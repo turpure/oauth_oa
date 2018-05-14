@@ -67,10 +67,10 @@ class User extends ActiveRecord implements IdentityInterface
     /**
      * {@inheritdoc}
      */
-    public static function findIdentityByAccessToken($token, $type = null)
-    {
-        throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
-    }
+//    public static function findIdentityByAccessToken($token, $type = null)
+//    {
+//        throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
+//    }
 
     /**
      * Finds user by username
@@ -134,12 +134,36 @@ class User extends ActiveRecord implements IdentityInterface
         return $this->auth_key;
     }
 
+
     /**
      * {@inheritdoc}
      */
     public function validateAuthKey($authKey)
     {
         return $this->getAuthKey() === $authKey;
+    }
+
+    /**
+     * 生成 access_token
+     */
+    public function generateApiToken()
+    {
+        $this->access_token = Yii::$app->security->generateRandomString() . '_' . time();
+    }
+
+
+    /**
+     * apiTokenIsValid
+     */
+    public static function apiTokenIsValid($token)
+    {
+        if (empty($token)) {
+            return false;
+        }
+
+        $timestamp = (int) substr($token, strrpos($token, '_') + 1);
+        $expire = Yii::$app->params['user.apiTokenExpire'];
+        return $timestamp + $expire >= time();
     }
 
     /**
@@ -185,5 +209,29 @@ class User extends ActiveRecord implements IdentityInterface
     public function removePasswordResetToken()
     {
         $this->password_reset_token = null;
+    }
+
+
+    public static function findIdentityByAccessToken($token, $type = null)
+    {
+        // 如果token无效的话，
+        if(!static::apiTokenIsValid($token)) {
+            throw new \yii\web\UnauthorizedHttpException("token is invalid.");
+        }
+
+        return static::findOne(['access_token' => $token, 'status' => self::STATUS_ACTIVE]);
+        // throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
+    }
+
+
+    public function loginByAccessToken($token, $type = null)
+    {
+        /* @var $class IdentityInterface */
+        $class = $this->identityClass;
+        $identity = $class::findIdentityByAccessToken($token, $type);
+        if ($identity && $this->login($identity)) {
+            return $identity;
+        }
+        return null;
     }
 }
