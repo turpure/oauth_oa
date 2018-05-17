@@ -15,7 +15,10 @@ return [
         'admin' => [
             'class' => 'mdm\admin\Module',
             'layout' => 'left-menu',//yii2-admin的导航菜单
-        ]
+        ],
+        'v1' => [
+            'class' => 'backend\modules\v1\Module',
+        ],
     ],
     'components' => [
         'request' => [
@@ -46,6 +49,7 @@ return [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+
             ],
         ],
         'authManager'  => [
@@ -56,6 +60,8 @@ return [
         'class' => 'mdm\admin\components\AccessControl',
         'allowActions' => [
             'site/*',
+            'v1/*',
+            'gii/*',
             'admin/*',
             // The actions listed here will be allowed to everyone including guests.
             // So, 'admin/*' should not appear here in the production, of course.
