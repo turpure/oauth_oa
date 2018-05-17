@@ -15,7 +15,7 @@ use yii\filters\auth\HttpBearerAuth;
 use yii\filters\auth\QueryParamAuth;
 use yii\filters\Cors;
 use yii\base\UserException;
-
+use Yii;
 
 class AdminController extends ActiveController
 {
@@ -95,5 +95,28 @@ class AdminController extends ActiveController
         }
 
         return $this->serializeData($data);
+    }
+
+
+    /*
+     * check access
+     */
+    public function checkAccess($action, $model = null, $params = [])
+    {
+        $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
+        $userId = $user?$user->getId():'';
+        $db = Yii::$app->db;
+        $actionId = '/'.Yii::$app->controller->getRoute();
+        $check_sql = 'select usr.id as userId,item.child as actionId from `user` as usr
+                  LEFT JOIN `auth_assignment` as ass on usr.id=ass.user_id
+                  LEFT JOIN `auth_item_child` as item on item.parent=ass.item_name where usr.id=:userId';
+        $user_permission = $db->createCommand($check_sql,[':userId'=>$userId])->queryAll();
+        $auth_actions= [];
+        foreach ($user_permission as $row){
+            $auth_actions[] = $row['actionId'];
+        }
+        if(!in_array($actionId,$auth_actions)){
+            throw new \yii\web\ForbiddenHttpException("No permiession!");
+        }
     }
 }
