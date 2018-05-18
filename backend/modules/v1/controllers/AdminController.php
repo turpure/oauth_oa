@@ -36,7 +36,7 @@ class AdminController extends ActiveController
         $behaviors['authenticator'] = [
             'class' => CompositeAuth::className(),
 
-            'authMethods' => [
+            'authMethods'        => [
                 ['class' => HttpBasicAuth::className(), 'auth' => [$this, 'auth']],
                 ['class' => HttpBearerAuth::className()],
                 ['class' => QueryParamAuth::className(), 'tokenParam' => 'token',],
