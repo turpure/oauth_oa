@@ -63,6 +63,7 @@ return [
             'v1/*',
             'gii/*',
             'admin/*',
+            'backend/*',
         ]
     ],
     'params' => $params,

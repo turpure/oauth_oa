@@ -113,7 +113,7 @@ class AdminController extends ActiveController
         $user_permission = $db->createCommand($check_sql,[':userId'=>$userId])->queryAll();
         $auth_actions= [];
         foreach ($user_permission as $row){
-            $auth_actions[] = $row['actionId'];
+              $auth_actions[] = $row['actionId'];
         }
         if(!in_array($actionId,$auth_actions)){
             throw new \yii\web\ForbiddenHttpException("No permiession!");
