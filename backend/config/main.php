@@ -14,12 +14,12 @@ return [
     'modules' => [
         'admin' => [
             'class' => 'mdm\admin\Module',
-            'layout' => 'left-menu',//yii2-admin的导航菜单
         ],
         'v1' => [
             'class' => 'backend\modules\v1\Module',
         ],
     ],
+    'language' => 'zh-CN',
     'components' => [
         'request' => [
             'csrfParam' => '_csrf-backend',
