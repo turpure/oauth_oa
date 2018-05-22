@@ -14,6 +14,7 @@ return [
     'modules' => [
         'admin' => [
             'class' => 'mdm\admin\Module',
+//            'layout' => 'left-menu'
         ],
         'v1' => [
             'class' => 'backend\modules\v1\Module',
@@ -55,6 +56,9 @@ return [
         'authManager'  => [
         'class' => 'yii\rbac\DbManager',
                 ]
+    ],
+    'aliases' => [
+        '@mdm/admin' => '@vendor/mdmsoft/yii2-admin',
     ],
     'as access' => [
         'class' => 'mdm\admin\components\AccessControl',

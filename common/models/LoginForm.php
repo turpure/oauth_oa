@@ -12,9 +12,14 @@ class LoginForm extends Model
     public $username;
     public $password;
     public $rememberMe = true;
-
     private $_user;
+    const GET_API_TOKEN = 'generate_api_token';
 
+    public function init ()
+    {
+        parent::init();
+        $this->on(self::GET_API_TOKEN, [$this, 'onGenerateApiToken']);
+    }
 
     /**
      * {@inheritdoc}
@@ -56,6 +61,7 @@ class LoginForm extends Model
     public function login()
     {
         if ($this->validate()) {
+            $this->trigger(self::GET_API_TOKEN);
             return Yii::$app->user->login($this->getUser(), $this->rememberMe ? 3600 * 24 * 30 : 0);
         }
         
