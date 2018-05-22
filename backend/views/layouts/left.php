@@ -30,7 +30,7 @@ $callback = function ($menu) {
 <aside class="main-sidebar">
     <section class="sidebar">
         <?= dmstr\widgets\Menu::widget([
-            'options' => ['class' => 'sidebar-menu'],
+            'options' => ['class' => 'sidebar-menu','data-widget' => 'tree'],
             'items' => MenuHelper::getAssignedMenu(Yii::$app->user->id, null, $callback),
         ]) ?>
     </section>
