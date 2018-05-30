@@ -27,6 +27,7 @@ class Goods extends \yii\db\ActiveRecord
     {
         return [
             [['name'], 'string', 'max' => 100],
+            [['creator'], 'string', 'max' => 100],
         ];
     }
 
@@ -38,6 +39,7 @@ class Goods extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'name' => 'Name',
+            'creator' => 'Creator',
         ];
     }
 }

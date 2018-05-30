@@ -30,7 +30,7 @@ return [
             'identityClass' => 'common\models\User',
 //            'enableAutoLogin' => true,
             'identityCookie' => ['name' => '_identity-backend', 'httpOnly' => true],
-//            'authTimeout' => 10
+//            'authTimeout' => 24*3600
         ],
         'session' => [
             // this is the name of the session cookie used for login on the backend
@@ -66,7 +66,7 @@ return [
         'class' => 'mdm\admin\components\AccessControl',
         'allowActions' => [
             'site/*',
-            'v1/*',
+//            'v1/*',
             'gii/*',
 //            'admin/*',
             'backend/*',
