@@ -19,7 +19,7 @@ Thumbs.db
 
 # composer vendor dir
 /vendor
-
+!/vendor/mdmsoft/
 # composer itself is not needed
 composer.phar
 

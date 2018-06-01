@@ -66,7 +66,7 @@ return [
         'class' => 'mdm\admin\components\AccessControl',
         'allowActions' => [
             'site/*',
-//            'v1/*',
+            'v1/*',
             'gii/*',
 //            'admin/*',
             'backend/*',
