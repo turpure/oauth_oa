@@ -1,7 +1,7 @@
 <?php
 /**
  * @desc PhpStorm.
- * @author: Administrator
+ * @author: turpure
  * @since: 2018-05-17 15:53
  */
 
@@ -19,6 +19,15 @@ use Yii;
 
 class AdminController extends ActiveController
 {
+
+//    public function init()
+//    {
+//        parent::init();
+//        Yii::$app->user->enableSession = false;
+//        Yii::$app->user->loginUrl  = false;
+//    }
+
+
     public function behaviors()
     {
         $behaviors = ArrayHelper::merge([
@@ -103,8 +112,9 @@ class AdminController extends ActiveController
      */
     public function checkAccess($action, $model = null, $params = [])
     {
-        $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
-        $userId = $user?$user->getId():'';
+//        $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
+//        $userId = $user?$user->getId():'';
+        $userId = Yii::$app->user->id;
         $db = Yii::$app->db;
         $actionId = '/'.Yii::$app->controller->getRoute();
         $check_sql = 'select usr.id as userId,item.child as actionId from `user` as usr
@@ -114,6 +124,9 @@ class AdminController extends ActiveController
         $auth_actions= [];
         foreach ($user_permission as $row){
               $auth_actions[] = $row['actionId'];
+        }
+        if ($model->creator_id !== $userId) {
+            throw new \yii\web\ForbiddenHttpException("You can only '.$action.' articles that you've created.");
         }
         if(!in_array($actionId,$auth_actions)){
             throw new \yii\web\ForbiddenHttpException("No permiession!");

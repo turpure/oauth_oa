@@ -4,6 +4,7 @@ namespace backend\modules\v1\controllers;
 
 use backend\models\RestLoginForm;
 use backend\models\SignupForm;
+use common\models\User;
 use Yii;
 use yii\web\IdentityInterface;
 use backend\modules\v1\controllers\AdminController;
