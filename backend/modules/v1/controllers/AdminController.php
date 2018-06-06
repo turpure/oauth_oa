@@ -6,6 +6,8 @@
  */
 
 namespace backend\modules\v1\controllers;
+
+use backend\models\AuthAssignment;
 use common\models\User;
 use yii\rest\ActiveController;
 use yii\helpers\ArrayHelper;
@@ -20,12 +22,13 @@ use Yii;
 class AdminController extends ActiveController
 {
 
-//    public function init()
-//    {
-//        parent::init();
-//        Yii::$app->user->enableSession = false;
-//        Yii::$app->user->loginUrl  = false;
-//    }
+    public function actions()
+    {
+        $actions = parent::actions();
+        // 注销系统自带的实现方法
+        unset($actions['index'], $actions['update'], $actions['create'], $actions['delete'], $actions['view']);
+        return $actions;
+    }
 
 
     public function behaviors()
@@ -45,7 +48,7 @@ class AdminController extends ActiveController
         $behaviors['authenticator'] = [
             'class' => CompositeAuth::className(),
 
-            'authMethods'        => [
+            'authMethods' => [
                 ['class' => HttpBasicAuth::className(), 'auth' => [$this, 'auth']],
                 ['class' => HttpBearerAuth::className()],
                 ['class' => QueryParamAuth::className(), 'tokenParam' => 'token',],
@@ -67,7 +70,7 @@ class AdminController extends ActiveController
     public function auth($username, $password)
     {
         $user = User::findByUsername($username);
-        if(empty($username) || empty($password) || empty($user)) {
+        if (empty($username) || empty($password) || empty($user)) {
             //return false;
             //OR
             throw new UserException("There is an error!");
@@ -79,8 +82,6 @@ class AdminController extends ActiveController
         //OR
         throw new UserException("Wrong username or password!");
     }
-
-
 
 
     /**
@@ -107,29 +108,50 @@ class AdminController extends ActiveController
     }
 
 
-    /*
-     * check access
+    /**
+     * @param $action
+     * @return bool
+     * @throws \yii\web\BadRequestHttpException
      */
+    public function beforeAction($action)
+    {
+        if (parent::beforeAction($action)) {
+            if($this->action->id !== 'login'){
+                $this->checkAccess($this->action->id);
+            }
+            return true;
+        }
+        return false;
+    }
+
+
+    /**
+     * @param string $action
+     * @param null $model
+     * @param array $params
+     * @return bool
+     * @throws \yii\db\Exception
+     * @throws \yii\web\ForbiddenHttpException
+     */
+
     public function checkAccess($action, $model = null, $params = [])
     {
-//        $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
-//        $userId = $user?$user->getId():'';
         $userId = Yii::$app->user->id;
         $db = Yii::$app->db;
-        $actionId = '/'.Yii::$app->controller->getRoute();
-        $check_sql = 'select usr.id as userId,item.child as actionId from `user` as usr
+        $role = User::getRole($userId);
+        if ($role !== AuthAssignment::ACCOUNT_ADMIN) {
+            $actionId = '/' . Yii::$app->controller->getRoute();
+            $check_sql = 'select usr.id as userId,item.child as actionId from `user` as usr
                   LEFT JOIN `auth_assignment` as ass on usr.id=ass.user_id
                   LEFT JOIN `auth_item_child` as item on item.parent=ass.item_name where usr.id=:userId';
-        $user_permission = $db->createCommand($check_sql,[':userId'=>$userId])->queryAll();
-        $auth_actions= [];
-        foreach ($user_permission as $row){
-              $auth_actions[] = $row['actionId'];
-        }
-        if ($model->creator_id !== $userId) {
-            throw new \yii\web\ForbiddenHttpException("You can only '.$action.' articles that you've created.");
-        }
-        if(!in_array($actionId,$auth_actions)){
-            throw new \yii\web\ForbiddenHttpException("No permiession!");
+            $user_permission = $db->createCommand($check_sql, [':userId' => $userId])->queryAll();
+            $auth_actions = [];
+            foreach ($user_permission as $row) {
+                $auth_actions[] = $row['actionId'];
+            }
+            if (!in_array($actionId, $auth_actions)) {
+                throw new \yii\web\ForbiddenHttpException("No permiession!");
+            }
         }
     }
 }
