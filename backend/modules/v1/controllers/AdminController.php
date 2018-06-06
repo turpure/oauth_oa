@@ -16,6 +16,8 @@ use yii\filters\auth\QueryParamAuth;
 use yii\filters\Cors;
 use yii\base\UserException;
 use Yii;
+use yii\filters\ContentNegotiator;
+use yii\web\Response;
 
 class AdminController extends ActiveController
 {
@@ -34,13 +36,22 @@ class AdminController extends ActiveController
             [
                 'class' => Cors::className(),
                 'cors' => [
-                    'Origin' => ['http://127.0.0.1'],
+                    'Origin' => ['*'],
                     'Access-Control-Allow-Credentials' => true,
+                    'Access-Control-Request-Headers' => ['Origin', 'X-Requested-With', 'Content-Type', 'Accept'],
                 ],
             ],
         ],
             parent::behaviors()
         );
+
+
+//        $behaviors['contentNegotiator'] = [
+//            'class' => ContentNegotiator::className(),
+//            'formats' => [
+//                'application/json' => Response::FORMAT_JSON
+//            ]
+//        ];
 
         $behaviors['authenticator'] = [
             'class' => CompositeAuth::className(),
