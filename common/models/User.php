@@ -1,6 +1,7 @@
 <?php
 namespace common\models;
 
+use backend\models\AuthAssignment;
 use Yii;
 use yii\base\NotSupportedException;
 use yii\behaviors\TimestampBehavior;
@@ -233,6 +234,15 @@ class User extends ActiveRecord implements IdentityInterface
             return $identity;
         }
         return null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getRole($id)
+    {
+        $role = AuthAssignment::findOne(['user_id'=>$id]);
+        return $role && $role['item_name'] ? $role['item_name'] : null;
     }
 
 }

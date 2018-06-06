@@ -7,7 +7,7 @@ use backend\models\SignupForm;
 use common\models\User;
 use Yii;
 use yii\web\IdentityInterface;
-use backend\modules\v1\controllers\AdminController;
+//use backend\modules\v1\controllers\AdminController;
 
 
 class UserController extends AdminController
