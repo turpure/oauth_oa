@@ -18,11 +18,8 @@ class MenuController extends AdminController
      */
     public function actionIndex ()
     {
-        //print_r($this->action->id);exit;
-        //$this->checkAccess($this->action->id);
         return AuthPositionMenu::getAuthMenuList();
     }
-
 
 
 }
