@@ -18,8 +18,9 @@ nbproject
 Thumbs.db
 
 # composer vendor dir
-/vendor
 !/vendor/mdmsoft/
+/vendor/*
+
 # composer itself is not needed
 composer.phar
 
@@ -34,3 +35,5 @@ phpunit.phar
 # vagrant runtime
 /.vagrant
 /composer.lock
+Would skip repository vendor/kartik-v/yii2-widget-select2
+
