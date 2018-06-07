@@ -32,5 +32,39 @@ class ConditionController extends AdminController
         return ApiCondition::getUserPlat();
     }
 
+    /**
+     * 获取仓库列表
+     * @return array
+     */
+    public function actionStore ()
+    {
+        return [
+            '义乌仓',
+            'FBW仓库',
+            'FBA仓库',
+            'FBA-19UK仓库',
+            'AMZ上海仓',
+            '4PXUS',
+        ];
+    }
+
+    /**
+     * 获取用户所管理的销售员列表/开发责任人列表/采购列表/美工列表
+     * @return array
+     */
+    public function actionMember ()
+    {
+        return ApiCondition::getUsers();
+    }
+
+    /**
+     * 获取用户所管理的账号列表
+     * @return array
+     */
+    public function actionAccount ()
+    {
+        return ApiCondition::getUserAccount();
+    }
+
 
 }
