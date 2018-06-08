@@ -2,6 +2,7 @@
 
 namespace mdm\admin\controllers;
 
+use mdm\admin\models\Department;
 use Yii;
 use mdm\admin\models\form\Login;
 use mdm\admin\models\form\PasswordResetRequest;
@@ -155,6 +156,18 @@ class UserController extends Controller
         return $this->render('update', [
             'model' => $model,
         ]);
+    }
+
+    /**
+     * 获取各级部门列表
+     * @param $id
+     * @return string
+     */
+    public function actionAjax()
+    {
+        $id = Yii::$app->request->post('id',0);
+        $depart = Department::find()->andWhere(['parent' =>$id])->asArray()->all();
+        return json_encode($depart);
     }
 
     /**
