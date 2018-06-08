@@ -1,6 +1,7 @@
 <?php
 namespace mdm\admin\models\form;
 
+use mdm\admin\models\Department;
 use mdm\admin\models\DepartmentChild;
 use Yii;
 use mdm\admin\models\User;
@@ -15,6 +16,7 @@ use yii\helpers\ArrayHelper;
 class UpdateUser extends Model
 {
     public $department;
+    public $child_depart;
     public $position;
     public $store;
     public $user_id;
@@ -37,7 +39,14 @@ class UpdateUser extends Model
         $this->user_id = (int)$userid;
         $this->username = User::findOne($userid)->username;
         $department = DepartmentChild::find()->where(['user_id'=>$userid])->one();
-        $this->department = $department?$department:'';
+        //print_r($department);exit;
+        if($department){
+            $departInfo = Department::findOne($department['department_id']);
+            $this->department = $departInfo['parent']?:$departInfo['id'];
+            $this->child_depart = $departInfo['parent']?$departInfo['id']:0;
+        }else{
+            $this->department = $this->child_depart = 0;
+        }
         $this->_position = ArrayHelper::getColumn(ArrayHelper::toArray(PositionChild::find()->where(['user_id'=>$userid])->all()),'position_id');
         $this->_store = ArrayHelper::getColumn(ArrayHelper::toArray(StoreChild::find()->where(['user_id'=>$userid])->all()),'store_id');
         $this->position = $this->_position;
@@ -55,7 +64,7 @@ class UpdateUser extends Model
     {
         return [
             [['user_id'],'integer'],
-            [['department',],'string'],
+            [['department','child_depart'],'string'],
             [['department',],'required'],
             [['store','position'],'safe']
         ];
@@ -78,7 +87,7 @@ class UpdateUser extends Model
             $DepartmentChild = $DepartmentChild?$DepartmentChild:new DepartmentChild();
             $Positon = new PositionChild();
             $DepartmentChild->user_id = $this->user_id;
-            $DepartmentChild->department_id = $this->department;
+            $DepartmentChild->department_id = $this->child_depart?:$this->department;
 
 
             // 增改删店铺

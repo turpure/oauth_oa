@@ -7,7 +7,6 @@ use yii\helpers\Json;
 use mdm\admin\AutocompleteAsset;
 use kartik\select2\Select2;
 use mdm\admin\models\Department;
-
 /* @var $this yii\web\View */
 /* @var $model mdm\admin\models\Menu */
 /* @var $form yii\widgets\ActiveForm */
