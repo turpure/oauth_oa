@@ -59,6 +59,7 @@ class AuthPositionMenu extends \yii\db\ActiveRecord
                 ->select('m.id,m.name,m.parent,m.route,m.order')
                 ->from('menu m')
                 ->orderBy('m.order')
+                ->andWhere(['not in', 'm.id',[3,6]])
                 ->asArray()->all();
         }
         else {
@@ -69,6 +70,7 @@ class AuthPositionMenu extends \yii\db\ActiveRecord
                 ->leftJoin('auth_position p','pm.position_id=p.id')
                 ->leftJoin('menu m','pm.menu_id=m.id')
                 ->where(['pc.user_id' => $userId])
+                ->andWhere(['not in', 'm.id',[3,6]])
                 ->orderBy('m.order')
                 ->asArray()->all();
         }
