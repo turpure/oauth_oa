@@ -41,7 +41,7 @@ class AdminController extends ActiveController
                 'cors' => [
                     'Origin' => ['*'],
                     'Access-Control-Allow-Credentials' => true,
-                    'Access-Control-Request-Headers' => ['content-type','Vue-Token','Origin', 'X-Requested-With', 'Content-Type', 'Accept'],
+                    'Access-Control-Request-Headers' => ['content-type','Authorization','Origin', 'X-Requested-With', 'Content-Type', 'Accept'],
                 ],
             ],
         ],
