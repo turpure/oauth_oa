@@ -15,7 +15,6 @@ use mdm\admin\AutocompleteAsset;
     <div class="row">
         <div class="col-sm-6">
             <?= $form->field($model, 'store')->textInput(['maxlength' => 128]) ?>
-
             <?= $form->field($model, 'platform')->textInput(['id' => 'platform']) ?>
 
         </div>
