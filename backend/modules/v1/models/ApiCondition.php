@@ -68,7 +68,7 @@ class ApiCondition
         //获取平台列表
         if ($role == AuthAssignment::ACCOUNT_ADMIN) {
             $plat = (new Query())
-                ->select('platform as plat')
+                ->select('id,platform as plat')
                 ->from('auth_store')
                 ->orderBy('platform')
                 ->groupBy('platform')
@@ -78,9 +78,9 @@ class ApiCondition
             $users = self::getUsers();
             $users = ArrayHelper::getColumn($users, 'id');
             $plat = (new Query())
-                ->select('platform as plat')
+                ->select('ast.id,platform as plat')
                 ->from('auth_store_child asc')
-                ->leftJoin('auth_store as', 'as.id=asc.store_id')
+                ->leftJoin('auth_store as ast', 'ast.id=asc.store_id')
                 ->where(['in', 'user_id', $users])
                 ->orderBy('platform')
                 ->groupBy('platform')
@@ -156,6 +156,7 @@ class ApiCondition
                 ->leftJoin('auth_position_child pc','pc.user_id=u.id')
                 ->leftJoin('auth_position p','p.id=pc.position_id')
                 ->andWhere(['is not', 'p.position', null])
+                ->distinct()
                 ->all();
         } elseif (in_array(AuthPosition::JOB_MANAGER, $position) ||
             in_array(AuthPosition::JOB_CHARGE, $position)
