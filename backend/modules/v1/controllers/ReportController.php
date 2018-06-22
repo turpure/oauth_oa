@@ -23,7 +23,7 @@ class ReportController extends  AdminController
                 'verbs' => [
                     'class' => VerbFilter::className(),
                     'actions' => [
-                        'sales' => ['post'],
+                        'sales' => ['post','options'],
                     ],
                 ],
        ],
@@ -40,15 +40,16 @@ class ReportController extends  AdminController
 
     public function actionSales ()
     {
-//        $condition = Yii::$app->request->post()['condition'];
+        $request = Yii::$app->request->post();
+        $cond= $request['condition'];
         $condition= [
-            'plat' => '',
-            'dateFlag' =>'1',
-            'beginDate' => '2018-05-10',
-            'endDate' => '2018-05-11',
-            'suffix' => '',
-            'seller' => '',
-            'storeName' => '',
+            'plat' => $cond['plat'],
+            'dateFlag' =>$cond['dateType'],
+            'beginDate' => $cond['dateRange'][0],
+            'endDate' => $cond['dateRange'][1],
+            'suffix' => $cond['account']?implode(',',$cond['account']):'',
+            'seller' => $cond['member'],
+            'storeName' => $cond['store']?implode(',',$cond['store']):'',
         ];
         $ret = ApiReport::getSalesReport($condition);
         return $ret;
