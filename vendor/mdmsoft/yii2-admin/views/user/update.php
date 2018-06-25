@@ -10,7 +10,6 @@ use mdm\admin\models\Position;
 use mdm\admin\models\Store;
 use yii\bootstrap\ActiveForm;
 use kartik\select2\Select2;
-
 /* @var $this yii\web\View */
 /* @var $model mdm\admin\models\User */
 
@@ -22,7 +21,6 @@ $controllerId = $this->context->uniqueId . '/';
 ?>
 <div class="site-update">
     <h1><?= Html::encode($this->title) ?></h1>
-
     <?= Html::errorSummary($model) ?>
     <div class="row">
         <div class="col-lg-5">
