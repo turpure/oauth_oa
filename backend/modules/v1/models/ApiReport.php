@@ -15,13 +15,13 @@ class ApiReport
 {
     /**
      * @brief sales profit report
-     * @params $condition
+     * @param $condition
      * @return array
      */
 
     public static function getSalesReport($condition)
     {
-        $sql = 'Z_P_FinancialProfit @pingtai=:plat,@DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,'.
+        $sql = 'meta_saleProfit @pingtai=:plat,@DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,'.
         '@SalerAliasName=:suffix,@Saler=:seller,@StoreName=:storeName';
         $con = Yii::$app->py_db;
         $params = [
