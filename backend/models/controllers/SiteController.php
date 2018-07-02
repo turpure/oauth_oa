@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Administrator
- * Date: 2018-06-25
- * Time: 11:57
- */
 namespace backend\controllers;
 
 use Yii;
