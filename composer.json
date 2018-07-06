@@ -20,7 +20,8 @@
         "yiisoft/yii2-swiftmailer": "~2.0.0 || ~2.1.0",
         "dmstr/yii2-adminlte-asset": "^2.1",
         "mdmsoft/yii2-admin": "2.*",
-        "kartik-v/yii2-widget-select2": "@dev"
+        "kartik-v/yii2-widget-select2": "@dev",
+        "phpoffice/phpspreadsheet": "^1.3"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.0.0",

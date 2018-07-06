@@ -64,50 +64,211 @@ class UploadController extends AdminController
     }
 
     /**
-     * @brief 死库费用
-     * @return array|string
+     * @brief 销售死库费用
+     * @return array
+     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
-    public function actionDiebasefee()
+    public function actionSalesdeadfee()
     {
-        $request = Yii::$app->request->post();
-        $cond = $request['condition'];
-        if (!$cond['devRate'] && !$cond['salerRate']) {
-            return [
-                'code' => 400,
-                'message' => 'The salerRate and the devRate can not be empty at the same time！',
-                //'message' => '销售汇率和开发汇率不能同时为空！',
-            ];
+        $file = $_FILES['file'];
+        if (!$file) {
+            return ['code' => 400, 'message' => 'The file can not be empty!'];
         }
-        $condition = [
-            'devRate' => $cond['devRate'],
-            'salerRate' => $cond['salerRate'],
-        ];
-        $ret = ApiUpload::updateExchangeRate($condition);
-        return $ret;
+        //判断文件后缀
+        $extension = ApiUpload::get_extension($file['name']);
+        if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
+
+        //文件上传
+        $result = ApiUpload::file($file, 'deadfee');
+        if (!$result) {
+            return ['code' => 400, 'message' => 'File upload failed'];
+        }else{
+            //获取上传excel文件的内容并保存
+            $res = ApiUpload::getExcelData($result,ApiUpload::SALES, ApiUpload::DEAD_FEE);
+            if($res !== true) return ['code' => 400, 'message' => $res];
+        }
+    }
+
+    /**
+     * @brief 开发死库费用
+     * @return array
+     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
+     */
+    public function actionDevdeadfee()
+    {
+        $file = $_FILES['file'];
+        if (!$file) {
+            return ['code' => 400, 'message' => 'The file can not be empty!'];
+        }
+        //判断文件后缀
+        $extension = ApiUpload::get_extension($file['name']);
+        if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
+
+        //文件上传
+        $result = ApiUpload::file($file, 'deadfee');
+        if (!$result) {
+            return ['code' => 400, 'message' => 'File upload failed'];
+        }else{
+            //获取上传excel文件的内容并保存
+            $res = ApiUpload::getExcelData($result,ApiUpload::DEVELOP, ApiUpload::DEAD_FEE);
+            if($res !== true) return ['code' => 400, 'message' => $res];
+        }
+    }
+
+    /**
+     * @brief 美工死库费用
+     * @return array
+     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
+     */
+    public function actionPosdeadfee()
+    {
+        $file = $_FILES['file'];
+        if (!$file) {
+            return ['code' => 400, 'message' => 'The file can not be empty!'];
+        }
+        //判断文件后缀
+        $extension = ApiUpload::get_extension($file['name']);
+        if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
+
+        //文件上传
+        $result = ApiUpload::file($file, 'deadfee');
+        if (!$result) {
+            return ['code' => 400, 'message' => 'File upload failed'];
+        }else{
+            //获取上传excel文件的内容并保存
+            $res = ApiUpload::getExcelData($result,ApiUpload::POSSESS, ApiUpload::DEAD_FEE);
+            if($res !== true) return ['code' => 400, 'message' => $res];
+        }
+    }
+
+    /**
+     * @brief 采购死库费用
+     * @return array
+     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
+     */
+    public function actionPurdeadfee()
+    {
+        $file = $_FILES['file'];
+        if (!$file) {
+            return ['code' => 400, 'message' => 'The file can not be empty!'];
+        }
+        //判断文件后缀
+        $extension = ApiUpload::get_extension($file['name']);
+        if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
+
+        //文件上传
+        $result = ApiUpload::file($file, 'deadfee');
+        if (!$result) {
+            return ['code' => 400, 'message' => 'File upload failed'];
+        }else{
+            //获取上传excel文件的内容并保存
+            $res = ApiUpload::getExcelData($result,ApiUpload::PURCHASE, ApiUpload::DEAD_FEE);
+            if($res !== true) return ['code' => 400, 'message' => $res];
+        }
     }
 
 
     /**
-     * @brief 运营杂费
-     * @return array|string
+     * @brief 销售运营杂费
+     * @return array
+     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
-    public function actionOperatefee()
+    public function actionSalesoperatefee()
     {
-        $request = Yii::$app->request->post();
-        $cond = $request['condition'];
-        if (!$cond['devRate'] && !$cond['salerRate']) {
-            return [
-                'code' => 400,
-                'message' => 'The salerRate and the devRate can not be empty at the same time！',
-                //'message' => '销售汇率和开发汇率不能同时为空！',
-            ];
+        $file = $_FILES['file'];
+        if (!$file) {
+            return ['code' => 400, 'message' => 'The file can not be empty!'];
         }
-        $condition = [
-            'devRate' => $cond['devRate'],
-            'salerRate' => $cond['salerRate'],
-        ];
-        $ret = ApiUpload::updateExchangeRate($condition);
-        return $ret;
+        //判断文件后缀
+        $extension = ApiUpload::get_extension($file['name']);
+        if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
+
+        //文件上传
+        $result = ApiUpload::file($file, 'opreatefee');
+        if (!$result) {
+            return ['code' => 400, 'message' => 'File upload failed'];
+        }else{
+            //获取上传excel文件的内容并保存
+            $res = ApiUpload::getExcelData($result,ApiUpload::SALES, ApiUpload::OPERATE_FEE);
+            if($res !== true) return ['code' => 400, 'message' => $res];
+        }
+    }
+
+    /**
+     * @brief 开发运营杂费
+     * @return array
+     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
+     */
+    public function actionDevoperatefee()
+    {
+        $file = $_FILES['file'];
+        if (!$file) {
+            return ['code' => 400, 'message' => 'The file can not be empty!'];
+        }
+        //判断文件后缀
+        $extension = ApiUpload::get_extension($file['name']);
+        if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
+
+        //文件上传
+        $result = ApiUpload::file($file, 'opreatefee');
+        if (!$result) {
+            return ['code' => 400, 'message' => 'File upload failed'];
+        }else{
+            //获取上传excel文件的内容并保存
+            $res = ApiUpload::getExcelData($result,ApiUpload::DEVELOP, ApiUpload::OPERATE_FEE);
+            if($res !== true) return ['code' => 400, 'message' => $res];
+        }
+    }
+
+    /**
+     * @brief 美工运营杂费
+     * @return array
+     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
+     */
+    public function actionPosoperatefee()
+    {
+        $file = $_FILES['file'];
+        if (!$file) {
+            return ['code' => 400, 'message' => 'The file can not be empty!'];
+        }
+        //判断文件后缀
+        $extension = ApiUpload::get_extension($file['name']);
+        if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
+
+        //文件上传
+        $result = ApiUpload::file($file, 'opreatefee');
+        if (!$result) {
+            return ['code' => 400, 'message' => 'File upload failed'];
+        }else{
+            //获取上传excel文件的内容并保存
+            $res = ApiUpload::getExcelData($result,ApiUpload::POSSESS, ApiUpload::OPERATE_FEE);
+            if($res !== true) return ['code' => 400, 'message' => $res];
+        }
+    }/**
+     * @brief 采购运营杂费
+     * @return array
+     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
+     */
+    public function actionPuroperatefee()
+    {
+        $file = $_FILES['file'];
+        if (!$file) {
+            return ['code' => 400, 'message' => 'The file can not be empty!'];
+        }
+        //判断文件后缀
+        $extension = ApiUpload::get_extension($file['name']);
+        if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
+
+        //文件上传
+        $result = ApiUpload::file($file, 'opreatefee');
+        if (!$result) {
+            return ['code' => 400, 'message' => 'File upload failed'];
+        }else{
+            //获取上传excel文件的内容并保存
+            $res = ApiUpload::getExcelData($result,ApiUpload::PURCHASE, ApiUpload::OPERATE_FEE);
+
+            if($res !== true) return ['code' => 400, 'message' => $res];
+        }
     }
 
 
