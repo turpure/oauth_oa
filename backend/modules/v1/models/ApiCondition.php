@@ -150,12 +150,11 @@ class ApiCondition
         $userId = Yii::$app->user->id;
         $role = User::getRole($userId);//登录用户角色
         $position = AuthPosition::getPosition($userId);//登录用户职位
-        if ($role == AuthAssignment::ACCOUNT_ADMIN) {
+        if ($role === AuthAssignment::ACCOUNT_ADMIN) {
             $users = (new Query())->select('u.id,username,p.position')
                 ->from('user u')
-                ->leftJoin('auth_position_child pc','pc.user_id=u.id')
-                ->leftJoin('auth_position p','p.id=pc.position_id')
-                ->andWhere(['is not', 'p.position', null])
+                ->innerJoin('auth_position_child pc','pc.user_id=u.id')
+                ->innerJoin('auth_position p','p.id=pc.position_id')
                 ->distinct()
                 ->all();
         } elseif (in_array(AuthPosition::JOB_MANAGER, $position) ||
@@ -165,18 +164,17 @@ class ApiCondition
             $depart_id = AuthDepartmentChild::findOne(['user_id' => $userId])['department_id'];
             $users = (new Query())->select('u.id,username,p.position')
                 ->from('user u')
-                ->leftJoin('auth_position_child pc','pc.user_id=u.id')
-                ->leftJoin('auth_department_child dc','dc.user_id=u.id')
-                ->leftJoin('auth_department d','d.id=dc.department_id')
-                ->leftJoin('auth_position p','p.id=pc.position_id')
+                ->innerJoin('auth_position_child pc','pc.user_id=u.id')
+                ->innerJoin('auth_department_child dc','dc.user_id=u.id')
+                ->innerJoin('auth_department d','d.id=dc.department_id')
+                ->innerJoin('auth_position p','p.id=pc.position_id')
                 ->andWhere(['or',['d.id' => $depart_id],['parent' => $depart_id]])
-                ->andWhere(['is not', 'u.id', null])
                 ->all();
         } else {
             $users = (new Query())->select('u.id,username,p.position')
                 ->from('user u')
-                ->leftJoin('auth_position_child pc','pc.user_id=u.id')
-                ->leftJoin('auth_position p','p.id=pc.position_id')
+                ->innerJoin('auth_position_child pc','pc.user_id=u.id')
+                ->innerJoin('auth_position p','p.id=pc.position_id')
                 ->andWhere(['u.id' => $userId])
                 ->all();
         }
