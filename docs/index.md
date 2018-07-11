@@ -44,3 +44,152 @@
             ]
 ```
 
+### 查询条件
+
+* 接口名称：获取查询条件
+* 请求示例：v1/condition
+* 条件列表：
+
+| 接口 | 名称 | 请求方法 | 返回数据 |
+| :------:| :------: | :------: |  :------: |
+| /department | 部门 | get | array |
+| /plat | 平台 | get | array |
+| /store | 仓库 | get | array |
+| /member | 人员 | get | array |
+| /account | 账号 | get | array |
+
+
+### 报表
+
+* 接口名称：查询报表
+* 请求示例：v1/report
+* 报表列表：
+
+#### sales 
+* 接口名称：销售毛利报表
+* 请求示例：v1/report/sales
+* 请求方法： post
+* 请求参数：
+
+```
+{
+	"condition": {
+		"department": "",
+		"plat": "",
+		"member": "",
+		"store": [],
+		"dateType": 0,
+		"dateRange": ["2018-07-04", "2018-07-13"],
+		"account": []
+	}
+}
+```
+
+#### develop 
+* 接口名称：开发毛利报表
+* 请求示例：v1/report/develop
+* 请求方法： post
+* 请求参数：
+
+```
+{
+	"condition": {
+		"member": "",
+		"dateType": 0,
+		"dateRange": ["2018-07-04", "2018-07-13"],
+	}
+}
+```
+
+#### purchase 
+* 接口名称：采购毛利报表
+* 请求示例：v1/report/purchase
+* 请求方法： post
+* 请求参数：
+
+```
+{
+	"condition": {
+		"member": "",
+		"dateType": 0,
+		"dateRange": ["2018-07-04", "2018-07-13"],
+	}
+}
+```
+
+#### possess 
+* 接口名称：美工毛利报表
+* 请求示例：v1/report/possess
+* 请求方法： post
+* 请求参数：
+
+```
+{
+	"condition": {
+		"member": "",
+		"dateType": 0,
+		"dateRange": ["2018-07-04", "2018-07-13"],
+	}
+}
+```
+
+#### ebay-sales 
+* 接口名称：eBay销售毛利报表
+* 请求示例：v1/report/ebay-sales
+* 请求方法： post
+* 请求参数：
+
+```
+{
+	"condition": {
+		"member": "",
+		"dateType": 0,
+		"dateRange": ["2018-07-04", "2018-07-13"],
+	}
+}
+```
+
+#### sales-trend 
+* 接口名称：销售额走势
+* 请求示例：v1/report/sales-trend
+* 请求方法： post
+* 请求参数：
+
+```
+{
+	"condition": {
+		"department": "",
+		"plat": "",
+		"member": "",
+		"store": [],
+		"dateType": 0,
+		"dateRange": ["2018-07-04", "2018-07-13"],
+		"account": []
+	}
+}
+```
+
+#### account 
+* 接口名称：账号毛利润报表
+* 请求示例：v1/report/account
+* 请求方法： post
+* 请求参数：
+
+```
+{
+	"condition": {
+		"department": "",
+		"plat": "",
+		"member": "",
+		"store": [],
+		"sku": "",
+		"dateType": 0,
+		"dateRange": ["2018-07-04", "2018-07-13"],
+		"account": []
+	}
+}
+```
+
+
+
+

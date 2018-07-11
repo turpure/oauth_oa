@@ -19,7 +19,7 @@ class ConditionController extends AdminController
      * @return array
      */
 
-    public function actionIndex ()
+    public function actionDepartment ()
     {
         return ApiCondition::getUserPosition();
     }
