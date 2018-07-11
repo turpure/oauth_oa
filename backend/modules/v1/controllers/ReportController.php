@@ -150,7 +150,7 @@ class ReportController extends  AdminController
             'dateFlag' =>$cond['dateType'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'flag' => $cond['flag'],
+            'flag' => $cond['dateType'],
             'salesman' => $cond['member']?("'".implode(',',$cond['member'])."'"):'',
             'chanel' => $cond['plat']?implode(',',$cond['plat']):'',
             'suffix' => $cond['account']?implode(',',$cond['account']):'',
@@ -165,7 +165,7 @@ class ReportController extends  AdminController
      * @brief profit report
      * @return array
      */
-    public function actionProfit ()
+    public function actionAccount ()
     {
         $request = Yii::$app->request->post();
         $cond= $request['condition'];
@@ -177,7 +177,7 @@ class ReportController extends  AdminController
             'salesman' => $cond['member'],
             'chanel' => $cond['plat'],
             'suffix' => $cond['account']?("'".implode(',',$cond['account'])."'"):'',
-            'storeName' => $cond['storeName']?("'".implode(',',$cond['storeName'])."'"):'',
+            'storeName' => $cond['store']?("'".implode(',',$cond['store'])."'"):'',
         ];
         $ret = ApiReport::getProfitReport($condition);
         return $ret;
