@@ -7,8 +7,7 @@ use backend\models\SignupForm;
 use common\models\User;
 use Yii;
 use yii\web\IdentityInterface;
-//use backend\modules\v1\controllers\AdminController;
-
+use backend\modules\v1\utils\Handler;
 
 class UserController extends AdminController
 {
@@ -64,6 +63,7 @@ class UserController extends AdminController
             'id' => $user->id,
             'username' => $user->username,
             'email' => $user->email,
+            'avatar' => $user->avatar
         ];
     }
 
@@ -74,12 +74,45 @@ class UserController extends AdminController
     {
 
         $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
+
         return [
             'id' => $user->id,
             'username' => $user->username,
             'email' => $user->email,
+            'avatar' => $user->avatar
         ];
     }
 
+    /**
+     * @brief 设置头像
+     *
+     */
+    public function  actionAvatar ()
+    {
+        $post = Yii::$app->request->post();
+        $avatar = isset($post['avatar'])?$post['avatar']:'';
+        $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
+        $userId = $user->id;
+        $image = Handler::baseToImage($avatar, $userId);
+        $url = Yii::$app->request->hostInfo;
+        $imageUrl = $url.'/'.$image;
+        $user->avatar = $imageUrl;
+        $user->save();
+        return [$imageUrl];
+    }
 
+
+    /*
+     * @brief API测试
+     */
+    public function actionApi()
+    {
+        $data = Yii::$app->request->post();
+        $url = $data['url'];
+        $body = json_encode($data['data']);
+//      $body['data']= $body['data']?:'{}';
+        //先转成json字符串，再替换！！
+        $body = str_replace('[]','{}',$body);
+        return [Handler::request($url, $body)];
+    }
 }
