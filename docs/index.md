@@ -158,7 +158,7 @@
 ```
 {
 	"condition": {
-		"department": "",
+		"department": ["运营一部","运营二部","运营三部"],
 		"plat": "",
 		"member": "",
 		"store": [],
