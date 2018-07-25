@@ -151,10 +151,12 @@ class ApiCondition
         $role = User::getRole($userId);//登录用户角色
         $position = AuthPosition::getPosition($userId);//登录用户职位
         if ($role === AuthAssignment::ACCOUNT_ADMIN) {
-            $users = (new Query())->select('u.id,username,p.position')
+            $users = (new Query())->select('u.id,username,p.position,d.department')
                 ->from('user u')
                 ->innerJoin('auth_position_child pc','pc.user_id=u.id')
                 ->innerJoin('auth_position p','p.id=pc.position_id')
+                ->innerJoin('auth_department_child dc','dc.user_id=u.id')
+                ->innerJoin('auth_department d','d.id=dc.department_id')
                 ->distinct()
                 ->all();
         } elseif (in_array(AuthPosition::JOB_MANAGER, $position) ||
@@ -162,7 +164,7 @@ class ApiCondition
         ) {
             //登录用户部门
             $depart_id = AuthDepartmentChild::findOne(['user_id' => $userId])['department_id'];
-            $users = (new Query())->select('u.id,username,p.position')
+            $users = (new Query())->select('u.id,username,p.position,d.department')
                 ->from('user u')
                 ->innerJoin('auth_position_child pc','pc.user_id=u.id')
                 ->innerJoin('auth_department_child dc','dc.user_id=u.id')
@@ -171,10 +173,12 @@ class ApiCondition
                 ->andWhere(['or',['d.id' => $depart_id],['parent' => $depart_id]])
                 ->all();
         } else {
-            $users = (new Query())->select('u.id,username,p.position')
+            $users = (new Query())->select('u.id,username,p.position,d.department')
                 ->from('user u')
                 ->innerJoin('auth_position_child pc','pc.user_id=u.id')
                 ->innerJoin('auth_position p','p.id=pc.position_id')
+                ->innerJoin('auth_department_child dc','dc.user_id=u.id')
+                ->innerJoin('auth_department d','d.id=dc.department_id')
                 ->andWhere(['u.id' => $userId])
                 ->all();
         }

@@ -49,12 +49,12 @@ class ReportController extends  AdminController
         $request = Yii::$app->request->post();
         $cond= $request['condition'];
         $condition= [
-            'plat' => $cond['plat'],
-            'dateFlag' =>$cond['dateType'],
+            'plat' => $cond['plat']?implode('',$cond['plat']):'',
+            'dateFlag' =>$cond['dateType']?:'',
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
             'suffix' => $cond['account']?implode(',',$cond['account']):'',
-            'seller' => $cond['member'],
+            'seller' => $cond['member']?implode(',',$cond['member']):'',
             'storeName' => $cond['store']?implode(',',$cond['store']):'',
         ];
         $ret = ApiReport::getSalesReport($condition);
