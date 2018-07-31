@@ -126,7 +126,7 @@
 ```
 {
 	"condition": {
-		"member": "",
+		"member": [],
 		"dateType": 0,
 		"dateRange": ["2018-07-04", "2018-07-13"]
 	}
@@ -142,7 +142,7 @@
 ```
 {
 	"condition": {
-		"member": "",
+		"member": [],
 		"dateType": 0,
 		"dateRange": ["2018-07-04", "2018-07-13"]
 	}
@@ -160,7 +160,7 @@
 	"condition": {
 		"department": ["运营一部","运营二部","运营三部"],
 		"plat": "",
-		"member": "",
+		"member": [],
 		"store": [],
 		"dateType": 0,
 		"dateRange": ["2018-07-04", "2018-07-13"],
@@ -180,7 +180,7 @@
 	"condition": {
 		"department": "",
 		"plat": "",
-		"member": "",
+		"member": [],
 		"store": [],
 		"sku": "",
 		"dateType": 0,

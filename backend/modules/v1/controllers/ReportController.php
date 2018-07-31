@@ -75,7 +75,7 @@ class ReportController extends  AdminController
             'dateFlag' =>$cond['dateType'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'seller' => $cond['member'],
+            'seller' => $cond['member']?implode(',',$cond['member']):'',
         ];
         $ret = ApiReport::getDevelopReport($condition);
         return $ret;
@@ -93,7 +93,7 @@ class ReportController extends  AdminController
             'dateFlag' =>$cond['dateType'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'purchase' => $cond['member'],
+            'purchase' => $cond['member']?implode(',',$cond['member']):'',
         ];
         $ret = ApiReport::getPurchaseReport($condition);
         return $ret;
@@ -112,7 +112,7 @@ class ReportController extends  AdminController
             'dateFlag' =>$cond['dateType'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'possess' => $cond['member'],
+            'possess' => $cond['member']?implode(',',$cond['member']):'',
         ];
         $ret = ApiReport::getPossessReport($condition);
         return $ret;
@@ -174,7 +174,7 @@ class ReportController extends  AdminController
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
             'sku' => $cond['sku'],
-            'salesman' => $cond['member'],
+            'salesman' => $cond['member']?implode(',',$cond['member']):'',
             'chanel' => $cond['plat'],
             'suffix' => $cond['account']?("'".implode(',',$cond['account'])."'"):'',
             'storeName' => $cond['store']?("'".implode(',',$cond['store'])."'"):'',
@@ -182,9 +182,5 @@ class ReportController extends  AdminController
         $ret = ApiReport::getProfitReport($condition);
         return $ret;
     }
-
-
-
-
 
 }
