@@ -68,7 +68,7 @@ class UploadController extends AdminController
      * @return array
      * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
-    public function actionSalesdeadfee()
+    public function actionSalesDeadFee()
     {
         $file = $_FILES['file'];
         if (!$file) {
@@ -82,11 +82,10 @@ class UploadController extends AdminController
         $result = ApiUpload::file($file, 'deadfee');
         if (!$result) {
             return ['code' => 400, 'message' => 'File upload failed'];
-        }else{
-            //获取上传excel文件的内容并保存
-            $res = ApiUpload::getExcelData($result,ApiUpload::SALES, ApiUpload::DEAD_FEE);
-            if($res !== true) return ['code' => 400, 'message' => $res];
         }
+            //获取上传excel文件的内容并保存
+//            $res = ApiUpload::getExcelData($result,ApiUpload::SALES, ApiUpload::DEAD_FEE);
+//            if($res !== true) return ['code' => 400, 'message' => $res];
     }
 
     /**
@@ -94,7 +93,7 @@ class UploadController extends AdminController
      * @return array
      * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
-    public function actionDevdeadfee()
+    public function actionDevDeadFee()
     {
         $file = $_FILES['file'];
         if (!$file) {
@@ -120,7 +119,7 @@ class UploadController extends AdminController
      * @return array
      * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
-    public function actionPosdeadfee()
+    public function actionPosDeadFee()
     {
         $file = $_FILES['file'];
         if (!$file) {
@@ -146,7 +145,7 @@ class UploadController extends AdminController
      * @return array
      * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
-    public function actionPurdeadfee()
+    public function actionPurDeadFee()
     {
         $file = $_FILES['file'];
         if (!$file) {
@@ -199,7 +198,7 @@ class UploadController extends AdminController
      * @return array
      * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
-    public function actionDevoperatefee()
+    public function actionDevOperateFee()
     {
         $file = $_FILES['file'];
         if (!$file) {
@@ -225,7 +224,7 @@ class UploadController extends AdminController
      * @return array
      * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
-    public function actionPosoperatefee()
+    public function actionPosOperateFee()
     {
         $file = $_FILES['file'];
         if (!$file) {
@@ -244,12 +243,15 @@ class UploadController extends AdminController
             $res = ApiUpload::getExcelData($result,ApiUpload::POSSESS, ApiUpload::OPERATE_FEE);
             if($res !== true) return ['code' => 400, 'message' => $res];
         }
-    }/**
+    }
+
+
+    /**
      * @brief 采购运营杂费
      * @return array
      * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
-    public function actionPuroperatefee()
+    public function actionPurOperateFee()
     {
         $file = $_FILES['file'];
         if (!$file) {

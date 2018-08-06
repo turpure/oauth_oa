@@ -190,3 +190,11 @@
 }
 ```
 
+#### sales-dead-fee
+* 接口名称：销售死库费用
+* 请求示例：v1/upload/sales-dead-fee
+* 请求方法：post
+* 请求格式：form-data
+* 请求参数：file : example.xlsx
+
+
