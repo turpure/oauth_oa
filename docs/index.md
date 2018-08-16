@@ -198,3 +198,280 @@
 * 请求参数：file : example.xlsx
 
 
+
+#### account 
+* 接口名称：eBay工具获取账号
+* 请求示例：v1/tool/account
+* 请求方法： post
+* 请求参数： （说明：eBay 获取eBay账号，Wish 获取Wish账号，SMT 获取SMT账号）
+
+```
+{
+    "condition": {
+        "type": "eBay"
+    }
+}
+```
+
+#### site 
+* 接口名称：eBay工具获取账号站点
+* 请求示例：v1/tool/site
+* 请求方法： post
+* 请求参数： 无
+
+
+#### size 
+* 接口名称：销售工具获取产品码号
+* 请求示例：v1/tool/size
+* 请求方法： post
+* 请求参数： 无
+
+#### color 
+* 接口名称：销售工具获取产品颜色
+* 请求示例：v1/tool/color
+* 请求方法： post
+* 请求参数： 无
+
+
+#### ebay-template 
+* 接口名称：eBay工具获取（下载）商品模板
+* 请求示例：v1/tool/ebay-template
+* 请求方法： post
+* 请求参数： （说明：suffix 多选账号数组；goodsCode 多个商品编码，用逗号隔开）
+
+```
+{
+    "condition": {
+            "suffix": [],
+            "goodsCode": ""
+        }
+}
+```
+
+
+#### ebaysku
+* 接口名称：eBay工具获取商品SKU列表
+* 请求示例：v1/tool/ebaysku
+* 请求方法： post
+* 请求参数： 
+
+```
+{
+    "condition": {
+            "suffix": "showtime688",
+            "goodsCode": "6C0046",
+            "Site": "美国",
+            "Cat1": "女人世界",
+            "Cat2": "内衣",
+            "price": "22",
+            "shipping1": "5",
+            "shipping2": "5"
+        }
+}
+```
+
+
+#### ebaysku-template
+* 接口名称：eBay工具获取（下载）商品SKU模板
+* 请求示例：v1/tool/ebaysku-template
+* 请求方法： post
+* 请求参数： 
+
+```
+{
+    "condition": {
+        "contents": {
+            "remark": [
+                "abc",
+                "edf"
+            ],
+            "SKU": [
+                "6C004601",
+                "6C004602"
+            ],
+            "Quantity": [
+                20,
+                20
+            ],
+            "StartPrice": [
+                0,
+                0
+            ],
+            "PictureURL": [
+                "http://121.196.233.153/images/6C004601.jpg",
+                "http://121.196.233.153/images/6C004602.jpg"
+            ],
+            "Color": [
+                "红色",
+                "粉色"
+            ],
+            "Size": [
+                "",
+                ""
+            ],
+            "pro1": [
+                "Red",
+                "Pink"
+            ],
+            "pro2": [
+                "",
+                ""
+            ],
+            "EAN": [
+                "Does not apply",
+                "Does not apply"
+            ],
+            "UPC": [
+                "Does not apply",
+                "Does not apply"
+            ]
+        }
+    }
+}
+```
+
+#### Smtsku
+* 接口名称：SMT工具获取商品SKU列表
+* 请求示例：v1/tool/smtsku
+* 请求方法： post
+* 请求参数： 
+
+```
+{
+    "condition": {
+            "suffix": "aliexpress_SMT-19",
+            "goodsCode": "6A0895",
+            "price": "22"
+        }
+}
+```
+
+#### smtsku-template
+* 接口名称：SMT工具获取（下载）商品SKU模板
+* 请求示例：v1/tool/smtsku-template
+* 请求方法： post
+* 请求参数： 
+
+```
+{
+    "condition": {
+        "contents": {
+            "SKU": [
+                "6C004601",
+                "6C004602"
+            ],
+            "quantity": [
+                20,
+                20
+            ],
+            "price": [
+                0,
+                0
+            ],
+            "pic_url": [
+                "http://121.196.233.153/images/6C004601.jpg",
+                "http://121.196.233.153/images/6C004602.jpg"
+            ],
+            "property1": [
+                "红色",
+                "粉色"
+            ],
+            "property2": [
+                "",
+                ""
+            ],
+            "varition1": [
+                "Red",
+                "Pink"
+            ],
+            "varition2": [
+                "",
+                ""
+            ],
+            "name1": [
+                "Does not apply",
+                "Does not apply"
+            ]
+        }
+    }
+}
+```
+
+#### wishsku
+* 接口名称：Wish工具获取商品SKU列表
+* 请求示例：v1/tool/wishsku
+* 请求方法： post
+* 请求参数： 
+
+```
+{
+    "condition": {
+            "suffix": "wish_01-eshop",
+            "goodsCode": "S161",
+            "price": "22",
+            "msrp": "22",
+            "shipping": "22"
+        }
+}
+```
+
+
+#### wishsku-template
+* 接口名称：Wish工具获取（下载）商品SKU模板
+* 请求示例：v1/tool/wishsku-template
+* 请求方法： post
+* 请求参数：
+
+```
+{
+    "condition": {
+        "contents": {
+            "SKU": [
+                "6C004601",
+                "6C004602"
+            ],
+            "variation1": [
+                1,
+                2
+            ],
+            "variation2": [
+                "黄色",
+                "粉色"
+            ],
+           
+            "pic_url": [
+                "http://121.196.233.153/images/6C004601.jpg",
+                "http://121.196.233.153/images/6C004602.jpg"
+            ],
+            "property2": [
+                "黄色",
+                "粉色"
+            ],
+            "property1": [
+                1,
+                2
+            ],
+            "quantity": [
+                1000,
+                1000
+            ],
+            "price": [
+                222,
+                222
+            ],
+            "msrp": [
+                111,
+                111
+            ],
+            "shipping": [
+                333,
+                333
+            ],
+            "shippingTime": [
+               "7-21",
+                "7-21"
+            ]
+        }
+    }
+}
+```
