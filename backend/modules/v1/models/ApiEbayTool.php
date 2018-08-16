@@ -98,19 +98,15 @@ class ApiEbayTool
         }
         $paypal = ApiTool::paypal($Selleruserid, $sum);//调用paypal
 
+        //$zhanghao = ApiExcelModel::$zhanghao;
 
-        $zhanghao = ApiExcelModel::$zhanghao;
-
-        //var_dump($da);exit();
         $ImageUrl = "https://www.tupianku.com/view/elarge/10023/-_1_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_2_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_3_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_4_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_5_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_6_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_7_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_8_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_9_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_10_.jpg";
-
 
         //2017-11-24 设置 DispatchTimeMax
         $dispatchtimesql = "SELECT DISTINCT GoodsCode,GoodsSKUStatus from B_Goods g 
 						LEFT JOIN B_GoodsSKU gs on gs.GoodsID=g.NID
 						where gs.GoodsSKUStatus<>'停产' AND GoodsCode='$GoodsCode'";
         $DispatchTimeMax = Yii::$app->py_db->createCommand($dispatchtimesql)->queryAll();
-
 
         $Site_dict = array(
             '美国' => '0',
@@ -126,7 +122,12 @@ class ApiEbayTool
         //var_dump($Site);exit;
         $Site = $Site_dict["$Site"];//站点匹配规则
         // sku匹配规则；商品编码@#账号，账号字典'taenha2017'=>'@#C01',
-        $sub = $zhanghao["$Selleruserid"];
+        $subSql = "SELECT nameCode FROM oa_ebay_suffix WHERE ebayName='$Selleruserid'";
+        $subQuery = Yii::$app->py_db->createCommand($subSql)->queryOne();
+
+        //$sub = $zhanghao["$Selleruserid"];
+        $sub = $subQuery["nameCode"];
+        //print_r($sub);exit;
         $a = $condition['contents'];//拿到前台表单里所有数据$a是数据源
         $num_item = count($a['SKU']);
         $picNum = count($a['PictureURL']);
