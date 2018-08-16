@@ -104,12 +104,11 @@ class ApiWishTool
         $price = $wishCon['price'];
         $shipping = $wishCon['shipping'];
         $sub1 = substr(substr($selleruserid, 5), 0, 1);
+        $sub2 = substr($selleruserid, 0, 4);
         if ($sub1 == 'E') {
             $su = self::subZhanghao($selleruserid, '_', '-');
             $sub = '@#' . $su;
-        }
-        $sub2 = substr($selleruserid, 0, 4);
-        if ($sub2 == 'WISE') {
+        }else if ($sub2 == 'WISE') {
             $sub = '@#' . substr(substr($selleruserid, 0, 6), 3, 5);
         }else{
             $sub = '';
