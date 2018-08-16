@@ -49,8 +49,8 @@ class ReportController extends  AdminController
         $request = Yii::$app->request->post();
         $cond= $request['condition'];
         $condition= [
-            'plat' => $cond['plat']?implode('',$cond['plat']):'',
-            'dateFlag' =>$cond['dateType']?:'',
+            'plat' => $cond['plat']?:'',
+            'dateFlag' =>$cond['dateType']?:0,
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
             'suffix' => $cond['account']?implode(',',$cond['account']):'',

@@ -21,8 +21,8 @@ class ApiReport
 
     public static function getSalesReport($condition)
     {
-        $sql = 'meta_saleProfit @pingtai=:plat,@DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,'.
-        '@SalerAliasName=:suffix,@Saler=:seller,@StoreName=:storeName';
+        $sql = 'Z_P_FinancialProfit @pingtai=:plat,@DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,'.
+        '@SalerAliasName=:suffix,@Saler=:seller,@StoreName=:storeName,@RateFlag=0';
         $con = Yii::$app->py_db;
         $params = [
             ':plat' => $condition['plat'],
@@ -34,7 +34,9 @@ class ApiReport
             ':storeName' => $condition['storeName']
         ];
         try {
-            return $con->createCommand($sql)->bindValues($params)->queryAll();
+//            return $con->createCommand($sql)->bindValues($params)->queryAll();
+            $query = $con->createCommand($sql)->bindValues($params)->queryAll();
+            return $query;
         }
         catch (\Exception $why) {
             return [$why];
