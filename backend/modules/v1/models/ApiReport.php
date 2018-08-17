@@ -35,8 +35,7 @@ class ApiReport
         ];
         try {
 //            return $con->createCommand($sql)->bindValues($params)->queryAll();
-            $query = $con->createCommand($sql)->bindValues($params)->queryAll();
-            return $query;
+            return $con->createCommand($sql)->bindValues($params)->queryAll();
         }
         catch (\Exception $why) {
             return [$why];
