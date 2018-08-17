@@ -104,13 +104,14 @@ class ApiWishTool
         $price = $wishCon['price'];
         $shipping = $wishCon['shipping'];
         $sub1 = substr(substr($selleruserid, 5), 0, 1);
+        $sub2 = substr($selleruserid, 0, 4);
         if ($sub1 == 'E') {
             $su = self::subZhanghao($selleruserid, '_', '-');
             $sub = '@#' . $su;
-        }
-        $sub2 = substr($selleruserid, 0, 4);
-        if ($sub2 == 'WISE') {
+        }else if ($sub2 == 'WISE') {
             $sub = '@#' . substr(substr($selleruserid, 0, 6), 3, 5);
+        }else{
+            $sub = '';
         }
         $ImageUrl = "https://www.tupianku.com/view/elarge/10023/$GoodsCode-_00_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_1_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_2_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_3_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_4_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_5_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_6_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_7_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_8_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_9_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_10_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_11_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_12_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_13_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_14_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_15_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_16_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_17_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_18_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_19_.jpg\nhttps://www.tupianku.com/view/elarge/10023/$GoodsCode-_20_.jpg";
 

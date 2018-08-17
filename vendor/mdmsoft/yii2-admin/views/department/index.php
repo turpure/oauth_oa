@@ -28,7 +28,7 @@ $this->params['breadcrumbs'][] = $this->title;
             [
                     'attribute' => 'parent',
                 'value' => function($model){
-                    return $model->parent ? Department::findOne($model->parent)->department : '';
+                    return $model->parent ? Department::findOne($model->parent)['department'] : '';
                 }
 
             ],
