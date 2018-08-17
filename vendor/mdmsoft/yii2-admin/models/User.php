@@ -29,6 +29,8 @@ class User extends ActiveRecord implements IdentityInterface
 {
     const STATUS_INACTIVE = 0;
     const STATUS_ACTIVE = 10;
+    public $depart;
+    public $position;
 
     /**
      * @inheritdoc
@@ -206,6 +208,8 @@ class User extends ActiveRecord implements IdentityInterface
             'email' => '邮箱',
             'created_at' => '创建时间',
             'status' => '状态',
+            'depart' => '部门',
+            'position' => '职位',
         ];
     }
 }

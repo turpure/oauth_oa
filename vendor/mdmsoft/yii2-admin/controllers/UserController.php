@@ -166,7 +166,7 @@ class UserController extends Controller
     public function actionAjax()
     {
         $id = Yii::$app->request->post('id',0);
-        $depart = Department::find()->andWhere(['parent' =>$id])->asArray()->all();
+        $depart = Department::find()->andFilterWhere(['parent' =>$id])->asArray()->all();
         return json_encode($depart);
     }
 
@@ -336,13 +336,13 @@ class UserController extends Controller
         if ($user->status == User::STATUS_INACTIVE) {
             $user->status = User::STATUS_ACTIVE;
             if ($user->save()) {
-                return $this->goHome();
+                return $this->redirect(['index']);
             } else {
                 $errors = $user->firstErrors;
                 throw new UserException(reset($errors));
             }
         }
-        return $this->goHome();
+        return $this->redirect(['index']);
     }
 
 
@@ -360,13 +360,13 @@ class UserController extends Controller
         if ($user->status == User::STATUS_ACTIVE) {
             $user->status = User::STATUS_INACTIVE;
             if ($user->save()) {
-                return $this->goHome();
+                return $this->redirect(['index']);
             } else {
                 $errors = $user->firstErrors;
                 throw new UserException(reset($errors));
             }
         }
-        return $this->goHome();
+        return $this->redirect(['index']);
     }
 
 

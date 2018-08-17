@@ -19,7 +19,7 @@ class User extends UserModel
     {
         return [
             [['id', 'status', 'created_at', 'updated_at'], 'integer'],
-            [['username', 'auth_key', 'password_hash', 'password_reset_token', 'email'], 'safe'],
+            [['username', 'auth_key', 'password_hash', 'password_reset_token', 'email','depart', 'position',], 'safe'],
         ];
     }
 
@@ -43,6 +43,9 @@ class User extends UserModel
     {
         $query = UserModel::find();
 
+
+
+
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
         ]);
@@ -59,7 +62,16 @@ class User extends UserModel
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ]);
-
+        if($this->depart){
+            $query->leftJoin('auth_department_child dc','dc.user_id=user.id')
+                ->leftJoin('auth_department d','d.id=dc.department_id')
+                ->andFilterWhere(['like', 'department', $this->depart]);
+        }
+        if($this->position){
+            $query->leftJoin('auth_position_child pc','pc.user_id=user.id')
+                ->leftJoin('auth_position p','p.id=pc.position_id')
+                ->andFilterWhere(['like', 'position', $this->position]);
+        }
         $query->andFilterWhere(['like', 'username', $this->username])
             ->andFilterWhere(['like', 'auth_key', $this->auth_key])
             ->andFilterWhere(['like', 'password_hash', $this->password_hash])

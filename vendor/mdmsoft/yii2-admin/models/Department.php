@@ -37,6 +37,7 @@ class Department extends ActiveRecord
     {
         return [
             [['department'], 'required'],
+            ['parent', 'default', 'value' => 0],
             [['id','parent'], 'integer'],
             [['department','description'], 'string'],
         ];
