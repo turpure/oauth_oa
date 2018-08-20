@@ -53,9 +53,9 @@ class ReportController extends  AdminController
             'dateFlag' =>$cond['dateType']?:0,
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'suffix' => $cond['account']?implode(',',$cond['account']):'',
-            'seller' => $cond['member']?implode(',',$cond['member']):'',
-            'storeName' => $cond['store']?implode(',',$cond['store']):'',
+            'suffix' => $cond['account']?"'".implode(',',$cond['account'])."'":'',
+            'seller' => $cond['member']?"'".implode(',',$cond['member'])."'":'',
+            'storeName' => $cond['store']?"'".implode(',',$cond['store'])."'":'',
         ];
         $ret = ApiReport::getSalesReport($condition);
         return $ret;
