@@ -159,7 +159,7 @@
 {
 	"condition": {
 		"department": ["运营一部","运营二部","运营三部"],
-		"plat": "",
+		"plat": [],
 		"member": [],
 		"store": [],
 		"dateType": 0,
