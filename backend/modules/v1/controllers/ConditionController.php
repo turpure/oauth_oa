@@ -38,14 +38,7 @@ class ConditionController extends AdminController
      */
     public function actionStore ()
     {
-        return [
-            '义乌仓',
-            'FBW仓库',
-            'FBA仓库',
-            'FBA-19UK仓库',
-            'AMZ上海仓',
-            '4PXUS',
-        ];
+        return ApiCondition::getStore();
     }
 
     /**

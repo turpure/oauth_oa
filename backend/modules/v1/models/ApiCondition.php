@@ -71,7 +71,7 @@ class ApiCondition
                 ->select('id,platform as plat')
                 ->from('auth_store')
                 ->orderBy('platform')
-                ->groupBy('platform')
+                ->groupBy(['platform','id'])
                 ->all();
         } else {
             //获取所属部门人员列表
@@ -83,7 +83,7 @@ class ApiCondition
                 ->leftJoin('auth_store as ast', 'ast.id=asc.store_id')
                 ->where(['in', 'user_id', $users])
                 ->orderBy('platform')
-                ->groupBy('platform')
+                ->groupBy(['ast.platform','ast.id'])
                 ->all();
         }
         return $plat;
@@ -186,7 +186,16 @@ class ApiCondition
     }
 
 
-
+    /**
+     * @brief 获取仓库列表
+     * @return array
+     */
+    public static function getStore()
+    {
+        $sql = 'select StoreName from  B_store';
+        $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
+        return ArrayHelper::getColumn($ret,'StoreName');
+    }
 
     /**
      * 获取登录用户管辖的用户列表
