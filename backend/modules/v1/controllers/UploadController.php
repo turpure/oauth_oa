@@ -44,7 +44,7 @@ class UploadController extends AdminController
         if ($request->isPost) {
             $post = $request->post();
             $cond = $post['condition'];
-            if (!$cond['devRate'] && !$cond['salerRate']) {
+            if (!$cond['devRate'] && !$cond['saleRate']) {
                 return [
                     'code' => 400,
                     'message' => 'The salerRate and the devRate can not be empty at the same time！',
@@ -53,7 +53,7 @@ class UploadController extends AdminController
             }
             $condition = [
                 'devRate' => $cond['devRate'],
-                'salerRate' => $cond['salerRate'],
+                'salerRate' => $cond['saleRate'],
             ];
             $ret = ApiUpload::updateExchangeRate($condition);
             return $ret;

@@ -189,7 +189,7 @@
 	}
 }
 ```
-
+### 费用导入
 #### sales-dead-fee
 * 接口名称：销售死库费用
 * 请求示例：v1/upload/sales-dead-fee
@@ -197,8 +197,25 @@
 * 请求格式：form-data
 * 请求参数：file : example.xlsx
 
+### 汇率设置
+#### get exchange
+* 接口名称：查看美元汇率
+* 请求示例：v1/upload/exchange
+* 请求方法：get
 
-
+#### update exchange
+* 接口名称：更新美元汇率
+* 请求示例：v1/upload/exchange
+* 请求方法：post
+* 请求参数：
+```
+{
+	"condition": {
+		"devRate": "",
+		"saleRate": ""
+	}
+}
+```
 #### account 
 * 接口名称：eBay工具获取账号
 * 请求示例：v1/tool/account
