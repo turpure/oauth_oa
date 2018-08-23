@@ -72,6 +72,7 @@ class ApiCondition
                 ->from('auth_store')
                 ->orderBy('platform')
                 ->groupBy(['platform'])
+                ->where(['used'=>0])
                 ->all();
         } else {
             //获取所属部门人员列表
@@ -82,6 +83,7 @@ class ApiCondition
                 ->from('auth_store_child asc')
                 ->leftJoin('auth_store as ast', 'ast.id=asc.store_id')
                 ->where(['in', 'user_id', $users])
+                ->andWhere(['used'=>0])
                 ->orderBy('platform')
                 ->groupBy(['ast.platform'])
                 ->all();
