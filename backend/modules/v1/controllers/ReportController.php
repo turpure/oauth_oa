@@ -174,7 +174,7 @@ class ReportController extends  AdminController
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
             'sku' => $cond['sku'],
-            'salesman' => $cond['member']?implode(',',$cond['member']):'',
+            'salesman' => $cond['member']?"'".implode(',',$cond['member'])."'":'',
             'chanel' => $cond['plat'],
             'suffix' => $cond['account']?("'".implode(',',$cond['account'])."'"):'',
             'storeName' => $cond['store']?("'".implode(',',$cond['store'])."'"):'',

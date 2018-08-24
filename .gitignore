@@ -40,3 +40,4 @@ Would skip repository vendor/kartik-v/yii2-widget-select2
 /backend/web/img/
 !/docs/
 /backend/uploads/
+/index.php
