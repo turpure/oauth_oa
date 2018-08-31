@@ -23,8 +23,11 @@ class ApiReport
     {
         $sql = 'Z_P_FinancialProfit @pingtai=:plat,@DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,'.
         '@SalerAliasName=:suffix,@Saler=:seller,@StoreName=:storeName,@RateFlag=0';
+        $cache = 'oauth_saleProfit @pingtai=:plat,@DateFlag=:dateFlag,@SalerAliasName=:suffix,@Saler=:seller,'.
+            '@StoreName=:storeName,@DateRangeType=:dateRangeType';
         $con = Yii::$app->py_db;
-        $params = [
+        $dateRangeType = $condition['dateRangeType'];
+        $sqlParams = [
             ':plat' => $condition['plat'],
             ':dateFlag' => $condition['dateFlag'],
             ':beginDate' => $condition['beginDate'],
@@ -33,9 +36,19 @@ class ApiReport
             ':seller' => $condition['seller'],
             ':storeName' => $condition['storeName']
         ];
+        $cacheParams = [
+            ':plat' => $condition['plat'],
+            ':dateFlag' => $condition['dateFlag'],
+            ':dateRangeType' => $condition['dateRangeType'],
+            ':suffix' => $condition['suffix'],
+            ':seller' => $condition['seller'],
+            ':storeName' => $condition['storeName']
+        ];
         try {
-//            return $con->createCommand($sql)->bindValues($params)->queryAll();
-            return $con->createCommand($sql)->bindValues($params)->queryAll();
+            if($dateRangeType < 3) {
+               return  $con->createCommand($cache)->bindValues($cacheParams)->queryAll();
+            }
+            return $con->createCommand($sql)->bindValues($sqlParams)->queryAll();
         }
         catch (\Exception $why) {
             return [$why];
