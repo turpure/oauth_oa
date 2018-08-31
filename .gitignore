@@ -41,3 +41,4 @@ Would skip repository vendor/kartik-v/yii2-widget-select2
 !/docs/
 /backend/uploads/
 /index.php
+!/yii
