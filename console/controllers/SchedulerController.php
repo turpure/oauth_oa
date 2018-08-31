@@ -35,7 +35,7 @@ class SchedulerController extends Controller
                     }
                 }
             }
-            print date('Y-m-d h:i:s').'-INFO:mission completed';
+            print date('Y-m-d h:i:s')."INFO:mission completed\n";
             $trans->commit();
         }
         catch (\Exception $why) {
