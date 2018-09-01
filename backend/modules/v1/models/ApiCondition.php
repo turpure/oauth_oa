@@ -51,6 +51,7 @@ class ApiCondition
         } else {
             $department = AuthDepartment::find()
                 ->select('id,department')
+                ->where(['<>', 'department', '采购部'])
                 ->andWhere(['parent' => 0])
                 ->asArray()->all();
         }
