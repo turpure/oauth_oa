@@ -297,10 +297,20 @@
 ```
 {
     "condition": {
+    	"setting": {
+            "suffix": "showtime688",
+            "goodsCode": "6C0046",
+            "Site": "美国",
+            "Cat1": "女人世界",
+            "Cat2": "内衣",
+            "price": "22",
+            "shipping1": "5",
+            "shipping2": "5"
+        },
         "contents": {
             "remark": [
                 "abc",
-                "edf"
+                "edffewfaewf"
             ],
             "SKU": [
                 "6C004601",

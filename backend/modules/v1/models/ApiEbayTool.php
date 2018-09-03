@@ -31,8 +31,6 @@ class ApiEbayTool
         $price = $condition['price'];
         $shipping1 = $condition['shipping1'];
         $shipping2 = $condition['shipping2'];
-        //保存post数据到session
-        Yii::$app->session->set('ebayCon', $condition);
         //获取商品的sku列表
 
         $sql = "select b.SKU from B_Goods as a  join B_GoodsSKU as b on a.NID = b.GoodsID where a.GoodsCode='" . $goodsCode . "' ORDER BY b.NID";
@@ -65,7 +63,9 @@ class ApiEbayTool
             $value['UPC'] = $value['EAN'] = 'Does not apply';
             $resList[$k] = $value;
         }
-        return $resList;
+        $res['payload'] = $resList;
+        $res['setting'] = $condition;
+        return $res;
     }
 
     /**
@@ -75,7 +75,7 @@ class ApiEbayTool
      */
     public static function handelInfo($condition)
     {
-        $ebayCon = Yii::$app->session->get('ebayCon');
+        $ebayCon = $condition['setting'];
         $Selleruserid = $ebayCon['suffix'];//字符串
         $GoodsCode = $ebayCon['goodsCode'];
         $Site = $ebayCon['Site'];
