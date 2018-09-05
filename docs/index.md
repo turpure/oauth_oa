@@ -189,6 +189,21 @@
 	}
 }
 ```
+#### introduce 
+* 接口名称：推荐人毛利报表
+* 请求示例：v1/report/introduce
+* 请求方法： post
+* 请求参数：
+
+```
+{
+	"condition": {
+		"member": ["朱晶晶"],
+		"dateType": 0,
+		"dateRange": ["2018-07-04", "2018-07-13"]
+	}
+}
+```
 ### 费用导入
 #### sales-dead-fee
 * 接口名称：销售死库费用

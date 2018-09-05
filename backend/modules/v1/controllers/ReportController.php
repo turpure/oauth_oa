@@ -184,4 +184,18 @@ class ReportController extends  AdminController
         return $ret;
     }
 
+    /**
+     * @brief introducer performance report
+     */
+    public function actionIntroducer() {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        $condition = [
+            'dateFlag' => $cond['dateType'],
+            'beginDate' => $cond['dateRange'][0],
+            'endDate' => $cond['dateRange'][1],
+            'member' => $cond['member']?implode($cond['member']):''
+        ];
+        return ApiReport::getIntroducerReport($condition);
+    }
 }

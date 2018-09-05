@@ -218,4 +218,27 @@ class ApiReport
 
     }
 
+    /**
+     * @brief introduce report
+     * @params $condition array
+     * @return array
+     */
+    public static function getIntroduceReport($condition)
+    {
+        $sql = 'exec P_RefereeProfit_advanced @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,@SalerName=:salerName';
+        $con = Yii::$app->py_db;
+        $params = [
+            ':dateFlag' => $condition['dateFlag'],
+            ':beginDate' => $condition['beginDate'],
+            ':endDate' => $condition['endDate'],
+            ':salerName' => $condition['member']
+        ];
+        try {
+            return $con->createCommand($sql)->bindValues($params)->queryAll();
+        }
+        catch (\Exception $why) {
+            return [$why];
+        }
+    }
+
 }
