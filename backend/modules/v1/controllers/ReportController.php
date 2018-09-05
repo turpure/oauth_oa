@@ -185,9 +185,9 @@ class ReportController extends  AdminController
     }
 
     /**
-     * @brief introducer performance report
+     * @brief introduce performance report
      */
-    public function actionIntroducer() {
+    public function actionIntroduce() {
         $request = Yii::$app->request->post();
         $cond = $request['condition'];
         $condition = [
@@ -196,6 +196,6 @@ class ReportController extends  AdminController
             'endDate' => $cond['dateRange'][1],
             'member' => $cond['member']?implode($cond['member']):''
         ];
-        return ApiReport::getIntroducerReport($condition);
+        return ApiReport::getIntroduceReport($condition);
     }
 }
