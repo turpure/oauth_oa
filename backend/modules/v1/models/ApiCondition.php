@@ -138,6 +138,7 @@ class ApiCondition
                 ->leftJoin('auth_store as', 'as.id=asc.store_id')
                 ->where(['in', 'user_id', $users])
                 ->orderBy('as.id')
+                ->distinct()
                 ->all();
         }
         return $account;
