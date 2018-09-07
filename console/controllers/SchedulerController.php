@@ -35,12 +35,31 @@ class SchedulerController extends Controller
                     }
                 }
             }
-            print date('Y-m-d h:i:s')."INFO:mission completed\n";
+            print date('Y-m-d h:i:s')."INFO:success to get sale-report data\n";
             $trans->commit();
         }
         catch (\Exception $why) {
-            echo $why;
+            print date('Y-m-d h:i:s')."INFO:fail to get sale-report data cause of $why \n";
             $trans->rollback();
     }
+    }
+
+
+    /**
+     * @brief display info of sku are out of stock
+     */
+    public function actionOutOfStockSku()
+    {
+        $con = \Yii::$app->py_db;
+        $sql = "EXEC oauth_outOfStockSku @GoodsState='',@MoreStoreID='',@GoodsUsed='0',@SupplierName='',@WarningCats='',@MoreSKU='',
+        @cg=0,@GoodsCatsCode='',@index='1',@KeyStr='',
+        @PageNum='100',@PageIndex='1',@Purchaser='',@LocationName='',@Used=''";
+        try {
+            $con->createCommand($sql)->execute();
+            print date('Y-m-d h:i:s')."INFO:success to get sku out of stock!\n";
+        }
+        catch (\Exception $why) {
+            print date('Y-m-d h:i:s')."INFO:fail to get sku out of stock cause of $why \n";
+        }
     }
 }

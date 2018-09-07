@@ -517,3 +517,11 @@
     }
 }
 ```
+### v1/data-center 数据中心
+
+#### 缺货分析
+* 接口名称：缺货分析
+* 请求方法： get
+* 请求示例：v1/data-center/out-of-stock-info 
+
+
