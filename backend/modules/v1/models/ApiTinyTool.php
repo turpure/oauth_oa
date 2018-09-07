@@ -8,22 +8,8 @@
 namespace backend\modules\v1\models;
 
 
-class ApiDataCenter
+class ApiTinyTool
 {
-    /**
-     * @brief get out of stock sku information
-     */
-    public static function outOfStockInfo () {
-        $con = \Yii::$app->py_db;
-        $sql = 'select * from oauth_outOfStockSkuInfo';
-        try {
-            return $con->createCommand($sql)->queryAll();
-        }
-        catch (\Exception $why) {
-            return [$why];
-        }
-    }
-
     /**
      * @brief get express information
      * @return array

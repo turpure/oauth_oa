@@ -524,4 +524,9 @@
 * 请求方法： get
 * 请求示例：v1/data-center/out-of-stock-info 
 
+### v1/tiny-tool UR小工具
 
+#### 物流网址查询
+* 接口名称：物流网址查询
+* 请求方法：get
+* 请求示例：v1/tiny-tool/express

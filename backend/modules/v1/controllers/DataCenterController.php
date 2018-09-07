@@ -7,7 +7,8 @@
 
 namespace backend\modules\v1\controllers;
 
-use yii\helpers\ArrayHelper;
+
+use backend\modules\v1\models\ApiDataCenter;
 
 class DataCenterController extends AdminController
 {
@@ -24,13 +25,16 @@ class DataCenterController extends AdminController
      */
     public function actionOutOfStockInfo()
     {
-        $con = \Yii::$app->py_db;
-        $sql = 'select * from oauth_outOfStockSkuInfo';
-        try {
-            return $con->createCommand($sql)->queryAll();
-        }
-        catch (\Exception $why) {
-            return [$why];
-        }
+       return ApiDataCenter::outOfStockInfo();
+    }
+
+
+    /**
+     * @brief show express info
+     * @return array
+     */
+    public function actionExpress()
+    {
+        return ApiDataCenter::express();
     }
 }
