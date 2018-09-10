@@ -15,11 +15,11 @@ class ApiPerform
 
     public static function getNewProductDevelopmentPerformance($condition)
     {
-        $params['DateFlag'] = 0;//0表交易时间
-        $params['BeginDate'] = $condition['BeginDate'];
-        $params['EndDate'] = $condition['EndDate'];
-        $params['CreateBeginDate'] = $condition['CreateBeginDate'];
-        $params['CreateEndDate'] = $condition['CreateEndDate'];
+        $params['DateFlag'] = 0;//0表示交易时间
+        $params['BeginDate'] = $condition['beginDate'];
+        $params['EndDate'] = $condition['endDate'];
+        $params['CreateBeginDate'] = $condition['createBeginDate'];
+        $params['CreateEndDate'] = $condition['createEndDate'];
 
         //日期为空的话不能显示表了 可以前端验证 required
         if (empty($params['BeginDate']) || empty($params['EndDate'])) {
@@ -33,9 +33,9 @@ class ApiPerform
         //$this->assign('params', $params);
 
         // 不用ＰＤＯ　,,,用sqlsrv 试试
-        $serverName = "121.196.233.153,12580";
-        $connectionInfo = array("UID" => "sa", "PWD" => "allroot89739659", "Database" => "ShopElf", "CharacterSet" => "utf-8");
-        $conn = sqlsrv_connect($serverName, $connectionInfo);
+//        $serverName = "121.196.233.153,12580";
+//        $connectionInfo = array("UID" => "sa", "PWD" => "allroot89739659", "Database" => "ShopElf", "CharacterSet" => "utf-8");
+//        $conn = sqlsrv_connect($serverName, $connectionInfo);
 
         //开发人员列表
         //$salers = array('刘珊珊', '宋现中', '王漫漫', '陈微微', '常金彩', '薛晨昕', '廖露露', '陈曦曦', '李星', '赵润连');
@@ -50,18 +50,10 @@ class ApiPerform
         $CreateBeginDate = $params['CreateBeginDate'];
         $CreateEndDate = $params['CreateEndDate'];
 
-        $pars = array(
-            array($DateFlag, SQLSRV_PARAM_IN),
-            array($BeginDate, SQLSRV_PARAM_IN),
-            array($EndDate, SQLSRV_PARAM_IN),
-            array($CreateBeginDate, SQLSRV_PARAM_IN),
-            array($CreateEndDate, SQLSRV_PARAM_IN),
-            array($salers_str, SQLSRV_PARAM_IN)
-        );
-
-        $sql = "{call z_demo_wo_test_sku_lirun(?,?,?,?,?,?)}";
-        $ret = sqlsrv_query($conn, $sql, $pars);
-        $ret = Yii::$app->db->createCommand($sql)->queryAll();
+        $sql = "EXEC z_demo_wo_test_sku_lirun('$DateFlag','$BeginDate','$EndDate','$CreateBeginDate','$CreateEndDate','$salers_str')";
+        //$ret = sqlsrv_query($conn, $sql, $pars);
+        print_r($sql);exit;
+        $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
 
         print_r($ret);exit;
         if ($ret === false) {
@@ -69,11 +61,7 @@ class ApiPerform
             die(print_r(sqlsrv_errors(), true));
         }
 
-        $SaleMoneyRmb = array();
-        $SaleProfitRmb = array();
-        $AllReport = array();
-        $HotReport = array();
-        $PopReport = array();
+        $SaleMoneyRmb = $SaleProfitRmb = $AllReport = $HotReport = $PopReport = array();
         while ($row = sqlsrv_fetch_array($ret, SQLSRV_FETCH_ASSOC)) {//返回结果集 GoodsSKUStatus
 //            $row['salername'] = iconv('GBK', 'UTF-8', $row['salername']);
             if ($row['dataType'] === 'All') {

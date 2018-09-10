@@ -43,13 +43,12 @@ class PerformController extends  AdminController
      */
     public function actionPerform(){
         $request = Yii::$app->request->post();
-        ///print_r($request);exit;
         $cond= $request['condition'];
         $condition= [
             'beginDate' => $cond['beginDate'],
             'endDate' => $cond['endDate'],
-            'CreateBeginDate' => $cond['CreateBeginDate'],
-            'CreateEndDate' => $cond['CreateEndDate'],
+            'createBeginDate' => $cond['createBeginDate'],
+            'createEndDate' => $cond['createEndDate'],
         ];
         $ret = ApiPerform::getNewProductDevelopmentPerformance($condition);
         return $ret;
