@@ -68,7 +68,7 @@ class ApiCondition
         //获取平台列表
         if ($role == AuthAssignment::ACCOUNT_ADMIN) {
             $plat = (new Query())
-                ->select('id,platform as plat')
+                ->select('platform as plat')
                 ->from('auth_store')
                 ->orderBy('platform')
                 ->groupBy('platform')
@@ -78,7 +78,7 @@ class ApiCondition
             $users = self::getUsers();
             $users = ArrayHelper::getColumn($users, 'id');
             $plat = (new Query())
-                ->select('ast.id,platform as plat')
+                ->select('platform as plat')
                 ->from('auth_store_child asc')
                 ->leftJoin('auth_store as ast', 'ast.id=asc.store_id')
                 ->where(['in', 'user_id', $users])
