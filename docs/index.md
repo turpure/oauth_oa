@@ -526,6 +526,63 @@
 * 请求方法： get
 * 请求示例：v1/data-center/out-of-stock-info 
 
+#### 获取物流公司列表
+* 接口名称：获取物流公司列表
+* 请求方法： get
+* 请求示例：v1/perform/logistics
+
+#### 平台物流费用
+* 接口名称：平台物流费用
+* 请求方法： post
+* 请求示例：v1/perform/cost
+* 请求参数： 
+```
+{
+    "condition": {
+        "beginDate": "2018-08-01",
+        "endDate":"2018-08-31",
+        "wlCompany":""
+    }
+}
+
+```
+
+#### 销售变化
+* 接口名称：销售变化
+* 请求方法： post
+* 请求示例：v1/perform/sales
+* 说明： 业绩归属人1 使用接口/v1/condition/member 获取
+* 请求参数： 
+```
+{
+    "condition": {
+        "plat": "eBay",
+        "suffix":"17-su061",
+        "saler":""
+    }
+}
+
+```
+
+#### 新品开发表现
+* 接口名称：新品开发表现
+* 请求方法： post
+* 请求示例：v1/perform/perform
+* 请求参数： 
+```
+{
+    "condition": {
+        "beginDate": "2018-08-01",
+        "endDate":"2018-08-31",
+        "createBeginDate":"",
+        "createEndDate":""
+    }
+}
+
+```
+
+
+
 ### v1/tiny-tool UR小工具
 
 #### 物流网址查询
