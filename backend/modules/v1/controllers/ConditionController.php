@@ -7,6 +7,7 @@ namespace backend\modules\v1\controllers;
 
 
 use backend\modules\v1\models\ApiCondition;
+use Codeception\Template\Api;
 
 class ConditionController extends AdminController
 {
@@ -38,14 +39,7 @@ class ConditionController extends AdminController
      */
     public function actionStore ()
     {
-        return [
-            '义乌仓',
-            'FBW仓库',
-            'FBA仓库',
-            'FBA-19UK仓库',
-            'AMZ上海仓',
-            '4PXUS',
-        ];
+        return ApiCondition::getStore();
     }
 
     /**
@@ -66,5 +60,19 @@ class ConditionController extends AdminController
         return ApiCondition::getUserAccount();
     }
 
+    /**
+     * @brief brand country
+     */
+    public function actionBrandCountry()
+    {
+        return ApiCondition::getBrandCountry();
+    }
 
+    /**
+     * @brief brand category
+     */
+    public function actionBrandCategory()
+    {
+        return ApiCondition::getBrandCategory();
+    }
 }

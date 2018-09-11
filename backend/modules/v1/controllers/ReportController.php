@@ -49,13 +49,14 @@ class ReportController extends  AdminController
         $request = Yii::$app->request->post();
         $cond= $request['condition'];
         $condition= [
+            'dateRangeType' => $cond['dateRangeType'],
             'plat' => $cond['plat']?:'',
             'dateFlag' =>$cond['dateType']?:0,
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'suffix' => $cond['account']?implode(',',$cond['account']):'',
-            'seller' => $cond['member']?implode(',',$cond['member']):'',
-            'storeName' => $cond['store']?implode(',',$cond['store']):'',
+            'suffix' => $cond['account']?"'".implode(',',$cond['account'])."'":'',
+            'seller' => $cond['member']?"'".implode(',',$cond['member'])."'":'',
+            'storeName' => $cond['store']?"'".implode(',',$cond['store'])."'":'',
         ];
         $ret = ApiReport::getSalesReport($condition);
         return $ret;
@@ -174,7 +175,7 @@ class ReportController extends  AdminController
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
             'sku' => $cond['sku'],
-            'salesman' => $cond['member']?implode(',',$cond['member']):'',
+            'salesman' => $cond['member']?"'".implode(',',$cond['member'])."'":'',
             'chanel' => $cond['plat'],
             'suffix' => $cond['account']?("'".implode(',',$cond['account'])."'"):'',
             'storeName' => $cond['store']?("'".implode(',',$cond['store'])."'"):'',
@@ -183,4 +184,18 @@ class ReportController extends  AdminController
         return $ret;
     }
 
+    /**
+     * @brief introduce performance report
+     */
+    public function actionIntroduce() {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        $condition = [
+            'dateFlag' => $cond['dateType'],
+            'beginDate' => $cond['dateRange'][0],
+            'endDate' => $cond['dateRange'][1],
+            'member' => $cond['member']?implode($cond['member']):''
+        ];
+        return ApiReport::getIntroduceReport($condition);
+    }
 }

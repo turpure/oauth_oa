@@ -32,8 +32,8 @@ class UpdatePosition extends Model
         $this->position_id = (int)$position_id;
         $this->position = Position::findOne($position_id)->position;
         $menu = ArrayHelper::getColumn(ArrayHelper::toArray(PositionMenu::find()->where(['position_id'=>$position_id])->all()),'menu_id');
-        $this->menu = $menu?$menu:'';
-        $this->_menu = $menu?$menu:'';
+        $this->menu = $menu?$menu:[];
+        $this->_menu = $menu?$menu:[];
         if (!$this->position) {
             throw new InvalidParamException('cannot find position name');
         }

@@ -57,6 +57,8 @@
 | /store | 仓库 | get | array |
 | /member | 人员 | get | array |
 | /account | 账号 | get | array |
+| /brand-country | 品牌国家 | get | array |
+| /brand-category | 品牌类别 | get | array |
 
 
 ### 报表
@@ -189,7 +191,22 @@
 	}
 }
 ```
+#### introduce 
+* 接口名称：推荐人毛利报表
+* 请求示例：v1/report/introduce
+* 请求方法： post
+* 请求参数：
 
+```
+{
+	"condition": {
+		"member": ["朱晶晶"],
+		"dateType": 0,
+		"dateRange": ["2018-07-04", "2018-07-13"]
+	}
+}
+```
+### 费用导入
 #### sales-dead-fee
 * 接口名称：销售死库费用
 * 请求示例：v1/upload/sales-dead-fee
@@ -197,8 +214,25 @@
 * 请求格式：form-data
 * 请求参数：file : example.xlsx
 
+### 汇率设置
+#### get exchange
+* 接口名称：查看美元汇率
+* 请求示例：v1/upload/exchange
+* 请求方法：get
 
-
+#### update exchange
+* 接口名称：更新美元汇率
+* 请求示例：v1/upload/exchange
+* 请求方法：post
+* 请求参数：
+```
+{
+	"condition": {
+		"devRate": "",
+		"saleRate": ""
+	}
+}
+```
 #### account 
 * 接口名称：eBay工具获取账号
 * 请求示例：v1/tool/account
@@ -280,10 +314,20 @@
 ```
 {
     "condition": {
+    	"setting": {
+            "suffix": "showtime688",
+            "goodsCode": "6C0046",
+            "Site": "美国",
+            "Cat1": "女人世界",
+            "Cat2": "内衣",
+            "price": "22",
+            "shipping1": "5",
+            "shipping2": "5"
+        },
         "contents": {
             "remark": [
                 "abc",
-                "edf"
+                "edffewfaewf"
             ],
             "SKU": [
                 "6C004601",
@@ -475,3 +519,34 @@
     }
 }
 ```
+### v1/data-center 数据中心
+
+#### 缺货分析
+* 接口名称：缺货分析
+* 请求方法： get
+* 请求示例：v1/data-center/out-of-stock-info 
+
+### v1/tiny-tool UR小工具
+
+#### 物流网址查询
+* 接口名称：物流网址查询
+* 请求方法：get
+* 请求示例：v1/tiny-tool/express
+
+#### 品牌列表
+* 接口名称：品牌列表
+* 请求方法：post
+* 请求示例：v1/tiny-tool/brand
+* 请求参数：
+```json
+{
+	"condition": {
+		"brand": "",
+		"country": "美国",
+		"category":"服装",
+		"start":1,
+		"limit":10
+	}
+}
+```
+

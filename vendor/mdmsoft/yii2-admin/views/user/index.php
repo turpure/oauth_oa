@@ -51,6 +51,19 @@ $this->params['breadcrumbs'][] = $this->title;
                     }
                 },
             ],
+            [
+                'attribute' => 'role',
+                'value' => function ($model) {
+                    $sql = "SELECT item_name as item FROM auth_assignment WHERE user_id=$model->id";
+                    $roles = Yii::$app->db->createCommand($sql)->queryAll();
+                    if($roles){
+                        $role = \yii\helpers\ArrayHelper::getColumn($roles,'item');
+                        return implode(',',$role);
+                    }else{
+                        return '';
+                    }
+                },
+            ],
             'created_at:date',
             [
                 'attribute' => 'status',

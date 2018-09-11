@@ -19,7 +19,7 @@ class User extends UserModel
     {
         return [
             [['id', 'status', 'created_at', 'updated_at'], 'integer'],
-            [['username', 'auth_key', 'password_hash', 'password_reset_token', 'email','depart', 'position',], 'safe'],
+            [['username', 'auth_key', 'password_hash', 'password_reset_token', 'email','depart', 'position','role'], 'safe'],
         ];
     }
 
@@ -71,6 +71,10 @@ class User extends UserModel
             $query->leftJoin('auth_position_child pc','pc.user_id=user.id')
                 ->leftJoin('auth_position p','p.id=pc.position_id')
                 ->andFilterWhere(['like', 'position', $this->position]);
+        }
+        if($this->role) {
+            $query->leftJoin('auth_assignment ag','ag.user_id=user.id')
+                ->andFilterWhere(['like','role',$this->role]);
         }
         $query->andFilterWhere(['like', 'username', $this->username])
             ->andFilterWhere(['like', 'auth_key', $this->auth_key])

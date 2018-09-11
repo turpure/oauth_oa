@@ -51,6 +51,7 @@ class ApiCondition
         } else {
             $department = AuthDepartment::find()
                 ->select('id,department')
+                ->where(['<>', 'department', '采购部'])
                 ->andWhere(['parent' => 0])
                 ->asArray()->all();
         }
@@ -71,7 +72,8 @@ class ApiCondition
                 ->select('platform as plat')
                 ->from('auth_store')
                 ->orderBy('platform')
-                ->groupBy('platform')
+                ->groupBy(['platform'])
+                ->where(['used'=>0])
                 ->all();
         } else {
             //获取所属部门人员列表
@@ -82,8 +84,9 @@ class ApiCondition
                 ->from('auth_store_child asc')
                 ->leftJoin('auth_store as ast', 'ast.id=asc.store_id')
                 ->where(['in', 'user_id', $users])
+                ->andWhere(['used'=>0])
                 ->orderBy('platform')
-                ->groupBy('platform')
+                ->groupBy(['ast.platform'])
                 ->all();
         }
         return $plat;
@@ -135,6 +138,7 @@ class ApiCondition
                 ->leftJoin('auth_store as', 'as.id=asc.store_id')
                 ->where(['in', 'user_id', $users])
                 ->orderBy('as.id')
+                ->distinct()
                 ->all();
         }
         return $account;
@@ -186,7 +190,48 @@ class ApiCondition
     }
 
 
+    /**
+     * @brief 获取仓库列表
+     * @return array
+     */
+    public static function getStore()
+    {
+        $sql = 'select StoreName from  B_store';
+        $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
+        return ArrayHelper::getColumn($ret,'StoreName');
+    }
 
+    /**
+     * @brief get brand country
+     * @return array
+     */
+    public static function getBrandCountry()
+    {
+        $sql = 'select distinct country from Y_Brand';
+        try {
+            $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
+            return ArrayHelper::getColumn($ret,'country');
+        }
+        catch (\Exception $why) {
+            return [$why];
+        }
+    }
+
+    /**
+     * @brief get brand category
+     * @return array
+     */
+    public static function getBrandCategory()
+    {
+        $sql = 'select distinct category from Y_Brand';
+        try {
+            $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
+            return ArrayHelper::getColumn($ret,'category');
+        }
+        catch (\Exception $why) {
+            return [$why];
+        }
+    }
 
     /**
      * 获取登录用户管辖的用户列表
