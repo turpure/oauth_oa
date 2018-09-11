@@ -7,6 +7,7 @@ namespace backend\modules\v1\controllers;
 
 
 use backend\modules\v1\models\ApiCondition;
+use Codeception\Template\Api;
 
 class ConditionController extends AdminController
 {
@@ -59,5 +60,19 @@ class ConditionController extends AdminController
         return ApiCondition::getUserAccount();
     }
 
+    /**
+     * @brief brand country
+     */
+    public function actionBrandCountry()
+    {
+        return ApiCondition::getBrandCountry();
+    }
 
+    /**
+     * @brief brand category
+     */
+    public function actionBrandCategory()
+    {
+        return ApiCondition::getBrandCategory();
+    }
 }

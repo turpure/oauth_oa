@@ -202,6 +202,38 @@ class ApiCondition
     }
 
     /**
+     * @brief get brand country
+     * @return array
+     */
+    public static function getBrandCountry()
+    {
+        $sql = 'select distinct country from Y_Brand';
+        try {
+            $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
+            return ArrayHelper::getColumn($ret,'country');
+        }
+        catch (\Exception $why) {
+            return [$why];
+        }
+    }
+
+    /**
+     * @brief get brand category
+     * @return array
+     */
+    public static function getBrandCategory()
+    {
+        $sql = 'select distinct category from Y_Brand';
+        try {
+            $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
+            return ArrayHelper::getColumn($ret,'category');
+        }
+        catch (\Exception $why) {
+            return [$why];
+        }
+    }
+
+    /**
      * 获取登录用户管辖的用户列表
      * @return array
      */

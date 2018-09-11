@@ -57,6 +57,8 @@
 | /store | 仓库 | get | array |
 | /member | 人员 | get | array |
 | /account | 账号 | get | array |
+| /brand-country | 品牌国家 | get | array |
+| /brand-category | 品牌类别 | get | array |
 
 
 ### 报表
@@ -548,4 +550,3 @@
 }
 ```
 
-```
