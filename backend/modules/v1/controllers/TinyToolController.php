@@ -27,4 +27,16 @@ class TinyToolController extends AdminController
     {
         return ApiTinyTool::express();
     }
+
+    /**
+     * @brief brand list
+     * @return array
+     */
+    public function actionBrand()
+    {
+        $post = \Yii::$app->request->post();
+        $condition = $post['condition'];
+
+        return ApiTinyTool::getBrand($condition);
+    }
 }

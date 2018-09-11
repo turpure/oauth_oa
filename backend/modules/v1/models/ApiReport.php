@@ -167,8 +167,8 @@ class ApiReport
      */
     public static function getSalesTrendReport($condition)
     {
-        $sql = "EXEC z_p_saletrendy @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,".
-        "@Flag=:flag,@Salesman=:salesman,@chanel=:chanel,@suffix=:suffix,@Dname=:dname";
+        $sql = 'EXEC z_p_saletrendy @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,'.
+        '@Flag=:flag,@Salesman=:salesman,@chanel=:chanel,@suffix=:suffix,@Dname=:dname';
         $con = Yii::$app->py_db;
         $params = [
             ':dateFlag' => $condition['dateFlag'],

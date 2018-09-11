@@ -530,3 +530,22 @@
 * 接口名称：物流网址查询
 * 请求方法：get
 * 请求示例：v1/tiny-tool/express
+
+#### 品牌列表
+* 接口名称：品牌列表
+* 请求方法：post
+* 请求示例：v1/tiny-tool/brand
+* 请求参数：
+```json
+{
+	"condition": {
+		"brand": "",
+		"country": "美国",
+		"category":"服装",
+		"start":1,
+		"limit":10
+	}
+}
+```
+
+```
