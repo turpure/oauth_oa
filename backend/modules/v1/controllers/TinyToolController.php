@@ -39,4 +39,15 @@ class TinyToolController extends AdminController
 
         return ApiTinyTool::getBrand($condition);
     }
+
+    /**
+     * @brief show goods picture
+     * @return array
+     */
+    public function actionGoodsPicture()
+    {
+        $post = \Yii::$app->request->post();
+        $condition = $post['condition'];
+        return ApiTinyTool::getGoodsPicture($condition);
+    }
 }

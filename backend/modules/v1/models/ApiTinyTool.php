@@ -89,4 +89,21 @@ class ApiTinyTool
             return [$why];
         }
     }
+
+    /**
+     * @brief get goods picture
+     * @param $condition
+     * @return array
+     */
+    public static function getGoodsPicture($condition)
+    {
+        $con = \Yii::$app->py_db;
+        $sql = '';
+        try {
+            return $con->createCommand($sql)->queryAll();
+        }
+        catch (\Exception $why) {
+            return [$why];
+        }
+    }
 }
