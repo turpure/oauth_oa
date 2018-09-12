@@ -73,7 +73,8 @@ class ApiTinyTool
                     country,
                     url,
                     category,
-                    imgname
+                    imgName,
+                    'http://121.196.233.153/images/brand/'+ Y_Brand.imgName +'.jpg' as imgUrl
                 FROM
                     Y_Brand
                 WHERE
@@ -98,8 +99,65 @@ class ApiTinyTool
     public static function getGoodsPicture($condition)
     {
         $con = \Yii::$app->py_db;
-        $sql = '';
-        try {
+        $salerName = ArrayHelper::getValue($condition,'salerName','');
+        $possessMan1 = ArrayHelper::getValue($condition,'possessMan1','');
+        $possessMan2 = ArrayHelper::getValue($condition,'possessMan2','');
+        $beginDate = ArrayHelper::getValue($condition,'beginDate','')?:'1990-01-01';
+        $endDate = ArrayHelper::getValue($condition,'endDate','')?:date('Y-m-d');
+        $goodsName = ArrayHelper::getValue($condition,'goodsName','');
+        $supplierName = ArrayHelper::getValue($condition,'supplierName','');
+        $goodsSkuStatus = ArrayHelper::getValue($condition,'goodsSkuStatus','');
+        $categoryParentName = ArrayHelper::getValue($condition,'categoryParentName','');
+        $categoryName = ArrayHelper::getValue($condition,'categoryName','');
+        $start = ArrayHelper::getValue($condition, 'start',0);
+        $limit = ArrayHelper::getValue($condition,'limit',0);
+
+        $sql = "SELECT
+	    *
+        FROM
+        (
+            SELECT
+                row_number () OVER (ORDER BY bg.nid) AS rowId,
+                bg.possessman1,
+                bg.GoodsCode,
+                bg.GoodsName,
+                bg.CreateDate,
+                bgs.SKU,
+                bgs.GoodsSKUStatus,
+                bgs.BmpFileName,
+                bg.LinkUrl,
+                bg.Brand,
+                bgc.CategoryParentName,
+                bgc.CategoryName
+            FROM
+                b_goods AS bg
+            LEFT JOIN B_GoodsSKU AS bgs ON bg.NID = bgs.GoodsID
+            LEFT JOIN B_GoodsCats AS bgc ON bgc.NID = bg.GoodsCategoryID
+            LEFT JOIN B_Supplier bs ON bs.NID = bg.SupplierID
+            WHERE
+                bgs.SKU IN (
+                    SELECT
+                        MIN (bgs.SKU)
+                    FROM
+                        B_GoodsSKU AS bgs
+                    GROUP BY
+                        bgs.GoodsID
+                )
+            AND bs.SupplierName LIKE '%$supplierName%'
+            AND bg.possessman1 LIKE '%$possessMan1%'
+            AND bg.possessman2 LIKE '%$possessMan2%'
+            AND bg.SalerName LIKE '%$salerName%'
+            AND bg.CreateDate BETWEEN '$beginDate'
+            AND '$endDate'
+            AND bg.GoodsName LIKE '%$goodsName%'
+            AND bgs.GoodsSKUStatus LIKE '%$goodsSkuStatus%'
+            AND bgc.CategoryParentName LIKE '%$categoryParentName%'
+            AND bgc.CategoryName LIKE '%$categoryName%'
+        ) pic
+        WHERE
+        rowId BETWEEN $start
+        AND $limit";
+            try {
             return $con->createCommand($sql)->queryAll();
         }
         catch (\Exception $why) {

@@ -75,4 +75,20 @@ class ConditionController extends AdminController
     {
         return ApiCondition::getBrandCategory();
     }
+
+    /**
+     * @brief goods status
+     */
+    public function actionGoodsStatus()
+    {
+        return ApiCondition::getGoodsStatus();
+    }
+
+    /**
+     * @brief goods cats
+     */
+    public function actionGoodsCats()
+    {
+        return ApiCondition::getGoodsCats();
+    }
 }

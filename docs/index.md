@@ -59,7 +59,8 @@
 | /account | 账号 | get | array |
 | /brand-country | 品牌国家 | get | array |
 | /brand-category | 品牌类别 | get | array |
-
+| /goods-status | 产品装态 | get | array |
+| /goods-cats | 产品分类 | get | array |
 
 ### 报表
 
@@ -607,3 +608,26 @@
 }
 ```
 
+#### 产品一览表
+* 接口名称：产品一览
+* 请求方法：post
+* 请求示例：v1/tiny-tool/goods-picture
+* 请求参数：
+```json
+{
+	"condition": {
+		"salerName":"尚显贝",
+		"possessMan1":"",
+		"possessMan2":"",
+		"beginDate":"",
+		"endDate":"",
+		"goodsName":"",
+		"supplierName":"",
+		"goodsSkuStatus":"",
+		"categoryParentName":"",
+		"categoryName":"",
+		"start":1,
+		"limit":10
+	}
+}
+```

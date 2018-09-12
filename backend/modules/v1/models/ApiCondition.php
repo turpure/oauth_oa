@@ -234,6 +234,38 @@ class ApiCondition
     }
 
     /**
+     * @brief get goods status
+     * @return array
+     */
+    public static function getGoodsStatus()
+    {
+        $sql = 'select dictionaryName as goodsStatus from B_Dictionary  where CategoryID=15';
+        try {
+            $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
+            return ArrayHelper::getColumn($ret,'goodsStatus');
+        }
+        catch (\Exception $why) {
+            return [$why];
+        }
+    }
+
+    /**
+     * @brief get goods status
+     * @return array
+     */
+    public static function getGoodsCats()
+    {
+        $sql = 'select CategoryLevel,CategoryName,CategoryParentName from B_GoodsCats';
+        try {
+            return Yii::$app->py_db->createCommand($sql)->queryAll();
+        }
+        catch (\Exception $why) {
+            return [$why];
+        }
+    }
+
+
+    /**
      * 获取登录用户管辖的用户列表
      * @return array
      */
