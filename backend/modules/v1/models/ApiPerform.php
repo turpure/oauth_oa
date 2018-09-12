@@ -119,55 +119,13 @@ class ApiPerform
         if( $res === false ) {
             echo "Error in executing statement.";
         }
-
+        $arr = [];
         foreach ( $res as $row ) {
-            if($row['wlCompany']=='物流方式找不到物流公司'){
-                $arr['red'] = $row;
-            }
-
             if($row['wlCompany']=='汇总'){
                 $arr['allfee'] = $row;
             }elseif($row['wlCompany']=='物流方式找不到物流公司'){
-                if($row['eBay']==0.00){
-                    $row['eBay']=0;
-                }
-                if($row['Wish']==0.00){
-                    $row['Wish']=0;
-                }
-                if($row['Amazon']==0.00){
-                    $row['Amazon']=0;
-                }
-                if($row['SMT']==0.00){
-                    $row['SMT']=0;
-                }
-                if($row['Shopee']==0.00){
-                    $row['Shopee']=0;
-                }
-                if($row['fare']==0.00){
-                    $row['fare']=0;
-                }
-
                 $arr['red'] = $row;
-            }
-            else{
-                if($row['eBay']==0.00){
-                    $row['eBay']=0;
-                }
-                if($row['Wish']==0.00){
-                    $row['Wish']=0;
-                }
-                if($row['Amazon']==0.00){
-                    $row['Amazon']=0;
-                }
-                if($row['SMT']==0.00){
-                    $row['SMT']=0;
-                }
-                if($row['Shopee']==0.00){
-                    $row['Shopee']=0;
-                }
-                if($row['fare']==0.00){
-                    $row['fare']=0;
-                }
+            }else{
                 $arr[] = $row;
             }
         }
