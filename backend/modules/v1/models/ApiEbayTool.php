@@ -108,19 +108,10 @@ class ApiEbayTool
 						where gs.GoodsSKUStatus<>'停产' AND GoodsCode='$GoodsCode'";
         $DispatchTimeMax = Yii::$app->py_db->createCommand($dispatchtimesql)->queryAll();
 
-        $Site_dict = array(
-            '美国' => '0',
-            '英国' => '3',
-            '澳大利亚' => '15',
-            '加拿大(英语)' => '2',
-            '德国' => '77',
-            '法国' => '71',
-            '意大利' => '101',
-            '西班牙' => '186',
-            'Ebay汽车' => '100'
-        );
-        //var_dump($Site);exit;
+        $SiteList =  Yii::$app->py_db->createCommand("SELECT [name],code FROM oa_ebay_country")->queryAll();
+        $Site_dict = ArrayHelper::map($SiteList,'name','code');
         $Site = $Site_dict["$Site"];//站点匹配规则
+        //print_r($Site);exit;
         // sku匹配规则；商品编码@#账号，账号字典'taenha2017'=>'@#C01',
         $subSql = "SELECT nameCode FROM oa_ebay_suffix WHERE ebayName='$Selleruserid'";
         $subQuery = Yii::$app->py_db->createCommand($subSql)->queryOne();

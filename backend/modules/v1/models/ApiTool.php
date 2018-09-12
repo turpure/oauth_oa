@@ -79,8 +79,10 @@ class ApiTool
 
         //获取商品属性固定值
         $da = ApiExcelModel::$ebayModel;
-        $zhanghao = ApiExcelModel::$zhanghao;
+        $zhanghao = ApiExcelModel::getZhanghao();
+        $template = ApiExcelModel::getPublicationStyle();
 
+       //print_r($template);exit;
         //获取分类列表
         $catSql = "SELECT name,catId FROM oa_goodscat ORDER BY id";
         $catList = Yii::$app->py_db->createCommand($catSql)->queryAll();
@@ -128,22 +130,10 @@ class ApiTool
 
             foreach ($Selleruserid as $key => $val) {
                 $uid = $val;//账号
+                //print_r($template[$uid]);exit;
 
-                if ($uid == 'littlemay93' || $uid == 'springyinee6') {
-                    $da['IbayTemplate'] = 'pr92';
-                }
-                if ($uid == 'supermarket6' || $uid == 'global_saler' || $uid == 'chuangrong89'
-                    || $uid == 'landchuang77' || $uid == 'springyinee6' || $uid == 'monstercaca'
-                    || $uid == 'littlemay93' || $uid == 'dangoyoung06' || $uid == 'shadowchen90' || $uid == 'willyerxie08' || $uid == 'middleshine' || $uid == 'taenha2017' || $uid == 'taenha'
-                    || $uid == 'sectionry-4' || $uid == 'leaveszhong96' || $uid == 'smartmilitary5'
-                    || $uid == 'vitalityang1' || $uid == 'redplumly3'
-                    || $uid == 'actinoliteye3' || $uid == 'purityhand7'
-                    || $uid == 'wooddiyy3' || $uid == 'sunseeke6'
-                ) {
-                    $sub = $zhanghao["$uid"];
-                } else {
-                    $sub = '@#' . substr($zhanghao["$uid"], 0, 2);  //sku的后缀
-                }
+                $da['IbayTemplate'] = $template[$uid];
+                $sub = $zhanghao[$uid];
                 $PayPalEmailAddress = self::paypal($val, $StartPrice); //调用 返回的paypal账号
 
                 foreach ($xlsData1 as $k => $v) {  //整理数据 给variations使用
@@ -317,6 +307,7 @@ class ApiTool
         }*/
 
         header('pragma:public');
+
         header('Access-Control-Allow-Origin: *');
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment; filename="'.$fileName.'.xlsx"');
