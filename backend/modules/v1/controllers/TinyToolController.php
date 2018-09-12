@@ -50,4 +50,8 @@ class TinyToolController extends AdminController
         $condition = $post['condition'];
         return ApiTinyTool::getGoodsPicture($condition);
     }
+
+    /**
+     * @brief
+     */
 }

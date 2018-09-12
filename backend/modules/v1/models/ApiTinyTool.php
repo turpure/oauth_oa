@@ -73,7 +73,8 @@ class ApiTinyTool
                     country,
                     url,
                     category,
-                    imgname
+                    imgName,
+                    'http://121.196.233.153/images/brand/'+ Y_Brand.imgName +'.jpg' as imgUrl
                 FROM
                     Y_Brand
                 WHERE
