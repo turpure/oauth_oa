@@ -42,10 +42,11 @@ class Handler
     /**
      * @param $url
      * @param $requestString
+     * @param $headers
      * @param int $timeout
      * @return bool|mixed
      */
-    public static function request($url,$requestString,$timeout = 5)
+    public static function request($url, $requestString, $headers, $timeout = 30)
     {
         if($url === '' || $requestString === '' || $timeout <=0){
             return false;
@@ -53,10 +54,17 @@ class Handler
         $con = curl_init((string)$url);
         curl_setopt($con, CURLOPT_HEADER, false);
         curl_setopt($con, CURLOPT_POSTFIELDS, $requestString);
+        curl_setopt($con, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($con, CURLOPT_POST,true);
+        curl_setopt($con, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($con, CURLOPT_SSL_VERIFYHOST, FALSE);
         curl_setopt($con, CURLOPT_RETURNTRANSFER,true);
         curl_setopt($con, CURLOPT_TIMEOUT,(int)$timeout);
-        return curl_exec($con);
+        $ret = curl_exec($con);
+        if($ret === false) {
+            return curl_error($con);
+        }
+        return $ret;
 
     }
 

@@ -6,7 +6,9 @@
  */
 
 namespace backend\modules\v1\models;
+use backend\modules\v1\utils\Handler;
 use yii\helpers\ArrayHelper;
+use \PhpOffice\PhpSpreadsheet\Reader\Csv;
 
 class ApiTinyTool
 {
@@ -163,5 +165,85 @@ class ApiTinyTool
         catch (\Exception $why) {
             return [$why];
         }
+    }
+
+    /**
+     * @brief convert csv to json
+     * @param $file
+     * @return array
+     * @throws \Exception
+     */
+    public static function FyndiqzUpload($file)
+    {
+        /* tmp file
+        if (!$file) {
+            return ['code' => 400, 'message' => 'The file can not be empty!'];
+        }
+        $extension = ApiUpload::get_extension($file['name']);
+        if ($extension !== '.csv')  {
+            return ['code' => 400, 'message' => 'Please upload csv file'];
+        }
+        $fileName = time().$extension;
+        $basePath = '/uploads/';
+        $path = \Yii::$app->basePath.$basePath;
+        if (!file_exists($path)) {
+            !is_dir($path) && !mkdir($path,0777) && !is_dir($path);
+        }
+        $fileSrc = $path.$fileName;
+        move_uploaded_file($file['tmp_name'],$fileSrc);
+        */
+        $reader = new Csv() ;
+        $reader->setInputEncoding('utf-8');
+        $reader->setDelimiter(',');
+        $reader->setEnclosure('');
+        $reader->setSheetIndex(0);
+        $spreadsheet = $reader->load($file['tmp_name']);
+        $spreadData = $spreadsheet->getActiveSheet()->toArray();
+        $len = count($spreadData);
+        $ret = [];
+        for ($i=1;$i<$len;$i++) {
+            $row = array_combine($spreadData[0],$spreadData[$i]);
+            $ret[] = $row;
+        }
+
+        $auth = \Yii::$app->params['auth'];
+        $auth = 'Basic ' . base64_encode($auth['merchant'].':'.$auth['token']);
+        $headers = [
+            "Authorization:$auth",
+            'Content-Type:application/json'
+        ];
+        $baseUrl = 'https://merchants-api.fyndiq.com/api/v1/articles';
+
+        $out = [];
+        foreach ($ret as $row) {
+            $img = [$row['Extra Image URL']];
+            for ($i=1;$i<11;$i++) {
+                if (!empty($row['Extra Image URL ' . $i])){
+                    $img[] = $row['Extra Image URL ' . $i];
+                }
+            }
+            $obj['sku'] = $row['*Unique ID'];
+            $obj['parent_sku'] = $row['Parent Unique ID'];
+            $obj['status'] = 'for sale';
+            $obj['quantity'] = $row['*Quantity'];
+            $obj['tags'] = [$row['Main Tag']] + explode(',',$row['*Tags']);
+            $obj['size'] = $row['Size'];
+            $obj['color'] = $row['Color'];
+            $obj['brand'] = '';
+            $obj['gtin'] = '';
+            $obj['main_image'] = $row['Variant Main Image URL'];
+            $obj['images'] = $img;
+            $obj['markets'] = ['SE'];
+            $obj['title'] = [['language' => 'en-US', 'value' => $row['*Product Name']]];
+            $obj['description'] = [['language' => 'en-US', 'value'=> $row['Description']]];
+            $obj['price'] = [['market' => 'SE', 'value' => ['amount'=> $row['*Price'], 'currency'=> 'USD']]];
+            $obj['original_price'] = [['market' => 'SE', 'value' => ['amount'=> $row['*MSRP'], 'currency'=> 'USD']]];
+            $obj['shipping_price'] = [['market' => 'SE', 'value' => ['amount'=> $row['*Shipping'], 'currency'=> 'USD']]];
+            $obj['shipping_time'] = [['market' => 'SE', 'value' => $row['Shipping Time(enter without " ", just the estimated days )']]];
+            $response = Handler::request($baseUrl,json_encode($obj),$headers);
+            $response = json_decode($response);
+            $out[] = $response;
+        }
+        return $out;
     }
 }

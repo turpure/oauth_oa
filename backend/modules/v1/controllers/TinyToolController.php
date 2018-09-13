@@ -52,6 +52,14 @@ class TinyToolController extends AdminController
     }
 
     /**
-     * @brief
+     * @brief fyndiq upload csv to backend
+     * @return array
+     * @throws \Exception
      */
+    public function actionFyndiqzUpload()
+    {
+        $file = $_FILES['file'];
+        return ApiTinyTool::FyndiqzUpload($file);
+
+    }
 }
