@@ -1,4 +1,3 @@
-
 [toc]
 
 # 菜单列表
@@ -12,14 +11,14 @@
 * data参数说明：
 
 
-| 元素名称 | 数据类型 | 是否非空 | 元素说明 |
-| :------:| :------: | :------: |  :------: |
-| id | int | 是 | 菜单唯一编码 |
-| name | string | 是 | 菜单名称 |
-| parent | int | 否 | 父菜单ID |
-| route | string | 是 | 路由 |
-| order | int | 否 | 菜单顺序 |
-| children | array | 否 | 子菜单列表 |
+| 元素名称 | 数据类型 | 是否非空 | 元素说明     |
+| :------: | :------: | :------: | :----------: |
+| id       | int      | 是       | 菜单唯一编码 |
+| name     | string   | 是       | 菜单名称     |
+| parent   | int      | 否       | 父菜单ID     |
+| route    | string   | 是       | 路由         |
+| order    | int      | 否       | 菜单顺序     |
+| children | array    | 否       | 子菜单列表   |
 
 * 成功示例：
 ```
@@ -51,19 +50,19 @@
 * 请求示例：v1/condition
 * 条件列表：
 
-| 接口 | 名称 | 请求方法 | 返回数据 |
-| :------:| :------: | :------: |  :------: |
-| /department | 部门 | get | array |
-| /plat | 平台 | get | array |
-| /store | 仓库 | get | array |
-| /member | 人员 | get | array |
-| /account | 账号 | get | array |
-| /brand-country | 品牌国家 | get | array |
-| /brand-category | 品牌类别 | get | array |
-| /goods-status | 产品装态 | get | array |
-| /goods-cats | 产品分类 | get | array |
+| 接口            | 名称     | 请求方法 | 返回数据 |
+| :-------------: | :------: | :------: | :------: |
+| /department     | 部门     | get      | array    |
+| /plat           | 平台     | get      | array    |
+| /store          | 仓库     | get      | array    |
+| /member         | 人员     | get      | array    |
+| /account        | 账号     | get      | array    |
+| /brand-country  | 品牌国家 | get      | array    |
+| /brand-category | 品牌类别 | get      | array    |
+| /goods-status   | 产品装态 | get      | array    |
+| /goods-cats     | 产品分类 | get      | array    |
 
-# 报表
+# 毛利润报表
 
 * 接口名称：查询报表
 * 请求示例：v1/report
@@ -235,7 +234,7 @@
 	}
 }
 ```
-## account 
+# eBay工具 
 * 接口名称：eBay工具获取账号
 * 请求示例：v1/tool/account
 * 请求方法： post
@@ -376,7 +375,7 @@
 }
 ```
 
-## Smtsku
+# SMT工具
 * 接口名称：SMT工具获取商品SKU列表
 * 请求示例：v1/tool/smtsku
 * 请求方法： post
@@ -443,7 +442,7 @@
 }
 ```
 
-## wishsku
+# Wish工具
 * 接口名称：Wish工具获取商品SKU列表
 * 请求示例：v1/tool/wishsku
 * 请求方法： post
