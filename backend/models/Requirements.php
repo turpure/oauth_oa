@@ -3,7 +3,8 @@
 namespace backend\models;
 
 use Yii;
-
+use yii\behaviors\TimestampBehavior;
+use \yii\db\ActiveRecord;
 /**
  * This is the model class for table "oauth_requirements".
  *
@@ -22,7 +23,7 @@ use Yii;
  * @property string $feedBack
  * @property string $processingPerson
  */
-class Requirements extends \yii\db\ActiveRecord
+class Requirements extends ActiveRecord
 {
     /**
      * {@inheritdoc}
@@ -38,6 +39,27 @@ class Requirements extends \yii\db\ActiveRecord
     public static function getDb()
     {
         return Yii::$app->get('py_db');
+    }
+
+    /**
+     * @brief set behaviors
+     *
+     */
+    public function behaviors()
+    {
+        return array_merge(parent::behaviors(),
+            [
+                [
+                    'class' => TimestampBehavior::className(),
+                    'attributes' => [
+                        # 创建之前
+                        ActiveRecord::EVENT_BEFORE_INSERT => ['createdDate'],
+                    ],
+                    #设置默认值
+                    'value' => time()
+                ]
+            ]
+            );
     }
 
     /**
