@@ -46,7 +46,8 @@ class Requirements extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'detail', 'creator', 'type', 'priority', 'status', 'result', 'feedBack', 'processingPerson'], 'string'],
+            [['name', 'detail', 'creator','status', 'result', 'feedBack', 'processingPerson'], 'string'],
+            [['priority','type'],'integer'],
             [['createdDate', 'beginDate', 'endDate', 'finishedDate'], 'safe'],
         ];
     }
