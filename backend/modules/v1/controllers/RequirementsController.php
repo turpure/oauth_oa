@@ -14,18 +14,4 @@ class RequirementsController extends AdminController
 
    public $isRest = true;
 
-   /**
-    * @brief set delete action
-    */
-   public function actionDelete($id)
-   {
-       try {
-           parent::atinconDelete($id);
-           return [];
-       }
-       catch (\Exception $why) {
-           return [$why];
-       }
-   }
-
 }

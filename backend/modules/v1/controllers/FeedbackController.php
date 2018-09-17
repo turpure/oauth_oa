@@ -9,7 +9,7 @@ namespace backend\modules\v1\controllers;
 
 use backend\modules\v1\models\ApiFeedBack;
 
-class FeedBack extends AdminController
+class FeedbackController extends AdminController
 {
     public $modelClass = 'backend\modules\v1\models\ApiFeedback';
 
