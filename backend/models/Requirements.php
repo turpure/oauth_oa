@@ -56,7 +56,7 @@ class Requirements extends ActiveRecord
                         ActiveRecord::EVENT_BEFORE_INSERT => ['createdDate'],
                     ],
                     #设置默认值
-                    'value' => time()
+                    'value' => date('Y-m-d H:i:s')
                 ]
             ]
             );
