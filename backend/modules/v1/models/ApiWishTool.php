@@ -63,7 +63,9 @@ class ApiWishTool
             $item['property2'] = $value['property2'];
             $xls[] = $item;
         }
-        return $xls;
+        $res['setting'] = $condition;
+        $res['payload'] = $xls;
+        return $res;
     }
 
     /**

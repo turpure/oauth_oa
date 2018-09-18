@@ -505,57 +505,179 @@
 * 请求参数：
 
 ```
+
 {
-    "condition": {
-        "contents": {
-            "SKU": [
-                "6C004601",
-                "6C004602"
-            ],
-            "variation1": [
-                1,
-                2
-            ],
-            "variation2": [
-                "黄色",
-                "粉色"
-            ],
-           
-            "pic_url": [
-                "http://121.196.233.153/images/6C004601.jpg",
-                "http://121.196.233.153/images/6C004602.jpg"
-            ],
-            "property2": [
-                "黄色",
-                "粉色"
-            ],
-            "property1": [
-                1,
-                2
-            ],
-            "quantity": [
-                1000,
-                1000
-            ],
-            "price": [
-                222,
-                222
-            ],
-            "msrp": [
-                111,
-                111
-            ],
-            "shipping": [
-                333,
-                333
-            ],
-            "shippingTime": [
-               "7-21",
-                "7-21"
-            ]
-        }
+    "code": 200,
+    "message": "success",
+    "data": {
+        "setting": {
+            "suffix": "wish_01-eshop",
+            "goodsCode": "S161",
+            "price": "22",
+            "msrp": "22",
+            "shipping": "22"
+        },
+        "payload": [
+            {
+                "SKU": "S16101",
+                "pic_url": "http://121.196.233.153/images/S16101.jpg",
+                "variation1": "1",
+                "variation2": "黄色",
+                "quantity": 1000,
+                "price": "22",
+                "shipping": "22",
+                "$shippingTime": "7-21",
+                "msrp": "22",
+                "property1": "1",
+                "property2": "黄色"
+            },
+            {
+                "SKU": "S16102",
+                "pic_url": "http://121.196.233.153/images/S16102.jpg",
+                "variation1": "2",
+                "variation2": "粉色",
+                "quantity": 1000,
+                "price": "22",
+                "shipping": "22",
+                "$shippingTime": "7-21",
+                "msrp": "22",
+                "property1": "2",
+                "property2": "粉色"
+            },
+            {
+                "SKU": "S16103",
+                "pic_url": "http://121.196.233.153/images/S16103.jpg",
+                "variation1": "3",
+                "variation2": "蓝色",
+                "quantity": 1000,
+                "price": "22",
+                "shipping": "22",
+                "$shippingTime": "7-21",
+                "msrp": "22",
+                "property1": "3",
+                "property2": "蓝色"
+            },
+            {
+                "SKU": "S16104",
+                "pic_url": "http://121.196.233.153/images/S16104.jpg",
+                "variation1": "4",
+                "variation2": "米色",
+                "quantity": 1000,
+                "price": "22",
+                "shipping": "22",
+                "$shippingTime": "7-21",
+                "msrp": "22",
+                "property1": "4",
+                "property2": "米色"
+            },
+            {
+                "SKU": "S16105",
+                "pic_url": "http://121.196.233.153/images/S16105.jpg",
+                "variation1": "5",
+                "variation2": "墨绿",
+                "quantity": 1000,
+                "price": "22",
+                "shipping": "22",
+                "$shippingTime": "7-21",
+                "msrp": "22",
+                "property1": "5",
+                "property2": "墨绿"
+            },
+            {
+                "SKU": "S16106",
+                "pic_url": "http://121.196.233.153/images/S16106.jpg",
+                "variation1": "6",
+                "variation2": "灰色",
+                "quantity": 1000,
+                "price": "22",
+                "shipping": "22",
+                "$shippingTime": "7-21",
+                "msrp": "22",
+                "property1": "6",
+                "property2": "灰色"
+            },
+            {
+                "SKU": "S16107",
+                "pic_url": "http://121.196.233.153/images/S16107.jpg",
+                "variation1": "7",
+                "variation2": "黄色",
+                "quantity": 1000,
+                "price": "22",
+                "shipping": "22",
+                "$shippingTime": "7-21",
+                "msrp": "22",
+                "property1": "7",
+                "property2": "黄色"
+            },
+            {
+                "SKU": "S16108",
+                "pic_url": "http://121.196.233.153/images/S16108.jpg",
+                "variation1": "8",
+                "variation2": "粉色",
+                "quantity": 1000,
+                "price": "22",
+                "shipping": "22",
+                "$shippingTime": "7-21",
+                "msrp": "22",
+                "property1": "8",
+                "property2": "粉色"
+            },
+            {
+                "SKU": "S16109",
+                "pic_url": "http://121.196.233.153/images/S16109.jpg",
+                "variation1": "9",
+                "variation2": "蓝色",
+                "quantity": 1000,
+                "price": "22",
+                "shipping": "22",
+                "$shippingTime": "7-21",
+                "msrp": "22",
+                "property1": "9",
+                "property2": "蓝色"
+            },
+            {
+                "SKU": "S16110",
+                "pic_url": "http://121.196.233.153/images/S16110.jpg",
+                "variation1": "10",
+                "variation2": "米色",
+                "quantity": 1000,
+                "price": "22",
+                "shipping": "22",
+                "$shippingTime": "7-21",
+                "msrp": "22",
+                "property1": "10",
+                "property2": "米色"
+            },
+            {
+                "SKU": "S16111",
+                "pic_url": "http://121.196.233.153/images/S16111.jpg",
+                "variation1": "11",
+                "variation2": "墨绿",
+                "quantity": 1000,
+                "price": "22",
+                "shipping": "22",
+                "$shippingTime": "7-21",
+                "msrp": "22",
+                "property1": "11",
+                "property2": "墨绿"
+            },
+            {
+                "SKU": "S16112",
+                "pic_url": "http://121.196.233.153/images/S16112.jpg",
+                "variation1": "12",
+                "variation2": "灰色",
+                "quantity": 1000,
+                "price": "22",
+                "shipping": "22",
+                "$shippingTime": "7-21",
+                "msrp": "22",
+                "property1": "12",
+                "property2": "灰色"
+            }
+        ]
     }
 }
+
 ```
 # v1/data-center 数据中心
 
