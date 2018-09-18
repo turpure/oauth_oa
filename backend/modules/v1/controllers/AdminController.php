@@ -43,6 +43,7 @@ class AdminController extends ActiveController
                 'cors' => [
                     'Origin' => ['*'],
                     'Access-Control-Allow-Credentials' => true,
+                    'Access-Control-Request-Method' => ['GET', 'POST', 'PUT', 'OPTIONS','DELETE'],
 //                    'Access-Control-Request-Headers' => ['content-type','Authorization','Origin', 'X-Requested-With', 'Content-Type', 'Accept'],
                     'Access-Control-Request-Headers' => ['*'],
                 ],
