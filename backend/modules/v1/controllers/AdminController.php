@@ -23,12 +23,14 @@ use yii\web\Response;
 
 class AdminController extends ActiveController
 {
-
+    public $isRest = false;
     public function actions()
     {
         $actions = parent::actions();
         // 注销系统自带的实现方法
-        unset($actions['index'], $actions['update'], $actions['create'], $actions['delete'], $actions['view']);
+        if (!$this->isRest) {
+            unset($actions['index'], $actions['update'], $actions['create'], $actions['delete'], $actions['view']);
+        }
         return $actions;
     }
 
@@ -41,6 +43,7 @@ class AdminController extends ActiveController
                 'cors' => [
                     'Origin' => ['*'],
                     'Access-Control-Allow-Credentials' => true,
+                    'Access-Control-Request-Method' => ['GET', 'POST', 'PUT', 'OPTIONS','DELETE'],
 //                    'Access-Control-Request-Headers' => ['content-type','Authorization','Origin', 'X-Requested-With', 'Content-Type', 'Accept'],
                     'Access-Control-Request-Headers' => ['*'],
                 ],

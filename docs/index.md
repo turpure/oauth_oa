@@ -1,24 +1,61 @@
-## v1/api
 
-### 菜单列表
+* [菜单列表](#%E8%8F%9C%E5%8D%95%E5%88%97%E8%A1%A8)
+  * [返回信息](#%E8%BF%94%E5%9B%9E%E4%BF%A1%E6%81%AF)
+* [查询条件](#%E6%9F%A5%E8%AF%A2%E6%9D%A1%E4%BB%B6)
+* [毛利润报表](#%E6%AF%9B%E5%88%A9%E6%B6%A6%E6%8A%A5%E8%A1%A8)
+  * [sales](#sales)
+  * [develop](#develop)
+  * [purchase](#purchase)
+  * [possess](#possess)
+  * [ebay\-sales](#ebay-sales)
+  * [sales\-trend](#sales-trend)
+  * [account](#account)
+  * [introduce](#introduce)
+* [费用导入](#%E8%B4%B9%E7%94%A8%E5%AF%BC%E5%85%A5)
+  * [sales\-dead\-fee](#sales-dead-fee)
+* [汇率设置](#%E6%B1%87%E7%8E%87%E8%AE%BE%E7%BD%AE)
+  * [get exchange](#get-exchange)
+  * [update exchange](#update-exchange)
+* [eBay工具](#ebay%E5%B7%A5%E5%85%B7)
+  * [site](#site)
+  * [size](#size)
+  * [color](#color)
+  * [ebay\-template](#ebay-template)
+  * [ebaysku](#ebaysku)
+  * [ebaysku\-template](#ebaysku-template)
+* [SMT工具](#smt%E5%B7%A5%E5%85%B7)
+  * [smtsku\-template](#smtsku-template)
+* [Wish工具](#wish%E5%B7%A5%E5%85%B7)
+  * [wishsku\-template](#wishsku-template)
+* [v1/data\-center 数据中心](#v1data-center-%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%BF%83)
+  * [缺货分析](#%E7%BC%BA%E8%B4%A7%E5%88%86%E6%9E%90)
+  * [获取物流公司列表](#%E8%8E%B7%E5%8F%96%E7%89%A9%E6%B5%81%E5%85%AC%E5%8F%B8%E5%88%97%E8%A1%A8)
+  * [平台物流费用](#%E5%B9%B3%E5%8F%B0%E7%89%A9%E6%B5%81%E8%B4%B9%E7%94%A8)
+  * [销售变化](#%E9%94%80%E5%94%AE%E5%8F%98%E5%8C%96)
+  * [新品开发表现](#%E6%96%B0%E5%93%81%E5%BC%80%E5%8F%91%E8%A1%A8%E7%8E%B0)
+* [v1/tiny\-tool UR小工具](#v1tiny-tool-ur%E5%B0%8F%E5%B7%A5%E5%85%B7)
+  * [物流网址查询](#%E7%89%A9%E6%B5%81%E7%BD%91%E5%9D%80%E6%9F%A5%E8%AF%A2)
+  * [品牌列表](#%E5%93%81%E7%89%8C%E5%88%97%E8%A1%A8)
+  * [产品一览表](#%E4%BA%A7%E5%93%81%E4%B8%80%E8%A7%88%E8%A1%A8)
+# 菜单列表
 
 * 接口名称：获取菜单列表
 * 请求方法：get
 * 请求示例：/v1/menu
 
-### 返回信息
+## 返回信息
 * 数据格式：json
 * data参数说明：
 
 
-| 元素名称 | 数据类型 | 是否非空 | 元素说明 |
-| :------:| :------: | :------: |  :------: |
-| id | int | 是 | 菜单唯一编码 |
-| name | string | 是 | 菜单名称 |
-| parent | int | 否 | 父菜单ID |
-| route | string | 是 | 路由 |
-| order | int | 否 | 菜单顺序 |
-| children | array | 否 | 子菜单列表 |
+| 元素名称 | 数据类型 | 是否非空 | 元素说明     |
+| :------: | :------: | :------: | :----------: |
+| id       | int      | 是       | 菜单唯一编码 |
+| name     | string   | 是       | 菜单名称     |
+| parent   | int      | 否       | 父菜单ID     |
+| route    | string   | 是       | 路由         |
+| order    | int      | 否       | 菜单顺序     |
+| children | array    | 否       | 子菜单列表   |
 
 * 成功示例：
 ```
@@ -44,31 +81,31 @@
             ]
 ```
 
-### 查询条件
+# 查询条件
 
 * 接口名称：获取查询条件
 * 请求示例：v1/condition
 * 条件列表：
 
-| 接口 | 名称 | 请求方法 | 返回数据 |
-| :------:| :------: | :------: |  :------: |
-| /department | 部门 | get | array |
-| /plat | 平台 | get | array |
-| /store | 仓库 | get | array |
-| /member | 人员 | get | array |
-| /account | 账号 | get | array |
-| /brand-country | 品牌国家 | get | array |
-| /brand-category | 品牌类别 | get | array |
-| /goods-status | 产品装态 | get | array |
-| /goods-cats | 产品分类 | get | array |
+| 接口            | 名称     | 请求方法 | 返回数据 |
+| :-------------: | :------: | :------: | :------: |
+| /department     | 部门     | get      | array    |
+| /plat           | 平台     | get      | array    |
+| /store          | 仓库     | get      | array    |
+| /member         | 人员     | get      | array    |
+| /account        | 账号     | get      | array    |
+| /brand-country  | 品牌国家 | get      | array    |
+| /brand-category | 品牌类别 | get      | array    |
+| /goods-status   | 产品装态 | get      | array    |
+| /goods-cats     | 产品分类 | get      | array    |
 
-### 报表
+# 毛利润报表
 
 * 接口名称：查询报表
 * 请求示例：v1/report
 * 报表列表：
 
-#### sales 
+## sales 
 * 接口名称：销售毛利报表
 * 请求示例：v1/report/sales
 * 请求方法： post
@@ -88,7 +125,7 @@
 }
 ```
 
-#### develop 
+## develop 
 * 接口名称：开发毛利报表
 * 请求示例：v1/report/develop
 * 请求方法： post
@@ -104,7 +141,7 @@
 }
 ```
 
-#### purchase 
+## purchase 
 * 接口名称：采购毛利报表
 * 请求示例：v1/report/purchase
 * 请求方法： post
@@ -120,7 +157,7 @@
 }
 ```
 
-#### possess 
+## possess 
 * 接口名称：美工毛利报表
 * 请求示例：v1/report/possess
 * 请求方法： post
@@ -136,7 +173,7 @@
 }
 ```
 
-#### ebay-sales 
+## ebay-sales 
 * 接口名称：eBay销售毛利报表
 * 请求示例：v1/report/ebay-sales
 * 请求方法： post
@@ -152,7 +189,7 @@
 }
 ```
 
-#### sales-trend 
+## sales-trend 
 * 接口名称：销售额走势
 * 请求示例：v1/report/sales-trend
 * 请求方法： post
@@ -172,7 +209,7 @@
 }
 ```
 
-#### account 
+## account 
 * 接口名称：账号毛利润报表
 * 请求示例：v1/report/account
 * 请求方法： post
@@ -192,7 +229,7 @@
 	}
 }
 ```
-#### introduce 
+## introduce 
 * 接口名称：推荐人毛利报表
 * 请求示例：v1/report/introduce
 * 请求方法： post
@@ -207,21 +244,21 @@
 	}
 }
 ```
-### 费用导入
-#### sales-dead-fee
+# 费用导入
+## sales-dead-fee
 * 接口名称：销售死库费用
 * 请求示例：v1/upload/sales-dead-fee
 * 请求方法：post
 * 请求格式：form-data
 * 请求参数：file : example.xlsx
 
-### 汇率设置
-#### get exchange
+# 汇率设置
+## get exchange
 * 接口名称：查看美元汇率
 * 请求示例：v1/upload/exchange
 * 请求方法：get
 
-#### update exchange
+## update exchange
 * 接口名称：更新美元汇率
 * 请求示例：v1/upload/exchange
 * 请求方法：post
@@ -234,7 +271,7 @@
 	}
 }
 ```
-#### account 
+# eBay工具 
 * 接口名称：eBay工具获取账号
 * 请求示例：v1/tool/account
 * 请求方法： post
@@ -248,27 +285,27 @@
 }
 ```
 
-#### site 
+## site 
 * 接口名称：eBay工具获取账号站点
 * 请求示例：v1/tool/site
 * 请求方法： post
 * 请求参数： 无
 
 
-#### size 
+## size 
 * 接口名称：销售工具获取产品码号
 * 请求示例：v1/tool/size
 * 请求方法： post
 * 请求参数： 无
 
-#### color 
+## color 
 * 接口名称：销售工具获取产品颜色
 * 请求示例：v1/tool/color
 * 请求方法： post
 * 请求参数： 无
 
 
-#### ebay-template 
+## ebay-template 
 * 接口名称：eBay工具获取（下载）商品模板
 * 请求示例：v1/tool/ebay-template
 * 请求方法： post
@@ -284,7 +321,7 @@
 ```
 
 
-#### ebaysku
+## ebaysku
 * 接口名称：eBay工具获取商品SKU列表
 * 请求示例：v1/tool/ebaysku
 * 请求方法： post
@@ -306,7 +343,7 @@
 ```
 
 
-#### ebaysku-template
+## ebaysku-template
 * 接口名称：eBay工具获取（下载）商品SKU模板
 * 请求示例：v1/tool/ebaysku-template
 * 请求方法： post
@@ -375,7 +412,7 @@
 }
 ```
 
-#### Smtsku
+# SMT工具
 * 接口名称：SMT工具获取商品SKU列表
 * 请求示例：v1/tool/smtsku
 * 请求方法： post
@@ -391,7 +428,7 @@
 }
 ```
 
-#### smtsku-template
+## smtsku-template
 * 接口名称：SMT工具获取（下载）商品SKU模板
 * 请求示例：v1/tool/smtsku-template
 * 请求方法： post
@@ -442,7 +479,7 @@
 }
 ```
 
-#### wishsku
+# Wish工具
 * 接口名称：Wish工具获取商品SKU列表
 * 请求示例：v1/tool/wishsku
 * 请求方法： post
@@ -461,7 +498,7 @@
 ```
 
 
-#### wishsku-template
+## wishsku-template
 * 接口名称：Wish工具获取（下载）商品SKU模板
 * 请求示例：v1/tool/wishsku-template
 * 请求方法： post
@@ -520,19 +557,19 @@
     }
 }
 ```
-### v1/data-center 数据中心
+# v1/data-center 数据中心
 
-#### 缺货分析
+## 缺货分析
 * 接口名称：缺货分析
 * 请求方法： get
 * 请求示例：v1/data-center/out-of-stock-info 
 
-#### 获取物流公司列表
+## 获取物流公司列表
 * 接口名称：获取物流公司列表
 * 请求方法： get
 * 请求示例：v1/perform/logistics
 
-#### 平台物流费用
+## 平台物流费用
 * 接口名称：平台物流费用
 * 请求方法： post
 * 请求示例：v1/perform/cost
@@ -548,7 +585,7 @@
 
 ```
 
-#### 销售变化
+## 销售变化
 * 接口名称：销售变化
 * 请求方法： post
 * 请求示例：v1/perform/sales
@@ -565,7 +602,7 @@
 
 ```
 
-#### 新品开发表现
+## 新品开发表现
 * 接口名称：新品开发表现
 * 请求方法： post
 * 请求示例：v1/perform/perform
@@ -584,14 +621,14 @@
 
 
 
-### v1/tiny-tool UR小工具
+# v1/tiny-tool UR小工具
 
-#### 物流网址查询
+## 物流网址查询
 * 接口名称：物流网址查询
 * 请求方法：get
 * 请求示例：v1/tiny-tool/express
 
-#### 品牌列表
+## 品牌列表
 * 接口名称：品牌列表
 * 请求方法：post
 * 请求示例：v1/tiny-tool/brand
@@ -608,7 +645,7 @@
 }
 ```
 
-#### 产品一览表
+## 产品一览表
 * 接口名称：产品一览
 * 请求方法：post
 * 请求示例：v1/tiny-tool/goods-picture

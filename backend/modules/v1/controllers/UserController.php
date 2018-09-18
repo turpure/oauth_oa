@@ -93,12 +93,17 @@ class UserController extends AdminController
         $avatar = isset($post['avatar'])?$post['avatar']:'';
         $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
         $userId = $user->id;
-        $image = Handler::baseToImage($avatar, $userId);
-        $url = Yii::$app->request->hostInfo;
-        $imageUrl = $url.'/'.$image;
-        $user->avatar = $imageUrl;
-        $user->save();
-        return [$imageUrl];
+        try{
+            $image = Handler::baseToImage($avatar, $userId);
+            $url = Yii::$app->request->hostInfo;
+            $imageUrl = $url.'/'.$image;
+            $user->avatar = $imageUrl;
+            $user->save();
+            return [$imageUrl];
+        }
+        catch (\Exception $why) {
+            return [$why];
+        }
     }
 
 

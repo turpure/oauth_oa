@@ -12,6 +12,7 @@ return [
     'basePath' => dirname(__DIR__),
     'controllerNamespace' => 'backend\controllers',
     'bootstrap' => ['log'],
+    'timeZone' => 'Asia/Shanghai',
     'modules' => [
         'admin' => [
             'class' => 'mdm\admin\Module',
@@ -56,8 +57,11 @@ return [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
-
-            ],
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => ['v1/goods','v1/requirements']
+                ],
+            ]
         ],
         'authManager'  => [
         'class' => 'yii\rbac\DbManager',
