@@ -73,15 +73,21 @@ class Handler
      * @param $path
      */
     private static function delDir($path) {
-       foreach (scandir($path,null) as $file) {
-           if('.' === $file || '..' === $file) {
-               continue;
-           }
-           if (is_dir("$path/$file")) {
-               self::delDir("$path/$file");
-           }
-           unlink("$path/$file");
-       }
+        try {
+            foreach (scandir($path,null) as $file) {
+                if('.' === $file || '..' === $file) {
+                    continue;
+                }
+                if (is_dir("$path/$file")) {
+                    self::delDir("$path/$file");
+                }
+                unlink("$path/$file");
+            }
+        }
+        catch (\Exception $why) {
+
+        }
+
     }
 
 }
