@@ -48,8 +48,6 @@ class ApiSmtTool
      */
     public static function getSmtSkuList($condition)
     {
-        //保存post数据到session
-        Yii::$app->session->set('SmtCon', $condition);
 
         $sql = "select a.GoodsCategoryID,b.SKU,b.BmpFileName,b.property1,b.property2 from B_Goods as a  join B_Goodssku as b on a.NID = b.GoodsID where a.GoodsCode='" . $condition['goodsCode'] . "'ORDER BY b.NID";
         $xlsData = Yii::$app->py_db->createCommand($sql)->queryAll();

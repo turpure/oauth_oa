@@ -23,8 +23,6 @@ class ApiWishTool
      */
     public static function getWishSkuList($condition)
     {
-        //保存post数据到session
-        Yii::$app->session->set('wishCon', $condition);
         $suffix = substr(substr($condition['suffix'], 5), 0, 1);
         if ($suffix == 'E') {
             $su = self::subZhanghao($condition['suffix'], '_', '-');
@@ -96,8 +94,8 @@ class ApiWishTool
     {
         $xlsName = "User";
         $xlsCell = ['sku', 'selleruserid', 'name', 'inventory', 'price', 'msrp', 'shipping', 'shipping_time', 'main_image', 'extra_images', 'variants', 'landing_page_url', 'tags', 'description', 'brand', 'upc'];
-        //获取session数据
-        $wishCon = Yii::$app->session->get('wishCon');
+
+        $wishCon = $condition['setting'];
         $selleruserid = $wishCon['suffix'];
         $GoodsCode = $wishCon['goodsCode'];
         $msrp = $wishCon['msrp'];
