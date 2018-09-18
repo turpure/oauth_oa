@@ -26,11 +26,10 @@ class Handler
 
         $path = Yii::getAlias('@app')."/web/img/$userId/";
         if (!file_exists($path)) {
-            !is_dir($path) && !mkdir($path,0777) && !is_dir($path);
+            !is_dir($path) && !mkdir($path,0777,true) && !is_dir($path);
         }
         self::delDir($path);
         $imageSrc = $path.$imageName;
-
         $ret = file_put_contents($imageSrc, base64_decode($image));
         if($ret){
             return "img/$userId/".$imageName;
