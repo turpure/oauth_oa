@@ -9,7 +9,9 @@ namespace backend\modules\v1\controllers;
 
 
 use backend\modules\v1\models\ApiTinyTool;
-
+use common\models\User;
+use PhpOffice\PhpSpreadsheet\Calculation\Exception;
+use Yii;
 class TinyToolController extends AdminController
 {
     public $modelClass = 'backend\modules\v1\models\ApiTinyTool';
@@ -60,6 +62,37 @@ class TinyToolController extends AdminController
     {
         $file = $_FILES['file'];
         return ApiTinyTool::FyndiqzUpload($file);
+
+    }
+
+    /**
+     * @brief set password
+     */
+    public function actionSetPassword()
+    {
+        $post = Yii::$app->request->post();
+        $userInfo = $post['user'];
+        try {
+            foreach ($userInfo as $user) {
+                $username = $user['username'];
+                $one = User::findOne(['username' => $username]);
+                if (!empty($one)) {
+                    $one->password = $user['password'];
+                    $one->password_hash = Yii::$app->security->generatePasswordHash($user['password']);
+                    $ret = $one->save();
+                    if (!$ret) {
+                        throw new \Exception("fail to set $username");
+                    }
+
+                }
+            }
+            return 'job done!';
+        }
+        catch(\Exception  $why) {
+            return [$why];
+        }
+
+
 
     }
 }

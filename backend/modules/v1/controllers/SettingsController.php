@@ -7,14 +7,14 @@
 
 namespace backend\modules\v1\controllers;
 
-use backend\modules\v1\models\ApiUpload;
+use backend\modules\v1\models\ApiSettings;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
 use Yii;
 
-class UploadController extends AdminController
+class SettingsController extends AdminController
 {
-    public $modelClass = 'backend\modules\v1\models\ApiUpload';
+    public $modelClass = 'backend\modules\v1\models\ApiSettings';
 
     public function behaviors()
     {
@@ -55,11 +55,11 @@ class UploadController extends AdminController
                 'devRate' => $cond['devRate'],
                 'salerRate' => $cond['saleRate'],
             ];
-            $ret = ApiUpload::updateExchangeRate($condition);
+            $ret = ApiSettings::updateExchangeRate($condition);
             return $ret;
         }
         if ($request->isGet) {
-            return ApiUpload::getExchangeRate();
+            return ApiSettings::getExchangeRate();
         }
     }
 
@@ -75,11 +75,11 @@ class UploadController extends AdminController
             return ['code' => 400, 'message' => 'The file can not be empty!'];
         }
         //判断文件后缀
-        $extension = ApiUpload::get_extension($file['name']);
+        $extension = ApiSettings::get_extension($file['name']);
         if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
 
         //文件上传
-        $result = ApiUpload::file($file, 'deadfee');
+        $result = ApiSettings::file($file, 'deadfee');
         if (!$result) {
             return ['code' => 400, 'message' => 'File upload failed'];
         }
@@ -100,16 +100,16 @@ class UploadController extends AdminController
             return ['code' => 400, 'message' => 'The file can not be empty!'];
         }
         //判断文件后缀
-        $extension = ApiUpload::get_extension($file['name']);
+        $extension = ApiSettings::get_extension($file['name']);
         if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
 
         //文件上传
-        $result = ApiUpload::file($file, 'deadfee');
+        $result = ApiSettings::file($file, 'deadfee');
         if (!$result) {
             return ['code' => 400, 'message' => 'File upload failed'];
         }else{
             //获取上传excel文件的内容并保存
-            $res = ApiUpload::getExcelData($result,ApiUpload::DEVELOP, ApiUpload::DEAD_FEE);
+            $res = ApiSettings::getExcelData($result,ApiSettings::DEVELOP, ApiSettings::DEAD_FEE);
             if($res !== true) return ['code' => 400, 'message' => $res];
         }
     }
@@ -126,16 +126,16 @@ class UploadController extends AdminController
             return ['code' => 400, 'message' => 'The file can not be empty!'];
         }
         //判断文件后缀
-        $extension = ApiUpload::get_extension($file['name']);
+        $extension = ApiSettings::get_extension($file['name']);
         if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
 
         //文件上传
-        $result = ApiUpload::file($file, 'deadfee');
+        $result = ApiSettings::file($file, 'deadfee');
         if (!$result) {
             return ['code' => 400, 'message' => 'File upload failed'];
         }else{
             //获取上传excel文件的内容并保存
-            $res = ApiUpload::getExcelData($result,ApiUpload::POSSESS, ApiUpload::DEAD_FEE);
+            $res = ApiSettings::getExcelData($result,ApiSettings::POSSESS, ApiSettings::DEAD_FEE);
             if($res !== true) return ['code' => 400, 'message' => $res];
         }
     }
@@ -152,16 +152,16 @@ class UploadController extends AdminController
             return ['code' => 400, 'message' => 'The file can not be empty!'];
         }
         //判断文件后缀
-        $extension = ApiUpload::get_extension($file['name']);
+        $extension = ApiSettings::get_extension($file['name']);
         if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
 
         //文件上传
-        $result = ApiUpload::file($file, 'deadfee');
+        $result = ApiSettings::file($file, 'deadfee');
         if (!$result) {
             return ['code' => 400, 'message' => 'File upload failed'];
         }else{
             //获取上传excel文件的内容并保存
-            $res = ApiUpload::getExcelData($result,ApiUpload::PURCHASE, ApiUpload::DEAD_FEE);
+            $res = ApiSettings::getExcelData($result,ApiSettings::PURCHASE, ApiSettings::DEAD_FEE);
             if($res !== true) return ['code' => 400, 'message' => $res];
         }
     }
@@ -179,16 +179,16 @@ class UploadController extends AdminController
             return ['code' => 400, 'message' => 'The file can not be empty!'];
         }
         //判断文件后缀
-        $extension = ApiUpload::get_extension($file['name']);
+        $extension = ApiSettings::get_extension($file['name']);
         if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
 
         //文件上传
-        $result = ApiUpload::file($file, 'opreatefee');
+        $result = ApiSettings::file($file, 'opreatefee');
         if (!$result) {
             return ['code' => 400, 'message' => 'File upload failed'];
         }else{
             //获取上传excel文件的内容并保存
-            $res = ApiUpload::getExcelData($result,ApiUpload::SALES, ApiUpload::OPERATE_FEE);
+            $res = ApiSettings::getExcelData($result,ApiSettings::SALES, ApiSettings::OPERATE_FEE);
             if($res !== true) return ['code' => 400, 'message' => $res];
         }
     }
@@ -205,16 +205,16 @@ class UploadController extends AdminController
             return ['code' => 400, 'message' => 'The file can not be empty!'];
         }
         //判断文件后缀
-        $extension = ApiUpload::get_extension($file['name']);
+        $extension = ApiSettings::get_extension($file['name']);
         if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
 
         //文件上传
-        $result = ApiUpload::file($file, 'opreatefee');
+        $result = ApiSettings::file($file, 'opreatefee');
         if (!$result) {
             return ['code' => 400, 'message' => 'File upload failed'];
         }else{
             //获取上传excel文件的内容并保存
-            $res = ApiUpload::getExcelData($result,ApiUpload::DEVELOP, ApiUpload::OPERATE_FEE);
+            $res = ApiSettings::getExcelData($result,ApiSettings::DEVELOP, ApiSettings::OPERATE_FEE);
             if($res !== true) return ['code' => 400, 'message' => $res];
         }
     }
@@ -231,16 +231,16 @@ class UploadController extends AdminController
             return ['code' => 400, 'message' => 'The file can not be empty!'];
         }
         //判断文件后缀
-        $extension = ApiUpload::get_extension($file['name']);
+        $extension = ApiSettings::get_extension($file['name']);
         if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
 
         //文件上传
-        $result = ApiUpload::file($file, 'opreatefee');
+        $result = ApiSettings::file($file, 'opreatefee');
         if (!$result) {
             return ['code' => 400, 'message' => 'File upload failed'];
         }else{
             //获取上传excel文件的内容并保存
-            $res = ApiUpload::getExcelData($result,ApiUpload::POSSESS, ApiUpload::OPERATE_FEE);
+            $res = ApiSettings::getExcelData($result,ApiSettings::POSSESS, ApiSettings::OPERATE_FEE);
             if($res !== true) return ['code' => 400, 'message' => $res];
         }
     }
@@ -258,16 +258,16 @@ class UploadController extends AdminController
             return ['code' => 400, 'message' => 'The file can not be empty!'];
         }
         //判断文件后缀
-        $extension = ApiUpload::get_extension($file['name']);
+        $extension = ApiSettings::get_extension($file['name']);
         if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
 
         //文件上传
-        $result = ApiUpload::file($file, 'opreatefee');
+        $result = ApiSettings::file($file, 'opreatefee');
         if (!$result) {
             return ['code' => 400, 'message' => 'File upload failed'];
         }else{
             //获取上传excel文件的内容并保存
-            $res = ApiUpload::getExcelData($result,ApiUpload::PURCHASE, ApiUpload::OPERATE_FEE);
+            $res = ApiSettings::getExcelData($result,ApiSettings::PURCHASE, ApiSettings::OPERATE_FEE);
 
             if($res !== true) return ['code' => 400, 'message' => $res];
         }

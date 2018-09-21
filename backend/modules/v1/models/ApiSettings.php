@@ -11,7 +11,7 @@ namespace backend\modules\v1\models;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Yii;
 
-class ApiUpload
+class ApiSettings
 {
     const DEVELOP = '开发';
     const SALES = '销售';

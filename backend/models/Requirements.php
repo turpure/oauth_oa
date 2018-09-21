@@ -12,13 +12,13 @@ use \yii\db\ActiveRecord;
  * @property string $name
  * @property string $detail
  * @property string $creator
- * @property string $type
- * @property string $priority
+ * @property int $type
+ * @property int $priority
  * @property string $createdDate
  * @property string $beginDate
  * @property string $endDate
  * @property string $finishedDate
- * @property string $status
+ * @property int $status
  * @property string $result
  * @property string $feedBack
  * @property string $processingPerson
@@ -68,8 +68,8 @@ class Requirements extends ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'detail', 'creator','status', 'result', 'feedBack', 'processingPerson'], 'string'],
-            [['priority','type'],'integer'],
+            [['name', 'detail', 'creator', 'result', 'feedBack', 'processingPerson'], 'string'],
+            [['priority','type','status'],'integer'],
             [['createdDate', 'beginDate', 'endDate', 'finishedDate'], 'safe'],
         ];
     }

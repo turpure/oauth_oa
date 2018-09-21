@@ -13,6 +13,7 @@ use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use backend\models\LoginForm;
 use frontend\models\SignupForm;
+
 /**
  * Site controller
  */
@@ -124,4 +125,5 @@ class SiteController extends Controller
 
         return $this->goHome();
     }
+
 }
