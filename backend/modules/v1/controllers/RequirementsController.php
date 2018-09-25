@@ -10,6 +10,7 @@ namespace backend\modules\v1\controllers;
 use yii\helpers\ArrayHelper;
 use Yii;
 use yii\data\ActiveDataProvider;
+use yii\db\Query;
 
 class RequirementsController extends AdminController
 {
@@ -49,6 +50,22 @@ class RequirementsController extends AdminController
         );
 
         return $actions;
+    }
+
+    public function actionSearchRequirements()
+    {
+        $get = Yii::$app->request->get();
+        $name = $get['name'];
+        $pageSize = isset($get['pageSize']) ? $get['pageSize']:10;
+        $query = (new Query())->from('oauth_requirements')->where(['like','name',$name]);
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            'db' => Yii::$app->py_db,
+            'pagination' => [
+                'pageSize' => $pageSize
+            ],
+        ]);
+        return $provider;
     }
 
 }
