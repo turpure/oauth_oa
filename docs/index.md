@@ -225,7 +225,9 @@
 		"sku": "",
 		"dateType": 0,
 		"dateRange": ["2018-07-04", "2018-07-13"],
-		"account": []
+		"account": [],
+		"start":1,
+        "limit":10
 	}
 }
 ```
@@ -683,8 +685,18 @@
 
 ## 缺货分析
 * 接口名称：缺货分析
-* 请求方法： get
+* 请求方法： post
 * 请求示例：v1/data-center/out-of-stock-info 
+```
+{
+    "condition": {
+        "start":1,
+        "limit":10
+    }
+}
+
+```
+
 
 ## 获取物流公司列表
 * 接口名称：获取物流公司列表
@@ -719,6 +731,8 @@
         "plat": "eBay",
         "suffix":"17-su061",
         "saler":""
+        "start":1,
+        "limit":10
     }
 }
 

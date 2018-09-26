@@ -75,6 +75,8 @@ class PerformController extends AdminController
             'suffix' => $cond['suffix'],
             'plat' => $cond['plat'],
             'saler' => $cond['saler'],
+            'start' => $cond['start'],
+            'limit' => $cond['limit'],
         ];
         $ret = ApiPerform::getSalesChange($condition);
         return $ret;

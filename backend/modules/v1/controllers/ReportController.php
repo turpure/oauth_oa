@@ -179,6 +179,8 @@ class ReportController extends  AdminController
             'chanel' => $cond['plat'],
             'suffix' => $cond['account']?("'".implode(',',$cond['account'])."'"):'',
             'storeName' => $cond['store']?("'".implode(',',$cond['store'])."'"):'',
+            'start' => $cond['start'],
+            'limit' => $cond['limit'],
         ];
         $ret = ApiReport::getProfitReport($condition);
         return $ret;

@@ -81,6 +81,8 @@ class ApiPerform
     {
         $data['suffix'] = $condition['suffix'];
         $data['pingtai'] = $condition['plat'];
+        $data['start'] = $condition['start']??0;
+        $data['limit'] = $condition['limit']??20;
 
         //将开发人员名称转化为B_person表的nid
         if($condition['saler']){
@@ -96,7 +98,7 @@ class ApiPerform
         }
 
         //print_r($salerId);exit;
-        $stmt = "EXEC z_demo_zongchange @suffix='$data[suffix]',@SalerName='$data[SalerName]',@pingtai='$data[pingtai]' ";
+        $stmt = "EXEC z_demo_zongchange @suffix='$data[suffix]',@SalerName='$data[SalerName]',@pingtai='$data[pingtai]',@PageIndex='$data[start]',@PageNum='$data[limit]' ";
         //print_r($stmt);exit;
         $ret = Yii::$app->py_db->createCommand($stmt)->queryAll();
         //print_r($ret);exit;

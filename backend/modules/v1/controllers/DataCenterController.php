@@ -25,7 +25,9 @@ class DataCenterController extends AdminController
      */
     public function actionOutOfStockInfo()
     {
-       return ApiDataCenter::outOfStockInfo();
+        $post = \Yii::$app->request->post();
+        $condition = $post['condition'];
+       return ApiDataCenter::outOfStockInfo($condition);
     }
 
 

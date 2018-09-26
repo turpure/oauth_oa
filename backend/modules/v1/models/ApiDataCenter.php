@@ -8,14 +8,23 @@
 namespace backend\modules\v1\models;
 
 
+use yii\helpers\ArrayHelper;
+
 class ApiDataCenter
 {
     /**
      * @brief get out of stock sku information
      */
-    public static function outOfStockInfo () {
+    public static function outOfStockInfo ($condition) {
+        $start = ArrayHelper::getValue($condition,'start',0);
+        $limit = ArrayHelper::getValue($condition,'limit',20);
         $con = \Yii::$app->py_db;
-        $sql = 'select * from oauth_outOfStockSkuInfo';
+        $sql = "SELECT * FROM(
+                    SELECT 
+                          row_number () OVER (ORDER BY goodscode) rowId,*
+                     FROM oauth_outOfStockSkuInfo
+                ) aa
+                WHERE rowId BETWEEN {$start} AND {$limit}";
         try {
             return $con->createCommand($sql)->queryAll();
         }

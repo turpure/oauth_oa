@@ -197,7 +197,7 @@ class ApiReport
     public static function getProfitReport($condition)
     {
         $sql = "EXEC Z_P_AccountProductProfit @chanel=:chanel,@DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,".
-        "@SalerAliasName=:suffix,@SalerName=:salesman,@StoreName=:storeName,@sku=:sku";
+        "@SalerAliasName=:suffix,@SalerName=:salesman,@StoreName=:storeName,@sku=:sku,@PageIndex=:PageIndex,@PageNum=:PageNum";
         $con = Yii::$app->py_db;
         $params = [
             ':chanel' => $condition['chanel'],
@@ -208,6 +208,8 @@ class ApiReport
             ':salesman' => $condition['salesman'],
             ':storeName' => $condition['storeName'],
             ':sku' => $condition['sku'],
+            ':PageIndex' => $condition['start'],
+            ':PageNum' => $condition['limit'],
         ];
         try {
             return $con->createCommand($sql)->bindValues($params)->queryAll();
