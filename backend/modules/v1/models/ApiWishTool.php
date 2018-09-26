@@ -38,6 +38,7 @@ class ApiWishTool
 
         $sql = "select b.remark,b.SKU,b.BmpFileName,b.property1,b.property2 from B_Goods as a  join B_Goodssku as b on a.NID = b.GoodsID where a.GoodsCode='" . $condition['goodsCode'] . "'ORDER BY b.NID";
         $xlsData = Yii::$app->py_db->createCommand($sql)->queryAll();
+        if(!$xlsData) return [];
 
         $patSql = "SELECT color,colorEn FROM oa_goodscolor ORDER BY id";
         $parList = Yii::$app->py_db->createCommand($patSql)->queryAll();
