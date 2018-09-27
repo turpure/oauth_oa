@@ -9,6 +9,9 @@ namespace backend\modules\v1\controllers;
 
 
 use backend\modules\v1\models\ApiDataCenter;
+use yii\data\ActiveDataProvider;
+use yii\db\Query;
+use Yii;
 
 class DataCenterController extends AdminController
 {
@@ -19,15 +22,29 @@ class DataCenterController extends AdminController
         return parent::behaviors();
     }
 
+
+    public $serializer = [
+        'class' => 'yii\rest\Serializer',
+        'collectionEnvelope' => 'items',
+    ];
+
     /**
      * @brief  show sku out of stock
-     * @return array
+     * @return string
      */
     public function actionOutOfStockInfo()
     {
-        $post = \Yii::$app->request->post();
-        $condition = $post['condition'];
-       return ApiDataCenter::outOfStockInfo($condition);
+        $get = Yii::$app->request->get();
+        $pageSize = isset($get['pageSize']) ? $get['pageSize']:10;
+        $query = (new Query())->from('oauth_outOfStockSkuInfo');
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            'db' => \Yii::$app->py_db,
+            'pagination' => [
+                'pageSize' => $pageSize
+            ]
+        ]);
+       return $provider;
     }
 
 
