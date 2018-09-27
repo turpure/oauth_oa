@@ -62,4 +62,20 @@ class SchedulerController extends Controller
             print date('Y-m-d h:i:s')."INFO:fail to get sku out of stock cause of $why \n";
         }
     }
+
+    /**
+     * @brief 更新主页各人员目标完成度
+     */
+    public function actionSite()
+    {
+        $con = \Yii::$app->py_db;
+        $sql = "EXEC oauth_target_procedure";
+        try {
+            $con->createCommand($sql)->execute();
+            print date('Y-m-d h:i:s')." INFO:success to get data of target completion!\n";
+        }
+        catch (\Exception $why) {
+            print date('Y-m-d h:i:s')." INFO:fail to get data of target completion cause of $why \n";
+        }
+    }
 }
