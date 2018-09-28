@@ -12,26 +12,6 @@ use yii\helpers\ArrayHelper;
 
 class ApiDataCenter
 {
-    /**
-     * @brief get out of stock sku information
-     */
-    public static function outOfStockInfo ($condition) {
-        $start = ArrayHelper::getValue($condition,'start',0);
-        $limit = ArrayHelper::getValue($condition,'limit',20);
-        $con = \Yii::$app->py_db;
-        $sql = "SELECT * FROM(
-                    SELECT 
-                          row_number () OVER (ORDER BY goodscode) rowId,*
-                     FROM oauth_outOfStockSkuInfo
-                ) aa
-                WHERE rowId BETWEEN {$start} AND {$limit}";
-        try {
-            return $con->createCommand($sql)->queryAll();
-        }
-        catch (\Exception $why) {
-            return [$why];
-        }
-    }
 
     /**
      * @brief get express information
