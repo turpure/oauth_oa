@@ -107,8 +107,8 @@ class SiteController extends AdminController
                 return [['label'=>'所有开发','name'=>'developer']];
             }
             return [
-                ['label'=>'郑州销售','name'=>'zhengzhou'],
                 ['label'=>'上海销售','name'=>'shanghai'],
+                ['label'=>'郑州销售','name'=>'zhengzhou'],
                 ['label'=>'所有部门','name'=>'depart'],
                 ['label'=>'所有开发','name'=>'developer']
             ];
