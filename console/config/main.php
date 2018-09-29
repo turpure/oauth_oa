@@ -8,6 +8,7 @@ $params = array_merge(
 
 return [
     'id' => 'app-console',
+    'timeZone' => 'Asia/Shanghai',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
     'controllerNamespace' => 'console\controllers',
