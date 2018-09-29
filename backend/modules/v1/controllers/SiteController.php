@@ -59,7 +59,7 @@ class SiteController extends AdminController
     {
         $sql = "SELECT depart,sum([primary]) AS [primary],sum([high]) AS [high],sum([amt]) AS [amt],
                      sum([amt])/sum([primary]) AS primaryRate,sum([amt])/sum([high]) AS highRate,
-                     MAX(dateRate) AS dateRate
+                     MAX(dateRate) AS dateRate,max(updatetime) as updatetime
                 FROM oauth_target 
                 WHERE depart <> '郑州分部' AND role = '销售'
                 GROUP BY depart
