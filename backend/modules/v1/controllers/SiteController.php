@@ -68,4 +68,52 @@ class SiteController extends AdminController
         return $query;
     }
 
+    /**
+     * @brief what I can see
+     * @return mixed
+     * @throws \Exception
+     */
+    public function actionPermission() {
+        $user = \Yii::$app->user->identity->id;
+        return $this->identity($user);
+    }
+
+
+    /**
+     * @brief who are you
+     * @param $userid
+     * @return mixed
+     * @throws \Exception
+     */
+    private function identity($userid) {
+        $salesCheck = "SELECT department FROM auth_department AS ad
+        LEFT JOIN auth_department_child AS adc ON ad.id = adc.department_id
+        LEFT JOIN auth_position_child AS apc ON apc.user_id = adc.user_id
+        LEFT JOIN auth_position AS ap ON ap.id = apc.position_id
+        WHERE
+        position=:position
+        AND adc.user_id = $userid";
+        $db = \Yii::$app->db;
+        $salesRet = $db->createCommand($salesCheck,[':position'=>'销售'])->queryOne();
+        if(!empty($salesRet)) {
+            if($salesRet->department ==='郑州分部') {
+                return [['label'=>'郑州销售','name'=>'zhengzhou']];
+            }
+            return [['label'=>'上海销售','name'=>'shanghai']];
+        }
+        else {
+            $devRet = $db->createCommand($salesCheck,[':position'=>'开发'])->queryOne();
+            if(!empty($devRet)) {
+                return [['label'=>'所有开发','name'=>'developer']];
+            }
+            return [
+                ['label'=>'郑州销售','name'=>'zhengzhou'],
+                ['label'=>'上海销售','name'=>'shanghai'],
+                ['label'=>'所有部门','name'=>'depart'],
+                ['label'=>'所有开发','name'=>'developer']
+            ];
+        }
+
+    }
+
 }
