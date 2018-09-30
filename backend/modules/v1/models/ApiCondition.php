@@ -127,6 +127,7 @@ class ApiCondition
             $account = (new Query())
                 ->select('id,store')
                 ->from('auth_store')
+                ->orderBy('store')
                 ->all();
         } else {
             //获取所属部门人员列表
@@ -137,7 +138,7 @@ class ApiCondition
                 ->from('auth_store_child asc')
                 ->leftJoin('auth_store as', 'as.id=asc.store_id')
                 ->where(['in', 'user_id', $users])
-                ->orderBy('as.id')
+                ->orderBy('store')
                 ->distinct()
                 ->all();
         }
