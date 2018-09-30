@@ -308,11 +308,16 @@ class ApiTool
 
         header('pragma:public');
 
-        header('Access-Control-Allow-Origin: *');
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="'.$fileName.'.xlsx"');
+        //header('Access-Control-Allow-Origin: *');
+        //header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        //header('Content-Disposition: attachment; filename="'.$fileName.'.xlsx"');
+
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment;filename="'.$fileName.'"');
+        header('Cache-Control: max-age=0');
+
         //attachment新窗口打印inline本窗口打印
-        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $writer = IOFactory::createWriter($spreadsheet, 'Xls');
         $writer->save('php://output');exit;
     }
 
