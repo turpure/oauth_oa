@@ -97,9 +97,15 @@ class SiteController extends AdminController
         $salesRet = $db->createCommand($salesCheck,[':position'=>'销售'])->queryOne();
         if(!empty($salesRet)) {
             if($salesRet['department'] ==='郑州分部') {
-                return [['label'=>'郑州销售','name'=>'zhengzhou']];
+                return [
+                    ['label'=>'郑州销售','name'=>'zhengzhou'],
+                    ['label'=>'所有部门','name'=>'depart'],
+                ];
             }
-            return [['label'=>'上海销售','name'=>'shanghai']];
+            return [
+                ['label'=>'上海销售','name'=>'shanghai'],
+                ['label'=>'所有部门','name'=>'depart'],
+                ];
         }
         else {
             $devRet = $db->createCommand($salesCheck,[':position'=>'开发'])->queryOne();
