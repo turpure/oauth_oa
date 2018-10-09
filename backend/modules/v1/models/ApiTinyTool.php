@@ -87,7 +87,7 @@ class ApiTinyTool
                     and (country like '%$country%')
                     and (category like '%$category%')
                 ) bra
-                where rowId BETWEEN $start and $limit";
+                where rowId BETWEEN $start and ($limit+$start)";
                 $res = $con->createCommand($sql)->queryAll();
             } else {
                 $res = [];
@@ -169,7 +169,7 @@ class ApiTinyTool
                     AND bgc.CategoryParentName LIKE '%$categoryParentName%'
                     AND bgc.CategoryName LIKE '%$categoryName%'
                 ) pic
-                WHERE rowId BETWEEN $start AND $limit";
+                WHERE rowId BETWEEN $start AND ($limit+$start)";
                 $res = $con->createCommand($sql)->queryAll();
             } else {
                 $res = [];
