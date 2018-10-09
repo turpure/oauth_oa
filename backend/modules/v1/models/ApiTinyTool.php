@@ -6,7 +6,9 @@
  */
 
 namespace backend\modules\v1\models;
+
 use backend\modules\v1\utils\Handler;
+use yii\data\SqlDataProvider;
 use yii\helpers\ArrayHelper;
 use \PhpOffice\PhpSpreadsheet\Reader\Csv;
 
@@ -46,8 +48,7 @@ class ApiTinyTool
 				ORDER BY t.DefaultExpress";
         try {
             return $con->createCommand($sql)->queryAll();
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return [$why];
         }
     }
@@ -60,35 +61,42 @@ class ApiTinyTool
     public static function getBrand($condition)
     {
         $con = \Yii::$app->py_db;
-        $brand = ArrayHelper::getValue($condition,'brand','');
-        $country = ArrayHelper::getValue($condition,'country','');
-        $category = ArrayHelper::getValue($condition,'category','');
-        $start = ArrayHelper::getValue($condition,'start',0);
-        $limit = ArrayHelper::getValue($condition,'limit',20);
-        $sql = "SELECT
-            *
-            FROM
-            (
-                SELECT
-                    row_number () OVER (ORDER BY imgname) rowId,
-                    brand,
-                    country,
-                    url,
-                    category,
-                    imgName,
-                    'http://121.196.233.153/images/brand/'+ Y_Brand.imgName +'.jpg' as imgUrl
-                FROM
-                    Y_Brand
-                WHERE
-                brand LIKE '%$brand%' 
-                and (country like '%$country%')
-                and (category like '%$category%')
-            ) bra
-            where rowId BETWEEN $start and $limit";
+        $brand = ArrayHelper::getValue($condition, 'brand', '');
+        $country = ArrayHelper::getValue($condition, 'country', '');
+        $category = ArrayHelper::getValue($condition, 'category', '');
+        $start = ArrayHelper::getValue($condition, 'start', 0);
+        $limit = ArrayHelper::getValue($condition, 'limit', 20);
         try {
-            return $con->createCommand($sql)->queryAll();
-        }
-        catch (\Exception $why) {
+            $totalSql = "SELECT COUNT(1) FROM Y_Brand WHERE
+                brand LIKE '%$brand%' and (country like '%$country%') and (category like '%$category%')";
+            $totalCount = $con->createCommand($totalSql)->queryScalar();
+            if ($totalCount) {
+                $sql = "SELECT * FROM (
+                        SELECT
+                        row_number () OVER (ORDER BY imgname) rowId,
+                        brand,
+                        country,
+                        url,
+                        category,
+                        imgName,
+                        'http://121.196.233.153/images/brand/'+ Y_Brand.imgName +'.jpg' as imgUrl
+                    FROM
+                        Y_Brand
+                    WHERE
+                    brand LIKE '%$brand%' 
+                    and (country like '%$country%')
+                    and (category like '%$category%')
+                ) bra
+                where rowId BETWEEN $start and $limit";
+                $res = $con->createCommand($sql)->queryAll();
+            } else {
+                $res = [];
+            }
+            return [
+                'items' => $res,
+                'totalCount' => $totalCount,
+            ];
+        } catch (\Exception $why) {
             return [$why];
         }
     }
@@ -101,68 +109,76 @@ class ApiTinyTool
     public static function getGoodsPicture($condition)
     {
         $con = \Yii::$app->py_db;
-        $salerName = ArrayHelper::getValue($condition,'salerName','');
-        $possessMan1 = ArrayHelper::getValue($condition,'possessMan1','');
-        $possessMan2 = ArrayHelper::getValue($condition,'possessMan2','');
-        $beginDate = ArrayHelper::getValue($condition,'beginDate','')?:'1990-01-01';
-        $endDate = ArrayHelper::getValue($condition,'endDate','')?:date('Y-m-d');
-        $goodsName = ArrayHelper::getValue($condition,'goodsName','');
-        $supplierName = ArrayHelper::getValue($condition,'supplierName','');
-        $goodsSkuStatus = ArrayHelper::getValue($condition,'goodsSkuStatus','');
-        $categoryParentName = ArrayHelper::getValue($condition,'categoryParentName','');
-        $categoryName = ArrayHelper::getValue($condition,'categoryName','');
-        $start = ArrayHelper::getValue($condition, 'start',0);
-        $limit = ArrayHelper::getValue($condition,'limit',0);
-
-        $sql = "SELECT
-	    *
-        FROM
-        (
-            SELECT
-                row_number () OVER (ORDER BY bg.nid) AS rowId,
-                bg.possessman1,
-                bg.GoodsCode,
-                bg.GoodsName,
-                bg.CreateDate,
-                bgs.SKU,
-                bgs.GoodsSKUStatus,
-                bgs.BmpFileName,
-                bg.LinkUrl,
-                bg.Brand,
-                bgc.CategoryParentName,
-                bgc.CategoryName
-            FROM
-                b_goods AS bg
-            LEFT JOIN B_GoodsSKU AS bgs ON bg.NID = bgs.GoodsID
-            LEFT JOIN B_GoodsCats AS bgc ON bgc.NID = bg.GoodsCategoryID
-            LEFT JOIN B_Supplier bs ON bs.NID = bg.SupplierID
-            WHERE
-                bgs.SKU IN (
+        $salerName = ArrayHelper::getValue($condition, 'salerName', '');
+        $possessMan1 = ArrayHelper::getValue($condition, 'possessMan1', '');
+        $possessMan2 = ArrayHelper::getValue($condition, 'possessMan2', '');
+        $beginDate = ArrayHelper::getValue($condition, 'beginDate', '') ?: '1990-01-01';
+        $endDate = ArrayHelper::getValue($condition, 'endDate', '') ?: date('Y-m-d');
+        $goodsName = ArrayHelper::getValue($condition, 'goodsName', '');
+        $supplierName = ArrayHelper::getValue($condition, 'supplierName', '');
+        $goodsSkuStatus = ArrayHelper::getValue($condition, 'goodsSkuStatus', '');
+        $categoryParentName = ArrayHelper::getValue($condition, 'categoryParentName', '');
+        $categoryName = ArrayHelper::getValue($condition, 'categoryName', '');
+        $start = ArrayHelper::getValue($condition, 'start', 0);
+        $limit = ArrayHelper::getValue($condition, 'limit', 0);
+        try {
+            $totalSql = "SELECT count(1) FROM b_goods AS bg
+                        LEFT JOIN B_GoodsSKU AS bgs ON bg.NID = bgs.GoodsID
+                        LEFT JOIN B_GoodsCats AS bgc ON bgc.NID = bg.GoodsCategoryID
+                        LEFT JOIN B_Supplier bs ON bs.NID = bg.SupplierID
+                        WHERE bgs.SKU IN (SELECT MIN (bgs.SKU) FROM B_GoodsSKU AS bgs GROUP BY bgs.GoodsID)
+                        AND bs.SupplierName LIKE '%$supplierName%'
+                        AND bg.possessman1 LIKE '%$possessMan1%'
+                        AND bg.possessman2 LIKE '%$possessMan2%'
+                        AND bg.SalerName LIKE '%$salerName%'
+                        AND bg.CreateDate BETWEEN '$beginDate'
+                        AND '$endDate'
+                        AND bg.GoodsName LIKE '%$goodsName%'
+                        AND bgs.GoodsSKUStatus LIKE '%$goodsSkuStatus%'
+                        AND bgc.CategoryParentName LIKE '%$categoryParentName%'
+                        AND bgc.CategoryName LIKE '%$categoryName%'";
+            $totalCount = $con->createCommand($totalSql)->queryScalar();
+            if ($totalCount) {
+                $sql = "SELECT * FROM(
                     SELECT
-                        MIN (bgs.SKU)
-                    FROM
-                        B_GoodsSKU AS bgs
-                    GROUP BY
-                        bgs.GoodsID
-                )
-            AND bs.SupplierName LIKE '%$supplierName%'
-            AND bg.possessman1 LIKE '%$possessMan1%'
-            AND bg.possessman2 LIKE '%$possessMan2%'
-            AND bg.SalerName LIKE '%$salerName%'
-            AND bg.CreateDate BETWEEN '$beginDate'
-            AND '$endDate'
-            AND bg.GoodsName LIKE '%$goodsName%'
-            AND bgs.GoodsSKUStatus LIKE '%$goodsSkuStatus%'
-            AND bgc.CategoryParentName LIKE '%$categoryParentName%'
-            AND bgc.CategoryName LIKE '%$categoryName%'
-        ) pic
-        WHERE
-        rowId BETWEEN $start
-        AND $limit";
-            try {
-            return $con->createCommand($sql)->queryAll();
-        }
-        catch (\Exception $why) {
+                        row_number () OVER (ORDER BY bg.nid) AS rowId,
+                        bg.possessman1,
+                        bg.GoodsCode,
+                        bg.GoodsName,
+                        bg.CreateDate,
+                        bgs.SKU,
+                        bgs.GoodsSKUStatus,
+                        bgs.BmpFileName,
+                        bg.LinkUrl,
+                        bg.Brand,
+                        bgc.CategoryParentName,
+                        bgc.CategoryName
+                    FROM b_goods AS bg
+                    LEFT JOIN B_GoodsSKU AS bgs ON bg.NID = bgs.GoodsID
+                    LEFT JOIN B_GoodsCats AS bgc ON bgc.NID = bg.GoodsCategoryID
+                    LEFT JOIN B_Supplier bs ON bs.NID = bg.SupplierID
+                    WHERE bgs.SKU IN (SELECT MIN (bgs.SKU) FROM B_GoodsSKU AS bgs GROUP BY bgs.GoodsID)
+                    AND bs.SupplierName LIKE '%$supplierName%'
+                    AND bg.possessman1 LIKE '%$possessMan1%'
+                    AND bg.possessman2 LIKE '%$possessMan2%'
+                    AND bg.SalerName LIKE '%$salerName%'
+                    AND bg.CreateDate BETWEEN '$beginDate'
+                    AND '$endDate'
+                    AND bg.GoodsName LIKE '%$goodsName%'
+                    AND bgs.GoodsSKUStatus LIKE '%$goodsSkuStatus%'
+                    AND bgc.CategoryParentName LIKE '%$categoryParentName%'
+                    AND bgc.CategoryName LIKE '%$categoryName%'
+                ) pic
+                WHERE rowId BETWEEN $start AND $limit";
+                $res = $con->createCommand($sql)->queryAll();
+            } else {
+                $res = [];
+            }
+            return [
+                'items' => $res,
+                'totalCount' => $totalCount,
+            ];
+        } catch (\Exception $why) {
             return [$why];
         }
     }
@@ -192,7 +208,7 @@ class ApiTinyTool
         $fileSrc = $path.$fileName;
         move_uploaded_file($file['tmp_name'],$fileSrc);
         */
-        $reader = new Csv() ;
+        $reader = new Csv();
         $reader->setInputEncoding('utf-8');
         $reader->setDelimiter(',');
         $reader->setEnclosure('');
@@ -201,13 +217,13 @@ class ApiTinyTool
         $spreadData = $spreadsheet->getActiveSheet()->toArray();
         $len = count($spreadData);
         $ret = [];
-        for ($i=1;$i<$len;$i++) {
-            $row = array_combine($spreadData[0],$spreadData[$i]);
+        for ($i = 1; $i < $len; $i++) {
+            $row = array_combine($spreadData[0], $spreadData[$i]);
             $ret[] = $row;
         }
 
         $auth = \Yii::$app->params['auth'];
-        $auth = 'Basic ' . base64_encode($auth['merchant'].':'.$auth['token']);
+        $auth = 'Basic ' . base64_encode($auth['merchant'] . ':' . $auth['token']);
         $headers = [
             "Authorization:$auth",
             'Content-Type:application/json'
@@ -217,8 +233,8 @@ class ApiTinyTool
         $out = [];
         foreach ($ret as $row) {
             $img = [$row['Extra Image URL']];
-            for ($i=1;$i<11;$i++) {
-                if (!empty($row['Extra Image URL ' . $i])){
+            for ($i = 1; $i < 11; $i++) {
+                if (!empty($row['Extra Image URL ' . $i])) {
                     $img[] = $row['Extra Image URL ' . $i];
                 }
             }
@@ -226,7 +242,7 @@ class ApiTinyTool
             $obj['parent_sku'] = $row['Parent Unique ID'];
             $obj['status'] = 'for sale';
             $obj['quantity'] = $row['*Quantity'];
-            $obj['tags'] = [$row['Main Tag']] + explode(',',$row['*Tags']);
+            $obj['tags'] = [$row['Main Tag']] + explode(',', $row['*Tags']);
             $obj['size'] = $row['Size'];
             $obj['color'] = $row['Color'];
             $obj['brand'] = '';
@@ -235,12 +251,12 @@ class ApiTinyTool
             $obj['images'] = $img;
             $obj['markets'] = ['SE'];
             $obj['title'] = [['language' => 'en-US', 'value' => $row['*Product Name']]];
-            $obj['description'] = [['language' => 'en-US', 'value'=> $row['Description']]];
-            $obj['price'] = [['market' => 'SE', 'value' => ['amount'=> $row['*Price'], 'currency'=> 'USD']]];
-            $obj['original_price'] = [['market' => 'SE', 'value' => ['amount'=> $row['*MSRP'], 'currency'=> 'USD']]];
-            $obj['shipping_price'] = [['market' => 'SE', 'value' => ['amount'=> $row['*Shipping'], 'currency'=> 'USD']]];
+            $obj['description'] = [['language' => 'en-US', 'value' => $row['Description']]];
+            $obj['price'] = [['market' => 'SE', 'value' => ['amount' => $row['*Price'], 'currency' => 'USD']]];
+            $obj['original_price'] = [['market' => 'SE', 'value' => ['amount' => $row['*MSRP'], 'currency' => 'USD']]];
+            $obj['shipping_price'] = [['market' => 'SE', 'value' => ['amount' => $row['*Shipping'], 'currency' => 'USD']]];
             $obj['shipping_time'] = [['market' => 'SE', 'value' => $row['Shipping Time(enter without " ", just the estimated days )']]];
-            $response = Handler::request($baseUrl,json_encode($obj),$headers);
+            $response = Handler::request($baseUrl, json_encode($obj), $headers);
             $response = json_decode($response);
             $out[] = $response;
         }

@@ -8,6 +8,8 @@
 namespace backend\modules\v1\controllers;
 use backend\modules\v1\controllers\AdminController;
 use backend\modules\v1\models\ApiReport;
+use yii\data\ArrayDataProvider;
+use yii\data\SqlDataProvider;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
 use Yii;
@@ -183,7 +185,11 @@ class ReportController extends  AdminController
             'limit' => $cond['limit'],
         ];
         $ret = ApiReport::getProfitReport($condition);
-        return $ret;
+        $num = $ret ? $ret[0]['totalNum']:0;
+        return [
+            'items' => $ret,
+            'totalCount' => $num,
+        ];
     }
 
     /**
