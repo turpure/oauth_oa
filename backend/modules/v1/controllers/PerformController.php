@@ -79,7 +79,11 @@ class PerformController extends AdminController
             'limit' => $cond['limit'],
         ];
         $ret = ApiPerform::getSalesChange($condition);
-        return $ret;
+        $num = $ret ? $ret[0]['totalNum']:0;
+        return [
+            'items' => $ret,
+            'totalCount' => $num,
+        ];
     }
 
     /**

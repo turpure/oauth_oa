@@ -95,4 +95,12 @@ class TinyToolController extends AdminController
 
 
     }
+
+    /**
+     * @brief fix price
+     */
+    public function actionFixPrice()
+    {
+
+    }
 }
