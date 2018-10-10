@@ -96,7 +96,7 @@ class SiteController extends AdminController
         $db = \Yii::$app->db;
         $salesRet = $db->createCommand($salesCheck,[':position'=>'销售'])->queryOne();
         if(!empty($salesRet)) {
-            if($salesRet['department'] ==='郑州分部') {
+            if(strpos($salesRet['department'],'郑州分部') !==false) {
                 return [
                     ['label'=>'郑州销售','name'=>'zhengzhou'],
                     ['label'=>'所有部门','name'=>'depart'],
