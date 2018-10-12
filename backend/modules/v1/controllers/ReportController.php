@@ -195,7 +195,8 @@ class ReportController extends  AdminController
     /**
      * @brief introduce performance report
      */
-    public function actionIntroduce() {
+    public function actionIntroduce()
+    {
         $request = Yii::$app->request->post();
         $cond = $request['condition'];
         $condition = [
@@ -207,4 +208,5 @@ class ReportController extends  AdminController
         //print_r($condition);exit;
         return ApiReport::getIntroduceReport($condition);
     }
+
 }

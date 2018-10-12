@@ -63,7 +63,7 @@ class UserController extends AdminController
             'id' => $user->id,
             'username' => $user->username,
             'email' => $user->email,
-            'avatar' => $user->avatar
+            'avatar' => $user->avatar,
         ];
     }
 
@@ -79,7 +79,8 @@ class UserController extends AdminController
             'id' => $user->id,
             'username' => $user->username,
             'email' => $user->email,
-            'avatar' => $user->avatar
+            'avatar' => $user->avatar,
+            'isAdmin' => $this->isAdmin()
         ];
     }
 
@@ -107,6 +108,21 @@ class UserController extends AdminController
     }
 
 
+    /**
+     * @brief whether the user is admin or not
+     * @return boolean
+     * @throws \Exception
+     */
+    private function isAdmin()
+    {
+        $userId = Yii::$app->user->id;
+        $db = Yii::$app->db;
+        $sql = "select item_name as role from auth_assignment where user_id=$userId";
+        $ret = $db->createCommand($sql)->queryOne();
+        return $ret['role'] === '超级管理员';
+    }
+
+
     /*
      * @brief API测试
      */
@@ -120,4 +136,5 @@ class UserController extends AdminController
         $body = str_replace('[]','{}',$body);
         return [Handler::request($url, $body)];
     }
+
 }
