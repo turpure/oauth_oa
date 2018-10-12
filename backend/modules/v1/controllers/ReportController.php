@@ -202,8 +202,9 @@ class ReportController extends  AdminController
             'dateFlag' => $cond['dateType'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'member' => $cond['member']?implode($cond['member']):''
+            'member' => $cond['member']?implode(',',$cond['member']):''
         ];
+        //print_r($condition);exit;
         return ApiReport::getIntroduceReport($condition);
     }
 }
