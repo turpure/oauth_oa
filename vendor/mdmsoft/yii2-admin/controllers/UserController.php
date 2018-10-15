@@ -153,6 +153,8 @@ class UserController extends Controller
                 $this->redirect('index');
             }
         }
+//print_r($model);exit;
+
         return $this->render('update', [
             'model' => $model,
         ]);

@@ -42,8 +42,9 @@ class UpdateUser extends Model
         //print_r($department);exit;
         if($department){
             $departInfo = Department::findOne($department['department_id']);
-            $this->department = $departInfo['parent']?:$departInfo['id'];
-            $this->child_depart = $departInfo['parent']?$departInfo['id']:0;
+
+            $this->department = empty($departInfo->parent)?$departInfo['id']:$departInfo->parent;
+            $this->child_depart = empty($departInfo['parent'])?0:$departInfo['id'];
         }else{
             $this->department = $this->child_depart = 0;
         }

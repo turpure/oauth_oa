@@ -99,7 +99,7 @@ class ApiPerform
 
         //print_r($salerId);exit;
         $stmt = "EXEC z_demo_zongchange @suffix='$data[suffix]',@SalerName='$data[SalerName]',@pingtai='$data[pingtai]',@PageIndex='$data[start]',@PageNum='$data[limit]' ";
-        print_r($stmt);exit;
+
         $ret = Yii::$app->py_db->createCommand($stmt)->queryAll();
         //print_r($ret);exit;
         if( $ret === false ) {
