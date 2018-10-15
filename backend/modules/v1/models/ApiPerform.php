@@ -28,8 +28,8 @@ class ApiPerform
 
         //开发人员列表
         //$salers = array('刘珊珊', '宋现中', '王漫漫', '陈微微', '常金彩', '薛晨昕', '廖露露', '陈曦曦', '李星', '赵润连');
-        $salersSql = "SELECT username FROM [USER] u INNER JOIN auth_assignment a ON u.id=a.user_id WHERE a.item_name='产品开发' ORDER BY username";
-        $saleList = Yii::$app->py_db->createCommand($salersSql)->queryAll();
+        $salersSql = "SELECT username FROM `user` u INNER JOIN auth_assignment a ON u.id=a.user_id WHERE a.item_name='产品开发' ORDER BY username";
+        $saleList = Yii::$app->db->createCommand($salersSql)->queryAll();
         $salers = ArrayHelper::getColumn($saleList, 'username');
         $salers_str = implode(',', $salers);
 
@@ -99,7 +99,7 @@ class ApiPerform
 
         //print_r($salerId);exit;
         $stmt = "EXEC z_demo_zongchange @suffix='$data[suffix]',@SalerName='$data[SalerName]',@pingtai='$data[pingtai]',@PageIndex='$data[start]',@PageNum='$data[limit]' ";
-        //print_r($stmt);exit;
+        print_r($stmt);exit;
         $ret = Yii::$app->py_db->createCommand($stmt)->queryAll();
         //print_r($ret);exit;
         if( $ret === false ) {

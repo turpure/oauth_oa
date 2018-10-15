@@ -131,10 +131,11 @@ class TinyToolController extends AdminController
         $res = Yii::$app->py_db->createCommand($sql)->queryOne();
         if(!$res) return $data;
 
-        if($post['num'] > 1) {
-            $res['costprice'] = $res['costprice'] * $post['num'];
-            $res['Weight'] = $res['Weight'] * $post['num'];
-        };
+        $post['num'] = $post['num'] ? $post['num'] : 1;
+        $post['rate'] = $post['rate'] ? $post['rate'] : 0;
+
+        $res['costprice'] = $res['costprice'] * $post['num'];
+        $res['Weight'] = $res['Weight'] * $post['num'];
         $data['detail'] = $res;
 
         if($res['Weight'] > Yii::$app->params['weight']){
@@ -148,9 +149,7 @@ class TinyToolController extends AdminController
             $data['rate'] = ApiUkFic::getRate($post['price'], $cost ,$res['costprice']);
         }
         //根据利润率获取售价
-        if($post['rate']){
-            $data['price'] = ApiUkFic::getPrice($post['rate'], $cost ,$res['costprice']);
-        }
+        $data['price'] = ApiUkFic::getPrice($post['rate'], $cost ,$res['costprice']);
         $data['transport'] = [
             'name' => Yii::$app->params['transport'],
             'cost' => round($cost,2),
@@ -188,11 +187,12 @@ class TinyToolController extends AdminController
         $res = ApiUk::getDetail($post['sku']);
         if(!$res) return $data;
 
-        if($post['num'] > 1) {
-            $res['price'] = $res['price'] * $post['num'];
-            $res['weight'] = $res['weight'] * $post['num'];
-            $res['height'] = $res['height'] * $post['num'];
-        };
+        $post['num'] = $post['num'] ? $post['num'] : 1;
+        $post['rate'] = $post['rate'] ? $post['rate'] : 0;
+
+        $res['price'] = $res['price'] * $post['num'];
+        $res['weight'] = $res['weight'] * $post['num'];
+        $res['height'] = $res['height'] * $post['num'];
         //print_r($res);exit;
         $data['detail'] = $res;
 
@@ -205,9 +205,7 @@ class TinyToolController extends AdminController
         }
 
         //根据利润率获取售价
-        if($post['rate']){
-            $data['price'] = ApiUk::getPrice($post['rate'], $data['transport']['cost'], $data['transport']['out'], $res['price']);
-        }
+        $data['price'] = ApiUk::getPrice($post['rate'], $data['transport']['cost'], $data['transport']['out'], $res['price']);
 
         //print_r($data);exit;
         return $data;
@@ -243,11 +241,13 @@ class TinyToolController extends AdminController
         //获取SKU信息
         $res = ApiAu::getDetail($post['sku']);
         if(!$res) return $data;
-        if($post['num'] > 1) {
-            $res['price'] = $res['price'] * $post['num'];
-            $res['weight'] = $res['weight'] * $post['num'];
-            $res['height'] = $res['height'] * $post['num'];
-        };
+
+        $post['num'] = $post['num'] ? $post['num'] : 1;
+        $post['rate'] = $post['rate'] ? $post['rate'] : 0;
+
+        $res['price'] = $res['price'] * $post['num'];
+        $res['weight'] = $res['weight'] * $post['num'];
+        $res['height'] = $res['height'] * $post['num'];
         $data['detail'] = $res;
 
         //获取运费和出库费
@@ -258,9 +258,7 @@ class TinyToolController extends AdminController
             $data['rate'] = ApiAu::getRate($post['price'], $data['transport']['cost'], $data['transport']['out'], $res['price']);
         }
         //根据利润率获取售价
-        if($post['rate']){
-            $data['price'] = ApiAu::getPrice($post['rate'], $data['transport']['cost'], $data['transport']['out'], $res['price']);
-        }
+        $data['price'] = ApiAu::getPrice($post['rate'], $data['transport']['cost'], $data['transport']['out'], $res['price']);
 
         //print_r($data);exit;
         return $data;
