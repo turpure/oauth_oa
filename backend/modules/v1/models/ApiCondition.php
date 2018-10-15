@@ -162,6 +162,7 @@ class ApiCondition
                 ->innerJoin('auth_position p','p.id=pc.position_id')
                 ->innerJoin('auth_department_child dc','dc.user_id=u.id')
                 ->innerJoin('auth_department d','d.id=dc.department_id')
+                ->andWhere(['u.status' => 10])
                 ->distinct()
                 ->all();
         } elseif (in_array(AuthPosition::JOB_MANAGER, $position) ||
@@ -175,8 +176,8 @@ class ApiCondition
                 ->innerJoin('auth_department_child dc','dc.user_id=u.id')
                 ->innerJoin('auth_department d','d.id=dc.department_id')
                 ->innerJoin('auth_position p','p.id=pc.position_id')
-                ->andWhere(['or',['d.id' => $depart_id],['parent' => $depart_id]])
-                ->all();
+                ->andWhere(['u.status' => 10])
+                ->andWhere(['or',['d.id' => $depart_id],['parent' => $depart_id]])->all();
         } else {
             $users = (new Query())->select('u.id,username,p.position,d.department')
                 ->from('user u')
@@ -184,6 +185,7 @@ class ApiCondition
                 ->innerJoin('auth_position p','p.id=pc.position_id')
                 ->innerJoin('auth_department_child dc','dc.user_id=u.id')
                 ->innerJoin('auth_department d','d.id=dc.department_id')
+                ->andWhere(['u.status' => 10])
                 ->andWhere(['u.id' => $userId])
                 ->all();
         }
