@@ -25,13 +25,15 @@ $callback = function ($menu) {
     return $return;
 };
 
+$list = MenuHelper::getAssignedMenu(Yii::$app->user->id, null, $callback);
+$list = [$list[0],$list[1]];
 
 ?>
 <aside class="main-sidebar">
     <section class="sidebar">
         <?= dmstr\widgets\Menu::widget([
             'options' => ['class' => 'sidebar-menu','data-widget' => 'tree'],
-            'items' => MenuHelper::getAssignedMenu(Yii::$app->user->id, null, $callback),
+            'items' => $list,
         ]) ?>
     </section>
 </aside>

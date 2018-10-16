@@ -26,6 +26,7 @@ $this->params['breadcrumbs'][] = $this->title;
             ['class' => 'yii\grid\SerialColumn'],
             'store',
             'platform',
+            'username',
             [
                 'class' => 'yii\grid\ActionColumn',
                 'template' => Helper::filterActionColumn(['view','update', 'delete']),

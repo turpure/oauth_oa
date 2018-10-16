@@ -25,6 +25,8 @@ class StoreSearch extends Store
     {
         return [
             [['store','platform'], 'string'],
+            [['username'], 'safe'],
+
         ];
     }
 
@@ -37,10 +39,12 @@ class StoreSearch extends Store
      */
     public function search($params)
     {
-        $query = Store::find();
+        $query = Store::find()->select('auth_store.*,u.username')
+            ->join('INNER JOIN','auth_store_child sc','sc.store_id=auth_store.id')
+            ->join('INNER JOIN','user u','u.id=sc.user_id');
 
         // add conditions that should always apply here
-
+        //var_dump($query);exit;
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
@@ -62,6 +66,7 @@ class StoreSearch extends Store
         ]);
 
         $query->andFilterWhere(['like', 'store', $this->store]);
+        $query->andFilterWhere(['like', 'username', $this->username]);
 
         return $dataProvider;
     }
