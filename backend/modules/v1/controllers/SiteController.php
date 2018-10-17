@@ -58,7 +58,8 @@ class SiteController extends AdminController
     public function actionDepart()
     {
         $sql = "SELECT depart,sum([primary]) AS [primary],sum([high]) AS [high],sum([amt]) AS [amt],
-                     sum([amt])/sum([primary]) AS primaryRate,sum([amt])/sum([high]) AS highRate,
+                     CASE WHEN sum([primary])=0 THEN 0 ELSE sum([amt])/sum([primary]) END AS primaryRate,
+                     CASE WHEN sum([high])=0 THEN 0 ELSE sum([amt])/sum([high]) END AS highRate,
                      MAX(dateRate) AS dateRate,max(updatetime) as updatetime
                 FROM oauth_target 
                 WHERE depart <> '郑州分部' AND role = '销售'
