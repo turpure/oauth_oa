@@ -21,7 +21,7 @@ class SiteController extends AdminController
     public function actionIndex()
     {
         $sql = "SELECT * FROM oauth_target 
-                WHERE username NOT IN ('韩珍','六部') AND depart <> '郑州分部' AND role = '销售'
+                WHERE username NOT IN ('韩珍','六部') AND depart NOT LIKE '%郑州分部%' AND role = '销售'
                 ORDER BY primaryRate DESC";
         $query = \Yii::$app->py_db->createCommand($sql)->queryAll();
         return $query;
@@ -34,7 +34,7 @@ class SiteController extends AdminController
     public function actionSales()
     {
         $sql = "SELECT * FROM oauth_target 
-                WHERE  depart = '郑州分部' AND role = '销售'
+                WHERE  depart LIKE '%郑州分部%' AND role = '销售'
                 ORDER BY highRate DESC";
         $query = \Yii::$app->py_db->createCommand($sql)->queryAll();
         return $query;
@@ -62,7 +62,7 @@ class SiteController extends AdminController
                      CASE WHEN sum([high])=0 THEN 0 ELSE sum([amt])/sum([high]) END AS highRate,
                      MAX(dateRate) AS dateRate,max(updatetime) as updatetime
                 FROM oauth_target 
-                WHERE depart <> '郑州分部' AND role = '销售'
+                WHERE  role = '销售'
                 GROUP BY depart
                 ORDER BY primaryRate DESC";
         $query = \Yii::$app->py_db->createCommand($sql)->queryAll();
