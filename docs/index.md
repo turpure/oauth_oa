@@ -871,4 +871,61 @@
 ```
 
 
+# v1/requirement 需求管理
+
+## 获取列表
+* 接口名称：获取列表
+* 请求方法：get
+* 请求示例：v1/requirement/search-requirements
+* 请求参数： name 标题  page 页数  pageSize 页数大小
+
+
+## 获取列表
+* 接口名称：获取列表
+* 请求方法：get
+* 请求示例：v1/requirement/search-requirements
+* 请求参数： name 标题  page 页数  pageSize 页数大小
+
+
+## 添加
+* 接口名称：添加
+* 请求方法：post
+* 请求示例：v1/requirement
+* 请求参数： 
+
+## 编辑
+* 接口名称：编辑
+* 请求方法：put
+* 请求示例：v1/requirement/{id}
+* 请求参数： 
+
+## 审核/批量审核
+* 接口名称：审核
+* 请求方法：post
+* 请求示例：v1/requirement/examine
+* 请求参数：  
+```
+{
+    "condition": {
+        "ids": [1,2]
+    }
+}
+```
+
+## 处理（更改进度状态）
+* 接口名称：处理
+* 请求方法：post
+* 请求示例：v1/requirement/deal
+* 请求参数： type: begin 处理人接受任务，开始处理任务；  end  处理人处理完任务，结束任务。
+```
+{
+    "condition": {
+        "id": 1,
+        "type": "begin"
+    }
+}
+```
+
+删除和详情restful格式接口可用
+
 
