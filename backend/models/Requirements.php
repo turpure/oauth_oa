@@ -25,12 +25,18 @@ use \yii\db\ActiveRecord;
  */
 class Requirements extends ActiveRecord
 {
+    const STATUS_TO_BE_AUDITED  = 1;     //待审核
+    const STATUS_FAILED         = 2;     //已驳回
+    const STATUS_TO_BE_DEALT    = 3;     //待处理(已审核)
+    const STATUS_DEALING        = 4;     //处理中
+    const STATUS_DEALT          = 5;     //处理完成
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return 'oauth_requirements';
+        //return 'oauth_requirements';
+        return 'requirement';
     }
 
     /**
@@ -38,7 +44,7 @@ class Requirements extends ActiveRecord
      */
     public static function getDb()
     {
-        return Yii::$app->get('py_db');
+        return Yii::$app->get('db');
     }
 
     /**
@@ -68,9 +74,9 @@ class Requirements extends ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'detail', 'creator', 'result', 'feedBack', 'processingPerson'], 'string'],
+            [['name', 'detail', 'creator', 'auditor', 'result', 'feedBack', 'processingPerson','img'], 'string'],
             [['priority','type','status'],'integer'],
-            [['createdDate', 'beginDate', 'endDate', 'finishedDate'], 'safe'],
+            [['createdDate', 'beginDate', 'endDate', 'auditDate'], 'safe'],
         ];
     }
 
@@ -83,13 +89,15 @@ class Requirements extends ActiveRecord
             'id' => 'ID',
             'name' => 'Name',
             'detail' => 'Detail',
+            'img' => 'Img',
             'creator' => 'Creator',
             'type' => 'Type',
             'priority' => 'Priority',
             'createdDate' => 'Created Date',
             'beginDate' => 'Begin Date',
             'endDate' => 'End Date',
-            'finishedDate' => 'Finished Date',
+            'auditor' => 'Auditor',
+            'auditDate' => 'Audit Date',
             'status' => 'Status',
             'result' => 'Result',
             'feedBack' => 'Feed Back',
