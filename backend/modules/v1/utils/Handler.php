@@ -87,7 +87,6 @@ class Handler
 
             return $savePath.'/'.$file_name;
         }
-        print_r(123);exit;
     }
 
 

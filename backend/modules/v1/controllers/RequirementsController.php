@@ -8,7 +8,6 @@
 namespace backend\modules\v1\controllers;
 
 use backend\models\Requirements;
-use backend\modules\v1\models\ApiSettings;
 use backend\modules\v1\utils\Handler;
 use yii\helpers\ArrayHelper;
 use Yii;
@@ -87,11 +86,13 @@ class RequirementsController extends AdminController
         $post = $get = Yii::$app->request->post('condition', '');
         $ids = isset($post['ids']) ? $post['ids'] : [];
         if (!$ids) return ['code' => 400, 'message' => '请选择要审核的项目！',];
-        $transaction = Yii::$app->db->transaction;
+        $transaction = Yii::$app->db->beginTransaction();
         try {
             foreach ($ids as $id) {
+                $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
+                $username = $user->username;
                 $require = Requirements::findOne($id);
-                $require->auditor = Yii::$app->db->user->identity->username;
+                $require->auditor = $username;
                 $require->auditDate = date('Y-m-d H:i:s');
                 $require->status = Requirements::STATUS_TO_BE_DEALT;
                 if (!$require->save()) {
@@ -102,7 +103,8 @@ class RequirementsController extends AdminController
             $res = ['code' => 200, 'message' => '审批完成！'];
         } catch (\Exception $e) {
             $transaction->rollBack();
-            $res = ['code' => 200, 'message' => '审批失败！'];
+            $res = ['code' => 400, 'message' => '审批失败！'];
+            $res = ['code' => 400, 'message' => $e->getMessage()];
         }
         return $res;
     }
@@ -116,7 +118,9 @@ class RequirementsController extends AdminController
         $post = $get = Yii::$app->request->post('condition', '');
         if (!($post['id'] && $post['type'])) return ['code' => 400, 'message' => '参数不能为空！',];
         $require = Requirements::findOne($post['id']);
-        $require->processingPerson = Yii::$app->db->user->identity->username;
+        $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
+        $username = $user->username;
+        $require->processingPerson = $username;
         if ($post['type'] === 'begin') {
             $require->beginDate = date('Y-m-d H:i:s');
             $require->status = Requirements::STATUS_DEALING;
