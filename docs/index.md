@@ -875,9 +875,28 @@
 
 ## 获取列表
 * 接口名称：获取列表
-* 请求方法：get
+* 请求方法：post
 * 请求示例：v1/requirements/search-requirements
-* 请求参数： name 标题  page 页数  pageSize 页数大小
+* 请求参数： flag:name搜索标题，creator搜索创建人  
+           name 搜索的值  
+           type 类型   int  1 BUG，2 新需求，3 任务，4 改进建议
+           priority 紧急程度  int 1 2 3 4 5
+           status 状态  int 1 待审核 2 已驳回 3 待处理 4 处理中 5 处理完成
+           processingPerson 处理人 string 朱洪涛，叶先钱，周鹏许
+```
+{
+    "condition": {
+        "flag": "name",
+        "name":"",
+        "type":1,   
+        "priority":1,   
+        "status":1,
+        "processingPerson":"朱洪涛",
+        "page":1,
+        "pageSize":10
+    }
+}
+```
 
 
 ## 添加

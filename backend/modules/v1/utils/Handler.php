@@ -91,6 +91,22 @@ class Handler
 
 
     /**
+     * 发送邮件
+     * @return string
+     */
+    public static function email($email, $title, $content)
+    {
+        $mail= Yii::$app->mailer->compose();
+        $mail->setTo($email);
+        $mail->setSubject($title);
+        //$mail->setTextBody('zheshisha ');   //发布纯文字文本
+        $mail->setHtmlBody($content);    //发布可以带html标签的文本
+        $mail->send();
+
+    }
+
+
+    /**
      *
      * @param $url
      * @param $requestString
