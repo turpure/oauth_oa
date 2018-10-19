@@ -38,6 +38,7 @@ phpunit.phar
 Would skip repository vendor/kartik-v/yii2-widget-select2
 
 /backend/web/img/
+/backend/web/uploads/
 !/docs/
 /backend/uploads/
 /index.php

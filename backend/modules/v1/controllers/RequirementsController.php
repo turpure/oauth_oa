@@ -145,7 +145,7 @@ class RequirementsController extends AdminController
         $img = isset($post['img']) ? $post['img'] : '';
         $image = Handler::common($img, 'requirement');
         $url = Yii::$app->request->hostInfo;
-        $imageUrl = $url . '/' . $image;
+        $imageUrl = $image?($url . '/' . $image):'';
         try {
             $post['img'] = $imageUrl;
             $require = new Requirements();
@@ -168,7 +168,7 @@ class RequirementsController extends AdminController
         if($require->img != $post['img']){
             $image = Handler::common($img, 'requirement');
             $url = Yii::$app->request->hostInfo;
-            $imageUrl = $url . '/' . $image;
+            $imageUrl = $image?($url . '/' . $image):'';
             $post['img'] = $imageUrl;
         }
         try {

@@ -70,7 +70,7 @@ class Handler
      */
     public static function common($content, $model = 'common')
     {
-        if (preg_match('/^(data:\s*img\/(\w+);base64,)/', $content, $result))
+        if (preg_match('/^(data:\s*(img|image)\/(\w+);base64,)/', $content, $result))
         {
             $type = $result[2];
             $file = time().rand(1000,9999);
