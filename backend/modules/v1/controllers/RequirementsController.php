@@ -82,7 +82,6 @@ class RequirementsController extends AdminController
             ]);
         }
         $query->andFilterWhere(["type" => $type, "priority" => $priority, "status" => $status]);
-        $query->andFilterWhere(["type" => $type, "priority" => $priority, "status" => $status]);
         $query->andFilterWhere(['like', "processingPerson", $get['processingPerson']]);
         if ($get['flag'] == 'name') {
             $query->andFilterWhere(['like', "name", $get['name']]);

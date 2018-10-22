@@ -165,7 +165,7 @@ class AdminController extends ActiveController
                 $auth_actions[] = $row['actionId'];
             }
             if (!in_array($actionId, $auth_actions)) {
-                throw new \yii\web\ForbiddenHttpException("No permiession!");
+                throw new \yii\web\ForbiddenHttpException("No permission!");
             }
         }
     }
