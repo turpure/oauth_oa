@@ -29,6 +29,7 @@ class Store extends ActiveRecord
     {
         return [
             [['store','platform'], 'required'],
+            ['store', 'unique',  'message' => 'This store name has already been used.'],
             [['store','platform'], 'string'],
         ];
     }

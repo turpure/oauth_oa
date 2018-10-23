@@ -873,15 +873,35 @@
 
 # v1/requirement 需求管理
 
-## 获取列表
-* 接口名称：获取列表
+## 我的需求列表
+* 接口名称：我的需求列表
 * 请求方法：get
-* 请求示例：v1/requirements/search-requirements
-* 请求参数： flag:name搜索标题，creator搜索创建人  
+* 请求示例：v1/requirements/index
+* 请求参数： flag:name搜索标题，detail 搜索详情
+           name 标题  
+           type 类型   int  1 BUG，2 新需求，3 任务，4 改进建议
+           priority 紧急程度  int 1 2 3 4 5
+           schedule 状态  int 1 待审核 2 已驳回 3  处理中 4 处理完成
+           
+ ## 审核列表      
+* 接口名称：审核列表
+* 请求方法：get
+* 请求示例：v1/requirements/examine-list
+* 请求参数： flag:name搜索标题，creator搜索创建人,detail 搜索详情
+           name 搜索的内容  
+           type 类型   int  1 BUG，2 新需求，3 任务，4 改进建议
+           priority 紧急程度  int 1 2 3 4 5
+
+
+## 获取列表
+* 接口名称：处理列表
+* 请求方法：get
+* 请求示例：v1/requirements/deal-list
+* 请求参数： flag:name搜索标题，creator搜索创建人 ,detail 搜索详情
            name 搜索的值  
            type 类型   int  1 BUG，2 新需求，3 任务，4 改进建议
            priority 紧急程度  int 1 2 3 4 5
-           status 状态  int 1 待审核 2 已驳回 3 待处理 4 处理中 5 处理完成
+           status 状态  int 1 open 2 In Progress 3 Resovled 4 Reopened 5 Closed
            processingPerson 处理人 string 朱洪涛，叶先钱，周鹏许
 
 
@@ -902,27 +922,15 @@
 * 请求方法：post
 * 请求示例：v1/requirements/examine
 * 请求参数：  
-```
+```json
 {
     "condition": {
+        "type":"pass",
         "ids": [1,2]
     }
 }
 ```
 
-## 处理（更改进度状态）
-* 接口名称：处理
-* 请求方法：post
-* 请求示例：v1/requirements/deal
-* 请求参数： type: begin 处理人接受任务，开始处理任务；  end  处理人处理完任务，结束任务。
-```
-{
-    "condition": {
-        "id": 1,
-        "type": "begin"
-    }
-}
-```
 
 删除和详情restful格式接口可用
 

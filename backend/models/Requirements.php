@@ -25,11 +25,10 @@ use \yii\db\ActiveRecord;
  */
 class Requirements extends ActiveRecord
 {
-    const STATUS_TO_BE_AUDITED  = 1;     //待审核
-    const STATUS_FAILED         = 2;     //已驳回
-    const STATUS_TO_BE_DEALT    = 3;     //待处理(已审核)
-    const STATUS_DEALING        = 4;     //处理中
-    const STATUS_DEALT          = 5;     //处理完成
+    const SCHEDULE_TO_BE_AUDITED  = 1;     //待审核
+    const SCHEDULE_FAILED         = 2;     //已驳回
+    const SCHEDULE_DEALING        = 3;     //处理中
+    const SCHEDULE_DEALT          = 4;     //处理完成
     /**
      * {@inheritdoc}
      */
@@ -75,7 +74,7 @@ class Requirements extends ActiveRecord
     {
         return [
             [['name', 'detail', 'creator', 'auditor', 'result', 'feedBack', 'processingPerson','img'], 'string'],
-            [['priority','type','status'],'integer'],
+            [['priority','type','status', 'schedule'],'integer'],
             [['createdDate', 'beginDate', 'endDate', 'auditDate'], 'safe'],
         ];
     }
@@ -98,6 +97,7 @@ class Requirements extends ActiveRecord
             'endDate' => 'End Date',
             'auditor' => 'Auditor',
             'auditDate' => 'Audit Date',
+            'schedule' => 'Schedule',
             'status' => 'Status',
             'result' => 'Result',
             'feedBack' => 'Feed Back',
