@@ -118,9 +118,12 @@ class RequirementsController extends AdminController
                 $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
                 $username = $user->username;
                 $require = Requirements::findOne($id);
+                if($require->status != Requirements::STATUS_TO_BE_AUDITED){
+                    throw new \Exception('Can not examine the requirement again, please choose again!');
+                }
                 $require->auditor = $username;
                 $require->auditDate = date('Y-m-d H:i:s');
-                $require->status = Requirements::STATUS_TO_BE_DEALT;
+                $require->status = $post['type'] == 'pass' ? Requirements::STATUS_TO_BE_DEALT : Requirements::STATUS_FAILED;
                 if (!$require->save()) {
                     throw new \Exception('failed to examine requirements!');
                 }

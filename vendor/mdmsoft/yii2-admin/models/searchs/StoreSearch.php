@@ -40,8 +40,13 @@ class StoreSearch extends Store
     public function search($params)
     {
         $query = Store::find()->select('auth_store.*,u.username')
-            ->join('INNER JOIN','auth_store_child sc','sc.store_id=auth_store.id')
-            ->join('INNER JOIN','user u','u.id=sc.user_id');
+            ->join('LEFT JOIN','auth_store_child sc','sc.store_id=auth_store.id')
+            ->join('LEFT JOIN','user u','u.id=sc.user_id')
+        ->where([
+            'OR',
+            ['sc.user_id' => null],
+            ['AND',['NOT', ['sc.user_id' => null]],['NOT',['u.username' => null]]]
+        ]);
 
         // add conditions that should always apply here
         //var_dump($query);exit;

@@ -45,7 +45,8 @@ class ApiEbayTool
         $patSql = "SELECT color,colorEn FROM oa_goodscolor ORDER BY id";
         $parList = Yii::$app->py_db->createCommand($patSql)->queryAll();
         $patterns = ArrayHelper::map($parList, 'color', 'colorEn');
-
+        $patternsArr = array_map(function ($v){return '/'.$v.'/';},array_keys($patterns));
+        $replacementsArr = array_values($patterns);
         //获取码号列表
         $sizeSql = "SELECT size FROM oa_goodssize ORDER BY id";
         $sizeList = Yii::$app->py_db->createCommand($sizeSql)->queryAll();
@@ -53,7 +54,8 @@ class ApiEbayTool
 
         $resList = [];
         foreach ($skuList as $k => $value) {
-            $var['property1'] = $patterns[$value['property1']];
+
+            $var['property1'] = preg_replace($patternsArr, $replacementsArr, $value['property1']);
             $value['pro1'] = empty($var['property1']) ? $value['property1'] : $var['property1'];
             $value['pro2'] = empty($size_dict[$value['property2']]) ? $value['property2'] : $size_dict[$value['property2']];
             if ($k > 0 && $value['pro1'] == $resList[$k - 1]['pro1']) {
