@@ -92,7 +92,14 @@ class UpdateUser extends Model
 
 
             // 增改删店铺
+            StoreChild::deleteAll(['store_id'=>$this->store]);
             foreach ($this->store as $sto) {
+                $child = new StoreChild();
+                $child->user_id = $this->user_id;
+                $child->store_id = $sto;
+                $child->save();
+            }
+            /*foreach ($this->store as $sto) {
                 $child = StoreChild::find()->where(['user_id'=>$userid,'store_id'=>$sto])->one();
                 $child = $child?$child:new StoreChild();
                 $child->user_id = $this->user_id;
@@ -101,11 +108,8 @@ class UpdateUser extends Model
             }
             $diff_stores = \array_diff($this->_store, $this->store);
             foreach ($diff_stores as $diff_sto) {
-                $stores = StoreChild::find()->where(['user_id'=>$userid,'store_id'=>$diff_sto])->all();
-                foreach ($stores as $sto) {
-                    $sto->delete();
-                }
-            }
+                $stores = StoreChild::deleteAll(['user_id'=>$userid,'store_id'=>$diff_sto]);
+            }*/
 
 
             // 增改删职位
