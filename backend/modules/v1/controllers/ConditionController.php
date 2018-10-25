@@ -22,7 +22,15 @@ class ConditionController extends AdminController
 
     public function actionDepartment ()
     {
-        return ApiCondition::getUserPosition();
+        return ApiCondition::getUserDepartment();
+    }
+
+    /**
+     * 获取登录用户所在二级登录部门
+     */
+    public  function  actionSecDepartment()
+    {
+        return ApiCondition::getUserSecDepartment();
     }
     /**
      * 获取登录用户的操作平台列表
