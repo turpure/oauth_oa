@@ -208,11 +208,15 @@ class RequirementsController extends AdminController
         $url = Yii::$app->request->hostInfo;
         $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
         $imgArr = isset($post['img']) && $post['img'] ? $post['img'] : [];
-        $image = '';
+        $image = $src = '' ;
+
         if ($imgArr) {
             foreach ($imgArr as $v) {
                 $img = Handler::common($v, 'requirement');
-                $imageList[] = $img ? ($url . '/' . $img) : '';
+                $item = $img ? ($url . '/' . $img) : '';
+                $src = '<img src="' . $item . '">';
+                $post['detail'] =  preg_replace("/<img src=\"\">/", $src, $post['detail'],1);
+                $imageList[] = $item;
             }
             $image = implode(',', $imageList);
         }
@@ -236,15 +240,23 @@ class RequirementsController extends AdminController
     {
         $post = Yii::$app->request->post();
         $url = Yii::$app->request->hostInfo;
-        $imgArr = isset($post['img']) ? $post['img'] : '';
+        $imgArr = isset($post['img']) ? $post['img'] : [];
+        if(is_array($imgArr)) ksort($imgArr);
         $require = Requirements::findOne($id);
         $oldStatus = $require->status;
         if ($require->img != $imgArr) {
-            $image = '';
+            $image = $src = '';
             if ($imgArr) {
                 foreach ($imgArr as $v) {
-                    $img = Handler::common($v, 'requirement');
-                    $imageList[] = $img ? ($url . '/' . $img) : '';
+                    if(strpos($v,"http://") === 0){
+                        $item = $v;
+                    }else{
+                        $img = Handler::common($v, 'requirement');
+                        $item = $img ? ($url . '/' . $img) : '';
+                    }
+                    $src = '<img src="' . $item . '">';
+                    $post['detail'] =  preg_replace("/<img src=\"\">/", $src, $post['detail'],1);
+                    $imageList[] = $item;
                 }
                 $image = implode(',', $imageList);
             }
