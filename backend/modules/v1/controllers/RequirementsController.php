@@ -86,7 +86,6 @@ class RequirementsController extends AdminController
 
         $query = (new Query())->from('requirement');
         $query->andFilterWhere(["type" => $type, "priority" => $priority, "schedule" => Requirements::SCHEDULE_TO_BE_AUDITED]);
-        $query->andFilterWhere(['like', "processingPerson", $get['processingPerson']]);
         if ($get['flag'] == 'name') {
             $query->andFilterWhere(['like', "name", $get['name']]);
         } else if ($get['flag'] == 'detail') {
