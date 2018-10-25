@@ -23,12 +23,11 @@ class ApiCondition
      * 获取用户所在一级部门
      * @return array
      */
-    public static function getUserPosition()
+    public static function getUserDepartment()
     {
         $userId = Yii::$app->user->id;
         $role = User::getRole($userId);
         $depart_id = AuthDepartmentChild::findOne(['user_id' => $userId])['department_id'];//登录用户部门
-        //print_r($role);exit;
         if ($role !== AuthAssignment::ACCOUNT_ADMIN) {
             $depart = AuthDepartmentChild::find()
                 ->select('auth_department.department,auth_department_child.department_id')
@@ -56,6 +55,44 @@ class ApiCondition
                 ->asArray()->all();
         }
         return $department;
+    }
+
+
+    /**
+     * 获取用户所在二级部门
+     * @return array
+     */
+    public static function getUserSecDepartment()
+    {
+        $userId = Yii::$app->user->id;
+        $role = User::getRole($userId);
+        $depart_id = AuthDepartmentChild::findOne(['user_id' => $userId])['department_id'];//登录用户部门
+        if ($role !== AuthAssignment::ACCOUNT_ADMIN) {
+            $depart= AuthDepartmentChild::find()
+                ->select('department,auth_department_child.department_id')
+                ->JoinWith('department')
+                ->where(['user_id' => $userId])
+                ->andWhere(
+                    ['auth_department.parent' => $depart_id])
+                ->asArray()->all();
+            $_arr = [];
+            if ($depart) {
+                foreach ($depart as $k => $v) {
+                    $_arr[$k]['id'] = $v['department']['id'];
+                    $_arr[$k]['department'] = $v['department']['department'];
+                    $_arr[$k]['parent'] = $v['department']['parent'];
+                }
+            }
+            $department = $_arr;
+        } else {
+            $department = AuthDepartment::find()
+                ->select('id,department,parent')
+                ->where(['<>', 'department', '采购部'])
+                ->andWhere(['<>','parent' , 0])
+                ->asArray()->all();
+        }
+        return $department;
+
     }
 
     /**
