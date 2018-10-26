@@ -32,7 +32,7 @@ class AuthDepartment extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['created_at', 'updated_at'], 'integer'],
+            [['id','created_at', 'updated_at'], 'integer'],
             [['department', 'description'], 'string', 'max' => 30],
             [['department_status'], 'string', 'max' => 20],
         ];
