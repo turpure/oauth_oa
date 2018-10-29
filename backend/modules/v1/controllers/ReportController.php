@@ -6,6 +6,7 @@
  */
 
 namespace backend\modules\v1\controllers;
+
 use backend\modules\v1\controllers\AdminController;
 use backend\modules\v1\models\ApiReport;
 use yii\data\ArrayDataProvider;
@@ -14,7 +15,7 @@ use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
 use Yii;
 
-class ReportController extends  AdminController
+class ReportController extends AdminController
 {
     public $modelClass = 'backend\modules\v1\models\ApiReport';
 
@@ -22,19 +23,19 @@ class ReportController extends  AdminController
     {
 
         $behaviors = ArrayHelper::merge([
-                'verbs' => [
-                    'class' => VerbFilter::className(),
-                    'actions' => [
-                        'sales' => ['post','options'],
-                        'develop' => ['post','options'],
-                        'purchase' => ['post','options'],
-                        'Possess' => ['post','options'],
-                        'ebay-sales' => ['post','options'],
-                        'sales-trend' => ['post','options'],
-                        'profit' => ['post','options'],
-                    ],
+            'verbs' => [
+                'class' => VerbFilter::className(),
+                'actions' => [
+                    'sales' => ['post', 'options'],
+                    'develop' => ['post', 'options'],
+                    'purchase' => ['post', 'options'],
+                    'Possess' => ['post', 'options'],
+                    'ebay-sales' => ['post', 'options'],
+                    'sales-trend' => ['post', 'options'],
+                    'profit' => ['post', 'options'],
                 ],
-       ],
+            ],
+        ],
             parent::behaviors()
         );
         return $behaviors;
@@ -46,22 +47,44 @@ class ReportController extends  AdminController
      * @return array
      */
 
-    public function actionSales ()
+    public function actionSales()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
-        $condition= [
+        $cond = $request['condition'];
+        if(!$cond['account'] && $cond['member']){
+            $seller = implode('\',\'', $cond['member']);
+            $suffixSql = "SELECT s.store FROM auth_store_child sc 
+                    LEFT JOIN user u ON sc.user_id=u.id 
+                    LEFT JOIN auth_store s ON s.id=sc.store_id 
+                    WHERE u.status=10 AND u.username IN ('{$seller}')";
+            $suffix = Yii::$app->db->createCommand($suffixSql)->queryAll();
+            $cond['account'] = ArrayHelper::getColumn($suffix,'store');
+        }
+
+        $condition = [
             'dateRangeType' => $cond['dateRangeType'],
-            'plat' => $cond['plat']?:'',
-            'dateFlag' =>$cond['dateType']?:0,
+            'plat' => $cond['plat'] ?: '',
+            'dateFlag' => $cond['dateType'] ?: 0,
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'suffix' => $cond['account']?"'".implode(',',$cond['account'])."'":'',
-            'seller' => $cond['member']?"'".implode(',',$cond['member'])."'":'',
-            'storeName' => $cond['store']?"'".implode(',',$cond['store'])."'":'',
+            'suffix' => $cond['account'] ? "'" . implode(',', $cond['account']) . "'" : '',
+            'seller' => $cond['member'] ? "'" . implode(',', $cond['member']) . "'" : '',
+            'storeName' => $cond['store'] ? "'" . implode(',', $cond['store']) . "'" : '',
         ];
-        $ret = ApiReport::getSalesReport($condition);
-        return $ret;
+        $data = ApiReport::getSalesReport($condition);
+        if (!$data) return $data;
+        $list = [];
+        foreach ($data as $v) {
+            $item = $v;
+            $salerSql = "SELECT u.username FROM auth_store_child sc 
+                    LEFT JOIN user u ON sc.user_id=u.id 
+                    LEFT JOIN auth_store s ON s.id=sc.store_id 
+                    WHERE u.status=10 AND s.store='{$v['suffix']}'";
+            $username = Yii::$app->db->createCommand($salerSql)->queryOne();
+            $item['salesman'] = $username ? $username['username'] : '';
+            $list[] = $item;
+        }
+        return $list;
     }
 
     /**
@@ -70,15 +93,15 @@ class ReportController extends  AdminController
      */
 
 
-    public function actionDevelop ()
+    public function actionDevelop()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
-        $condition= [
-            'dateFlag' =>$cond['dateType'],
+        $cond = $request['condition'];
+        $condition = [
+            'dateFlag' => $cond['dateType'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'seller' => $cond['member']?implode(',',$cond['member']):'',
+            'seller' => $cond['member'] ? implode(',', $cond['member']) : '',
         ];
         $ret = ApiReport::getDevelopReport($condition);
         return $ret;
@@ -88,15 +111,15 @@ class ReportController extends  AdminController
      * @brief Purchase profit report
      * @return array
      */
-    public function actionPurchase ()
+    public function actionPurchase()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
-        $condition= [
-            'dateFlag' =>$cond['dateType'],
+        $cond = $request['condition'];
+        $condition = [
+            'dateFlag' => $cond['dateType'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'purchase' => $cond['member']?implode(',',$cond['member']):'',
+            'purchase' => $cond['member'] ? implode(',', $cond['member']) : '',
         ];
         $ret = ApiReport::getPurchaseReport($condition);
         return $ret;
@@ -107,15 +130,15 @@ class ReportController extends  AdminController
      * @brief Possess profit report
      * @return array
      */
-    public function actionPossess ()
+    public function actionPossess()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
-        $condition= [
-            'dateFlag' =>$cond['dateType'],
+        $cond = $request['condition'];
+        $condition = [
+            'dateFlag' => $cond['dateType'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'possess' => $cond['member']?implode(',',$cond['member']):'',
+            'possess' => $cond['member'] ? implode(',', $cond['member']) : '',
         ];
         $ret = ApiReport::getPossessReport($condition);
         return $ret;
@@ -125,12 +148,12 @@ class ReportController extends  AdminController
      * @brief EbaySales profit report
      * @return array
      */
-    public function actionEbaySales ()
+    public function actionEbaySales()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
-        $condition= [
-            'dateFlag' =>$cond['dateType'],
+        $cond = $request['condition'];
+        $condition = [
+            'dateFlag' => $cond['dateType'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
             'possess' => $cond['member'],
@@ -140,24 +163,23 @@ class ReportController extends  AdminController
     }
 
 
-
     /**
      * @brief SalesTrend profit report
      * @return array
      */
-    public function actionSalesTrend ()
+    public function actionSalesTrend()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
-        $condition= [
-            'dateFlag' =>$cond['dateType'],
+        $cond = $request['condition'];
+        $condition = [
+            'dateFlag' => $cond['dateType'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'flag' => $cond['flag']?:0,
-            'salesman' => $cond['member']?implode(',',$cond['member']):'',
-            'chanel' => $cond['plat']?implode(',', $cond['plat']):'',
-            'suffix' => $cond['account']?implode(',',$cond['account']):'',
-            'dname' => $cond['department']?implode(',',$cond['department']):'',
+            'flag' => $cond['flag'] ?: 0,
+            'salesman' => $cond['member'] ? implode(',', $cond['member']) : '',
+            'chanel' => $cond['plat'] ? implode(',', $cond['plat']) : '',
+            'suffix' => $cond['account'] ? implode(',', $cond['account']) : '',
+            'dname' => $cond['department'] ? implode(',', $cond['department']) : '',
         ];
         $ret = ApiReport::getSalesTrendReport($condition);
         return $ret;
@@ -168,24 +190,24 @@ class ReportController extends  AdminController
      * @brief profit report
      * @return array
      */
-    public function actionAccount ()
+    public function actionAccount()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
-        $condition= [
-            'dateFlag' =>$cond['dateType'],
+        $cond = $request['condition'];
+        $condition = [
+            'dateFlag' => $cond['dateType'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
             'sku' => $cond['sku'],
-            'salesman' => $cond['member']?"'".implode(',',$cond['member'])."'":'',
+            'salesman' => $cond['member'] ? "'" . implode(',', $cond['member']) . "'" : '',
             'chanel' => $cond['plat'],
-            'suffix' => $cond['account']?("'".implode(',',$cond['account'])."'"):'',
-            'storeName' => $cond['store']?("'".implode(',',$cond['store'])."'"):'',
+            'suffix' => $cond['account'] ? ("'" . implode(',', $cond['account']) . "'") : '',
+            'storeName' => $cond['store'] ? ("'" . implode(',', $cond['store']) . "'") : '',
             'start' => $cond['start'],
             'limit' => $cond['limit'],
         ];
         $ret = ApiReport::getProfitReport($condition);
-        $num = $ret ? $ret[0]['totalNum']:0;
+        $num = $ret ? $ret[0]['totalNum'] : 0;
         return [
             'items' => $ret,
             'totalCount' => $num,
@@ -203,10 +225,11 @@ class ReportController extends  AdminController
             'dateFlag' => $cond['dateType'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'member' => $cond['member']?implode(',',$cond['member']):''
+            'member' => $cond['member'] ? implode(',', $cond['member']) : ''
         ];
         //print_r($condition);exit;
         return ApiReport::getIntroduceReport($condition);
     }
+
 
 }

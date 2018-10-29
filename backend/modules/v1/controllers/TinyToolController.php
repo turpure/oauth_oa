@@ -121,6 +121,7 @@ class TinyToolController extends AdminController
         ];
 
         $data = [
+            'num' => 0,
             'detail' => [],
             'rate' => [],
             'price' => [],
@@ -133,6 +134,8 @@ class TinyToolController extends AdminController
 
         $post['num'] = $post['num'] ? $post['num'] : 1;
         $post['rate'] = $post['rate'] ? $post['rate'] : 0;
+
+        $data['num'] = $post['num'];
 
         $res['costprice'] = $res['costprice'] * $post['num'];
         $res['Weight'] = $res['Weight'] * $post['num'];
@@ -178,6 +181,7 @@ class TinyToolController extends AdminController
             'rate' => $cond['rate'],
         ];
         $data = [
+            'num' => 0,
             'detail' => [],
             'rate' => [],
             'price' => [],
@@ -189,6 +193,8 @@ class TinyToolController extends AdminController
 
         $post['num'] = $post['num'] ? $post['num'] : 1;
         $post['rate'] = $post['rate'] ? $post['rate'] : 0;
+
+        $data['num'] = $post['num'];
 
         $res['price'] = $res['price'] * $post['num'];
         $res['weight'] = $res['weight'] * $post['num'];
@@ -232,6 +238,7 @@ class TinyToolController extends AdminController
             'rate' => $cond['rate'],
         ];
         $data = [
+            'num' => 0,
             'detail' => [],
             'rate' => [],
             'price' => [],
@@ -244,6 +251,8 @@ class TinyToolController extends AdminController
 
         $post['num'] = $post['num'] ? $post['num'] : 1;
         $post['rate'] = $post['rate'] ? $post['rate'] : 0;
+
+        $data['num'] = $post['num'];
 
         $res['price'] = $res['price'] * $post['num'];
         $res['weight'] = $res['weight'] * $post['num'];
