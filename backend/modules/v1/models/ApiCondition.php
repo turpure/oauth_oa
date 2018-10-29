@@ -16,6 +16,7 @@ use common\models\User;
 use Yii;
 use yii\db\Query;
 use yii\helpers\ArrayHelper;
+use backend\modules\v1\utils\Helper;
 
 class ApiCondition
 {
@@ -25,36 +26,23 @@ class ApiCondition
      */
     public static function getUserDepartment()
     {
-        $userId = Yii::$app->user->id;
-        $role = User::getRole($userId);
-        $depart_id = AuthDepartmentChild::findOne(['user_id' => $userId])['department_id'];//登录用户部门
-        if ($role !== AuthAssignment::ACCOUNT_ADMIN) {
-            $depart = AuthDepartmentChild::find()
-                ->select('auth_department.department,auth_department_child.department_id')
-                ->JoinWith('department')
-                ->where(['user_id' => $userId])
-                ->andWhere([
-                    'or',
-                    ['auth_department.id' => $depart_id],
-                    ['auth_department.parent' => $depart_id],
-                ])
-                ->asArray()->all();
-            $_arr = [];
-            if ($depart) {
-                foreach ($depart as $k => $v) {
-                    $_arr[$k]['id'] = $v['department']['id'];
-                    $_arr[$k]['department'] = $v['department']['department'];
-                }
+        $userInfo = self::getUsers();
+        $department = [];
+        foreach ($userInfo as $key=>$value) {
+            $row = [];
+            if(empty($value['parent_id']) && empty($value['parent_department'])) {
+                $row['id'] = $value['department_id'];
+                $row['department'] = $value['department'];
+                $department[] = $row;
             }
-            $department = $_arr;
-        } else {
-            $department = AuthDepartment::find()
-                ->select('id,department')
-                ->where(['<>', 'department', '采购部'])
-                ->andWhere(['parent' => 0])
-                ->asArray()->all();
+            else {
+                $row['id'] = $value['parent_id'];
+                $row['department'] = $value['parent_department'];
+                $department[] = $row;
+            }
         }
-        return $department;
+        $ret = Helper::arrayUnique($department);
+        return Helper::arraySort($ret,'id',SORT_ASC);
     }
 
 
@@ -64,35 +52,19 @@ class ApiCondition
      */
     public static function getUserSecDepartment()
     {
-        $userId = Yii::$app->user->id;
-        $role = User::getRole($userId);
-        $depart_id = AuthDepartmentChild::findOne(['user_id' => $userId])['department_id'];//登录用户部门
-        if ($role !== AuthAssignment::ACCOUNT_ADMIN) {
-            $depart= AuthDepartmentChild::find()
-                ->select('department,auth_department_child.department_id')
-                ->JoinWith('department')
-                ->where(['user_id' => $userId])
-                ->andWhere(
-                    ['auth_department.parent' => $depart_id])
-                ->asArray()->all();
-            $_arr = [];
-            if ($depart) {
-                foreach ($depart as $k => $v) {
-                    $_arr[$k]['id'] = $v['department']['id'];
-                    $_arr[$k]['department'] = $v['department']['department'];
-                    $_arr[$k]['parent'] = $v['department']['parent'];
-                }
+        $userInfo = self::getUsers();
+        $department = [];
+        foreach ($userInfo as $key=>$value) {
+            $row = [];
+            if(!empty($value['parent_id']) || !empty($value['parent_department'])) {
+                $row['id'] = $value['department_id'];
+                $row['department'] = $value['department'];
+                $row['parent'] = $value['parent_id'];
+                $department[] = $row;
             }
-            $department = $_arr;
-        } else {
-            $department = AuthDepartment::find()
-                ->select('id,department,parent')
-                ->where(['<>', 'department', '采购部'])
-                ->andWhere(['<>','parent' , 0])
-                ->asArray()->all();
         }
-        return $department;
-
+        $ret = Helper::arrayUnique($department);
+        return Helper::arraySort($ret,'id',SORT_ASC);
     }
 
     /**
@@ -184,7 +156,7 @@ class ApiCondition
 
 
     /**
-     * 获取登录用户管辖的用户列表（可能重复，用户拥有多个职位）
+     * 获取用户资源(权限资源控制接口)
      * @return array
      */
     public static function getUsers()
@@ -193,7 +165,7 @@ class ApiCondition
         $role = User::getRole($userId);//登录用户角色
         $position = AuthPosition::getPosition($userId);//登录用户职位
         if ($role === AuthAssignment::ACCOUNT_ADMIN) {
-            $users = (new Query())->select("u.id,username,p.position,d.department,pd.department as parent_depart")
+            $users = (new Query())->select("u.id,username,p.position,d.department as department,d.id as department_id,pd.department as parent_department,pd.id as parent_id")
                 ->from('`user` as u ')
                 ->innerJoin('auth_position_child pc','pc.user_id=u.id')
                 ->innerJoin('auth_position p','p.id=pc.position_id')
@@ -208,7 +180,7 @@ class ApiCondition
         ) {
             //登录用户部门
             $depart_id = AuthDepartmentChild::findOne(['user_id' => $userId])['department_id'];
-            $users = (new Query())->select('u.id,username,p.position,d.department,pd.department as parent_depart')
+            $users = (new Query())->select('u.id,username,p.position,d.department as department,d.id as department_id,pd.department as parent_department,pd.id as parent_id')
                 ->from('user u')
                 ->innerJoin('auth_position_child pc','pc.user_id=u.id')
                 ->innerJoin('auth_department_child dc','dc.user_id=u.id')
@@ -218,7 +190,7 @@ class ApiCondition
                 ->andWhere(['u.status' => 10])
                 ->andWhere(['or',['d.id' => $depart_id],['d.parent' => $depart_id]])->all();
         } else {
-            $users = (new Query())->select('u.id,username,p.position,d.department,pd.department as parent_depart')
+            $users = (new Query())->select('u.id,username,p.position,d.department as department,d.id as department_id,pd.department as parent_department,pd.id as parent_id')
                 ->from('user u')
                 ->innerJoin('auth_position_child pc','pc.user_id=u.id')
                 ->innerJoin('auth_position p','p.id=pc.position_id')
@@ -306,35 +278,5 @@ class ApiCondition
             return [$why];
         }
     }
-
-
-    /**
-     * 获取登录用户管辖的用户列表
-     * @return array
-     */
-    /*public static function getUsers()
-    {
-        $userId = Yii::$app->user->id;
-        $role = User::getRole($userId);//登录用户角色
-        $position = AuthPosition::getPosition($userId);//登录用户职位
-        $depart_id = AuthDepartmentChild::findOne(['user_id' => $userId])['department_id'];//登录用户部门
-        if ($role == AuthAssignment::ACCOUNT_ADMIN) {
-            $users = User::find()->select('id,username')->asArray()->all();
-        } elseif (in_array(AuthPosition::JOB_MANAGER, $position) ||
-            in_array(AuthPosition::JOB_CHARGE, $position)
-        ) {
-            $users = (new Query())->select('u.id,username')
-                ->from('user u')
-                ->leftJoin('auth_department_child dc','dc.user_id=u.id')
-                ->leftJoin('auth_department d','d.id=dc.department_id')
-                ->andWhere(['or',['d.id' => $depart_id],['parent' => $depart_id]])
-                ->all();
-        } else {
-            $users = User::find()->select('id,username')
-                ->where(['id' => $userId])->asArray()->all();
-        }
-        return $users;
-    }*/
-
 
 }

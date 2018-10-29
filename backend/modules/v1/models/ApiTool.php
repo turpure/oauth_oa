@@ -308,7 +308,7 @@ class ApiTool
 
         header('pragma:public');
 
-        //header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Origin: *');
         //header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         //header('Content-Disposition: attachment; filename="'.$fileName.'.xlsx"');
 
