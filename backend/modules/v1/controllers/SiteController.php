@@ -108,18 +108,16 @@ class SiteController extends AdminController
                $ret[] = ['label'=>'所有部门','name'=>'depart'];
             }
         }
-        else {
-            $devRet = $db->createCommand($salesCheck,[':position'=>'开发'])->queryOne();
-            if(!empty($devRet)) {
-                $ret[] = ['label'=>'所有开发','name'=>'developer'];
-            }
-            else {
-                $ret[] = ['label'=>'上海销售','name'=>'shanghai'];
-                $ret[] = ['label'=>'郑州销售','name'=>'zhengzhou'];
-                $ret[] = ['label'=>'所有部门','name'=>'depart'];
-                $ret[] = ['label'=>'所有开发','name'=>'developer'];
-            }
+        $devRet = $db->createCommand($salesCheck,[':position'=>'开发'])->queryOne();
+        if(!empty($devRet)) {
+            $ret[] = ['label'=>'所有开发','name'=>'developer'];
         }
+        else {
+            $ret[] = ['label'=>'上海销售','name'=>'shanghai'];
+            $ret[] = ['label'=>'郑州销售','name'=>'zhengzhou'];
+            $ret[] = ['label'=>'所有部门','name'=>'depart'];
+            $ret[] = ['label'=>'所有开发','name'=>'developer'];
+            }
         return Helper::arrayUnique($ret);
     }
 }
