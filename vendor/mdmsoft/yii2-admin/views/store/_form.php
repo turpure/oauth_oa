@@ -16,6 +16,7 @@ use mdm\admin\AutocompleteAsset;
         <div class="col-sm-6">
             <?= $form->field($model, 'store')->textInput(['maxlength' => 128]) ?>
             <?= $form->field($model, 'platform')->textInput(['id' => 'platform']) ?>
+            <?php if(!$model->isNewRecord) echo $form->field($model, 'used', [])->checkbox() ?>
 
         </div>
     </div>

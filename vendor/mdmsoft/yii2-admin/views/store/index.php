@@ -26,10 +26,16 @@ $this->params['breadcrumbs'][] = $this->title;
             ['class' => 'yii\grid\SerialColumn'],
             'store',
             'platform',
+            [
+                'attribute' => 'used',
+                'value' => function ($modle) {
+                    return $modle->used ? '停用' : '启用';
+                }
+            ],
             'username',
             [
                 'class' => 'yii\grid\ActionColumn',
-                'template' => Helper::filterActionColumn(['view','update', 'delete']),
+                'template' => Helper::filterActionColumn(['view', 'update', 'delete']),
 
             ],
         ]

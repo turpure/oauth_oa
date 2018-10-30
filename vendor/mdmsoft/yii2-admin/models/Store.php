@@ -31,6 +31,7 @@ class Store extends ActiveRecord
             [['store','platform'], 'required'],
             ['store', 'unique',  'message' => 'This store name has already been used.'],
             [['store','platform'], 'string'],
+            [['used'], 'integer'],
         ];
     }
 
@@ -43,6 +44,7 @@ class Store extends ActiveRecord
             'id' => 'ID',
             'store' => '店铺名称',
             'platform' => '平台',
+            'used' => '停用',
             'username' => '归属人',
             ];
     }
