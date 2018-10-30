@@ -8,6 +8,7 @@
 
 namespace backend\modules\v1\controllers;
 
+use backend\modules\v1\utils\Helper;
 
 class SiteController extends AdminController
 {
@@ -95,32 +96,30 @@ class SiteController extends AdminController
         position=:position
         AND adc.user_id = $userid";
         $db = \Yii::$app->db;
+        $ret = [];
         $salesRet = $db->createCommand($salesCheck,[':position'=>'销售'])->queryOne();
         if(!empty($salesRet)) {
             if(strpos($salesRet['department'],'郑州分部') !==false) {
-                return [
-                    ['label'=>'郑州销售','name'=>'zhengzhou'],
-                    ['label'=>'所有部门','name'=>'depart'],
-                ];
+                $ret[] = ['label'=>'郑州销售','name'=>'zhengzhou'];
+                $ret[] = ['label'=>'所有部门','name'=>'depart'];
             }
-            return [
-                ['label'=>'上海销售','name'=>'shanghai'],
-                ['label'=>'所有部门','name'=>'depart'],
-                ];
+            else {
+               $ret[] = ['label'=>'上海销售','name'=>'shanghai'];
+               $ret[] = ['label'=>'所有部门','name'=>'depart'];
+            }
         }
         else {
             $devRet = $db->createCommand($salesCheck,[':position'=>'开发'])->queryOne();
             if(!empty($devRet)) {
-                return [['label'=>'所有开发','name'=>'developer']];
+                $ret[] = ['label'=>'所有开发','name'=>'developer'];
             }
-            return [
-                ['label'=>'上海销售','name'=>'shanghai'],
-                ['label'=>'郑州销售','name'=>'zhengzhou'],
-                ['label'=>'所有部门','name'=>'depart'],
-                ['label'=>'所有开发','name'=>'developer']
-            ];
+            else {
+                $ret[] = ['label'=>'上海销售','name'=>'shanghai'];
+                $ret[] = ['label'=>'郑州销售','name'=>'zhengzhou'];
+                $ret[] = ['label'=>'所有部门','name'=>'depart'];
+                $ret[] = ['label'=>'所有开发','name'=>'developer'];
+            }
         }
-
+        return Helper::arrayUnique($ret);
     }
-
 }
