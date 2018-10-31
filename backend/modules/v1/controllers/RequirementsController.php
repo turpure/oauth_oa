@@ -10,6 +10,7 @@ namespace backend\modules\v1\controllers;
 use backend\models\AuthAssignment;
 use backend\models\Requirements;
 use backend\modules\v1\utils\Handler;
+use backend\modules\v1\utils\MailEvent;
 use common\models\User;
 use mdm\admin\models\Store;
 use yii\helpers\ArrayHelper;
@@ -22,6 +23,8 @@ class RequirementsController extends AdminController
     public $modelClass = 'backend\models\Requirements';
 
     public $isRest = true;
+
+    const SEND_MAIL = 'send_mail';
 
     public $serializer = [
         'class' => 'yii\rest\Serializer',
@@ -36,9 +39,15 @@ class RequirementsController extends AdminController
         $actions = parent::actions();
         // 注销系统自带的实现方法
         unset($actions['index'], $actions['create'], $actions['update']);
-
         return $actions;
     }
+    public function init ()
+    {
+        parent::init();
+        // 绑定邮件类，当事件触发的时候，调用我们刚刚定义的邮件类Mail
+        $this->on(self::SEND_MAIL, ['backend\modules\v1\utils\Handler', 'email']);
+    }
+
 
     /**
      * 我的需求列表
@@ -171,11 +180,14 @@ class RequirementsController extends AdminController
                 //发邮件给创建人
                 $c_user = User::findOne(['username' => $require->creator]);
                 if ($c_user && $c_user->email) {
-                    $content = '<div>' .
+                    $event = new MailEvent();
+                    $event->email = $c_user->email;
+                    $event->subject = 'UR管理中心需求进度变更';
+                    $event->content = '<div>' .
                         $require->creator . '<p style=" text-indent:2em;">你好:</p>
                         <p style="text-indent:2em;">您的需求建议<span style="font-size:150%;color: blue;">' . $require->name . '</span>已通过审核!
                         详情请查看:<a href="http://58.246.226.254:9099/?#/v1/requirements/index">http://58.246.226.254:9099</a></p></div>';
-                    Handler::email($c_user->email, 'UR管理中心需求进度变更', $content);
+                    $this->trigger(self::SEND_MAIL,$event);
                 }
                 //发邮件给处理人
                 $arr = explode(',', $require->processingPerson);
@@ -183,11 +195,14 @@ class RequirementsController extends AdminController
                     foreach ($arr as $v){
                         $d_user = User::findOne(['username' => $v]);
                         if ($d_user && $d_user->email) {
-                            $content = '<div>' .
-                                $require->processingPerson . '<p style=" text-indent:2em;">你好:</p>
-                        <p style="text-indent:2em;">您有新的需求建议：<span style="font-size:150%;color: blue;">' . $require->name . '</span>，请及时处理!
-                        详情请查看:<a href="http://58.246.226.254:9099/?#/v1/requirements/index">http://58.246.226.254:9099</a></p></div>';
-                            Handler::email($d_user->email, 'UR管理中心需求进度变更', $content);
+                            $event = new MailEvent();
+                            $event->email = $c_user->email;
+                            $event->subject = 'UR管理中心需求进度变更';
+                            $event->content = '<div>' .
+                                $v . '<p style=" text-indent:2em;">你好:</p>
+                                <p style="text-indent:2em;">您有新的需求建议：<span style="font-size:150%;color: blue;">' . $require->name . '</span>，请及时处理!
+                                详情请查看:<a href="http://58.246.226.254:9099/?#/v1/requirements/index">http://58.246.226.254:9099</a></p></div>';
+                            $this->trigger(self::SEND_MAIL,$event);
                         }
                     }
                 }
@@ -269,20 +284,35 @@ class RequirementsController extends AdminController
         }
         try {
             $require->attributes = $post;
-            if ($require->status == 5 && $oldStatus != $require->status) {
+            if ($require->status == 5 && $oldStatus != 5 && $require->schedule == Requirements::SCHEDULE_DEALING) {
                 $require->schedule = Requirements::SCHEDULE_DEALT;
                 $require->endDate = date('Y-m-d H:i:s');
             }
+            if ($require->status != 5 && $oldStatus == 5 && $require->schedule == Requirements::SCHEDULE_DEALT) {
+                $require->schedule = Requirements::SCHEDULE_DEALING;
+            }
             $require->save();
+            //print_r($oldStatus);
+            //print_r($require->schedule);
+            //print_r($require->status);exit;
             //发邮件给创建人
-            if ($oldStatus != $require->status && $require->status == Requirements::SCHEDULE_DEALT) {
-                $content = '<div>' .
-                    $require->creator . '<p style=" text-indent:2em;">你好:</p>
+            //条件 1.schedule=3 status从[1,2,3,4]改成5 此时任务处理结束，需要把schedule 改成4
+            //条件 2.schedule=4 status从5改成[1,2,3,4] 此时任务返工处理，需要把schedule 改成3
+            if ($require->status != 5 && $oldStatus == 5 && $require->schedule == Requirements::SCHEDULE_DEALING ||
+                $require->status == 5 && $oldStatus != 5 && $require->schedule == Requirements::SCHEDULE_DEALT
+            ) {
+                $c_user = User::findOne(['username' => $require->creator]);
+               // print_r($c_user);exit;
+                if ($c_user && $c_user->email) {
+                    $event = new MailEvent();
+                    $event->email = $c_user->email;
+                    $event->subject = 'UR管理中心需求进度变更';
+                    $event->content = '<div>' .
+                        $require->creator . '<p style=" text-indent:2em;">你好:</p>
                         <p style="text-indent:2em;">您的需求建议已被<span style="font-size:150%;color: blue;">' . $require->processingPerson . '</span>处理完成!
                         详情请查看:<a href="http://58.246.226.254:9099/?#/v1/requirements/index">http://58.246.226.254:9099</a></p></div>';
-                $c_user = User::findOne(['username' => $require->creator]);
-                if ($c_user && $c_user->email) {
-                    Handler::email($c_user->email, 'UR管理中心需求进度变更', $content);
+
+                    $this->trigger(self::SEND_MAIL,$event);
                 }
             }
             return $require;

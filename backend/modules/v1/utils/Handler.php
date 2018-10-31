@@ -94,13 +94,22 @@ class Handler
      * 发送邮件
      * @return string
      */
-    public static function email($email, $title, $content)
+    /*public static function email($email, $title, $content)
     {
         $mail= Yii::$app->mailer->compose();
         $mail->setTo($email);
         $mail->setSubject($title);
         //$mail->setTextBody('zheshisha ');   //发布纯文字文本
         $mail->setHtmlBody($content);    //发布可以带html标签的文本
+        $mail->send();
+
+    }*/public static function email($event)
+    {
+        $mail= Yii::$app->mailer->compose();
+        $mail->setTo($event->email);
+        $mail->setSubject($event->subject);
+        //$mail->setTextBody('zheshisha ');   //发布纯文字文本
+        $mail->setHtmlBody($event->content);    //发布可以带html标签的文本
         $mail->send();
 
     }
