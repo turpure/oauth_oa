@@ -178,13 +178,18 @@ class RequirementsController extends AdminController
                     Handler::email($c_user->email, 'UR管理中心需求进度变更', $content);
                 }
                 //发邮件给处理人
-                $d_user = User::findOne(['username' => $require->processingPerson]);
-                if ($d_user && $d_user->email) {
-                    $content = '<div>' .
-                        $require->processingPerson . '<p style=" text-indent:2em;">你好:</p>
+                $arr = explode(',', $require->processingPerson);
+                if($arr){
+                    foreach ($arr as $v){
+                        $d_user = User::findOne(['username' => $v]);
+                        if ($d_user && $d_user->email) {
+                            $content = '<div>' .
+                                $require->processingPerson . '<p style=" text-indent:2em;">你好:</p>
                         <p style="text-indent:2em;">您有新的需求建议：<span style="font-size:150%;color: blue;">' . $require->name . '</span>，请及时处理!
                         详情请查看:<a href="http://58.246.226.254:9099/?#/v1/requirements/index">http://58.246.226.254:9099</a></p></div>';
-                    Handler::email($d_user->email, 'UR管理中心需求进度变更', $content);
+                            Handler::email($d_user->email, 'UR管理中心需求进度变更', $content);
+                        }
+                    }
                 }
             }
             $transaction->commit();
