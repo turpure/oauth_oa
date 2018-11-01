@@ -313,7 +313,7 @@ class ApiTool
         //header('Content-Disposition: attachment; filename="'.$fileName.'.xlsx"');
 
         header('Content-Type: application/vnd.ms-excel');
-        header('Content-Disposition: attachment;filename="'.$fileName.'"');
+        header('Content-Disposition: attachment;filename="'.$fileName.'.xls"');
         header('Cache-Control: max-age=0');
 
         //attachment新窗口打印inline本窗口打印

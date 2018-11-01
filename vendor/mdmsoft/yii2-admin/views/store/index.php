@@ -16,6 +16,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <p>
         <?= Html::a(Yii::t('rbac-admin', '新增店铺'), ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a(Yii::t('rbac-admin', '导出'), ['export'], ['class' => 'export btn btn-primary']) ?>
     </p>
 
     <?=
@@ -38,7 +39,19 @@ $this->params['breadcrumbs'][] = $this->title;
                 'template' => Helper::filterActionColumn(['view', 'update', 'delete']),
 
             ],
-        ]
+        ],
+        'pager' => [
+            'class' => \common\widgets\MLinkPager::className(),
+            'firstPageLabel' => '首页',
+            'prevPageLabel' => '<',
+            'nextPageLabel' => '>',
+            'lastPageLabel' => '尾页',
+            'goPageLabel' => true,
+            'goPageSizeArr' => ['10' => 10, '20' => 20, '50' => 50, '100' => 100, '500' => 500, '1000' => 1000, '100000' => '全部'],
+            'totalPageLable' => '共x页',
+            'goButtonLable' => '确定',
+            'maxButtonCount' => 10
+        ],
     ]);
     ?>
 </div>

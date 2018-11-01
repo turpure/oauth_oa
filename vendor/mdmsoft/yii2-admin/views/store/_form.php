@@ -4,10 +4,12 @@ use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 use yii\helpers\Json;
 use mdm\admin\AutocompleteAsset;
-
+use \mdm\admin\models\Position;
 /* @var $this yii\web\View */
 /* @var $model mdm\admin\models\Menu */
 /* @var $form yii\widgets\ActiveForm */
+
+
 ?>
 
 <div class="department-form">
@@ -16,6 +18,7 @@ use mdm\admin\AutocompleteAsset;
         <div class="col-sm-6">
             <?= $form->field($model, 'store')->textInput(['maxlength' => 128]) ?>
             <?= $form->field($model, 'platform')->textInput(['id' => 'platform']) ?>
+            <?= $form->field($model, 'username')->dropDownList(Position::getPositionUser('销售'),['prompt' => '请选择归属人']) ?>
             <?php if(!$model->isNewRecord) echo $form->field($model, 'used', [])->checkbox() ?>
 
         </div>

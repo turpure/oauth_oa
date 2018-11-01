@@ -48,4 +48,5 @@ class Store extends ActiveRecord
             'username' => '归属人',
             ];
     }
+
 }
