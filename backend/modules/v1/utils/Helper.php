@@ -56,4 +56,20 @@ class Helper
         array_multisort($keysValue, $sort, $array);
         return $array;
     }
+
+    /**
+     * @brief 数组过滤
+     * @param $array
+     * @return array
+     */
+    public static function arrayFilter($array)
+    {
+        $keysValue = [];
+        foreach ($array as $k => $v) {
+            if($v !== '') {
+                $keysValue[$k] = $v;
+            }
+        }
+        return $keysValue;
+    }
 }

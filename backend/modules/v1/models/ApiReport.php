@@ -167,18 +167,15 @@ class ApiReport
      */
     public static function getSalesTrendReport($condition)
     {
-        $sql = 'EXEC z_p_saletrendy @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,'.
-        '@Flag=:flag,@Salesman=:salesman,@chanel=:chanel,@suffix=:suffix,@Dname=:dname';
-        $con = Yii::$app->py_db;
+        $sql = 'call report_salesTrend(:store,:queryType,:showType,:dateFlag,:beginDate,:endDate)';
+        $con = Yii::$app->db;
         $params = [
+            ':store' => $condition['store'],
+            ':queryType' => $condition['queryType'],
+            ':showType' => $condition['showType'],
             ':dateFlag' => $condition['dateFlag'],
             ':beginDate' => $condition['beginDate'],
-            ':endDate' => $condition['endDate'],
-            ':flag' => $condition['flag'],
-            ':salesman' => $condition['salesman'],
-            ':chanel' => $condition['chanel'],
-            ':suffix' => $condition['suffix'],
-            ':dname' => $condition['dname'],
+            ':endDate' => $condition['endDate']
         ];
         try {
             return $con->createCommand($sql)->bindValues($params)->queryAll();

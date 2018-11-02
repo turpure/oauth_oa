@@ -7,6 +7,7 @@
 namespace backend\modules\v1\utils;
 use backend\modules\v1\models\ApiSettings;
 use Yii;
+use yii\helpers\ArrayHelper;
 
 class Handler
 {
@@ -167,4 +168,50 @@ class Handler
 
     }
 
+    /**
+     * @brief 多种请求参数化成单一参数
+     * @param $queryParam
+     * @return array
+     * @throws \Exception
+     */
+    public static function paramsFilter($queryParam)
+    {
+        $sql = 'call oauth_userInfo';
+        $db = Yii::$app->db;
+        $userInfo = $db->createCommand($sql)->queryAll();
+        //归化查询条件
+        $ret = $userInfo;
+        foreach ($queryParam as $type => $value) {
+            if (!empty($value)) {
+                $filter = [];
+                foreach ($value as $constrain) {
+                    foreach ($ret as $row) {
+                        if (strtolower($row[$type]) === strtolower($constrain)) {
+                            $filter[] = $row;
+                        }
+                    }
+                }
+            }
+            else {
+                $filter = $ret;
+            }
+            $ret = $filter;
+        }
+
+        // 归化查询类型
+        $unEmptyCondition = array_filter($queryParam);
+        $keys = array_keys($unEmptyCondition);
+        $queryType = array_pop($keys)?:'';
+        if ($queryType === 'platform') {
+           if(!empty($queryParam['department'])) {
+               $queryType = 'department';
+           }
+           if(!empty($queryParam['secDepartment'])) {
+               $queryType = 'secDepartment';
+           }
+        }
+        $store = ArrayHelper::getColumn($ret,'store');
+
+        return ['queryType'=>$queryType,'store' => $store]  ;
+    }
 }
