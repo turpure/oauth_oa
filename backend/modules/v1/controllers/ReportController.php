@@ -13,6 +13,7 @@ use yii\data\SqlDataProvider;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
 use Yii;
+use backend\modules\v1\utils\Handler;
 
 class ReportController extends  AdminController
 {
@@ -144,26 +145,32 @@ class ReportController extends  AdminController
     /**
      * @brief SalesTrend profit report
      * @return array
+     * @throws  \Exception
      */
     public function actionSalesTrend ()
     {
         $request = Yii::$app->request->post();
         $cond= $request['condition'];
-        $condition= [
-            'dateFlag' =>$cond['dateType'],
-            'beginDate' => $cond['dateRange'][0],
-            'endDate' => $cond['dateRange'][1],
-            'flag' => $cond['flag']?:0,
-            'salesman' => $cond['member']?implode(',',$cond['member']):'',
-            'chanel' => $cond['plat']?implode(',', $cond['plat']):'',
-            'suffix' => $cond['account']?implode(',',$cond['account']):'',
-            'dname' => $cond['department']?implode(',',$cond['department']):'',
+        $queryParams = [
+            'department' => $cond['department'],
+            'secDepartment' => $cond['secDepartment'],
+            'platform' => $cond['plat'],
+            'username' => $cond['member'],
+            'store' => $cond['account']
         ];
+        $params = Handler::paramsFilter($queryParams);
+        $condition= [
+            'store' => $params['store']?implode(',',$params['store']):'',
+            'queryType' => $params['queryType'],
+            'dateFlag' =>$cond['dateType'],
+            'showType' => $cond['flag']?:0,
+            'beginDate' => $cond['dateRange'][0],
+            'endDate' => $cond['dateRange'][1]
+        ];
+
         $ret = ApiReport::getSalesTrendReport($condition);
         return $ret;
     }
-
-
     /**
      * @brief profit report
      * @return array

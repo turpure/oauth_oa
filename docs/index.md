@@ -217,6 +217,7 @@
 {
 	"condition": {
 		"department": ["运营一部","运营二部","运营三部"],
+		"secDepartment":[],
 		"plat": [],
 		"member": [],
 		"store": [],
