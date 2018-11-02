@@ -144,16 +144,49 @@ class Requirements extends ActiveRecord
             }
         }
 
+        //处理完成且是多个处理人时，发邮件给处理人
+        if ($changedAttributes['schedule'] == self::SCHEDULE_DEALT) {
+            $arr = explode(',', $this->processingPerson);
+            if($arr && count($arr) > 1){
+                foreach ($arr as $v){
+                    $d_user = User::findOne(['username' => $v]);
+                    if ($d_user && $d_user->email) {
+                        $c_event = new MailEvent();
+                        $c_event->email = $d_user->email;
+                        $c_event->subject = 'UR管理中心需求进度变更';
+                        $c_event->content = '<div>' .
+                            $v . '<p style=" text-indent:2em;">你好:</p>
+                                <p style="text-indent:2em;">您的需求建议：<span style="font-size:150%;color: blue;">' . $this->name . '</span>，已经处理完成!
+                                详情请查看:<a href="http://58.246.226.254:9099/?#/v1/requirements/index">http://58.246.226.254:9099</a></p></div>';
+                        $this->trigger(self::EVENT_SEND_EMAIL,$c_event);
+                    }
+                }
+            }
+        }
+
+
         //发邮件给创建人
         $c_user = User::findOne(['username' => $this->creator]);
         if ($c_user && $c_user->email) {
             $event = new MailEvent();
             $event->email = $c_user->email;
             $event->subject = 'UR管理中心需求进度变更';
-            $event->content = '<div>' .
-                $this->creator . '<p style=" text-indent:2em;">你好:</p>
-                        <p style="text-indent:2em;">您的需求建议已被<span style="font-size:150%;color: blue;">' . $this->processingPerson . '</span>处理完成!
+            if($changedAttributes['schedule'] == self::SCHEDULE_FAILED){
+                $event->content = '<div>' .
+                    $this->creator . '<p style=" text-indent:2em;">你好:</p>
+                        <p style="text-indent:2em;">您的需求建议<span style="font-size:150%;color: blue;">' . $this->name . '</span>未通过审核!
                         详情请查看:<a href="http://58.246.226.254:9099/?#/v1/requirements/index">http://58.246.226.254:9099</a></p></div>';
+            }elseif ($changedAttributes['schedule'] == self::SCHEDULE_DEALING){
+                $event->content = '<div>' .
+                    $this->creator . '<p style=" text-indent:2em;">你好:</p>
+                        <p style="text-indent:2em;">您的需求建议<span style="font-size:150%;color: blue;">' . $this->name . '</span>已通过审核,正在处理中!
+                        详情请查看:<a href="http://58.246.226.254:9099/?#/v1/requirements/index">http://58.246.226.254:9099</a></p></div>';
+            }else{
+                $event->content = '<div>' .
+                    $this->creator . '<p style=" text-indent:2em;">你好:</p>
+                        <p style="text-indent:2em;">您的需求建议<span style="font-size:150%;color: blue;">' . $this->name . '</span>已经处理完成!
+                        详情请查看:<a href="http://58.246.226.254:9099/?#/v1/requirements/index">http://58.246.226.254:9099</a></p></div>';
+            }
 
             $this->trigger(self::EVENT_SEND_EMAIL, $event);
         }

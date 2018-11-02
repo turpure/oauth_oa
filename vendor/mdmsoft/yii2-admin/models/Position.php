@@ -9,7 +9,6 @@ namespace mdm\admin\models;
 use yii\db\ActiveRecord;
 use yii\behaviors\TimestampBehavior;
 use yii\helpers\ArrayHelper;
-use \common\models\User;
 
 class Position extends ActiveRecord
 {
