@@ -83,13 +83,14 @@ class AuthPositionMenu extends \yii\db\ActiveRecord
      * @param int $pid
      * @return array
      */
-    private static function childTree($data, $pid = null)
+    private static function childTree($data, $pid = null, $level = 1)
     {
         $tree = [];
         foreach($data as $k => $v)
         {
             if($v['parent'] == $pid) {
-                $v['children'] = self::childTree($data, $v['id']);
+                $v['level'] = $level;
+                $v['children'] = self::childTree($data, $v['id'], $level + 1);
                 $tree[] = $v;
                 //unset($data[$k]);
             }
