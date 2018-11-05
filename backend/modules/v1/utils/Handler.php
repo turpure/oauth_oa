@@ -203,10 +203,10 @@ class Handler
         $keys = array_keys($unEmptyCondition);
         $queryType = array_pop($keys)?:'';
         if ($queryType === 'platform') {
-           if(!empty($queryParam['department'])) {
+           if(!empty($queryParam['department']) && count($queryParam['department']) > 1) {
                $queryType = 'department';
            }
-           if(!empty($queryParam['secDepartment'])) {
+           if(!empty($queryParam['secDepartment']) && count($queryParam['secDepartment']) > 1) {
                $queryType = 'secDepartment';
            }
         }
