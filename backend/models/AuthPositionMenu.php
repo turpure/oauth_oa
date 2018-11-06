@@ -55,26 +55,27 @@ class AuthPositionMenu extends \yii\db\ActiveRecord
             throw new \yii\web\ForbiddenHttpException("There is a problem with the account. Please contact the administrator!");
         }
         else if ($role === AuthAssignment::ACCOUNT_ADMIN){
-            $data = static::find()
-                ->select('m.id,m.name,m.parent,m.route,m.order')
+            $query = static::find()
+                ->select('m.id,m.name,m.parent,m.route,m.tabParentId')
                 ->from('menu m')
-                ->orderBy('m.order')
                 ->andWhere(['not in', 'm.id',[3,6]])
-                ->asArray()->all();
+                ->andWhere(['OR',['m.parent' => null],['not in', 'm.parent',[3,6]]]);
         }
         else {
-            $data = static::find()
-                ->select('m.id,m.name,m.parent,m.route,m.order')
+            $query = static::find()
+                ->select('m.id,m.name,m.parent,m.route,m.tabParentId')
                 ->from('auth_position_menu pm')
                 ->leftJoin('auth_position_child pc','pc.position_id=pm.position_id')
                 ->leftJoin('auth_position p','pm.position_id=p.id')
                 ->leftJoin('menu m','pm.menu_id=m.id')
                 ->where(['pc.user_id' => $userId])
                 ->andWhere(['not in', 'm.id',[3,6]])
-                ->orderBy('m.order')
-                ->asArray()->all();
+                ->andWhere(['OR',['m.parent' => null],['not in', 'm.parent',[3,6]]]);
         }
-        return self::childTree($data);
+
+        $data = $query->orderBy('m.order')->asArray()->all();
+        $menu = self::childTab($data);
+        return self::childTree($menu);
     }
 
 
@@ -83,16 +84,27 @@ class AuthPositionMenu extends \yii\db\ActiveRecord
      * @param int $pid
      * @return array
      */
-    private static function childTree($data, $pid = null, $level = 1)
+    private static function childTree($data, $pid = null)
     {
         $tree = [];
         foreach($data as $k => $v)
         {
             if($v['parent'] == $pid) {
-                $v['level'] = $level;
-                $v['children'] = self::childTree($data, $v['id'], $level + 1);
+                $v['children'] = self::childTree($data, $v['id']);
                 $tree[] = $v;
-                //unset($data[$k]);
+            }
+        }
+        return $tree;
+    }
+
+    private static function childTab($data, $pid = 0)
+    {
+        $tree = [];
+        foreach($data as $k => $v)
+        {
+            if($v['tabParentId'] == $pid) {
+                $v['tabs'] = self::childTab($data, $v['id']);
+                $tree[] = $v;
             }
         }
         return $tree;

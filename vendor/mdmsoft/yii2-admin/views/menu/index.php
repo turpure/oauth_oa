@@ -37,6 +37,13 @@ $this->params['breadcrumbs'][] = $this->title;
             ],
             'route',
             'order',
+            [
+                'attribute' => 'tabParentId',
+                'value' =>function($model){
+                    return $model->tabParentId ? '标签' : null;
+                },
+                'label' => '类型',
+            ],
             ['class' => 'yii\grid\ActionColumn'],
         ],
     ]);
