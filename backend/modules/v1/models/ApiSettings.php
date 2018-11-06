@@ -43,10 +43,7 @@ class ApiSettings
         $sql = "UPDATE Y_RateManagement SET salerRate='{$condition['salerRate']}',devRate='{$condition['devRate']}'";
         $res = Yii::$app->py_db->createCommand($sql)->execute();
         if ($res) {
-            $result = [
-                'code' => 400,
-                'message' => 'Data update success！',
-            ];
+            $result = true;
         } else {
             $result = [
                 'code' => 400,
@@ -68,10 +65,7 @@ class ApiSettings
         $sql = "UPDATE Y_RateManagement SET salerRate='{$condition['salerRate']}',devRate='{$condition['devRate']}'";
         $res = Yii::$app->py_db->createCommand($sql)->execute();
         if ($res) {
-            $result = [
-                'code' => 400,
-                'message' => 'Data insert success！',
-            ];
+            $result = true;
         } else {
             $result = [
                 'code' => 400,

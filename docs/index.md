@@ -276,12 +276,12 @@
 # 汇率设置
 ## get exchange
 * 接口名称：查看美元汇率
-* 请求示例：v1/upload/exchange
+* 请求示例：v1/settings/exchange
 * 请求方法：get
 
 ## update exchange
 * 接口名称：更新美元汇率
-* 请求示例：v1/upload/exchange
+* 请求示例：v1/settings/exchange
 * 请求方法：post
 * 请求参数：
 ```
