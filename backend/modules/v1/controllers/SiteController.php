@@ -22,7 +22,7 @@ class SiteController extends AdminController
     public function actionIndex()
     {
         $sql = "SELECT * FROM oauth_target 
-                WHERE username NOT IN ('韩珍','六部') AND depart NOT LIKE '%郑州分部%' AND role = '销售'
+                WHERE depart NOT LIKE '%郑州分部%' AND role = '销售' AND isnull(display,0)=0
                 ORDER BY primaryRate DESC";
         $query = \Yii::$app->py_db->createCommand($sql)->queryAll();
         return $query;
@@ -35,7 +35,7 @@ class SiteController extends AdminController
     public function actionSales()
     {
         $sql = "SELECT * FROM oauth_target 
-                WHERE  depart LIKE '%郑州分部%' AND role = '销售'
+                WHERE  depart LIKE '%郑州分部%' AND role = '销售' AND isnull(display,0)=0
                 ORDER BY highRate DESC";
         $query = \Yii::$app->py_db->createCommand($sql)->queryAll();
         return $query;
@@ -47,7 +47,7 @@ class SiteController extends AdminController
     public function actionDevelop()
     {
         $sql = "SELECT * FROM oauth_target 
-                WHERE role = '开发'
+                WHERE role = '开发' AND isnull(display,0)=0
                 ORDER BY primaryRate DESC";
         $query = \Yii::$app->py_db->createCommand($sql)->queryAll();
         return $query;

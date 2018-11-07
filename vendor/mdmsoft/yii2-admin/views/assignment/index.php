@@ -1,6 +1,7 @@
 <?php
 
 use yii\helpers\Html;
+use yii\helpers\Url;
 use yii\grid\GridView;
 use yii\widgets\Pjax;
 
@@ -22,7 +23,14 @@ if (!empty($extraColumns)) {
 }
 $columns[] = [
     'class' => 'yii\grid\ActionColumn',
-    'template' => '{view}'
+    'template' => '{view}',
+    'buttons' => [
+        'view' => function ($url, $model, $key) {
+            return Html::a('分配角色',
+                Url::to($url),
+                ['type' => 'button', 'class' => 'btn btn-primary', 'title' => '分配角色', 'aria-label' => '分配角色']);
+        },
+    ],
 ];
 ?>
 <div class="assignment-index">
