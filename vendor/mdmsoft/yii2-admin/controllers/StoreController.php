@@ -103,15 +103,33 @@ class StoreController extends Controller
     }
 
     public function actionExport(){
-        $data = Store::find()->select("`store` as '店铺名称',`platform` as '平台',`username` as '归属人',`used` as '停用'")
+        $sql = "SELECT s.store AS '账号',s.platform as '平台',u.username AS '销售',aa.username AS '主管',d.department as '小组', 
+				        CASE WHEN ifnull(pd.department,'')<>'' THEN pd.department ELSE d.department END AS '部门'
+                FROM `auth_store` s 
+                LEFT JOIN `auth_store_child` sc ON s.id=sc.store_id
+                LEFT JOIN `user` u ON u.id=sc.user_id
+                LEFT JOIN `auth_department_child` dc ON u.id=dc.user_id
+                LEFT JOIN `auth_department` d ON d.id=dc.department_id
+                LEFT JOIN `auth_department` pd ON pd.id=d.parent
+                LEFT JOIN (
+                    SELECT d.department,u.username,p.position  
+                    FROM auth_department d
+                    LEFT JOIN `auth_department_child` dc ON d.id=dc.department_id
+                    LEFT JOIN `auth_department` pd ON pd.id=d.parent
+                    LEFT JOIN `user` u ON u.id=dc.user_id
+                    LEFT JOIN `auth_position_child` pc ON u.id=pc.user_id
+                    LEFT JOIN `auth_position` p ON p.id=pc.position_id
+                    WHERE pd.department='郑州分部' AND p.position='主管' OR  p.position='经理'
+                ) aa ON aa.department = (CASE WHEN ifnull(pd.department,'')<>'' THEN pd.department ELSE d.department END)";
+        /*$data = Store::find()->select("`store` as '店铺名称',`platform` as '平台',`username` as '归属人',`used` as '停用'")
             ->join('LEFT JOIN','auth_store_child sc','sc.store_id=auth_store.id')
             ->join('LEFT JOIN','user u','u.id=sc.user_id')
-            ->asArray()->all();
+            ->asArray()->all();*/
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
         $title = "店铺（账号）归属人详情";
-        $titleList = ['店铺名称','平台', '归属人', '停用'];
-        //$data = array_map('get_object_vars',$data);
-        ApiTool::exportExcel($title, $titleList, $data);
+        $titleList = ['账号','平台', '销售', '主管', '小组', '部门'];
         //var_dump($data);exit;
+        ApiTool::exportExcel($title, $titleList, $data);
     }
 
 }

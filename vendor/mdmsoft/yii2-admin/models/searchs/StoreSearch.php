@@ -64,6 +64,7 @@ class StoreSearch extends Store
         ]);
 
         $query->andFilterWhere(['like', 'store', $this->store]);
+        $query->andFilterWhere(['like', 'platform', $this->platform]);
         $query->andFilterWhere(['like', 'username', $this->username]);
 
         return $dataProvider;

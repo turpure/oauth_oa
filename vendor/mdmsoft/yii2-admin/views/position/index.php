@@ -1,6 +1,7 @@
 <?php
 
 use yii\helpers\Html;
+use yii\helpers\Url;
 use yii\grid\GridView;
 use mdm\admin\components\Helper;
 
@@ -29,6 +30,13 @@ $this->params['breadcrumbs'][] = $this->title;
             [
                 'class' => 'yii\grid\ActionColumn',
                 'template' => Helper::filterActionColumn(['view','update', 'delete']),
+                'buttons' => [
+                    'update' => function ($url, $model, $key) {
+                        return Html::a('<span class="glyphicon glyphicon-pencil"></span>',
+                            Url::to($url),
+                            ['type' => 'button', 'title' => '分配权限', 'aria-label' => '分配权限']);
+                    },
+                ],
             ],
         ]
     ]);
