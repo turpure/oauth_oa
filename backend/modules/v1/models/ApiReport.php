@@ -21,33 +21,17 @@ class ApiReport
 
     public static function getSalesReport($condition)
     {
-        $sql = 'Z_P_FinancialProfit @pingtai=:plat,@DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,'.
-        '@SalerAliasName=:suffix,@Saler=:seller,@StoreName=:storeName,@RateFlag=0';
-        $cache = 'oauth_saleProfit @pingtai=:plat,@DateFlag=:dateFlag,@SalerAliasName=:suffix,@Saler=:seller,'.
-            '@StoreName=:storeName,@DateRangeType=:dateRangeType';
-        $con = Yii::$app->py_db;
-        $dateRangeType = $condition['dateRangeType'];
+        $con = Yii::$app->db;
+        $sql = 'call report_salesProfit(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse);';
         $sqlParams = [
-            ':plat' => $condition['plat'],
-            ':dateFlag' => $condition['dateFlag'],
+            ':dateType' => $condition['dateType'],
             ':beginDate' => $condition['beginDate'],
             ':endDate' => $condition['endDate'],
-            ':suffix' => $condition['suffix'],
-            ':seller' => $condition['seller'],
-            ':storeName' => $condition['storeName']
-        ];
-        $cacheParams = [
-            ':plat' => $condition['plat'],
-            ':dateFlag' => $condition['dateFlag'],
-            ':dateRangeType' => $condition['dateRangeType'],
-            ':suffix' => $condition['suffix'],
-            ':seller' => $condition['seller'],
-            ':storeName' => $condition['storeName']
+            ':queryType' => $condition['queryType'],
+            ':store' => $condition['store'],
+            ':warehouse' => $condition['warehouse']
         ];
         try {
-            if($dateRangeType < 3) {
-               return  $con->createCommand($cache)->bindValues($cacheParams)->queryAll();
-            }
             return $con->createCommand($sql)->bindValues($sqlParams)->queryAll();
         }
         catch (\Exception $why) {
