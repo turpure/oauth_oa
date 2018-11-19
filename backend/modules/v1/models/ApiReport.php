@@ -151,7 +151,7 @@ class ApiReport
      */
     public static function getSalesTrendReport($condition)
     {
-        $sql = 'call report_salesTrend(:store,:queryType,:showType,:dateFlag,:beginDate,:endDate)';
+        $sql = 'call test_trend(:store,:queryType,:showType,:dateFlag,:beginDate,:endDate)';
         $con = Yii::$app->db;
         $params = [
             ':store' => $condition['store'],
