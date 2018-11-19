@@ -58,6 +58,20 @@ class TinyToolController extends AdminController
     }
 
     /**
+     * @brief modify declared value
+     * @return array
+     */
+    public function actionDeclaredValue()
+    {
+        $post = \Yii::$app->request->post();
+        $condition = $post['condition'];
+        return ApiTinyTool::modifyDeclaredValue($condition);
+    }
+
+
+
+
+    /**
      * @brief fyndiq upload csv to backend
      * @return array
      * @throws \Exception

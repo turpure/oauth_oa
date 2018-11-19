@@ -9,6 +9,7 @@ namespace backend\modules\v1\models;
 
 use backend\modules\v1\utils\Handler;
 use yii\data\SqlDataProvider;
+use yii\db\Exception;
 use yii\helpers\ArrayHelper;
 use \PhpOffice\PhpSpreadsheet\Reader\Csv;
 
@@ -100,6 +101,44 @@ class ApiTinyTool
             return [$why];
         }
     }
+
+    /**
+     * @brief get goods picture
+     * @param $condition
+     * @return array|mixed
+     */
+    public static function modifyDeclaredValue($condition)
+    {
+        $con = \Yii::$app->py_db;
+        $orderId = ArrayHelper::getValue($condition, 'order_id', '');
+        $declaredValue = ArrayHelper::getValue($condition, 'declared_value', 2);
+        $orderArr = explode(',',$orderId);
+        try{
+            if($orderArr){
+                foreach ($orderArr as $v){
+                    $sql = "SELECT isnull(sum([L_QTY]),0) AS num FROM (SELECT [L_QTY] FROM P_TradeDtUn (nolock) WHERE TradeNid = {$v}
+                        UNION
+                        SELECT [L_QTY] FROM P_TradeDt (nolock) WHERE TradeNid = {$v}) aa";
+                    $num = $con->createCommand($sql)->queryOne()['num'];
+
+                    if(!$num) echo new Exception('订单异常！');
+
+                    $value = floor($declaredValue*10/$num)/10;
+
+                    $res = $con->createCommand("UPDATE P_TradeDtUn SET [DeclaredValue]={$value} WHERE TradeNid = {$v}")->execute();
+                    $result = $con->createCommand("UPDATE P_TradeDt SET [DeclaredValue]={$value} WHERE TradeNid = {$v}")->execute();
+
+                    if($res === false || $result === false) echo new Exception("订单号为:{$v}的订单申报价修改失败！");
+                }
+                return true;
+            }else{
+                echo new Exception('订单号不能为空！');
+            }
+        }catch (\Exception $e){
+            return [$e];
+        }
+    }
+
 
     /**
      * @brief get goods picture
