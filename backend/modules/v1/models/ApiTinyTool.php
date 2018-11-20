@@ -116,9 +116,11 @@ class ApiTinyTool
         try{
             if($orderArr){
                 foreach ($orderArr as $v){
-                    $sql = "SELECT isnull(sum([L_QTY]),0) AS num FROM (SELECT [L_QTY] FROM P_TradeDtUn (nolock) WHERE TradeNid = {$v}
-                        UNION
-                        SELECT [L_QTY] FROM P_TradeDt (nolock) WHERE TradeNid = {$v}) aa";
+                    $sql = "SELECT isnull(sum([L_QTY]),0) AS num FROM (
+                              SELECT nid,[L_QTY] FROM P_TradeDtUn (nolock) WHERE TradeNid = {$v}
+                              UNION 
+                              SELECT nid,[L_QTY] FROM P_TradeDt (nolock) WHERE TradeNid = {$v}
+                            ) aa";
                     $num = $con->createCommand($sql)->queryOne()['num'];
 
                     if(!$num) echo new Exception('订单异常！');
