@@ -123,18 +123,30 @@ class ApiTinyTool
                             ) aa";
                     $num = $con->createCommand($sql)->queryOne()['num'];
 
-                    if(!$num) echo new Exception('订单异常！');
-
+                    if($num == 0) {
+                        return [
+                            'code' => 400,
+                            'message' => '无效的订单编号或订单异常！'
+                        ];
+                    }
                     $value = floor($declaredValue*10/$num)/10;
 
                     $res = $con->createCommand("UPDATE P_TradeDtUn SET [DeclaredValue]={$value} WHERE TradeNid = {$v}")->execute();
                     $result = $con->createCommand("UPDATE P_TradeDt SET [DeclaredValue]={$value} WHERE TradeNid = {$v}")->execute();
 
-                    if($res === false || $result === false) echo new Exception("订单号为:{$v}的订单申报价修改失败！");
+                    if($res === false || $result === false) {
+                        return [
+                            'code' => 400,
+                            'message' => "订单号为:{$v}的订单申报价修改失败！"
+                        ];
+                    }
                 }
                 return true;
             }else{
-                echo new Exception('订单号不能为空！');
+                return [
+                    'code' => 400,
+                    'message' => "订单号不能为空！"
+                ];
             }
         }catch (\Exception $e){
             return [$e];
