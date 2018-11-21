@@ -21,17 +21,18 @@ class ApiUk{
         $sql = "SELECT aa.SKU,aa.skuname,aa.goodscode,aa.CategoryName,aa.CreateDate,aa.price,k.weight*1000 AS weight,k.length,k.width,k.height
                 FROM (    
                     SELECT w.SKU,w.skuname,w.goodscode,w.CategoryName,w.CreateDate,
-                    price = (CASE w.costprice WHEN 0 THEN w.goodsPrice ELSE w.costprice END)
+                    price = (CASE WHEN w.costprice<=0 THEN w.goodsPrice ELSE w.costprice END)
                     FROM Y_R_tStockingWaring w WHERE (SKU LIKE 'UK-%' OR SKU LIKE 'EX-A0684%') AND storeName='万邑通UK' 
                 UNION ALL 
                     SELECT w.SKU,w.skuname,w.goodscode,w.CategoryName,w.CreateDate,
-                    (CASE w.costprice WHEN 0 THEN w.goodsPrice ELSE w.costprice END) AS price
+                    (CASE WHEN w.costprice<=0 THEN w.goodsPrice ELSE w.costprice END) AS price
                     FROM Y_R_tStockingWaring w WHERE SKU LIKE 'UK-%' AND storeName='金皖399' 
                     AND SKU NOT IN (SELECT SKU FROM Y_R_tStockingWaring WHERE SKU LIKE 'UK-%' AND storeName='万邑通UK')
                     ) AS aa
                 LEFT JOIN UK_Storehouse_WeightAndSize k ON aa.sku=k.sku
                 WHERE  aa.sku='{$sku}'";
         $res = Yii::$app->py_db->createCommand($sql)->queryOne();
+        print_r($res);exit;
         return $res;
     }
 
