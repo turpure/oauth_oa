@@ -32,7 +32,6 @@ class ApiUk{
                 LEFT JOIN UK_Storehouse_WeightAndSize k ON aa.sku=k.sku
                 WHERE  aa.sku='{$sku}'";
         $res = Yii::$app->py_db->createCommand($sql)->queryOne();
-        print_r($res);exit;
         return $res;
     }
 
