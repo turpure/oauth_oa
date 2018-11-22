@@ -335,4 +335,16 @@ class ApiTinyTool
         return $db->createCommand($sql)->queryAll();
 
     }
+
+    /**
+     * @brief get orders on risk
+     * @return mixed
+     */
+    public static function getRiskyOrder() {
+        $sql = "select nid as tradeNid,orderTime,suffix,buyerId,shipToName,shipToStreet,
+            shipToStreet2,shipToCity,shipToZip,shipToCountryCode,shipToPhoneNum
+             from p_trade where memo like '%钓鱼%'";
+        $db = \Yii::$app->py_db;
+        return $db->createCommand($sql)->queryAll();
+    }
 }
