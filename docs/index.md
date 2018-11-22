@@ -886,6 +886,20 @@
 }
 ```
 
+## 异常paypal
+* 接口名称：异常paypal列表
+* 请求方法：post
+* 请求示例：v1/tiny-tool/exception-pay-pal
+* 请求参数：
+```json
+{
+  "condition":{
+    "beginDate":"2018-10-01",
+    "endDate":"2018-11-23"
+  }
+}
+```
+
 
 # v1/requirement 需求管理
 

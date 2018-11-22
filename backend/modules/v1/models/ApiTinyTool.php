@@ -315,4 +315,24 @@ class ApiTinyTool
         }
         return $out;
     }
+    /**
+     * @brief get exception payPal
+     * @param $cond
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    public static function getExceptionPayPal($cond) {
+        $beginDate = ArrayHelper::getValue($cond, 'beginDate','');
+        $endDate = ArrayHelper::getValue($cond, 'endDate', '');
+        if(empty($beginDate) && empty($endDate)) {
+            $sql = 'select itemId,payPal,sellerUserId,createdTime from exceptionPaypal';
+        }
+        else {
+            $sql = "select itemId,payPal,sellerUserId,createdTime from exceptionPaypal where createdTime BETWEEN
+                  '$beginDate' and date_add('$endDate',INTERVAL 1 day)";
+        }
+        $db = \Yii::$app->db;
+        return $db->createCommand($sql)->queryAll();
+
+    }
 }
