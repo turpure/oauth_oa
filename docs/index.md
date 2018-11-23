@@ -904,6 +904,32 @@
 * 请求方法：get
 * 请求示例：v1/tiny-tool/risky-order
 
+## 黑名单
+* 接口名称：黑名单
+* 请求示例：v1/tiny-tool/blacklist
+
+| 请求方法 | 请求参数 | 返回数据 |
+| :------:| :------: | :------: |
+| get   | 无 |    array  |
+| post | json| array| 
+
+* post 参数
+```json
+{
+	"data": {
+		"platform": "wish",
+		"buyerId":"ja",
+		"shipToName":"",
+		"shipToStreet":"",
+		"shipToStreet2":"",
+		"shipToCity":"",
+		"shipToState":"",
+		"shipToZip":"",
+		"shipToCountryCode":"",
+		"shipToPhoneNum":""
+	}
+}
+```
 
 
 # v1/requirement 需求管理

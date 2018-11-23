@@ -347,4 +347,41 @@ class ApiTinyTool
         $db = \Yii::$app->py_db;
         return $db->createCommand($sql)->queryAll();
     }
+
+    /**
+     * @brief display blacklist
+     * @return mixed
+     */
+    public static function getBlacklist() {
+        $sql = 'select platform,buyerid,
+                shipToName,shiptostreet,shiptostreet2,shiptocity,shiptostate,shiptozip,shiptocountryCode,SHIPtoPHONEnUM 
+                from oauth_blacklist';
+        $db = \Yii::$app->py_db;
+        return $db->createCommand($sql)->queryAll();
+    }
+
+    public static function saveBlacklist($data) {
+        $sql = 'insert into oauth_blacklist values
+        (:platform,:buyerId,:shipToName,:shipToStreet,:shipToStreet2,
+        :shipToCity,:shipToState,:shipToZip,:shipToCountryCode,:shipToPhoneNum)';
+        $db = \Yii::$app->py_db;
+        $command = $db->createCommand($sql);
+        $command->bindValues([
+            ':platform' => $data['platform'],
+            ':buyerId' => $data['buyerId'],
+            ':shipToName' => $data['shipToName'],
+            ':shipToStreet' => $data['shipToStreet'],
+            ':shipToStreet2' => $data['shipToStreet2'],
+            ':shipToCity' => $data['shipToCity'],
+            ':shipToState' => $data['shipToState'],
+            ':shipToZip' => $data['shipToZip'],
+            ':shipToCountryCode' => $data['shipToCountryCode'],
+            ':shipToPhoneNum' => $data['shipToPhoneNum']
+        ]);
+        $ret = $command->execute();
+        if($ret) {
+            return ['success'];
+        }
+        return ['fail'];
+    }
 }

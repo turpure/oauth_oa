@@ -296,9 +296,23 @@ class TinyToolController extends AdminController
         return ApiTinyTool::getExceptionPayPal($cond);
     }
 
+    /**
+     * @return mixed
+     */
     public function actionRiskyOrder()
     {
         return ApiTinyTool::getRiskyOrder();
     }
 
+    public function actionBlacklist()
+    {
+        $request = Yii::$app->request;
+        if($request->isGet) {
+            return ApiTinyTool::getBlacklist();
+        }
+        if($request->isPost) {
+            $data = $request->post()['data'];
+            return ApiTinyTool::saveBlacklist($data);
+        }
+    }
 }
