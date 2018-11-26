@@ -353,7 +353,7 @@ class ApiTinyTool
      * @return mixed
      */
     public static function getBlacklist() {
-        $sql = 'select platform,buyerid,
+        $sql = 'select addressowner,buyerid,
                 shipToName,shiptostreet,shiptostreet2,shiptocity,shiptostate,shiptozip,shiptocountryCode,SHIPtoPHONEnUM 
                 from oauth_blacklist';
         $db = \Yii::$app->py_db;
@@ -362,12 +362,12 @@ class ApiTinyTool
 
     public static function saveBlacklist($data) {
         $sql = 'insert into oauth_blacklist values
-        (:platform,:buyerId,:shipToName,:shipToStreet,:shipToStreet2,
+        (:addressonwer,:buyerId,:shipToName,:shipToStreet,:shipToStreet2,
         :shipToCity,:shipToState,:shipToZip,:shipToCountryCode,:shipToPhoneNum)';
         $db = \Yii::$app->py_db;
         $command = $db->createCommand($sql);
         $command->bindValues([
-            ':platform' => $data['platform'],
+            ':addressowner' => $data['addressowner'],
             ':buyerId' => $data['buyerId'],
             ':shipToName' => $data['shipToName'],
             ':shipToStreet' => $data['shipToStreet'],
