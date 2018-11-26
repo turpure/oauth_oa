@@ -362,7 +362,7 @@ class ApiTinyTool
 
     public static function saveBlacklist($data) {
         $sql = 'insert into oauth_blacklist values
-        (:addressonwer,:buyerId,:shipToName,:shipToStreet,:shipToStreet2,
+        (:addressowner,:buyerId,:shipToName,:shipToStreet,:shipToStreet2,
         :shipToCity,:shipToState,:shipToZip,:shipToCountryCode,:shipToPhoneNum)';
         $db = \Yii::$app->py_db;
         $command = $db->createCommand($sql);
