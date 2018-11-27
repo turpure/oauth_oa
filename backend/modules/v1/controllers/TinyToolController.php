@@ -304,6 +304,10 @@ class TinyToolController extends AdminController
         return ApiTinyTool::getRiskyOrder();
     }
 
+    /**
+     * @brief display and edit blacklist
+     * @return array|mixed
+     */
     public function actionBlacklist()
     {
         $request = Yii::$app->request;
@@ -314,5 +318,10 @@ class TinyToolController extends AdminController
             $data = $request->post()['data'];
             return ApiTinyTool::saveBlacklist($data);
         }
+    }
+
+    public function actionExceptionEdition()
+    {
+        return ApiTinyTool::getExceptionEdition();
     }
 }

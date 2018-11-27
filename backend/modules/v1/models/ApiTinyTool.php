@@ -384,4 +384,16 @@ class ApiTinyTool
         }
         return ['fail'];
     }
+
+    public static function getExceptionEdition() {
+        $sql = 'select editor,shipToName,shipToZip,tableName,tradeNid from exceptionEdition';
+        $db = \Yii::$app->db;
+        try {
+            return $db->createCommand($sql)->queryAll();
+        }
+        catch (\Exception $why) {
+            return [$why];
+        }
+
+    }
 }

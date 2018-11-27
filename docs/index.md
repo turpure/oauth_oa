@@ -931,6 +931,12 @@
 }
 ```
 
+## 异常改订单
+* 接口名称：黑名单
+* 请求示例：v1/tiny-tool/exception-edition
+* 请求方法： get
+* 请求参数： 无
+
 
 # v1/requirement 需求管理
 
