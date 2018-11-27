@@ -298,10 +298,13 @@ class TinyToolController extends AdminController
 
     /**
      * @return mixed
+     * @throws \Exception
      */
     public function actionRiskyOrder()
     {
-        return ApiTinyTool::getRiskyOrder();
+        $request = Yii::$app->request;
+        $cond = $request->post()['condition'];
+        return ApiTinyTool::getRiskyOrder($cond);
     }
 
     /**
@@ -322,6 +325,8 @@ class TinyToolController extends AdminController
 
     public function actionExceptionEdition()
     {
-        return ApiTinyTool::getExceptionEdition();
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        return ApiTinyTool::getExceptionEdition($cond);
     }
 }

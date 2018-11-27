@@ -901,8 +901,19 @@
 ```
 ## 风险订单
 * 接口名称：风险订单
-* 请求方法：get
+* 请求方法：post
 * 请求示例：v1/tiny-tool/risky-order
+* 请求参数： 
+
+```json
+{
+  "condition":{
+    "beginDate":"2018-10-01",
+    "endDate":"2018-11-27"
+  }
+}
+```
+
 
 ## 黑名单
 * 接口名称：黑名单
@@ -934,8 +945,17 @@
 ## 异常改订单
 * 接口名称：黑名单
 * 请求示例：v1/tiny-tool/exception-edition
-* 请求方法： get
-* 请求参数： 无
+* 请求方法： post
+* 请求参数： 
+
+```json
+{
+  "condition":{
+    "beginDate":"2018-10-01",
+    "endDate":"2018-11-27"
+  }
+}
+```
 
 
 # v1/requirement 需求管理

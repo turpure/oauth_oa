@@ -339,12 +339,15 @@ class ApiTinyTool
     /**
      * @brief get orders on risk
      * @return mixed
+     * @throws \Exception
      */
-    public static function getRiskyOrder() {
-        $sql = "select nid as tradeNid,orderTime,suffix,buyerId,shipToName,shipToStreet,
+    public static function getRiskyOrder($cond) {
+        $beginDate = $cond['beginDate'];
+        $endDate = $cond['endDate'];
+        $sql = "select tradeNid,orderTime,suffix,buyerId,shipToName,shipToStreet,
             shipToStreet2,shipToCity,shipToZip,shipToCountryCode,shipToPhoneNum
-             from p_trade where memo like '%钓鱼%'";
-        $db = \Yii::$app->py_db;
+             from riskyTrades where orderTime BETWEEN '$beginDate' and date_add('$endDate',INTERVAL 1 day)";
+        $db = \Yii::$app->db;
         return $db->createCommand($sql)->queryAll();
     }
 
@@ -385,8 +388,11 @@ class ApiTinyTool
         return ['fail'];
     }
 
-    public static function getExceptionEdition() {
-        $sql = 'select editor,shipToName,shipToZip,tableName,tradeNid,createdTime from exceptionEdition';
+    public static function getExceptionEdition($cond) {
+        $beginDate = $cond['beginDate'];
+        $endDate = $cond['endDate'];
+        $sql = "select editor,shipToName,shipToZip,tableName,tradeNid,createdTime from exceptionEdition where createdTime
+        between '$beginDate' and date_add('$endDate',INTERVAL 1 day)";
         $db = \Yii::$app->db;
         try {
             return $db->createCommand($sql)->queryAll();
