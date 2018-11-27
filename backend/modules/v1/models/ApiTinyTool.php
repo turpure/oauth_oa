@@ -344,9 +344,17 @@ class ApiTinyTool
     public static function getRiskyOrder($cond) {
         $beginDate = $cond['beginDate'];
         $endDate = $cond['endDate'];
-        $sql = "select tradeNid,orderTime,suffix,buyerId,shipToName,shipToStreet,
+        if (empty($beginDate) && empty($endDate)) {
+            $sql = "select tradeNid,orderTime,suffix,buyerId,shipToName,shipToStreet,
+              shipToStreet2,shipToCity,shipToZip,shipToCountryCode,shipToPhoneNum
+              from riskyTrades";
+        }
+        else {
+            $sql = "select tradeNid,orderTime,suffix,buyerId,shipToName,shipToStreet,
             shipToStreet2,shipToCity,shipToZip,shipToCountryCode,shipToPhoneNum
              from riskyTrades where orderTime BETWEEN '$beginDate' and date_add('$endDate',INTERVAL 1 day)";
+        }
+
         $db = \Yii::$app->db;
         return $db->createCommand($sql)->queryAll();
     }
