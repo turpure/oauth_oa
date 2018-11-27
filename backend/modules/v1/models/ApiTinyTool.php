@@ -339,12 +339,75 @@ class ApiTinyTool
     /**
      * @brief get orders on risk
      * @return mixed
+     * @throws \Exception
      */
-    public static function getRiskyOrder() {
-        $sql = "select nid as tradeNid,orderTime,suffix,buyerId,shipToName,shipToStreet,
+    public static function getRiskyOrder($cond) {
+        $beginDate = $cond['beginDate'];
+        $endDate = $cond['endDate'];
+        if (empty($beginDate) && empty($endDate)) {
+            $sql = "select tradeNid,orderTime,suffix,buyerId,shipToName,shipToStreet,
+              shipToStreet2,shipToCity,shipToZip,shipToCountryCode,shipToPhoneNum
+              from riskyTrades";
+        }
+        else {
+            $sql = "select tradeNid,orderTime,suffix,buyerId,shipToName,shipToStreet,
             shipToStreet2,shipToCity,shipToZip,shipToCountryCode,shipToPhoneNum
-             from p_trade where memo like '%钓鱼%'";
+             from riskyTrades where orderTime BETWEEN '$beginDate' and date_add('$endDate',INTERVAL 1 day)";
+        }
+
+        $db = \Yii::$app->db;
+        return $db->createCommand($sql)->queryAll();
+    }
+
+    /**
+     * @brief display blacklist
+     * @return mixed
+     */
+    public static function getBlacklist() {
+        $sql = 'select addressowner,buyerid,
+                shipToName,shiptostreet,shiptostreet2,shiptocity,shiptostate,shiptozip,shiptocountryCode,SHIPtoPHONEnUM 
+                from oauth_blacklist';
         $db = \Yii::$app->py_db;
         return $db->createCommand($sql)->queryAll();
+    }
+
+    public static function saveBlacklist($data) {
+        $sql = 'insert into oauth_blacklist values
+        (:addressowner,:buyerId,:shipToName,:shipToStreet,:shipToStreet2,
+        :shipToCity,:shipToState,:shipToZip,:shipToCountryCode,:shipToPhoneNum)';
+        $db = \Yii::$app->py_db;
+        $command = $db->createCommand($sql);
+        $command->bindValues([
+            ':addressowner' => $data['addressowner'],
+            ':buyerId' => $data['buyerId'],
+            ':shipToName' => $data['shipToName'],
+            ':shipToStreet' => $data['shipToStreet'],
+            ':shipToStreet2' => $data['shipToStreet2'],
+            ':shipToCity' => $data['shipToCity'],
+            ':shipToState' => $data['shipToState'],
+            ':shipToZip' => $data['shipToZip'],
+            ':shipToCountryCode' => $data['shipToCountryCode'],
+            ':shipToPhoneNum' => $data['shipToPhoneNum']
+        ]);
+        $ret = $command->execute();
+        if($ret) {
+            return ['success'];
+        }
+        return ['fail'];
+    }
+
+    public static function getExceptionEdition($cond) {
+        $beginDate = $cond['beginDate'];
+        $endDate = $cond['endDate'];
+        $sql = "select editor,shipToName,shipToZip,tableName,tradeNid,createdTime from exceptionEdition where createdTime
+        between '$beginDate' and date_add('$endDate',INTERVAL 1 day)";
+        $db = \Yii::$app->db;
+        try {
+            return $db->createCommand($sql)->queryAll();
+        }
+        catch (\Exception $why) {
+            return [$why];
+        }
+
     }
 }
