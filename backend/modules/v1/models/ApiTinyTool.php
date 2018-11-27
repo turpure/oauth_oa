@@ -386,7 +386,7 @@ class ApiTinyTool
     }
 
     public static function getExceptionEdition() {
-        $sql = 'select editor,shipToName,shipToZip,tableName,tradeNid from exceptionEdition';
+        $sql = 'select editor,shipToName,shipToZip,tableName,tradeNid,createdTime from exceptionEdition';
         $db = \Yii::$app->db;
         try {
             return $db->createCommand($sql)->queryAll();
