@@ -112,10 +112,10 @@ class ApiTinyTool
         $con = \Yii::$app->py_db;
         $orderId = ArrayHelper::getValue($condition, 'order_id', '');
         $declaredValue = ArrayHelper::getValue($condition, 'declared_value', 2);
-        $orderArr = explode(',',$orderId);
-        try{
-            if($orderArr){
-                foreach ($orderArr as $v){
+        $orderArr = explode(',', $orderId);
+        try {
+            if ($orderArr) {
+                foreach ($orderArr as $v) {
                     $sql = "SELECT isnull(sum([L_QTY]),0) AS num FROM (
                               SELECT nid,[L_QTY] FROM P_TradeDtUn (nolock) WHERE TradeNid = {$v}
                               UNION 
@@ -123,18 +123,18 @@ class ApiTinyTool
                             ) aa";
                     $num = $con->createCommand($sql)->queryOne()['num'];
 
-                    if($num == 0) {
+                    if ($num == 0) {
                         return [
                             'code' => 400,
                             'message' => '无效的订单编号或订单异常！'
                         ];
                     }
-                    $value = floor($declaredValue*10/$num)/10;
+                    $value = floor($declaredValue * 10 / $num) / 10;
 
                     $res = $con->createCommand("UPDATE P_TradeDtUn SET [DeclaredValue]={$value} WHERE TradeNid = {$v}")->execute();
                     $result = $con->createCommand("UPDATE P_TradeDt SET [DeclaredValue]={$value} WHERE TradeNid = {$v}")->execute();
 
-                    if($res === false || $result === false) {
+                    if ($res === false || $result === false) {
                         return [
                             'code' => 400,
                             'message' => "订单号为:{$v}的订单申报价修改失败！"
@@ -142,13 +142,13 @@ class ApiTinyTool
                     }
                 }
                 return true;
-            }else{
+            } else {
                 return [
                     'code' => 400,
                     'message' => "订单号不能为空！"
                 ];
             }
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return [$e];
         }
     }
@@ -180,16 +180,15 @@ class ApiTinyTool
                         LEFT JOIN B_GoodsCats AS bgc ON bgc.NID = bg.GoodsCategoryID
                         LEFT JOIN B_Supplier bs ON bs.NID = bg.SupplierID
                         WHERE bgs.SKU IN (SELECT MIN (bgs.SKU) FROM B_GoodsSKU AS bgs GROUP BY bgs.GoodsID)
-                        AND bs.SupplierName LIKE '%$supplierName%'
-                        AND bg.possessman1 LIKE '%$possessMan1%'
-                        AND bg.possessman2 LIKE '%$possessMan2%'
-                        AND bg.SalerName LIKE '%$salerName%'
-                        AND bg.CreateDate BETWEEN '$beginDate'
-                        AND '$endDate'
-                        AND bg.GoodsName LIKE '%$goodsName%'
-                        AND bgs.GoodsSKUStatus LIKE '%$goodsSkuStatus%'
-                        AND bgc.CategoryParentName LIKE '%$categoryParentName%'
-                        AND bgc.CategoryName LIKE '%$categoryName%'";
+                        AND bg.CreateDate BETWEEN '$beginDate' AND '$endDate' ";
+            if ($supplierName) $totalSql .= " AND bs.SupplierName LIKE '%$supplierName%' ";
+            if ($possessMan1) $totalSql .= " AND bg.possessman1 LIKE '%$possessMan1%' ";
+            if ($possessMan2) $totalSql .= " AND bg.possessman2 LIKE '%$possessMan2%' ";
+            if ($salerName) $totalSql .= " AND bg.SalerName LIKE '%$salerName%' ";
+            if ($goodsName) $totalSql .= " AND bg.GoodsName LIKE '%$goodsName%' ";
+            if ($goodsSkuStatus) $totalSql .= " AND bgs.GoodsSKUStatus LIKE '%$goodsSkuStatus%' ";
+            if ($categoryParentName) $totalSql .= " AND bgc.CategoryParentName LIKE '%$categoryParentName%' ";
+            if ($categoryName) $totalSql .= " AND bgc.CategoryName LIKE '%$categoryName%'";
             $totalCount = $con->createCommand($totalSql)->queryScalar();
             if ($totalCount) {
                 $sql = "SELECT * FROM(
@@ -211,17 +210,16 @@ class ApiTinyTool
                     LEFT JOIN B_GoodsCats AS bgc ON bgc.NID = bg.GoodsCategoryID
                     LEFT JOIN B_Supplier bs ON bs.NID = bg.SupplierID
                     WHERE bgs.SKU IN (SELECT MIN (bgs.SKU) FROM B_GoodsSKU AS bgs GROUP BY bgs.GoodsID)
-                    AND bs.SupplierName LIKE '%$supplierName%'
-                    AND bg.possessman1 LIKE '%$possessMan1%'
-                    AND bg.possessman2 LIKE '%$possessMan2%'
-                    AND bg.SalerName LIKE '%$salerName%'
-                    AND bg.CreateDate BETWEEN '$beginDate'
-                    AND '$endDate'
-                    AND bg.GoodsName LIKE '%$goodsName%'
-                    AND bgs.GoodsSKUStatus LIKE '%$goodsSkuStatus%'
-                    AND bgc.CategoryParentName LIKE '%$categoryParentName%'
-                    AND bgc.CategoryName LIKE '%$categoryName%'
-                ) pic
+                    AND bg.CreateDate BETWEEN '$beginDate' AND '$endDate' ";
+                if ($supplierName) $sql .= " AND bs.SupplierName LIKE '%$supplierName%' ";
+                if ($possessMan1) $sql .= " AND bg.possessman1 LIKE '%$possessMan1%' ";
+                if ($possessMan2) $sql .= " AND bg.possessman2 LIKE '%$possessMan2%' ";
+                if ($salerName) $sql .= " AND bg.SalerName LIKE '%$salerName%' ";
+                if ($goodsName) $sql .= " AND bg.GoodsName LIKE '%$goodsName%' ";
+                if ($goodsSkuStatus) $sql .= " AND bgs.GoodsSKUStatus LIKE '%$goodsSkuStatus%' ";
+                if ($categoryParentName) $sql .= " AND bgc.CategoryParentName LIKE '%$categoryParentName%' ";
+                if ($categoryName) $sql .= " AND bgc.CategoryName LIKE '%$categoryName%'";
+                $sql .= ") pic
                 WHERE rowId BETWEEN $start AND ($limit+$start)";
                 $res = $con->createCommand($sql)->queryAll();
             } else {
@@ -315,19 +313,20 @@ class ApiTinyTool
         }
         return $out;
     }
+
     /**
      * @brief get exception payPal
      * @param $cond
      * @return array
      * @throws \yii\db\Exception
      */
-    public static function getExceptionPayPal($cond) {
-        $beginDate = ArrayHelper::getValue($cond, 'beginDate','');
+    public static function getExceptionPayPal($cond)
+    {
+        $beginDate = ArrayHelper::getValue($cond, 'beginDate', '');
         $endDate = ArrayHelper::getValue($cond, 'endDate', '');
-        if(empty($beginDate) && empty($endDate)) {
+        if (empty($beginDate) && empty($endDate)) {
             $sql = 'select itemId,payPal,sellerUserId,createdTime from exceptionPaypal';
-        }
-        else {
+        } else {
             $sql = "select itemId,payPal,sellerUserId,createdTime from exceptionPaypal where createdTime BETWEEN
                   '$beginDate' and date_add('$endDate',INTERVAL 1 day)";
         }
@@ -341,15 +340,15 @@ class ApiTinyTool
      * @return mixed
      * @throws \Exception
      */
-    public static function getRiskyOrder($cond) {
+    public static function getRiskyOrder($cond)
+    {
         $beginDate = $cond['beginDate'];
         $endDate = $cond['endDate'];
         if (empty($beginDate) && empty($endDate)) {
             $sql = "select tradeNid,orderTime,suffix,buyerId,shipToName,shipToStreet,
               shipToStreet2,shipToCity,shipToZip,shipToCountryCode,shipToPhoneNum,completeStatus,processor
               from riskyTrades";
-        }
-        else {
+        } else {
             $sql = "select tradeNid,orderTime,suffix,buyerId,shipToName,shipToStreet,
             shipToStreet2,shipToCity,shipToZip,shipToCountryCode,shipToPhoneNum,completeStatus,processor
              from riskyTrades where orderTime BETWEEN '$beginDate' and date_add('$endDate',INTERVAL 1 day)";
@@ -364,12 +363,13 @@ class ApiTinyTool
      * @return array
      * @throws Exception
      */
-    public static function handleRiskyOrder($data) {
+    public static function handleRiskyOrder($data)
+    {
         $trade_id = $data['tradeNid'];
         $processor = $data['processor'];
         $sql = "update riskyTrades set processor='$processor',completeStatus='已完成' where tradeNid=$trade_id ";
         $ret = \Yii::$app->db->createCommand($sql)->execute();
-        if($ret) {
+        if ($ret) {
             return ['msg' => 'success'];
         }
         return ['msg' => 'failed'];
@@ -379,7 +379,8 @@ class ApiTinyTool
      * @brief display blacklist
      * @return mixed
      */
-    public static function getBlacklist() {
+    public static function getBlacklist()
+    {
         $sql = 'select addressowner,buyerid,
                 shipToName,shiptostreet,shiptostreet2,shiptocity,shiptostate,shiptozip,shiptocountryCode,SHIPtoPHONEnUM 
                 from oauth_blacklist';
@@ -387,7 +388,8 @@ class ApiTinyTool
         return $db->createCommand($sql)->queryAll();
     }
 
-    public static function saveBlacklist($data) {
+    public static function saveBlacklist($data)
+    {
         $sql = 'insert into oauth_blacklist values
         (:addressowner,:buyerId,:shipToName,:shipToStreet,:shipToStreet2,
         :shipToCity,:shipToState,:shipToZip,:shipToCountryCode,:shipToPhoneNum)';
@@ -406,13 +408,14 @@ class ApiTinyTool
             ':shipToPhoneNum' => $data['shipToPhoneNum']
         ]);
         $ret = $command->execute();
-        if($ret) {
+        if ($ret) {
             return ['success'];
         }
         return ['fail'];
     }
 
-    public static function getExceptionEdition($cond) {
+    public static function getExceptionEdition($cond)
+    {
         $beginDate = $cond['beginDate'];
         $endDate = $cond['endDate'];
         $sql = "select editor,shipToName,shipToZip,tableName,tradeNid,createdTime from exceptionEdition where createdTime
@@ -420,8 +423,7 @@ class ApiTinyTool
         $db = \Yii::$app->db;
         try {
             return $db->createCommand($sql)->queryAll();
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return [$why];
         }
 
