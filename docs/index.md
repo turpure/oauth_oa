@@ -913,6 +913,20 @@
   }
 }
 ```
+## 处理风险订单
+* 接口名称：风险订单
+* 请求方法：post
+* 请求示例：v1/tiny-tool/handle-risky-order
+* 请求参数： 
+
+```json
+{
+  "data":{
+    "tradeNid":"7371505",
+    "processor":"admin"
+  }
+}
+```
 
 
 ## 黑名单

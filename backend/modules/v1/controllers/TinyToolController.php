@@ -308,6 +308,16 @@ class TinyToolController extends AdminController
     }
 
     /**
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    public function actionHandleRiskyOrder() {
+        $request = Yii::$app->request;
+        $data = $request->post()['data'];
+        return ApiTinyTool::handleRiskyOrder($data);
+    }
+
+    /**
      * @brief display and edit blacklist
      * @return array|mixed
      */

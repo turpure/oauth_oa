@@ -346,17 +346,33 @@ class ApiTinyTool
         $endDate = $cond['endDate'];
         if (empty($beginDate) && empty($endDate)) {
             $sql = "select tradeNid,orderTime,suffix,buyerId,shipToName,shipToStreet,
-              shipToStreet2,shipToCity,shipToZip,shipToCountryCode,shipToPhoneNum
+              shipToStreet2,shipToCity,shipToZip,shipToCountryCode,shipToPhoneNum,completeStatus,processor
               from riskyTrades";
         }
         else {
             $sql = "select tradeNid,orderTime,suffix,buyerId,shipToName,shipToStreet,
-            shipToStreet2,shipToCity,shipToZip,shipToCountryCode,shipToPhoneNum
+            shipToStreet2,shipToCity,shipToZip,shipToCountryCode,shipToPhoneNum,completeStatus,processor
              from riskyTrades where orderTime BETWEEN '$beginDate' and date_add('$endDate',INTERVAL 1 day)";
         }
 
         $db = \Yii::$app->db;
         return $db->createCommand($sql)->queryAll();
+    }
+
+    /**
+     * @param $data
+     * @return array
+     * @throws Exception
+     */
+    public static function handleRiskyOrder($data) {
+        $trade_id = $data['tradeNid'];
+        $processor = $data['processor'];
+        $sql = "update riskyTrades set processor='$processor',completeStatus='已完成' where tradeNid=$trade_id ";
+        $ret = \Yii::$app->db->createCommand($sql)->execute();
+        if($ret) {
+            return ['msg' => 'success'];
+        }
+        return ['msg' => 'failed'];
     }
 
     /**
