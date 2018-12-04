@@ -8,8 +8,10 @@
 namespace backend\modules\v1\models;
 
 use backend\modules\v1\utils\Handler;
+use yii\data\ActiveDataProvider;
 use yii\data\SqlDataProvider;
 use yii\db\Exception;
+use yii\db\Query;
 use yii\helpers\ArrayHelper;
 use \PhpOffice\PhpSpreadsheet\Reader\Csv;
 
@@ -343,19 +345,27 @@ class ApiTinyTool
     public static function getRiskyOrder($cond)
     {
         $beginDate = $cond['beginDate'];
-        $endDate = $cond['endDate'];
-        if (empty($beginDate) && empty($endDate)) {
-            $sql = "select tradeNid,orderTime,suffix,buyerId,shipToName,shipToStreet,
-              shipToStreet2,shipToCity,shipToZip,shipToCountryCode,shipToPhoneNum,completeStatus,processor
-              from riskyTrades";
-        } else {
-            $sql = "select tradeNid,orderTime,suffix,buyerId,shipToName,shipToStreet,
-            shipToStreet2,shipToCity,shipToZip,shipToCountryCode,shipToPhoneNum,completeStatus,processor
-             from riskyTrades where orderTime BETWEEN '$beginDate' and date_add('$endDate',INTERVAL 1 day)";
+        $endDate = $cond['endDate']? date('Y-m-d',strtotime('+1 day',strtotime($cond['endDate']))):'';
+        $pageSize = $cond['pageSize'] ?: 10;
+        $query = (new Query())->select(
+            'tradeNid,orderTime,suffix,buyerId,
+            shipToName,shipToStreet,shipToStreet2,shipToCity,
+            shipToZip,shipToCountryCode,shipToPhoneNum,
+            completeStatus,processor')->from('riskyTrades');
+        if (!empty($beginDate) || !empty($endDate)) {
+            $query->andFilterWhere(['between','orderTime',$beginDate,$endDate]);
+
         }
 
-        $db = \Yii::$app->db;
-        return $db->createCommand($sql)->queryAll();
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            'db' => \Yii::$app->db,
+            'pagination' => [
+                'pageSize' => $pageSize
+            ],
+        ]);
+
+       return $provider;
     }
 
     /**

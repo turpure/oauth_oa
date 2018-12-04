@@ -909,7 +909,8 @@
 {
   "condition":{
     "beginDate":"2018-10-01",
-    "endDate":"2018-11-27"
+    "endDate":"2018-11-27",
+    "pageSize":"10"
   }
 }
 ```
