@@ -9,6 +9,7 @@ namespace backend\modules\v1\controllers;
 
 use backend\models\AuthAssignment;
 use backend\models\Requirements;
+use backend\modules\v1\utils\Handler;
 use yii\helpers\ArrayHelper;
 use Yii;
 use yii\data\ActiveDataProvider;
