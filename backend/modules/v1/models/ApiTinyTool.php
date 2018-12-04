@@ -347,6 +347,7 @@ class ApiTinyTool
         $beginDate = $cond['beginDate'];
         $endDate = $cond['endDate']? date('Y-m-d',strtotime('+1 day',strtotime($cond['endDate']))):'';
         $pageSize = $cond['pageSize'] ?: 10;
+        $currentPage = $cond['currentPage'] ?: 1;
         $query = (new Query())->select(
             'tradeNid,orderTime,suffix,buyerId,
             shipToName,shipToStreet,shipToStreet2,shipToCity,
@@ -361,7 +362,8 @@ class ApiTinyTool
             'query' => $query,
             'db' => \Yii::$app->db,
             'pagination' => [
-                'pageSize' => $pageSize
+                'pageSize' => $pageSize,
+                'page' => $currentPage - 1
             ],
         ]);
 
