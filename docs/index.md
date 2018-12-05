@@ -1033,8 +1033,83 @@
     }
 }
 ```
-
-
 删除和详情restful格式接口可用
 
 
+# v1/news 信息更新
+
+## 信息列表
+* 接口名称：信息列表
+* 请求方法：get
+* 请求示例：v1/news/index
+* 请求参数： 
+           type 类型   string  index-- 首页列表， list 查看列表
+           title 标题 string  
+           star 星级  int 1 2 3 4 5
+           isTop 是否置顶  int 0 否 1 是
+          
+       
+ ## 置顶
+* 接口名称：置顶
+* 请求方法：post
+* 请求示例：v1/news/top
+* 请求参数： 
+         id  信息ID  int 
+         isTop 是否置顶  int 0 否 1 是
+         
+## 创建
+* 接口名称：创建
+* 请求方法：post
+* 请求示例：v1/news/create
+* 请求参数： 
+         title 标题 string  
+         detail 标题 string  
+         star 星级  int 1 2 3 4 5 
+         isTop 是否置顶  int 0 否 1 是
+
+```json
+{
+    "code": 200,
+    "message": "success",
+    "data": {
+        "title": "test",
+        "detail": "11111",
+        "star": "2",
+        "isTop": "1",
+        "createDate": "2018-12-05 16:03:58",
+        "id": 3
+    }
+}
+```
+     
+## 更新
+* 接口名称：更新
+* 请求方法：put
+* 请求示例：v1/news/create?id=xxx
+* 请求参数： 
+         title 标题 string  
+         detail 标题 string  
+         star 星级  int 1 2 3 4 5 
+         isTop 是否置顶  int 0 否 1 是
+
+```json
+{
+    "code": 200,
+    "message": "success",
+    "data": {
+        "title": "test",
+        "detail": "11111",
+        "star": "2",
+        "isTop": "1",
+        "createDate": "2018-12-05 16:03:58",
+        "id": 3
+    }
+}
+```    
+## 删除
+* 接口名称：删除
+* 请求方法：delete
+* 请求示例：v1/news/delete?id=xxx
+
+
+          

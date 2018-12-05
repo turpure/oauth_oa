@@ -24,6 +24,12 @@ return [
     ],
     'language' => 'zh-CN',
     'components' => [
+        'formatter' => [
+            'class' => 'yii\i18n\Formatter',
+            'dateFormat' => 'php:Y-M-d',
+            'datetimeFormat' => 'php:Y-M-d H:i:s',
+            'timeFormat' => 'php:H:i:s',
+        ],
         'request' => [
             'csrfParam' => '_csrf-backend',
             'parsers' => [
