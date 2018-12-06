@@ -37,7 +37,7 @@ class News extends \yii\db\ActiveRecord
             [['title'], 'required'],
             [['star', 'isTop'], 'integer'],
             [['createDate', 'updateDate'], 'safe'],
-            [['title', 'detail'], 'string'],
+            [['title', 'detail', 'creator'], 'string'],
         ];
     }
 
