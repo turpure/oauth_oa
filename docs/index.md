@@ -1085,7 +1085,7 @@
 ## 更新
 * 接口名称：更新
 * 请求方法：put
-* 请求示例：v1/news/create?id=xxx
+* 请求示例：v1/news/update?id=xxx
 * 请求参数： 
          title 标题 string  
          detail 标题 string  

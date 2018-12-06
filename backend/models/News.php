@@ -15,8 +15,8 @@ use yii\db\Expression;
  * @property string $detail 详情
  * @property int $star 星级
  * @property int $isTop 是否置顶
- * @property string $createdate 创建时间
- * @property string $updatedate 最后更新时间
+ * @property string $createDate 创建时间
+ * @property string $updateDate 最后更新时间
  */
 class News extends \yii\db\ActiveRecord
 {
@@ -57,7 +57,8 @@ class News extends \yii\db\ActiveRecord
         ];
     }
 
-    /*public function behaviors()
+
+    public function behaviors()
     {
         return //array_merge(parent::behaviors(),
             [
@@ -65,15 +66,14 @@ class News extends \yii\db\ActiveRecord
                     'class' => TimestampBehavior::className(),
                     'attributes' => [
                         # 创建之前
-                        ActiveRecord::EVENT_BEFORE_INSERT => ['createDate'],
-                        //ActiveRecord::EVENT_BEFORE_UPDATE => 'updateDate',
+                        ActiveRecord::EVENT_BEFORE_INSERT => ['createDate','updateDate'],
+                        ActiveRecord::EVENT_BEFORE_UPDATE => ['updateDate'],
                     ],
                     #设置默认值
-                    //'value' => date('Y-m-d H:i:s')
-                    'value' => new Expression('NOW()')
+                    'value' => date('Y-m-d H:i:s')
                 ],
             ];
        // );
-    }*/
+    }
 
 }
