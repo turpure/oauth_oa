@@ -22,14 +22,15 @@ class ApiReport
     public static function getSalesReport($condition)
     {
         $con = Yii::$app->db;
-        $sql = 'call report_salesProfit(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse);';
+        $sql = 'call report_salesProfit(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse,:exchangeRate);';
         $sqlParams = [
             ':dateType' => $condition['dateType'],
             ':beginDate' => $condition['beginDate'],
             ':endDate' => $condition['endDate'],
             ':queryType' => $condition['queryType'],
             ':store' => $condition['store'],
-            ':warehouse' => $condition['warehouse']
+            ':warehouse' => $condition['warehouse'],
+            ':exchangeRate' => $condition['exchangeRate']
         ];
         try {
             return $con->createCommand($sql)->bindValues($sqlParams)->queryAll();

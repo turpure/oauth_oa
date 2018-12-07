@@ -8,6 +8,7 @@
 namespace backend\modules\v1\controllers;
 use backend\modules\v1\controllers\AdminController;
 use backend\modules\v1\models\ApiReport;
+use backend\modules\v1\models\ApiSettings;
 use yii\data\ArrayDataProvider;
 use yii\data\SqlDataProvider;
 use yii\filters\VerbFilter;
@@ -57,7 +58,7 @@ class ReportController extends  AdminController
             'username' => isset($cond['member'])?$cond['member']:[],
             'store' => isset($cond['account'])?$cond['account']:[]
         ];
-
+        $exchangeRate = ApiSettings::getExchangeRate();
         $paramsFilter = Handler::paramsHandler($params);
         $condition= [
             'dateType' =>$cond['dateType']?:0,
@@ -66,6 +67,7 @@ class ReportController extends  AdminController
             'queryType' => $paramsFilter['queryType'],
             'store' => implode(',',$paramsFilter['store']),
             'warehouse' => $cond['store']?"'".implode(',',$cond['store'])."'":'',
+            'exchangeRate' => $exchangeRate['salerRate']
         ];
         return ApiReport::getSalesReport($condition);
     }
