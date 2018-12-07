@@ -159,10 +159,18 @@ class TinyToolController extends AdminController
         $res['Weight'] = $res['Weight'] * $post['num'];
         $data['detail'] = $res;
 
-        if($res['Weight'] > Yii::$app->params['weight']){
-            $cost = Yii::$app->params['bwBasic'] + Yii::$app->params['bwPrice'] * $res['Weight'];
-        }else{
+        if($res['Weight'] < Yii::$app->params['weight1']){
+            $name = Yii::$app->params['transport1'];
             $cost = Yii::$app->params['swBasic'] + Yii::$app->params['swPrice'] * $res['Weight'];
+        }elseif($res['Weight'] < Yii::$app->params['weight2']){
+            $name = Yii::$app->params['transport1'];
+            $cost = Yii::$app->params['bwBasic'] + Yii::$app->params['bwPrice'] * $res['Weight'];
+        }elseif($res['Weight'] < Yii::$app->params['weight3']){
+            $name = Yii::$app->params['transport2'];
+            $cost = Yii::$app->params['wBasic'] + Yii::$app->params['price2'] * $res['Weight'];
+        }else{
+            $name = Yii::$app->params['transport2'];
+            $cost = Yii::$app->params['wBasic'] + Yii::$app->params['price3'] * $res['Weight'];
         }
 
         //根据售价获取利润率
@@ -172,7 +180,7 @@ class TinyToolController extends AdminController
         //根据利润率获取售价
         $data['price'] = ApiUkFic::getPrice($post['rate'], $cost ,$res['costprice']);
         $data['transport'] = [
-            'name' => Yii::$app->params['transport'],
+            'name' => $name,
             'cost' => round($cost,2),
         ];
         //print_r($data);exit;
