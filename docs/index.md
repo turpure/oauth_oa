@@ -1160,6 +1160,71 @@
 * 请求示例：v1/condition/goods-category
 * 请求参数：  pid  分类父ID  默认为0
 
+ ### 创建
+* 接口名称：创建
+* 请求方法：post
+* 请求示例：v1/news/create
+* 请求参数： 
+```json
+{
+    "condition": {
+    	"img":"",
+		"cate":25,
+		"subCate":"",
+		"introducer":"",
+		"vendor1":"",
+		"origin1":"",
+		"developer":"",
+		"introReason":""
+	}
+}
+```
+ ### 编辑
+* 接口名称：编辑
+* 请求方法：put
+* 请求示例：v1/news/update
+* 请求参数： 
+```json
+{
+    "condition": {
+        "nid":7,
+    	"img":"",
+		"cate":25,
+		"subCate":"",
+		"vendor1":"",
+		"origin1":"",
+		"developer":"",
+		"introReason":""
+	}
+}
+```
+
+ ### 删除 / 批量删除
+* 接口名称：删除/ 批量删除
+* 请求方法：delete
+* 请求示例：v1/news/delete
+* 请求参数： 
+```json
+{
+    "condition": {
+        "nid":[7]
+	}
+}
+```
+
+ ### 认领
+* 接口名称：认领
+* 请求方法：post
+* 请求示例：v1/news/claim
+* 请求参数： 
+```json
+{
+    "condition": {
+        "nid":7,
+        "devStatus":"正向认领"
+	}
+}
+```
 
 
 

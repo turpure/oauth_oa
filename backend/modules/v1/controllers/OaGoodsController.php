@@ -5,7 +5,6 @@ namespace backend\modules\v1\controllers;
 use backend\modules\v1\models\ApiGoods;
 use Yii;
 use backend\models\OaGoods;
-use yii\helpers\ArrayHelper;
 
 /**
  * OaGoodsController implements the CRUD actions for OaGoods model.
@@ -31,7 +30,10 @@ class OaGoodsController extends AdminController
         return $actions;
     }
 
-
+    /**
+     *           产品推荐
+     * =================================================================
+     */
     /**
      * 产品推荐列表
      * @return \yii\data\ActiveDataProvider
@@ -63,133 +65,139 @@ class OaGoodsController extends AdminController
      * @param integer $typeid
      * @return mixed
      */
-    public function actionCreate($pid = 0, $typeid = 1)
+    public function actionCreate()
     {
+        $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
         $model = new OaGoods();
-
-        $request = Yii::$app->request;
-        if ($request->isPost) {
-            if ($model->load(Yii::$app->request->post()) && $model->save()) {
-                //默认值更新到当前行中
-                $id = $model->nid;
-                $cate = $model->cate;
-                $cateModel = GoodsCats::find()->where(['nid' => $cate])->one();
-                $current_model = $this->findModel($id);
-                $user = yii::$app->user->identity->username;
-                //根据类目ID更新类目名称
-                $current_model->catNid = $cate;
-                $current_model->cate = $cateModel->CategoryName;
-                $current_model->devNum = '20' . date('ymd', time()) . strval($id);
-                $current_model->devStatus = '';
-                $current_model->checkStatus = '未认领';
-                $current_model->introducer = $user;
-                $current_model->updateDate = strftime('%F %T');
-                $current_model->createDate = strftime('%F %T');
-                $current_model->update(false);
-                return $this->redirect(['index']);
-            } else {
-
-                echo "something Wrong!";
+        $post = Yii::$app->request->post('condition');
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            $cateModel = Yii::$app->py_db->createCommand("SELECT CategoryName FROM B_GoodsCats WHERE NID = :nid")
+                ->bindValues([':nid' => $post['cate']])->queryOne();
+            $subCateNameModel = Yii::$app->py_db->createCommand("SELECT CategoryName FROM B_GoodsCats WHERE NID = :nid")
+                ->bindValues([':nid' => $post['subCate']])->queryOne();
+            $model->attributes = $post;
+            $model->catNid = $post['cate'];
+            $model->cate = $cateModel && isset($cateModel['CategoryName']) ? $cateModel['CategoryName'] : '';
+            $model->subCate = $subCateNameModel && isset($subCateNameModel['CategoryName']) ? $subCateNameModel['CategoryName'] : '';
+            $model->devStatus = '';
+            $model->checkStatus = '未认领';
+            $model->introducer = $user->username;
+            $model->updateDate = $model->createDate = date('Y-m-d H:i:s');
+            $ret = $model->save();
+            if (!$ret) {
+                throw new \Exception('Create new product failed!');
             }
-
+            $model->devNum = date('Ymd', time()) . strval($model->nid);
+            $model->save();
+            $transaction->commit();
+            return $model;
+        } catch (\Exception $why) {
+            $transaction->rollBack();
+            return
+                [
+                    'code' => 400,
+                    //'message' => '置顶失败！',
+                    'message' => $why->getMessage(),
+                ];
         }
-
-        if ($request->isGet) {
-            $pid = (int)Yii::$app->request->get('pid');
-            $typeid = (int)Yii::$app->request->get('typeid');
-            $model->getCatList($pid);
-            if ($typeid == 1) {
-                Yii::$app->response->format = Response::FORMAT_JSON;
-                return $model->getCatList($pid);
-            }
-
-            $sql = "SELECT u.username FROM auth_assignment AS au LEFT JOIN [user] u ON u.id=au.user_id
-                    WHERE item_name LIKE '%产品开发%' AND u.id IS NOT NULL ORDER BY u.username";
-            $dev = Yii::$app->db->createCommand($sql)->queryAll();
-            //print_r($dev);exit;
-
-            $devList = ArrayHelper::map($dev,'username','username');
-
-            return $this->renderAjax('create', [
-                'model' => $model,
-                'devList' => $devList,
-            ]);
-        }
-
     }
 
     /**
-     * Displays a single OaGoods model.
-     * @param integer $id
-     * @return mixed
-     */
-    public function actionForwardView($id)
-    {
-        return $this->renderAjax('forward-view', [
-            'model' => $this->findModel($id),
-        ]);
-    }
-
-
-
-    /**
-     * Updates an existing OaGoods model.
+     * 更新产品推荐内容
      * If update is successful, the browser will be redirected to the 'view' page.
-     * @param integer $id
-     *
      * @return mixed
      */
-    public function actionUpdate($id)
+    public function actionUpdate()
     {
-        $model = $this->findModel($id);
-        if ($model->load(Yii::$app->request->post()) && $model->save(false)) {
-            //默认值更新到当前行中
-            $id = $model->nid;
-            $cate = $model->cate;
-            $cateModel = GoodsCats::find()->where(['nid' => $cate])->one();
-            $current_model = clone $model;
-            //根据类目ID更新类目名称
-            $current_model->catNid = $cate;
-            $current_model->cate = $cateModel->CategoryName;
-            $subCateNameModel = GoodsCats::find()->where(['NID' => $model->subCate])->one();
-            $current_model->subCate = $subCateNameModel->CategoryName;
+        $post = Yii::$app->request->post('condition');
+        $model = OaGoods::findOne($post['nid']);
 
-            $current_model->update(false);
-            return $this->redirect(['index']);
+        $cateModel = Yii::$app->py_db->createCommand("SELECT CategoryName FROM B_GoodsCats WHERE NID = :nid")
+            ->bindValues([':nid' => $post['cate']])->queryOne();
+        //根据类目ID更新类目名称
+        $model->attributes = $post;
+        $model->catNid = $post['cate'];
+        $model->cate = $cateModel && isset($cateModel['CategoryName']) ? $cateModel['CategoryName'] : '';
+        $subCateNameModel = Yii::$app->py_db->createCommand("SELECT CategoryName FROM B_GoodsCats WHERE NID = :nid")
+            ->bindValues([':nid' => $post['subCate']])->queryOne();
+        $model->subCate = $subCateNameModel && isset($subCateNameModel['CategoryName']) ? $subCateNameModel['CategoryName'] : '';
+        $model->updateDate = date('Y-m-d H:i:s');
+        $ret = $model->save();
+        if($ret){
+            return true;
         } else {
-            //根据不同的状态返回不同的view
-            $checkStatus = $model->checkStatus;
-            if ($checkStatus === '未通过') {
-                return $this->renderAjax('updateReset', [
-                    'model' => $model,
-                ]);
-            } else {
+            return [
+                'code' => 400,
+                'message' => 'Update product failed！'
+            ];
+        }
+    }
 
-                $request = Yii::$app->request;
-                if ($request->isGet) {
-                    $cid = (int)Yii::$app->request->get('pid');
-                    $typeid = (int)Yii::$app->request->get('typeid');
-                    $model->getCatList($cid);
-                    if ($typeid == 1) {
-                        Yii::$app->response->format = Response::FORMAT_JSON;
-                        return $model->getCatList($cid);
+
+    /**
+     * 删除/批量删除产品推荐 todo
+     * If deletion is successful echo
+     * @return mixed
+     */
+    public function actionDelete()
+    {
+        $post = Yii::$app->request->post('condition');
+        if (!$post['nid']) {
+            return [
+                'code' => 400,
+                'message' => 'Please select the item to delete！'
+            ];
+        }
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            foreach ($post['nid'] as $id) {
+                $sql = "select isnull(completeStatus,'') as completeStatus from oa_goodsinfo where goodsid= :id";
+                //$complete_status_query = OaGoodsinfo::findBySql($sql, [":id" => $post['id']])->one();
+                $complete_status_query = '';
+                if (!empty($complete_status_query)) {
+                    $completeStatus = $complete_status_query->completeStatus;
+                    if (empty($completeStatus)) {
+                        OaGoods::deleteAll(['nid' => $id]);
+                    } else {
+                        throw new \Exception('Perfected products cannot be deleted!');
                     }
-                    //获取开发员列表
-                    $sql = "SELECT u.username FROM auth_assignment AS au LEFT JOIN [user] u ON u.id=au.user_id
-                    WHERE item_name LIKE '%产品开发%' AND u.id IS NOT NULL ORDER BY u.username";
-                    $dev = Yii::$app->db->createCommand($sql)->queryAll();
-
-                    $devList = ArrayHelper::map($dev,'username','username');
-                    return $this->renderAjax('update', [
-                        'model' => $model,
-                        'devList' => $devList,
-                    ]);
+                } else {
+                    OaGoods::deleteAll(['nid' => $id]);
                 }
-
-
             }
+            $transaction->commit();
+            return true;
+        } catch (\Exception $why) {
+            $transaction->rollBack();
+            return
+                [
+                    'code' => 400,
+                    //'message' => '置顶失败！',
+                    'message' => $why->getMessage(),
+                ];
+        }
+    }
 
-
+    /**
+     * 认领
+     * @throws NotFoundHttpException
+     */
+    public function actionClaim()
+    {
+        $post = Yii::$app->request->post('condition');
+        $model = OaGoods::findOne($post['nid']);
+        $model->devStatus = $post['devStatus'];
+        $model->checkStatus = '已认领';
+        $model->updateDate = date('Y-m-d H:i:s');
+        $ret = $model->save();
+        if($ret){
+            return true;
+        } else {
+            return [
+                'code' => 400,
+                'message' => 'Claim product failed！'
+            ];
         }
     }
 
@@ -211,7 +219,7 @@ class OaGoodsController extends AdminController
             $stockUp = $request->post()['OaForwardGoods']['stockUp'];
             $user = Yii::$app->user->identity->username;
 
-            if  ($model->load($request->post()) && $model->save()) {
+            if ($model->load($request->post()) && $model->save()) {
                 //默认值更新到当前行中
                 $id = $model->nid;
                 $current_model = $this->findModel($id);
@@ -221,15 +229,14 @@ class OaGoodsController extends AdminController
                 $sub_cate = $model->subCate;
                 try {
                     $cateModel = GoodsCats::find()->where(['nid' => $sub_cate])->one();
-                }
-                catch (\Exception $e) {
+                } catch (\Exception $e) {
                     $cateModel = GoodsCats::find()->where(['CategoryName' => $sub_cate])->one();
                 }
                 //自动计算预估月毛利
                 $price = $current_model->salePrice;
                 $rate = $current_model->hopeRate;
                 $sale = $current_model->hopeSale;
-                $moth_profit = $price*$rate*$sale*0.01;
+                $moth_profit = $price * $rate * $sale * 0.01;
                 $current_model->hopeMonthProfit = $moth_profit;
                 $current_model->devNum = '20' . date('ymd', time()) . strval($id);
                 $current_model->devStatus = '正向认领';
@@ -269,6 +276,19 @@ class OaGoodsController extends AdminController
 
 
     /**
+     * Displays a single OaGoods model.
+     * @param integer $id
+     * @return mixed
+     */
+    public function actionForwardView($id)
+    {
+        return $this->renderAjax('forward-view', [
+            'model' => $this->findModel($id),
+        ]);
+    }
+
+
+    /**
      * Creates a new OaGoods model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
@@ -282,7 +302,7 @@ class OaGoodsController extends AdminController
         $request = Yii::$app->request;
         if ($request->isPost) {
 
-            if ($model->load(Yii::$app->request->post())&&$model->save(false) ) {
+            if ($model->load(Yii::$app->request->post()) && $model->save(false)) {
 
                 //默认值更新到当前行中
                 $id = $model->nid;
@@ -293,15 +313,14 @@ class OaGoodsController extends AdminController
                 try {
 
                     $cateModel = GoodsCats::find()->where(['nid' => $sub_cate])->one();
-                }
-                catch (\Exception $e) {
+                } catch (\Exception $e) {
                     $cateModel = GoodsCats::find()->where(['CategoryName' => $sub_cate])->one();
                 }
                 $current_model->cate = $cateModel->CategoryName;
                 $price = $current_model->salePrice;
                 $rate = $current_model->hopeRate;
                 $sale = $current_model->hopeSale;
-                $moth_profit = $price*$rate*$sale*0.01;
+                $moth_profit = $price * $rate * $sale * 0.01;
                 $current_model->hopeMonthProfit = $moth_profit;
                 $current_model->devNum = '20' . date('ymd', time()) . strval($id);
                 $current_model->devStatus = '逆向认领';
@@ -348,18 +367,17 @@ class OaGoodsController extends AdminController
      */
     public function actionForwardUpdate($id)
     {
-        $model = OaForwardGoods::find()->where(['nid' => $id]) ->one();
+        $model = OaForwardGoods::find()->where(['nid' => $id])->one();
         $canStock = $this->validateStock();
 
-        if ($model->load(Yii::$app->request->post()) && $model->save(false) ) {
+        if ($model->load(Yii::$app->request->post()) && $model->save(false)) {
 
             //默认值更新到当前行中
             $sub_cate = $model->subCate;
             try {
 
                 $cateModel = GoodsCats::find()->where(['nid' => $sub_cate])->one();
-            }
-            catch (\Exception $e) {
+            } catch (\Exception $e) {
                 $cateModel = GoodsCats::find()->where(['CategoryName' => $sub_cate])->one();
             }
 
@@ -368,7 +386,7 @@ class OaGoodsController extends AdminController
             $price = $current_model->salePrice;
             $rate = $current_model->hopeRate;
             $sale = $current_model->hopeSale;
-            $moth_profit = $price*$rate*$sale*0.01;
+            $moth_profit = $price * $rate * $sale * 0.01;
             $current_model->hopeMonthProfit = $moth_profit;
             $current_model->catNid = $cateModel->CategoryParentID;
             $current_model->cate = $cateModel->CategoryParentName;
@@ -395,17 +413,16 @@ class OaGoodsController extends AdminController
 
     public function actionForwardUpdateCheck($id)
     {
-        $model = OaForwardGoods::find()->where(['nid' => $id]) ->one();
+        $model = OaForwardGoods::find()->where(['nid' => $id])->one();
 
 
-        if ($model->load(Yii::$app->request->post()) && $model->save(false) ) {
+        if ($model->load(Yii::$app->request->post()) && $model->save(false)) {
 
             //默认值更新到当前行中
             $sub_cate = $model->subCate;
             try {
                 $cateModel = GoodsCats::find()->where(['nid' => $sub_cate])->one();
-            }
-            catch (\Exception $e) {
+            } catch (\Exception $e) {
                 $cateModel = GoodsCats::find()->where(['CategoryName' => $sub_cate])->one();
             }
 
@@ -414,7 +431,7 @@ class OaGoodsController extends AdminController
             $price = $current_model->salePrice;
             $rate = $current_model->hopeRate;
             $sale = $current_model->hopeSale;
-            $moth_profit = $price*$rate*$sale*0.01;
+            $moth_profit = $price * $rate * $sale * 0.01;
             $current_model->hopeMonthProfit = $moth_profit;
             $current_model->catNid = $cateModel->CategoryParentID;
             $current_model->cate = $cateModel->CategoryParentName;
@@ -454,7 +471,7 @@ class OaGoodsController extends AdminController
      */
     public function actionBackwardUpdate($id)
     {
-        $model = OaForwardGoods::find()->where(['nid' => $id]) ->one();
+        $model = OaForwardGoods::find()->where(['nid' => $id])->one();
         $canStock = $this->validateStock();
 
         if ($model->load(Yii::$app->request->post()) && $model->save(false)) {
@@ -462,20 +479,19 @@ class OaGoodsController extends AdminController
             $cate = $model->cate;
             $cateModel = GoodsCats::find()->where(['nid' => $cate])->one();
             //根据类目ID更新类目名称
-        $sub_cate = $model->subCate;
-        try {
-            $cateModel = GoodsCats::find()->where(['nid' => $sub_cate])->one();
-        }
-        catch (\Exception $e) {
-            $cateModel = GoodsCats::find()->where(['CategoryName' => $sub_cate])->one();
-        }
+            $sub_cate = $model->subCate;
+            try {
+                $cateModel = GoodsCats::find()->where(['nid' => $sub_cate])->one();
+            } catch (\Exception $e) {
+                $cateModel = GoodsCats::find()->where(['CategoryName' => $sub_cate])->one();
+            }
 
-        //根据类目ID更新类目名称
+            //根据类目ID更新类目名称
             $current_model = $this->findModel($id);
             $price = $current_model->salePrice;
             $rate = $current_model->hopeRate;
             $sale = $current_model->hopeSale;
-            $moth_profit = $price*$rate*$sale*0.01;
+            $moth_profit = $price * $rate * $sale * 0.01;
             $current_model->hopeMonthProfit = $moth_profit;
             $current_model->catNid = $cateModel->CategoryParentID;
             $current_model->cate = $cateModel->CategoryParentName;
@@ -503,15 +519,14 @@ class OaGoodsController extends AdminController
 
     public function actionBackwardUpdateCheck($id)
     {
-        $model = OaForwardGoods::find()->where(['nid' => $id]) ->one();
-        if ($model->load(Yii::$app->request->post()) && $model->save(false) ) {
+        $model = OaForwardGoods::find()->where(['nid' => $id])->one();
+        if ($model->load(Yii::$app->request->post()) && $model->save(false)) {
 
             //默认值更新到当前行中
             $sub_cate = $model->subCate;
             try {
                 $cateModel = GoodsCats::find()->where(['nid' => $sub_cate])->one();
-            }
-            catch (\Exception $e) {
+            } catch (\Exception $e) {
                 $cateModel = GoodsCats::find()->where(['CategoryName' => $sub_cate])->one();
             }
 
@@ -520,7 +535,7 @@ class OaGoodsController extends AdminController
             $price = $current_model->salePrice;
             $rate = $current_model->hopeRate;
             $sale = $current_model->hopeSale;
-            $moth_profit = $price*$rate*$sale*0.01;
+            $moth_profit = $price * $rate * $sale * 0.01;
             $current_model->hopeMonthProfit = $moth_profit;
             $current_model->catNid = $cateModel->CategoryParentID;
             $current_model->cate = $cateModel->CategoryParentName;
@@ -537,34 +552,6 @@ class OaGoodsController extends AdminController
      * @brief delete products in oa_goodsInfo
      */
 
-    /**
-     * Deletes an existing OaGoods model.
-     * If deletion is successful echo
-     * @return mixed
-     */
-    public function actionDelete()
-    {
-        $id = $_POST['id'];
-        $sql = "select isnull(completeStatus,'') as completeStatus from oa_goodsinfo where goodsid= :id";
-        $complete_status_query = OaGoodsinfo::findBySql($sql,[":id"=>$id])->one();
-        if(!empty($complete_status_query)){
-            $completeStatus = $complete_status_query->completeStatus;
-            if(empty($completeStatus)){
-                $this->findModel($id)->delete();
-                $msg = '删除成功!';
-            }else{
-                $msg = '已完善的产品不能轻易删除!';
-            }
-        }else{
-            $this->findModel($id)->delete();
-            $msg = '删除成功!';
-        }
-
-        return $msg ;
-
-    }
-
-
 
     /**
      *  lots fail simultaneously
@@ -573,26 +560,25 @@ class OaGoodsController extends AdminController
      */
     public function actionDeleteLots()
     {
-        if(!empty($_POST)){
-            $ids =$_POST["id"];
+        if (!empty($_POST)) {
+            $ids = $_POST["id"];
             $sql = "select isnull(completeStatus,'') as completeStatus from oa_goodsinfo where goodsid= :id";
-            if(!empty($ids)){
-                try{
+            if (!empty($ids)) {
+                try {
                     foreach ($ids as $id) {
-                        $complete_status_query = OaGoodsinfo::findBySql($sql,[":id"=>$id])->one();
-                        if(!empty($complete_status_query)){
+                        $complete_status_query = OaGoodsinfo::findBySql($sql, [":id" => $id])->one();
+                        if (!empty($complete_status_query)) {
                             $completeStatus = $complete_status_query->completeStatus;
-                            if(empty($completeStatus)){
+                            if (empty($completeStatus)) {
                                 $this->findModel($id)->delete();
                             }
 
-                        }else{
+                        } else {
                             $this->findModel($id)->delete();
                         }
                     }
                     $msg = '删除成功!';
-                }
-                catch (\yii\db\Exception $why) {
+                } catch (\yii\db\Exception $why) {
                     $msg = '删除失败!';
                 }
 
@@ -629,7 +615,7 @@ class OaGoodsController extends AdminController
     public function actionBackwardRecheck($id)
     {
 
-        $model = OaForwardGoods::find()->where(['nid' => $id]) ->one();
+        $model = OaForwardGoods::find()->where(['nid' => $id])->one();
 
         if ($model->load(Yii::$app->request->post()) && $model->save(false)) {
             //默认值更新到当前行中
@@ -639,8 +625,7 @@ class OaGoodsController extends AdminController
             $sub_cate = $model->subCate;
             try {
                 $cateModel = GoodsCats::find()->where(['nid' => $sub_cate])->one();
-            }
-            catch (\Exception $e) {
+            } catch (\Exception $e) {
                 $cateModel = GoodsCats::find()->where(['CategoryName' => $sub_cate])->one();
             }
 
@@ -649,7 +634,7 @@ class OaGoodsController extends AdminController
             $price = $current_model->salePrice;
             $rate = $current_model->hopeRate;
             $sale = $current_model->hopeSale;
-            $moth_profit = $price*$rate*$sale*0.01;
+            $moth_profit = $price * $rate * $sale * 0.01;
             $current_model->hopeMonthProfit = $moth_profit;
             $current_model->catNid = $cateModel->CategoryParentID;
             $current_model->cate = $cateModel->CategoryParentName;
@@ -658,7 +643,7 @@ class OaGoodsController extends AdminController
             $current_model->update(false);
             return $this->redirect(['backward-products']);
         }
-        echo  "something wrong";
+        echo "something wrong";
     }
 
 
@@ -671,16 +656,15 @@ class OaGoodsController extends AdminController
     public function actionForwardRecheck($id)
     {
 
-        $model = OaForwardGoods::find()->where(['nid' => $id]) ->one();
+        $model = OaForwardGoods::find()->where(['nid' => $id])->one();
         //先更新数据
-        if ($model->load(Yii::$app->request->post())  ) {
+        if ($model->load(Yii::$app->request->post())) {
             //默认值更新到当前行中
             $sub_cate = $model->subCate;
             try {
 
                 $cateModel = GoodsCats::find()->where(['nid' => $sub_cate])->one();
-            }
-            catch (\Exception $e) {
+            } catch (\Exception $e) {
                 $cateModel = GoodsCats::find()->where(['CategoryName' => $sub_cate])->one();
             }
 
@@ -690,7 +674,7 @@ class OaGoodsController extends AdminController
             $price = $current_model->salePrice;
             $rate = $current_model->hopeRate;
             $sale = $current_model->hopeSale;
-            $moth_profit = $price*$rate*$sale*0.01;
+            $moth_profit = $price * $rate * $sale * 0.01;
             $current_model->hopeMonthProfit = $moth_profit;
             $current_model->catNid = $cateModel->CategoryParentID;
             $current_model->cate = $cateModel->CategoryParentName;
@@ -699,7 +683,7 @@ class OaGoodsController extends AdminController
             $current_model->update(false);
             return $this->redirect(['forward-products']);
         }
-        echo  "something wrong";
+        echo "something wrong";
     }
 
 
@@ -844,16 +828,6 @@ class OaGoodsController extends AdminController
     }
 
 
-    public function actionHeart($id)
-    {
-        $model = $this->findModel($id);
-
-        return $this->renderAjax('heart', [
-            'model' => $model,
-        ]);
-    }
-
-
     // Forward action
 
     public function actionForward($id)
@@ -888,7 +862,7 @@ class OaGoodsController extends AdminController
     public function actionForwardProducts()
     {
         $searchModel = new OaGoodsSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams, '正向认领', '','正向开发');
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams, '正向认领', '', '正向开发');
 
         return $this->render('forwardProducts', [
             'searchModel' => $searchModel,
@@ -900,7 +874,7 @@ class OaGoodsController extends AdminController
     public function actionBackwardProducts()
     {
         $searchModel = new OaGoodsSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams, '逆向认领', '','逆向开发');
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams, '逆向认领', '', '逆向开发');
 
         return $this->render('backwardProducts', [
             'searchModel' => $searchModel,
@@ -971,11 +945,11 @@ class OaGoodsController extends AdminController
     {
         $user = Yii::$app->user->identity->username;
         $userid = Yii::$app->user->identity->getId();
-        $User = User::findOne(['id'=>$userid]);
-        $canStock = $User->canStockUp?:0;
+        $User = User::findOne(['id' => $userid]);
+        $canStock = $User->canStockUp ?: 0;
 
         //备货的人才接受检查
-        if ($canStock === 0){
+        if ($canStock === 0) {
             return 'no';
         }
         $stockUsed = "SELECT count(og.nid) AS usedStock FROM oa_goods AS og  
@@ -989,19 +963,17 @@ class OaGoodsController extends AdminController
         $connection = Yii::$app->db;
 
         try {
-            $used = $connection->createCommand($stockUsed,[':developer'=>$user])->queryAll()[0]['usedStock'];
-        }
-        catch (\Exception $e) {
+            $used = $connection->createCommand($stockUsed, [':developer' => $user])->queryAll()[0]['usedStock'];
+        } catch (\Exception $e) {
             $used = 0;
         }
         try {
-            $have = $connection->createCommand($stockHave,[':developer'=>$user])->queryAll()[0]['haveStock'];
-        }
-        catch (\Exception $e) {
+            $have = $connection->createCommand($stockHave, [':developer' => $user])->queryAll()[0]['haveStock'];
+        } catch (\Exception $e) {
             $have = 0;
         }
-        if($have>0  && $have<=$used ) {
-           return 'no';
+        if ($have > 0 && $have <= $used) {
+            return 'no';
         }
         return 'yes';
     }
@@ -1010,11 +982,11 @@ class OaGoodsController extends AdminController
     {
         $user = Yii::$app->user->identity->username;
         $userid = Yii::$app->user->identity->getId();
-        $User = User::findOne(['id'=>$userid]);
-        $canStock = $User->canStockUp?:0;
+        $User = User::findOne(['id' => $userid]);
+        $canStock = $User->canStockUp ?: 0;
 
         //不备货的人才接受检查
-        if ($canStock > 0){
+        if ($canStock > 0) {
             return 'yes';
         }
         $numberUsed = "select count(og.nid) as usedStock  from oa_goods as og  
@@ -1028,19 +1000,17 @@ class OaGoodsController extends AdminController
                       and developer=:developer";
         $connection = Yii::$app->db;
         try {
-            $used = $connection->createCommand($numberUsed,[':developer'=>$user])->queryAll()[0]['usedStock'];
-        }
-        catch (\Exception $e) {
+            $used = $connection->createCommand($numberUsed, [':developer' => $user])->queryAll()[0]['usedStock'];
+        } catch (\Exception $e) {
             $used = 0;
         }
         try {
-            $have = $connection->createCommand($numberHave,[':developer'=>$user])->queryAll()[0]['haveStock'];
-        }
-        catch (\Exception $e) {
+            $have = $connection->createCommand($numberHave, [':developer' => $user])->queryAll()[0]['haveStock'];
+        } catch (\Exception $e) {
             $have = 0;
         }
 
-         if($have>0  && $have<=$used) {
+        if ($have > 0 && $have <= $used) {
             return 'no';
         }
         return 'yes';
