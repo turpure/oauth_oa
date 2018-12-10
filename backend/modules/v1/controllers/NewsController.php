@@ -39,6 +39,7 @@ class NewsController extends AdminController
     {
         $get = Yii::$app->request->get();
         $pageSize = isset($get['pageSize']) ? $get['pageSize'] : 10;
+        $page = isset($get['page']) ? $get['page'] - 1: 0;
         $type = isset($get['type']) && $get['type'] ? $get['type'] : null;
         $title = isset($get['title']) && $get['title'] ? $get['title'] : null;
         $star = isset($get['star']) && $get['star'] ? $get['star'] : null;
@@ -47,19 +48,20 @@ class NewsController extends AdminController
         $query = News::find();
         $query->andFilterWhere(["isTop" => $isTop, "star" => $star]);
         $query->andFilterWhere(['like', "title", $title]);
-        if ($type == 'index') {
-            return $query->orderBy('isTop DESC,updateDate DESC')->limit(10)->asArray()->all();
+        if ($type === 'index') {
+            $query->orderBy('isTop DESC,updateDate DESC');
         } else {
             $query->orderBy('updateDate DESC');
-            $provider = new ActiveDataProvider([
-                'query' => $query,
-                'db' => Yii::$app->db,
-                'pagination' => [
-                    'pageSize' => $pageSize
-                ],
-            ]);
-            return $provider;
         }
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            'db' => Yii::$app->db,
+            'pagination' => [
+                'pageSize' => $pageSize,
+                'page' => $page
+            ],
+        ]);
+        return $provider;
     }
 
 
