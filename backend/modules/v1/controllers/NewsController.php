@@ -67,24 +67,36 @@ class NewsController extends AdminController
     public function actionTop(){
         $post = Yii::$app->request->post();
         $model = News::findOne($post['id']);
-        if($model['isTop'] == $post['isTop']){
+        if(!$model){
             return [
                 'code' => 400,
-                'message' => $post['isTop']?'该信息已处置顶状态，不能进行置顶操作！':'该信息已处非置顶状态，不能进行取消置顶操作！',
+                'message' => "Cant't get the model information！",
             ];
         }
-        $model->isTop = $post['isTop'];
-        $res = $model->save();
-        //$res = News::updateAll(['isTop' => $post['isTop']],['id' => $post['id']]);
 
-        if($res) {
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            $res = News::updateAll(['isTop' => 0],['isTop' => 1]);
+            if (!$res) {
+                throw new \Exception('置顶失败!');
+            }
+            $model->isTop = $post['isTop'];
+            $ret = $model->save();
+            if (!$ret) {
+                throw new \Exception('置顶失败11!');
+            }
+            $transaction->commit();
             return true;
-        }else{
-            return [
+        } catch (\Exception $why) {
+            $transaction->rollBack();
+            return
+            [
                 'code' => 400,
-                'message' => $post['isTop']?'置顶失败！':'取消置顶失败！',
+                //'message' => '置顶失败！',
+                'message' => $why->getMessage(),
             ];
         }
+
     }
 
 }

@@ -99,4 +99,13 @@ class ConditionController extends AdminController
     {
         return ApiCondition::getGoodsCats();
     }
+
+    /**
+     * @brief brand category
+     */
+    public function actionGoodsCategory($pid = 0)
+    {
+        return ApiCondition::getGoodsCategory($pid);
+    }
+
 }

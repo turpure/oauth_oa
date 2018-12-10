@@ -1036,7 +1036,7 @@
 删除和详情restful格式接口可用
 
 
-# v1/news 信息更新
+# 信息更新
 
 ## 信息列表
 * 接口名称：信息列表
@@ -1110,6 +1110,57 @@
 * 接口名称：删除
 * 请求方法：delete
 * 请求示例：v1/news/delete?id=xxx
+
+
+# 产品中心
+
+##产品推荐
+
+### 产品推荐列表
+* 接口名称：产品推荐列表
+* 请求方法：post
+* 请求示例：v1/news/list
+* 请求参数： 
+```json
+{
+    "condition": {
+		"cate":"",
+		"introducer":"",
+		"checkStatus":"",
+		"createDate":[],
+		"updateDate":[],
+		"subCate":"",
+		"vendor1":"",
+		"origin1":"",
+		"developer":"",
+		"introReason":"",
+		"approvalNote":"",
+		"page":0,
+		"pageSize":10
+	}
+}
+```
+          
+       
+ ### 详情
+* 接口名称：详情
+* 请求方法：post
+* 请求示例：v1/news/info
+* 请求参数： 
+```json
+{
+    "condition": {
+		"id":1
+	}
+}
+```
+ ### 获取产品分类
+* 接口名称：详情
+* 请求方法：get
+* 请求示例：v1/condition/goods-category
+* 请求参数：  pid  分类父ID  默认为0
+
+
 
 
           

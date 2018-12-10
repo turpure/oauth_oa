@@ -13,7 +13,7 @@ use yii\helpers\ArrayHelper;
 class OaGoodsController extends AdminController
 {
 
-    public $modelClass = 'backend\models\News';
+    public $modelClass = 'backend\models\OaGoods';
 
     public $serializer = [
         'class' => 'yii\rest\Serializer',
@@ -27,14 +27,15 @@ class OaGoodsController extends AdminController
     {
         $actions = parent::actions();
         // 注销系统自带的实现方法
-        unset($actions['index']/*, $actions['create'], $actions['update']*/);
+        unset($actions['index'], $actions['create'], $actions['update'], $actions['view'], $actions['delete']);
         return $actions;
     }
 
 
     /**
-     * Lists all OaGoods models.
-     * @return mixed
+     * 产品推荐列表
+     * @return \yii\data\ActiveDataProvider
+     * @throws \yii\db\Exception
      */
     public function actionList()
     {
@@ -44,32 +45,19 @@ class OaGoodsController extends AdminController
     }
 
     /**
-     * Displays a single OaGoods model.
+     * 产品推荐详情
      * @param integer $id
      * @return mixed
      */
-    public function actionView($id)
+    public function actionInfo()
     {
-        return $this->renderAjax('view', [
-            'model' => $this->findModel($id),
-        ]);
-    }
-
-
-    /**
-     * Displays a single OaGoods model.
-     * @param integer $id
-     * @return mixed
-     */
-    public function actionForwardView($id)
-    {
-        return $this->renderAjax('forward-view', [
-            'model' => $this->findModel($id),
-        ]);
+        $post = Yii::$app->request->post('condition');
+        $model = OaGoods::findOne($post['id']);
+        return $model;
     }
 
     /**
-     * Creates a new OaGoods model.
+     * 添加推荐产品
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @param integer $pid
      * @param integer $typeid
@@ -129,6 +117,20 @@ class OaGoodsController extends AdminController
         }
 
     }
+
+    /**
+     * Displays a single OaGoods model.
+     * @param integer $id
+     * @return mixed
+     */
+    public function actionForwardView($id)
+    {
+        return $this->renderAjax('forward-view', [
+            'model' => $this->findModel($id),
+        ]);
+    }
+
+
 
     /**
      * Updates an existing OaGoods model.
