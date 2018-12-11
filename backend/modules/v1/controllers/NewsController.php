@@ -58,8 +58,7 @@ class NewsController extends AdminController
         }
         $data = $query->asArray()->all();
         foreach($data as $k => $v) {
-            $title = mb_substr($v['title'],0,30,'utf-8');
-            $data[$k]['title'] =  Helper::stringFilter($title);
+            $data[$k]['title'] =  Helper::stringFilter($v['title']);
             $data[$k]['detail'] =  Helper::stringFilter($v['detail']);
         }
         $provider = new ArrayDataProvider([
