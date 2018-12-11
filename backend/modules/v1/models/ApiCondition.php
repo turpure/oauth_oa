@@ -279,21 +279,5 @@ class ApiCondition
         }
     }
 
-    /**
-     * @brief get brand category
-     * @return array
-     */
-    public static function getGoodsCategory($pid)
-    {
-        $sql = "SELECT NID,CategoryName FROM B_GoodsCats WHERE CategoryParentID = :id";
-        try {
-            $model = Yii::$app->py_db->createCommand($sql)->bindValues([':id' => $pid])->queryAll();
-            return ArrayHelper::map($model,'NID','CategoryName');
-        }
-        catch (\Exception $why) {
-            return [$why];
-        }
-    }
-
 
 }

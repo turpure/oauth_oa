@@ -9,8 +9,11 @@
 namespace backend\modules\v1\controllers;
 
 use backend\models\News;
+use backend\modules\v1\utils\Helper;
 use Yii;
 use yii\data\ActiveDataProvider;
+use yii\data\ArrayDataProvider;
+use yii\helpers\ArrayHelper;
 
 class NewsController extends AdminController
 {
@@ -53,14 +56,20 @@ class NewsController extends AdminController
         } else {
             $query->orderBy('updateDate DESC');
         }
-        $provider = new ActiveDataProvider([
-            'query' => $query,
-            'db' => Yii::$app->db,
+        $data = $query->asArray()->all();
+        foreach($data as $k => $v) {
+            $title = mb_substr($v['title'],0,30,'utf-8');
+            $data[$k]['title'] =  Helper::stringFilter($title);
+            $data[$k]['detail'] =  Helper::stringFilter($v['detail']);
+        }
+        $provider = new ArrayDataProvider([
+            'allModels' => $data,
             'pagination' => [
                 'pageSize' => $pageSize,
                 'page' => $page
             ],
         ]);
+
         return $provider;
     }
 
@@ -85,7 +94,7 @@ class NewsController extends AdminController
             $model->isTop = $post['isTop'];
             $ret = $model->save();
             if (!$ret) {
-                throw new \Exception('置顶失败11!');
+                throw new \Exception('置顶失败!');
             }
             $transaction->commit();
             return true;

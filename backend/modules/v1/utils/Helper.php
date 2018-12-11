@@ -72,4 +72,22 @@ class Helper
         }
         return $keysValue;
     }
+
+    /**
+     * @brief 匹配字符串中URL地址并替换成a标签
+     * @param $array
+     * @return array
+     */
+    public static function stringFilter($string)
+    {
+        preg_match_all( '#(http|https|ftp|ftps)://([\w-]+\.)+[\w-]+(/[\w-./?%&=]*)?#i', $string ,$list);
+        if($list && isset($list[0])){
+            foreach ($list[0] as $k => $v) {
+                $keysValue = '<a herf="' . $v . '" target="_blank">' . $v . '</a>';
+                $string = str_replace($v, $keysValue, $string);
+            }
+        }
+        return $string;
+    }
+
 }
