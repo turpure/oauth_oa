@@ -27,7 +27,7 @@ class ApiGoods
     public static function getGoodsList($user, $post)
     {
         $pageSize = isset($post['pageSize']) ? $post['pageSize'] : 10;
-        $page = isset($post['page']) ? $post['page'] : 0;
+        $page = isset($post['page']) ? $post['page'] : 1;
         //$createDate = isset($get['pageSize']) ? $post['pageSize'] : [];
 
 
@@ -55,7 +55,7 @@ class ApiGoods
             'query' => $query,
             //'db' => Yii::$app->db,
             'pagination' => [
-                'page' => $page,
+                'pageParam' => $page,
                 'pageSize' => $pageSize,
             ],
         ]);
