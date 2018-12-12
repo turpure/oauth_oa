@@ -270,7 +270,7 @@ class ApiCondition
      */
     public static function getGoodsCats()
     {
-        $sql = 'select NID,CategoryLevel,CategoryName,CategoryParentName from B_GoodsCats';
+        $sql = 'select NID,CategoryLevel,CategoryName,CategoryParentID,CategoryParentName from B_GoodsCats';
         try {
             return Yii::$app->py_db->createCommand($sql)->queryAll();
         }
