@@ -54,7 +54,7 @@ class OaGoodsController extends AdminController
     public function actionInfo()
     {
         $post = Yii::$app->request->post('condition');
-        $model = OaGoods::findOne($post['id']);
+        $model = OaGoods::findOne($post['nid']);
         return $model;
     }
 
@@ -125,7 +125,7 @@ class OaGoodsController extends AdminController
         $model->updateDate = date('Y-m-d H:i:s');
         $ret = $model->save();
         if ($ret) {
-            return true;
+            return $model;
         } else {
             return [
                 'code' => 400,
