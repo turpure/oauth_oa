@@ -72,14 +72,10 @@ class OaGoodsController extends AdminController
         $post = Yii::$app->request->post('condition');
         $transaction = Yii::$app->db->beginTransaction();
         try {
-            $cateModel = Yii::$app->py_db->createCommand("SELECT CategoryName FROM B_GoodsCats WHERE NID = :nid")
+            $cateModel = Yii::$app->py_db->createCommand("SELECT Nid,CategoryName FROM B_GoodsCats WHERE CategoryName = :nid")
                 ->bindValues([':nid' => $post['cate']])->queryOne();
-            $subCateNameModel = Yii::$app->py_db->createCommand("SELECT CategoryName FROM B_GoodsCats WHERE NID = :nid")
-                ->bindValues([':nid' => $post['subCate']])->queryOne();
             $model->attributes = $post;
-            $model->catNid = $post['cate'];
-            $model->cate = $cateModel && isset($cateModel['CategoryName']) ? $cateModel['CategoryName'] : '';
-            $model->subCate = $subCateNameModel && isset($subCateNameModel['CategoryName']) ? $subCateNameModel['CategoryName'] : '';
+            $model->catNid = $cateModel && isset($cateModel['Nid']) ? $cateModel['Nid'] : 0;
             $model->devStatus = '';
             $model->checkStatus = '未认领';
             $model->introducer = $user->username;
@@ -113,15 +109,11 @@ class OaGoodsController extends AdminController
         $post = Yii::$app->request->post('condition');
         $model = OaGoods::findOne($post['nid']);
 
-        $cateModel = Yii::$app->py_db->createCommand("SELECT CategoryName FROM B_GoodsCats WHERE NID = :nid")
+        $cateModel = Yii::$app->py_db->createCommand("SELECT Nid,CategoryName FROM B_GoodsCats WHERE CategoryName = :nid")
             ->bindValues([':nid' => $post['cate']])->queryOne();
         //根据类目ID更新类目名称
         $model->attributes = $post;
-        $model->catNid = $post['cate'];
-        $model->cate = $cateModel && isset($cateModel['CategoryName']) ? $cateModel['CategoryName'] : '';
-        $subCateNameModel = Yii::$app->py_db->createCommand("SELECT CategoryName FROM B_GoodsCats WHERE NID = :nid")
-            ->bindValues([':nid' => $post['subCate']])->queryOne();
-        $model->subCate = $subCateNameModel && isset($subCateNameModel['CategoryName']) ? $subCateNameModel['CategoryName'] : '';
+        $model->catNid = $cateModel && isset($cateModel['Nid']) ? $cateModel['Nid'] : 0;
         $model->updateDate = date('Y-m-d H:i:s');
         $ret = $model->save();
         if ($ret) {

@@ -215,5 +215,20 @@ class ReportController extends  AdminController
         //print_r($condition);exit;
         return ApiReport::getIntroduceReport($condition);
     }
+    /**
+     * @brief introduce performance report
+     */
+    public function actionRefund()
+    {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        $condition = [
+            'beginDate' => $cond['dateRange'][0],
+            'endDate' => $cond['dateRange'][1],
+            'suffix' => $cond['suffix'],
+            'salesman' => $cond['salesman'],
+        ];
+        return ApiReport::getRefundDetails($condition);
+    }
 
 }
