@@ -249,7 +249,7 @@ class ApiReport
                 LEFT JOIN user u ON sc.user_id=u.id WHERE u.status=10";
         if($condition['suffix']) $sql .= " AND suffix=:suffix";
         if($condition['salesman']) $sql .= " AND username=:salesman";
-        if($condition['beginDate'] && $condition['endDate'] ) $sql .= " AND refund_time between '{$condition['beginDate']}' AND '{$condition['endDate']}'";
+        if($condition['beginDate'] && $condition['endDate'] ) $sql .= " AND refundTime between '{$condition['beginDate']}' AND '{$condition['endDate']}'";
         $con = Yii::$app->db;
         $params = [
             ':suffix' => $condition['suffix'],
