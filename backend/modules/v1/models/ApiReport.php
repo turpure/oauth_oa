@@ -241,6 +241,10 @@ class ApiReport
         }
     }
 
+    /**
+     * @param $condition
+     * @return array|ArrayDataProvider
+     */
     public static function getRefundDetails($condition)
     {
         $sql = "SELECT rd.*,u.username AS slesman FROM cache_refund_details rd 
@@ -257,6 +261,38 @@ class ApiReport
         ];
         try {
             $data = $con->createCommand($sql)->bindValues($params)->queryAll();
+            $provider = new ArrayDataProvider([
+                'allModels' => $data,
+                'pagination' => [
+                    'pageSize' => $condition['pageSize'],
+                    'pageParam' => $condition['page']
+                ],
+            ]);
+
+            return $provider;
+        }
+        catch (\Exception $why) {
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * @param $condition
+     * @return array|ArrayDataProvider
+     */
+    public static function getGoodsRefundDetails($condition)
+    {
+        $sql = "SELECT goodsName,sku,SUM(number) AS number,SUM(refund) AS refund FROM cache_refund_goods WHERE sku IS NOT NULL ";
+        if($condition['sku']) $sql .= " AND sku LIKE '%". $condition['sku'] . "%'";
+        if($condition['goodsName']) $sql .= " AND goodsName LIKE '%". $condition['goodsName'] . "%'";
+        if($condition['beginDate'] && $condition['endDate'] ) $sql .= " AND refund_time between '{$condition['beginDate']}' AND '" . $condition['endDate'] . " 23:59:59'";
+        $sql .= " GROUP BY goodsName,sku ORDER BY SUM(refund) DESC";
+        $con = Yii::$app->db;
+        try {
+            $data = $con->createCommand($sql)->queryAll();
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'pagination' => [
