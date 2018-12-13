@@ -6,10 +6,7 @@
  */
 
 namespace backend\modules\v1\controllers;
-use backend\modules\v1\controllers\AdminController;
 use backend\modules\v1\models\ApiReport;
-use yii\data\ArrayDataProvider;
-use yii\data\SqlDataProvider;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
 use Yii;
@@ -18,6 +15,11 @@ use backend\modules\v1\utils\Handler;
 class ReportController extends  AdminController
 {
     public $modelClass = 'backend\modules\v1\models\ApiReport';
+
+    public $serializer = [
+        'class' => 'yii\rest\Serializer',
+        'collectionEnvelope' => 'items',
+    ];
 
     public function behaviors()
     {
@@ -227,6 +229,8 @@ class ReportController extends  AdminController
             'endDate' => $cond['dateRange'][1],
             'suffix' => $cond['suffix'],
             'salesman' => $cond['salesman'],
+            'page' => isset($cond['page']) ? $cond['page'] : 1,
+            'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 10,
         ];
         return ApiReport::getRefundDetails($condition);
     }

@@ -11,9 +11,7 @@ namespace backend\modules\v1\controllers;
 use backend\models\News;
 use backend\modules\v1\utils\Helper;
 use Yii;
-use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
-use yii\helpers\ArrayHelper;
 
 class NewsController extends AdminController
 {

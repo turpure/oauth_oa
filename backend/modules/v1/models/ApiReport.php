@@ -8,8 +8,8 @@
 namespace backend\modules\v1\models;
 
 use Yii;
-use yii\db\Query;
-use yii\helpers\ArrayHelper;
+use yii\data\ArrayDataProvider;
+use yii\data\SqlDataProvider;
 
 class ApiReport
 {
@@ -243,7 +243,7 @@ class ApiReport
 
     public static function getRefundDetails($condition)
     {
-        $sql = "SELECT rd.*,u.username FROM cache_refund_details rd 
+        $sql = "SELECT rd.*,u.username AS slesman FROM cache_refund_details rd 
                 LEFT JOIN auth_store s ON s.store=rd.suffix
                 LEFT JOIN auth_store_child sc ON sc.store_id=s.id
                 LEFT JOIN user u ON sc.user_id=u.id WHERE u.status=10";
@@ -254,11 +254,18 @@ class ApiReport
         $params = [
             ':suffix' => $condition['suffix'],
             ':salesman' => $condition['salesman'],
-            ':beginDate' => $condition['beginDate'],
-            ':endDate' => $condition['endDate'],
         ];
         try {
-            return $con->createCommand($sql)->bindValues($params)->queryAll();
+            $data = $con->createCommand($sql)->bindValues($params)->queryAll();
+            $provider = new ArrayDataProvider([
+                'allModels' => $data,
+                'pagination' => [
+                    'pageSize' => $condition['pageSize'],
+                    'pageParam' => $condition['page']
+                ],
+            ]);
+
+            return $provider;
         }
         catch (\Exception $why) {
             return [
