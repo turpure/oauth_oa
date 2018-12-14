@@ -226,31 +226,15 @@ class ReportController extends  AdminController
         $request = Yii::$app->request->post();
         $cond = $request['condition'];
         $condition = [
-            'beginDate' => $cond['dateRange'][0],
-            'endDate' => $cond['dateRange'][1],
+            'type' => $cond['type'],
             'suffix' => $cond['suffix'],
             'salesman' => $cond['salesman'],
+            'beginDate' => $cond['dateRange'][0],
+            'endDate' => $cond['dateRange'][1],
             'page' => isset($cond['page']) ? $cond['page'] : 1,
             'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 10,
         ];
         return ApiReport::getRefundDetails($condition);
-    }
-    /**
-     * @brief goods refund details
-     */
-    public function actionGoodsRefund()
-    {
-        $request = Yii::$app->request->post();
-        $cond = $request['condition'];
-        $condition = [
-            'beginDate' => $cond['dateRange'][0],
-            'endDate' => $cond['dateRange'][1],
-            'sku' => $cond['sku'],
-            'goodsName' => $cond['goodsName'],
-            'page' => isset($cond['page']) ? $cond['page'] : 1,
-            'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 10,
-        ];
-        return ApiReport::getGoodsRefundDetails($condition);
     }
 
 }
