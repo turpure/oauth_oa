@@ -7,6 +7,9 @@
 
 namespace backend\modules\v1\controllers;
 use backend\modules\v1\models\ApiReport;
+use backend\modules\v1\models\ApiSettings;
+use yii\data\ArrayDataProvider;
+use yii\data\SqlDataProvider;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
 use Yii;
@@ -46,6 +49,7 @@ class ReportController extends  AdminController
 
     /**
      * @brief sales profit report
+     * @throws \Exception
      * @return array
      */
 
@@ -53,18 +57,23 @@ class ReportController extends  AdminController
     {
         $request = Yii::$app->request->post();
         $cond= $request['condition'];
+        $params = [
+            'platform' => isset($cond['plat'])?$cond['plat']:[],
+            'username' => isset($cond['member'])?$cond['member']:[],
+            'store' => isset($cond['account'])?$cond['account']:[]
+        ];
+        $exchangeRate = ApiSettings::getExchangeRate();
+        $paramsFilter = Handler::paramsHandler($params);
         $condition= [
-            'dateRangeType' => $cond['dateRangeType'],
-            'plat' => $cond['plat']?:'',
-            'dateFlag' =>$cond['dateType']?:0,
+            'dateType' =>$cond['dateType']?:0,
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'suffix' => $cond['account']?"'".implode(',',$cond['account'])."'":'',
-            'seller' => $cond['member']?"'".implode(',',$cond['member'])."'":'',
-            'storeName' => $cond['store']?"'".implode(',',$cond['store'])."'":'',
+            'queryType' => $paramsFilter['queryType'],
+            'store' => implode(',',$paramsFilter['store']),
+            'warehouse' => $cond['store']?"'".implode(',',$cond['store'])."'":'',
+            'exchangeRate' => $exchangeRate['salerRate']
         ];
-        $ret = ApiReport::getSalesReport($condition);
-        return $ret;
+        return ApiReport::getSalesReport($condition);
     }
 
     /**

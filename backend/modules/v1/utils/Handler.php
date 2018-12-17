@@ -176,28 +176,8 @@ class Handler
      */
     public static function paramsFilter($queryParam)
     {
-        $sql = 'call oauth_userInfo';
-        $db = Yii::$app->db;
-        $userInfo = $db->createCommand($sql)->queryAll();
-        //归化查询条件
-        $ret = $userInfo;
-        foreach ($queryParam as $type => $value) {
-            if (!empty($value)) {
-                $filter = [];
-                foreach ($value as $constrain) {
-                    foreach ($ret as $row) {
-                        if (strtolower($row[$type]) === strtolower($constrain)) {
-                            $filter[] = $row;
-                        }
-                    }
-                }
-            }
-            else {
-                $filter = $ret;
-            }
-            $ret = $filter;
-        }
 
+        $ret = self::userFilter($queryParam);
         // 归化查询类型
         $unEmptyCondition = array_filter($queryParam);
         $keys = array_keys($unEmptyCondition);
@@ -213,5 +193,58 @@ class Handler
         $store = ArrayHelper::getColumn($ret,'store');
 
         return ['queryType'=>$queryType,'store' => $store]  ;
+    }
+
+    /**
+     * @brief 处理毛利报表的查询参数
+     * @param $queryParams
+     * @throws \yii\db\Exception
+     * @return mixed
+     */
+    public static function paramsHandler($queryParams)
+    {
+       $ret = self::userFilter($queryParams);
+       $queryType = 0 ;
+       foreach ($queryParams as $key=>$value) {
+           if(!empty($value)) {
+               $queryType = 1;
+               break;
+           }
+       }
+       $store = ArrayHelper::getColumn($ret,'store');
+       return [
+           'queryType' => $queryType,
+           'store' => array_filter($store)
+           ];
+    }
+
+    /**
+     * @brief 过滤出账号
+     * @param $query
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    private static function  userFilter($query) {
+        $sql = 'call oauth_userInfo';
+        $db = Yii::$app->db;
+        $userInfo = $db->createCommand($sql)->queryAll();
+        $ret = $userInfo;
+        foreach ($query as $type => $value) {
+            if (!empty($value)) {
+                $filter = [];
+                foreach ($value as $constrain) {
+                    foreach ($ret as $row) {
+                        if (strtolower($row[$type]) === strtolower($constrain)) {
+                            $filter[] = $row;
+                        }
+                    }
+                }
+            }
+            else {
+                $filter = $ret;
+            }
+            $ret = $filter;
+        }
+        return $ret;
     }
 }
