@@ -9,7 +9,6 @@ namespace backend\modules\v1\models;
 
 use Yii;
 use yii\data\ArrayDataProvider;
-use yii\data\SqlDataProvider;
 
 class ApiReport
 {
@@ -225,15 +224,28 @@ class ApiReport
         }
     }
 
+    /**
+     * @param $condition
+     * @return array|ArrayDataProvider
+     */
     public static function getRefundDetails($condition)
     {
-        $sql = "SELECT rd.*,u.username AS slesman FROM cache_refund_details rd 
+        //美元汇率
+        $rate = ApiUkFic::getRateUkOrUs('USD');
+        $sql = "SELECT rd.*,refund*" . $rate . " AS refundZn,u.username AS slesman 
+                FROM (
+                    SELECT MAX(suffix) AS suffix,MAX(goodsName) AS goodsName,MAX(goodsCode) AS goodsCode,
+				    MAX(goodsSku) AS goodsSku, MAX(tradeId) AS tradeId,MAX(orderId) AS orderId,MAX(storeName) AS storeName,
+				    MAX(refund) AS refund, MAX(currencyCode) AS currencyCode,MAX(refundTime) AS refundTime,refundId
+                    FROM `cache_refund_details` GROUP BY refundId
+                ) rd 
                 LEFT JOIN auth_store s ON s.store=rd.suffix
                 LEFT JOIN auth_store_child sc ON sc.store_id=s.id
                 LEFT JOIN user u ON sc.user_id=u.id WHERE u.status=10";
         if($condition['suffix']) $sql .= " AND suffix=:suffix";
         if($condition['salesman']) $sql .= " AND username=:salesman";
         if($condition['beginDate'] && $condition['endDate'] ) $sql .= " AND refundTime between '{$condition['beginDate']}' AND '{$condition['endDate']}'";
+        $sql .= " ORDER BY refund DESC";
         $con = Yii::$app->db;
         $params = [
             ':suffix' => $condition['suffix'],
@@ -258,5 +270,6 @@ class ApiReport
             ];
         }
     }
+
 
 }
