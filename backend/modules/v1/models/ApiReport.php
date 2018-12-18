@@ -253,7 +253,7 @@ class ApiReport
                 'allModels' => $data,
                 'pagination' => [
                     'pageSize' => $condition['pageSize'],
-                    'pageParam' => $condition['page']
+                    //'pageParam' => $condition['page']
                 ],
             ]);
 

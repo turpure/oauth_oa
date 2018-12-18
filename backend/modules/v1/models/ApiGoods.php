@@ -27,9 +27,7 @@ class ApiGoods
     public static function getGoodsList($user, $post)
     {
         $pageSize = isset($post['pageSize']) ? $post['pageSize'] : 10;
-        $page = isset($post['page']) ? $post['page'] : 1;
-        //$createDate = isset($get['pageSize']) ? $post['pageSize'] : [];
-
+        //$page = isset($post['page']) ? $post['page'] : 1;
 
         // 返回当前用户管辖下的用户
         $userList = ApiUser::getUserList($user->username);
@@ -55,7 +53,7 @@ class ApiGoods
             'query' => $query,
             //'db' => Yii::$app->db,
             'pagination' => [
-                'pageParam' => $page,
+               // 'pageParam' => $page,
                 'pageSize' => $pageSize,
             ],
         ]);
@@ -74,7 +72,7 @@ class ApiGoods
     public static function getForwardList($user, $post)
     {
         $pageSize = isset($post['pageSize']) ? $post['pageSize'] : 10;
-        $page = isset($post['page']) ? $post['page'] : 1;
+        //$page = isset($post['page']) ? $post['page'] : 1;
         //$createDate = isset($get['pageSize']) ? $post['pageSize'] : [];
 
 
@@ -84,7 +82,7 @@ class ApiGoods
         //print_r($userList);exit;
 
         $query = OaGoods::find();
-        $query->select('nid,img,cate,subCate,vendor1,origin1,introReason,checkStatus,introducer,developer,approvalNote,createDate,updateDate');
+        $query->select('nid,stockUp,img,cate,subCate,vendor1,origin1,introReason,checkStatus,introducer,developer,approvalNote,createDate,updateDate');
         $query->filterWhere(["IFNULL(developer,'')" => $userList]);//查看权限
         $query->filterWhere(['devStatus' => '正向认领']);//正向开发
         $query->filterWhere(['like', 'checkStatus', $post['checkStatus']]);
@@ -103,7 +101,7 @@ class ApiGoods
             'query' => $query,
             //'db' => Yii::$app->db,
             'pagination' => [
-                'pageParam' => $page,
+                //'pageParam' => $page,
                 'pageSize' => $pageSize,
             ],
         ]);
