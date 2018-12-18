@@ -151,7 +151,7 @@ class ApiReport
      */
     public static function getSalesTrendReport($condition)
     {
-        $sql = 'call test_trend(:store,:queryType,:showType,:dateFlag,:beginDate,:endDate)';
+        $sql = 'call report_salesTrend(:store,:queryType,:showType,:dateFlag,:beginDate,:endDate)';
         $con = Yii::$app->db;
         $params = [
             ':store' => $condition['store'],
@@ -242,17 +242,13 @@ class ApiReport
                 LEFT JOIN auth_store s ON s.store=rd.suffix
                 LEFT JOIN auth_store_child sc ON sc.store_id=s.id
                 LEFT JOIN user u ON sc.user_id=u.id WHERE u.status=10";
-        if($condition['suffix']) $sql .= " AND suffix=:suffix";
-        if($condition['salesman']) $sql .= " AND username=:salesman";
+        if($condition['suffix']) $sql .= " AND suffix IN (".$condition['suffix'] . ")";
+        if($condition['storename']) $sql .= " AND storeName IN (".$condition['storename'].")";
         if($condition['beginDate'] && $condition['endDate'] ) $sql .= " AND refundTime between '{$condition['beginDate']}' AND '{$condition['endDate']}'";
         $sql .= " ORDER BY refund DESC";
         $con = Yii::$app->db;
-        $params = [
-            ':suffix' => $condition['suffix'],
-            ':salesman' => $condition['salesman'],
-        ];
         try {
-            $data = $con->createCommand($sql)->bindValues($params)->queryAll();
+            $data = $con->createCommand($sql)->queryAll();
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'pagination' => [

@@ -228,13 +228,32 @@ class ReportController extends  AdminController
     }
 
     /**
-     * @brief suffix refund details
+     * suffix refund details
+     * @return array|ArrayDataProvider
+     * @throws \yii\db\Exception
      */
     public function actionRefund()
     {
         $request = Yii::$app->request->post();
-        $cond = $request['condition'];
-        $condition = [
+        $cond= $request['condition'];
+        $params = [
+            'platform' => isset($cond['plat'])?$cond['plat']:[],
+            'salesman' => isset($cond['salesman'])?$cond['salesman']:[],
+            'suffix' => isset($cond['suffix'])?$cond['suffix']:[]
+        ];
+        $paramsFilter = Handler::paramsHandler($params);
+        $condition= [
+            'type' =>$cond['type'],
+            'beginDate' => $cond['dateRange'][0],
+            'endDate' => $cond['dateRange'][1],
+            //'queryType' => $paramsFilter['queryType'],
+            'suffix' => "'".implode("','",$paramsFilter['store'])."'",
+            'storename' => $cond['storename']?"'".implode(',',$cond['storename'])."'":'',
+            'page' => isset($cond['page']) ? $cond['page'] : 1,
+            'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 10,
+        ];
+        //print_r($condition['suffix']);exit;
+        /*$condition = [
             'type' => $cond['type'],
             'suffix' => $cond['suffix'],
             'salesman' => $cond['salesman'],
@@ -242,7 +261,7 @@ class ReportController extends  AdminController
             'endDate' => $cond['dateRange'][1],
             'page' => isset($cond['page']) ? $cond['page'] : 1,
             'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 10,
-        ];
+        ];*/
         return ApiReport::getRefundDetails($condition);
     }
 
