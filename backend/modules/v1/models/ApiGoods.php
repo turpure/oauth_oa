@@ -32,22 +32,20 @@ class ApiGoods
         // 返回当前用户管辖下的用户
         $userList = ApiUser::getUserList($user->username);
 
-        //print_r($userList);exit;
-
         $query = OaGoods::find();
         $query->select('nid,img,cate,subCate,vendor1,origin1,introReason,checkStatus,introducer,developer,approvalNote,createDate,updateDate');
-        $query->filterWhere(["IFNULL(introducer,'')" => $userList]);//有推荐人的产品列表
-        $query->filterWhere(['like', 'checkStatus', $post['checkStatus']]);
-        $query->filterWhere(['like', 'cate', $post['cate']]);
-        $query->filterWhere(['like', 'subCate', $post['subCate']]);
-        $query->filterWhere(['like', 'vendor1', $post['vendor1']]);
-        $query->filterWhere(['like', 'origin1', $post['origin1']]);
-        $query->filterWhere(['like', 'introReason', $post['introReason']]);
-        $query->filterWhere(['like', 'introducer', $post['introducer']]);
-        $query->filterWhere(['like', 'developer', $post['developer']]);
-        $query->filterWhere(['like', 'approvalNote', $post['approvalNote']]);
-        if($post['createDate'])$query->filterWhere(['between', "date_format(createDate,'%Y-%m-%d')", $post['createDate'][0], $post['createDate'][1]]);
-        if($post['updateDate'])$query->filterWhere(['between', "date_format(updateDate,'%Y-%m-%d')", $post['updateDate'][0], $post['updateDate'][1]]);
+        $query->andFilterWhere(["IFNULL(introducer,'')" => $userList]);//有推荐人的产品列表
+        $query->andFilterWhere(['like', 'checkStatus', $post['checkStatus']]);
+        $query->andFilterWhere(['like', 'cate', $post['cate']]);
+        $query->andFilterWhere(['like', 'subCate', $post['subCate']]);
+        $query->andFilterWhere(['like', 'vendor1', $post['vendor1']]);
+        $query->andFilterWhere(['like', 'origin1', $post['origin1']]);
+        $query->andFilterWhere(['like', 'introReason', $post['introReason']]);
+        $query->andFilterWhere(['like', 'introducer', $post['introducer']]);
+        $query->andFilterWhere(['like', 'developer', $post['developer']]);
+        $query->andFilterWhere(['like', 'approvalNote', $post['approvalNote']]);
+        if($post['createDate'])$query->andFilterWhere(['between', "date_format(createDate,'%Y-%m-%d')", $post['createDate'][0], $post['createDate'][1]]);
+        if($post['updateDate'])$query->andFilterWhere(['between', "date_format(updateDate,'%Y-%m-%d')", $post['updateDate'][0], $post['updateDate'][1]]);
 
         $provider = new ActiveDataProvider([
             'query' => $query,
@@ -83,19 +81,19 @@ class ApiGoods
 
         $query = OaGoods::find();
         $query->select('nid,stockUp,img,cate,subCate,vendor1,origin1,introReason,checkStatus,introducer,developer,approvalNote,createDate,updateDate');
-        $query->filterWhere(["IFNULL(developer,'')" => $userList]);//查看权限
-        $query->filterWhere(['devStatus' => '正向认领']);//正向开发
-        $query->filterWhere(['like', 'checkStatus', $post['checkStatus']]);
-        $query->filterWhere(['like', 'cate', $post['cate']]);
-        $query->filterWhere(['like', 'subCate', $post['subCate']]);
-        $query->filterWhere(['like', 'vendor1', $post['vendor1']]);
-        $query->filterWhere(['like', 'origin1', $post['origin1']]);
-        $query->filterWhere(['like', 'introReason', $post['introReason']]);
-        $query->filterWhere(['like', 'introducer', $post['introducer']]);
-        $query->filterWhere(['like', 'developer', $post['developer']]);
-        $query->filterWhere(['like', 'approvalNote', $post['approvalNote']]);
-        if($post['createDate'])$query->filterWhere(['between', "date_format(createDate,'%Y-%m-%d')", $post['createDate'][0], $post['createDate'][1]]);
-        if($post['updateDate'])$query->filterWhere(['between', "date_format(updateDate,'%Y-%m-%d')", $post['updateDate'][0], $post['updateDate'][1]]);
+        $query->andFilterWhere(["IFNULL(developer,'')" => $userList]);//查看权限
+        $query->andFilterWhere(['devStatus' => '正向认领']);//正向开发
+        $query->andFilterWhere(['like', 'checkStatus', $post['checkStatus']]);
+        $query->andFilterWhere(['like', 'cate', $post['cate']]);
+        $query->andFilterWhere(['like', 'subCate', $post['subCate']]);
+        $query->andFilterWhere(['like', 'vendor1', $post['vendor1']]);
+        $query->andFilterWhere(['like', 'origin1', $post['origin1']]);
+        $query->andFilterWhere(['like', 'introReason', $post['introReason']]);
+        $query->andFilterWhere(['like', 'introducer', $post['introducer']]);
+        $query->andFilterWhere(['like', 'developer', $post['developer']]);
+        $query->andFilterWhere(['like', 'approvalNote', $post['approvalNote']]);
+        if($post['createDate'])$query->andFilterWhere(['between', "date_format(createDate,'%Y-%m-%d')", $post['createDate'][0], $post['createDate'][1]]);
+        if($post['updateDate'])$query->andFilterWhere(['between', "date_format(updateDate,'%Y-%m-%d')", $post['updateDate'][0], $post['updateDate'][1]]);
 
         $provider = new ActiveDataProvider([
             'query' => $query,
