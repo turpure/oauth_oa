@@ -30,10 +30,7 @@ class ForwardDevelopController extends AdminController
         return $actions;
     }
 
-    /**
-     *  产品推荐
-     * =================================================================
-     */
+
     /**
      * 正向开发列表
      * @return \yii\data\ActiveDataProvider
@@ -60,15 +57,16 @@ class ForwardDevelopController extends AdminController
         $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
         $model = new OaGoods();
         $post = Yii::$app->request->post('condition');
+        $status = ['create' => '待提交', 'check' => '待审批'];
         $transaction = Yii::$app->db->beginTransaction();
         try {
-            $cateModel = Yii::$app->py_db->createCommand("SELECT Nid,CategoryName FROM B_GoodsCats WHERE CategoryName = :nid")
-                ->bindValues([':nid' => $post['cate']])->queryOne();
+            $cateModel = Yii::$app->py_db->createCommand("SELECT Nid,CategoryName FROM B_GoodsCats WHERE CategoryName = :CategoryName")
+                ->bindValues([':CategoryName' => $post['cate']])->queryOne();
             $model->attributes = $post;
             $model->catNid = $cateModel && isset($cateModel['Nid']) ? $cateModel['Nid'] : 0;
-            $model->devStatus = '';
-            $model->checkStatus = '未认领';
-            $model->introducer = $user->username;
+            $model->devStatus = '正向认领';
+            $model->checkStatus = $status[$post['type']];
+            $model->developer = $user->username;
             $model->updateDate = $model->createDate = date('Y-m-d H:i:s');
             $ret = $model->save();
             if (!$ret) {
@@ -98,11 +96,12 @@ class ForwardDevelopController extends AdminController
         $post = Yii::$app->request->post('condition');
         $model = OaGoods::findOne($post['nid']);
 
-        $cateModel = Yii::$app->py_db->createCommand("SELECT Nid,CategoryName FROM B_GoodsCats WHERE CategoryName = :nid")
-            ->bindValues([':nid' => $post['cate']])->queryOne();
+        $cateModel = Yii::$app->py_db->createCommand("SELECT Nid,CategoryName FROM B_GoodsCats WHERE CategoryName = :CategoryName")
+            ->bindValues([':CategoryName' => $post['cate']])->queryOne();
         //根据类目ID更新类目名称
         $model->attributes = $post;
         $model->catNid = $cateModel && isset($cateModel['Nid']) ? $cateModel['Nid'] : 0;
+        $model->checkStatus = $post['type'] == 'check' ? '待审核' : $model->checkStatus;
         $model->updateDate = date('Y-m-d H:i:s');
         $ret = $model->save();
         if ($ret) {
@@ -161,25 +160,46 @@ class ForwardDevelopController extends AdminController
     }
 
     /**
-     * 认领
-     * @throws NotFoundHttpException
+     * 验证用户当月可开发数量，判断是否可备货，或是否可创建 TODO
+     * @return array|bool|string
      */
-    public function actionClaim()
+    public function actionValidateStock()
     {
-        $post = Yii::$app->request->post('condition');
-        $model = OaGoods::findOne($post['nid']);
-        $model->devStatus = $post['devStatus'];
-        $model->checkStatus = '已认领';
-        $model->updateDate = date('Y-m-d H:i:s');
-        $ret = $model->save();
-        if ($ret) {
-            return true;
-        } else {
+        $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
+        $canStock = $user->canStockUp?:0;
+        //不备货的人才接受检查
+        if ($canStock > 0)  return true;
+
+        $numberUsed = "select count(og.nid) as usedStock  from oa_goods as og  
+                      LEFT JOIN oa_goodsinfo as ogs on og.nid = ogs.goodsid
+                      where isnull(og.stockUp,0)=0 and og.developer=:developer 
+                      and DATEDIFF(mm, createDate, getdate()) = 0
+                      and og.mineId is null AND checkStatus<>'未通过'";
+        $numberHave = "select isnull(stockNumThisMonth,0) as haveStock  from oa_stock_goods_number 
+                      where isStock= 'nonstock'
+                      and DATEDIFF(mm, createDate, getdate()) = 0
+                      and developer=:developer";
+        $connection = Yii::$app->db;
+        try {
+            $used = $connection->createCommand($numberUsed,[':developer'=>$user])->queryAll()[0]['usedStock'];
+        }
+        catch (\Exception $e) {
+            $used = 0;
+        }
+        try {
+            $have = $connection->createCommand($numberHave,[':developer'=>$user])->queryAll()[0]['haveStock'];
+        }
+        catch (\Exception $e) {
+            $have = 0;
+        }
+        if($have>0  && $have<=$used) {
             return [
                 'code' => 400,
                 'message' => 'Claim product failed！'
             ];
         }
+        return true;
+
     }
 
 

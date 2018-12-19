@@ -72,8 +72,8 @@ class OaGoodsController extends AdminController
         $post = Yii::$app->request->post('condition');
         $transaction = Yii::$app->db->beginTransaction();
         try {
-            $cateModel = Yii::$app->py_db->createCommand("SELECT Nid,CategoryName FROM B_GoodsCats WHERE CategoryName = :nid")
-                ->bindValues([':nid' => $post['cate']])->queryOne();
+            $cateModel = Yii::$app->py_db->createCommand("SELECT Nid,CategoryName FROM B_GoodsCats WHERE CategoryName = :CategoryName")
+                ->bindValues([':CategoryName' => $post['cate']])->queryOne();
             $model->attributes = $post;
             $model->catNid = $cateModel && isset($cateModel['Nid']) ? $cateModel['Nid'] : 0;
             $model->devStatus = '';
