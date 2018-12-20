@@ -232,20 +232,46 @@ class ApiReport
     {
         //美元汇率
         $rate = ApiUkFic::getRateUkOrUs('USD');
-        $sql = "SELECT rd.*,refund*" . $rate . " AS refundZn,u.username AS slesman 
+        $sql = '';
+
+        //按订单汇总退款
+        if ($condition['type'] === 'order') {
+            $sql = 'SELECT rd.*,refund*' . $rate . " AS refundZn,u.username AS salesman 
                 FROM (
                     SELECT MAX(suffix) AS suffix,MAX(goodsName) AS goodsName,MAX(goodsCode) AS goodsCode,
 				    MAX(goodsSku) AS goodsSku, MAX(tradeId) AS tradeId,MAX(orderId) AS orderId,MAX(storeName) AS storeName,
 				    MAX(refund) AS refund, MAX(currencyCode) AS currencyCode,MAX(refundTime) AS refundTime,refundId
-                    FROM `cache_refund_details` GROUP BY refundId
+                    FROM `cache_refund_details` 
+                    WHERE refundTime between '{$condition['beginDate']}' AND DATE_ADD('{$condition['endDate']}', INTERVAL 1 DAY)
+                    GROUP BY refundId
                 ) rd 
                 LEFT JOIN auth_store s ON s.store=rd.suffix
                 LEFT JOIN auth_store_child sc ON sc.store_id=s.id
-                LEFT JOIN user u ON sc.user_id=u.id WHERE u.status=10";
-        if($condition['suffix']) $sql .= " AND suffix IN (".$condition['suffix'] . ")";
-        if($condition['storename']) $sql .= " AND storeName IN (".$condition['storename'].")";
-        if($condition['beginDate'] && $condition['endDate'] ) $sql .= " AND refundTime between '{$condition['beginDate']}' AND '{$condition['endDate']}'";
-        $sql .= " ORDER BY refund DESC";
+                LEFT JOIN user u ON sc.user_id=u.id WHERE u.status=10 ";
+            if ($condition['suffix']) {
+                $sql .= 'AND suffix IN ('.$condition['suffix'] . ') ';
+            }
+            $sql .= 'ORDER BY refund DESC';
+        }
+
+        //按SKU汇总退款
+        if ($condition['type'] === 'goods') {
+            $sql = 'SELECT rd.*,' . "u.username AS salesman 
+                FROM (
+                    SELECT suffix,goodsName,goodsCode,goodsSku,count(id) as times 
+                    FROM `cache_refund_details` 
+                    WHERE refundTime between '{$condition['beginDate']}' AND DATE_ADD('{$condition['endDate']}', INTERVAL 1 DAY)
+                    GROUP BY suffix,goodsName,goodsCode,goodsSKu
+                ) rd 
+                LEFT JOIN auth_store s ON s.store=rd.suffix
+                LEFT JOIN auth_store_child sc ON sc.store_id=s.id
+                LEFT JOIN user u ON sc.user_id=u.id WHERE u.status=10 ";
+            if ($condition['suffix']) {
+                $sql .= 'AND suffix IN ('.$condition['suffix'] . ') ';
+            }
+            $sql .= 'ORDER BY times DESC';
+        }
+
         $con = Yii::$app->db;
         try {
             $data = $con->createCommand($sql)->queryAll();
@@ -253,7 +279,6 @@ class ApiReport
                 'allModels' => $data,
                 'pagination' => [
                     'pageSize' => $condition['pageSize'],
-                    //'pageParam' => $condition['page']
                 ],
             ]);
 
