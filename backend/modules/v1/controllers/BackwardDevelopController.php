@@ -9,7 +9,7 @@ use backend\models\OaGoods;
 /**
  * OaGoodsController implements the CRUD actions for OaGoods model.
  */
-class ForwardDevelopController extends AdminController
+class BackwardDevelopController extends AdminController
 {
 
     public $modelClass = 'backend\models\OaGoods';
@@ -32,7 +32,7 @@ class ForwardDevelopController extends AdminController
 
 
     /**
-     * 正向开发列表
+     * 逆向开发列表
      * @return \yii\data\ActiveDataProvider
      * @throws \yii\db\Exception
      */
@@ -40,13 +40,13 @@ class ForwardDevelopController extends AdminController
     {
         $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
         $post = Yii::$app->request->post('condition');
-        return ApiGoods::getForwardList($user, $post);
+        return ApiGoods::getBackwardList($user, $post);
     }
 
 
 
     /**
-     * 添加正向开发
+     * 添加逆向开发
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @param integer $pid
      * @param integer $typeid
@@ -87,7 +87,7 @@ class ForwardDevelopController extends AdminController
     }
 
     /**
-     * 更新产品推荐内容
+     * 更新产品内容
      * If update is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
