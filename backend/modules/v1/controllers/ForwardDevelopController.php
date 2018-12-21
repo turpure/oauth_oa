@@ -101,7 +101,7 @@ class ForwardDevelopController extends AdminController
         //根据类目ID更新类目名称
         $model->attributes = $post;
         $model->catNid = $cateModel && isset($cateModel['Nid']) ? $cateModel['Nid'] : 0;
-        $model->checkStatus = $post['type'] == 'check' ? '待审核' : $model->checkStatus;
+        $model->checkStatus = $post['type'] == 'check' ? '待审批' : $model->checkStatus;
         $model->updateDate = date('Y-m-d H:i:s');
         $ret = $model->save();
         if ($ret) {
@@ -114,6 +114,43 @@ class ForwardDevelopController extends AdminController
         }
     }
 
+    /**
+     * 提交审核  批量提交审核
+     * @return mixed
+     */
+    public function actionSubmit()
+    {
+        $post = Yii::$app->request->post('condition');
+        if (!$post['nid']) {
+            return [
+                'code' => 400,
+                'message' => 'Please select the items to pass！'
+            ];
+        }
+
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            foreach ($post['nid'] as $id) {
+                $model = OaGoods::findOne(['nid' => $id]);
+                if(!in_array($model->checkStatus,['待提交','未通过','已作废'])){
+                    throw new \Exception('Please select the right items to check！');
+                }
+                $model->checkStatus = '待审批';
+                $model->updateDate = date('Y-m-d H:i:s');
+                $model->save();
+            }
+            $transaction->commit();
+            return true;
+        } catch (\Exception $why) {
+            $transaction->rollBack();
+            return
+                [
+                    'code' => 400,
+                    'message' => $why->getMessage(),
+                ];
+        }
+
+    }
 
 
     /**
