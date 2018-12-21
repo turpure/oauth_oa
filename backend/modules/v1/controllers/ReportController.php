@@ -9,7 +9,6 @@ namespace backend\modules\v1\controllers;
 use backend\modules\v1\models\ApiReport;
 use backend\modules\v1\models\ApiSettings;
 use yii\data\ArrayDataProvider;
-use yii\data\SqlDataProvider;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
 use Yii;
@@ -238,30 +237,18 @@ class ReportController extends  AdminController
         $cond= $request['condition'];
         $params = [
             'platform' => isset($cond['plat'])?$cond['plat']:[],
-            'salesman' => isset($cond['salesman'])?$cond['salesman']:[],
-            'suffix' => isset($cond['suffix'])?$cond['suffix']:[]
+            'username' => isset($cond['member'])?$cond['member']:[],
+            'store' => isset($cond['account'])?$cond['account']:[]
         ];
         $paramsFilter = Handler::paramsHandler($params);
         $condition= [
             'type' =>$cond['type'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            //'queryType' => $paramsFilter['queryType'],
             'suffix' => "'".implode("','",$paramsFilter['store'])."'",
-            'storename' => $cond['storename']?"'".implode(',',$cond['storename'])."'":'',
             'page' => isset($cond['page']) ? $cond['page'] : 1,
             'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 10,
         ];
-        //print_r($condition['suffix']);exit;
-        /*$condition = [
-            'type' => $cond['type'],
-            'suffix' => $cond['suffix'],
-            'salesman' => $cond['salesman'],
-            'beginDate' => $cond['dateRange'][0],
-            'endDate' => $cond['dateRange'][1],
-            'page' => isset($cond['page']) ? $cond['page'] : 1,
-            'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 10,
-        ];*/
         return ApiReport::getRefundDetails($condition);
     }
 
