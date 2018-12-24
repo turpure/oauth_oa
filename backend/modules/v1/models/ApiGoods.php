@@ -74,7 +74,8 @@ class ApiGoods
         $userList = ApiUser::getUserList($user->username);
 
         $query = OaGoods::find();
-        $query->select('nid,stockUp,img,cate,subCate,vendor1,origin1,introReason,checkStatus,introducer,developer,approvalNote,createDate,updateDate');
+        $query->select('nid,stockUp,img,cate,subCate,vendor1,origin1,introReason,checkStatus,introducer,developer,approvalNote,
+                                createDate,updateDate,salePrice,hopeMonthProfit,hopeRate,hopeWeight,hopeCost');
         $query->andFilterWhere(["IFNULL(developer,'')" => $userList]);//查看权限
         $query->andFilterWhere(['devStatus' => '正向认领']);//正向开发
         $query->andFilterWhere(['checkStatus' => ['已认领','待提交','待审核','已审核','未通过']]);
@@ -118,7 +119,8 @@ class ApiGoods
         $userList = ApiUser::getUserList($user->username);
 
         $query = OaGoods::find();
-        $query->select('nid,stockUp,img,cate,subCate,vendor1,origin1,introReason,checkStatus,introducer,developer,approvalNote,createDate,updateDate');
+        $query->select('nid,stockUp,img,cate,subCate,vendor1,origin1,introReason,checkStatus,introducer,developer,approvalNote,
+                                createDate,updateDate,salePrice,hopeMonthProfit,hopeRate,hopeWeight,hopeCost');
         $query->andFilterWhere(["IFNULL(developer,'')" => $userList]);//查看权限
         $query->andFilterWhere(['devStatus' => '逆向认领']);//正向开发
         $query->andFilterWhere(['checkStatus' => ['已认领','待提交','待审核','已审核','未通过']]);
@@ -163,7 +165,8 @@ class ApiGoods
         $userList = ApiUser::getUserList($user->username);
 
         $query = OaGoods::find();
-        $query->select('nid,stockUp,img,cate,subCate,vendor1,origin1,introReason,checkStatus,introducer,developer,approvalNote,createDate,updateDate');
+        $query->select('nid,stockUp,img,cate,subCate,vendor1,origin1,introReason,checkStatus,introducer,developer,approvalNote,
+                        createDate,updateDate,salePrice,hopeMonthProfit,hopeRate,hopeWeight,hopeCost');
         $query->andFilterWhere(["IFNULL(developer,'')" => $userList]);//查看权限
         if($type == 'check'){
             $query->andFilterWhere(['checkStatus' => '待审核']);

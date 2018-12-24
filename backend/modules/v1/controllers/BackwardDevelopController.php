@@ -116,48 +116,5 @@ class BackwardDevelopController extends AdminController
 
 
 
-    /**
-     * 验证用户当月可开发数量，判断是否可备货，或是否可创建 TODO
-     * @return array|bool|string
-     */
-    public function actionValidateStock()
-    {
-        $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
-        $canStock = $user->canStockUp?:0;
-        //不备货的人才接受检查
-        if ($canStock > 0)  return true;
-
-        $numberUsed = "select count(og.nid) as usedStock  from oa_goods as og  
-                      LEFT JOIN oa_goodsinfo as ogs on og.nid = ogs.goodsid
-                      where isnull(og.stockUp,0)=0 and og.developer=:developer 
-                      and DATEDIFF(mm, createDate, getdate()) = 0
-                      and og.mineId is null AND checkStatus<>'未通过'";
-        $numberHave = "select isnull(stockNumThisMonth,0) as haveStock  from oa_stock_goods_number 
-                      where isStock= 'nonstock'
-                      and DATEDIFF(mm, createDate, getdate()) = 0
-                      and developer=:developer";
-        $connection = Yii::$app->db;
-        try {
-            $used = $connection->createCommand($numberUsed,[':developer'=>$user])->queryAll()[0]['usedStock'];
-        }
-        catch (\Exception $e) {
-            $used = 0;
-        }
-        try {
-            $have = $connection->createCommand($numberHave,[':developer'=>$user])->queryAll()[0]['haveStock'];
-        }
-        catch (\Exception $e) {
-            $have = 0;
-        }
-        if($have>0  && $have<=$used) {
-            return [
-                'code' => 400,
-                'message' => 'Claim product failed！'
-            ];
-        }
-        return true;
-
-    }
-
 
 }
