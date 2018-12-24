@@ -66,7 +66,7 @@ class ForwardDevelopController extends AdminController
             $model->catNid = $cateModel && isset($cateModel['Nid']) ? $cateModel['Nid'] : 0;
             $model->devStatus = '正向认领';
             $model->checkStatus = $status[$post['type']];
-            $model->developer = $user->username;
+            $model->developer = $post['developer']?:$user->username;
             $model->updateDate = $model->createDate = date('Y-m-d H:i:s');
             $ret = $model->save();
             if (!$ret) {

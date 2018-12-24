@@ -31,10 +31,6 @@ class OaGoodsController extends AdminController
     }
 
     /**
-     *           产品推荐
-     * =================================================================
-     */
-    /**
      * 产品推荐列表
      * @return \yii\data\ActiveDataProvider
      * @throws \yii\db\Exception
@@ -78,7 +74,7 @@ class OaGoodsController extends AdminController
             $model->catNid = $cateModel && isset($cateModel['Nid']) ? $cateModel['Nid'] : 0;
             $model->devStatus = '';
             $model->checkStatus = '未认领';
-            $model->introducer = $user->username;
+            $model->introducer = $post['introducer']?:$user->username;
             $model->updateDate = $model->createDate = date('Y-m-d H:i:s');
             $ret = $model->save();
             if (!$ret) {
