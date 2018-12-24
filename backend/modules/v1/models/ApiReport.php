@@ -239,11 +239,11 @@ class ApiReport
             $sql = 'SELECT rd.*,refund*' . $rate . " AS refundZn,u.username AS salesman 
                 FROM (
                     SELECT MAX(suffix) AS suffix,MAX(goodsName) AS goodsName,MAX(goodsCode) AS goodsCode,
-				    MAX(goodsSku) AS goodsSku, MAX(tradeId) AS tradeId,MAX(orderId) AS orderId,MAX(storeName) AS storeName,
+				    MAX(goodsSku) AS goodsSku, MAX(tradeId) AS tradeId,orderId,MAX(storeName) AS storeName,
 				    MAX(refund) AS refund, MAX(currencyCode) AS currencyCode,MAX(refundTime) AS refundTime,refundId
                     FROM `cache_refund_details` 
                     WHERE refundTime between '{$condition['beginDate']}' AND DATE_ADD('{$condition['endDate']}', INTERVAL 1 DAY)
-                    GROUP BY refundId
+                    GROUP BY refundId,OrderId,refund,refundTime
                 ) rd 
                 LEFT JOIN auth_store s ON s.store=rd.suffix
                 LEFT JOIN auth_store_child sc ON sc.store_id=s.id
