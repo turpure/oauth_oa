@@ -165,7 +165,7 @@ class ApiGoods
         $userList = ApiUser::getUserList($user->username);
 
         $query = OaGoods::find();
-        $query->select('nid,stockUp,img,cate,subCate,vendor1,origin1,introReason,checkStatus,introducer,developer,approvalNote,
+        $query->select('nid,mineId,stockUp,img,cate,subCate,vendor1,origin1,introReason,checkStatus,introducer,developer,approvalNote,
                         createDate,updateDate,salePrice,hopeMonthProfit,hopeRate,hopeWeight,hopeCost,hopeSale');
         $query->andFilterWhere(["IFNULL(developer,'')" => $userList]);//查看权限
         if($type == 'check'){
@@ -176,6 +176,11 @@ class ApiGoods
             $query->andFilterWhere(['checkStatus' => '未通过']);
         }
         $query->andFilterWhere(['IFNULL(stockUp,0)' => $post['stockUp']]);
+        if ($post['mineId'] == 1){
+            $query->andFilterWhere(['>', 'IFNULL(mineId,0)', 0]);
+        }elseif($post['mineId'] == 0){
+            $query->andFilterWhere(['IFNULL(mineId,0)' => 0]);
+        }
         $query->andFilterWhere(['like', 'devNum', $post['devNum']]);
         $query->andFilterWhere(['like', 'checkStatus', $post['checkStatus']]);
         $query->andFilterWhere(['like', 'cate', $post['cate']]);
