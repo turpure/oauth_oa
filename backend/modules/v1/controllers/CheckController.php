@@ -87,7 +87,7 @@ class CheckController extends AdminController
             foreach ($post['nid'] as $id) {
                 $model = OaGoods::findOne(['nid' => $id]);
                 if(!in_array($model->checkStatus,['待审批'])){
-                    throw new \Exception('Please select the right items to pass！');
+                    throw new \Exception('重复提交审批！');
                 }
                 $model->checkStatus = '已审批';
                 $model->updateDate = date('Y-m-d H:i:s');
