@@ -101,7 +101,7 @@ class BackwardDevelopController extends AdminController
         //根据类目ID更新类目名称
         $model->attributes = $post;
         $model->catNid = $cateModel && isset($cateModel['Nid']) ? $cateModel['Nid'] : 0;
-        $model->checkStatus = $post['type'] == 'check' ? '待审核' : $model->checkStatus;
+        $model->checkStatus = $post['type'] == 'check' ? '待审批' : ($model->checkStatus == '已认领' ? '待提交' : $model->checkStatus);
         $model->updateDate = date('Y-m-d H:i:s');
         $ret = $model->save();
         if ($ret) {

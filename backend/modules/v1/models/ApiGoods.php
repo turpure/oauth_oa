@@ -46,7 +46,7 @@ class ApiGoods
         $query->andFilterWhere(['like', 'approvalNote', $post['approvalNote']]);
         if($post['createDate'])$query->andFilterWhere(['between', "date_format(createDate,'%Y-%m-%d')", $post['createDate'][0], $post['createDate'][1]]);
         if($post['updateDate'])$query->andFilterWhere(['between', "date_format(updateDate,'%Y-%m-%d')", $post['updateDate'][0], $post['updateDate'][1]]);
-
+        $query->orderBy('createDate DESC');
         $provider = new ActiveDataProvider([
             'query' => $query,
             //'db' => Yii::$app->db,
@@ -78,7 +78,7 @@ class ApiGoods
                                 createDate,updateDate,salePrice,hopeMonthProfit,hopeRate,hopeWeight,hopeCost,hopeSale');
         $query->andFilterWhere(["IFNULL(developer,'')" => $userList]);//查看权限
         $query->andFilterWhere(['devStatus' => '正向认领']);//正向开发
-        $query->andFilterWhere(['checkStatus' => ['已认领','待提交','待审核','已审核','未通过']]);
+        $query->andFilterWhere(['checkStatus' => ['已认领','待提交','待审批','已审批','未通过']]);
         $query->andFilterWhere(['IFNULL(stockUp,0)' => $post['stockUp']]);
         $query->andFilterWhere(['like', 'devNum', $post['devNum']]);
         $query->andFilterWhere(['like', 'checkStatus', $post['checkStatus']]);
@@ -92,7 +92,7 @@ class ApiGoods
         $query->andFilterWhere(['like', 'approvalNote', $post['approvalNote']]);
         if($post['createDate'])$query->andFilterWhere(['between', "date_format(createDate,'%Y-%m-%d')", $post['createDate'][0], $post['createDate'][1]]);
         if($post['updateDate'])$query->andFilterWhere(['between', "date_format(updateDate,'%Y-%m-%d')", $post['updateDate'][0], $post['updateDate'][1]]);
-
+        $query->orderBy('createDate DESC');
         $provider = new ActiveDataProvider([
             'query' => $query,
             //'db' => Yii::$app->db,
@@ -123,7 +123,7 @@ class ApiGoods
                                 createDate,updateDate,salePrice,hopeMonthProfit,hopeRate,hopeWeight,hopeCost,hopeSale');
         $query->andFilterWhere(["IFNULL(developer,'')" => $userList]);//查看权限
         $query->andFilterWhere(['devStatus' => '逆向认领']);//正向开发
-        $query->andFilterWhere(['checkStatus' => ['已认领','待提交','待审核','已审核','未通过']]);
+        $query->andFilterWhere(['checkStatus' => ['已认领','待提交','待审批','已审批','未通过']]);
         $query->andFilterWhere(['IFNULL(stockUp,0)' => $post['stockUp']]);
         $query->andFilterWhere(['like', 'devNum', $post['devNum']]);
         $query->andFilterWhere(['like', 'checkStatus', $post['checkStatus']]);
@@ -137,7 +137,7 @@ class ApiGoods
         $query->andFilterWhere(['like', 'approvalNote', $post['approvalNote']]);
         if($post['createDate'])$query->andFilterWhere(['between', "date_format(createDate,'%Y-%m-%d')", $post['createDate'][0], $post['createDate'][1]]);
         if($post['updateDate'])$query->andFilterWhere(['between', "date_format(updateDate,'%Y-%m-%d')", $post['updateDate'][0], $post['updateDate'][1]]);
-
+        $query->orderBy('createDate DESC');
         $provider = new ActiveDataProvider([
             'query' => $query,
             //'db' => Yii::$app->db,
@@ -169,9 +169,9 @@ class ApiGoods
                         createDate,updateDate,salePrice,hopeMonthProfit,hopeRate,hopeWeight,hopeCost,hopeSale');
         $query->andFilterWhere(["IFNULL(developer,'')" => $userList]);//查看权限
         if($type == 'check'){
-            $query->andFilterWhere(['checkStatus' => '待审核']);
+            $query->andFilterWhere(['checkStatus' => '待审批']);
         }elseif($type == 'pass'){
-            $query->andFilterWhere(['checkStatus' => '已审核']);
+            $query->andFilterWhere(['checkStatus' => '已审批']);
         }else{
             $query->andFilterWhere(['checkStatus' => '未通过']);
         }
@@ -193,7 +193,7 @@ class ApiGoods
         $query->andFilterWhere(['like', 'approvalNote', $post['approvalNote']]);
         if($post['createDate'])$query->andFilterWhere(['between', "date_format(createDate,'%Y-%m-%d')", $post['createDate'][0], $post['createDate'][1]]);
         if($post['updateDate'])$query->andFilterWhere(['between', "date_format(updateDate,'%Y-%m-%d')", $post['updateDate'][0], $post['updateDate'][1]]);
-
+        $query->orderBy('createDate DESC');
         $provider = new ActiveDataProvider([
             'query' => $query,
             //'db' => Yii::$app->db,
