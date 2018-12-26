@@ -92,6 +92,9 @@ class CheckController extends AdminController
                 $model->checkStatus = '已审批';
                 $model->updateDate = date('Y-m-d H:i:s');
                 $model->save();
+
+                //保存数据到goodsinfo表中
+
             }
             $transaction->commit();
             return true;
