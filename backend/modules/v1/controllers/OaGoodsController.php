@@ -19,16 +19,6 @@ class OaGoodsController extends AdminController
         'collectionEnvelope' => 'items',
     ];
 
-    /**
-     * @brief set pageSize
-     */
-    public function actions()
-    {
-        $actions = parent::actions();
-        // 注销系统自带的实现方法
-        unset($actions['index'], $actions['create'], $actions['update'], $actions['view'], $actions['delete']);
-        return $actions;
-    }
 
     /**
      * 产品推荐列表
@@ -67,22 +57,19 @@ class OaGoodsController extends AdminController
 
     /**
      * 产品推荐详情
-     * @param integer $id
      * @return mixed
      */
     public function actionInfo()
     {
         $post = Yii::$app->request->post('condition');
-        $model = OaGoods::findOne($post['nid']);
-        return $model;
+         return OaGoods::findOne($post['nid']);
     }
 
     /**
      * 添加推荐产品
-     * If creation is successful, the browser will be redirected to the 'view' page.
-     * @param integer $pid
-     * @param integer $typeid
+     * @brief If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
+     * @throws \Exception
      */
     public function actionCreate()
     {

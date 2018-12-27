@@ -1,6 +1,6 @@
 <?php
 /**
- * @desc PhpStorm.
+ * @desc base controller.
  * @author: turpure
  * @since: 2018-05-17 15:53
  */
@@ -18,12 +18,11 @@ use yii\filters\auth\QueryParamAuth;
 use yii\filters\Cors;
 use yii\base\UserException;
 use Yii;
-use yii\filters\ContentNegotiator;
-use yii\web\Response;
 
 class AdminController extends ActiveController
 {
     public $isRest = false;
+
     public function actions()
     {
         $actions = parent::actions();
@@ -34,7 +33,6 @@ class AdminController extends ActiveController
         return $actions;
     }
 
-
     public function behaviors()
     {
         $behaviors = ArrayHelper::merge([
@@ -44,7 +42,6 @@ class AdminController extends ActiveController
                     'Origin' => ['*'],
                     'Access-Control-Allow-Credentials' => true,
                     'Access-Control-Request-Method' => ['GET', 'POST', 'PUT', 'OPTIONS','DELETE'],
-//                    'Access-Control-Request-Headers' => ['content-type','Authorization','Origin', 'X-Requested-With', 'Content-Type', 'Accept'],
                     'Access-Control-Request-Headers' => ['*'],
                 ],
             ],
@@ -52,13 +49,6 @@ class AdminController extends ActiveController
             parent::behaviors()
         );
 
-
-//        $behaviors['contentNegotiator'] = [
-//            'class' => ContentNegotiator::className(),
-//            'formats' => [
-//                'application/json' => Response::FORMAT_JSON
-//            ]
-//        ];
 
         $behaviors['authenticator'] = [
             'class' => CompositeAuth::className(),
@@ -79,23 +69,22 @@ class AdminController extends ActiveController
     }
 
 
-    /*
-     * basic-auth auth
+    /**
+     * @brief basic-auth auth
+     * @param $username, $password
+     * @return mixed
+     * @throws \Exception
      */
     public function auth($username, $password)
     {
         $user = User::findByUsername($username);
         if (empty($username) || empty($password) || empty($user)) {
-            //return false;
-            //OR
-            throw new UserException("There is an error!");
+            throw new UserException('There is an error!');
         }
         if ($user->validatePassword($password)) {
             return $user;
         }
-        //return false;
-        //OR
-        throw new UserException("Wrong username or password!");
+        throw new UserException('Wrong username or password!');
     }
 
 
@@ -111,7 +100,7 @@ class AdminController extends ActiveController
         if ($result === null) {
             $result = [];
         }
-        if ($data['code'] == 200 && (is_array($result))) {
+        if ($data['code'] === 200 && (is_array($result))) {
             $data['data'] = $result;
         }
         if ($result === false) {
@@ -126,7 +115,7 @@ class AdminController extends ActiveController
     /**
      * @param $action
      * @return bool
-     * @throws \yii\web\BadRequestHttpException
+     * @throws \Exception
      */
     public function beforeAction($action)
     {
@@ -144,7 +133,7 @@ class AdminController extends ActiveController
      * @param string $action
      * @param null $model
      * @param array $params
-     * @return bool
+     * @return mixed
      * @throws \yii\db\Exception
      * @throws \yii\web\ForbiddenHttpException
      */
