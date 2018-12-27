@@ -215,7 +215,6 @@ class ApiGoods
         if($post['hopeCost'])   $query->andFilterWhere(['and',['>=', 'hopeCost', $post['hopeCost']], ['<', 'hopeCost', ceil($post['hopeCost'] + 1)]]);
         if($post['hopeMonthProfit'])$query->andFilterWhere(['and',['>=', 'hopeMonthProfit', $post['hopeMonthProfit']], ['<', 'hopeMonthProfit', ceil($post['hopeMonthProfit'] + 1)]]);
 
-        print_r($query->createCommand()->getRawSql());exit;
         $query->orderBy('createDate DESC');
         $provider = new ActiveDataProvider([
             'query' => $query,
