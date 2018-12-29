@@ -7,8 +7,8 @@
 
 namespace backend\modules\v1\models;
 
-
-use yii\helpers\ArrayHelper;
+use Yii;
+use yii\data\ArrayDataProvider;
 
 class ApiDataCenter
 {
@@ -52,4 +52,32 @@ class ApiDataCenter
             return [$why];
         }
     }
+
+    /**
+     * 获取销售变化表（连个时间段对比）
+     * @param $condition
+     * Date: 2018-12-29 15:46
+     * Author: henry
+     * @return ArrayDataProvider
+     * @throws \yii\db\Exception
+     */
+    public static function getSalesChangeData($condition){
+        //获取本周一时间
+        $day = date('Y-m-d', (time() - ((date('w') == 0 ? 7 : date('w')) - 1) * 24 * 3600));
+        $sql = "SELECT username,sc.* FROM cache_sales_change sc
+                LEFT JOIN auth_store s ON s.store=sc.suffix
+                LEFT JOIN auth_store_child scc ON scc.store_id=s.id
+                LEFT JOIN `user` u ON u.id=scc.user_id
+                WHERE createDate >= '{$day}' ORDER BY numDiff DESC";
+        $list = Yii::$app->db->createCommand($sql)->queryAll();
+        $data = new ArrayDataProvider([
+            'allModels' => $list,
+            'pagination' => [
+                'pageSize' => $condition['pageSize'],
+            ],
+        ]);
+        return $data;
+    }
+
+
 }

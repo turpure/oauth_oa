@@ -56,4 +56,18 @@ class DataCenterController extends AdminController
     {
         return ApiDataCenter::express();
     }
+
+    /**
+     * 获取销售变化表（连个时间段对比）
+     * Date: 2018-12-29 15:47
+     * Author: henry
+     * @return \yii\data\ArrayDataProvider
+     * @throws \yii\db\Exception
+     */
+    public function actionSalesChange()
+    {
+        $condition = Yii::$app->request->get();
+        $condition['pageSize'] = isset($condition['pageSize']) && $condition['pageSize'] ? : 10;
+        return ApiDataCenter::getSalesChangeData($condition);
+    }
 }

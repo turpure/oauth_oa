@@ -90,6 +90,8 @@ class CheckController extends AdminController
                     throw new \Exception('重复提交审批！');
                 }
                 $model->checkStatus = '已审批';
+                $model->approvalNote = isset($post['approvalNote'])?$post['approvalNote']:$model->approvalNote;
+                //$model->checkStatus = '已审批';
                 $model->updateDate = date('Y-m-d H:i:s');
                 $model->save();
 
@@ -129,6 +131,7 @@ class CheckController extends AdminController
                     throw new \Exception('Please select the right items to failed！');
                 }
                 $model->checkStatus = '未通过';
+                $model->approvalNote = isset($post['approvalNote'])?$post['approvalNote']:$model->approvalNote;
                 $model->updateDate = date('Y-m-d H:i:s');
                 $model->save();
             }

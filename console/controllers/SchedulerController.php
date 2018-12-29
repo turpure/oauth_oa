@@ -8,7 +8,7 @@ namespace console\controllers;
 
 use yii\console\Controller;
 
-
+use Yii;
 class SchedulerController extends Controller
 {
     /**
@@ -78,4 +78,28 @@ class SchedulerController extends Controller
             print date('Y-m-d h:i:s')." INFO:fail to get data of target completion cause of $why \n";
         }
     }
+
+    /**
+     * 更新产品销量变化（两个时间段对比）
+     * Date: 2018-12-29 11:55
+     * Author: henry
+     */
+    public function actionSalesChange()
+    {
+        $sql = "EXEC oauth_salesChangeOfTwoDateBlock";
+        try {
+            $list = Yii::$app->py_db->createCommand($sql)->queryAll();
+
+             Yii::$app->db->createCommand()->batchInsert(
+                'cache_sales_change',
+                    ['suffix','goodsCode','goodsName','lastNum','lastAmt','num','amt','numDiff','amtDiff','createDate'],
+                    $list
+                )->execute();
+
+            print date('Y-m-d h:i:s')." INFO:success to update data of sales change!\n";
+        } catch (\Exception $why) {
+            print date('Y-m-d h:i:s')." INFO:fail to update data of sales change cause of $why \n";
+        }
+    }
+
 }
