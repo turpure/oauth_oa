@@ -67,7 +67,7 @@ class DataCenterController extends AdminController
     public function actionSalesChange()
     {
         $condition = Yii::$app->request->get();
-        $condition['pageSize'] = isset($condition['pageSize']) && $condition['pageSize'] ? : 10;
+        $condition['pageSize'] = isset($condition['pageSize']) && $condition['pageSize'] ? $condition['pageSize'] : 10;
         return ApiDataCenter::getSalesChangeData($condition);
     }
 }
