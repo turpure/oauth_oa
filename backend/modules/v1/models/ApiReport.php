@@ -9,6 +9,7 @@ namespace backend\modules\v1\models;
 
 use Yii;
 use yii\data\ArrayDataProvider;
+use yii\helpers\ArrayHelper;
 
 class ApiReport
 {
@@ -280,6 +281,101 @@ class ApiReport
                 'pagination' => [
                     'pageSize' => $condition['pageSize'],
                     'page' => $condition['page'] -1,
+                ],
+            ]);
+
+            return $provider;
+        }
+        catch (\Exception $why) {
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * @param $condition
+     * @return array|ArrayDataProvider
+     */
+    public static function getDeadFee($condition)
+    {
+        $deadSql = "select suffix,storename, sum(diefeeZn) as total,dateTime 
+                from (
+                      select  suffix, storename,diefeeZn, convert(varchar(10),clearancedate,121)  as dateTime 
+		              from y_offlineclearn 
+                      where convert(varchar(10),clearancedate,121) between '" . $condition['beginDate'] . "' and '". $condition['endDate'] . "'";
+        if ($condition['suffix']) $deadSql .= ' AND suffix IN ('.$condition['suffix'] . ') ';
+        if ($condition['storename']) $deadSql .= ' AND storename IN ('.$condition['storename'] . ') ';
+        $deadSql .= " ) ret GROUP by suffix, storename,dateTime;";
+
+        $userSql = "SELECT s.store,s.platform,IFNULL(u.username,'未分配') AS username
+                    FROM `auth_store` s 
+                    LEFT JOIN `auth_store_child` sc ON s.id=sc.store_id
+                    LEFT JOIN `user` u ON u.id=sc.user_id
+                    WHERE u.`status`=10 ";
+        if ($condition['suffix']) $userSql .= ' AND store IN ('.$condition['suffix'] . ') ';
+
+        try {
+            $deadData = Yii::$app->py_db->createCommand($deadSql)->queryAll();
+            $userData = Yii::$app->db->createCommand($userSql)->queryAll();
+            $userData = ArrayHelper::map($userData,'store','username');
+            $data = [];
+            foreach ($deadData as $v){
+                $item = $v;
+                $item['salesman'] = isset($userData[$v['suffix']]) ? $userData[$v['suffix']] : '未分配';
+                $data[] = $item;
+            }
+            $provider = new ArrayDataProvider([
+                'allModels' => $data,
+                'pagination' => [
+                    'pageSize' => $condition['pageSize'],
+                ],
+            ]);
+
+            return $provider;
+        }
+        catch (\Exception $why) {
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
+        }
+    }
+ /**
+     * @param $condition
+     * @return array|ArrayDataProvider
+     */
+    public static function getExtraFee($condition)
+    {
+        $sql = "SELECT suffix, SUM(saleOpeFeeZn) as saleOpeFeeZn, dateTime
+                    FROM(
+                        SELECT suffix, saleOpeFeeZn, saleOpeTime, CONVERT(varchar(10),saleOpeTime,121) as dateTime
+                        FROM Y_saleOpeFee
+                        WHERE CONVERT(varchar(10),saleOpeTime,121)  BETWEEN '" . $condition['beginDate'] . "' and '". $condition['endDate'] . "'";
+        if ($condition['suffix']) $sql .= ' AND suffix IN ('.$condition['suffix'] . ') ';
+        $sql .= " ) ret GROUP by suffix,dateTime;";
+
+        $userSql = "SELECT s.store,s.platform,IFNULL(u.username,'未分配') AS username
+                    FROM `auth_store` s 
+                    LEFT JOIN `auth_store_child` sc ON s.id=sc.store_id
+                    LEFT JOIN `user` u ON u.id=sc.user_id
+                    WHERE u.`status`=10 ";
+        if ($condition['suffix']) $userSql .= ' AND store IN ('.$condition['suffix'] . ') ';
+        try {
+            $extraData = Yii::$app->py_db->createCommand($sql)->queryAll();
+            $userData = Yii::$app->db->createCommand($userSql)->queryAll();
+            $userData = ArrayHelper::map($userData,'store','username');
+            $data = [];
+            foreach ($extraData as $v){
+                $item = $v;
+                $item['salesman'] = isset($userData[$v['suffix']]) ? $userData[$v['suffix']] : '未分配';
+                $data[] = $item;
+            }
+            $provider = new ArrayDataProvider([
+                'allModels' => $data,
+                'pagination' => [
+                    'pageSize' => $condition['pageSize'],
                 ],
             ]);
 

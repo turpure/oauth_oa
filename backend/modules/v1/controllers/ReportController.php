@@ -69,7 +69,7 @@ class ReportController extends  AdminController
             'endDate' => $cond['dateRange'][1],
             'queryType' => $paramsFilter['queryType'],
             'store' => implode(',',$paramsFilter['store']),
-            'warehouse' => $cond['store']?"'".implode(',',$cond['store'])."'":'',
+            'warehouse' => $cond['store']?implode(',',$cond['store']):'',
             'exchangeRate' => $exchangeRate['salerRate']
         ];
         return ApiReport::getSalesReport($condition);
@@ -251,5 +251,69 @@ class ReportController extends  AdminController
         ];
         return ApiReport::getRefundDetails($condition);
     }
+
+
+    /**
+     * 死库明细
+     * Date: 2019-01-04 10:21
+     * Author: henry
+     * @return array|ArrayDataProvider
+     * @throws \yii\db\Exception
+     */
+    public function actionDeadFee()
+    {
+        $request = Yii::$app->request->post();
+        $cond= $request['condition'];
+        $params = [
+            'platform' => isset($cond['plat'])?$cond['plat']:[],
+            'username' => isset($cond['member'])?$cond['member']:[],
+            'store' => isset($cond['account'])?$cond['account']:[]
+        ];
+        $paramsFilter = Handler::paramsHandler($params);
+        $storeName = $cond['storename']?"'".implode(',',$cond['storename'])."'":'';
+        $storeName = str_replace(",","','",$storeName);
+        $condition= [
+            'beginDate' => $cond['dateRange'][0],
+            'endDate' => $cond['dateRange'][1],
+            'suffix' => "'".implode("','",$paramsFilter['store'])."'",
+            'storename' => $storeName,
+            'page' => isset($cond['page']) ? $cond['page'] : 1,
+            'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 10,
+        ];
+        return ApiReport::getDeadFee($condition);
+    }
+
+    /**
+     * 杂费明细
+     * Date: 2019-01-04 10:22
+     * Author: henry
+     * @return array|ArrayDataProvider
+     * @throws \yii\db\Exception
+     */
+    public function actionExtraFee()
+    {
+        $request = Yii::$app->request->post();
+        $cond= $request['condition'];
+        $params = [
+            'platform' => isset($cond['plat'])?$cond['plat']:[],
+            'username' => isset($cond['member'])?$cond['member']:[],
+            'store' => isset($cond['account'])?$cond['account']:[]
+        ];
+        $paramsFilter = Handler::paramsHandler($params);
+        $condition= [
+            'beginDate' => $cond['dateRange'][0],
+            'endDate' => $cond['dateRange'][1],
+            'suffix' => "'".implode("','",$paramsFilter['store'])."'",
+            'page' => isset($cond['page']) ? $cond['page'] : 1,
+            'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 10,
+        ];
+        return ApiReport::getExtraFee($condition);
+
+    }
+
+
+
+
+
 
 }
