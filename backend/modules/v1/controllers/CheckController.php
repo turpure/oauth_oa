@@ -75,6 +75,7 @@ class CheckController extends AdminController
      */
     public function actionPass()
     {
+        ApiGoods::saveDataToInfo(12);exit;
         $post = Yii::$app->request->post('condition');
         if (!$post['nid']) {
             return [
@@ -96,7 +97,7 @@ class CheckController extends AdminController
                 $model->save();
 
                 //保存数据到goodsinfo表中
-
+                ApiGoods::saveDataToInfo($id);
             }
             $transaction->commit();
             return true;
