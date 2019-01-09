@@ -66,8 +66,16 @@ class DataCenterController extends AdminController
      */
     public function actionSalesChange()
     {
-        $condition = Yii::$app->request->get();
-        $condition['pageSize'] = isset($condition['pageSize']) && $condition['pageSize'] ? $condition['pageSize'] : 10;
+        $cond = Yii::$app->request->post('condition');
+        $suffix = $cond['suffix']?"'".implode("','",$cond['suffix'])."'":'';
+        $salesman = $cond['salesman']?"'".implode("','",$cond['salesman'])."'":'';
+        $condition = [
+            'suffix' => str_replace(",","','",$suffix),
+            'salesman' => str_replace(",","','",$salesman),
+            'goodsName' => $cond['goodsName'],
+            'goodsCode' => $cond['goodsCode'],
+            'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 10,
+        ];
         return ApiDataCenter::getSalesChangeData($condition);
     }
 }
