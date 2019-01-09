@@ -242,7 +242,7 @@ class ApiReport
                     SELECT MAX(suffix) AS suffix,MAX(goodsName) AS goodsName,MAX(goodsCode) AS goodsCode,
 				    MAX(goodsSku) AS goodsSku, MAX(tradeId) AS tradeId,orderId,MAX(storeName) AS storeName,
 				    MAX(refund) AS refund, MAX(currencyCode) AS currencyCode,MAX(refundTime) AS refundTime,
-				    MAX(orderTime) AS orderTime, MAX(orderCountry) AS orderCountry,MAX(platform) AS platform,MAX(wlMode) AS wlMode,refundId
+				    MAX(orderTime) AS orderTime, MAX(orderCountry) AS orderCountry,MAX(platform) AS platform,MAX(expressWay) AS expressWay,refundId
                     FROM `cache_refund_details` 
                     WHERE refundTime between '{$condition['beginDate']}' AND DATE_ADD('{$condition['endDate']}', INTERVAL 1 DAY)
                     GROUP BY refundId,OrderId,refund,refundTime
