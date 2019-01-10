@@ -9,6 +9,7 @@ namespace backend\modules\v1\models;
 
 use Yii;
 use yii\data\ArrayDataProvider;
+use yii\data\Sort;
 
 class ApiDataCenter
 {
@@ -73,10 +74,14 @@ class ApiDataCenter
         if ($condition['salesman']) $sql .= " AND u.username IN(" . $condition['salesman'] . ') ';
         if ($condition['goodsName']) $sql .= " AND sc.goodsName LIKE '%" . $condition['goodsName'] . "%'";
         if ($condition['goodsCode']) $sql .= " AND sc.goodsCode LIKE '%" . $condition['goodsCode'] . "%'";
-        $sql .= " ORDER BY numDiff DESC";
+        //$sql .= " ORDER BY numDiff DESC";
         $list = Yii::$app->db->createCommand($sql)->queryAll();
         $data = new ArrayDataProvider([
             'allModels' => $list,
+            'sort' => [
+                'defaultOrder' => ['numDiff' => SORT_DESC],
+                'attributes' => ['suffix', 'salesman', 'goodsName','goodsCode','lastNum','lastAmt','num','amt','numDiff','amtDiff','createDate'],
+            ],
             'pagination' => [
                 'pageSize' => $condition['pageSize'],
             ],

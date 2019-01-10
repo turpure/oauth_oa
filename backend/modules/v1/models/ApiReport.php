@@ -244,16 +244,17 @@ class ApiReport
 				    MAX(refund) AS refund, MAX(currencyCode) AS currencyCode,MAX(refundTime) AS refundTime,
 				    MAX(orderTime) AS orderTime, MAX(orderCountry) AS orderCountry,MAX(platform) AS platform,MAX(expressWay) AS expressWay,refundId
                     FROM `cache_refund_details` 
-                    WHERE refundTime between '{$condition['beginDate']}' AND DATE_ADD('{$condition['endDate']}', INTERVAL 1 DAY)
+                    WHERE refundTime between '{$condition['beginDate']}' AND DATE_ADD('{$condition['endDate']}', INTERVAL 1 DAY) 
+                          AND IFNULL(platform,'')<>'' 
                     GROUP BY refundId,OrderId,refund,refundTime
                 ) rd 
                 LEFT JOIN auth_store s ON s.store=rd.suffix
                 LEFT JOIN auth_store_child sc ON sc.store_id=s.id
                 LEFT JOIN user u ON sc.user_id=u.id WHERE u.status=10 ";
             if ($condition['suffix']) {
-                $sql .= 'AND suffix IN ('.$condition['suffix'] . ') ';
+                $sql .= ' AND suffix IN ('.$condition['suffix'] . ') ';
             }
-            $sql .= 'ORDER BY refund DESC';
+            $sql .= ' ORDER BY refund DESC;';
         }
 
         //按SKU汇总退款
