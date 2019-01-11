@@ -35,11 +35,11 @@ class SchedulerController extends Controller
                     }
                 }
             }
-            print date('Y-m-d h:i:s')."INFO:success to get sale-report data\n";
+            print date('Y-m-d H:i:s')."INFO:success to get sale-report data\n";
             $trans->commit();
         }
         catch (\Exception $why) {
-            print date('Y-m-d h:i:s')."INFO:fail to get sale-report data cause of $why \n";
+            print date('Y-m-d H:i:s')."INFO:fail to get sale-report data cause of $why \n";
             $trans->rollback();
     }
     }
@@ -56,10 +56,10 @@ class SchedulerController extends Controller
         @PageNum='100',@PageIndex='1',@Purchaser='',@LocationName='',@Used=''";
         try {
             $con->createCommand($sql)->execute();
-            print date('Y-m-d h:i:s')."INFO:success to get sku out of stock!\n";
+            print date('Y-m-d H:i:s')."INFO:success to get sku out of stock!\n";
         }
         catch (\Exception $why) {
-            print date('Y-m-d h:i:s')."INFO:fail to get sku out of stock cause of $why \n";
+            print date('Y-m-d H:i:s')."INFO:fail to get sku out of stock cause of $why \n";
         }
     }
 
@@ -72,10 +72,10 @@ class SchedulerController extends Controller
         $sql = "EXEC oauth_target_procedure";
         try {
             $con->createCommand($sql)->execute();
-            print date('Y-m-d h:i:s')." INFO:success to get data of target completion!\n";
+            print date('Y-m-d H:i:s')." INFO:success to get data of target completion!\n";
         }
         catch (\Exception $why) {
-            print date('Y-m-d h:i:s')." INFO:fail to get data of target completion cause of $why \n";
+            print date('Y-m-d H:i:s')." INFO:fail to get data of target completion cause of $why \n";
         }
     }
 
@@ -96,10 +96,50 @@ class SchedulerController extends Controller
                     $list
                 )->execute();
 
-            print date('Y-m-d h:i:s')." INFO:success to update data of sales change!\n";
+            print date('Y-m-d H:i:s')." INFO:success to update data of sales change!\n";
         } catch (\Exception $why) {
-            print date('Y-m-d h:i:s')." INFO:fail to update data of sales change cause of $why \n";
+            print date('Y-m-d H:i:s')." INFO:fail to update data of sales change cause of $why \n";
         }
     }
+
+    /**
+     * 更新主页今日爆款
+     * Date: 2019-01-11 11:11
+     * Author: henry
+     */
+    public function actionPros()
+    {
+        //获取昨天时间
+        $beginDate = date('Y-m-d',strtotime('-30 days'));
+        $endDate = date('Y-m-d',strtotime('-1 days'));
+        $sql = "EXEC oauth_siteGoods @DateFlag=:dateFlag,@BeginDate=:beginDate,@EndDate=:endDate";
+        $params = [
+            ':dateFlag' => 1,//发货时间
+            ':beginDate' => $beginDate,
+            ':endDate' => $endDate
+        ];
+        try {
+            $list = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+            //清空数据表并插入新数据
+            Yii::$app->db->createCommand("TRUNCATE TABLE site_goods")->execute();
+            Yii::$app->db->createCommand()->batchInsert('site_goods', ['profit', 'platform','goodsCode','goodsName','endTime','img'], $list)->execute();
+
+            print date('Y-m-d H:i:s')." INFO:success to update data of today pros!\n";
+        }
+        catch (\Exception $why) {
+            print date('Y-m-d H:i:s')." INFO:fail to update data of today pros cause of $why \n";
+        }
+    }
+
+    /**
+     * 更新主页利润增长表
+     * Date: 2019-01-11 11:55
+     * Author: henry
+     */
+    public function actionProfit()
+    {
+
+    }
+
 
 }

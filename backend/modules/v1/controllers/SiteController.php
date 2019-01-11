@@ -193,8 +193,22 @@ class SiteController extends AdminController
         return $query;
     }
 
-
-
+    /**
+     * 今日爆款
+     * Date: 2019-01-10 18:38
+     * Author: henry
+     * @return mixed
+     * @throws \yii\db\Exception
+     */
+    public function actionPros()
+    {
+        $plat = \Yii::$app->request->get('plat','eBay');
+        $sql = "SELECT * FROM site_goods 
+                WHERE  platform = '{$plat}'
+                ORDER BY profit DESC";
+        $query = \Yii::$app->db->createCommand($sql)->queryAll();
+        return $query;
+    }
 
 
 }
