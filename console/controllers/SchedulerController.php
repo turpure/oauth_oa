@@ -138,6 +138,23 @@ class SchedulerController extends Controller
      */
     public function actionProfit()
     {
+        try {
+            //获取销售人员毛利
+            //$sql = "CALL oauth_site_profit;";
+            //$saleList = Yii::$app->db->createCommand($sql)->queryAll();
+            //获取开发人员毛利
+            $sql = "CALL oauth_site_profit;";
+            $list = Yii::$app->db->createCommand($sql)->queryAll();
+            //print_r($list);exit;
+            //清空数据表并插入新数据
+            Yii::$app->db->createCommand("TRUNCATE TABLE site_profit")->execute();
+            Yii::$app->db->createCommand()->batchInsert('site_profit', ['username','depart','role','storename','lastProfit','profit', 'rate','dateRate','updateTime'], $list)->execute();
+
+            print date('Y-m-d H:i:s')." INFO:success to update data of profit changes!\n";
+        }
+        catch (\Exception $why) {
+            print date('Y-m-d H:i:s')." INFO:fail to update data of profit changes cause of $why \n";
+        }
 
     }
 
