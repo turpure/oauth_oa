@@ -77,14 +77,15 @@ class ApiUkFic{
             $data['pFee'] = $price * Yii::$app->params['spRate'] + Yii::$app->params['spBasic'];
         }else{
             $data['price'] = ($cost/$ukRate + $costprice/$ukRate + Yii::$app->params['bpBasic'])/(1 - $rate/100 - Yii::$app->params['eRate'] - Yii::$app->params['bpRate']);
-            $data['pFee'] = $price * Yii::$app->params['bpRate'] + Yii::$app->params['bpBasic'];
+            $data['pFee'] = $data['price'] * Yii::$app->params['bpRate'] + Yii::$app->params['bpBasic'];
+            //print_r($data['price']);exit;
         }
         //eBay交易费
-        $data['eFee'] = $price * Yii::$app->params['eRate'];
+        $data['eFee'] = $data['price'] * Yii::$app->params['eRate'];
 
         //计算毛利
         $profit = $data['price'] - $data['pFee'] - $data['eFee'] - $cost/$ukRate - $costprice/$ukRate;
-        $data['price'] = round($price,2);
+        $data['price'] = round($data['price'],2);
         $data['eFee'] = round($data['eFee'],2);
         $data['pFee'] = round($data['pFee'],2);
         $data['profit'] = round($profit,2);
