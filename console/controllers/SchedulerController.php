@@ -138,17 +138,29 @@ class SchedulerController extends Controller
      */
     public function actionProfit()
     {
+        //获取上月时间
+        $lastBeginDate = date('Y-m-01',strtotime('-1 month'));
+        $lastEndDate = date('Y-m-t',strtotime('-1 month'));
+        $beginDate = date('Y-m-01');
+        $endDate = date('Y-m-d',strtotime('-1 day'));
         try {
             //获取销售人员毛利
-            //$sql = "CALL oauth_site_profit;";
-            //$saleList = Yii::$app->db->createCommand($sql)->queryAll();
-            //获取开发人员毛利
             $sql = "CALL oauth_site_profit;";
-            $list = Yii::$app->db->createCommand($sql)->queryAll();
-            //print_r($list);exit;
+            $saleList = Yii::$app->db->createCommand($sql)->queryAll();
+            //获取开发人员毛利
+            $devSql = "EXEC oauth_siteDeveloperProfit";
+            $devList = Yii::$app->py_db->createCommand($devSql)->queryAll();
+            //print_r($devList);exit;
             //清空数据表并插入新数据
             Yii::$app->db->createCommand("TRUNCATE TABLE site_profit")->execute();
-            Yii::$app->db->createCommand()->batchInsert('site_profit', ['username','depart','role','storename','lastProfit','profit', 'rate','dateRate','updateTime'], $list)->execute();
+            //插入销售毛利数据
+            Yii::$app->db->createCommand()->batchInsert('site_profit',
+                ['username','depart','role','storename','lastProfit','profit', 'rate','dateRate','updateTime'],
+                $saleList)->execute();
+            //插入开发毛利数据
+            Yii::$app->db->createCommand()->batchInsert('site_profit',
+                ['username','depart','role','lastProfit','profit', 'rate','dateRate','updateTime'],
+                $devList)->execute();
 
             print date('Y-m-d H:i:s')." INFO:success to update data of profit changes!\n";
         }
