@@ -62,14 +62,30 @@ class ApiDataCenter
      * @return ArrayDataProvider
      * @throws \yii\db\Exception
      */
-    public static function getSalesChangeData($condition){
-        //获取本周一时间
-        $day = date('Y-m-d', (time() - ((date('w') == 0 ? 7 : date('w')) - 1) * 24 * 3600));
+    public static function getSalesChangeData($condition)
+    {
+        $updateSql = "oauth_salesChangeOfTwoDateBlock @lastBeginDate=:lastBeginDate,@lastEndDate=:lastEndDate,@beginDate=:beginDate,@endDate=:endDate ";
+        $items = [
+            ':lastBeginDate' => $condition['lastBeginDate'],
+            ':lastEndDate' => $condition['lastEndDate'],
+            ':beginDate' => $condition['beginDate'],
+            ':endDate' => $condition['endDate']
+        ];
+        $data = Yii::$app->py_db->createCommand($updateSql)->bindValues($items)->queryAll();
+
+        //清空数据表并插入新数据
+        Yii::$app->db->createCommand("TRUNCATE TABLE cache_sales_change")->execute();
+        //更新cache_sales_change 表数据
+        Yii::$app->db->createCommand()->batchInsert(
+            'cache_sales_change',
+            ['suffix','goodsCode','goodsName','lastNum','lastAmt','num','amt','numDiff','amtDiff','createDate'],
+            $data
+        )->execute();
+
         $sql = "SELECT username,sc.* FROM cache_sales_change sc
                 LEFT JOIN auth_store s ON s.store=sc.suffix
                 LEFT JOIN auth_store_child scc ON scc.store_id=s.id
-                LEFT JOIN `user` u ON u.id=scc.user_id
-                WHERE createDate >= '{$day}' ";
+                LEFT JOIN `user` u ON u.id=scc.user_id ";
         if ($condition['suffix']) $sql .= " AND sc.suffix IN(" . $condition['suffix'] . ') ';
         if ($condition['salesman']) $sql .= " AND u.username IN(" . $condition['salesman'] . ') ';
         if ($condition['goodsName']) $sql .= " AND sc.goodsName LIKE '%" . $condition['goodsName'] . "%'";

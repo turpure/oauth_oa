@@ -70,6 +70,10 @@ class DataCenterController extends AdminController
         $suffix = $cond['suffix']?"'".implode("','",$cond['suffix'])."'":'';
         $salesman = $cond['salesman']?"'".implode("','",$cond['salesman'])."'":'';
         $condition = [
+            'lastBeginDate' => $cond['lastDateRange'][0],
+            'lastEndDate' => $cond['lastDateRange'][1],
+            'beginDate' => $cond['dateRange'][0],
+            'endDate' => $cond['dateRange'][1],
             'suffix' => str_replace(",","','",$suffix),
             'salesman' => str_replace(",","','",$salesman),
             'goodsName' => $cond['goodsName'],
