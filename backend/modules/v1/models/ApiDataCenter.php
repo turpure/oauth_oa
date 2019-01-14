@@ -64,7 +64,6 @@ class ApiDataCenter
      */
     public static function getSalesChangeData($condition)
     {
-        print_r($condition);exit;
         $updateSql = "oauth_salesChangeOfTwoDateBlock @lastBeginDate=:lastBeginDate,@lastEndDate=:lastEndDate,@beginDate=:beginDate,@endDate=:endDate ";
         $items = [
             ':lastBeginDate' => $condition['lastBeginDate'],
