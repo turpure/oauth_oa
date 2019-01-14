@@ -85,7 +85,8 @@ class ApiDataCenter
         $sql = "SELECT username,sc.* FROM cache_sales_change sc
                 LEFT JOIN auth_store s ON s.store=sc.suffix
                 LEFT JOIN auth_store_child scc ON scc.store_id=s.id
-                LEFT JOIN `user` u ON u.id=scc.user_id ";
+                LEFT JOIN `user` u ON u.id=scc.user_id 
+                WHERE 1=1 ";
         if ($condition['suffix']) $sql .= " AND sc.suffix IN(" . $condition['suffix'] . ') ';
         if ($condition['salesman']) $sql .= " AND u.username IN(" . $condition['salesman'] . ') ';
         if ($condition['goodsName']) $sql .= " AND sc.goodsName LIKE '%" . $condition['goodsName'] . "%'";
