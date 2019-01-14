@@ -144,19 +144,12 @@ class SchedulerController extends Controller
         $beginDate = date('Y-m-01');
         $endDate = date('Y-m-d',strtotime('-1 day'));
         try {
-            //获取销售人员毛利
-            $sql = "CALL oauth_site_profit;";
-            $saleList = Yii::$app->db->createCommand($sql)->queryAll();
             //获取开发人员毛利
             $devSql = "EXEC oauth_siteDeveloperProfit";
             $devList = Yii::$app->py_db->createCommand($devSql)->queryAll();
-            //print_r($devList);exit;
-            //清空数据表并插入新数据
-            Yii::$app->db->createCommand("TRUNCATE TABLE site_profit")->execute();
-            //插入销售毛利数据
-            Yii::$app->db->createCommand()->batchInsert('site_profit',
-                ['username','depart','role','storename','lastProfit','profit', 'rate','dateRate','updateTime'],
-                $saleList)->execute();
+
+            //插入销售毛利数据(存储过程插入)
+            Yii::$app->db->createCommand("CALL oauth_site_profit;")->execute();
             //插入开发毛利数据
             Yii::$app->db->createCommand()->batchInsert('site_profit',
                 ['username','depart','role','lastProfit','profit', 'rate','dateRate','updateTime'],
