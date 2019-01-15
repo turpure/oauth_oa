@@ -202,7 +202,7 @@ class SiteController extends AdminController
      */
     public function actionPros()
     {
-        $plat = \Yii::$app->request->get('plat','eBay');
+        $plat = \Yii::$app->request->get('plat','eBay-义乌仓');
         $sql = "SELECT * FROM site_goods 
                 WHERE  platform = '{$plat}'
                 ORDER BY profit DESC";
