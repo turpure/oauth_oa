@@ -34,7 +34,7 @@ class AuthDepartment extends \yii\db\ActiveRecord
         return [
             [['id','created_at', 'updated_at'], 'integer'],
             [['department', 'description'], 'string', 'max' => 30],
-            [['department_status'], 'string', 'max' => 20],
+            [['type'], 'string', 'max' => 20],
         ];
     }
 

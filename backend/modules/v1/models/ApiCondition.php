@@ -30,16 +30,19 @@ class ApiCondition
         $department = [];
         foreach ($userInfo as $key=>$value) {
             $row = [];
-            if(empty($value['parent_id']) && empty($value['parent_department'])) {
-                $row['id'] = $value['department_id'];
-                $row['department'] = $value['department'];
-                $department[] = $row;
-            }
-            else {
+            if(!empty($value['parent_id']) && !empty($value['parent_department'])) {
                 $row['id'] = $value['parent_id'];
                 $row['department'] = $value['parent_department'];
-                $department[] = $row;
+                $row['type'] = $value['department_type'];
             }
+            else if(!empty($value['department_id']) && !empty($value['department'])) {
+                $row['id'] = $value['department_id'];
+                $row['department'] = $value['department'];
+                $row['type'] = $value['department_type'];
+            }else{
+                continue;
+            }
+            $department[] = $row;
         }
         $ret = Helper::arrayUnique($department);
         return Helper::arraySort($ret,'id',SORT_ASC);
@@ -165,10 +168,11 @@ class ApiCondition
         $role = User::getRole($userId);//登录用户角色
         $position = AuthPosition::getPosition($userId);//登录用户职位
         if ($role === AuthAssignment::ACCOUNT_ADMIN) {
-            $users = (new Query())->select("u.id,username,p.position,d.department as department,d.id as department_id,pd.department as parent_department,pd.id as parent_id")
+            $users = (new Query())->select("u.id,username,p.position,d.department as department,d.id as department_id,pd.department as parent_department,pd.id as parent_id,
+                     IFNULL(pd.`type`,d.`type`) as department_type")
                 ->from('`user` as u ')
-                ->innerJoin('auth_position_child pc','pc.user_id=u.id')
-                ->innerJoin('auth_position p','p.id=pc.position_id')
+                ->leftJoin('auth_position_child pc','pc.user_id=u.id')
+                ->leftJoin('auth_position p','p.id=pc.position_id')
                 ->leftJoin('auth_department_child dc','dc.user_id=u.id')
                 ->leftJoin('auth_department d','d.id=dc.department_id')
                 ->leftJoin('auth_department pd','pd.id=d.parent')
@@ -180,7 +184,8 @@ class ApiCondition
         ) {
             //登录用户部门
             $depart_id = AuthDepartmentChild::findOne(['user_id' => $userId])['department_id'];
-            $users = (new Query())->select('u.id,username,p.position,d.department as department,d.id as department_id,pd.department as parent_department,pd.id as parent_id')
+            $users = (new Query())->select("u.id,username,p.position,d.department as department,d.id as department_id,pd.department as parent_department,pd.id as parent_id,
+            IFNULL(pd.`type`,d.`type`) as department_type")
                 ->from('user u')
                 ->innerJoin('auth_position_child pc','pc.user_id=u.id')
                 ->innerJoin('auth_department_child dc','dc.user_id=u.id')
@@ -190,7 +195,8 @@ class ApiCondition
                 ->andWhere(['u.status' => 10])
                 ->andWhere(['or',['d.id' => $depart_id],['d.parent' => $depart_id]])->all();
         } else {
-            $users = (new Query())->select('u.id,username,p.position,d.department as department,d.id as department_id,pd.department as parent_department,pd.id as parent_id')
+            $users = (new Query())->select("u.id,username,p.position,d.department as department,d.id as department_id,pd.department as parent_department,pd.id as parent_id,
+            IFNULL(pd.`type`,d.`type`) as department_type")
                 ->from('user u')
                 ->innerJoin('auth_position_child pc','pc.user_id=u.id')
                 ->innerJoin('auth_position p','p.id=pc.position_id')
