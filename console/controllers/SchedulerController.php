@@ -122,7 +122,9 @@ class SchedulerController extends Controller
             $list = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
             //清空数据表并插入新数据
             Yii::$app->db->createCommand("TRUNCATE TABLE site_goods")->execute();
-            Yii::$app->db->createCommand()->batchInsert('site_goods', ['profit', 'platform','goodsCode','goodsName','endTime','img'], $list)->execute();
+            Yii::$app->db->createCommand()->batchInsert('site_goods',
+                ['profit', 'salesNum', 'platform','goodsCode','goodsName','endTime','img','developer','linkUrl','cate','subCate'],
+                $list)->execute();
 
             print date('Y-m-d H:i:s')." INFO:success to update data of today pros!\n";
         }
