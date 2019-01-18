@@ -59,7 +59,9 @@ class RequirementsController extends AdminController
             $query->andFilterWhere(['creator' => $user->username]);
         }
         $query->andFilterWhere(["type" => $type, "priority" => $priority, "schedule" => $schedule]);
+        $query->andFilterWhere(['like', "creator", $get['creator']]);
         $query->andFilterWhere(['like', "name", $get['name']]);
+        $query->andFilterWhere(['like', "detail", $get['detail']]);
         $query->orderBy('createdDate DESC');
 
         $provider = new ActiveDataProvider([
@@ -85,13 +87,9 @@ class RequirementsController extends AdminController
 
         $query = (new Query())->from('requirement');
         $query->andFilterWhere(["type" => $type, "priority" => $priority, "schedule" => Requirements::SCHEDULE_TO_BE_AUDITED]);
-        if ($get['flag'] == 'name') {
-            $query->andFilterWhere(['like', "name", $get['name']]);
-        } else if ($get['flag'] == 'detail') {
-            $query->andFilterWhere(['like', "detail", $get['name']]);
-        } else {
-            $query->andFilterWhere(['like', "creator", $get['name']]);
-        }
+        $query->andFilterWhere(['like', "name", $get['name']]);
+        $query->andFilterWhere(['like', "detail", $get['detail']]);
+        $query->andFilterWhere(['like', "creator", $get['creator']]);
         $query->orderBy('createdDate DESC');
 
         $provider = new ActiveDataProvider([
@@ -121,13 +119,9 @@ class RequirementsController extends AdminController
         $query->andFilterWhere(["type" => $type, "priority" => $priority, 'status' => $status]);
         $query->andFilterWhere(["schedule" => [Requirements::SCHEDULE_DEALING, Requirements::SCHEDULE_DEALT]]);
         $query->andFilterWhere(['like', "processingPerson", $get['processingPerson']]);
-        if ($get['flag'] == 'name') {
-            $query->andFilterWhere(['like', "name", $get['name']]);
-        } else if ($get['flag'] == 'detail') {
-            $query->andFilterWhere(['like', "detail", $get['name']]);
-        } else {
-            $query->andFilterWhere(['like', "creator", $get['name']]);
-        }
+        $query->andFilterWhere(['like', "name", $get['name']]);
+        $query->andFilterWhere(['like', "detail", $get['detail']]);
+        $query->andFilterWhere(['like', "creator", $get['creator']]);
         $query->orderBy('createdDate DESC');
 
         $provider = new ActiveDataProvider([
