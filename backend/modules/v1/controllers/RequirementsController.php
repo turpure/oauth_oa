@@ -90,6 +90,8 @@ class RequirementsController extends AdminController
         $query->andFilterWhere(['like', "name", $get['name']]);
         $query->andFilterWhere(['like', "detail", $get['detail']]);
         $query->andFilterWhere(['like', "creator", $get['creator']]);
+        $query->andFilterWhere(['like', "processingPerson", $get['processingPerson']]);
+
         $query->orderBy('createdDate DESC');
 
         $provider = new ActiveDataProvider([
