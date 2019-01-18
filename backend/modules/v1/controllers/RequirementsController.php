@@ -47,7 +47,7 @@ class RequirementsController extends AdminController
     {
         $get = Yii::$app->request->get();
         $pageSize = isset($get['pageSize']) ? $get['pageSize'] : 10;
-        $type = isset($get['type']) && $get['type'] ? $get['type'] : null;
+        $type = $get['type'];//isset($get['type']) && $get['type'] ? $get['type'] : null;
         $priority = isset($get['priority']) && $get['priority'] ? $get['priority'] : null;
         $schedule = isset($get['schedule']) && $get['schedule'] ? $get['schedule'] : null;
         $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
@@ -82,7 +82,7 @@ class RequirementsController extends AdminController
     {
         $get = Yii::$app->request->get();
         $pageSize = isset($get['pageSize']) ? $get['pageSize'] : 10;
-        $type = isset($get['type']) && $get['type'] ? $get['type'] : null;
+        $type = $get['type'];//isset($get['type']) && $get['type'] ? $get['type'] : null;
         $priority = isset($get['priority']) && $get['priority'] ? $get['priority'] : null;
 
         $query = (new Query())->from('requirement');
@@ -111,7 +111,7 @@ class RequirementsController extends AdminController
     {
         $get = Yii::$app->request->get();
         $pageSize = isset($get['pageSize']) ? $get['pageSize'] : 10;
-        $type = isset($get['type']) && $get['type'] ? $get['type'] : null;
+        $type = $get['type'];//isset($get['type']) && $get['type'] ? $get['type'] : null;
         $priority = isset($get['priority']) && $get['priority'] ? $get['priority'] : null;
         $status = isset($get['status']) && $get['status'] ? $get['status'] : null;
 
