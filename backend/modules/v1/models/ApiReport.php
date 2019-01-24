@@ -239,7 +239,7 @@ class ApiReport
         if ($condition['type'] === 'order') {
             $sql = 'SELECT rd.*,refund*' . $rate . " AS refundZn,u.username AS salesman 
                 FROM (
-                    SELECT MAX(suffix) AS suffix,MAX(goodsName) AS goodsName,MAX(goodsCode) AS goodsCode,
+                    SELECT MAX(refMonth) AS refMonth, MAX(dateDelta) as dateDelta, MAX(suffix) AS suffix,MAX(goodsName) AS goodsName,MAX(goodsCode) AS goodsCode,
 				    MAX(goodsSku) AS goodsSku, MAX(tradeId) AS tradeId,orderId,MAX(storeName) AS storeName,
 				    MAX(refund) AS refund, MAX(currencyCode) AS currencyCode,MAX(refundTime) AS refundTime,
 				    MAX(orderTime) AS orderTime, MAX(orderCountry) AS orderCountry,MAX(platform) AS platform,MAX(expressWay) AS expressWay,refundId
