@@ -46,6 +46,8 @@ class RequirementsController extends AdminController
     public function actionIndex()
     {
         $get = Yii::$app->request->get();
+        $sortProperty = isset($get['sortProperty']) ? $get['sortProperty'] : 'createDate';
+        $sortOrder = isset($get['sortOrder']) ? $get['sortOrder'] : 'DESC';
         $pageSize = isset($get['pageSize']) ? $get['pageSize'] : 10;
         $type = isset($get['type']) && $get['type'] ? $get['type'] : null;
         $priority = isset($get['priority']) && $get['priority'] ? $get['priority'] : null;
@@ -53,7 +55,6 @@ class RequirementsController extends AdminController
         $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
         $role = (new Query())->select('item_name as role')->from('auth_assignment')->where(['user_id' => $user->id])->all();
         $roleList = ArrayHelper::getColumn($role, 'role');
-        //print_r($roleList);exit;
         $query = (new Query())->from('requirement');
         if (!in_array(AuthAssignment::ACCOUNT_ADMIN, $roleList)) {
             $query->andFilterWhere(['creator' => $user->username]);
@@ -62,8 +63,7 @@ class RequirementsController extends AdminController
         $query->andFilterWhere(['like', "creator", $get['creator']]);
         $query->andFilterWhere(['like', "name", $get['name']]);
         $query->andFilterWhere(['like', "detail", $get['detail']]);
-        $query->orderBy('createdDate DESC');
-
+        $query->orderBy($sortProperty.' '.$sortOrder);
         $provider = new ActiveDataProvider([
             'query' => $query,
             'db' => Yii::$app->db,
