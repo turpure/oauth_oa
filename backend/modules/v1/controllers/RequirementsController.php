@@ -112,6 +112,8 @@ class RequirementsController extends AdminController
     public function actionDealList()
     {
         $get = Yii::$app->request->get();
+        $sortProperty = isset($get['sortProperty']) ? $get['sortProperty'] : 'createDate';
+        $sortOrder = isset($get['sortOrder']) ? $get['sortOrder'] : 'DESC';
         $pageSize = isset($get['pageSize']) ? $get['pageSize'] : 10;
         $type = $get['type'];//isset($get['type']) && $get['type'] ? $get['type'] : null;
         $priority = isset($get['priority']) && $get['priority'] ? $get['priority'] : null;
@@ -124,7 +126,7 @@ class RequirementsController extends AdminController
         $query->andFilterWhere(['like', "name", $get['name']]);
         $query->andFilterWhere(['like', "detail", $get['detail']]);
         $query->andFilterWhere(['like', "creator", $get['creator']]);
-        $query->orderBy('createdDate DESC');
+        $query->orderBy($sortProperty.' '.$sortOrder);
 
         $provider = new ActiveDataProvider([
             'query' => $query,
