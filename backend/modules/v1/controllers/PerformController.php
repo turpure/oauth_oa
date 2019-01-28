@@ -72,7 +72,7 @@ class PerformController extends AdminController
         $cond = $request['condition'];
 
         $condition = [
-            'suffix' => $cond['suffix'],
+            'suffix' => implode(',',$cond['suffix']),
             'plat' => $cond['plat'],
             'saler' => $cond['saler'],
             'start' => $cond['start'],
