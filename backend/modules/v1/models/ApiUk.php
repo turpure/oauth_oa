@@ -58,10 +58,39 @@ class ApiUk{
         }
 
         //获取运费,超重、超长、超宽、超高取快递方式Yodel - Packet Home Mini 否则取快递方式 Royal Mail - Untracked 48 Large Letter
-        if($weight > Yii::$app->params['w_uk_tran_1_4'] || $length > Yii::$app->params['len_uk_tran'] ||
+        if($weight > Yii::$app->params['w_uk_tran_3_6'] || $length > Yii::$app->params['len_uk_tran_3'] ||
+            $width > Yii::$app->params['wid_uk_tran_3'] || $height > Yii::$app->params['hei_uk_tran_3']){
+            $data['name'] = '无法获取对应物流！';
+            $data['cost'] = 0;
+        }elseif($weight > Yii::$app->params['w_uk_tran_2_2'] || $length > Yii::$app->params['len_uk_tran_2'] ||
+            $width > Yii::$app->params['wid_uk_tran_2'] || $height > Yii::$app->params['hei_uk_tran_2']){
+            $data['name'] = Yii::$app->params['transport_uk3'];
+            //获取方式3的运费
+            if($weight <= Yii::$app->params['w_uk_tran_3_1']){
+                $data['cost'] = Yii::$app->params['w_uk_tran_fee_3_1'];
+            }else if($weight <= Yii::$app->params['w_uk_tran_3_2']){
+                $data['cost'] = Yii::$app->params['w_uk_tran_fee_3_2'];
+            }else if($weight <= Yii::$app->params['w_uk_tran_3_3']){
+                $data['cost'] = Yii::$app->params['w_uk_tran_fee_3_3'];
+            }else if($weight <= Yii::$app->params['w_uk_tran_3_4']){
+                $data['cost'] = Yii::$app->params['w_uk_tran_fee_3_4'];
+            }else if($weight <= Yii::$app->params['w_uk_tran_3_5']){
+                $data['cost'] = Yii::$app->params['w_uk_tran_fee_3_5'];
+            }else if($weight <= Yii::$app->params['w_uk_tran_3_6']){
+                $data['cost'] = Yii::$app->params['w_uk_tran_fee_3_6'];
+            }else{
+                $data['cost'] = Yii::$app->params['w_uk_tran_fee_3_7'];
+            }
+        }elseif($weight > Yii::$app->params['w_uk_tran_1_4'] || $length > Yii::$app->params['len_uk_tran'] ||
             $width > Yii::$app->params['wid_uk_tran'] || $height > Yii::$app->params['hei_uk_tran']){
             $data['name'] = Yii::$app->params['transport_uk2'];
-            $data['cost'] = Yii::$app->params['w_uk_tran_fee_2'];
+            //获取方式2的运费
+            if($weight <= Yii::$app->params['w_uk_tran_2_1']){
+                $data['cost'] = Yii::$app->params['w_uk_tran_fee_2_1'];
+            }else{
+                $data['cost'] = Yii::$app->params['w_uk_tran_fee_2_2'];
+            }
+
         }else{
             $data['name'] = Yii::$app->params['transport_uk1'];
             //获取方式1的运费
