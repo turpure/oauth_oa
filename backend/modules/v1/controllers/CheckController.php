@@ -92,12 +92,12 @@ class CheckController extends AdminController
                 }
                 $model->checkStatus = '已审批';
                 $model->approvalNote = isset($post['approvalNote'])?$post['approvalNote']:$model->approvalNote;
-                //$model->checkStatus = '已审批';
                 $model->updateDate = date('Y-m-d H:i:s');
+
                 $model->save();
 
                 //保存数据到goodsinfo表中
-                //ApiGoods::saveDataToInfo($id);
+                ApiGoods::saveDataToInfo($id);
             }
             $transaction->commit();
             return true;

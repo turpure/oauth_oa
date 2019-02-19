@@ -9,6 +9,7 @@ namespace backend\modules\v1\controllers;
 
 
 use backend\modules\v1\models\ApiDataCenter;
+use backend\modules\v1\utils\Handler;
 use yii\data\ActiveDataProvider;
 use yii\db\Query;
 use Yii;
@@ -81,5 +82,35 @@ class DataCenterController extends AdminController
             'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 10,
         ];
         return ApiDataCenter::getSalesChangeData($condition);
+    }
+
+
+    /**
+     * Date: 2019-02-18 16:24
+     * Author: henry
+     * @return \yii\data\ArrayDataProvider
+     * @throws \Exception
+     */
+    public function actionPriceTrend()
+    {
+        $request = Yii::$app->request->post();
+        $cond= $request['condition'];
+        $queryParams = [
+            'department' => $cond['department'],
+            'secDepartment' => $cond['secDepartment'],
+            'platform' => $cond['plat'],
+            'username' => $cond['member'],
+            'store' => $cond['account']
+        ];
+        $params = Handler::paramsFilter($queryParams);
+        $condition= [
+            'store' => $params['store']?implode(',',$params['store']):'',
+            'queryType' => $params['queryType'],
+            'dateFlag' =>$cond['dateType'],
+            'showType' => $cond['flag']?:0,
+            'beginDate' => $cond['dateRange'][0],
+            'endDate' => $cond['dateRange'][1]
+        ];
+        return ApiDataCenter::getPriceChangeData($condition);
     }
 }

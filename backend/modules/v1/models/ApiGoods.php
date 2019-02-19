@@ -225,17 +225,37 @@ class ApiGoods
 
     }
 
-    public static function saveDataToInfo($id)
+    /**
+     * @param $id
+     * Date: 2019-02-18 14:23
+     * Author: henry
+     * @throws \yii\db\Exception
+     */
+    public static function saveDataToInfo($id,$dictionary)
     {
         $goodsModel = OaGoods::findOne($id);
         $user = User::findOne(['username' => $goodsModel->developer]);
         $_model = new OaGoodsinfo();
         if($goodsModel->mineId){
+            $dictionaryName = ArrayHelper::getValue($request,'dictionaryName');
+            $dictionaryName[] = 'eBay';
+            $dictionaryName = \array_unique($dictionaryName);
+            $dictionaryName = \implode(',',$dictionaryName);
 
+            $sql = 'p_oa_joomCheckToGoodsInfo @mid=:mid,@dictionaryName=:dictionaryName';
+            $db = Yii::$app->db;
+            try {
+                $check = $db->createCommand($sql)->bindValues([':mid' => $goodsModel->mineId, ':dictionaryName' => $dictionaryName]);
+                $check->execute();
+                return '审核成功！';
+            }
+            catch (\Exception $why) {
+                return '审核失败！';
+            }
         }else{
             $code = self::generateCode($goodsModel->cate);
-            print_r($code);exit;
-            $_model->mapPersons = $mapPersons;
+            //print_r($code);exit;
+            $_model->mapPersons = $user->mapPersons;
             $_model->goodsid = $goodsModel->nid;
             $_model->GoodsCode = $code;
             $_model->picUrl = $goodsModel->img;
@@ -243,44 +263,45 @@ class ApiGoods
             $_model->devDatetime = strftime('%F %T');
             $_model->updateTime = strftime('%F %T');
             $_model->achieveStatus = '待处理';
-            $_model->stockUp = $goodsModel->stockUp;
+            $_model->stockUp = $goodsModel->stockUp ? '是' : '否';
             if(empty($_model->possessMan1)){
-                $arc_model = OaSysRules::find()->where(['ruleKey' => $developer])->andWhere(['ruleType' => 'dev-arc-map'])->one();
+                $arc_model = OaSysRules::find()->where(['ruleKey' => $goodsModel->developer])->andWhere(['ruleType' => 'dev-arc-map'])->one();
                 $arc = $arc_model?$arc_model->ruleValue:'';
                 $_model->possessMan1 = $arc;
             }
             if(empty($_model->Purchaser)){
-                $pur_model = OaSysRules::find()->where(['ruleKey' => $developer])->andWhere(['ruleType' => 'dev-pur-map'])->one();
+                $pur_model = OaSysRules::find()->where(['ruleKey' => $goodsModel->developer])->andWhere(['ruleType' => 'dev-pur-map'])->one();
                 $pur = $pur_model?$pur_model->ruleValue:'';
                 $_model->Purchaser = $pur;
             }
             $_model->save();
+            //print_r($res);exit();
         }
-        print_r($goodsModel);exit();
+        //print_r(123123);exit();
 
     }
 
     /**
-     *
      * @param $cate
+     * Date: 2019-02-18 14:23
+     * Author: henry
      * @return string
      * @throws \yii\db\Exception
      */
     private static function generateCode($cate)
     {
-        $connection = Yii::$app->db;
         $b_previous_code = Yii::$app->py_db->createCommand(
             "select isnull(goodscode,'UN0000') as maxCode from b_goods where nid in 
             (select max(bgs.nid) from B_Goods as bgs left join B_GoodsCats as bgc
             on bgs.GoodsCategoryID= bgc.nid where bgc.CategoryParentName='$cate' and len(goodscode)=6)"
         )->queryOne();
 
-        $oa_previous_code = $connection->createCommand(
-            "select ifnull(goodscode,'UN0000') as maxCode from proCenter.oa_goodsinfo
+        $oa_previous_code = Yii::$app->pro_db->createCommand(
+            "select ifnull(goodscode,'UN0000') as maxCode from oa_goodsinfo
             where id in (select max(id) from oa_goodsinfo as info LEFT join 
             oa_goods as og on info.goodsid=og.nid where cate = '$cate')")->queryOne();
 
-        $oa_goodsId_query = $connection->createCommand("select max(nid) as maxNid from oa_goods")->queryOne();
+        $oa_goodsId_query = Yii::$app->pro_db->createCommand("select max(nid) as maxNid from oa_goods")->queryOne();
         $oa_maxNid = $oa_goodsId_query['maxNid'];
 
         //按规则生成编码
@@ -305,10 +326,10 @@ class ApiGoods
             $zero_bit = substr('0000',0,4-strlen($tail));
             $code = $head.$zero_bit.$tail;
             //检查SKU是否已经存在
-            $check_oa_goods = $connection->createCommand(
+            $check_oa_goods = Yii::$app->py_db->createCommand(
                 "select pid from oa_goodsinfo where goodscode like '$code"."%'"
             )->queryOne();
-            $check_b_goods = $connection->createCommand(
+            $check_b_goods = Yii::$app->py_db->createCommand(
                 "select nid from b_goods where goodscode='$code'"
             )->queryOne();
             if((empty($check_oa_goods) && empty($check_b_goods))) {

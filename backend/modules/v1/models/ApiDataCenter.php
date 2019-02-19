@@ -107,4 +107,30 @@ class ApiDataCenter
     }
 
 
+    /**
+     * @param $condition
+     * Date: 2019-02-19 14:55
+     * Author: henry
+     * @return array
+     */
+    public static function getPriceChangeData($condition)
+    {
+        $sql = 'exec oauth_priceChange :suffix,:beginDate,:endDate,:showType,:dateFlag';
+        $con = Yii::$app->py_db;
+        $params = [
+            ':suffix' => $condition['store'],
+            ':beginDate' => $condition['beginDate'],
+            ':endDate' => $condition['endDate'],
+            ':showType' => $condition['showType'],
+            ':dateFlag' => $condition['dateFlag'],
+        ];
+        try {
+            return $con->createCommand($sql)->bindValues($params)->queryAll();
+        }
+        catch (\Exception $why) {
+            return [$why];
+        }
+    }
+
+
 }

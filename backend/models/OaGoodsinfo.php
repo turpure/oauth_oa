@@ -70,7 +70,7 @@ class OaGoodsinfo extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['IsLiquid', 'IsPowder', 'isMagnetism', 'IsCharged', 'goodsid', 'SupplierID', 'StoreID', 'bgoodsid', 'stockUp', 'stockdays', 'number', 'mid'], 'integer'],
+            [['goodsid', 'SupplierID', 'StoreID', 'bgoodsid', 'stockdays', 'number', 'mid'], 'integer'],
             [['description', 'SupplierName'], 'string'],
             [['DeclaredValue'], 'number'],
             [['devDatetime', 'updateTime', 'picCompleteTime'], 'safe'],
@@ -81,7 +81,7 @@ class OaGoodsinfo extends \yii\db\ActiveRecord
             [['possessMan1', 'possessMan2'], 'string', 'max' => 64],
             [['achieveStatus', 'AttributeName'], 'string', 'max' => 60],
             [['picStatus'], 'string', 'max' => 30],
-            [['isVar', 'wishpublish'], 'string', 'max' => 10],
+            [['isVar', 'stockUp', 'IsLiquid', 'IsPowder', 'isMagnetism', 'IsCharged', 'wishpublish'], 'string', 'max' => 10],
             [['headKeywords', 'tailKeywords'], 'string', 'max' => 20],
             [['GoodsCode'], 'unique'],
         ];
