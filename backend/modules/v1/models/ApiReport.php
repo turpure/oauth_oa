@@ -21,7 +21,6 @@ class ApiReport
 
     public static function getSalesReport($condition)
     {
-        print_r($condition);exit;
         $con = Yii::$app->db;
         $sql = 'call report_salesProfit(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse,:exchangeRate);';
         $sqlParams = [
