@@ -181,7 +181,6 @@ class ApiCondition
     public static function getUsers()
     {
         $userId = Yii::$app->user->id;
-        $userId = 154;
         $role = User::getRole($userId);//登录用户角色
         $position = AuthPosition::getPosition($userId);//登录用户职位
         //if ($role === AuthAssignment::ACCOUNT_ADMIN) {
