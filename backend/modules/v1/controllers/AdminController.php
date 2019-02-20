@@ -143,7 +143,8 @@ class AdminController extends ActiveController
         $userId = Yii::$app->user->id;
         $db = Yii::$app->db;
         $role = User::getRole($userId);
-        if ($role !== AuthAssignment::ACCOUNT_ADMIN) {
+        //if ($role !== AuthAssignment::ACCOUNT_ADMIN) {
+        if (in_array(AuthAssignment::ACCOUNT_ADMIN,$role) === false) {
             $actionId = '/' . Yii::$app->controller->getRoute();
             $check_sql = 'select usr.id as userId,item.child as actionId from `user` as usr
                   LEFT JOIN `auth_assignment` as ass on usr.id=ass.user_id

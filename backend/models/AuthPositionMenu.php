@@ -54,7 +54,8 @@ class AuthPositionMenu extends \yii\db\ActiveRecord
         if($role === null || $role === AuthAssignment::ACCOUNT_EMPTY){
             throw new \yii\web\ForbiddenHttpException("There is a problem with the account. Please contact the administrator!");
         }
-        else if ($role === AuthAssignment::ACCOUNT_ADMIN){
+        //else if ($role === AuthAssignment::ACCOUNT_ADMIN){
+        else if (in_array(AuthAssignment::ACCOUNT_ADMIN,$role) !== false){
             $query = static::find()
                 ->select('m.id,m.name,m.parent,m.route,m.tabParentId')
                 ->from('menu m')

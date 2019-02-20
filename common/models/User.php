@@ -6,6 +6,7 @@ use Yii;
 use yii\base\NotSupportedException;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
+use yii\helpers\ArrayHelper;
 use yii\web\IdentityInterface;
 
 /**
@@ -241,8 +242,10 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public static function getRole($id)
     {
-        $role = AuthAssignment::findOne(['user_id'=>$id]);
-        return $role && $role['item_name'] ? $role['item_name'] : null;
+        $role = AuthAssignment::findAll(['user_id'=>$id]);
+        return ArrayHelper::getColumn($role,'item_name');
+        //$role = AuthAssignment::findOne(['user_id'=>$id]);
+        //return $role && $role['item_name'] ? $role['item_name'] : null;
     }
 
 }

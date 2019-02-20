@@ -16,6 +16,7 @@ use Yii;
 class AuthAssignment extends \yii\db\ActiveRecord
 {
     const ACCOUNT_ADMIN = '超级管理员';
+    const ACCOUNT_SERVICE = 'eBay客服';
     const ACCOUNT_EMPTY = '';
     /**
      * {@inheritdoc}

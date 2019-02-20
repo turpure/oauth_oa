@@ -79,7 +79,8 @@ class ApiCondition
         $userId = Yii::$app->user->id;
         $role = User::getRole($userId);//登录用户角色
         //获取平台列表
-        if ($role == AuthAssignment::ACCOUNT_ADMIN) {
+        //if ($role == AuthAssignment::ACCOUNT_ADMIN) {
+        if (in_array(AuthAssignment::ACCOUNT_ADMIN,$role) !== false) {
             $plat = (new Query())
                 ->select('platform as plat')
                 ->from('auth_store')
@@ -87,7 +88,14 @@ class ApiCondition
                 ->groupBy(['platform'])
                 ->where(['used'=>0])
                 ->all();
-        } else {
+        } else if(in_array(AuthAssignment::ACCOUNT_SERVICE,$role) !== false){
+            $plat = (new Query())
+                ->select('platform as plat')
+                ->from('auth_store')
+                ->where(['platform' => 'eBay'])
+                ->groupBy(['platform'])
+                ->all();
+        }else {
             //获取所属部门人员列表
             $users = self::getUsers();
             $users = ArrayHelper::getColumn($users, 'id');
@@ -114,7 +122,8 @@ class ApiCondition
         $userId = Yii::$app->user->id;
         $role = User::getRole($userId);
         //获取部门列表
-        if ($role !== AuthAssignment::ACCOUNT_ADMIN) {
+        //if ($role !== AuthAssignment::ACCOUNT_ADMIN) {
+        if (in_array(AuthAssignment::ACCOUNT_ADMIN,$role) !== false) {
             $sales = (new Query())
                 ->select('auth_department.department,auth_department_child.department_id')
                 ->from('auth_')
@@ -135,10 +144,17 @@ class ApiCondition
         $userId = Yii::$app->user->id;
         $role = User::getRole($userId);//登录用户角色
         //获取平台列表
-        if ($role == AuthAssignment::ACCOUNT_ADMIN) {
+        if (in_array(AuthAssignment::ACCOUNT_ADMIN,$role) !== false) {
             $account = (new Query())
                 ->select('id,store,platform')
                 ->from('auth_store')
+                ->orderBy('store')
+                ->all();
+        } else if(in_array(AuthAssignment::ACCOUNT_SERVICE,$role) !== false){
+            $account = (new Query())
+                ->select('id,store,platform')
+                ->from('auth_store')
+                ->where(['platform' => 'eBay'])
                 ->orderBy('store')
                 ->all();
         } else {
@@ -165,9 +181,11 @@ class ApiCondition
     public static function getUsers()
     {
         $userId = Yii::$app->user->id;
+        $userId = 154;
         $role = User::getRole($userId);//登录用户角色
         $position = AuthPosition::getPosition($userId);//登录用户职位
-        if ($role === AuthAssignment::ACCOUNT_ADMIN) {
+        //if ($role === AuthAssignment::ACCOUNT_ADMIN) {
+        if (in_array(AuthAssignment::ACCOUNT_ADMIN,$role) !== false) {
             $users = (new Query())->select("u.id,username,p.position,d.department as department,d.id as department_id,pd.department as parent_department,pd.id as parent_id,
                      IFNULL(pd.`type`,d.`type`) as department_type")
                 ->from('`user` as u ')
@@ -194,7 +212,23 @@ class ApiCondition
                 ->leftJoin('auth_department pd','pd.id=d.parent')
                 ->andWhere(['u.status' => 10])
                 ->andWhere(['or',['d.id' => $depart_id],['d.parent' => $depart_id]])->all();
-        } else {
+        } elseif (in_array(AuthPosition::JOB_SERVICE, $position) !== false) {
+            //登录用户部门
+            $users = (new Query())->select("u.id,username,p.position,d.department as department,d.id as department_id,pd.department as parent_department,pd.id as parent_id,
+            IFNULL(pd.`type`,d.`type`) as department_type")
+                ->from('user u')
+                ->innerJoin('auth_position_child pc','pc.user_id=u.id')
+                ->innerJoin('auth_department_child dc','dc.user_id=u.id')
+                ->innerJoin('auth_department d','d.id=dc.department_id')
+                ->innerJoin('auth_position p','p.id=pc.position_id')
+                ->leftJoin('auth_department pd','pd.id=d.parent')
+                ->leftJoin('auth_store_child asc', 'asc.user_id=u.id')
+                ->leftJoin('auth_store as', 'as.id=asc.store_id')
+                ->andWhere(['as.platform' => 'eBay','u.status' => 10,'p.position' => '销售'])
+                ->orWhere(['u.id' => $userId])
+                ->groupBy('u.id,username,p.position,d.department,d.id,pd.department,pd.id,IFNULL(pd.`type`,d.`type`)')
+                ->all();
+        }else {
             $users = (new Query())->select("u.id,username,p.position,d.department as department,d.id as department_id,pd.department as parent_department,pd.id as parent_id,
             IFNULL(pd.`type`,d.`type`) as department_type")
                 ->from('user u')

@@ -20,6 +20,7 @@ class AuthPosition extends \yii\db\ActiveRecord
     const JOB_PURCHASE = '采购';
     const JOB_ART = '美工';
     const JOB_SALE = '销售';
+    const JOB_SERVICE = 'eBay客服';
     /**
      * {@inheritdoc}
      */
