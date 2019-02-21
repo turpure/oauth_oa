@@ -133,4 +133,39 @@ class ApiDataCenter
     }
 
 
+    /**
+     * @param $condition
+     * Date: 2019-02-21 14:18
+     * Author: henry
+     * @return array
+     */
+    public static function getWeightDiffData($condition)
+    {
+        $sql = "SELECT CASE WHEN IFNULL(pd.department,'')<>'' THEN pd.department ELSE d.department END AS department,
+                CASE WHEN IFNULL(pd.department,'')<>'' THEN d.department ELSE '' END AS secDepartment,
+                u.username,s.platform,cw.* 
+                FROM cache_weightDiff cw
+                LEFT JOIN auth_store s ON s.store=cw.suffix
+                LEFT JOIN auth_store_child sc ON s.id=sc.store_id
+                LEFT JOIN `user` u ON u.id=sc.user_id
+                LEFT JOIN auth_department_child dc ON u.id=dc.user_id
+                LEFT JOIN auth_department d ON d.id=dc.department_id
+                LEFT JOIN auth_department pd ON pd.id=d.parent
+                WHERE 1=1
+                ";
+        if($condition['store']) {
+            $store = str_replace(',', "','",$condition['store']);
+            $sql .= " AND cw.suffix IN ('{$store}')";
+        }
+        if($condition['beginDate'] && $condition['endDate']) $sql .= " AND cw.orderCloseDate BETWEEN '{$condition['beginDate']}' AND '{$condition['endDate']}'";
+        $con = Yii::$app->db;
+        try {
+            return $con->createCommand($sql)->queryAll();
+        }
+        catch (\Exception $why) {
+            return [$why];
+        }
+    }
+
+
 }

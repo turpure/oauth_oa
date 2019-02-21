@@ -11,6 +11,7 @@ namespace backend\modules\v1\controllers;
 use backend\modules\v1\models\ApiDataCenter;
 use backend\modules\v1\utils\Handler;
 use yii\data\ActiveDataProvider;
+use yii\data\ArrayDataProvider;
 use yii\db\Query;
 use Yii;
 
@@ -86,9 +87,9 @@ class DataCenterController extends AdminController
 
 
     /**
-     * Date: 2019-02-18 16:24
+     * Date: 2019-02-21 14:37
      * Author: henry
-     * @return \yii\data\ArrayDataProvider
+     * @return array
      * @throws \Exception
      */
     public function actionPriceTrend()
@@ -112,5 +113,47 @@ class DataCenterController extends AdminController
             'endDate' => $cond['dateRange'][1]
         ];
         return ApiDataCenter::getPriceChangeData($condition);
+    }
+
+
+    /**
+     * Date: 2019-02-21 14:52
+     * Author: henry
+     * @return array|ArrayDataProvider
+     * @throws \Exception
+     */
+    public function actionWeightDiff()
+    {
+        $request = Yii::$app->request->post();
+        $cond= $request['condition'];
+        $queryParams = [
+            'department' => $cond['department'],
+            'secDepartment' => $cond['secDepartment'],
+            'platform' => $cond['plat'],
+            'username' => $cond['member'],
+            'store' => $cond['account']
+        ];
+        $params = Handler::paramsFilter($queryParams);
+        $condition= [
+            'store' => $params['store']?implode(',',$params['store']):'',
+            'queryType' => $params['queryType'],
+            'dateFlag' =>$cond['dateType'],
+            'showType' => $cond['flag']?:0,
+            'beginDate' => $cond['dateRange'][0],
+            'endDate' => $cond['dateRange'][1]
+        ];
+        $data = ApiDataCenter::getWeightDiffData($condition);
+        if(!$data) return $data;
+        $provider = new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'defaultOrder' => ['weightDiff' => SORT_DESC],
+                'attributes' => ['suffix', 'username','weightDiff','orderCloseDate'],
+            ],
+            'pagination' => [
+                'pageSize' => isset($condition['pageSize']) && $condition['pageSize'] ? $condition['pageSize'] : 20,
+            ],
+        ]);
+        return $provider;
     }
 }

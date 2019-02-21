@@ -166,4 +166,35 @@ class SchedulerController extends Controller
     }
 
 
+
+    public function actionWeightDiff()
+    {
+        $beginDate = '2018-10-01';
+        $endDate = date('Y-m-d',strtotime('-1 day'));
+        //print_r($endDate);exit;
+        try {
+            //获取开发人员毛利
+            $sql = "EXEC oauth_weightDiff :beginDate,:endDate";
+            $list = Yii::$app->py_db->createCommand($sql)->bindValues([':beginDate' => $beginDate,':endDate' => $endDate])->queryAll();
+            $step = 500;
+            $count = ceil(count($list)/500);
+            print_r($count."  ");
+            print_r(count($list));exit;
+            //插入数据
+            if($list){
+                for ($i = 0; $i<= $count; $i++){
+                    Yii::$app->db->createCommand()->batchInsert('cache_weightDiff',
+                        ['trendId','suffix','orderCloseDate','orderWeight','skuWeight', 'weightDiff'],
+                        array_slice($list,$i*$step,$step))->execute();
+                }
+            }
+            print date('Y-m-d H:i:s')." INFO:success to update data of weight diff!\n";
+        }
+        catch (\Exception $why) {
+            print date('Y-m-d H:i:s')." INFO:fail to update data of weight diff cause of $why \n";
+        }
+
+    }
+
+
 }
