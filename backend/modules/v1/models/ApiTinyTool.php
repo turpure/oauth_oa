@@ -390,13 +390,23 @@ class ApiTinyTool
      * @brief display blacklist
      * @return mixed
      */
-    public static function getBlacklist()
+    public static function getBlacklist($cond)
     {
-        $sql = 'select addressowner,buyerid,
-                shipToName,shiptostreet,shiptostreet2,shiptocity,shiptostate,shiptozip,shiptocountryCode,SHIPtoPHONEnUM 
-                from oauth_blacklist';
-        $db = \Yii::$app->py_db;
-        return $db->createCommand($sql)->queryAll();
+        $pageSize = isset($cond['pageSize']) ?$cond['pageSize']: 10;
+        $currentPage = isset($cond['currentPage']) ?$cond['currentPage']: 1;
+        $query = (new Query())->select(
+            'id,addressowner,buyerid,shipToName,shiptostreet,shiptostreet2,
+            shiptocity,shiptostate,shiptozip,shiptocountryCode,SHIPtoPHONEnUM'
+            )->from('oauth_blacklist')->orderBy(['id' => SORT_DESC]);
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            'db' => \Yii::$app->py_db,
+            'pagination' => [
+                'pageSize' => $pageSize,
+                'page' => $currentPage -1
+            ]
+        ]);
+        return $provider;
     }
 
     public static function saveBlacklist($data)
@@ -423,6 +433,24 @@ class ApiTinyTool
             return ['success'];
         }
         return ['fail'];
+    }
+
+    /**
+     * @param $id
+     * @return array
+     */
+    public static function deleteBlacklist($id)
+    {
+        $sql = "delete from oauth_blacklist where id=$id";
+        $db = \Yii::$app->py_db;
+        try {
+            $db->createCommand($sql)->execute();
+            $msg = 'success';
+        }
+        catch (\Exception $why) {
+            $msg = $why;
+        }
+        return [$msg];
     }
 
     public static function getExceptionEdition($cond)

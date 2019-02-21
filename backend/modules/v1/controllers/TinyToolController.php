@@ -338,11 +338,16 @@ class TinyToolController extends AdminController
     {
         $request = Yii::$app->request;
         if($request->isGet) {
-            return ApiTinyTool::getBlacklist();
+            $cond = $request->get();
+            return ApiTinyTool::getBlacklist($cond);
         }
         if($request->isPost) {
             $data = $request->post()['data'];
             return ApiTinyTool::saveBlacklist($data);
+        }
+        if($request->isDelete) {
+            $id = $request->get()['id'];
+            return ApiTinyTool::deleteBlacklist($id);
         }
     }
 
