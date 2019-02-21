@@ -178,13 +178,13 @@ class SchedulerController extends Controller
             $list = Yii::$app->py_db->createCommand($sql)->bindValues([':beginDate' => $beginDate,':endDate' => $endDate])->queryAll();
             $step = 500;
             $count = ceil(count($list)/500);
-            print_r($count."  ");
-            print_r(count($list));exit;
+            //清空数据表
+            Yii::$app->db->createCommand('TRUNCATE TABLE cache_weightDiff')->execute();
             //插入数据
             if($list){
                 for ($i = 0; $i<= $count; $i++){
                     Yii::$app->db->createCommand()->batchInsert('cache_weightDiff',
-                        ['trendId','suffix','orderCloseDate','orderWeight','skuWeight', 'weightDiff'],
+                        ['trendId','suffix','orderCloseDate','orderWeight','skuWeight', 'weightDiff', 'profit'],
                         array_slice($list,$i*$step,$step))->execute();
                 }
             }

@@ -151,7 +151,7 @@ class DataCenterController extends AdminController
                 'attributes' => ['suffix', 'username','weightDiff','orderCloseDate'],
             ],
             'pagination' => [
-                'pageSize' => isset($condition['pageSize']) && $condition['pageSize'] ? $condition['pageSize'] : 20,
+                'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
             ],
         ]);
         return $provider;
