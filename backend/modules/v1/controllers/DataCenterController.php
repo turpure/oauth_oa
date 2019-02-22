@@ -14,6 +14,7 @@ use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\db\Query;
 use Yii;
+use yii\helpers\ArrayHelper;
 
 class DataCenterController extends AdminController
 {
@@ -37,7 +38,7 @@ class DataCenterController extends AdminController
     public function actionOutOfStockInfo()
     {
         $get = Yii::$app->request->get();
-        $pageSize = isset($get['pageSize']) ? $get['pageSize']:10;
+        $pageSize = isset($get['pageSize']) ? $get['pageSize'] : 10;
         $query = (new Query())->from('oauth_outOfStockSkuInfo');
         $provider = new ActiveDataProvider([
             'query' => $query,
@@ -46,7 +47,7 @@ class DataCenterController extends AdminController
                 'pageSize' => $pageSize
             ]
         ]);
-       return $provider;
+        return $provider;
     }
 
 
@@ -69,8 +70,8 @@ class DataCenterController extends AdminController
     public function actionSalesChange()
     {
         $cond = Yii::$app->request->post('condition');
-        $suffix = $cond['suffix']?"'".implode("','",$cond['suffix'])."'":'';
-        $salesman = $cond['salesman']?"'".implode("','",$cond['salesman'])."'":'';
+        $suffix = $cond['suffix'] ? "'" . implode("','", $cond['suffix']) . "'" : '';
+        $salesman = $cond['salesman'] ? "'" . implode("','", $cond['salesman']) . "'" : '';
         $condition = [
             'lastBeginDate' => $cond['lastDateRange'][0],
             'lastEndDate' => $cond['lastDateRange'][1],
@@ -95,7 +96,7 @@ class DataCenterController extends AdminController
     public function actionPriceTrend()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
+        $cond = $request['condition'];
         $queryParams = [
             'department' => $cond['department'],
             'secDepartment' => $cond['secDepartment'],
@@ -104,19 +105,22 @@ class DataCenterController extends AdminController
             'store' => $cond['account']
         ];
         $params = Handler::paramsFilter($queryParams);
-        $condition= [
-            'store' => $params['store']?implode(',',$params['store']):'',
+        $condition = [
+            'store' => $params['store'] ? implode(',', $params['store']) : '',
             'queryType' => $params['queryType'],
-            'dateFlag' =>$cond['dateType'],
-            'showType' => $cond['flag']?:0,
+            'dateFlag' => $cond['dateType'],
+            'showType' => $cond['flag'] ?: 0,
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1]
         ];
-        return ApiDataCenter::getPriceChangeData($condition);
+        $data = ApiDataCenter::getPriceChangeData($condition);
+
+        return  ApiDataCenter::outputData($data);
     }
 
 
     /**
+     * 获取订单重量与对应的sku重量总和的差异表
      * Date: 2019-02-21 14:52
      * Author: henry
      * @return array|ArrayDataProvider
@@ -125,7 +129,7 @@ class DataCenterController extends AdminController
     public function actionWeightDiff()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
+        $cond = $request['condition'];
         $queryParams = [
             'department' => $cond['department'],
             'secDepartment' => $cond['secDepartment'],
@@ -134,21 +138,22 @@ class DataCenterController extends AdminController
             'store' => $cond['account']
         ];
         $params = Handler::paramsFilter($queryParams);
-        $condition= [
-            'store' => $params['store']?implode(',',$params['store']):'',
+        $condition = [
+            'store' => $params['store'] ? implode(',', $params['store']) : '',
             'queryType' => $params['queryType'],
-            'dateFlag' =>$cond['dateType'],
-            'showType' => $cond['flag']?:0,
+            'dateFlag' => $cond['dateType'],
+            'showType' => $cond['flag'] ?: 0,
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1]
         ];
         $data = ApiDataCenter::getWeightDiffData($condition);
-        if(!$data) return $data;
+        if (!$data) return $data;
         $provider = new ArrayDataProvider([
             'allModels' => $data,
             'sort' => [
                 'defaultOrder' => ['weightDiff' => SORT_DESC],
-                'attributes' => ['suffix', 'username','weightDiff','orderCloseDate'],
+                'attributes' => ['trendId', 'department', 'secDepartment', 'suffix', 'platform', 'username', 'profit',
+                    'orderWeight', 'skuWeight', 'weightDiff', 'orderCloseDate'],
             ],
             'pagination' => [
                 'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
@@ -156,4 +161,21 @@ class DataCenterController extends AdminController
         ]);
         return $provider;
     }
+
+
+    /**
+     * Date: 2019-02-22 11:31
+     * Author: henry
+     * @return bool
+     * @throws \Exception
+     * @throws \Throwable
+     * @throws \yii\db\Exception
+     */
+    public function actionUpdateWeight()
+    {
+        $request = Yii::$app->request->post()['condition'];
+        return ApiDataCenter::updateWeight($request);
+    }
+
+
 }

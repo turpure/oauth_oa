@@ -168,4 +168,102 @@ class ApiDataCenter
     }
 
 
+    /**
+     * @param $condition
+     * Date: 2019-02-22 10:37
+     * Author: henry
+     * @return bool
+     * @throws \Exception
+     * @throws \Throwable
+     * @throws \yii\db\Exception
+     */
+    public static function updateWeight($condition)
+    {
+        $nidList = $condition['nid'];
+        $nids = implode(',',$nidList);
+        $sql = "EXEC oauth_updateOrderWeight '{$nids}'";
+
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            $result = Yii::$app->py_db->createCommand($sql)->execute();
+            if ($result === false) {
+                $transaction->rollBack();
+            }
+            if($nidList){
+                foreach ($nidList as $value){
+                    $res = Yii::$app->py_db->createCommand("EXEC P_Fr_CalcShippingCostByNid {$value}")->execute();
+                    if ($res === false) {
+                        $transaction->rollBack();
+                    }
+                }
+            }
+
+            $transaction->commit();
+            return true;
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
+
+
+    }
+
+
+    /**
+     * @param $data
+     * Date: 2019-02-22 15:06
+     * Author: henry
+     * @return array
+     */
+    public static function outputData($data)
+    {
+        //获取饼状图数据
+        $pieName = array_unique(array_column($data, 'flag'));
+        sort($pieName);
+        //获取走势图时间数据
+        $orderPie = $skuPie = $orderLineNum = $orderLineRate = $skuLineNum = $skuLineRate = [];
+
+        foreach($data as $value){
+            //订单价格饼图数据
+            if($value['type'] == 'order'){
+                $orderPie[] = ['name' => $value['flag'], 'value' => $value['orderNum']];
+            }
+            //SKu价格饼图数据
+            if($value['type'] == 'sku'){
+                $skuPie[] = ['name' => $value['flag'], 'value' => $value['orderNum']];
+            }
+
+            //订单价格区间订单数量线图数据
+            if($value['type'] == 'orderTrend'){
+                $orderLineNum[] = ['flag' => $value['flag'], 'orderDate' => $value['orderDate'], 'orderNum' => $value['orderNum']];
+                $orderLineRate[] = ['flag' => $value['flag'], 'orderDate' => $value['orderDate'], 'rate' => $value['rate']];
+            }
+
+            //线形图时间数据 SKU价格区间SKU数量线图数据
+            if($value['type'] == 'skuTrend'){
+                $skuLineNum[] = ['flag' => $value['flag'], 'orderDate' => $value['orderDate'], 'orderNum' => $value['orderNum']];
+                $skuLineRate[] = ['flag' => $value['flag'], 'orderDate' => $value['orderDate'], 'rate' => $value['rate']];
+            }
+        }
+
+        $result = [
+            'orderPie' => [
+                'legend' => $pieName,
+                'data' => $orderPie,
+            ],
+            'skuPie' => [
+                'legend' => $pieName,
+                'data' => $skuPie,
+            ],
+            'orderLineNum' => $orderLineNum,
+            'orderLineRate' => $orderLineRate,
+            'skuLineNum' => $skuLineNum,
+            'skuLineRate' => $skuLineRate,
+        ];
+        return $result;
+    }
+
 }
