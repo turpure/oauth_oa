@@ -171,6 +171,27 @@ class ApiReport
 
     }
 
+    public static function getOrderCountReport($condition)
+    {
+        $sql = 'call report_orderCount(:store,:queryType,:showType,:dateFlag,:beginDate,:endDate)';
+        $con = Yii::$app->db;
+        $params = [
+            ':store' => $condition['store'],
+            ':queryType' => $condition['queryType'],
+            ':showType' => $condition['showType'],
+            ':dateFlag' => $condition['dateFlag'],
+            ':beginDate' => $condition['beginDate'],
+            ':endDate' => $condition['endDate']
+        ];
+        try {
+            return $con->createCommand($sql)->bindValues($params)->queryAll();
+        }
+        catch (\Exception $why) {
+            return [$why];
+        }
+
+    }
+
     /**
      * @brief  profit report
      * @params $condition
