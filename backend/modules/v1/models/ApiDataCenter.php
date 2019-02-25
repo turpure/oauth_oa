@@ -157,8 +157,8 @@ class ApiDataCenter
             $store = str_replace(',', "','",$condition['store']);
             $sql .= " AND cw.suffix IN ('{$store}')";
         }
-        if($condition['tradeId']) {
-            $tradeId = str_replace(',', "','",$condition['tradeId']);
+        if($condition['trendId']) {
+            $tradeId = str_replace(',', "','",$condition['trendId']);
             $sql .= " AND cw.trendId IN ('{$tradeId}')";
         };
         if($condition['beginDate'] && $condition['endDate']) $sql .= " AND cw.orderCloseDate BETWEEN '{$condition['beginDate']}' AND '{$condition['endDate']}'";

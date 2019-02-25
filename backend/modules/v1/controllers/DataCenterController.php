@@ -140,7 +140,7 @@ class DataCenterController extends AdminController
         $params = Handler::paramsFilter($queryParams);
         $condition = [
             'store' => $params['store'] ? implode(',', $params['store']) : '',
-            'tradeId' => $cond['tradeId'],
+            'trendId' => $cond['trendId'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1]
         ];
