@@ -5,6 +5,7 @@ namespace backend\modules\v1\controllers;
 use backend\modules\v1\models\ApiGoods;
 use Yii;
 use backend\models\OaGoods;
+use yii\helpers\ArrayHelper;
 
 /**
  * OaGoodsController implements the CRUD actions for OaGoods model.
@@ -96,8 +97,15 @@ class CheckController extends AdminController
 
                 $model->save();
 
+                $dictionaryName = [];
+                if($model->mineId) {
+                    $dictionaryName = isset($post['dictionaryName']) && $post['dictionaryName'] ? ArrayHelper::getValue($post, 'dictionaryName') : [];
+                    $dictionaryName[] = 'eBay';
+                    $dictionaryName = \array_unique($dictionaryName);
+                    $dictionaryName = \implode(',', $dictionaryName);
+                }
                 //保存数据到goodsinfo表中
-                ApiGoods::saveDataToInfo($id);
+                ApiGoods::saveDataToInfo($id, $dictionaryName);
             }
             $transaction->commit();
             return true;

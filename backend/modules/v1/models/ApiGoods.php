@@ -237,21 +237,9 @@ class ApiGoods
         $user = User::findOne(['username' => $goodsModel->developer]);
         $_model = new OaGoodsinfo();
         if($goodsModel->mineId){
-            $dictionaryName = ArrayHelper::getValue($request,'dictionaryName');
-            $dictionaryName[] = 'eBay';
-            $dictionaryName = \array_unique($dictionaryName);
-            $dictionaryName = \implode(',',$dictionaryName);
-
-            $sql = 'p_oa_joomCheckToGoodsInfo @mid=:mid,@dictionaryName=:dictionaryName';
+            $sql = 'CALL oa_joomCheckToGoodsInfo(@mid=:mid,@dictionaryName=:dictionaryName)';
             $db = Yii::$app->db;
-            try {
-                $check = $db->createCommand($sql)->bindValues([':mid' => $goodsModel->mineId, ':dictionaryName' => $dictionaryName]);
-                $check->execute();
-                return '审核成功！';
-            }
-            catch (\Exception $why) {
-                return '审核失败！';
-            }
+            $db->createCommand($sql)->bindValues([':mid' => $goodsModel->mineId, ':dictionaryName' => $dictionary])->execute();
         }else{
             $code = self::generateCode($goodsModel->cate);
             //print_r($code);exit;

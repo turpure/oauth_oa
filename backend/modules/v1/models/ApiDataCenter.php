@@ -151,12 +151,16 @@ class ApiDataCenter
                 LEFT JOIN auth_department_child dc ON u.id=dc.user_id
                 LEFT JOIN auth_department d ON d.id=dc.department_id
                 LEFT JOIN auth_department pd ON pd.id=d.parent
-                WHERE 1=1
+                WHERE flag=0
                 ";
         if($condition['store']) {
             $store = str_replace(',', "','",$condition['store']);
             $sql .= " AND cw.suffix IN ('{$store}')";
         }
+        if($condition['tradeId']) {
+            $tradeId = str_replace(',', "','",$condition['tradeId']);
+            $sql .= " AND cw.trendId IN ('{$tradeId}')";
+        };
         if($condition['beginDate'] && $condition['endDate']) $sql .= " AND cw.orderCloseDate BETWEEN '{$condition['beginDate']}' AND '{$condition['endDate']}'";
         $con = Yii::$app->db;
         try {
@@ -195,8 +199,13 @@ class ApiDataCenter
                     if ($res === false) {
                         $transaction->rollBack();
                     }
+                    $re = Yii::$app->db->createCommand("UPDATE cache_weightDiff SET flag=1 WHERE trendId={$value}")->execute();
+                    if ($re === false) {
+                        $transaction->rollBack();
+                    }
                 }
             }
+
 
             $transaction->commit();
             return true;
