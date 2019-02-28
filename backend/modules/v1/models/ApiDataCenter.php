@@ -220,6 +220,26 @@ class ApiDataCenter
 
     }
 
+    /**
+     * @param $condition
+     * Date: 2019-02-27 15:26
+     * Author: henry
+     * @return \yii\db\DataReader
+     * @throws \yii\db\Exception
+     */
+    public static function getDelayDeliveryData($condition)
+    {
+        $sql = "EXEC oauth_delayDelivery :beginDate,:endDate,:suffix,:flag";
+        $params = [
+            ':suffix' => $condition['store'],
+            ':beginDate' => $condition['beginDate'],
+            ':endDate' => $condition['endDate'],
+            ':flag' => $condition['flag'],
+        ];
+        $data = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+        return $data;
+    }
+
 
     /**
      * @param $data
