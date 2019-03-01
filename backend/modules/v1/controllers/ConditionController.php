@@ -51,12 +51,14 @@ class ConditionController extends AdminController
     }
 
     /**
-     * 获取用户所管理的销售员列表/开发责任人列表/采购列表/美工列表
+     * @param bool $flag  --标识是否取消权限，取消权限的话就拥有所有权限（admin权限）
+     * Date: 2019-03-01 10:07
+     * Author: henry
      * @return array
      */
-    public function actionMember ()
+    public function actionMember ($flag = false)
     {
-        return ApiCondition::getUsers();
+        return ApiCondition::getUsers($flag);
     }
 
     /**

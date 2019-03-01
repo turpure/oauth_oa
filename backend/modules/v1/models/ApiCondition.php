@@ -178,13 +178,13 @@ class ApiCondition
      * 获取用户资源(权限资源控制接口)
      * @return array
      */
-    public static function getUsers()
+    public static function getUsers($flag)
     {
         $userId = Yii::$app->user->id;
         $role = User::getRole($userId);//登录用户角色
         $position = AuthPosition::getPosition($userId);//登录用户职位
         //if ($role === AuthAssignment::ACCOUNT_ADMIN) {
-        if (in_array(AuthAssignment::ACCOUNT_ADMIN,$role) !== false) {
+        if (in_array(AuthAssignment::ACCOUNT_ADMIN,$role) !== false || $flag == true) {
             $users = (new Query())->select("u.id,username,p.position,d.department as department,d.id as department_id,pd.department as parent_department,pd.id as parent_id,
                      IFNULL(pd.`type`,d.`type`) as department_type")
                 ->from('`user` as u ')
