@@ -222,10 +222,9 @@ class ApiDataCenter
 
     /**
      * @param $condition
-     * Date: 2019-02-27 15:26
+     * Date: 2019-03-01 10:54
      * Author: henry
-     * @return \yii\db\DataReader
-     * @throws \yii\db\Exception
+     * @return array
      */
     public static function getDelayDeliveryData($condition)
     {
@@ -234,10 +233,20 @@ class ApiDataCenter
             ':suffix' => $condition['store'],
             ':beginDate' => $condition['beginDate'],
             ':endDate' => $condition['endDate'],
-            ':flag' => $condition['flag'],
+            ':flag' => 0,
+        ];
+        $paramsArr = [
+            ':suffix' => $condition['store'],
+            ':beginDate' => $condition['beginDate'],
+            ':endDate' => $condition['endDate'],
+            ':flag' => 1,
         ];
         $data = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
-        return $data;
+        $list = Yii::$app->py_db->createCommand($sql)->bindValues($paramsArr)->queryAll();
+        return [
+            'pieData' => $data,
+            'tableData' => $list
+        ];
     }
 
 
