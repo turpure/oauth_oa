@@ -178,7 +178,7 @@ class ApiCondition
      * 获取用户资源(权限资源控制接口)
      * @return array
      */
-    public static function getUsers($flag)
+    public static function getUsers($flag = false)
     {
         $userId = Yii::$app->user->id;
         $role = User::getRole($userId);//登录用户角色
