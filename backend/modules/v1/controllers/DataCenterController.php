@@ -177,11 +177,10 @@ class DataCenterController extends AdminController
 
 
     /**
-     * Date: 2019-02-27 15:56
+     * Date: 2019-03-04 13:12
      * Author: henry
-     * @return \yii\db\DataReader
+     * @return array
      * @throws \Exception
-     * @throws \yii\db\Exception
      */
     public function actionDelayDelivery()
     {
@@ -200,10 +199,38 @@ class DataCenterController extends AdminController
             'queryType' => $params['queryType'],
             'beginDate' => $cond['dateRange'] ? $cond['dateRange'][0] : '',
             'endDate' => $cond['dateRange'] ? $cond['dateRange'][1] : '',
-            'flag' => $cond['flag']
         ];
         //print_r($condition);exit;
         return ApiDataCenter::getDelayDeliveryData($condition);
+    }
+
+
+    /**
+     * Date: 2019-03-04 13:12
+     * Author: henry
+     * @return array
+     * @throws \Exception
+     */
+    public function actionDelayDetail()
+    {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        $queryParams = [
+            'department' => $cond['department'],
+            'secDepartment' => $cond['secDepartment'],
+            'platform' => $cond['plat'],
+            'username' => $cond['member'],
+            'store' => $cond['account']
+        ];
+        $params = Handler::paramsFilter($queryParams);
+        $condition = [
+            'store' => $params['store'] ? implode(',', $params['store']) : '',
+            'queryType' => $params['queryType'],
+            'beginDate' => $cond['dateRange'] ? $cond['dateRange'][0] : '',
+            'endDate' => $cond['dateRange'] ? $cond['dateRange'][1] : '',
+        ];
+        //print_r($condition);exit;
+        return ApiDataCenter::getDelayDeliveryData($condition,1);
     }
 
 

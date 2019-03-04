@@ -226,27 +226,17 @@ class ApiDataCenter
      * Author: henry
      * @return array
      */
-    public static function getDelayDeliveryData($condition)
+    public static function getDelayDeliveryData($condition, $flag = 0)
     {
         $sql = "EXEC oauth_delayDelivery :beginDate,:endDate,:suffix,:flag";
         $params = [
             ':suffix' => $condition['store'],
             ':beginDate' => $condition['beginDate'],
             ':endDate' => $condition['endDate'],
-            ':flag' => 0,
+            ':flag' => $flag,
         ];
-        $paramsArr = [
-            ':suffix' => $condition['store'],
-            ':beginDate' => $condition['beginDate'],
-            ':endDate' => $condition['endDate'],
-            ':flag' => 1,
-        ];
-        $data = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
-        $list = Yii::$app->py_db->createCommand($sql)->bindValues($paramsArr)->queryAll();
-        return [
-            'pieData' => $data,
-            'tableData' => $list
-        ];
+        return Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+
     }
 
 

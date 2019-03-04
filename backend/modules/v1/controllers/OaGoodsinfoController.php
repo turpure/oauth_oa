@@ -53,29 +53,21 @@ class OaGoodsinfoController extends AdminController
     /**
      * @inheritdoc
      */
-    public function behaviors()
-    {
-        return [
-            'verbs' => [
-                'class' => VerbFilter::className(),
-                'actions' => [
-                    'delete' => ['POST'],
-                ],
-            ],
-        ];
-    }
+
 
     /**
-     * Lists all OaGoodsinfo models.
-     * @return mixed
+     * 属性信息
+     * Date: 2019-03-01 15:39
+     * Author: henry
      */
-    public function actionIndex()
+    public function actionInfoList()
     {
-        $condition = Yii::$app->request->get();
+        $condition = Yii::$app->request->post()['condition'];
         //没有搜索条件，则添加默认显示图片状态条件
         if(!isset($condition['achieveStatus'])){
             $condition['achieveStatus'] = '待处理';
         }
+        //print_r($condition);exit;
         $dataProvider = ApiGoodsinfo::getOaGoodsInfoList($condition);
         return $dataProvider;
     }

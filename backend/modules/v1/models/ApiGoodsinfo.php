@@ -18,6 +18,7 @@ namespace backend\modules\v1\models;
 
 
 use backend\models\OaGoodsinfo;
+use yii\data\ActiveDataProvider;
 
 class ApiGoodsinfo
 {
@@ -36,7 +37,13 @@ class ApiGoodsinfo
         if(isset($condition['isMagnetism'])) $query->andFilterWhere(['isMagnetism' => $condition['isMagnetism']]);
         if(isset($condition['IsCharged'])) $query->andFilterWhere(['IsCharged' => $condition['IsCharged']]);
         if(isset($condition['IsCharged'])) $query->andFilterWhere(['IsCharged' => $condition['IsCharged']]);
-
+        $data = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => [
+                'pageSize' => isset($condition['pageSize']) && $condition['pageSize'] ? $condition['pageSize'] : 6,
+            ],
+        ]);
+        return $data;
     }
 
 }
