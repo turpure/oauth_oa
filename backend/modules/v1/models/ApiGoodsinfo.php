@@ -18,11 +18,19 @@ namespace backend\modules\v1\models;
 
 
 use backend\models\OaGoodsinfo;
+use yii\data\ActiveDataProvider;
+
 
 class ApiGoodsinfo
 {
-    public static function getOaGoodsInfoList($condition)
+    /**
+     * @param $condition
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getOaGoodsAttributesList($condition)
     {
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $query = OaGoodsinfo::find();
         if(isset($condition['goodsCode'])) $query->andFilterWhere(['like', 'goodsCode', $condition['goodsCode']]);
         if(isset($condition['achieveStatus'])) $query->andFilterWhere(['like', 'achieveStatus', $condition['achieveStatus']]);
@@ -36,7 +44,37 @@ class ApiGoodsinfo
         if(isset($condition['isMagnetism'])) $query->andFilterWhere(['isMagnetism' => $condition['isMagnetism']]);
         if(isset($condition['IsCharged'])) $query->andFilterWhere(['IsCharged' => $condition['IsCharged']]);
         if(isset($condition['IsCharged'])) $query->andFilterWhere(['IsCharged' => $condition['IsCharged']]);
+        $query->orderBy('id DESC');
 
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            //'db' => Yii::$app->db,
+            'pagination' => [
+                //'pageParam' => $page,
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
+    }
+
+    /**
+     * @brief get one attribute entry by id
+     * @param $condition
+     * @return mixed
+     */
+    public static function getAttributeById($condition)
+    {
+        $id = isset($condition['id'])? $condition['id']: '';
+        if(empty($id)){
+            return [];
+        }
+        return OaGoodsinfo::findOne(['id'=>$id]);
+
+    }
+
+    public static function deleteAttributeById($id)
+    {
+        OaGoodsinfo::deleteAll(['id'=>$id]);
     }
 
 }

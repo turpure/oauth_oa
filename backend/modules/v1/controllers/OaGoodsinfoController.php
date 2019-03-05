@@ -16,7 +16,6 @@
 
 namespace backend\modules\v1\controllers;
 
-use app\models\OaDataMine;
 use backend\models\OaGoods;
 use backend\models\OaSysRules;
 use backend\models\OaTaskAttributeLog;
@@ -50,53 +49,52 @@ class OaGoodsinfoController extends AdminController
     ];
 
     public $pid;
-    /**
-     * @inheritdoc
-     */
-    public function behaviors()
-    {
-        return [
-            'verbs' => [
-                'class' => VerbFilter::className(),
-                'actions' => [
-                    'delete' => ['POST'],
-                ],
-            ],
-        ];
-    }
+//    /**
+//     * @inheritdoc
+//     */
+//    public function behaviors()
+//    {
+//        return [
+//            'verbs' => [
+//                'class' => VerbFilter::className(),
+//                'actions' => [
+//                    'delete' => ['POST'],
+//                ],
+//            ],
+//        ];
+//    }
 
     /**
-     * Lists all OaGoodsinfo models.
+     * goods-info-attributes list
      * @return mixed
      */
-    public function actionIndex()
+    public function actionAttributesList()
     {
         $condition = Yii::$app->request->get();
         //没有搜索条件，则添加默认显示图片状态条件
         if(!isset($condition['achieveStatus'])){
             $condition['achieveStatus'] = '待处理';
         }
-        $dataProvider = ApiGoodsinfo::getOaGoodsInfoList($condition);
-        return $dataProvider;
+        return ApiGoodsinfo::getOaGoodsAttributesList($condition);
     }
 
     /**
-     * Displays a single OaGoodsinfo model.
-     * @param integer $id
+     * get one attribute
      * @return mixed
      */
-    public function actionView($id = null)
+    public function actionAttribute()
     {
-
-        $conid = Yii::$app->db->createCommand("SELECT goodsid from  oa_Goodsinfo WHERE pid=$id")
-            ->queryOne();
-        $goodsItem = OaGoods::find()->select('oa_goods.*')->where(['nid'=>$conid])->all();
-
-        return $this->renderAjax('view', [
-            'model' => $this->findModel($id),
-            'goodsitems' =>$goodsItem[0],
-        ]);
+        $request = Yii::$app->request;
+        if ($request->isPost) {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiGoodsinfo::getAttributeById($condition);
+        }
+        if ($request->isDelete) {
+            $id = Yii::$app->request->get()['id'];
+            return ApiGoodsinfo::deleteAttributeById($id);
+        }
     }
+
 
     /**
      * Creates a new OaGoodsinfo model.
