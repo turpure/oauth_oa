@@ -70,7 +70,7 @@ class OaGoodsinfo extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['goodsid', 'SupplierID', 'StoreID', 'bgoodsid', 'stockdays', 'number', 'mid'], 'integer'],
+            [['goodsid', 'SupplierID', 'StoreID', 'bgoodsid', 'stockdays', 'number', 'mid','filterType'], 'integer'],
             [['description', 'SupplierName'], 'string'],
             [['DeclaredValue'], 'number'],
             [['devDatetime', 'updateTime', 'picCompleteTime'], 'safe'],
@@ -94,6 +94,7 @@ class OaGoodsinfo extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
+            'filterType' => 'filter Type',
             'IsLiquid' => 'Is Liquid',
             'IsPowder' => 'Is Powder',
             'isMagnetism' => 'Is Magnetism',

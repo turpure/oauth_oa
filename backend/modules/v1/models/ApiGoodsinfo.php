@@ -18,6 +18,7 @@ namespace backend\modules\v1\models;
 
 
 use backend\models\OaGoodsinfo;
+use backend\models\OaGoodsSku;
 use yii\data\ActiveDataProvider;
 
 class ApiGoodsinfo
@@ -27,10 +28,28 @@ class ApiGoodsinfo
      * @return mixed
      * @throws \Exception
      */
-    public static function getOaGoodsAttributesList($condition)
+    const GoodsInfo = 1;
+    const PictureInfo = 2;
+    const PlatInfo = 3;
+
+    public static function getOaGoodsInfoList($condition)
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $type= $condition['type'];
         $query = OaGoodsinfo::find();
+        if ($type === 'goods-info') {
+            $query->where(['filterType' => self::GoodsInfo]);
+        }
+        if ($type === 'picture-info')
+        {
+            $query->where(['filterType' => self::PictureInfo]);
+        }
+        if ($type === 'plat-info') {
+            $query->where(['filterType' => self::PlatInfo]);
+        }
+        else {
+            return [];
+        }
         if(isset($condition['goodsCode'])) $query->andFilterWhere(['like', 'goodsCode', $condition['goodsCode']]);
         if(isset($condition['achieveStatus'])) $query->andFilterWhere(['like', 'achieveStatus', $condition['achieveStatus']]);
         if(isset($condition['goodsName'])) $query->andFilterWhere(['like', 'goodsName', $condition['goodsName']]);
@@ -73,7 +92,52 @@ class ApiGoodsinfo
 
     public static function deleteAttributeById($id)
     {
-        OaGoodsinfo::deleteAll(['id'=>$id]);
+        $ret = OaGoodsinfo::deleteAll(['id'=>$id]);
+        if ($ret) {
+            return ['success'];
+        }
+        return ['failure'];
+    }
+
+    public static function getAttributeInfo($condition)
+    {
+        $id = isset($condition['id'])? $condition['id']: '';
+        if(empty($id)) {
+            return [];
+        }
+        $basicInfo = OaGoodsinfo::findOne(['id'=>$id]);
+        $skuInfo = OaGoodsSku::findAll(['infoId'=>$id]);
+        return [
+            'basicInfo' => $basicInfo,
+            'skuInFo' => $skuInfo
+        ];
+    }
+
+    public static function importToShopElf($condition)
+    {
+        $id = isset($condition['id'])? $condition['id']:'';
+        if(empty($id)) {
+            return [];
+        }
+        return ['success'];
+    }
+
+    public static function finishAttribute($condition)
+    {
+        $id = isset($condition['id'])? $condition['id']:'';
+        if(empty($id)) {
+            return [];
+        }
+        return ['success'];
+    }
+
+    public static function saveAttribute($condition)
+    {
+        $id = isset($condition['id'])? $condition['id']:'';
+        if(empty($id)) {
+            return [];
+        }
+        return ['success'];
     }
 
 }
