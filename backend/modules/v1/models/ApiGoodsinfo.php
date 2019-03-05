@@ -20,7 +20,6 @@ namespace backend\modules\v1\models;
 use backend\models\OaGoodsinfo;
 use yii\data\ActiveDataProvider;
 
-
 class ApiGoodsinfo
 {
     /**

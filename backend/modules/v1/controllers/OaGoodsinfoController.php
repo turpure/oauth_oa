@@ -49,6 +49,7 @@ class OaGoodsinfoController extends AdminController
     ];
 
     public $pid;
+<<<<<<< HEAD
 //    /**
 //     * @inheritdoc
 //     */
@@ -69,13 +70,32 @@ class OaGoodsinfoController extends AdminController
      * @return mixed
      */
     public function actionAttributesList()
+=======
+    /**
+     * @inheritdoc
+     */
+
+
+    /**
+     * 属性信息
+     * Date: 2019-03-01 15:39
+     * Author: henry
+     */
+    public function actionInfoList()
+>>>>>>> e1121bb44985ef0bbd83b12ecdb5799d79e3c1db
     {
-        $condition = Yii::$app->request->get();
+        $condition = Yii::$app->request->post()['condition'];
         //没有搜索条件，则添加默认显示图片状态条件
         if(!isset($condition['achieveStatus'])){
             $condition['achieveStatus'] = '待处理';
         }
+<<<<<<< HEAD
         return ApiGoodsinfo::getOaGoodsAttributesList($condition);
+=======
+        //print_r($condition);exit;
+        $dataProvider = ApiGoodsinfo::getOaGoodsInfoList($condition);
+        return $dataProvider;
+>>>>>>> e1121bb44985ef0bbd83b12ecdb5799d79e3c1db
     }
 
     /**
