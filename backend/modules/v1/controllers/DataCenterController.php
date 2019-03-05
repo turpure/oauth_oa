@@ -233,5 +233,35 @@ class DataCenterController extends AdminController
         return ApiDataCenter::getDelayDeliveryData($condition,1);
     }
 
+    /**
+     * Date: 2019-03-04 13:12
+     * Author: henry
+     * @return array
+     * @throws \Exception
+     */
+    public function actionDelayShip()
+    {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        $queryParams = [
+            'department' => $cond['department'],
+            'secDepartment' => $cond['secDepartment'],
+            'platform' => $cond['plat'],
+            'username' => $cond['member'],
+            'store' => $cond['account']
+        ];
+        $params = Handler::paramsFilter($queryParams);
+        //var_dump($params);exit;
+        $condition = [
+            'store' => $params['store'] ? implode(',', $params['store']) : '',
+            'queryType' => $params['queryType'],
+            'dateFlag' =>$cond['dateType'],
+            'beginDate' => $cond['dateRange'] ? $cond['dateRange'][0] : '',
+            'endDate' => $cond['dateRange'] ? $cond['dateRange'][1] : '',
+        ];
+        //print_r($condition);exit;
+        return ApiDataCenter::getDelayShipData($condition);
+    }
+
 
 }

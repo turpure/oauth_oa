@@ -195,7 +195,7 @@ class ApiTinyTool
             if ($totalCount) {
                 $sql = "SELECT * FROM(
                     SELECT
-                        row_number () OVER (ORDER BY bg.nid) AS rowId,
+                        row_number () OVER (ORDER BY bg.nid DESC) AS rowId,
                         bg.possessman1,
                         bg.GoodsCode,
                         bg.GoodsName,
@@ -221,7 +221,8 @@ class ApiTinyTool
                 if ($goodsSkuStatus) $sql .= " AND bgs.GoodsSKUStatus LIKE '%$goodsSkuStatus%' ";
                 if ($categoryParentName) $sql .= " AND bgc.CategoryParentName LIKE '%$categoryParentName%' ";
                 if ($categoryName) $sql .= " AND bgc.CategoryName LIKE '%$categoryName%'";
-                $sql .= ") pic
+                $sql .= " -- ORDER BY bg.CreateDate DESC
+                ) pic
                 WHERE rowId BETWEEN $start AND ($limit+$start)";
                 $res = $con->createCommand($sql)->queryAll();
             } else {

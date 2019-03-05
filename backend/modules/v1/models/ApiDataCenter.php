@@ -239,6 +239,17 @@ class ApiDataCenter
 
     }
 
+    public static function getDelayShipData($condition)
+    {
+        $sql = "EXEC oauth_delayShip :beginDate,:endDate,:suffix,:dateFlag";
+        $params = [
+            ':suffix' => $condition['store'],
+            ':beginDate' => $condition['beginDate'],
+            ':endDate' => $condition['endDate'],
+            ':dateFlag' => $condition['dateFlag'],
+        ];
+        return Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+    }
 
     /**
      * @param $data
