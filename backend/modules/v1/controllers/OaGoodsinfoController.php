@@ -76,6 +76,7 @@ class OaGoodsinfoController extends AdminController
 
     /**
      * @brief finish the attribute entry
+     * @throws \Throwable
      */
     public function actionFinishAttribute()
     {
@@ -116,7 +117,6 @@ class OaGoodsinfoController extends AdminController
         $condition = $request->post()['condition'];
         return ApiGoodsinfo::getAttributeInfo($condition);
     }
-
 
     ###########################  picture info ########################################
 
