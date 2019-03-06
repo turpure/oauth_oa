@@ -133,13 +133,24 @@ class ApiGoodsinfo
         return ['success'];
     }
 
+    /**
+     * @param $condition
+     * @return array
+     * @throws \Exception
+     */
     public static function saveAttribute($condition)
     {
-        $id = isset($condition['id'])? $condition['id']:'';
-        if(empty($id)) {
+        $attributeInfo = $condition['basicInfo'];
+        if(empty($attributeInfo)) {
             return [];
         }
-        return ['success'];
+        $id = $attributeInfo['id'];
+        $goodsInfo = OaGoodsinfo::findOne(['id'=>$id]);
+        $goodsInfo->setAttributes($attributeInfo);
+        if( $goodsInfo->save()) {
+            return ['success'];
+        }
+//        return ['success'];
     }
 
 }
