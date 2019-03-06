@@ -88,6 +88,10 @@ class OaGoodsinfoController extends AdminController
 
     }
 
+    /**
+     * @return array
+     * @throws \Exception
+     */
     public function actionSaveAttribute()
     {
         $request = Yii::$app->request;

@@ -124,13 +124,35 @@ class ApiGoodsinfo
         return ['success'];
     }
 
+    /**
+     * @param $condition
+     * @return array
+     * @throws \Throwable
+     */
     public static function finishAttribute($condition)
     {
         $id = isset($condition['id'])? $condition['id']:'';
         if(empty($id)) {
-            return [];
+            return ['failure'];
         }
-        return ['success'];
+        $goodsInfo = OaGoodsinfo::findOne(['id'=>$id]);
+        if($goodsInfo === null) {
+            return ['failure'];
+        }
+        //属性信息标记完善，图片信息为待处理
+        try {
+            $goodsInfo->achieveStatus = '已完善';
+            if(empty($goodsInfo->picStatus)) {
+                $goodsInfo->picStatus = '待处理';
+            }
+            if ($goodsInfo->update()) {
+                return ['success'];
+            }
+        }
+        catch (\Exception  $why) {
+           return ['failure'];
+        }
+        return ['failure'];
     }
 
     /**
