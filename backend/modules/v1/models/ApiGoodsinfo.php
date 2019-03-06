@@ -141,16 +141,27 @@ class ApiGoodsinfo
     public static function saveAttribute($condition)
     {
         $attributeInfo = $condition['basicInfo'];
-        if(empty($attributeInfo)) {
-            return [];
+        $skuInfo = $condition['skuInfo'];
+        $infoId = $attributeInfo['id'];
+        $goodsInfo = OaGoodsinfo::findOne(['id'=>$infoId]);
+        if($goodsInfo === null) {
+            return ['failure'];
         }
-        $id = $attributeInfo['id'];
-        $goodsInfo = OaGoodsinfo::findOne(['id'=>$id]);
+        foreach ($skuInfo as $skuRow) {
+            $skuId = isset($skuRow['id']) ? $skuRow['id']: '';
+            $skuModel = OaGoodsSku::findOne(['id'=>$skuId]);
+            if($skuModel === null) {
+                $skuModel = new OaGoodsSku();
+                $skuRow['id'] = $skuModel->id;
+                $skuRow['pid'] = $infoId;
+            }
+            $skuModel->setAttributes($skuRow);
+            $skuModel->save();
+        }
         $goodsInfo->setAttributes($attributeInfo);
         if( $goodsInfo->save()) {
-            return ['success'];
+                return ['success'];
         }
-//        return ['success'];
     }
 
 }
