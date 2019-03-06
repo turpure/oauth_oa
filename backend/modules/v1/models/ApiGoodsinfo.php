@@ -35,16 +35,17 @@ class ApiGoodsinfo
     public static function getOaGoodsInfoList($condition)
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $currentPage = isset($condition['currentPage']) ? $condition['currentPage'] : 1;
         $type= $condition['type'];
         $query = OaGoodsinfo::find();
         if ($type === 'goods-info') {
             $query->where(['filterType' => self::GoodsInfo]);
         }
-        if ($type === 'picture-info')
+        elseif ($type === 'picture-info')
         {
             $query->where(['filterType' => self::PictureInfo]);
         }
-        if ($type === 'plat-info') {
+        elseif ($type === 'plat-info') {
             $query->where(['filterType' => self::PlatInfo]);
         }
         else {
@@ -70,6 +71,7 @@ class ApiGoodsinfo
             'pagination' => [
                 //'pageParam' => $page,
                 'pageSize' => $pageSize,
+                'Page' => $currentPage -1
             ],
         ]);
         return $provider;
