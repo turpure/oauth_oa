@@ -9,12 +9,12 @@ namespace backend\modules\v1\models;
 
 use backend\modules\v1\utils\Handler;
 use yii\data\ActiveDataProvider;
-use yii\data\SqlDataProvider;
+use yii\data\ArrayDataProvider;
 use yii\db\Exception;
 use yii\db\Query;
 use yii\helpers\ArrayHelper;
 use \PhpOffice\PhpSpreadsheet\Reader\Csv;
-
+use Yii;
 class ApiTinyTool
 {
     /**
@@ -157,13 +157,13 @@ class ApiTinyTool
 
 
     /**
-     * @brief get goods picture
      * @param $condition
-     * @return array
+     * Date: 2019-03-06 16:39
+     * Author: henry
+     * @return array|ArrayDataProvider
      */
     public static function getGoodsPicture($condition)
     {
-        $con = \Yii::$app->py_db;
         $salerName = ArrayHelper::getValue($condition, 'salerName', '');
         $possessMan1 = ArrayHelper::getValue($condition, 'possessMan1', '');
         $possessMan2 = ArrayHelper::getValue($condition, 'possessMan2', '');
@@ -174,28 +174,9 @@ class ApiTinyTool
         $goodsSkuStatus = ArrayHelper::getValue($condition, 'goodsSkuStatus', '');
         $categoryParentName = ArrayHelper::getValue($condition, 'categoryParentName', '');
         $categoryName = ArrayHelper::getValue($condition, 'categoryName', '');
-        $start = ArrayHelper::getValue($condition, 'start', 0);
-        $limit = ArrayHelper::getValue($condition, 'limit', 0);
+        $pageSize = ArrayHelper::getValue($condition, 'pageSize', 30);
         try {
-            $totalSql = "SELECT count(1) FROM b_goods AS bg
-                        LEFT JOIN B_GoodsSKU AS bgs ON bg.NID = bgs.GoodsID
-                        LEFT JOIN B_GoodsCats AS bgc ON bgc.NID = bg.GoodsCategoryID
-                        LEFT JOIN B_Supplier bs ON bs.NID = bg.SupplierID
-                        WHERE bgs.SKU IN (SELECT MIN (bgs.SKU) FROM B_GoodsSKU AS bgs GROUP BY bgs.GoodsID)
-                        AND bg.CreateDate BETWEEN '$beginDate' AND '$endDate' ";
-            if ($supplierName) $totalSql .= " AND bs.SupplierName LIKE '%$supplierName%' ";
-            if ($possessMan1) $totalSql .= " AND bg.possessman1 LIKE '%$possessMan1%' ";
-            if ($possessMan2) $totalSql .= " AND bg.possessman2 LIKE '%$possessMan2%' ";
-            if ($salerName) $totalSql .= " AND bg.SalerName LIKE '%$salerName%' ";
-            if ($goodsName) $totalSql .= " AND bg.GoodsName LIKE '%$goodsName%' ";
-            if ($goodsSkuStatus) $totalSql .= " AND bgs.GoodsSKUStatus LIKE '%$goodsSkuStatus%' ";
-            if ($categoryParentName) $totalSql .= " AND bgc.CategoryParentName LIKE '%$categoryParentName%' ";
-            if ($categoryName) $totalSql .= " AND bgc.CategoryName LIKE '%$categoryName%'";
-            $totalCount = $con->createCommand($totalSql)->queryScalar();
-            if ($totalCount) {
-                $sql = "SELECT * FROM(
-                    SELECT
-                        row_number () OVER (ORDER BY bg.nid DESC) AS rowId,
+            $sql = "SELECT
                         bg.possessman1,
                         bg.GoodsCode,
                         bg.GoodsName,
@@ -213,25 +194,23 @@ class ApiTinyTool
                     LEFT JOIN B_Supplier bs ON bs.NID = bg.SupplierID
                     WHERE bgs.SKU IN (SELECT MIN (bgs.SKU) FROM B_GoodsSKU AS bgs GROUP BY bgs.GoodsID)
                     AND bg.CreateDate BETWEEN '$beginDate' AND '$endDate' ";
-                if ($supplierName) $sql .= " AND bs.SupplierName LIKE '%$supplierName%' ";
-                if ($possessMan1) $sql .= " AND bg.possessman1 LIKE '%$possessMan1%' ";
-                if ($possessMan2) $sql .= " AND bg.possessman2 LIKE '%$possessMan2%' ";
-                if ($salerName) $sql .= " AND bg.SalerName LIKE '%$salerName%' ";
-                if ($goodsName) $sql .= " AND bg.GoodsName LIKE '%$goodsName%' ";
-                if ($goodsSkuStatus) $sql .= " AND bgs.GoodsSKUStatus LIKE '%$goodsSkuStatus%' ";
-                if ($categoryParentName) $sql .= " AND bgc.CategoryParentName LIKE '%$categoryParentName%' ";
-                if ($categoryName) $sql .= " AND bgc.CategoryName LIKE '%$categoryName%'";
-                $sql .= " -- ORDER BY bg.CreateDate DESC
-                ) pic
-                WHERE rowId BETWEEN $start AND ($limit+$start)";
-                $res = $con->createCommand($sql)->queryAll();
-            } else {
-                $res = [];
-            }
-            return [
-                'items' => $res,
-                'totalCount' => $totalCount,
-            ];
+            if ($supplierName) $sql .= " AND bs.SupplierName LIKE '%$supplierName%' ";
+            if ($possessMan1) $sql .= " AND bg.possessman1 LIKE '%$possessMan1%' ";
+            if ($possessMan2) $sql .= " AND bg.possessman2 LIKE '%$possessMan2%' ";
+            if ($salerName) $sql .= " AND bg.SalerName LIKE '%$salerName%' ";
+            if ($goodsName) $sql .= " AND bg.GoodsName LIKE '%$goodsName%' ";
+            if ($goodsSkuStatus) $sql .= " AND bgs.GoodsSKUStatus LIKE '%$goodsSkuStatus%' ";
+            if ($categoryParentName) $sql .= " AND bgc.CategoryParentName LIKE '%$categoryParentName%' ";
+            if ($categoryName) $sql .= " AND bgc.CategoryName LIKE '%$categoryName%'";
+            $sql .= "  ORDER BY bg.CreateDate DESC";
+            $res = Yii::$app->py_db->createCommand($sql)->queryAll();
+            $data = new ArrayDataProvider([
+                'allModels' => $res,
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+            return $data;
         } catch (\Exception $why) {
             return [$why];
         }
@@ -346,7 +325,7 @@ class ApiTinyTool
     public static function getRiskyOrder($cond)
     {
         $beginDate = $cond['beginDate'];
-        $endDate = $cond['endDate']? date('Y-m-d',strtotime('+1 day',strtotime($cond['endDate']))):'';
+        $endDate = $cond['endDate'] ? date('Y-m-d', strtotime('+1 day', strtotime($cond['endDate']))) : '';
         $pageSize = $cond['pageSize'] ?: 10;
         $currentPage = $cond['currentPage'] ?: 1;
         $query = (new Query())->select(
@@ -355,7 +334,7 @@ class ApiTinyTool
             shipToZip,shipToCountryCode,shipToPhoneNum,
             completeStatus,processor')->from('riskyTrades')->orderBy(['orderTime' => SORT_DESC]);
         if (!empty($beginDate) || !empty($endDate)) {
-            $query->andFilterWhere(['between','orderTime',$beginDate,$endDate]);
+            $query->andFilterWhere(['between', 'orderTime', $beginDate, $endDate]);
         }
 
         $provider = new ActiveDataProvider([
@@ -367,7 +346,7 @@ class ApiTinyTool
             ],
         ]);
 
-       return $provider;
+        return $provider;
     }
 
     /**
@@ -393,18 +372,18 @@ class ApiTinyTool
      */
     public static function getBlacklist($cond)
     {
-        $pageSize = isset($cond['pageSize']) ?$cond['pageSize']: 10;
-        $currentPage = isset($cond['currentPage']) ?$cond['currentPage']: 1;
+        $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 10;
+        $currentPage = isset($cond['currentPage']) ? $cond['currentPage'] : 1;
         $query = (new Query())->select(
             'id,addressowner,buyerid,shipToName,shiptostreet,shiptostreet2,
             shiptocity,shiptostate,shiptozip,shiptocountryCode,SHIPtoPHONEnUM'
-            )->from('oauth_blacklist')->orderBy(['id' => SORT_DESC]);
+        )->from('oauth_blacklist')->orderBy(['id' => SORT_DESC]);
         $provider = new ActiveDataProvider([
             'query' => $query,
             'db' => \Yii::$app->py_db,
             'pagination' => [
                 'pageSize' => $pageSize,
-                'page' => $currentPage -1
+                'page' => $currentPage - 1
             ]
         ]);
         return $provider;
@@ -447,8 +426,7 @@ class ApiTinyTool
         try {
             $db->createCommand($sql)->execute();
             $msg = 'success';
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             $msg = $why;
         }
         return [$msg];
