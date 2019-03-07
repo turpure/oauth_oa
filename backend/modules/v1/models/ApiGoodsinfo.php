@@ -17,6 +17,7 @@
 namespace backend\modules\v1\models;
 
 
+use backend\models\OaGoods;
 use backend\models\OaGoodsinfo;
 use backend\models\OaGoodsSku;
 use yii\data\ActiveDataProvider;
@@ -107,11 +108,31 @@ class ApiGoodsinfo
         if(empty($id)) {
             return [];
         }
-        $basicInfo = OaGoodsinfo::findOne(['id'=>$id]);
+        $goodsInfo = OaGoodsinfo::findOne(['id'=>$id]);
+        if($goodsInfo === null) {
+            return [];
+        }
+        $oaGoods = OaGoods::find()
+            ->select('nid,vendor1,vendor2,vendor3,origin1,origin2,origin3')
+            ->where(['nid'=>$goodsInfo->goodsid])->one();
+        if ($oaGoods === null) {
+            $oaGoods = [
+                'nid' => $goodsInfo->goodsid,
+                'vendor1' => '',
+                'vendor2' => '',
+                'vendor3' => '',
+                'origin1' => '',
+                'origin2' => '',
+                'origin3' => '',
+            ];
+        }
         $skuInfo = OaGoodsSku::findAll(['infoId'=>$id]);
         return [
-            'basicInfo' => $basicInfo,
-            'skuInFo' => $skuInfo
+            'basicInfo' => [
+                'goodsInfo' => $goodsInfo,
+                'oaGoods' => $oaGoods,
+            ],
+            'skuInfo' => $skuInfo
         ];
     }
 
@@ -162,7 +183,8 @@ class ApiGoodsinfo
      */
     public static function saveAttribute($condition)
     {
-        $attributeInfo = $condition['basicInfo'];
+        $attributeInfo = $condition['basicInfo']['goodsInfo'];
+        $oaInfo = $condition['basicInfo']['oaGoods'];
         $skuInfo = $condition['skuInfo'];
         $infoId = $attributeInfo['id'];
         $goodsInfo = OaGoodsinfo::findOne(['id'=>$infoId]);
@@ -180,8 +202,15 @@ class ApiGoodsinfo
             $skuModel->setAttributes($skuRow);
             $skuModel->save();
         }
+
+        $oaGoods = OaGoods::findOne(['nid'=>$oaInfo['nid']]);
+        if ($oaGoods === null) {
+            $oaGoods =  new OaGoods();
+            $oaGoods->nid = $oaInfo['nid'];
+        }
+        $oaGoods->setAttributes($oaInfo);
         $goodsInfo->setAttributes($attributeInfo);
-        if( $goodsInfo->save()) {
+        if( $goodsInfo->save() && $oaGoods->save()) {
                 return ['success'];
         }
     }
