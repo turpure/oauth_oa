@@ -8,7 +8,7 @@
 namespace backend\modules\v1\utils;
 
 use backend\models\OaGoodsinfo;
-use backend\models\OaGoods;
+use backend\models\ShopElf\BGoods;
 use Yii;
 
 class ProductCenterTools
@@ -41,12 +41,20 @@ class ProductCenterTools
 
     /**
      * @brief 导入普源系统
-     * @param $data
-     * @return string
+     * @return array
      */
-    public function importShopElf($data)
+    public static function importShopElf()
     {
-        $msg = 'success';
-        return $msg;
+        $id = 1;
+        $bGoods = BGoods::findOne(['NID'=>$id]);
+        if($bGoods === null) {
+            $bGoods = new BGoods();
+        }
+        $bGoods->setAttributes([]);
+        if($bGoods->save()) {
+            return ['success'];
+        }
+        return ['failure'];
+
     }
 }

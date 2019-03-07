@@ -72,7 +72,7 @@ class OaGoodsinfoController extends AdminController
             return [];
         }
         $condition = $request->post()['condition'];
-        return ApiGoodsinfo::importToShopElf($condition);
+        return ProductCenterTools::importShopElf();
     }
 
     /**
