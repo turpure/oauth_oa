@@ -17,6 +17,7 @@
 namespace backend\modules\v1\controllers;
 
 use backend\modules\v1\models\ApiGoodsinfo;
+use backend\modules\v1\utils\ProductCenterTools;
 use yii\data\ActiveDataProvider;
 use Yii;
 
@@ -116,6 +117,20 @@ class OaGoodsinfoController extends AdminController
         }
         $condition = $request->post()['condition'];
         return ApiGoodsinfo::getAttributeInfo($condition);
+    }
+
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    public function actionGenerateCode()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $infoId = $request->post()['condition']['id'];
+        return ProductCenterTools::generateCode($infoId);
     }
 
     ###########################  picture info ########################################
