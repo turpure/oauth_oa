@@ -89,8 +89,7 @@ class ApiGoodsinfo
         if(empty($id)){
             return [];
         }
-        return OaGoodsinfo::findOne(['id'=>$id]);
-
+        return OaGoodsinfo::find()->with('oaGoods')->where(['id'=>$id])->asArray()->one();
     }
 
     public static function deleteAttributeById($id)
@@ -113,11 +112,13 @@ class ApiGoodsinfo
             return [];
         }
         $oaGoods = OaGoods::find()
-            ->select('nid,vendor1,vendor2,vendor3,origin1,origin2,origin3')
+            ->select('nid,cate,subCate,vendor1,vendor2,vendor3,origin1,origin2,origin3')
             ->where(['nid'=>$goodsInfo->goodsid])->one();
         if ($oaGoods === null) {
             $oaGoods = [
                 'nid' => $goodsInfo->goodsid,
+                'cate' => '',
+                'subCate' => '',
                 'vendor1' => '',
                 'vendor2' => '',
                 'vendor3' => '',

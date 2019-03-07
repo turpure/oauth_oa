@@ -7,25 +7,33 @@
 
 namespace backend\modules\v1\utils;
 
+use backend\models\OaGoodsinfo;
+use backend\models\OaGoods;
+
 
 class ProductCenterTools
 {
 
     /**
      * @brief 按照编码规则生成商品编码
-     * @param array
+     * @param int
+     * @return string
      */
-    public function generateCode($infoIds)
+    public function generateCode($infoId)
     {
+        $proCenterMaxCode = 1;
+        return $proCenterMaxCode + 1;
 
     }
 
     /**
      * @brief 导入普源系统
      * @param $data
+     * @return string
      */
     public function importShopElf($data)
     {
-
+        $msg = 'success';
+        return $msg;
     }
 }
