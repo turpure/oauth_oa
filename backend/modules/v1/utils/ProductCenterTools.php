@@ -60,6 +60,26 @@ class ProductCenterTools
         return ['failure'];
     }
 
+    /**
+     * @brief 自动生成采购单
+     * @param string
+     * @return array
+     */
+    public static function generatePurchasingOrder($goodsCode)
+    {
+        $sql = 'exec oa_P_make_orders :goodsCode';
+        $connection = yii::$app->py_db;
+        $ret = $connection->createCommand($sql)->bindValue('goodsCOde', $goodsCode)->queryOne();
+        $bill_number = $ret['billNumber'];
+        if ($bill_number === 0) {
+            return [];
+        }
+        return [$bill_number];
+    }
+    /**
+     * @brief 数据预处理
+     * @return array
+     */
     private static function _preImport()
     {
         $condition = ['id' => 5];
@@ -76,6 +96,11 @@ class ProductCenterTools
         ];
     }
 
+    /**
+     * @brief B_Goods格式
+     * @param $goodsInfo
+     * @return array
+     */
     public static function _preGoodsInfo($goodsInfo)
     {
         $bGoods = [
@@ -118,6 +143,12 @@ class ProductCenterTools
 
     }
 
+    /**
+     * @brief B_goodsSku 格式处理
+     * @param $skuInfo
+     * @param $description
+     * @return array
+     */
     public static function _preGoodsSkuInfo($skuInfo, $description)
     {
         $bGoodsSku = [];
@@ -142,6 +173,11 @@ class ProductCenterTools
        return $bGoodsSku;
     }
 
+    /**
+     * @brief CurrentStock 格式处理
+     * @param $skuInfo
+     * @return array
+     */
     public static function _preCurrentStockInfo($skuInfo)
     {
         $stock = [];
