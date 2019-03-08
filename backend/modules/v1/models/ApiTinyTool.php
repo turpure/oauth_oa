@@ -167,7 +167,7 @@ class ApiTinyTool
         $salerName = ArrayHelper::getValue($condition, 'salerName', '');
         $possessMan1 = ArrayHelper::getValue($condition, 'possessMan1', '');
         $possessMan2 = ArrayHelper::getValue($condition, 'possessMan2', '');
-        $beginDate = ArrayHelper::getValue($condition, 'beginDate', '') ?: '1990-01-01';
+        $beginDate = ArrayHelper::getValue($condition, 'beginDate', '') ?: '2015-06-01';
         $endDate = ArrayHelper::getValue($condition, 'endDate', '') ?: date('Y-m-d');
         $goodsName = ArrayHelper::getValue($condition, 'goodsName', '');
         $supplierName = ArrayHelper::getValue($condition, 'supplierName', '');
@@ -192,7 +192,8 @@ class ApiTinyTool
                     LEFT JOIN B_GoodsSKU AS bgs ON bg.NID = bgs.GoodsID
                     LEFT JOIN B_GoodsCats AS bgc ON bgc.NID = bg.GoodsCategoryID
                     LEFT JOIN B_Supplier bs ON bs.NID = bg.SupplierID
-                    WHERE bgs.SKU IN (SELECT MIN (bgs.SKU) FROM B_GoodsSKU AS bgs GROUP BY bgs.GoodsID)
+                    -- WHERE bgs.SKU IN (SELECT MIN (bgs.SKU) FROM B_GoodsSKU AS bgs GROUP BY bgs.GoodsID)
+                    WHERE EXISTS(SELECT MIN(SKU) FROM B_GoodsSKU AS bgss  GROUP BY bgss.GoodsID HAVING bgs.SKU=MIN(bgss.SKU))
                     AND bg.CreateDate BETWEEN '$beginDate' AND '$endDate' ";
             if ($supplierName) $sql .= " AND bs.SupplierName LIKE '%$supplierName%' ";
             if ($possessMan1) $sql .= " AND bg.possessman1 LIKE '%$possessMan1%' ";
