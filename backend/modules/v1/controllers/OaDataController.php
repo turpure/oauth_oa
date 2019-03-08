@@ -27,10 +27,37 @@ class OaDataController extends AdminController
         return parent::behaviors();
     }
 
-
+    /**
+     * 产品中心
+     * Date: 2019-03-07 16:51
+     * Author: henry
+     * @return \yii\data\ActiveDataProvider
+     */
     public function actionProduct(){
         $condition = Yii::$app->request->post()['condition'];
+        return ApiOaData::getOaData($condition, 'product');
+    }
+
+    /**
+     * 销售产品列表
+     * Date: 2019-03-08 9:11
+     * Author: henry
+     * @return \yii\data\ActiveDataProvider
+     */
+    public function actionSales(){
+        $condition = Yii::$app->request->post()['condition'];
         return ApiOaData::getOaData($condition);
+    }
+
+    /**
+     * Wish待刊登
+     * Date: 2019-03-08 9:11
+     * Author: henry
+     * @return \yii\data\ActiveDataProvider
+     */
+    public function actionWish(){
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiOaData::getOaData($condition,'wish');
     }
 
 }
