@@ -238,4 +238,52 @@ class ApiGoodsinfo
         }
         return ['failure'];
     }
+
+    ###########################  picture info ########################################
+
+    /**
+     * @brief 图片信息明细
+     * @param $condition
+     * @return mixed
+     */
+    public static function getPictureInfo($condition)
+    {
+        $id = isset($condition['id'])?$condition['id']:'';
+        if(empty($id)) {
+            return [];
+        }
+        return OaGoodsSku::findAll(['infoId' => $id]);
+    }
+
+    /**
+     * @brief 保存图片信息明细
+     * @param $condition
+     * @return array
+     */
+    public static function savePictureInfo($condition)
+    {
+        $pictureInfo = $condition['pictureInfo'];
+        $msg = 'success';
+        foreach ($pictureInfo as $picRow) {
+            $id = $picRow['id'];
+            $skuEntry = OaGoodsSku::findOne(['id' => $id]);
+            if($skuEntry === null) {
+                $msg = 'failure';
+                break;
+            }
+            $skuEntry->setAttributes($picRow);
+            if(!$skuEntry->save()) {
+                $msg = 'failure';
+                break;
+            }
+        }
+        return [$msg];
+    }
+
+    public static function finishPicture($condition)
+    {
+
+    }
+
+
 }
