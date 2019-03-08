@@ -33,6 +33,11 @@ class ApiGoodsinfo
     const PictureInfo = 2;
     const PlatInfo = 3;
 
+    /**
+     * @brief 属性信息列表
+     * @param $condition
+     * @return ActiveDataProvider
+     */
     public static function getOaGoodsInfoList($condition)
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
@@ -79,7 +84,7 @@ class ApiGoodsinfo
     }
 
     /**
-     * @brief get one attribute entry by id
+     * @brief goodsInfo条目
      * @param $condition
      * @return mixed
      */
@@ -92,6 +97,11 @@ class ApiGoodsinfo
         return OaGoodsinfo::find()->with('oaGoods')->where(['id'=>$id])->asArray()->one();
     }
 
+    /**
+     * @brief 删除属性信息条目的事务
+     * @param $id
+     * @return array
+     */
     public static function deleteAttributeById($id)
     {
         $ret = OaGoodsinfo::deleteAll(['id'=>$id]);
@@ -101,6 +111,11 @@ class ApiGoodsinfo
         return ['failure'];
     }
 
+    /**
+     * @brief 包含oa-goods,goods-info,goods-sku 数据的条目
+     * @param $condition
+     * @return array
+     */
     public static function getAttributeInfo($condition)
     {
         $id = isset($condition['id'])? $condition['id']: '';
@@ -137,6 +152,11 @@ class ApiGoodsinfo
         ];
     }
 
+    /**
+     * @brief 将属性信息导入到普源
+     * @param $condition
+     * @return array
+     */
     public static function importToShopElf($condition)
     {
         $id = isset($condition['id'])? $condition['id']:'';
@@ -147,7 +167,8 @@ class ApiGoodsinfo
     }
 
     /**
-     * @param $condition
+     * @brief 属性信息标记已完善
+     * @param array
      * @return array
      * @throws \Throwable
      */
@@ -178,6 +199,7 @@ class ApiGoodsinfo
     }
 
     /**
+     * @brief 保存属性信息
      * @param $condition
      * @return array
      * @throws \Exception
@@ -214,6 +236,6 @@ class ApiGoodsinfo
         if( $goodsInfo->save() && $oaGoods->save()) {
                 return ['success'];
         }
+        return ['failure'];
     }
-
 }
