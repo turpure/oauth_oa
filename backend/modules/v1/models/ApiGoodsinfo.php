@@ -252,7 +252,10 @@ class ApiGoodsinfo
         if(empty($id)) {
             return [];
         }
-        return OaGoodsSku::findAll(['infoId' => $id]);
+        return OaGoodsSku::find()
+            ->select('id,sku,linkurl,property1,property2,property3')
+            ->where(['infoId'=>$id])
+            ->all();
     }
 
     /**
@@ -262,7 +265,7 @@ class ApiGoodsinfo
      */
     public static function savePictureInfo($condition)
     {
-        $pictureInfo = $condition['pictureInfo'];
+        $pictureInfo = $condition;
         $msg = 'success';
         foreach ($pictureInfo as $picRow) {
             $id = $picRow['id'];
