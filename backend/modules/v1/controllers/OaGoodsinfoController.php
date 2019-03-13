@@ -146,6 +146,30 @@ class OaGoodsinfoController extends AdminController
         return ApiGoodsinfo::getOaGoodsInfoList($condition);
     }
 
+    /**
+     * @brief 图片信息明细
+     * @return array|mixed
+     */
+    public function actionPictureInfo()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        return ApiGoodsinfo::getPictureInfo($condition);
+    }
+
+    public function actionSavePictureInfo()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        return ApiGoodsinfo::savePictureInfo($condition);
+    }
+
 
     ###########################  plat info ########################################
 
