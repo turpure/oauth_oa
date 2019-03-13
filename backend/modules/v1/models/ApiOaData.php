@@ -17,7 +17,10 @@
 namespace backend\modules\v1\models;
 
 use yii\data\ActiveDataProvider;
+use yii\data\ArrayDataProvider;
 use yii\db\Query;
+use Yii;
+use yii\helpers\ArrayHelper;
 
 class ApiOaData
 {
@@ -99,9 +102,74 @@ class ApiOaData
      * Author: henry
      * @return ActiveDataProvider
      */
-    public static function getOaSalesData($condition)
+    public static function getCatPerformData()
     {
+        $sql = 'P_oa_CategoryPerformance';
+        //$cache = Yii::$app->local_cache;
+        $today = 'category-' . date('y-m-d');
+       // $ret = $cache->get($today);
+        //if (!empty($ret)) {
+          //  $result = $ret;
+        //} else {
+            $result = Yii::$app->py_db->createCommand($sql)->queryAll();
+          //  $cache->set($today, $result, 86400);
+        //}
+        foreach ($result as $key => $value) {
+            if ($value['Distinguished'] == 'catNum') {
+                $va['value'] = (int)$value['value'];
+                $va['name'] = $value['name'];
+                $Data['catNum'][] = $va;
+            } else {
+                $va['value'] = (int)$value['value'];
+                $va['name'] = $value['name'];
+                $Data['catAmt'][] = $va;
+            }
+        }
+        $Data['maxValue'] = max(ArrayHelper::getColumn($result,'value'));
+        $Data['name'] = array_column($Data['catNum'], 'name');
+        return $Data;
 
+    }
+
+    public static function getCatDetailData($condition)
+    {
+        $data['type'] = $condition['dateFlag'];
+        $data['cat'] = $condition['cat'];
+        $data['order_start'] = $condition['orderDate'][0];
+        $data['order_end'] = $condition['orderDate'][1];
+        $data['create_start'] = (!empty($condition['devDate'])) ? $condition['devDate'] : '';
+        $data['create_end'] = (!empty($condition['devDate'])) ? $condition['devDate'] : '';
+        $sql = "EXEC P_oa_CategoryPerformance_demo " . $data['type'] . " ,'" . $data['order_start'] . "','" . $data['order_end'] . "','" . $data['create_start'] . "','" . $data['create_end'] . "','".$data['cat']."';";
+        //P_oa_CategoryPerformance_demo 0 ,'2018-01-01','2018-01-23','',''
+        //缓存数据
+        //$cache = Yii::$app->local_cache;
+        //$ret = $cache->get($sql);
+        //if($ret !== false){
+         //   $result = $ret;
+        //} else {
+            $result = Yii::$app->py_db->createCommand($sql)->queryAll();
+          //  $cache->set($sql,$result,2592000);
+        //}
+        //选择了主目录，重组结果数组
+        if($data['cat']){
+            foreach ($result as $v){
+                $v['CategoryParentName'] = $v['CategoryName'];
+                unset($v['CategoryName']);
+                $list[] = $v;
+            }
+        }else{
+            $list = $result;
+        }
+        $dataProvider = new ArrayDataProvider([
+            'allModels' => $list,
+            'pagination' => [
+                'pageSize' => false,
+            ],
+            'sort' => [
+                'attributes' => ['catCodeNum', 'non_catCodeNum', 'numRate', 'l_qty', 'non_l_qty', 'qtyRate', 'l_AMT', 'non_l_AMT', 'amtRate'],
+            ],
+        ]);
+        return $dataProvider;
 
     }
 

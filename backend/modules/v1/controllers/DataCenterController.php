@@ -201,7 +201,10 @@ class DataCenterController extends AdminController
             'endDate' => $cond['dateRange'] ? $cond['dateRange'][1] : '',
         ];
         //print_r($condition);exit;
-        return ApiDataCenter::getDelayDeliveryData($condition);
+        return [
+            'pieData' => ApiDataCenter::getDelayDeliveryData($condition),
+            'barData' => ApiDataCenter::getDelayDeliveryData($condition,1),
+            ];
     }
 
 
@@ -230,7 +233,7 @@ class DataCenterController extends AdminController
             'endDate' => $cond['dateRange'] ? $cond['dateRange'][1] : '',
         ];
         //print_r($condition);exit;
-        return ApiDataCenter::getDelayDeliveryData($condition,1);
+        return ApiDataCenter::getDelayDeliveryData($condition,2);
     }
 
     /**
