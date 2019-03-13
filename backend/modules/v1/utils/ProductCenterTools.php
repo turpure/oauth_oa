@@ -8,6 +8,11 @@
 namespace backend\modules\v1\utils;
 
 use backend\models\OaGoodsinfo;
+use backend\models\OaGoodsSku;
+use backend\models\OaEbayGoods;
+use backend\models\OaEbayGoodsSku;
+use backend\models\OaWishGoods;
+use backend\models\OaWishGoodsSku;
 use backend\models\ShopElf\BGoods;
 use backend\modules\v1\models\ApiGoodsinfo;
 use Yii;
@@ -75,6 +80,32 @@ class ProductCenterTools
             return [];
         }
         return [$bill_number];
+    }
+
+
+    /**
+     * @param $infoId
+     * @return array
+     */
+    public static function finishPicture($infoId)
+    {
+
+        $goodsInfo = OaGoodsinfo::find()->with('oaGoods')->where(['id'=>$infoId])->asArray()->one() ;
+        $goodsSku = OaGoodsSku::findAll(['infoId'=>$infoId]);
+
+//         oa-goodsInfo to oa-wish-goods
+        static::_goodsInfoToWishGoods($goodsInfo);
+
+//         oa-goodsInfo to oa-ebay-goods
+//        static::_goodsInfoToEbayGoods($goodsInfo);
+
+        // oa-goodsSku to oa-wish-goodsSku
+        static::_goodsInfoToWishGoodsSku($goodsSku);
+//         oa-goodsSku to oa-ebay-goodsSku
+
+//        static::_goodsSkuToEbayGoodsSku($goodsSku);
+        // update oa-goodsInfo status
+        return ['success'];
     }
     /**
      * @brief 数据预处理
@@ -205,5 +236,143 @@ class ProductCenterTools
             $stock[]  = $currentStock;
         }
         return $stock;
+    }
+
+    /**
+     * @brief import goodsInfo to wishGoods
+     * @param $goodsInfo
+     * @return bool
+     */
+    private static function _goodsInfoToWishGoods($goodsInfo)
+    {
+        $wishGoodsAttributes = [
+            'SKU' => $goodsInfo['GoodsCode'],
+            'title' => '',
+            'description' => $goodsInfo['description'],
+            'inventory' => 10000,
+            'price' => $goodsInfo['oaGoods']['salePrice'],
+            'msrp' => $goodsInfo['oaGoods']['salePrice'] * 6,
+            'shipping' => '0',
+            'shippingTime' => '7-21',
+            'tags' => '',
+            'mainImage' => 'https://www.tupianku.com/view/full/10023/'.$goodsInfo['GoodsCode'].'_0.jpg',
+            'goodsId' => $goodsInfo['bgoodsid'],
+            'infoId' => $goodsInfo['id'],
+            'extraImages' => static::_generateImages($goodsInfo['GoodsCode']),
+            'headKeywords' => $goodsInfo['headKeywords'],
+            'requiredKeywords' => $goodsInfo['requiredKeywords'],
+            'randomKeywords' => $goodsInfo['randomKeywords'],
+            'tailKeywords' => $goodsInfo['tailKeywords'],
+            'wishTags' => $goodsInfo['wishtags'],
+            'stockUp' => $goodsInfo['stockUp'],
+        ];
+        $wishGoods = OaWishGoods::findOne(['infoId'=>$goodsInfo['id']]);
+        if($wishGoods === null) {
+            $wishGoods = new OaWishGoods() ;
+        }
+        $wishGoods->setAttributes($wishGoodsAttributes);
+        if ($wishGoods->save()) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @brief import goodsSku into wishGoodsSKu
+     * @param $goodsSku
+     * @return bool
+     */
+    private static function _goodsInfoToWishGoodsSku($goodsSku)
+    {
+        foreach ($goodsSku as $sku) {
+            $wishGoodsSkuAttributes = [
+                'infoId' => $sku['infoId'],
+                'sid' => $sku['id'],
+                'sku' => $sku['sku'],
+                'color' => $sku['property1'],
+                'size' => $sku['property2'],
+                'inventory' => 10000,
+                'price' => $sku['RetailPrice'],
+                'shipping' => 0,
+                'msrp' => $sku['RetailPrice'] * 6,
+                'shippingTime' => '7-21',
+                'linkUrl' => $sku['linkurl'],
+                'goodsSkuId' => $sku['goodsskuid'],
+                'weight' => $sku['Weight'],
+                'joomPrice' => $sku['joomPrice'],
+                'joomShipping' => $sku['joomShipping'],
+            ];
+            $wishGoodsSku = OaWishGoodsSku::findOne(['sid'=>$sku['id']]);
+            if($wishGoodsSku === null) {
+                $wishGoodsSku = new OaWishGoodsSku() ;
+            }
+            $wishGoodsSku->setAttributes($wishGoodsSkuAttributes);
+            if (!$wishGoodsSku->save()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    /**
+     * @brief import goodsSku into ebayGoods
+     * @param $goodsInfo
+     * @return bool
+     */
+    private static function _goodsInfoToEbayGoods($goodsInfo)
+    {
+        $ebayGoodsAttributes = [
+            'infoId' => $goodsInfo['id']
+        ];
+        $ebayGoods = OaEbayGoods::findOne(['infoid'=>$goodsInfo['id']]);
+        if ($ebayGoods === null) {
+            $ebayGoods = new OaEbayGoods() ;
+        }
+        $ebayGoods->setAttributes($ebayGoodsAttributes);
+        if ($ebayGoods->save()) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @brief import goodsSku into ebayGoodsSKu
+     * @param $goodsSku
+     * @return bool
+     */
+    private static function _goodsSkuToEbayGoodsSku($goodsSku)
+    {
+        foreach ($goodsSku as $sku) {
+            $ebayGoodsSkuAttributes = [
+                'sid' => $sku['id']
+            ];
+            $ebayGoodsSku = OaEbayGoodsSku::findOne(['sid'=>$sku['id']]);
+            if ($ebayGoodsSku === null) {
+                $ebayGoodsSku = new OaEbayGoodsSku() ;
+            }
+            $ebayGoodsSku->setAttributes($ebayGoodsSkuAttributes);
+            if (!$ebayGoodsSku->save()) {
+                return false;
+            }
+        }
+        return true;
+
+    }
+
+
+    private static function _generateImages($goodsCode)
+    {
+        $baseUrl = 'https://www.tupianku.com/view/full/10023/';
+        $images = '';
+        for ($i=0;$i<20;$i++) {
+            if ($i === 0) {
+                $images = $images.$baseUrl.$i.$goodsCode.'0_jpg'.'\n';
+            }
+            else {
+                $images = $images.$baseUrl.$i.$goodsCode.'_jpg'.'\n';
+            }
+        }
+        return $images;
     }
 }
