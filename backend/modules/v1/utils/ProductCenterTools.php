@@ -107,13 +107,14 @@ class ProductCenterTools
         static::_goodsSkuToEbayGoodsSku($goodsSku);
 
          //update oa-goodsInfo status
-        $goodsInfo->setAttributes(
+        $pictureInfo = Oagoodsinfo::findOne(['id'=>$infoId]);
+        $pictureInfo->setAttributes(
             [
                 'filterType' => static::PlatInfo,
                 'picStatus' => '已完善',
             ]
         );
-        if($goodsInfo->save()) {
+        if($pictureInfo->save()) {
             return ['success'];
         }
         return ['failure'];
