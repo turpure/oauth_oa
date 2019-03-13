@@ -174,6 +174,10 @@ class OaGoodsinfoController extends AdminController
         return ApiGoodsinfo::savePictureInfo($condition);
     }
 
+    /**
+     * @brief 图片信息标记完善
+     * @return array
+     */
     public function actionFinishPicture()
     {
         $request = Yii::$app->request;
@@ -182,6 +186,16 @@ class OaGoodsinfoController extends AdminController
         }
         $condition = $request->post()['condition'];
         return ApiGoodsinfo::finishPicture($condition);
+    }
+
+    public function actionPictureToFtp()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $infoId = $request->post()['condition']['id'];
+        return ProductCenterTools::uploadImagesToFtp($infoId);
     }
 
 

@@ -85,12 +85,12 @@ class ProductCenterTools
 
 
     /**
+     * @brief 图片信息标记完善
      * @param $infoId
      * @return array
      */
     public static function finishPicture($infoId)
     {
-
         $goodsInfo = OaGoodsinfo::find()->with('oaGoods')->where(['id'=>$infoId])->asArray()->one() ;
         $goodsSku = OaGoodsSku::findAll(['infoId'=>$infoId]);
 
@@ -117,6 +117,33 @@ class ProductCenterTools
             return ['success'];
         }
         return ['failure'];
+    }
+
+    public static function uploadImagesToFtp($infoId) {
+        $goodsSku = OaGoodsSku::findAll(['infoId'=>$infoId]);
+        $tmpDir = Yii::$app->basePath .'\\runtime\\image\\';
+        $mode = FTP_BINARY;
+        $asynchronous = false;
+        try{
+            foreach ($goodsSku as $sku){
+                $url = $sku->linkurl;
+                if(!empty($url)){
+                    $filename = explode('_',$sku->sku)[0]. '.jpg';
+                    $remote_file = '/'.$filename;
+                    $local_file = $tmpDir . $filename ;
+                    copy($url,$local_file);
+                    Yii::$app->ftp->put($local_file,$remote_file,$mode,$asynchronous);
+                    if(!unlink($local_file)){
+                        throw new \Exception('failure');
+                    }
+                }
+            }
+            $msg = 'success';
+        }
+        catch (\Exception $why){
+            $msg = 'failure';
+        }
+        return [$msg];
     }
     /**
      * @brief 数据预处理
