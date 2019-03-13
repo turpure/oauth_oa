@@ -36,19 +36,19 @@ use Yii;
  * @property string $regionManufacture
  * @property string $reserveField
  * @property string $inShippingMethod1
- * @property string $InFirstCost1
- * @property string $InSuccessorCost1
+ * @property string $inFirstCost1
+ * @property string $inSuccessorCost1
  * @property string $inShippingMethod2
- * @property string $InFirstCost2
- * @property string $InSuccessorCost2
+ * @property string $inFirstCost2
+ * @property string $inSuccessorCost2
  * @property string $outShippingMethod1
  * @property string $outFirstCost1
  * @property string $outSuccessorCost1
- * @property string $outShiptoCountry1
+ * @property string $outShipToCountry1
  * @property string $outShippingMethod2
  * @property string $outFirstCost2
  * @property string $outSuccessorCost2
- * @property string $outShiptoCountry2
+ * @property string $outShipToCountry2
  * @property string $mainPage
  * @property string $extraPage
  * @property string $sku
@@ -77,12 +77,12 @@ class OaEbayGoods extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['goodsId', 'prepareDay', 'quantity', 'infoId', 'stockUp'], 'integer'],
-            [['description', 'extraPage', 'specifics'], 'string'],
-            [['nowPrice', 'InFirstCost1', 'InSuccessorCost1', 'InFirstCost2', 'InSuccessorCost2', 'outFirstCost1', 'outSuccessorCost1', 'outFirstCost2', 'outSuccessorCost2'], 'number'],
+            [['goodsId', 'prepareDay', 'quantity', 'infoId',], 'integer'],
+            [['description', 'extraPage', 'specifics','stockUp'], 'string'],
+            [['nowPrice', 'inFirstCost1', 'inSuccessorCost1', 'inFirstCost2', 'inSuccessorCost2', 'outFirstCost1', 'outSuccessorCost1', 'outFirstCost2', 'outSuccessorCost2'], 'number'],
             [['location', 'brand', 'shape', 'features', 'regionManufacture', 'inShippingMethod1', 'inShippingMethod2', 'outShippingMethod1', 'outShippingMethod2', 'sku', 'iBayTemplate'], 'string', 'max' => 50],
             [['country', 'postCode', 'site', 'listedCate', 'listedSubcate', 'unit', 'bundleListing'], 'string', 'max' => 10],
-            [['title', 'subTitle', 'outShiptoCountry1', 'outShiptoCountry2', 'mainPage'], 'string', 'max' => 200],
+            [['title', 'subTitle', 'outShipToCountry1', 'outShipToCountry2', 'mainPage'], 'string', 'max' => 200],
             [['UPC', 'EAN', 'MPN', 'color', 'type', 'material', 'headKeywords', 'tailKeywords'], 'string', 'max' => 20],
             [['intendedUse'], 'string', 'max' => 30],
             [['reserveField'], 'string', 'max' => 100],
@@ -125,19 +125,19 @@ class OaEbayGoods extends \yii\db\ActiveRecord
             'regionManufacture' => 'Region Manufacture',
             'reserveField' => 'Reserve Field',
             'inShippingMethod1' => 'inShipping Method1',
-            'InFirstCost1' => 'In First Cost1',
-            'InSuccessorCost1' => 'In Successor Cost1',
+            'inFirstCost1' => 'In First Cost1',
+            'inSuccessorCost1' => 'In Successor Cost1',
             'inShippingMethod2' => 'inShipping Method2',
-            'InFirstCost2' => 'In First Cost2',
-            'InSuccessorCost2' => 'In Successor Cost2',
+            'inFirstCost2' => 'In First Cost2',
+            'inSuccessorCost2' => 'In Successor Cost2',
             'outShippingMethod1' => 'outShipping Method1',
             'outFirstCost1' => 'out First Cost1',
             'outSuccessorCost1' => 'out Successor Cost1',
-            'outShipToCountry1' => 'out Shipto Country1',
+            'outShipToCountry1' => 'out Ship To Country1',
             'outShippingMethod2' => 'outShipping Method2',
             'outFirstCost2' => 'out First Cost2',
             'outSuccessorCost2' => 'out Successor Cost2',
-            'outShipToCountry2' => 'out Shipto Country2',
+            'outShipToCountry2' => 'out Ship To Country2',
             'mainPage' => 'Main Page',
             'extraPage' => 'Extra Page',
             'sku' => 'Sku',
