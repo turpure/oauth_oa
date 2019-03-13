@@ -148,11 +148,11 @@ class TinyToolController extends AdminController
         //获取SKU信息
         //$sql = "EXEC ibay365_ebay_virtual_store_online_product '{$post['sku']}'";
         $sql = "SELECT 
-                    r.SKU,r.skuname,r.goodscode,r.Weight+s.Weight AS Weight,r.CategoryName,r.CreateDate,
+                    r.SKU,r.skuname,r.goodscode,r.Weight,r.CategoryName,r.CreateDate,
                     CASE WHEN r.costprice<=0 THEN r.goodsPrice ELSE r.costprice END costprice
                 FROM Y_R_tStockingWaring  r
                 LEFT JOIN B_Goods g ON g.goodscode = r.goodscode
-                LEFT JOIN B_PackInfo s ON g.packName = s.packName
+                -- LEFT JOIN B_PackInfo s ON g.packName = s.packName
                 WHERE r.SKU='{$post['sku']}' ";
         $res = Yii::$app->py_db->createCommand($sql)->queryOne();
         if(!$res) return $data;
