@@ -248,7 +248,26 @@ class ApiDataCenter
             ':endDate' => $condition['endDate'],
             ':dateFlag' => $condition['dateFlag'],
         ];
-        return Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+        $data = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+        $pieData = $barData = [];
+        foreach ($data as $v){
+            if ($v['type'] == 'pie'){
+                $pieData[] = [
+                    'name' => $v['name'],
+                    'value' => $v['value'],
+                ];
+            }else{
+                $barData[] = [
+                    'dt' => $v['dt'],
+                    'name' => $v['name'],
+                    'value' => $v['value'],
+                ];
+            }
+        }
+        return [
+            'pieData' => $pieData,
+            'barData' => $barData,
+        ];
     }
 
     /**

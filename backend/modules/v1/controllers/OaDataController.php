@@ -60,4 +60,20 @@ class OaDataController extends AdminController
         return ApiOaData::getOaData($condition,'wish');
     }
 
+
+    /**
+     * 最近30天类目表现
+     * Date: 2019-03-11 14:19
+     * Author: henry
+     * @return \yii\data\ActiveDataProvider
+     */
+    public function actionCatPerform(){
+        return ApiOaData::getCatPerformData();
+    }
+
+    public function actionCat(){
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiOaData::getCatDetailData($condition);
+    }
+
 }
