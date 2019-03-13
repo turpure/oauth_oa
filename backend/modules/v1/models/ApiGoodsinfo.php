@@ -21,6 +21,8 @@ use backend\models\OaGoods;
 use backend\models\OaGoodsinfo;
 use backend\models\OaGoodsSku;
 use yii\data\ActiveDataProvider;
+use backend\modules\v1\utils\ProductCenterTools;
+
 
 class ApiGoodsinfo
 {
@@ -285,7 +287,11 @@ class ApiGoodsinfo
 
     public static function finishPicture($condition)
     {
-
+        $id = isset($condition['id'])?$condition['id']:'';
+        if(empty($id)) {
+            return [];
+        }
+        return ProductCenterTools::finishPicture($id);
     }
 
 

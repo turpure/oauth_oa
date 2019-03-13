@@ -160,6 +160,10 @@ class OaGoodsinfoController extends AdminController
         return ApiGoodsinfo::getPictureInfo($condition);
     }
 
+    /**
+     * @brief 保存图片信息
+     * @return array
+     */
     public function actionSavePictureInfo()
     {
         $request = Yii::$app->request;
@@ -168,6 +172,16 @@ class OaGoodsinfoController extends AdminController
         }
         $condition = $request->post()['condition'];
         return ApiGoodsinfo::savePictureInfo($condition);
+    }
+
+    public function actionFinishPicture()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        return ApiGoodsinfo::finishPicture($condition);
     }
 
 
