@@ -71,7 +71,7 @@ class OaGoodsinfo extends \yii\db\ActiveRecord
     {
         return [
             [['goodsid', 'SupplierID', 'StoreID', 'bgoodsid', 'stockdays', 'number', 'mid','filterType'], 'integer'],
-            [['description', 'SupplierName','cate'], 'string'],
+            [['description', 'SupplierName'], 'string'],
             [['DeclaredValue'], 'number'],
             [['devDatetime', 'updateTime', 'picCompleteTime'], 'safe'],
             [['GoodsName', 'AliasCnName', 'AliasEnName'], 'string', 'max' => 200],
@@ -140,7 +140,6 @@ class OaGoodsinfo extends \yii\db\ActiveRecord
             'mid' => 'Mid',
             'extendStatus' => 'Extend Status',
             'mapPersons' => 'Map Persons',
-            'cate' => 'cate',
         ];
     }
 
