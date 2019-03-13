@@ -211,4 +211,31 @@ class OaGoodsinfoController extends AdminController
         $condition['type'] = 'plat-info';
         return ApiGoodsinfo::getOaGoodsInfoList($condition);
     }
+
+    /**
+     * @brief 获取条目详情
+     * @return mixed
+     */
+    public function actionPlat()
+    {
+        $request = Yii::$app->request;
+        if ($request->isPost) {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiGoodsinfo::getAttributeById($condition);
+        }
+    }
+
+    /**
+     * @brief 获取平台模板信息
+     * @return array|mixed
+     */
+    public function actionPlatInfo()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        return ApiGoodsinfo::getPlatInfoById($condition);
+    }
 }

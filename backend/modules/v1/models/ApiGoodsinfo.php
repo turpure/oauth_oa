@@ -17,9 +17,13 @@
 namespace backend\modules\v1\models;
 
 
+use backend\models\OaEbayGoods;
+use backend\models\OaEbayGoodsSku;
 use backend\models\OaGoods;
 use backend\models\OaGoodsinfo;
 use backend\models\OaGoodsSku;
+use backend\models\OaWishGoods;
+use backend\models\OaWishGoodsSku;
 use yii\data\ActiveDataProvider;
 use backend\modules\v1\utils\ProductCenterTools;
 
@@ -294,5 +298,30 @@ class ApiGoodsinfo
         return ProductCenterTools::finishPicture($id);
     }
 
+###########################  plat info ########################################
 
+
+    public static function getPlatInfoById($condition)
+    {
+        $plat = $condition['plat'];
+        $infoId = $condition['id'];
+        if ($plat === 'wish') {
+            $goods = OaWishGoods::findOne(['infoId'=>$infoId]);
+            $goodsSku = OaWishGoodsSku::findAll(['infoId'=>$infoId]);
+
+        }
+        elseif($plat === 'ebay') {
+            $goods = OaEbayGoods::findOne(['infoId'=>$infoId]);
+            $goodsSku = OaEbayGoodsSku::findAll(['infoId'=>$infoId]);
+        }
+        else {
+            $goods = [];
+            $goodsSku = [];
+        }
+
+        return [
+            'basicInfo' => $goods,
+            'skuInfo' => $goodsSku
+        ];
+    }
 }
