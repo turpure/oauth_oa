@@ -282,8 +282,10 @@ class ApiDataCenter
         $pieName = array_unique(array_column($data, 'flag'));
         sort($pieName);
         //获取走势图时间数据
-        $orderPie = $skuPie = $orderLineNum = $orderLineRate = $skuLineNum = $skuLineRate = [];
-
+        $orderPie = $skuPie = [];
+        $orderLineNum =  $skuLineNum  = [];
+        $orderLineRate = $skuLineRate = [];
+        $orderLineAvg = $skuLineAvg = [];
         foreach($data as $value){
             //订单价格饼图数据
             if($value['type'] == 'order'){
@@ -305,6 +307,15 @@ class ApiDataCenter
                 $skuLineNum[] = ['flag' => $value['flag'], 'orderDate' => $value['orderDate'], 'orderNum' => $value['orderNum']];
                 $skuLineRate[] = ['flag' => $value['flag'], 'orderDate' => $value['orderDate'], 'rate' => $value['rate']];
             }
+            //每天平均订单价格数据
+            if($value['type'] == 'orderAvg'){
+                $orderLineAvg[] = ['orderDate' => $value['orderDate'], 'amtAvg' => $value['rate']];
+            }
+
+            //每天平均SKU单价数据
+            if($value['type'] == 'skuAvg'){
+                $skuLineAvg[] = ['orderDate' => $value['orderDate'], 'amtAvg' => $value['rate']];
+            }
         }
 
         $result = [
@@ -320,6 +331,8 @@ class ApiDataCenter
             'orderLineRate' => $orderLineRate,
             'skuLineNum' => $skuLineNum,
             'skuLineRate' => $skuLineRate,
+            'orderLineAvg' => $orderLineAvg,
+            'skuLineAvg' => $skuLineAvg,
         ];
         return $result;
     }
