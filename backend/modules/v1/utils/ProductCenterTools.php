@@ -20,6 +20,7 @@ use Yii;
 class ProductCenterTools
 {
 
+    const PlatInfo = 3;
     /**
      * @brief 按照编码规则生成商品编码
      * @param int
@@ -93,19 +94,29 @@ class ProductCenterTools
         $goodsInfo = OaGoodsinfo::find()->with('oaGoods')->where(['id'=>$infoId])->asArray()->one() ;
         $goodsSku = OaGoodsSku::findAll(['infoId'=>$infoId]);
 
-//         oa-goodsInfo to oa-wish-goods
+         //oa-goodsInfo to oa-wish-goods
         static::_goodsInfoToWishGoods($goodsInfo);
 
-//         oa-goodsInfo to oa-ebay-goods
-//        static::_goodsInfoToEbayGoods($goodsInfo);
+         //oa-goodsInfo to oa-ebay-goods
+        static::_goodsInfoToEbayGoods($goodsInfo);
 
         // oa-goodsSku to oa-wish-goodsSku
         static::_goodsInfoToWishGoodsSku($goodsSku);
-//         oa-goodsSku to oa-ebay-goodsSku
 
-//        static::_goodsSkuToEbayGoodsSku($goodsSku);
-        // update oa-goodsInfo status
-        return ['success'];
+         //oa-goodsSku to oa-ebay-goodsSku
+        static::_goodsSkuToEbayGoodsSku($goodsSku);
+
+         //update oa-goodsInfo status
+        $goodsInfo->setAttributes(
+            [
+                'filterType' => static::PlatInfo,
+                'picStatus' => '已完善',
+            ]
+        );
+        if($goodsInfo->save()) {
+            return ['success'];
+        }
+        return ['failure'];
     }
     /**
      * @brief 数据预处理
@@ -323,9 +334,60 @@ class ProductCenterTools
     private static function _goodsInfoToEbayGoods($goodsInfo)
     {
         $ebayGoodsAttributes = [
-            'infoId' => $goodsInfo['id']
+            'goodsId' => $goodsInfo['goodsid'],
+            'location' => 'Shanghai',
+            'country' => 'CN',
+            'postCode' => '',
+            'prepareDay' => 10,
+            'site' => '0',
+            'listedCate' => '',
+            'listedSubcate' => '',
+            'title' => '',
+            'subTitle' => '',
+            'description' => $goodsInfo['description'],
+            'quantity' => 6,
+            'nowPrice' => $goodsInfo['oaGoods']['salePrice'],
+            'UPC' => 'Does not apply',
+            'EAN' => 'Does not apply',
+            'brand' => '' ,
+            'MPN' => '',
+            'color' => '',
+            'type' => '',
+            'material' => '',
+            'intendedUse' => '',
+            'unit' => '',
+            'bundleListing' => '',
+            'shape' => '',
+            'features' => '',
+            'regionManufacture' => '',
+            'reserveField' => '',
+            'inShippingMethod1' => '23',
+            'inFirstCost1' => '',
+            'inSuccessorCost1' => '',
+            'inShippingMethod2' => '',
+            'inFirstCost2' => '',
+            'inSuccessorCost2' => '',
+            'outShippingMethod1' => '93',
+            'outFirstCost1' => '',
+            'outSuccessorCost1' => '',
+            'outShipToCountry1' => '',
+            'outShippingMethod2' => '',
+            'outFirstCost2' => '',
+            'outSuccessorCost2' => '',
+            'outShipToCountry2' => '',
+            'mainPage' => 'https://www.tupianku.com/view/full/10023/'.$goodsInfo['GoodsCode'].'-_0.jpg',
+            'extraPage' => static::_generateImages($goodsInfo['GoodsCode']),
+            'sku' => $goodsInfo['GoodsCode'],
+            'infoId' => $goodsInfo['id'],
+            'specifics' => '{"specifics":[{"Brand":"Unbranded"}]}',
+            'iBayTemplate' => 'pr110',
+            'headKeywords' => $goodsInfo['headKeywords'],
+            'requiredKeywords' => $goodsInfo['requiredKeywords'],
+            'randomKeywords' => $goodsInfo['randomKeywords'],
+            'tailKeywords' => $goodsInfo['tailKeywords'],
+            'stockUp' => $goodsInfo['stockUp'],
         ];
-        $ebayGoods = OaEbayGoods::findOne(['infoid'=>$goodsInfo['id']]);
+        $ebayGoods = OaEbayGoods::findOne(['infoId'=>$goodsInfo['id']]);
         if ($ebayGoods === null) {
             $ebayGoods = new OaEbayGoods() ;
         }
@@ -345,7 +407,14 @@ class ProductCenterTools
     {
         foreach ($goodsSku as $sku) {
             $ebayGoodsSkuAttributes = [
-                'sid' => $sku['id']
+                'itemId' => '',
+                'sid' => $sku['id'],
+                'infoId' => $sku['infoId'],
+                'sku' => $sku['sku'],
+                'quantity' => '',
+                'retailPrice' => $sku['RetailPrice'],
+                'imageUrl' => $sku['linkurl'],
+                'property' => static::_generateProperty($sku),
             ];
             $ebayGoodsSku = OaEbayGoodsSku::findOne(['sid'=>$sku['id']]);
             if ($ebayGoodsSku === null) {
@@ -361,6 +430,11 @@ class ProductCenterTools
     }
 
 
+    /**
+     * @brief generate extra images
+     * @param $goodsCode
+     * @return string
+     */
     private static function _generateImages($goodsCode)
     {
         $baseUrl = 'https://www.tupianku.com/view/full/10023/';
@@ -375,4 +449,19 @@ class ProductCenterTools
         }
         return $images;
     }
+
+   private static function _generateProperty($goodsSku)
+   {
+       $ret =  [
+           'columns' => [
+               'Color' => $goodsSku['property1'],
+               'Size' => $goodsSku['property2'],
+               '款式3' => $goodsSku['property3'],
+               'UPC' => 'Does not apply',
+           ],
+           'pictureKey' => 'color',
+       ];
+       return json_encode($ret);
+   }
+
 }
