@@ -349,6 +349,11 @@ class ApiGoodsinfo
         return ['success'];
     }
 
+    /**
+     * @brief 保存wish模板
+     * @param $condition
+     * @return array
+     */
     public  static function saveWishInfo($condition)
     {
         $goodsInfo = $condition['basicInfo'];
@@ -363,6 +368,22 @@ class ApiGoodsinfo
             }
         }
         if (!$goods->save()) {
+            return ['failure'];
+        }
+        return ['success'];
+    }
+
+    public static function finishPlat($condition) {
+        $infoId = $condition['id'];
+        $plat = $condition['plat'];
+        $goodsInfo = OagoodsInfo::findOne(['id'=>$infoId]);
+        $oldPlat = $goodsInfo->completeStatus?:'';
+        $plat = array_merge($plat,explode(',',$oldPlat));
+        $plat = array_filter($plat);
+        $plat = array_unique($plat);
+        asort($plat);
+        $goodsInfo->completeStatus = implode(',', $plat);
+        if(!$goodsInfo->save()) {
             return ['failure'];
         }
         return ['success'];

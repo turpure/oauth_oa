@@ -266,4 +266,14 @@ class OaGoodsinfoController extends AdminController
         $condition = $request->post()['condition'];
         return ApiGoodsinfo::saveEbayInfo($condition);
     }
+
+    public function actionFinishPlat()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        return ApiGoodsinfo::finishPlat($condition);
+    }
 }
