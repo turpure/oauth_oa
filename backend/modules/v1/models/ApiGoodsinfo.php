@@ -324,4 +324,47 @@ class ApiGoodsinfo
             'skuInfo' => $goodsSku
         ];
     }
+
+    /**
+     * @brief save ebay info
+     * @param $condition
+     * @return array
+     */
+    public  static function saveEbayInfo($condition)
+    {
+        $goodsInfo = $condition['basicInfo'];
+        $skuInfo = $condition['skuInfo'];
+        $goods = OaEbayGoods::findOne(['nid'=>$goodsInfo['nid']]);
+        $goods->setAttributes($goodsInfo);
+        foreach ($skuInfo as $row) {
+            $sku = OaEbayGoodsSku::findOne(['id'=>$row['id']]);
+            $sku->setAttributes($row);
+            if(!$sku->save()) {
+                return ['failure'];
+            }
+        }
+        if (!$goods->save()) {
+           return ['failure'];
+        }
+        return ['success'];
+    }
+
+    public  static function saveWishInfo($condition)
+    {
+        $goodsInfo = $condition['basicInfo'];
+        $skuInfo = $condition['skuInfo'];
+        $goods = OaWishGoods::findOne(['id'=>$goodsInfo['id']]);
+        $goods->setAttributes($goodsInfo);
+        foreach ($skuInfo as $row) {
+            $sku = OaWishGoodsSku::findOne(['id'=>$row['id']]);
+            $sku->setAttributes($row);
+            if(!$sku->save()) {
+                return ['failure'];
+            }
+        }
+        if (!$goods->save()) {
+            return ['failure'];
+        }
+        return ['success'];
+    }
 }
