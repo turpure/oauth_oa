@@ -112,7 +112,9 @@ class ApiTool
             //类别来判断账号Selleruserid 和 Category1
             $cat = $xlsData1['0']['CategoryName'];
             $Category1 = $cat_dict[$cat];//子类目进行匹配Category1字段
+
             //1个商品编码下面又多个SKU的 价格有0 有值混合的情况 取值。。。。, 全0 才是0.99
+            $valArr = [];
             foreach ($xlsData1 as $key => $value) {
                 if ((float)$value['StartPrice'] != '0' || (float)$value['StartPrice'] != '' || (float)$value['StartPrice'] != 0) {
                     $valArr[] = (float)$value['StartPrice'];
@@ -186,7 +188,7 @@ class ApiTool
                     unset($xlsData2);
                 }
 
-                if (max($valArr) >= 5) {
+                if ($valArr && max($valArr) >= 5) {
                     $ShippingService1 = 'ePacketChina';
                 } else {
                     $ShippingService1 = 'EconomyShippingFromOutsideUS';
