@@ -238,4 +238,42 @@ class OaGoodsinfoController extends AdminController
         $condition = $request->post()['condition'];
         return ApiGoodsinfo::getPlatInfoById($condition);
     }
+
+    /**
+     * @brief 保存wish模板信息
+     * @return array
+     */
+    public  function actionSaveWishInfo()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        return ApiGoodsinfo::saveWishInfo($condition);
+    }
+
+    /**
+     * @brief 保存ebay模板信息
+     * @return array
+     */
+    public function actionSaveEbayInfo()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        return ApiGoodsinfo::saveEbayInfo($condition);
+    }
+
+    public function actionFinishPlat()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        return ApiGoodsinfo::finishPlat($condition);
+    }
 }
