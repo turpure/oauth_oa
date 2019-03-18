@@ -111,7 +111,7 @@ class ApiTool
             }
             //类别来判断账号Selleruserid 和 Category1
             $cat = $xlsData1['0']['CategoryName'];
-            $Category1 = $cat_dict[$cat];//子类目进行匹配Category1字段
+            $Category1 = isset($cat_dict[$cat])?$cat_dict[$cat]:$cat;//子类目进行匹配Category1字段
 
             //1个商品编码下面又多个SKU的 价格有0 有值混合的情况 取值。。。。, 全0 才是0.99
             $valArr = [];
