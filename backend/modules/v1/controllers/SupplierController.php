@@ -17,6 +17,7 @@
 
 namespace backend\modules\v1\controllers;
 
+use backend\models\OaSupplierGoodsSku;
 use backend\models\OaSupplierOrder;
 use backend\models\OaSupplierOrderDetail;
 use backend\modules\v1\models\ApiSupplier;
@@ -34,6 +35,17 @@ class SupplierController extends AdminController
 
 ###########################  supplier info ########################################
 
+    /**
+     * Date: 2019-03-18 16:21
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    public function actionPySupplierList()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        return (new ApiSupplier)->getPySupplierList($condition);
+    }
     /** 供应商列表
      * Date: 2019-03-14 14:56
      * Author: henry
@@ -59,7 +71,8 @@ class SupplierController extends AdminController
             return ApiSupplier::getSupplierById($condition);
         }
         if ($request->isDelete) {
-            $id = Yii::$app->request->get()['id'];
+            $id = Yii::$app->request->post()['id'];
+            $id = $id ? $id :Yii::$app->request->get()['id'];
             return ApiSupplier::deleteSupplierById($id);
         }
     }
@@ -101,11 +114,11 @@ class SupplierController extends AdminController
         return ApiSupplier::getOaSupplierGoodsList($condition);
     }
 
-    /**
-     * 获取供应商产品详情 或 删除供应商产品
-     * Date: 2019-03-14 16:42
+    /** 获取供应商产品详情列表 或 删除供应商产品（同时删除SKU）
+     * Date: 2019-03-18 16:29
      * Author: henry
-     * @return array|bool|null|\yii\db\ActiveRecord
+     * @return array|bool|\yii\data\ActiveDataProvider
+     * @throws \yii\db\Exception
      */
     public function actionGoodsAttribute()
     {
@@ -115,11 +128,33 @@ class SupplierController extends AdminController
             return ApiSupplier::getSupplierGoodsById($condition);
         }
         if ($request->isDelete) {
-            $id = Yii::$app->request->get('id', 0);
+            $id = Yii::$app->request->post('id', 0);
+            $id = $id ? $id :Yii::$app->request->get()['id'];
             return ApiSupplier::deleteSupplierGoodsById($id);
         }
     }
 
+    /**  删除SKU
+     * @param $id
+     * Date: 2019-03-18 15:08
+     * Author: henry
+     * @return bool
+     * @throws \Throwable
+     */
+    public function actionDeleteSku()
+    {
+        $id = Yii::$app->request->post('condition')['id'];
+        try {
+            $sku = OaSupplierGoodsSku::findOne(['id'=>$id]);
+            if(!empty($sku)) {
+                $sku->delete();
+            }
+        }
+        catch (\Exception $why) {
+            return false;
+        }
+        return true;
+    }
     /**
      * 创建供应商产品
      * Date: 2019-03-14 16:55
@@ -200,6 +235,19 @@ class SupplierController extends AdminController
         return false;
     }
 
+    /** 获取普源采购订单
+     * Date: 2019-03-16 15:17
+     * Author: henry
+     * @return bool|string
+     * @throws \yii\db\Exception
+     */
+    public function actionQuery()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        $id = isset($condition['id']) ? $condition['id'] : '';
+
+    }
+
 
     /**
      * 手动同步普源数据到产品中心
@@ -212,7 +260,7 @@ class SupplierController extends AdminController
         $condition = Yii::$app->request->post()['condition'];
         $id = $condition['id']?$condition['id']:'';
         //获取产品SKU
-        if(!$id) return [];
+        if(!$id) return false;
         $sku = OaSupplierOrder::findOne($id)[''];
 
         $sql = "SELECT

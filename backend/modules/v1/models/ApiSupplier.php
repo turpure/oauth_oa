@@ -20,10 +20,44 @@ namespace backend\modules\v1\models;
 
 use backend\models\OaSupplier;
 use backend\models\OaSupplierGoods;
+use backend\models\OaSupplierGoodsSku;
 use yii\data\ActiveDataProvider;
+use Yii;
+use yii\web\Response;
 
 class ApiSupplier
 {
+    /**
+     * @param $condition
+     * Date: 2019-03-18 16:16
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    public function getPySupplierList($condition)
+    {
+        $q = isset($condition['q'])?$condition['q']:'';
+        Yii::$app->response->format = Response::FORMAT_JSON;//响应数据格式为json
+        $out = ['results' => ['id' => '', 'text' => '']];
+        if (!$q) {
+            return $out;
+        }
+
+        $sql = "SELECT TOP 50 bs.supplierName FROM B_supplier bs
+                WHERE used=0 AND supplierName LIKE '%{$q}%' 
+                AND NOT EXISTS (SELECT supplierName FROM oa_supplier WHERE RTRIM(LTRIM(oa_supplier.supplierName)) = RTRIM(LTRIM(bs.supplierName)))  
+                ORDER BY supplierName";
+        $res = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $out['results'] = array_map([$this, 'format'], $res);
+        //print_r($out['results']);exit;
+        return $out;
+    }
+    private function format($data){
+        $result = [];
+        $result['id'] = $data['supplierName'];
+        $result['text'] = $data['supplierName'];
+        return $result;
+    }
 
     /**
      * @param $condition
@@ -175,9 +209,9 @@ class ApiSupplier
 
     /**
      * @param $condition
-     * Date: 2019-03-14 16:31
+     * Date: 2019-03-18 15:02
      * Author: henry
-     * @return array|null|\yii\db\ActiveRecord
+     * @return array|ActiveDataProvider
      */
     public static function getSupplierGoodsById($condition)
     {
@@ -185,22 +219,40 @@ class ApiSupplier
         if (empty($id)) {
             return [];
         }
-        return OaSupplierGoods::findOne(['id' => $id]);
+        return new ActiveDataProvider([
+            'query' => OaSupplierGoodsSku::find()->where(['supplierGoodsId' => $id]),
+            'pagination' => ['pageSize' => 200]
+        ]);
     }
 
     /**
      * @param $id
-     * Date: 2019-03-14 16:52
+     * Date: 2019-03-18 15:53
      * Author: henry
      * @return bool
+     * @throws \yii\db\Exception
      */
     public static function deleteSupplierGoodsById($id)
     {
-        $ret = OaSupplierGoods::deleteAll(['id' => $id]);
-        if ($ret) {
-            return true;
+        $db = OaSupplierGoods::getDb();
+        $trans = $db->beginTransaction();
+        try {
+
+            $res = OaSupplierGoods::deleteAll(['id' => $id]);
+            if (!$res) {
+                throw new \Exception('删除失败！');
+            }
+            $res = OaSupplierGoodsSku::deleteAll(['supplierGoodsId' => $id]);
+            if (!$res) {
+                throw new \Exception('删除失败！');
+            }
+            $trans->commit();
+            $msg = true;
+        } catch (\Exception $why) {
+            $trans->rollBack();
+            $msg = false;
         }
-        return false;
+        return $msg;
     }
 
     /** 创建供应商信息
@@ -212,13 +264,13 @@ class ApiSupplier
     public static function createSupplierGoods($condition)
     {
         $model = new OaSupplierGoods();
-            $model->attributes = $condition;
-            if (!isset($condition['createdTime']) || !$condition['createdTime']) $model->createdTime = date('Y-m-d H:i:s');
+        $model->attributes = $condition;
+        if (!isset($condition['createdTime']) || !$condition['createdTime']) $model->createdTime = date('Y-m-d H:i:s');
         $res = $model->save();
         if ($res) {
             return true;
-        }else{
-            return  [
+        } else {
+            return [
                 'code' => 400,
                 //'message' => array_values($model->getErrors())[0][0],
                 'message' => 'failed'
@@ -239,20 +291,19 @@ class ApiSupplier
             return false;
         }
         $model = OaSupplierGoods::findOne($id);
-            $model->attributes = $condition;
-            if (!isset($condition['updatedTime']) || !$condition['updatedTime']) $model->updatedTime = date('Y-m-d H:i:s');
+        $model->attributes = $condition;
+        if (!isset($condition['updatedTime']) || !$condition['updatedTime']) $model->updatedTime = date('Y-m-d H:i:s');
         $res = $model->save();
         if ($res) {
             return true;
-        }else{
-            return  [
+        } else {
+            return [
                 'code' => 400,
                 //'message' => array_values($model->getErrors())[0][0],
                 'message' => 'failed'
             ];
         }
     }
-
 
 
 }
