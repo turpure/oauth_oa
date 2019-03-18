@@ -150,7 +150,7 @@ class ApiSupplier
      */
     public static function getOaSupplierGoodsList($condition)
     {
-        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
         $query = OaSupplierGoods::find();
 
         if (isset($condition['updatedTime'])) $query->andFilterWhere(['updatedTime' => $condition['updatedTime']]);
@@ -253,7 +253,6 @@ class ApiSupplier
         }
     }
 
-    #################################    supplier  order   ###############################################
 
 
 }
