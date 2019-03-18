@@ -158,19 +158,6 @@ class ApiGoodsinfo
         ];
     }
 
-    /**
-     * @brief 将属性信息导入到普源
-     * @param $condition
-     * @return array
-     */
-    public static function importToShopElf($condition)
-    {
-        $id = isset($condition['id'])? $condition['id']:'';
-        if(empty($id)) {
-            return [];
-        }
-        return ['success'];
-    }
 
     /**
      * @brief 属性信息标记已完善
