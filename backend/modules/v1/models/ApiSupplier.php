@@ -23,6 +23,7 @@ use backend\models\OaSupplierGoods;
 use backend\models\OaSupplierGoodsSku;
 use yii\data\ActiveDataProvider;
 use Yii;
+use yii\helpers\ArrayHelper;
 use yii\web\Response;
 
 class ApiSupplier
@@ -36,7 +37,7 @@ class ApiSupplier
      */
     public function getPySupplierList($condition)
     {
-        $q = isset($condition['q'])?$condition['q']:'';
+        $q = isset($condition['q']) ? $condition['q'] : '';
         Yii::$app->response->format = Response::FORMAT_JSON;//响应数据格式为json
         $out = ['results' => ['id' => '', 'text' => '']];
         if (!$q) {
@@ -52,7 +53,28 @@ class ApiSupplier
         //print_r($out['results']);exit;
         return $out;
     }
-    private function format($data){
+
+    /**
+     * 获取已有的供应商列表
+     * @param $condition
+     * Date: 2019-03-18 17:31
+     * Author: henry
+     * @return array
+     */
+    public function getSupplier($condition)
+    {
+        $q = isset($condition['q']) ? $condition['q'] : '';
+        Yii::$app->response->format = Response::FORMAT_JSON;//响应数据格式为json
+        $out = ['results' => ['id' => '', 'text' => '']];
+        if (!$q) {
+            return $out;
+        }
+        $res = OaSupplier::find()->where(['like', 'supplierName', $q])->asArray()->all();
+        $out['results'] = array_map([$this, 'format'], $res);
+        return $out;
+    }
+    private function format($data)
+    {
         $result = [];
         $result['id'] = $data['supplierName'];
         $result['text'] = $data['supplierName'];
@@ -303,6 +325,45 @@ class ApiSupplier
                 'message' => 'failed'
             ];
         }
+    }
+
+    /** 保存SKU信息
+     * @param $condition
+     * Date: 2019-03-18 17:09
+     * Author: henry
+     * @return bool
+     */
+    public static function updateSupplierGoodsSKU($condition)
+    {
+        $ids = isset($condition['id']) ? $condition['id'] : [];
+        if (empty($ids)) {
+            return false;
+        }
+        $trans = Yii::$app->db->beginTransaction();
+        try {
+            foreach ($ids as $row) {
+                if ($row['id']){
+                    $sku = OaSupplierGoodsSku::findOne(['id' => $row['id']]);
+                    if (!empty($sku)) {
+                        $sku->setAttributes($row);
+                        if (!$sku->save()) {
+                            throw new \Exception('保存失败！');
+                        }
+                    }
+                }else{
+                    $sku = new OaSupplierGoodsSku();
+                    $sku->setAttributes($row);
+                    if (!$sku->save()) {
+                        throw new \Exception('保存失败！');
+                    }
+                }
+            }
+            $trans->commit();
+            $msg = true;
+        } catch (\Exception $why) {
+            $msg = false;
+        }
+        return $msg;
     }
 
 
