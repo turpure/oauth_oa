@@ -14,6 +14,8 @@ use backend\models\OaEbayGoodsSku;
 use backend\models\OaWishGoods;
 use backend\models\OaWishGoodsSku;
 use backend\models\ShopElf\BGoods;
+use backend\models\ShopElf\BGoodsSku;
+use backend\models\ShopElf\KCCurrentStock;
 use backend\modules\v1\models\ApiGoodsinfo;
 use Yii;
 
@@ -48,22 +50,10 @@ class ProductCenterTools
 
     /**
      * @brief 导入普源系统
-     * @return array
      */
-    public static function importShopElf()
+    public static function importShopElf($infoId)
     {
-        $data = static::_preImport();
-        return $data;
-        $id = 1;
-        $bGoods = BGoods::findOne(['NID'=>$id]);
-        if($bGoods === null) {
-            $bGoods = new BGoods();
-        }
-        $bGoods->setAttributes([]);
-        if($bGoods->save()) {
-            return ['success'];
-        }
-        return ['failure'];
+        $data = static::_preImport($infoId);
     }
 
     /**
@@ -148,11 +138,12 @@ class ProductCenterTools
     }
     /**
      * @brief 数据预处理
+     * @param $infoId
      * @return array
      */
-    private static function _preImport()
+    private static function _preImport($infoId)
     {
-        $condition = ['id' => 5];
+        $condition = ['id' => $infoId];
         $goodsInfo = ApiGoodsinfo::getAttributeInfo($condition);
         $skuInfo = $goodsInfo['skuInfo'];
         $description = $goodsInfo['basicInfo']['goodsInfo']['description'];
@@ -166,6 +157,62 @@ class ProductCenterTools
         ];
     }
 
+    /**
+     * @brief 导入到bGoods里面
+     * @param $data
+     * @return mixed
+     */
+    private static function _bgoodsImport($data)
+    {
+        $goodsCode = $data['b_goods']['GoodsCode'];
+        $bGoods = BGoods::findOne(['GoodsCode'=>$goodsCode]);
+        if ($bGoods === null) {
+            $bGoods = new BGoods();
+        }
+        $bGoods->setAttributes($data['b_goods']);
+        if(!$bGoods->save()) {
+            return false;
+        }
+        return BGoods::find()->select('id')->where(['GoodsCode'=>$goodsCode])->asArray()->one();
+
+    }
+
+    private static function _stockImport($data,$goodsId,$goodsSkuIds)
+    {
+        $stock = $data['stock'];
+        foreach($stock as $stk) {
+            $currentStock = KCCurrentStock::findOne(['GoodsId'=>$data['goodsId'],'GoodsSKUID'=>$stk['goodsSkuId']]);
+            if($currentStock === null) {
+                $currentStock = new KCCurrentStock();
+            }
+            $currentStock->setAttributes($stock);
+            if(!$currentStock->save()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * @brief 导入到bGoodsSku里面
+     * @param $data
+     * @return mixed
+     */
+    private static function _bgoodsSkuImport($data)
+    {
+        $goodsSku = $data['b_goodsSku']['sku'];
+        foreach($goodsSku as $sku) {
+            $bGoodsSku = BGoodsSku::findOne(['sku'=>$sku['sku']]);
+            if($bGoodsSku === null) {
+                $bGoodsSku = new BGoodsSku();
+            }
+            $bGoodsSku->setAttributes($data['b_goodsSku']['sku']);
+            if(!$bGoodsSku->save()) {
+                return false;
+            }
+        }
+        return BGoodsSku::find()->select('id')->where(['GoodsCode'=>$data['GoodsCode']])->asArray()->one();
+    }
     /**
      * @brief B_Goods格式
      * @param $goodsInfo
@@ -478,6 +525,11 @@ class ProductCenterTools
         return $images;
     }
 
+    /**
+     * @brief 生成属性信息
+     * @param $goodsSku
+     * @return string
+     */
    private static function _generateProperty($goodsSku)
    {
        $ret =  [

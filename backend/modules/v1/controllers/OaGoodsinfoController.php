@@ -72,7 +72,8 @@ class OaGoodsinfoController extends AdminController
             return [];
         }
         $condition = $request->post()['condition'];
-        return ProductCenterTools::importShopElf();
+        $infoId = $condition['id'];
+        return ProductCenterTools::importShopElf($infoId);
     }
 
     /**
