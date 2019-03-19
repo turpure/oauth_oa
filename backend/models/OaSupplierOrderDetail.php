@@ -77,7 +77,7 @@ class OaSupplierOrderDetail extends \yii\db\ActiveRecord
     /**
      * @brief join with oa_supplierOrder
      */
-    public function getOa_SupplierOrder() {
+    public function getOaSupplierOrder() {
         return $this->hasOne(OaSupplierOrder::className(),['id'=>'orderId']);
     }
 
