@@ -139,31 +139,39 @@ class ProductCenterTools
         return [$msg];
     }
     /**
-     * @brief 数据预处理
+     * @brief 数据预处理和数据导入事务
      * @param $infoId
      * @return array
      */
     private static function _preImport($infoId)
     {
-        $condition = ['id' => $infoId];
-        $goodsInfo = ApiGoodsinfo::getAttributeInfo($condition);
-        $skuInfo = $goodsInfo['skuInfo'];
-        $bGoods = static::_preGoodsInfo($goodsInfo);
-        $bGoods = static::_bGoodsImport($bGoods);
-        $bGoodsSku = static::_preGoodsSkuInfo($skuInfo, $bGoods);
-        $bGoodsSku = static::_bGoodsSkuImport($bGoodsSku);
-        $stock = static::_preCurrentStockInfo($bGoodsSku);
-        $ret = static::_stockImport($stock);
-        if(!$ret) {
-            return ['failure'];
+        $db = Yii::$app->py_db;
+        $trans = $db->beginTransaction();
+        try {
+            $condition = ['id' => $infoId];
+            $goodsInfo = ApiGoodsinfo::getAttributeInfo($condition);
+            $skuInfo = $goodsInfo['skuInfo'];
+            $bGoods = static::_preGoodsInfo($goodsInfo);
+            $bGoods = static::_bGoodsImport($bGoods);
+            $bGoodsSku = static::_preGoodsSkuInfo($skuInfo, $bGoods);
+            $bGoodsSku = static::_bGoodsSkuImport($bGoodsSku);
+            $stock = static::_preCurrentStockInfo($bGoodsSku);
+            static::_stockImport($stock);
+            $trans->commit();
+            $msg = ['success!'];
         }
-        return ['success'];
+        catch (\Exception $why) {
+           $trans->rollBack();
+           $msg = ['failure'];
+        }
+        return $msg;
     }
 
     /**
      * @brief 导入到bGoods里面
-     * @param $data
+     * @param $goodsInfo
      * @return mixed
+     * @throws \Exception
      */
     private static function _bGoodsImport($goodsInfo)
     {
@@ -174,12 +182,17 @@ class ProductCenterTools
         }
         $bGoods->setAttributes($goodsInfo);
         if(!$bGoods->save()) {
-            return false;
+            throw new \Exception('fail to import goods');
         }
         $goodsInfo['goodsId'] = $bGoods['NID'];
         return $goodsInfo;
     }
 
+    /**
+     * @brief 导入库存表
+     * @param $stock
+     * @throws \Exception
+     */
     private static function _stockImport($stock)
     {
         foreach($stock as $stk) {
@@ -189,16 +202,16 @@ class ProductCenterTools
             }
             $currentStock->setAttributes($stk);
             if(!$currentStock->save()) {
-                return false;
+                throw new \Exception('fail to import stock');
             }
         }
-        return true;
     }
 
     /**
      * @brief 导入到bGoodsSku里面
      * @param $data
      * @return mixed
+     * @throws \Exception
      */
     private static function _bGoodsSkuImport($data)
     {
@@ -210,7 +223,7 @@ class ProductCenterTools
             }
             $bGoodsSku->setAttributes($sku);
             if(!$bGoodsSku->save()) {
-                return false;
+                throw new \Exception('fail to import goodsSku');
             }
             $sku['goodsSkuId'] = $bGoodsSku['NID'];
             $ret[] = $sku;
