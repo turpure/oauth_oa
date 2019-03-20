@@ -115,7 +115,7 @@ class DataCenterController extends AdminController
         ];
         $data = ApiDataCenter::getPriceChangeData($condition);
 
-        return  ApiDataCenter::outputData($data);
+        return ApiDataCenter::outputData($data);
     }
 
 
@@ -197,14 +197,18 @@ class DataCenterController extends AdminController
         $condition = [
             'store' => $params['store'] ? implode(',', $params['store']) : '',
             'queryType' => $params['queryType'],
+            'dateFlag' => $cond['dateType'],
             'beginDate' => $cond['dateRange'] ? $cond['dateRange'][0] : '',
             'endDate' => $cond['dateRange'] ? $cond['dateRange'][1] : '',
         ];
         //print_r($condition);exit;
         return [
-            'pieData' => ApiDataCenter::getDelayDeliveryData($condition),
-            'barData' => ApiDataCenter::getDelayDeliveryData($condition,1),
-            ];
+            'delayDeliveryData' => [
+                'pieData' => ApiDataCenter::getDelayDeliveryData($condition),
+                'barData' => ApiDataCenter::getDelayDeliveryData($condition, 2),
+            ],
+            'delayShipData' => ApiDataCenter::getDelayShipData($condition),
+        ];
     }
 
 
@@ -233,7 +237,7 @@ class DataCenterController extends AdminController
             'endDate' => $cond['dateRange'] ? $cond['dateRange'][1] : '',
         ];
         //print_r($condition);exit;
-        return ApiDataCenter::getDelayDeliveryData($condition,2);
+        return ApiDataCenter::getDelayDeliveryData($condition, 1);
     }
 
     /**
@@ -258,7 +262,7 @@ class DataCenterController extends AdminController
         $condition = [
             'store' => $params['store'] ? implode(',', $params['store']) : '',
             'queryType' => $params['queryType'],
-            'dateFlag' =>$cond['dateType'],
+            'dateFlag' => $cond['dateType'],
             'beginDate' => $cond['dateRange'] ? $cond['dateRange'][0] : '',
             'endDate' => $cond['dateRange'] ? $cond['dateRange'][1] : '',
         ];

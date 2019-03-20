@@ -63,13 +63,10 @@ class ApiSupplier
      */
     public function getSupplier($condition)
     {
-        $q = isset($condition['q']) ? $condition['q'] : '';
+        $q = isset($condition['q']) ? $condition['q'] : null;
         Yii::$app->response->format = Response::FORMAT_JSON;//响应数据格式为json
         $out = ['results' => ['id' => '', 'text' => '']];
-        if (!$q) {
-            return $out;
-        }
-        $res = OaSupplier::find()->where(['like', 'supplierName', $q])->asArray()->all();
+        $res = OaSupplier::find()->andFilterWhere(['like', 'supplierName', $q])->asArray()->all();
         $out['results'] = array_map([$this, 'format'], $res);
         return $out;
     }
