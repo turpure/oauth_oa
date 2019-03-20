@@ -8,52 +8,54 @@ use Yii;
  * This is the model class for table "proCenter.oa_goodsinfo".
  *
  * @property int $id
- * @property int $IsLiquid
- * @property int $IsPowder
+ * @property int $isLiquid
+ * @property int $isPowder
  * @property int $isMagnetism
- * @property int $IsCharged
+ * @property int $isCharged
  * @property string $description
- * @property string $GoodsName
- * @property string $AliasCnName
- * @property string $AliasEnName
- * @property string $PackName
- * @property string $Season
- * @property string $DictionaryName
- * @property string $SupplierName
- * @property string $StoreName
- * @property string $Purchaser
+ * @property string $goodsName
+ * @property string $aliasCnName
+ * @property string $aliasEnName
+ * @property string $packName
+ * @property string $season
+ * @property string $dictionaryName
+ * @property string $supplierName
+ * @property string $storeName
+ * @property string $purchaser
  * @property string $possessMan1
  * @property string $possessMan2
- * @property string $DeclaredValue
+ * @property string $declaredValue
  * @property string $picUrl
- * @property int $goodsid
- * @property string $GoodsCode
+ * @property int $goodsId
+ * @property string $goodsCode
  * @property string $achieveStatus
  * @property string $devDatetime
  * @property string $developer
  * @property string $updateTime
  * @property string $picStatus
- * @property int $SupplierID
- * @property int $StoreID
- * @property string $AttributeName
- * @property int $bgoodsid
+ * @property int $supplierID
+ * @property int $storeID
+ * @property string $attributeName
+ * @property int $bgoodsId
  * @property string $completeStatus
  * @property string $isVar
  * @property string $headKeywords
  * @property string $requiredKeywords
  * @property string $randomKeywords
  * @property string $tailKeywords
- * @property string $wishtags
+ * @property string $wishTags
  * @property int $stockUp
  * @property string $picCompleteTime
- * @property string $goodsstatus
- * @property int $stockdays
- * @property string $wishpublish
+ * @property string $goodsStatus
+ * @property int $stockDays
+ * @property string $wishPublish
  * @property int $number
  * @property int $mid
  * @property string $extendStatus
  * @property string $mapPersons
  */
+
+
 class OaGoodsinfo extends \yii\db\ActiveRecord
 {
     /**
@@ -70,20 +72,20 @@ class OaGoodsinfo extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['goodsid', 'SupplierID', 'StoreID', 'bgoodsid', 'stockdays', 'number', 'mid','filterType'], 'integer'],
-            [['description', 'SupplierName'], 'string'],
-            [['DeclaredValue'], 'number'],
+            [['goodsId', 'supplierID', 'storeID', 'bgoodsId', 'stockDays', 'number', 'mid','filterType'], 'integer'],
+            [['description', 'supplierName'], 'string'],
+            [['declaredValue'], 'number'],
             [['devDatetime', 'updateTime', 'picCompleteTime'], 'safe'],
-            [['GoodsName', 'AliasCnName', 'AliasEnName'], 'string', 'max' => 200],
-            [['PackName', 'Purchaser', 'developer'], 'string', 'max' => 50],
-            [['Season', 'GoodsCode', 'completeStatus', 'goodsstatus'], 'string', 'max' => 100],
-            [['DictionaryName', 'StoreName', 'picUrl', 'requiredKeywords', 'randomKeywords', 'wishtags', 'extendStatus', 'mapPersons'], 'string', 'max' => 255],
+            [['goodsName', 'aliasCnName', 'aliasEnName'], 'string', 'max' => 200],
+            [['packName', 'purchaser', 'developer'], 'string', 'max' => 50],
+            [['season', 'goodsCode', 'completeStatus', 'goodsStatus'], 'string', 'max' => 100],
+            [['dictionaryName', 'storeName', 'picUrl', 'requiredKeywords', 'randomKeywords', 'wishTags', 'extendStatus', 'mapPersons'], 'string', 'max' => 255],
             [['possessMan1', 'possessMan2'], 'string', 'max' => 64],
-            [['achieveStatus', 'AttributeName'], 'string', 'max' => 60],
+            [['achieveStatus', 'attributeName'], 'string', 'max' => 60],
             [['picStatus'], 'string', 'max' => 30],
-            [['isVar', 'stockUp', 'IsLiquid', 'IsPowder', 'isMagnetism', 'IsCharged', 'wishpublish'], 'string', 'max' => 10],
+            [['isVar', 'stockUp', 'isLiquid', 'isPowder', 'isMagnetism', 'isCharged', 'wishPublish'], 'string', 'max' => 10],
             [['headKeywords', 'tailKeywords'], 'string', 'max' => 20],
-            [['GoodsCode'], 'unique'],
+            [['goodsCode'], 'unique'],
         ];
     }
 
@@ -94,50 +96,50 @@ class OaGoodsinfo extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'filterType' => 'filter Type',
-            'IsLiquid' => 'Is Liquid',
-            'IsPowder' => 'Is Powder',
-            'isMagnetism' => 'Is Magnetism',
-            'IsCharged' => 'Is Charged',
-            'description' => 'Description',
-            'GoodsName' => 'Goods Name',
-            'AliasCnName' => 'Alias Cn Name',
-            'AliasEnName' => 'Alias En Name',
-            'PackName' => 'Pack Name',
-            'Season' => 'Season',
-            'DictionaryName' => 'Dictionary Name',
-            'SupplierName' => 'Supplier Name',
-            'StoreName' => 'Store Name',
-            'Purchaser' => 'Purchaser',
+            'FilterType' => 'filter Type',
+            'isLiquid' => 'Is Liquid',
+            'isPowder' => 'Is Powder',
+            'IsMagnetism' => 'Is Magnetism',
+            'isCharged' => 'Is Charged',
+            'description' => 'description',
+            'goodsName' => 'Goods Name',
+            'aliasCnName' => 'Alias Cn Name',
+            'aliasEnName' => 'Alias En Name',
+            'packName' => 'Pack Name',
+            'season' => 'season',
+            'dictionaryName' => 'Dictionary Name',
+            'supplierName' => 'Supplier Name',
+            'storeName' => 'Store Name',
+            'purchaser' => 'purchaser',
             'possessMan1' => 'Possess Man1',
             'possessMan2' => 'Possess Man2',
-            'DeclaredValue' => 'Declared Value',
+            'declaredValue' => 'Declared Value',
             'picUrl' => 'Pic Url',
-            'goodsid' => 'Goodsid',
-            'GoodsCode' => 'Goods Code',
+            'goodsId' => 'Goods Id',
+            'goodsCode' => 'Goods Code',
             'achieveStatus' => 'Achieve Status',
             'devDatetime' => 'Dev Datetime',
-            'developer' => 'Developer',
+            'developer' => 'developer',
             'updateTime' => 'Update Time',
             'picStatus' => 'Pic Status',
-            'SupplierID' => 'Supplier ID',
-            'StoreID' => 'Store ID',
-            'AttributeName' => 'Attribute Name',
-            'bgoodsid' => 'Bgoodsid',
+            'supplierID' => 'Supplier ID',
+            'storeID' => 'Store ID',
+            'attributeName' => 'Attribute Name',
+            'bgoodsId' => 'BgoodsId',
             'completeStatus' => 'Complete Status',
             'isVar' => 'Is Var',
             'headKeywords' => 'Head Keywords',
             'requiredKeywords' => 'Required Keywords',
             'randomKeywords' => 'Random Keywords',
             'tailKeywords' => 'Tail Keywords',
-            'wishtags' => 'Wishtags',
+            'wishTags' => 'wishTags',
             'stockUp' => 'Stock Up',
             'picCompleteTime' => 'Pic Complete Time',
-            'goodsstatus' => 'Goodsstatus',
-            'stockdays' => 'Stockdays',
-            'wishpublish' => 'Wishpublish',
-            'number' => 'Number',
-            'mid' => 'Mid',
+            'goodsStatus' => 'Goods Status',
+            'stockDays' => 'Stock Days',
+            'wishPublish' => 'Wish Publish',
+            'number' => 'number',
+            'mid' => 'mid',
             'extendStatus' => 'Extend Status',
             'mapPersons' => 'Map Persons',
         ];
@@ -145,6 +147,6 @@ class OaGoodsinfo extends \yii\db\ActiveRecord
 
     public function getOaGoods()
     {
-        return $this->hasOne(OaGoods::className(),['nid'=>'goodsid']);
+        return $this->hasOne(OaGoods::className(),['nid'=>'goodsId']);
     }
 }

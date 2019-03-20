@@ -50,10 +50,12 @@ class ProductCenterTools
 
     /**
      * @brief 导入普源系统
+     * @param $infoId
+     * @return mixed
      */
     public static function importShopElf($infoId)
     {
-        $data = static::_preImport($infoId);
+        return static::_preImport($infoId);
     }
 
     /**
@@ -137,81 +139,96 @@ class ProductCenterTools
         return [$msg];
     }
     /**
-     * @brief 数据预处理
+     * @brief 数据预处理和数据导入事务
      * @param $infoId
      * @return array
      */
     private static function _preImport($infoId)
     {
-        $condition = ['id' => $infoId];
-        $goodsInfo = ApiGoodsinfo::getAttributeInfo($condition);
-        $skuInfo = $goodsInfo['skuInfo'];
-        $description = $goodsInfo['basicInfo']['goodsInfo']['description'];
-        $bGoods = static::_preGoodsInfo($goodsInfo);
-        $bGoodsSku = static::_preGoodsSkuInfo($skuInfo, $description);
-        $stock = static::_preCurrentStockInfo($skuInfo);
-        return [
-            'b_goods' => $bGoods,
-            'b_goodsSku' => $bGoodsSku,
-            'stock' => $stock,
-        ];
+        $db = Yii::$app->py_db;
+        $trans = $db->beginTransaction();
+        try {
+            $condition = ['id' => $infoId];
+            $goodsInfo = ApiGoodsinfo::getAttributeInfo($condition);
+            $skuInfo = $goodsInfo['skuInfo'];
+            $bGoods = static::_preGoodsInfo($goodsInfo);
+            $bGoods = static::_bGoodsImport($bGoods);
+            $bGoodsSku = static::_preGoodsSkuInfo($skuInfo, $bGoods);
+            $bGoodsSku = static::_bGoodsSkuImport($bGoodsSku);
+            $stock = static::_preCurrentStockInfo($bGoodsSku);
+            static::_stockImport($stock);
+            $trans->commit();
+            $msg = ['success!'];
+        }
+        catch (\Exception $why) {
+           $trans->rollBack();
+           $msg = ['failure'];
+        }
+        return $msg;
     }
 
     /**
      * @brief 导入到bGoods里面
-     * @param $data
+     * @param $goodsInfo
      * @return mixed
+     * @throws \Exception
      */
-    private static function _bgoodsImport($data)
+    private static function _bGoodsImport($goodsInfo)
     {
-        $goodsCode = $data['b_goods']['GoodsCode'];
+        $goodsCode = $goodsInfo['GoodsCode'];
         $bGoods = BGoods::findOne(['GoodsCode'=>$goodsCode]);
         if ($bGoods === null) {
             $bGoods = new BGoods();
         }
-        $bGoods->setAttributes($data['b_goods']);
+        $bGoods->setAttributes($goodsInfo);
         if(!$bGoods->save()) {
-            return false;
+            throw new \Exception('fail to import goods');
         }
-        return BGoods::find()->select('id')->where(['GoodsCode'=>$goodsCode])->asArray()->one();
-
+        $goodsInfo['goodsId'] = $bGoods['NID'];
+        return $goodsInfo;
     }
 
-    private static function _stockImport($data,$goodsId,$goodsSkuIds)
+    /**
+     * @brief 导入库存表
+     * @param $stock
+     * @throws \Exception
+     */
+    private static function _stockImport($stock)
     {
-        $stock = $data['stock'];
         foreach($stock as $stk) {
-            $currentStock = KCCurrentStock::findOne(['GoodsId'=>$data['goodsId'],'GoodsSKUID'=>$stk['goodsSkuId']]);
+            $currentStock = KCCurrentStock::findOne(['GoodsID'=>$stk['GoodsID'],'GoodsSKUID'=>$stk['GoodsSKUID']]);
             if($currentStock === null) {
                 $currentStock = new KCCurrentStock();
             }
-            $currentStock->setAttributes($stock);
+            $currentStock->setAttributes($stk);
             if(!$currentStock->save()) {
-                return false;
+                throw new \Exception('fail to import stock');
             }
         }
-        return true;
     }
 
     /**
      * @brief 导入到bGoodsSku里面
      * @param $data
      * @return mixed
+     * @throws \Exception
      */
-    private static function _bgoodsSkuImport($data)
+    private static function _bGoodsSkuImport($data)
     {
-        $goodsSku = $data['b_goodsSku']['sku'];
-        foreach($goodsSku as $sku) {
-            $bGoodsSku = BGoodsSku::findOne(['sku'=>$sku['sku']]);
+        $ret= [];
+        foreach($data as $sku) {
+            $bGoodsSku = BGoodsSku::findOne(['SKU'=>$sku['SKU']]);
             if($bGoodsSku === null) {
                 $bGoodsSku = new BGoodsSku();
             }
-            $bGoodsSku->setAttributes($data['b_goodsSku']['sku']);
+            $bGoodsSku->setAttributes($sku);
             if(!$bGoodsSku->save()) {
-                return false;
+                throw new \Exception('fail to import goodsSku');
             }
+            $sku['goodsSkuId'] = $bGoodsSku['NID'];
+            $ret[] = $sku;
         }
-        return BGoodsSku::find()->select('id')->where(['GoodsCode'=>$data['GoodsCode']])->asArray()->one();
+        return $ret;
     }
     /**
      * @brief B_Goods格式
@@ -221,40 +238,41 @@ class ProductCenterTools
     public static function _preGoodsInfo($goodsInfo)
     {
         $bGoods = [
-            'GoodsCategoryID' => $goodsInfo['basicInfo']['oaGoods']['cate'],
-            'CategoryCode' =>  $goodsInfo['basicInfo']['oaGoods']['subCate'],
-            'GoodsCode' =>  $goodsInfo['basicInfo']['goodsInfo']['GoodsCode'],
-            'GoodsName' =>  $goodsInfo['basicInfo']['goodsInfo']['GoodsName'],
-            'MultiStyle' => $goodsInfo['basicInfo']['goodsInfo']['isVar'],
-            'salePrice' =>  $goodsInfo['skuInfo'][0]['RetailPrice'],
-            'CostPrice' =>  $goodsInfo['skuInfo'][0]['CostPrice'],
-            'AliasCnName' => $goodsInfo['basicInfo']['goodsInfo']['AliasCnName'],
-            'AliasEnName' =>  $goodsInfo['basicInfo']['goodsInfo']['AliasEnName'],
-            'Weight' =>  $goodsInfo['skuInfo'][0]['Weight'],
+            'GoodsCategoryID' => '2', //$goodsInfo['basicInfo']['oaGoods']['cate'],
+            'CategoryCode' => '6', // $goodsInfo['basicInfo']['oaGoods']['subCate'],
+            'GoodsCode' =>  $goodsInfo['basicInfo']['goodsInfo']['GoodsCode']?:'',
+            'GoodsName' =>  $goodsInfo['basicInfo']['goodsInfo']['GoodsName']?:'',
+            'MultiStyle' =>1,// $goodsInfo['basicInfo']['goodsInfo']['isVar'],
+            'salePrice' =>  $goodsInfo['skuInfo'][0]['RetailPrice']?:0,
+            'CostPrice' =>  $goodsInfo['skuInfo'][0]['CostPrice']?:0,
+            'AliasCnName' => $goodsInfo['basicInfo']['goodsInfo']['AliasCnName']?:'',
+            'AliasEnName' =>  $goodsInfo['basicInfo']['goodsInfo']['AliasEnName']?:'',
+            'Weight' =>  $goodsInfo['skuInfo'][0]['Weight']?:0,
             'OriginCountry' => 'China',
             'OriginCountryCode' => 'CN',
-            'SupplierID' =>  $goodsInfo['basicInfo']['goodsInfo']['SupplierID'],
-            'SalerName ' =>  $goodsInfo['basicInfo']['goodsInfo']['developer'],
-            'PackName' =>  $goodsInfo['basicInfo']['goodsInfo']['PackName'],
+            'SupplierID' =>21,//  $goodsInfo['basicInfo']['goodsInfo']['SupplierID'],
+            'SalerName ' =>  $goodsInfo['basicInfo']['goodsInfo']['developer']?:'',
+            'PackName' =>  $goodsInfo['basicInfo']['goodsInfo']['PackName']?:'',
             'GoodsStatus' => '在售',
             'DevDate' =>  date('Y-m-d H:i:s'),
-            'RetailPrice' =>  $goodsInfo['skuInfo'][0]['RetailPrice'],
-            'StoreID' =>  $goodsInfo['basicInfo']['goodsInfo']['StoreID'],
-            'Purchaser' =>  $goodsInfo['basicInfo']['goodsInfo']['Purchaser'],
-            'LinkUrl' =>  $goodsInfo['basicInfo']['oaGoods']['vendor1'],
-            'LinkUrl2' =>  $goodsInfo['basicInfo']['oaGoods']['vendor2'],
-            'LinkUrl3' =>  $goodsInfo['basicInfo']['oaGoods']['vendor3'],
-            'IsCharged' => $goodsInfo['basicInfo']['goodsInfo']['IsCharged'],
-            'Season' =>  $goodsInfo['basicInfo']['goodsInfo']['Season'],
-            'IsPowder' =>  $goodsInfo['basicInfo']['goodsInfo']['IsPowder'],
-            'IsLiquid' =>  $goodsInfo['basicInfo']['goodsInfo']['IsLiquid'],
-            'possessMan1' =>  $goodsInfo['basicInfo']['goodsInfo']['possessMan1'],
-            'LinkUrl4' =>  $goodsInfo['basicInfo']['oaGoods']['origin1'],
-            'LinkUrl5' =>  $goodsInfo['basicInfo']['oaGoods']['origin2'],
-            'LinkUrl6' =>  $goodsInfo['basicInfo']['oaGoods']['origin3'],
-            'isMagnetism' =>  $goodsInfo['basicInfo']['goodsInfo']['isMagnetism'],
-            'DeclaredValue' =>  $goodsInfo['basicInfo']['goodsInfo']['DeclaredValue'],
-            'PackFee' => ''
+            'RetailPrice' =>  $goodsInfo['skuInfo'][0]['RetailPrice']?:0,
+            'StoreID' => 7,// $goodsInfo['basicInfo']['goodsInfo']['StoreID'],
+            'Purchaser' =>  $goodsInfo['basicInfo']['goodsInfo']['Purchaser']?:'',
+            'LinkUrl' =>  $goodsInfo['basicInfo']['oaGoods']['vendor1']?:'',
+            'LinkUrl2' =>  $goodsInfo['basicInfo']['oaGoods']['vendor2']?:'',
+            'LinkUrl3' =>  $goodsInfo['basicInfo']['oaGoods']['vendor3']?:'',
+            'IsCharged' =>1, // $goodsInfo['basicInfo']['goodsInfo']['IsCharged'],
+            'Season' =>  $goodsInfo['basicInfo']['goodsInfo']['Season']?:'',
+            'IsPowder' =>1,//  $goodsInfo['basicInfo']['goodsInfo']['IsPowder'],
+            'IsLiquid' =>1,//  $goodsInfo['basicInfo']['goodsInfo']['IsLiquid'],
+            'possessMan1' =>  $goodsInfo['basicInfo']['goodsInfo']['possessMan1']?:'',
+            'LinkUrl4' =>  $goodsInfo['basicInfo']['oaGoods']['origin1']?:'',
+            'LinkUrl5' =>  $goodsInfo['basicInfo']['oaGoods']['origin2']?:'',
+            'LinkUrl6' =>  $goodsInfo['basicInfo']['oaGoods']['origin3']?:'',
+            'isMagnetism' =>1,//  $goodsInfo['basicInfo']['goodsInfo']['isMagnetism'],
+            'DeclaredValue' =>  $goodsInfo['basicInfo']['goodsInfo']['DeclaredValue']?:0,
+            'PackFee' => 0,
+            'description' => $goodsInfo['basicInfo']['goodsInfo']['description']
         ];
         return $bGoods;
 
@@ -263,26 +281,26 @@ class ProductCenterTools
     /**
      * @brief B_goodsSku 格式处理
      * @param $skuInfo
-     * @param $description
+     * @param $bGoods
      * @return array
      */
-    public static function _preGoodsSkuInfo($skuInfo, $description)
+    public static function _preGoodsSkuInfo($skuInfo, $bGoods)
     {
         $bGoodsSku = [];
         foreach ($skuInfo as $skuRow) {
             $Sku = [
                 'sellCount' => 0,
-                'GoodsID' => '',
+                'GoodsID' => $bGoods['goodsId'],
                 'SKU' => $skuRow['sku'],
-                'property1' => $skuRow['property1'],
-                'property2' => $skuRow['property2'],
-                'property3' => $skuRow['property3'],
+                'property1' => $skuRow['property1']?:'',
+                'property2' => $skuRow['property2']?:'',
+                'property3' => $skuRow['property3']?:'',
                 'SKUName' => $skuRow['sku'] . $skuRow['property1'],
                 'BmpFileName' => 'http://121.196.233.153/images/' . $skuRow['sku'] . '.jpg',
-                'Remark' => $description,
-                'Weight' => $skuRow['Weight'],
-                'CostPrice' => $skuRow['CostPrice'],
-                'RetailPrice' => $skuRow['RetailPrice'],
+                'Remark' => $bGoods['description']?:'',
+                'Weight' => $skuRow['Weight']?:0,
+                'CostPrice' => $skuRow['CostPrice']?:0,
+                'RetailPrice' => $skuRow['RetailPrice']?:0,
                 'GoodsSKUStatus' => '在售',
             ];
             $bGoodsSku[] = $Sku;
@@ -300,9 +318,9 @@ class ProductCenterTools
         $stock = [];
         foreach ($skuInfo as $skuRow) {
             $currentStock = [
-                'StoreID' =>'',
-                'GoodsSKUID' => $skuRow['sku'],
-                'GoodsID' =>'',
+                'StoreID' =>'7',
+                'GoodsSKUID' => $skuRow['goodsSkuId'],
+                'GoodsID' =>$skuRow['GoodsID'],
                 'Number' =>0,
                 'Money' =>0,
                 'Price' =>0,
