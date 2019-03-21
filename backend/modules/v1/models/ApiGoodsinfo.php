@@ -67,21 +67,21 @@ class ApiGoodsinfo
         if(isset($condition['achieveStatus'])) $query->andFilterWhere(['like', 'achieveStatus', $condition['achieveStatus']]);
         if(isset($condition['goodsName'])) $query->andFilterWhere(['like', 'goodsName', $condition['goodsName']]);
         if(isset($condition['developer'])) $query->andFilterWhere(['like', 'developer', $condition['developer']]);
-        if(isset($condition['AliasCnName'])) $query->andFilterWhere(['like', 'AliasCnName', $condition['AliasCnName']]);
-        if(isset($condition['AliasEnName'])) $query->andFilterWhere(['like', 'AliasEnName', $condition['AliasEnName']]);
+        if(isset($condition['aliasCnName'])) $query->andFilterWhere(['like', 'aliasCnName', $condition['aliasCnName']]);
+        if(isset($condition['aliasEnName'])) $query->andFilterWhere(['like', 'aliasEnName', $condition['aliasEnName']]);
         if(isset($condition['stockUp'])) $query->andFilterWhere(['stockUp' => $condition['stockUp']]);
-        if(isset($condition['IsLiquid'])) $query->andFilterWhere(['IsLiquid' => $condition['IsLiquid']]);
-        if(isset($condition['IsPowder'])) $query->andFilterWhere(['IsPowder' => $condition['IsPowder']]);
+        if(isset($condition['isLiquid'])) $query->andFilterWhere(['isLiquid' => $condition['isLiquid']]);
+        if(isset($condition['isPowder'])) $query->andFilterWhere(['isPowder' => $condition['isPowder']]);
         if(isset($condition['isMagnetism'])) $query->andFilterWhere(['isMagnetism' => $condition['isMagnetism']]);
-        if(isset($condition['IsCharged'])) $query->andFilterWhere(['IsCharged' => $condition['IsCharged']]);
-        if(isset($condition['IsCharged'])) $query->andFilterWhere(['IsCharged' => $condition['IsCharged']]);
+        if(isset($condition['isCharged'])) $query->andFilterWhere(['isCharged' => $condition['isCharged']]);
+        if(isset($condition['isVar'])) $query->andFilterWhere(['isVar' => $condition['isVar']]);
+        if($condition['devDatetime'])$query->andFilterWhere(['between', "date_format(devDatetime,'%Y-%m-%d')", $condition['devDatetime'][0], $condition['devDatetime'][1]]);
+        if($condition['updateTime'])$query->andFilterWhere(['between', "date_format(updateTime,'%Y-%m-%d')", $condition['updateTime'][0], $condition['updateTime'][1]]);
         $query->orderBy('id DESC');
 
         $provider = new ActiveDataProvider([
             'query' => $query,
-            //'db' => Yii::$app->db,
             'pagination' => [
-                //'pageParam' => $page,
                 'pageSize' => $pageSize,
                 'Page' => $currentPage -1
             ],
