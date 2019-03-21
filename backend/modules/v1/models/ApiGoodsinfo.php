@@ -75,8 +75,8 @@ class ApiGoodsinfo
         if(isset($condition['isMagnetism'])) $query->andFilterWhere(['isMagnetism' => $condition['isMagnetism']]);
         if(isset($condition['isCharged'])) $query->andFilterWhere(['isCharged' => $condition['isCharged']]);
         if(isset($condition['isVar'])) $query->andFilterWhere(['isVar' => $condition['isVar']]);
-        if(isset($condition['devDatetime']))$query->andFilterWhere(['between', "date_format(devDatetime,'%Y-%m-%d')", $condition['devDatetime'][0], $condition['devDatetime'][1]]);
-        if(isset($condition['updateTime']))$query->andFilterWhere(['between', "date_format(updateTime,'%Y-%m-%d')", $condition['updateTime'][0], $condition['updateTime'][1]]);
+        if(isset($condition['devDatetime']) && !empty($condition['devDatetime']))$query->andFilterWhere(['between', "date_format(devDatetime,'%Y-%m-%d')", $condition['devDatetime'][0], $condition['devDatetime'][1]]);
+        if(isset($condition['updateTime']) && !empty($condition['updateTime']))$query->andFilterWhere(['between', "date_format(updateTime,'%Y-%m-%d')", $condition['updateTime'][0], $condition['updateTime'][1]]);
         $query->orderBy('id DESC');
 
         $provider = new ActiveDataProvider([
