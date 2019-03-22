@@ -70,7 +70,7 @@ class ApiGoodsinfo
         if(isset($condition['developer'])) $query->andFilterWhere(['like', 'developer', $condition['developer']]);
         if(isset($condition['aliasCnName'])) $query->andFilterWhere(['like', 'aliasCnName', $condition['aliasCnName']]);
         if(isset($condition['aliasEnName'])) $query->andFilterWhere(['like', 'aliasEnName', $condition['aliasEnName']]);
-        if(isset($condition['stockUp'])) $query->andFilterWhere(['stockUp' => $condition['stockUp']]);
+        if(isset($condition['stockUp'])) $query->andFilterWhere(['oa_goodsinfo.stockUp' => $condition['stockUp']]);
         if(isset($condition['isLiquid'])) $query->andFilterWhere(['isLiquid' => $condition['isLiquid']]);
         if(isset($condition['isPowder'])) $query->andFilterWhere(['isPowder' => $condition['isPowder']]);
         if(isset($condition['isMagnetism'])) $query->andFilterWhere(['isMagnetism' => $condition['isMagnetism']]);
