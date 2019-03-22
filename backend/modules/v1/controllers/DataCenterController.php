@@ -240,12 +240,16 @@ class DataCenterController extends AdminController
         return ApiDataCenter::getDelayDeliveryData($condition, 1);
     }
 
+
+
     /**
      * Date: 2019-03-04 13:12
      * Author: henry
      * @return array
      * @throws \Exception
      */
+
+    /*
     public function actionDelayShip()
     {
         $request = Yii::$app->request->post();
@@ -269,6 +273,7 @@ class DataCenterController extends AdminController
         //print_r($condition);exit;
         return ApiDataCenter::getDelayShipData($condition);
     }
+    */
 
 
 }
