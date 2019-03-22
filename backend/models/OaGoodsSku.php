@@ -13,15 +13,15 @@ use Yii;
  * @property string $property1
  * @property string $property2
  * @property string $property3
- * @property string $Weight
+ * @property string $weight
  * @property string $memo1
  * @property string $memo2
  * @property string $memo3
  * @property string $memo4
- * @property string $linkurl
- * @property int $goodsskuid
- * @property string $RetailPrice
- * @property string $CostPrice
+ * @property string $linkUrl
+ * @property int $goodsSkuId
+ * @property string $retailPrice
+ * @property string $costPrice
  * @property int $stockNum
  * @property int $did
  * @property string $joomPrice
@@ -43,10 +43,10 @@ class OaGoodsSku extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['infoId', 'goodsskuid', 'stockNum', 'did'], 'integer'],
+            [['infoId', 'goodsSkuId', 'stockNum', 'did'], 'integer'],
             [['sku'], 'required'],
-            [['Weight', 'RetailPrice', 'CostPrice', 'joomPrice', 'joomShipping'], 'number'],
-            [['sku', 'property1', 'property2', 'property3', 'memo1', 'memo2', 'memo3', 'memo4', 'linkurl'], 'string', 'max' => 255],
+            [['weight', 'retailPrice', 'costPrice', 'joomPrice', 'joomShipping'], 'number'],
+            [['sku', 'property1', 'property2', 'property3', 'memo1', 'memo2', 'memo3', 'memo4', 'linkUrl'], 'string', 'max' => 255],
         ];
     }
 
@@ -62,15 +62,15 @@ class OaGoodsSku extends \yii\db\ActiveRecord
             'property1' => 'Property1',
             'property2' => 'Property2',
             'property3' => 'Property3',
-            'Weight' => 'Weight',
+            'weight' => 'weight',
             'memo1' => 'Memo1',
             'memo2' => 'Memo2',
             'memo3' => 'Memo3',
             'memo4' => 'Memo4',
-            'linkurl' => 'Linkurl',
-            'goodsskuid' => 'Goodsskuid',
-            'RetailPrice' => 'Retail Price',
-            'CostPrice' => 'Cost Price',
+            'linkUrl' => 'Linkurl',
+            'goodsSkuId' => 'Goodsskuid',
+            'retailPrice' => 'Retail Price',
+            'costPrice' => 'Cost Price',
             'stockNum' => 'Stock Num',
             'did' => 'Did',
             'joomPrice' => 'Joom Price',

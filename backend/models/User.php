@@ -4,6 +4,8 @@ namespace backend\models;
 
 use Yii;
 use yii\web\IdentityInterface;
+use backend\models\AuthAssignment;
+
 
 /**
  * This is the model class for table "user".
@@ -114,6 +116,7 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
      * 为model的password_hash字段生成密码的hash值
      *
      * @param string $password
+     * @throws \Exception
      */
     public function setPassword($password)
     {
@@ -123,6 +126,7 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
 
     /**
      * 生成 "remember me" 认证key
+     * @throws \Exception
      */
     public function generateAuthKey()
     {
@@ -152,5 +156,13 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
     }
 
 
+    /**
+     * @brief join with AuthAssignment
+     * @return \yii\db\ActiveQuery
+     */
+    public function getAuthAssignment()
+    {
+        return $this->hasMany(AuthAssignment::className(),['user_id'=>'id']);
+    }
 
 }

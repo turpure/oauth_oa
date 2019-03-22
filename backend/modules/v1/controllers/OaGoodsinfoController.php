@@ -18,9 +18,10 @@ namespace backend\modules\v1\controllers;
 
 use backend\modules\v1\models\ApiGoodsinfo;
 use backend\modules\v1\utils\ProductCenterTools;
+use backend\modules\v1\utils\AttributeInfoTools;
 use yii\data\ActiveDataProvider;
 use Yii;
-
+use yii\helpers\ArrayHelper;
 
 
 class OaGoodsinfoController extends AdminController
@@ -46,7 +47,7 @@ class OaGoodsinfoController extends AdminController
     }
 
     /**
-     * get one attribute
+     * @brief get one attribute
      * @return mixed
      */
     public function actionAttribute()
@@ -61,6 +62,91 @@ class OaGoodsinfoController extends AdminController
             return ApiGoodsinfo::deleteAttributeById($id);
         }
     }
+
+
+    /**
+     * @brief Attribute info to edit
+     * @return array
+     * @throws \Exception
+     */
+    public function actionAttributeInfo()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        return ApiGoodsinfo::getAttributeInfo($condition);
+    }
+
+    /**
+     * @brief get package name
+     * @return array
+     */
+    public function actionAttributeInfoPackName()
+    {
+        return AttributeInfoTools::getPackageNames();
+    }
+
+
+    /**
+     * @brief get store name
+     * @return array
+     */
+    public function actionAttributeInfoStoreName()
+    {
+        return AttributeInfoTools::getStoreName();
+    }
+
+    public function actionAttributeInfoSeason()
+    {
+        return AttributeInfoTools::getSeason();
+    }
+    /**
+     * @brief get special attributes
+     * @return array
+     */
+    public function actionAttributeInfoSpecialAttribute()
+    {
+        return AttributeInfoTools::getSpecialAttributes();
+    }
+
+    /**
+     * @brief get plat
+     * @return array
+     */
+    public function actionAttributeInfoPlat()
+    {
+        return AttributeInfoTools::getPlat();
+    }
+
+    /**
+     * @brief get cat
+     * @return array
+     */
+    public function actionAttributeInfoCat()
+    {
+        return AttributeInfoTools::getCat();
+    }
+
+    /**
+     * @brief get subCat
+     * @return array
+     */
+    public function actionAttributeInfoSubCat()
+    {
+        return AttributeInfoTools::getSubCat();
+    }
+
+    /**
+     * @brief get salesman
+     * @return array
+     */
+    public function actionAttributeInfoSalesman()
+    {
+        return AttributeInfoTools::getSalesman();
+    }
+
 
     /**
      * @brief import attribute entry into shopElf
@@ -95,7 +181,7 @@ class OaGoodsinfoController extends AdminController
      * @return array
      * @throws \Exception
      */
-    public function actionSaveAttribute()
+    public function actionSaveAttributeInfo()
     {
         $request = Yii::$app->request;
         if (!$request->isPost) {
@@ -105,20 +191,6 @@ class OaGoodsinfoController extends AdminController
         return ApiGoodsinfo::saveAttribute($condition);
     }
 
-    /**
-     * @brief Attribute info to edit
-     * @return array
-     * @throws \Exception
-     */
-    public function actionAttributeInfo()
-    {
-        $request = Yii::$app->request;
-        if (!$request->isPost) {
-            return [];
-        }
-        $condition = $request->post()['condition'];
-        return ApiGoodsinfo::getAttributeInfo($condition);
-    }
 
     /**
      * @return array
