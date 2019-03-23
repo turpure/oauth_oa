@@ -59,6 +59,7 @@ class ApiGoodsinfo
             $query->where(['filterType' => self::PictureInfo]);
         }
         elseif ($type === 'plat-info') {
+            $query->joinWith('oaGoods')->asArray();
             $query->where(['filterType' => self::PlatInfo]);
         }
         else {
