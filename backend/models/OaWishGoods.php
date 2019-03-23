@@ -8,7 +8,7 @@ use Yii;
  * This is the model class for table "proCenter.oa_wishGoods".
  *
  * @property int $id
- * @property string $SKU
+ * @property string $sku
  * @property string $title
  * @property string $description
  * @property int $inventory
@@ -47,7 +47,7 @@ class OaWishGoods extends \yii\db\ActiveRecord
             [['description', 'extraImages','stockUp'], 'string'],
             [['inventory', 'goodsId', 'infoId',], 'integer'],
             [['price', 'msrp', 'shipping'], 'number'],
-            [['SKU'], 'string', 'max' => 50],
+            [['sku'], 'string', 'max' => 50],
             [['title', 'mainImage'], 'string', 'max' => 2000],
             [['shippingTime', 'headKeywords', 'tailKeywords'], 'string', 'max' => 20],
             [['tags', 'wishTags'], 'string', 'max' => 500],
@@ -62,7 +62,7 @@ class OaWishGoods extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'SKU' => 'Sku',
+            'sku' => 'Sku',
             'title' => 'Title',
             'description' => 'Description',
             'inventory' => 'Inventory',

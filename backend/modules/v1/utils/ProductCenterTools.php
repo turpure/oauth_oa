@@ -350,7 +350,7 @@ class ProductCenterTools
     private static function _goodsInfoToWishGoods($goodsInfo)
     {
         $wishGoodsAttributes = [
-            'SKU' => $goodsInfo['goodsCode'],
+            'sku' => $goodsInfo['goodsCode'],
             'title' => '',
             'description' => $goodsInfo['description'],
             'inventory' => 10000,
