@@ -219,6 +219,18 @@ class OaGoodsinfoController extends AdminController
         return ApiGoodsinfo::getOaGoodsInfoList($condition);
     }
 
+    public function actionPicture()
+    {
+        $request = Yii::$app->request;
+        if ($request->isPost) {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiGoodsinfo::getAttributeById($condition);
+        }
+        if ($request->isDelete) {
+            $id = Yii::$app->request->get()['id'];
+            return ApiGoodsinfo::deleteAttributeById($id);
+        }
+    }
     /**
      * @brief 图片信息明细
      * @return array|mixed
