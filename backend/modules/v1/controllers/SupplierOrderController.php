@@ -39,7 +39,7 @@ class SupplierOrderController extends AdminController
      * Author: henry
      * @return \yii\data\ActiveDataProvider
      */
-    public static function actionSupplierOrderList()
+    public function actionSupplierOrderList()
     {
         $condition = Yii::$app->request->post()['condition'];
         return ApiSupplierOrder::getOaSupplierOrderList($condition);
