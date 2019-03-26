@@ -13,11 +13,13 @@ use backend\models\OaEbayGoods;
 use backend\models\OaEbayGoodsSku;
 use backend\models\OaWishGoods;
 use backend\models\OaWishGoodsSku;
+use backend\models\ShopElf\BDictionary;
 use backend\models\ShopElf\BGoods;
 use backend\models\ShopElf\BGoodsSku;
 use backend\models\ShopElf\KCCurrentStock;
 use backend\modules\v1\models\ApiGoodsinfo;
 use Yii;
+use yii\helpers\ArrayHelper;
 
 class ProductCenterTools
 {
@@ -562,4 +564,15 @@ class ProductCenterTools
        return json_encode($ret);
    }
 
+
+    /**
+     * @brief 产品状态
+     * @return array
+     */
+   public static function getGoodsStatus()
+   {
+       $ret = BDictionary::findAll(['CategoryID'  => 15]);
+       return ArrayHelper::getColumn($ret,'DictionaryName');
+
+   }
 }

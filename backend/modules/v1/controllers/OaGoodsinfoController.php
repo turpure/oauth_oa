@@ -352,6 +352,10 @@ class OaGoodsinfoController extends AdminController
         return ApiGoodsinfo::saveEbayInfo($condition);
     }
 
+    /**
+     * @brief 标记完善
+     * @return array
+     */
     public function actionFinishPlat()
     {
         $request = Yii::$app->request;
@@ -360,5 +364,23 @@ class OaGoodsinfoController extends AdminController
         }
         $condition = $request->post()['condition'];
         return ApiGoodsinfo::finishPlat($condition);
+    }
+
+    /**
+     * @brief 产品状态
+     * @return array
+     */
+    public function actionPlatGoodsStatus()
+    {
+        return ProductCenterTools::getGoodsStatus();
+    }
+
+    /**
+     * @brief 完善的平台
+     * @return array
+     */
+    public function actionPlatCompletedPlat()
+    {
+        return ['joom','wish', 'ebay'];
     }
 }
