@@ -383,4 +383,13 @@ class OaGoodsinfoController extends AdminController
     {
         return ['joom','wish', 'ebay'];
     }
+
+    /**
+     * @brief 所有的ebay账号
+     * @return array
+     */
+    public function actionPlatEbayAccount()
+    {
+        return ApiGoodsinfo::getEbayAccount();
+    }
 }

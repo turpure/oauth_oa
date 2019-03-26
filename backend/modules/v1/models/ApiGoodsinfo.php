@@ -24,8 +24,10 @@ use backend\models\OaGoodsinfo;
 use backend\models\OaGoodsSku;
 use backend\models\OaWishGoods;
 use backend\models\OaWishGoodsSku;
+use backend\models\OaEbaySuffix;
 use yii\data\ActiveDataProvider;
 use backend\modules\v1\utils\ProductCenterTools;
+use yii\helpers\ArrayHelper;
 
 
 class ApiGoodsinfo
@@ -376,5 +378,15 @@ class ApiGoodsinfo
             return ['failure'];
         }
         return ['success'];
+    }
+
+    /**
+     * @brief get all ebay accounts
+     * @return array
+     */
+    public static function getEbayAccount()
+    {
+        $ret = OaEbaySuffix::find()->select('ebaySuffix,ebayName')->all();
+        return ArrayHelper::map($ret,'ebayName','ebaySuffix');
     }
 }
