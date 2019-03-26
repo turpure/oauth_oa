@@ -22,7 +22,7 @@ use Yii;
  * @property string $link6
  * @property string $paymentDays
  * @property string $payChannel
- * @property string $purchase
+ * @property string $purchaser
  * @property string $createTime
  * @property string $updateTime
  * @property int $supplierId 关联普源供的应商ID
@@ -46,7 +46,7 @@ class OaSupplier extends \yii\db\ActiveRecord
             [['createTime', 'updateTime'], 'safe'],
             [['supplierId'], 'integer'],
             [['supplierName', 'address', 'link1', 'link2', 'link3', 'link4', 'link5', 'link6'], 'string', 'max' => 255],
-            [['contactPerson1', 'phone1', 'contactPerson2', 'phone2', 'paymentDays', 'payChannel', 'purchase'], 'string', 'max' => 50],
+            [['contactPerson1', 'phone1', 'contactPerson2', 'phone2', 'paymentDays', 'payChannel', 'purchaser'], 'string', 'max' => 50],
         ];
     }
 
@@ -71,7 +71,7 @@ class OaSupplier extends \yii\db\ActiveRecord
             'link6' => 'Link6',
             'paymentDays' => 'Payment Days',
             'payChannel' => 'Pay Channel',
-            'purchase' => 'Purchase',
+            'purchaser' => 'Purchaser',
             'createTime' => 'create Time',
             'updateTime' => 'update Time',
             'supplierId' => 'Supplier ID',

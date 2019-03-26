@@ -21,6 +21,9 @@ namespace backend\modules\v1\models;
 use backend\models\OaSupplier;
 use backend\models\OaSupplierGoods;
 use backend\models\OaSupplierGoodsSku;
+use backend\models\User;
+use mdm\admin\models\Department;
+use mdm\admin\models\DepartmentChild;
 use yii\data\ActiveDataProvider;
 use Yii;
 use yii\helpers\ArrayHelper;
@@ -70,6 +73,7 @@ class ApiSupplier
         $out['results'] = array_map([$this, 'format'], $res);
         return $out;
     }
+
     private function format($data)
     {
         $result = [];
@@ -89,7 +93,7 @@ class ApiSupplier
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
         $query = OaSupplier::find();
 
-        if (isset($condition['purchase'])) $query->andFilterWhere(['like', 'purchase', $condition['purchase']]);
+        if (isset($condition['purchaser'])) $query->andFilterWhere(['like', 'purchaser', $condition['purchaser']]);
         if (isset($condition['supplierName'])) $query->andFilterWhere(['like', 'supplierName', $condition['supplierName']]);
         if (isset($condition['contactPerson1'])) $query->andFilterWhere(['like', 'contactPerson1', $condition['contactPerson1']]);
         if (isset($condition['phone1'])) $query->andFilterWhere(['like', 'phone1', $condition['phone1']]);
@@ -149,20 +153,36 @@ class ApiSupplier
      */
     public static function createSupplier($condition)
     {
-        $model = new OaSupplier();
-
-        $model->attributes = $condition;
-        if (!isset($condition['createTime']) || !$condition['createTime']) $model->createTime = date('Y-m-d H:i:s');
-        $res = $model->save();
-        if ($res) {
-            return true;
+        //判断当前采购的最大创建数量
+        //$user = Yii::$app->user->identity->username;
+        $user = $condition['purchaser'];
+        $userModel = User::findOne(['username' => $user]);
+        $num = OaSupplier::find()->andWhere(['purchaser' => $user])->count();
+        //获取部门
+        $departChild = DepartmentChild::findOne(['user_id' => $userModel['id']]);
+        $depart = Department::findOne(['id' => $departChild['department_id']]);
+        if ($depart['type'] == '供应链' && $num < $userModel['maxSupplierNum']) {
+            $model = new OaSupplier();
+            $supplierId = Yii::$app->py_db->createCommand("SELECT nid FROM B_supplier WHERE supplierName LIKE '%" . $condition['supplierName'] . "%'")->queryOne();
+            $model->attributes = $condition;
+            $model->supplierId = $supplierId['nid'];
+            if (!isset($condition['createTime']) || !$condition['createTime']) $model->createTime = date('Y-m-d H:i:s');
+            $res = $model->save();
+            if ($res) {
+                return true;
+            } else {
+                return [
+                    'code' => 400,
+                    'message' => 'failed'
+                ];
+            }
         } else {
             return [
                 'code' => 400,
-                //'message' => array_values($model->getErrors())[0][0],
-                'message' => 'failed'
+                'message' => 'The user can not add new suppliers'
             ];
         }
+
     }
 
     /**
@@ -178,8 +198,9 @@ class ApiSupplier
             return false;
         }
         $model = OaSupplier::findOne($id);
-
+        $supplierId = Yii::$app->db->createCommand("SELECT nid FROM B_supplier WHERE supplierName LIKE '%" . $condition['supplierName'] . "%'")->queryOne();
         $model->attributes = $condition;
+        $model->supplierId = $supplierId['nid'];
         if (!isset($condition['updateTime']) || !$condition['updateTime']) $model->updateTime = date('Y-m-d H:i:s');
         $res = $model->save();
         if ($res) {
@@ -276,25 +297,39 @@ class ApiSupplier
 
     /** 创建供应商信息
      * @param $condition
-     * Date: 2019-03-14 17:52
+     * Date: 2019-03-26 16:02
      * Author: henry
      * @return array|bool
+     * @throws \yii\db\Exception
      */
     public static function createSupplierGoods($condition)
     {
-        $model = new OaSupplierGoods();
-        $model->attributes = $condition;
-        if (!isset($condition['createdTime']) || !$condition['createdTime']) $model->createdTime = date('Y-m-d H:i:s');
-        $res = $model->save();
-        if ($res) {
-            return true;
-        } else {
-            return [
+        $db = Yii::$app->db;
+        $tran = $db->transaction;
+        try{
+            $model = new OaSupplierGoods();
+            $model->attributes = $condition;
+            if (!isset($condition['createdTime']) || !$condition['createdTime']) $model->createdTime = date('Y-m-d H:i:s');
+            if (!$model->save()) {
+                throw new \Exception('failed');
+            }
+            $goodsCode = $model->goodsCode;
+            $supplierGoodsId = $model->id;
+            $sql = "P_oa_SkuToSupplierGoodsSku '$goodsCode','$supplierGoodsId' ";
+            $res = Yii::$app->db->createCommand($sql)->execute();
+            if (!$res) {
+                throw new \Exception('failed');
+            }
+            $tran->commit();
+            $ret = true;
+        }catch (\Exception $e){
+            $tran->rollBack();
+            $ret = [
                 'code' => 400,
-                //'message' => array_values($model->getErrors())[0][0],
-                'message' => 'failed'
+                'message' => $e->getMessage()
             ];
         }
+        return $ret;
     }
 
     /**
@@ -339,7 +374,7 @@ class ApiSupplier
         $trans = Yii::$app->db->beginTransaction();
         try {
             foreach ($ids as $row) {
-                if ($row['id']){
+                if ($row['id']) {
                     $sku = OaSupplierGoodsSku::findOne(['id' => $row['id']]);
                     if (!empty($sku)) {
                         $sku->setAttributes($row);
@@ -347,7 +382,7 @@ class ApiSupplier
                             throw new \Exception('保存失败！');
                         }
                     }
-                }else{
+                } else {
                     $sku = new OaSupplierGoodsSku();
                     $sku->setAttributes($row);
                     if (!$sku->save()) {

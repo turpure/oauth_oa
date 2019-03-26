@@ -160,11 +160,12 @@ class SupplierController extends AdminController
         }
         return true;
     }
-    /**
-     * 创建供应商产品
-     * Date: 2019-03-14 16:55
+
+    /** 创建供应商产品
+     * Date: 2019-03-26 16:12
      * Author: henry
-     * @return bool|string
+     * @return array|bool
+     * @throws \yii\db\Exception
      */
     public function actionCreateGoods()
     {

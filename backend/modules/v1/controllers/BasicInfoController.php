@@ -19,6 +19,7 @@ namespace backend\modules\v1\controllers;
 use backend\models\OaEbaySuffix;
 use backend\models\OaJoomSuffix;
 use backend\models\OaShippingService;
+use backend\models\OaSysRules;
 use backend\models\OaWishSuffix;
 use backend\modules\v1\models\ApiBasicInfo;
 use Yii;
@@ -213,6 +214,54 @@ class BasicInfoController extends AdminController
         if (!$id) return false;
         return OaShippingService::deleteAll(['id' => $id]);
     }
+
+    ##############################   sys  rules ###############################
+
+    /** get joom suffix list
+     * Date: 2019-03-25 16:49
+     * Author: henry
+     * @return \yii\data\ActiveDataProvider
+     */
+    public function actionSysRules()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiBasicInfo::getSysRulesList($condition);
+    }
+
+
+    /**
+     * Date: 2019-03-25 17:06
+     * Author: henry
+     * @return array|\backend\models\OaShippingService
+     */
+    public function actionCreateRules(){
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiBasicInfo::createSysRules($condition);
+    }
+
+    /**
+     * Date: 2019-03-25 17:13
+     * Author: henry
+     * @return array|bool|null|static
+     */
+    public function actionUpdateRules(){
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiBasicInfo::updateSysRules($condition);
+    }
+
+    /**
+     * Date: 2019-03-25 17:17
+     * Author: henry
+     * @return bool|int
+     */
+    public function actionDeleteRules(){
+        $condition = Yii::$app->request->post()['condition'];
+        $id = isset($condition['id'])?$condition['id']:'';
+        if (!$id) return false;
+        return OaSysRules::deleteAll(['id' => $id]);
+    }
+
+
 
 
 }

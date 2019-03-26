@@ -20,6 +20,7 @@ namespace backend\modules\v1\models;
 use backend\models\OaEbaySuffix;
 use backend\models\OaJoomSuffix;
 use backend\models\OaShippingService;
+use backend\models\OaSysRules;
 use backend\models\OaWishSuffix;
 use yii\data\ActiveDataProvider;
 
@@ -179,8 +180,6 @@ class ApiBasicInfo
         }
     }
 
-
-
     ##############################   joom suffix   ###############################
 
     /** get joom suffix list
@@ -269,11 +268,10 @@ class ApiBasicInfo
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
         $query = OaShippingService::find();
-        if(isset($condition['joomName'])) $query->andFilterWhere(['like', 'joomName', $condition['joomName']]);
-        if(isset($condition['joomSuffix'])) $query->andFilterWhere(['like', 'joomSuffix', $condition['joomSuffix']]);
-        if(isset($condition['imgCode'])) $query->andFilterWhere(['like', 'imgCode', $condition['imgCode']]);
-        if(isset($condition['mainImg'])) $query->andFilterWhere(['like', 'mainImg', $condition['mainImg']]);
-        if(isset($condition['skuCode'])) $query->andFilterWhere(['like', 'skuCode', $condition['skuCode']]);
+        if(isset($condition['servicesName'])) $query->andFilterWhere(['like', 'servicesName', $condition['servicesName']]);
+        if(isset($condition['type'])) $query->andFilterWhere(['like', 'type', $condition['type']]);
+        if(isset($condition['site'])) $query->andFilterWhere(['like', 'site', $condition['site']]);
+        if(isset($condition['ibayShipping'])) $query->andFilterWhere(['like', 'ibayShipping', $condition['ibayShipping']]);
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
@@ -332,4 +330,80 @@ class ApiBasicInfo
             ];
         }
     }
+
+    ##############################   sys rules  ###############################
+
+    /** get joom suffix list
+     * @param $condition
+     * Date: 2019-03-25 16:56
+     * Author: henry
+     * @return ActiveDataProvider
+     */
+    public static function getSysRulesList($condition)
+    {
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
+        $query = OaSysRules::find();
+        if(isset($condition['ruleName'])) $query->andFilterWhere(['like', 'ruleName', $condition['ruleName']]);
+        if(isset($condition['ruleKey'])) $query->andFilterWhere(['like', 'ruleKey', $condition['ruleKey']]);
+        if(isset($condition['ruleValue'])) $query->andFilterWhere(['like', 'ruleValue', $condition['ruleValue']]);
+        if(isset($condition['ruleType'])) $query->andFilterWhere(['like', 'ruleType', $condition['ruleType']]);
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => [
+                'pageSize' => isset($pageSize) && $pageSize ? $pageSize   : 20,
+            ],
+        ]);
+
+        $dataProvider->setSort([
+            'defaultOrder' => [
+                'id' => SORT_DESC,
+            ],
+        ]);
+        return $dataProvider;
+    }
+
+    /**
+     * @param $condition
+     * Date: 2019-03-25 17:02
+     * Author: henry
+     * @return array|OaEbaySuffix
+     */
+    public static function createSysRules($condition)
+    {
+        $model = new OaSysRules();
+        $model->attributes = $condition;
+        $res = $model->save();
+        if($res){
+            return $model;
+        }else{
+            return [
+                'code' => 400,
+                'message' => $model->getErrors()[0]
+            ];
+        }
+    }
+
+    /**
+     * @param $condition
+     * Date: 2019-03-25 17:11
+     * Author: henry
+     * @return array|bool|null|static
+     */
+    public static function updateSysRules($condition)
+    {
+        $id = isset($condition['id'])?$condition['id']:'';
+        if (!$id) return false;
+        $model = OaSysRules::findOne($id);
+        $model->attributes = $condition;
+        $res = $model->save();
+        if($res){
+            return $model;
+        }else{
+            return [
+                'code' => 400,
+                'message' => $model->getErrors()[0]
+            ];
+        }
+    }
+
 }
