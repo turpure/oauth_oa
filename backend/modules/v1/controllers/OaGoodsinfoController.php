@@ -402,4 +402,28 @@ class OaGoodsinfoController extends AdminController
     {
         return ApiGoodsinfo::getEbayStore();
     }
+
+    /**
+     * @brief 导出ebay模板
+     */
+    public function actionPlatExportWish()
+    {
+
+    }
+
+    /**
+     * @brief 导出ebay模板
+     */
+    public function actionPlatExportEbay()
+    {
+
+    }
+
+    /**
+     * @brief 导出wish模板
+     */
+    public function actionPlatExportJoom()
+    {
+
+    }
 }
