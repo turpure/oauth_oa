@@ -389,4 +389,15 @@ class ApiGoodsinfo
         $ret = OaEbaySuffix::find()->select('ebaySuffix,ebayName')->all();
         return ArrayHelper::map($ret,'ebayName','ebaySuffix');
     }
+
+    /**
+     * @brief get all ebay stores
+     * @return array
+     */
+    public static function getEbayStore()
+    {
+        $ret = OaEbaySuffix::find()->select('storeCountry')
+            ->distinct()->all();
+        return ArrayHelper::getColumn($ret, 'storeCountry');
+    }
 }

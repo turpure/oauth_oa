@@ -392,4 +392,14 @@ class OaGoodsinfoController extends AdminController
     {
         return ApiGoodsinfo::getEbayAccount();
     }
+
+
+    /**
+     * @brief 所有的eBay仓库
+     * @return array
+     */
+    public function actionPlatEbayStore()
+    {
+        return ApiGoodsinfo::getEbayStore();
+    }
 }
