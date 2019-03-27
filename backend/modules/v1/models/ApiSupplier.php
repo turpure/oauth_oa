@@ -305,7 +305,7 @@ class ApiSupplier
     public static function createSupplierGoods($condition)
     {
         $db = Yii::$app->db;
-        $tran = $db->transaction;
+        $tran = $db->beginTransaction;
         try{
             $model = new OaSupplierGoods();
             $model->attributes = $condition;
