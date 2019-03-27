@@ -19,6 +19,7 @@ namespace backend\modules\v1\models;
 
 use backend\models\OaEbaySuffix;
 use backend\models\OaJoomSuffix;
+use backend\models\OaJoomToWish;
 use backend\models\OaShippingService;
 use backend\models\OaSysRules;
 use backend\models\OaWishSuffix;
@@ -140,7 +141,7 @@ class ApiBasicInfo
      * @param $condition
      * Date: 2019-03-25 15:40
      * Author: henry
-     * @return array|OaEbaySuffix
+     * @return array|OaWishSuffix
      */
     public static function createWishSuffix($condition)
     {
@@ -216,7 +217,7 @@ class ApiBasicInfo
      * @param $condition
      * Date: 2019-03-25 16:38
      * Author: henry
-     * @return array|OaEbaySuffix
+     * @return array|OaJoomSuffix
      */
     public static function createJoomSuffix($condition)
     {
@@ -258,7 +259,7 @@ class ApiBasicInfo
 
     ##############################   shipping service   ###############################
 
-    /** get joom suffix list
+    /** get shipping service list
      * @param $condition
      * Date: 2019-03-25 16:56
      * Author: henry
@@ -291,7 +292,7 @@ class ApiBasicInfo
      * @param $condition
      * Date: 2019-03-25 17:02
      * Author: henry
-     * @return array|OaEbaySuffix
+     * @return array|OaShippingService
      */
     public static function createShippingService($condition)
     {
@@ -333,7 +334,7 @@ class ApiBasicInfo
 
     ##############################   sys rules  ###############################
 
-    /** get joom suffix list
+    /** get sys rules list
      * @param $condition
      * Date: 2019-03-25 16:56
      * Author: henry
@@ -366,7 +367,7 @@ class ApiBasicInfo
      * @param $condition
      * Date: 2019-03-25 17:02
      * Author: henry
-     * @return array|OaEbaySuffix
+     * @return array|OaSysRules
      */
     public static function createSysRules($condition)
     {
@@ -395,6 +396,84 @@ class ApiBasicInfo
         if (!$id) return false;
         $model = OaSysRules::findOne($id);
         $model->attributes = $condition;
+        $res = $model->save();
+        if($res){
+            return $model;
+        }else{
+            return [
+                'code' => 400,
+                'message' => $model->getErrors()[0]
+            ];
+        }
+    }
+
+    ##############################   joom to wish  ###############################
+
+    /** get joom to wish list
+     * @param $condition
+     * Date: 2019-03-27 09:08
+     * Author: henry
+     * @return ActiveDataProvider
+     */
+    public static function getJoomWishList($condition)
+    {
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
+        $query = OaJoomToWish::find();
+        if(isset($condition['greaterEqual'])) $query->andFilterWhere(['like', 'greaterEqual', $condition['greaterEqual']]);
+        if(isset($condition['less'])) $query->andFilterWhere(['like', 'less', $condition['less']]);
+        if(isset($condition['addedPrice'])) $query->andFilterWhere(['addedPrice' => $condition['addedPrice']]);
+        if(isset($condition['createDate'])) $query->andFilterWhere(['createDate' => $condition['createDate']]);
+        if(isset($condition['updateDate'])) $query->andFilterWhere(['updateDate' => $condition['updateDate']]);
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => [
+                'pageSize' => isset($pageSize) && $pageSize ? $pageSize   : 20,
+            ],
+        ]);
+
+        $dataProvider->setSort([
+            'defaultOrder' => [
+                'id' => SORT_DESC,
+            ],
+        ]);
+        return $dataProvider;
+    }
+
+    /**
+     * @param $condition
+     * Date: 2019-03-27 09:13
+     * Author: henry
+     * @return array|OaJoomToWish
+     */
+    public static function createJoomWish($condition)
+    {
+        $model = new OaJoomToWish();
+        $model->attributes = $condition;
+        $model->createDate = date('Y-m-d H:i:s');
+        $res = $model->save();
+        if($res){
+            return $model;
+        }else{
+            return [
+                'code' => 400,
+                'message' => $model->getErrors()[0]
+            ];
+        }
+    }
+
+    /**
+     * @param $condition
+     * Date: 2019-03-27 09:22
+     * Author: henry
+     * @return array|bool|null|static
+     */
+    public static function updateJoomWish($condition)
+    {
+        $id = isset($condition['id'])?$condition['id']:'';
+        if (!$id) return false;
+        $model = OaJoomToWish::findOne($id);
+        $model->attributes = $condition;
+        $model->updateDate = date('Y-m-d H:i:s');
         $res = $model->save();
         if($res){
             return $model;

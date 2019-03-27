@@ -18,6 +18,7 @@ namespace backend\modules\v1\controllers;
 
 use backend\models\OaEbaySuffix;
 use backend\models\OaJoomSuffix;
+use backend\models\OaJoomToWish;
 use backend\models\OaShippingService;
 use backend\models\OaSysRules;
 use backend\models\OaWishSuffix;
@@ -232,7 +233,7 @@ class BasicInfoController extends AdminController
     /**
      * Date: 2019-03-25 17:06
      * Author: henry
-     * @return array|\backend\models\OaShippingService
+     * @return array|\backend\models\OaSysRules
      */
     public function actionCreateRules(){
         $condition = Yii::$app->request->post()['condition'];
@@ -262,6 +263,52 @@ class BasicInfoController extends AdminController
     }
 
 
+    ##############################   joom to wish   ###############################
+
+    /** get joom suffix list
+     * Date: 2019-03-27 09:01
+     * Author: henry
+     * @return \yii\data\ActiveDataProvider
+     */
+    public function actionJoomWish()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiBasicInfo::getJoomWishList($condition);
+    }
 
 
-}
+    /**
+     * Date: 2019-03-27 09:11
+     * Author: henry
+     * @return array|\backend\models\OaJoomToWish
+     */
+    public function actionCreateContrast(){
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiBasicInfo::createJoomWish($condition);
+    }
+
+    /**
+     * Date: 2019-03-27 09:21
+     * Author: henry
+     * @return array|bool|null|static
+     */
+    public function actionUpdateContrast(){
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiBasicInfo::updateJoomWish($condition);
+    }
+
+    /**
+     * Date: 2019-03-27 09:33
+     * Author: henry
+     * @return bool|int
+     */
+    public function actionDeleteContrast()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        $id = isset($condition['id']) ? $condition['id'] : '';
+        if (!$id) return false;
+        return OaJoomToWish::deleteAll(['id' => $id]);
+    }
+
+
+    }
