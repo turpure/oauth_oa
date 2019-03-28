@@ -241,10 +241,9 @@ class ApiGoods
             $db->createCommand($sql)->bindValues([':mid' => $goodsModel->mineId, ':dictionaryName' => $dictionary])->execute();
         }else{
             $code = self::generateCode($goodsModel->cate);
-            //print_r($code);exit;
             $_model->mapPersons = $user->mapPersons;
-            $_model->goodsid = $goodsModel->nid;
-            $_model->GoodsCode = $code;
+            $_model->goodsId = $goodsModel->nid;
+            $_model->goodsCode = $code;
             $_model->picUrl = $goodsModel->img;
             $_model->developer = $goodsModel->developer;
             $_model->devDatetime = strftime('%F %T');
@@ -259,13 +258,13 @@ class ApiGoods
                 $arc = $arc_model?$arc_model->ruleValue:'';
                 $_model->possessMan1 = $arc;
             }
-            if(empty($_model->Purchaser)){
+            if(empty($_model->purchaser)){
                 $pur_model = OaSysRules::find()->where(['ruleKey' => $goodsModel->developer])->andWhere(['ruleType' => 'dev-pur-map'])->one();
                 if(!$pur_model){
                     throw new Exception('当前开发没有对应采购！');
                 }
                 $pur = $pur_model?$pur_model->ruleValue:'';
-                $_model->Purchaser = $pur;
+                $_model->purchaser = $pur;
             }
             $_model->save();
         }
