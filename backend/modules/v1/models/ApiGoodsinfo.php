@@ -25,6 +25,7 @@ use backend\models\OaGoodsSku;
 use backend\models\OaWishGoods;
 use backend\models\OaWishGoodsSku;
 use backend\models\OaEbaySuffix;
+use backend\models\OaWishSuffix;
 use yii\data\ActiveDataProvider;
 use backend\modules\v1\utils\ProductCenterTools;
 use yii\helpers\ArrayHelper;
@@ -399,5 +400,46 @@ class ApiGoodsinfo
         $ret = OaEbaySuffix::find()->select('storeCountry')
             ->distinct()->all();
         return ArrayHelper::getColumn($ret, 'storeCountry');
+    }
+
+    /**
+     * @brief prepare wish data to export
+     * @param $id
+     * @return array
+     * @throws \Exception
+     */
+    public static function preExportWish($id)
+    {
+        $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
+        $wishAccounts = OaWishSuffix::find()->asArray()->all();
+        $row = [
+            'sku' => '', 'selleruserid' => '', 'name' => '', 'inventory' => '', 'price' => '', 'msrp' => '',
+            'shipping' => '', 'shipping_time' => '', 'main_image' => '', 'extra_images' => '', 'variants' => '',
+            'landing_page_url' => '', 'tags' => '', 'description' => '', 'brand'=> '', 'upc'=> '','local_price'=> '',
+            'local_shippingfee'=> '','local_currency'=> ''
+        ];
+        $ret = [];
+        foreach ($wishAccounts as $account) {
+            $row['sku'] = $wishInfo['sku'];
+            $row['selleruserid'] = $account['shortName'];
+            $row['name'] = $wishInfo['title'];
+            $row['inventory'] = $wishInfo['inventory'];
+            $row['price'] = $wishInfo['price'];
+            $row['msrp'] = $wishInfo['msrp'];
+            $row['shipping'] = $wishInfo['shipping'];
+            $row['shipping_time'] = $wishInfo['shippingTime'];
+            $row['main_image'] = $wishInfo['mainImage'];
+            $row['extra_images'] = $wishInfo['extraImages'];
+            $row['variants'] = $wishInfo['sku'];
+            $row['landing_page_url'] = $wishInfo['mainImage'];
+            $row['tags'] = $wishInfo['tags'];
+            $row['description'] = $wishInfo['description'];
+            $row['brand'] = '';
+            $row['upc'] = '';
+            $row['local_shippingfee'] = $wishInfo['shipping'] * 6.88;
+            $row['local_currency'] = $wishInfo['price'] * 6.88;
+            $ret[] = $row;
+        }
+        return $ret;
     }
 }
