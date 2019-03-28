@@ -26,6 +26,7 @@ use backend\models\OaWishGoods;
 use backend\models\OaWishGoodsSku;
 use backend\models\OaEbaySuffix;
 use backend\models\OaWishSuffix;
+use backend\models\OaJoomSuffix;
 use yii\data\ActiveDataProvider;
 use backend\modules\v1\utils\ProductCenterTools;
 use yii\helpers\ArrayHelper;
@@ -441,5 +442,57 @@ class ApiGoodsinfo
             $ret[] = $row;
         }
         return $ret;
+    }
+
+
+    public static function preExportJoom($id, $account)
+    {
+        $joomInfo = OaWishgoods::find()->joinWith('OaWishSku')->where(['infoId' => $id])->asArray()->one();
+        $joomAccounts = OaJoomSuffix::find()->where(['joomName'=>$account])->asArray()->one();
+        $row = [
+            'Parent Unique ID'=>'', '*Product Name'=>'', 'Description'=>'', '*Tags'=>'', '*Unique ID'=>'', 'Color'=>'',
+            'Size'=>'', '*Quantity'=>'', '*Price'=>'', '*MSRP'=>'', '*Shipping'=>'', 'Shipping weight'=>'',
+            'Shipping Time(enter without " ", just the estimated days )'=>'', '*Product Main Image URL'=>'',
+            'Variant Main Image URL'=>'', 'Extra Image URL'=>'', 'Extra Image URL 1'=>'', 'Extra Image URL 2'=>'',
+            'Extra Image URL 3'=>'', 'Extra Image URL 4'=>'', 'Extra Image URL 5'=>'', 'Extra Image URL 6'=>'',
+            'Extra Image URL 7'=>'', 'Extra Image URL 8'=>'', 'Extra Image URL 9'=>'', 'Dangerous Kind'=>'',
+            'Declared Value'=>'',
+        ];
+        $ret = [];
+        $row['Parent Unique ID'] = $joomInfo['goodsCode'] . $joomAccounts['skuCode'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['Description'] = $joomInfo['Description'];
+        $row['*Tags'] = $joomInfo['tags'];
+        $row['*Unique ID'] = $joomInfo['sku'];
+        $row['Color'] = 'color';
+        $row['Size'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+        $row['*Product Name'] = $joomInfo['title'];
+
     }
 }

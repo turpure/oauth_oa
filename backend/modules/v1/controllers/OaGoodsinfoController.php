@@ -20,10 +20,8 @@ use backend\modules\v1\models\ApiGoodsinfo;
 use backend\modules\v1\utils\ProductCenterTools;
 use backend\modules\v1\utils\AttributeInfoTools;
 use backend\modules\v1\utils\ExportTools;
-use PhpOffice\PhpSpreadsheet\Calculation\Exception;
 use yii\data\ActiveDataProvider;
 use Yii;
-use yii\helpers\ArrayHelper;
 
 
 class OaGoodsinfoController extends AdminController
@@ -432,7 +430,7 @@ class OaGoodsinfoController extends AdminController
      */
     public function actionPlatExportJoom()
     {
-        $data = ApiGoodsinfo::preExportWish(5);
+        $data = ApiGoodsinfo::preExportJoom(5,'Joom');
         ExportTools::toExcelOrCsv('csv-test', $data, 'Csv');
     }
 }
