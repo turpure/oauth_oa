@@ -76,6 +76,11 @@ class BasicInfoController extends AdminController
         return OaEbaySuffix::deleteAll(['id' => $id]);
     }
 
+    public function actionEbayInfo(){
+        $condition = Yii::$app->request->post()['condition'];
+        $id = isset($condition['id'])?$condition['id']:'';
+        return OaEbaySuffix::findOne(['id' => $id]);
+    }
 
     ##############################   wish suffix   ###############################
 
@@ -89,7 +94,6 @@ class BasicInfoController extends AdminController
         $condition = Yii::$app->request->post()['condition'];
         return ApiBasicInfo::getWishSuffixList($condition);
     }
-
 
     /**
      * Date: 2019-03-25 15:37
@@ -123,6 +127,11 @@ class BasicInfoController extends AdminController
         return OaWishSuffix::deleteAll(['id' => $id]);
     }
 
+    public function actionWishInfo(){
+        $condition = Yii::$app->request->post()['condition'];
+        $id = isset($condition['id'])?$condition['id']:'';
+        return OaWishSuffix::findOne(['id' => $id]);
+    }
 
     ##############################   joom suffix   ###############################
 
@@ -170,6 +179,12 @@ class BasicInfoController extends AdminController
         return OaJoomSuffix::deleteAll(['id' => $id]);
     }
 
+    public function actionJoomInfo(){
+        $condition = Yii::$app->request->post()['condition'];
+        $id = isset($condition['id'])?$condition['id']:'';
+        return OaJoomSuffix::findOne(['id' => $id]);
+    }
+
     ##############################   shipping service   ###############################
 
     /** get joom suffix list
@@ -182,7 +197,6 @@ class BasicInfoController extends AdminController
         $condition = Yii::$app->request->post()['condition'];
         return ApiBasicInfo::getShippingServiceList($condition);
     }
-
 
     /**
      * Date: 2019-03-25 17:06
@@ -216,6 +230,12 @@ class BasicInfoController extends AdminController
         return OaShippingService::deleteAll(['id' => $id]);
     }
 
+    public function actionShippingInfo(){
+        $condition = Yii::$app->request->post()['condition'];
+        $id = isset($condition['id'])?$condition['id']:'';
+        return OaShippingService::findOne(['id' => $id]);
+    }
+
     ##############################   sys  rules ###############################
 
     /** get joom suffix list
@@ -228,7 +248,6 @@ class BasicInfoController extends AdminController
         $condition = Yii::$app->request->post()['condition'];
         return ApiBasicInfo::getSysRulesList($condition);
     }
-
 
     /**
      * Date: 2019-03-25 17:06
@@ -262,6 +281,11 @@ class BasicInfoController extends AdminController
         return OaSysRules::deleteAll(['id' => $id]);
     }
 
+    public function actionRulesInfo(){
+        $condition = Yii::$app->request->post()['condition'];
+        $id = isset($condition['id'])?$condition['id']:'';
+        return OaSysRules::findOne(['id' => $id]);
+    }
 
     ##############################   joom to wish   ###############################
 
@@ -275,7 +299,6 @@ class BasicInfoController extends AdminController
         $condition = Yii::$app->request->post()['condition'];
         return ApiBasicInfo::getJoomWishList($condition);
     }
-
 
     /**
      * Date: 2019-03-27 09:11
@@ -310,5 +333,10 @@ class BasicInfoController extends AdminController
         return OaJoomToWish::deleteAll(['id' => $id]);
     }
 
+    public function actionContrastInfo(){
+        $condition = Yii::$app->request->post()['condition'];
+        $id = isset($condition['id'])?$condition['id']:'';
+        return OaJoomToWish::findOne(['id' => $id]);
+    }
 
     }
