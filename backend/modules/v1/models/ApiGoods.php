@@ -15,6 +15,7 @@ use backend\models\User;
 use Yii;
 use backend\models\OaGoods;
 use yii\data\ActiveDataProvider;
+use yii\db\Exception;
 
 class ApiGoods
 {
@@ -215,9 +216,7 @@ class ApiGoods
         $query->orderBy('createDate DESC');
         $provider = new ActiveDataProvider([
             'query' => $query,
-            //'db' => Yii::$app->db,
             'pagination' => [
-                //'pageParam' => $page,
                 'pageSize' => $pageSize,
             ],
         ]);
@@ -254,18 +253,22 @@ class ApiGoods
             $_model->stockUp = $goodsModel->stockUp ? '是' : '否';
             if(empty($_model->possessMan1)){
                 $arc_model = OaSysRules::find()->where(['ruleKey' => $goodsModel->developer])->andWhere(['ruleType' => 'dev-arc-map'])->one();
+                if(!$arc_model){
+                    throw new Exception('当前开发没有对应美工！');
+                }
                 $arc = $arc_model?$arc_model->ruleValue:'';
                 $_model->possessMan1 = $arc;
             }
             if(empty($_model->Purchaser)){
                 $pur_model = OaSysRules::find()->where(['ruleKey' => $goodsModel->developer])->andWhere(['ruleType' => 'dev-pur-map'])->one();
+                if(!$pur_model){
+                    throw new Exception('当前开发没有对应采购！');
+                }
                 $pur = $pur_model?$pur_model->ruleValue:'';
                 $_model->Purchaser = $pur;
             }
             $_model->save();
-            //print_r($res);exit();
         }
-        //print_r(123123);exit();
 
     }
 

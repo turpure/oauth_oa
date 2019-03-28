@@ -69,10 +69,11 @@ class CheckController extends AdminController
     }
 
 
-    /**
-     * 通过审核
-     *
-     * @return mixed
+    /** 通过审核
+     * Date: 2019-03-27 10:13
+     * Author: henry
+     * @return array|bool
+     * @throws \yii\db\Exception
      */
     public function actionPass()
     {
@@ -193,6 +194,9 @@ class CheckController extends AdminController
         }
 
     }
+
+
+
 
 
 }
