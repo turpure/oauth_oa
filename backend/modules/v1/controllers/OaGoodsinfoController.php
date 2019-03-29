@@ -193,11 +193,28 @@ class OaGoodsinfoController extends AdminController
     }
 
     /**
+     * @brief 保存并完善属性信息
+     * @return array
+     * @throws
+     */
+    public function actionSaveFinishAttribute()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $saveCondition = $request->post()['condition'];
+        $finishCondition = ['id' => $saveCondition['basicInfo']['goodsInfo']];
+        ApiGoodsinfo::saveAttribute($saveCondition);
+        return ApiGoodsinfo::finishAttribute($finishCondition);
+    }
+
+    /**
      * @brief 保存属性信息
      * @return array
      * @throws \Exception
      */
-    public function actionSaveAttributeInfo()
+    public function actionSaveAttribute()
     {
         $request = Yii::$app->request;
         if (!$request->isPost) {
