@@ -53,6 +53,7 @@ use Yii;
  * @property int $mid
  * @property string $extendStatus
  * @property string $mapPersons
+ * @property string $filterType
  */
 
 

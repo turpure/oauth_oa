@@ -38,7 +38,7 @@ class ApiGoods
 
         $query = OaGoods::find();
         $query->select('nid,img,cate,subCate,vendor1,origin1,introReason,checkStatus,introducer,developer,approvalNote,createDate,updateDate');
-        $query->andFilterWhere(["IFNULL(introducer,'')" => $userList]);//有推荐人的产品列表
+        $query->andFilterWhere(['OR',["IFNULL(introducer,'')" => $userList],["IFNULL(developer,'')" => $userList]]);//有推荐人的产品列表
         $query->andFilterWhere(['like', 'checkStatus', $post['checkStatus']]);
         $query->andFilterWhere(['like', 'cate', $post['cate']]);
         $query->andFilterWhere(['like', 'subCate', $post['subCate']]);
@@ -48,9 +48,10 @@ class ApiGoods
         $query->andFilterWhere(['like', 'introducer', $post['introducer']]);
         $query->andFilterWhere(['like', 'developer', $post['developer']]);
         $query->andFilterWhere(['like', 'approvalNote', $post['approvalNote']]);
-        if($post['createDate'])$query->andFilterWhere(['between', "date_format(createDate,'%Y-%m-%d')", $post['createDate'][0], $post['createDate'][1]]);
-        if($post['updateDate'])$query->andFilterWhere(['between', "date_format(updateDate,'%Y-%m-%d')", $post['updateDate'][0], $post['updateDate'][1]]);
-        $query->orderBy('createDate DESC');
+        if($post['createDate']) $query->andFilterWhere(['between', "date_format(createDate,'%Y-%m-%d')", $post['createDate'][0], $post['createDate'][1]]);
+        if($post['updateDate']) $query->andFilterWhere(['between', "date_format(updateDate,'%Y-%m-%d')", $post['updateDate'][0], $post['updateDate'][1]]);
+        $query->andWhere(['in', 'checkStatus', ['未认领', '已认领']]);
+        $query->orderBy('checkStatus DESC,createDate DESC');
         $provider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
@@ -250,6 +251,7 @@ class ApiGoods
             $_model->updateTime = strftime('%F %T');
             $_model->achieveStatus = '待处理';
             $_model->stockUp = $goodsModel->stockUp ? '是' : '否';
+            $_model->filterType = ApiGoodsinfo::GoodsInfo;
             if(empty($_model->possessMan1)){
                 $arc_model = OaSysRules::find()->where(['ruleKey' => $goodsModel->developer])->andWhere(['ruleType' => 'dev-arc-map'])->one();
                 if(!$arc_model){
