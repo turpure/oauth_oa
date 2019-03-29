@@ -410,8 +410,13 @@ class OaGoodsinfoController extends AdminController
     public function actionPlatExportWish()
     {
 
-//        $data = [['sku' => '2019','name'=>'jing'],['sku'=>'2018','name'=>'james']];
-        $data = ApiGoodsinfo::preExportWish(5);
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        $infoId = $condition['id'];
+        $data = ApiGoodsinfo::preExportWish($infoId);
         ExportTools::toExcelOrCsv('test', $data, 'Xls');
 
     }
@@ -423,13 +428,32 @@ class OaGoodsinfoController extends AdminController
      */
     public function actionPlatExportJoom()
     {
-        $data = ApiGoodsinfo::preExportJoom(5,'Joom');
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        $infoId = $condition['id'];
+        $account = $condition['account'];
+        $data = ApiGoodsinfo::preExportJoom($infoId, $account);
         ExportTools::toExcelOrCsv('csv-test', $data, 'Csv');
     }
 
+    /**
+     * @brief 导出ebay模板
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
     public function actionPlatExportEbay()
     {
-        $data = ApiGoodsinfo::preExportEbay(5,'ebay');
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        $infoId = $condition['id'];
+        $account = $condition['account'];
+        $data = ApiGoodsinfo::preExportJoom($infoId, $account);
         ExportTools::toExcelOrCsv('ebay', $data, 'Xls');
     }
 }
