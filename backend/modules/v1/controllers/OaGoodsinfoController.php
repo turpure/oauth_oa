@@ -416,13 +416,6 @@ class OaGoodsinfoController extends AdminController
 
     }
 
-    /**
-     * @brief 导出ebay模板
-     */
-    public function actionPlatExportEbay()
-    {
-
-    }
 
     /**
      * @brief 导出wish模板
@@ -432,5 +425,11 @@ class OaGoodsinfoController extends AdminController
     {
         $data = ApiGoodsinfo::preExportJoom(5,'Joom');
         ExportTools::toExcelOrCsv('csv-test', $data, 'Csv');
+    }
+
+    public function actionPlatExportEbay()
+    {
+        $data = ApiGoodsinfo::preExportEbay(5,'ebay');
+        ExportTools::toExcelOrCsv('ebay', $data, 'Xls');
     }
 }
