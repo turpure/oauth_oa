@@ -85,7 +85,7 @@ class ApiGoods
         $query->andFilterWhere(["IFNULL(developer,'')" => $userList]);//查看权限
         $query->andFilterWhere(['devStatus' => '正向认领']);//正向开发
         $query->andFilterWhere(['checkStatus' => ['已认领','待提交','待审批','已审批','未通过']]);
-        $query->andFilterWhere(['IFNULL(stockUp,0)' => $post['stockUp']]);
+        $query->andFilterWhere(["IFNULL(stockUp,'否')" => $post['stockUp']]);
         $query->andFilterWhere(['like', 'devNum', $post['devNum']]);
         $query->andFilterWhere(['like', 'checkStatus', $post['checkStatus']]);
         $query->andFilterWhere(['like', 'cate', $post['cate']]);
@@ -136,7 +136,7 @@ class ApiGoods
         $query->andFilterWhere(["IFNULL(developer,'')" => $userList]);//查看权限
         $query->andFilterWhere(['devStatus' => '逆向认领']);//正向开发
         $query->andFilterWhere(['checkStatus' => ['已认领','待提交','待审批','已审批','未通过']]);
-        $query->andFilterWhere(['IFNULL(stockUp,0)' => $post['stockUp']]);
+        $query->andFilterWhere(["IFNULL(stockUp,'否')" => $post['stockUp']]);
         $query->andFilterWhere(['like', 'devNum', $post['devNum']]);
         $query->andFilterWhere(['like', 'checkStatus', $post['checkStatus']]);
         $query->andFilterWhere(['like', 'cate', $post['cate']]);
@@ -192,7 +192,7 @@ class ApiGoods
         }else{
             $query->andFilterWhere(['checkStatus' => '未通过']);
         }
-        $query->andFilterWhere(['IFNULL(stockUp,0)' => $post['stockUp']]);
+        $query->andFilterWhere(["IFNULL(stockUp,'否')" => $post['stockUp']]);
         if ($post['mineId'] == 1){
             $query->andFilterWhere(['>', 'IFNULL(mineId,0)', 0]);
         }elseif($post['mineId'] == 0){
@@ -253,7 +253,7 @@ class ApiGoods
             $_model->devDatetime = strftime('%F %T');
             $_model->updateTime = strftime('%F %T');
             $_model->achieveStatus = '待处理';
-            $_model->stockUp = $goodsModel->stockUp ? '是' : '否';
+            $_model->stockUp = $goodsModel->stockUp;
             $_model->filterType = ApiGoodsinfo::GoodsInfo;
             if(empty($_model->possessMan1)){
                 $arc_model = OaSysRules::find()->where(['ruleKey' => $goodsModel->developer])->andWhere(['ruleType' => 'dev-arc-map'])->one();

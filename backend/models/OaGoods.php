@@ -34,7 +34,7 @@ use Yii;
  * @property string $approvalNote
  * @property int $bGoodsid
  * @property string $hopeCost
- * @property int $stockUp
+ * @property string $stockUp
  * @property int $mineId
  */
 class OaGoods extends \yii\db\ActiveRecord
@@ -56,11 +56,10 @@ class OaGoods extends \yii\db\ActiveRecord
             [['createDate', 'updateDate'], 'safe'],
             [['vendor1', 'vendor2', 'vendor3', 'origin2', 'origin3', 'origin1'], 'string'],
             [['salePrice', 'hopeMonthProfit', 'hopeRate', 'hopeWeight', 'hopeCost'], 'number'],
-            [['hopeSale', 'catNid', 'bGoodsid', 'stockUp', 'mineId'], 'integer'],
+            [['hopeSale', 'catNid', 'bGoodsid', 'mineId'], 'integer'],
             [['cate', 'subCate'], 'string', 'max' => 50],
             [['devNum'], 'string', 'max' => 80],
-            [['introducer'], 'string', 'max' => 10],
-            [['devStatus', 'checkStatus', 'developer'], 'string', 'max' => 20],
+            [['devStatus', 'checkStatus', 'developer', 'introducer', 'stockUp'], 'string', 'max' => 20],
             [['img'], 'string', 'max' => 300],
             [['introReason', 'approvalNote'], 'string', 'max' => 500],
         ];
