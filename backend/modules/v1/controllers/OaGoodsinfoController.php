@@ -177,7 +177,23 @@ class OaGoodsinfoController extends AdminController
 
     }
 
+
     /**
+     * @return array
+     */
+    public function actionAttributeInfoDeleteVariant()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        $ids = $condition['id'];
+        return ApiGoodsinfo::deleteAttributeVariantById($ids);
+    }
+
+    /**
+     * @brief 保存属性信息
      * @return array
      * @throws \Exception
      */
@@ -193,6 +209,7 @@ class OaGoodsinfoController extends AdminController
 
 
     /**
+     * @brief 生成商品编码
      * @return array
      * @throws \Exception
      */

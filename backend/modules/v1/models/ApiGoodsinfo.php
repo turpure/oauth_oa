@@ -238,6 +238,19 @@ class ApiGoodsinfo
         return ['failure'];
     }
 
+    /**
+     * @brief 删除多属性信息
+     * @param $ids
+     * @return array
+     */
+    public static function deleteAttributeVariantById($ids)
+    {
+        foreach ($ids as $id) {
+            OaGoodsSku::deleteAll(['id'=>$id]);
+        }
+        return ['success'];
+    }
+
     ###########################  picture info ########################################
 
     /**
