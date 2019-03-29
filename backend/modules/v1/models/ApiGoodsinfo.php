@@ -447,52 +447,47 @@ class ApiGoodsinfo
 
     public static function preExportJoom($id, $account)
     {
-        $joomInfo = OaWishgoods::find()->joinWith('OaWishSku')->where(['infoId' => $id])->asArray()->one();
-        $joomAccounts = OaJoomSuffix::find()->where(['joomName'=>$account])->asArray()->one();
+        $joomSkuInfo = OaWishGoodsSku::find()->joinWith('oaWishGoods')->where(['oa_wishGoods.infoId' => $id])->asArray()->one();
+        $joomInfo = $joomSkuInfo['oaWishGoods'];
+        $joomAccounts = OaJoomSuffix::find()->where(['joomName' => $account])->asArray()->one();
         $row = [
-            'Parent Unique ID'=>'', '*Product Name'=>'', 'Description'=>'', '*Tags'=>'', '*Unique ID'=>'', 'Color'=>'',
-            'Size'=>'', '*Quantity'=>'', '*Price'=>'', '*MSRP'=>'', '*Shipping'=>'', 'Shipping weight'=>'',
-            'Shipping Time(enter without " ", just the estimated days )'=>'', '*Product Main Image URL'=>'',
-            'Variant Main Image URL'=>'', 'Extra Image URL'=>'', 'Extra Image URL 1'=>'', 'Extra Image URL 2'=>'',
-            'Extra Image URL 3'=>'', 'Extra Image URL 4'=>'', 'Extra Image URL 5'=>'', 'Extra Image URL 6'=>'',
-            'Extra Image URL 7'=>'', 'Extra Image URL 8'=>'', 'Extra Image URL 9'=>'', 'Dangerous Kind'=>'',
-            'Declared Value'=>'',
+            'Parent Unique ID' => '', '*Product Name' => '', 'Description' => '', '*Tags' => '', '*Unique ID' => '', 'Color' => '',
+            'Size' => '', '*Quantity' => '', '*Price' => '', '*MSRP' => '', '*Shipping' => '', 'Shipping weight' => '',
+            'Shipping Time(enter without " ", just the estimated days )' => '', '*Product Main Image URL' => '',
+            'Variant Main Image URL' => '', 'Extra Image URL' => '', 'Extra Image URL 1' => '', 'Extra Image URL 2' => '',
+            'Extra Image URL 3' => '', 'Extra Image URL 4' => '', 'Extra Image URL 5' => '', 'Extra Image URL 6' => '',
+            'Extra Image URL 7' => '', 'Extra Image URL 8' => '', 'Extra Image URL 9' => '', 'Dangerous Kind' => '',
+            'Declared Value' => '',
         ];
         $ret = [];
-        $row['Parent Unique ID'] = $joomInfo['goodsCode'] . $joomAccounts['skuCode'];
+        $row['Parent Unique ID'] = $joomInfo['sku'] . $joomAccounts['skuCode'];
         $row['*Product Name'] = $joomInfo['title'];
-        $row['Description'] = $joomInfo['Description'];
+        $row['Description'] = $joomInfo['description'];
         $row['*Tags'] = $joomInfo['tags'];
         $row['*Unique ID'] = $joomInfo['sku'];
         $row['Color'] = 'color';
         $row['Size'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['*Product Name'] = $joomInfo['title'];
-
+        $row['*Quantity'] = $joomInfo['title'];
+        $row['*Price'] = $joomInfo['title'];
+        $row['*Shipping'] = $joomInfo['title'];
+        $row['Shipping weight'] = $joomInfo['title'];
+        $row['Shipping Time(enter without " ", just the estimated days )'] = $joomInfo['title'];
+        $row['*Product Main Image URL'] = $joomInfo['title'];
+        $row['Variant Main Image URL'] = $joomInfo['title'];
+        $row['Extra Image URL'] = $joomInfo['title'];
+        $row['Extra Image URL 1'] = $joomInfo['title'];
+        $row['Extra Image URL 2'] = $joomInfo['title'];
+        $row['Extra Image URL 3'] = $joomInfo['title'];
+        $row['Extra Image URL 4'] = $joomInfo['title'];
+        $row['Extra Image URL 5'] = $joomInfo['title'];
+        $row['Extra Image URL 6'] = $joomInfo['title'];
+        $row['Extra Image URL 7'] = $joomInfo['title'];
+        $row['Extra Image URL 8'] = $joomInfo['title'];
+        $row['Extra Image URL 9'] = $joomInfo['title'];
+        $row['Extra Image URL 10'] = $joomInfo['title'];
+        $row['Dangerous Kind'] = $joomInfo['title'];
+        $row['Declared Value'] = $joomInfo['title'];
+        $ret[] = $row;
+        return $ret;
     }
 }
