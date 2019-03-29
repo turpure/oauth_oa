@@ -19,9 +19,9 @@ namespace backend\modules\v1\controllers;
 use backend\modules\v1\models\ApiGoodsinfo;
 use backend\modules\v1\utils\ProductCenterTools;
 use backend\modules\v1\utils\AttributeInfoTools;
+use backend\modules\v1\utils\ExportTools;
 use yii\data\ActiveDataProvider;
 use Yii;
-use yii\helpers\ArrayHelper;
 
 
 class OaGoodsinfoController extends AdminController
@@ -401,5 +401,35 @@ class OaGoodsinfoController extends AdminController
     public function actionPlatEbayStore()
     {
         return ApiGoodsinfo::getEbayStore();
+    }
+
+    /**
+     * @brief 导出ebay模板
+     * @throws \Exception
+     */
+    public function actionPlatExportWish()
+    {
+
+//        $data = [['sku' => '2019','name'=>'jing'],['sku'=>'2018','name'=>'james']];
+        $data = ApiGoodsinfo::preExportWish(5);
+        ExportTools::toExcelOrCsv('test', $data, 'Xls');
+
+    }
+
+
+    /**
+     * @brief 导出wish模板
+     * @throws \Exception
+     */
+    public function actionPlatExportJoom()
+    {
+        $data = ApiGoodsinfo::preExportJoom(5,'Joom');
+        ExportTools::toExcelOrCsv('csv-test', $data, 'Csv');
+    }
+
+    public function actionPlatExportEbay()
+    {
+        $data = ApiGoodsinfo::preExportEbay(5,'ebay');
+        ExportTools::toExcelOrCsv('ebay', $data, 'Xls');
     }
 }

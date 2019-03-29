@@ -72,4 +72,13 @@ class OaWishGoodsSku extends \yii\db\ActiveRecord
             'joomShipping' => 'Joom Shipping',
         ];
     }
+
+    /**
+     * @brief linked with oaWishGoods
+     */
+    public function getOaWishGoods()
+    {
+        return $this->hasOne(OaWishGoods::className(),['infoId'=>'infoId']);
+    }
+
 }

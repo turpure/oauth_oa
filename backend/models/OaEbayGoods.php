@@ -151,4 +151,13 @@ class OaEbayGoods extends \yii\db\ActiveRecord
             'stockUp' => 'Stock Up',
         ];
     }
+
+    /**
+     * @brief related with oaEbayGoodsSku
+     * @return \yii\db\ActiveQuery
+     */
+    public function getOaEbayGoodsSku()
+    {
+        return $this->hasMany(OaEbayGoodsSku::className(),['infoId' => 'infoId']);
+    }
 }
