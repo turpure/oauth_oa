@@ -39,7 +39,6 @@ class ApiGoods
         $query = OaGoods::find();
         $query->select('nid,img,cate,subCate,vendor1,origin1,introReason,checkStatus,introducer,developer,approvalNote,createDate,updateDate');
         $query->andFilterWhere(['OR',["IFNULL(introducer,'')" => $userList],["IFNULL(developer,'')" => $userList]]);//有推荐人的产品列表
-        $query->andFilterWhere(['like', 'checkStatus', $post['checkStatus']]);
         $query->andFilterWhere(['like', 'cate', $post['cate']]);
         $query->andFilterWhere(['like', 'subCate', $post['subCate']]);
         $query->andFilterWhere(['like', 'vendor1', $post['vendor1']]);
@@ -50,8 +49,12 @@ class ApiGoods
         $query->andFilterWhere(['like', 'approvalNote', $post['approvalNote']]);
         if($post['createDate']) $query->andFilterWhere(['between', "date_format(createDate,'%Y-%m-%d')", $post['createDate'][0], $post['createDate'][1]]);
         if($post['updateDate']) $query->andFilterWhere(['between', "date_format(updateDate,'%Y-%m-%d')", $post['updateDate'][0], $post['updateDate'][1]]);
-        $query->andWhere(['in', 'checkStatus', ['未认领', '已认领']]);
-        $query->orderBy('checkStatus DESC,createDate DESC');
+        if(isset($post['createDate']) && $post['createDate']) {
+            $query->andWhere(['checkStatus' => '未认领']);
+        }else{
+            $query->andWhere(['like', 'checkStatus', $post['checkStatus']]);
+        }
+        $query->orderBy('createDate DESC');
         $provider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
