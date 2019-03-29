@@ -184,6 +184,7 @@ class ApiGoodsinfo
         //属性信息标记完善，图片信息为待处理
         try {
             $goodsInfo->achieveStatus = '已完善';
+            $goodsInfo->filterType = static::PictureInfo;
             if(empty($goodsInfo->picStatus)) {
                 $goodsInfo->picStatus = '待处理';
             }
@@ -236,6 +237,19 @@ class ApiGoodsinfo
                 return ['success'];
         }
         return ['failure'];
+    }
+
+    /**
+     * @brief 删除多属性信息
+     * @param $ids
+     * @return array
+     */
+    public static function deleteAttributeVariantById($ids)
+    {
+        foreach ($ids as $id) {
+            OaGoodsSku::deleteAll(['id'=>$id]);
+        }
+        return ['success'];
     }
 
     ###########################  picture info ########################################
