@@ -30,6 +30,13 @@ class TinyToolController extends AdminController
         return parent::behaviors();
     }
 
+    public function actionExpressTracking()
+    {
+        $request = Yii::$app->request;
+        $condition = $request->post('condition');
+        return ApiTinyTool::expressTracking($condition);
+    }
+
     /**
      * @brief show express info
      * @return array
