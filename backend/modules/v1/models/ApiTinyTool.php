@@ -42,7 +42,7 @@ class ApiTinyTool
             $query->andFilterWhere(['trackNo'=>$trackNo]);
         }
         if(!empty($orderTime)) {
-            $query->andFilterWhere(['between','date_format("%Y-%m-%d")', $orderTime[0], $orderTime[1]]);
+            $query->andFilterWhere(['between','date_format(orderTime,"%Y-%m-%d")', $orderTime[0], $orderTime[1]]);
         }
         $query->orderBy('orderTime DESC');
         $provider = new ActiveDataProvider([
