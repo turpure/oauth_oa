@@ -50,9 +50,9 @@ class ApiGoods
         if($post['createDate']) $query->andFilterWhere(['between', "date_format(createDate,'%Y-%m-%d')", $post['createDate'][0], $post['createDate'][1]]);
         if($post['updateDate']) $query->andFilterWhere(['between', "date_format(updateDate,'%Y-%m-%d')", $post['updateDate'][0], $post['updateDate'][1]]);
         if(isset($post['checkStatus']) && $post['checkStatus']) {
-            $query->andWhere(['checkStatus' => '未认领']);
-        }else{
             $query->andWhere(['like', 'checkStatus', $post['checkStatus']]);
+        }else{
+            $query->andWhere(['checkStatus' => '未认领']);
         }
         $query->orderBy('createDate DESC');
         $provider = new ActiveDataProvider([

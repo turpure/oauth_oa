@@ -3,6 +3,7 @@
 namespace backend\modules\v1\controllers;
 
 use backend\modules\v1\models\ApiGoods;
+use backend\modules\v1\models\ApiTool;
 use Yii;
 use backend\models\OaGoods;
 
@@ -43,6 +44,7 @@ class OaGoodsController extends AdminController
         $post = Yii::$app->request->post('condition');
         return ApiGoods::getForwardList($user, $post);
     }
+
     /**
      * 逆向开发列表
      * @return \yii\data\ActiveDataProvider
@@ -62,7 +64,7 @@ class OaGoodsController extends AdminController
     public function actionInfo()
     {
         $post = Yii::$app->request->post('condition');
-         return OaGoods::findOne($post['nid']);
+        return OaGoods::findOne($post['nid']);
     }
 
     /**
@@ -286,7 +288,7 @@ class OaGoodsController extends AdminController
         try {
             foreach ($post['nid'] as $id) {
                 $model = OaGoods::findOne(['nid' => $id]);
-                if(!in_array($model->checkStatus,['待提交','未通过','已作废'])){
+                if (!in_array($model->checkStatus, ['待提交', '未通过', '已作废'])) {
                     throw new \Exception('Please select the right items to check！');
                 }
                 $model->checkStatus = '待审批';
@@ -307,6 +309,40 @@ class OaGoodsController extends AdminController
     }
 
 
+    /** 下载模板
+     * Date: 2019-04-01 13:35
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionTemplate()
+    {
+        $fileName = '导入模板';
+        $fileName = 'ImportTemplate';
+        $headers = ['*img', '*cate', '*subCate', 'vendor1', 'vendor2', 'vendor3',
+            '*origin1', 'origin2', 'origin3', '*salePrice', '*hopeWeight', '*hopeRate', '*hopeSale'];
+        $data = [
+            [
+                '*img' => 'https://i.ebayimg.com/images/g/shMAAOSw3GFZoaEY/s-l500.png',
+                '*cate' => '女人世界',
+                '*subCate' => '女鞋',
+                'vendor1' => 'vendor1',
+                'vendor2' => 'vendor2',
+                'vendor3' => 'vendor3',
+                '*origin1' => 'origin1',
+                'origin2' => 'origin2',
+                'origin3' => 'origin3',
+                '*salePrice' => '6',
+                '*hopeWeight' => '6',
+                '*hopeRate' => '6',
+                '*hopeSale' => '6',
+            ]
+        ];
+        ApiTool::exportExcel($fileName, $headers, $data);
+    }
+
+
+
     /**
      * 验证用户当月可开发数量，判断是否可备货，或是否可创建 TODO
      * @return array|bool|string
@@ -314,9 +350,9 @@ class OaGoodsController extends AdminController
     public function actionValidateStock()
     {
         $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
-        $canStock = $user->canStockUp?:0;
+        $canStock = $user->canStockUp ?: 0;
         //不备货的人才接受检查
-        if ($canStock > 0)  return true;
+        if ($canStock > 0) return true;
 
         $numberUsed = "select count(og.nid) as usedStock  from oa_goods as og  
                       LEFT JOIN oa_goodsinfo as ogs on og.nid = ogs.goodsid
@@ -329,29 +365,21 @@ class OaGoodsController extends AdminController
                       and developer=:developer";
         $connection = Yii::$app->db;
         try {
-            $used = $connection->createCommand($numberUsed,[':developer'=>$user])->queryAll()[0]['usedStock'];
-        }
-        catch (\Exception $e) {
+            $used = $connection->createCommand($numberUsed, [':developer' => $user])->queryAll()[0]['usedStock'];
+        } catch (\Exception $e) {
             $used = 0;
         }
         try {
-            $have = $connection->createCommand($numberHave,[':developer'=>$user])->queryAll()[0]['haveStock'];
-        }
-        catch (\Exception $e) {
+            $have = $connection->createCommand($numberHave, [':developer' => $user])->queryAll()[0]['haveStock'];
+        } catch (\Exception $e) {
             $have = 0;
         }
-        if($have>0  && $have<=$used) {
+        if ($have > 0 && $have <= $used) {
             return false;
         }
         return true;
 
     }
-
-
-
-
-
-
 
 
 }
