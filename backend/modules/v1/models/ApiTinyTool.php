@@ -8,6 +8,7 @@
 namespace backend\modules\v1\models;
 
 use backend\modules\v1\utils\Handler;
+use backend\models\CacheExpress;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\db\Exception;
@@ -17,6 +18,28 @@ use \PhpOffice\PhpSpreadsheet\Reader\Csv;
 use Yii;
 class ApiTinyTool
 {
+
+    public static function expressTracking($condition)
+    {
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $currentPage = isset($condition['currentPage']) ? $condition['currentPage'] : 1;
+        $suffix = isset($condition['suffix']) ? $condition['suffix']:'';
+        $tradeId = isset($condition['tradeId']) ? $condition['tradeId']:'';
+        $expressName = isset($condition['expressName']) ? $condition['expressName']:'';
+        $trackNo = isset($condition['trackNo']) ? $condition['trackNo']:'';
+        $orderTime = isset($condition['orderTime']) ? $condition['orderTime']:'';
+        if(!empty($suffix)) {
+        }
+        $query = CacheExpress::find();
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => [
+                'pageSize' => $pageSize,
+                'page' => $currentPage - 1
+            ]
+        ]);
+        return $provider;
+    }
     /**
      * @brief get express information
      * @return array
