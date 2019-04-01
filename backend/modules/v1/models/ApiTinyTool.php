@@ -21,16 +21,30 @@ class ApiTinyTool
 
     public static function expressTracking($condition)
     {
+        $query = CacheExpress::find();
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $currentPage = isset($condition['currentPage']) ? $condition['currentPage'] : 1;
         $suffix = isset($condition['suffix']) ? $condition['suffix']:'';
         $tradeId = isset($condition['tradeId']) ? $condition['tradeId']:'';
         $expressName = isset($condition['expressName']) ? $condition['expressName']:'';
         $trackNo = isset($condition['trackNo']) ? $condition['trackNo']:'';
-        $orderTime = isset($condition['orderTime']) ? $condition['orderTime']:'';
+        $orderTime = isset($condition['orderTime']) ? $condition['orderTime']:[];
         if(!empty($suffix)) {
+            $query->andFilterWhere(['like','suffix'=>$suffix]);
         }
-        $query = CacheExpress::find();
+        if(!empty($tradeId)) {
+            $query->andFilterWhere(['tradeId'=>$tradeId]);
+        }
+        if(!empty($expressName)) {
+            $query->andFilterWhere(['like','expressName'=>$expressName]);
+        }
+        if(!empty($trackNo)) {
+            $query->andFilterWhere(['trackNo'=>$trackNo]);
+        }
+        if(!empty($orderTime)) {
+            $query->andFilterWhere(['between','date_format("%Y-%m-%d")', $orderTime[0], $orderTime[1]]);
+        }
+        $query->orderBy('orderTime DESC');
         $provider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
