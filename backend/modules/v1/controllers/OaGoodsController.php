@@ -84,7 +84,7 @@ class OaGoodsController extends AdminController
             $model->catNid = $cateModel && isset($cateModel['Nid']) ? $cateModel['Nid'] : 0;
             $model->devStatus = '';
             $model->checkStatus = '未认领';
-            $model->introducer = $post['introducer']?:$user->username;
+            $model->introducer = isset($post['introducer']) && $post['introducer'] ? $post['introducer'] : $user->username;
             $model->updateDate = $model->createDate = date('Y-m-d H:i:s');
             $ret = $model->save();
             if (!$ret) {
@@ -153,7 +153,7 @@ class OaGoodsController extends AdminController
             $model->catNid = $cateModel && isset($cateModel['Nid']) ? $cateModel['Nid'] : 0;
             $model->devStatus = $post['flag'] == 'forward' ? '正向认领' : '逆向认领';
             $model->checkStatus = $status[$post['type']];
-            $model->developer = $post['developer']?:$user->username;
+            $model->developer = isset($post['developer']) && $post['developer'] ? $post['developer'] : $user->username;
             $model->updateDate = $model->createDate = date('Y-m-d H:i:s');
             $ret = $model->save();
             if (!$ret) {

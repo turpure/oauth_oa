@@ -16,12 +16,14 @@
 
 namespace backend\modules\v1\controllers;
 
+use backend\models\OaJoomSuffix;
 use backend\modules\v1\models\ApiGoodsinfo;
 use backend\modules\v1\utils\ProductCenterTools;
 use backend\modules\v1\utils\AttributeInfoTools;
 use backend\modules\v1\utils\ExportTools;
 use yii\data\ActiveDataProvider;
 use Yii;
+use yii\helpers\ArrayHelper;
 
 
 class OaGoodsinfoController extends AdminController
@@ -490,4 +492,17 @@ class OaGoodsinfoController extends AdminController
         $data = ApiGoodsinfo::preExportJoom($infoId, $account);
         ExportTools::toExcelOrCsv('ebay', $data, 'Xls');
     }
+
+    /** 获取需要导出的Joom没账号
+     * Date: 2019-04-01 9:22
+     * Author: henry
+     * @return array
+     */
+    public function actionJoomName(){
+        $list = OaJoomSuffix::find()->asArray()->all();
+        return ArrayHelper::getColumn($list,'joomName');
+    }
+
+
+
 }
