@@ -29,6 +29,7 @@ use backend\models\OaWishSuffix;
 use backend\models\OaJoomSuffix;
 use yii\data\ActiveDataProvider;
 use backend\modules\v1\utils\ProductCenterTools;
+use yii\db\Query;
 use yii\helpers\ArrayHelper;
 
 
@@ -59,11 +60,19 @@ class ApiGoodsinfo
         }
         elseif ($type === 'picture-info')
         {
-            $query->joinWith('oaGoods')->asArray();
+            $query = (new Query())->select("gi.*,g.*")
+                ->from('proCenter.oa_goodsinfo gi')
+                ->join('LEFT JOIN','proCenter.oa_goods g','g.nid=gi.goodsId');
+            //select("oa_goodsinfo.*,oa_goods.vendor1,oa_goods.vendor2,oa_goods.vendor3,
+            //oa_goods.origin1,oa_goods.origin2,oa_goods.origin3,")
+            //$query->joinWith('oaGoods')->asArray();
             $query->where(['filterType' => self::PictureInfo]);
         }
         elseif ($type === 'plat-info') {
-            $query->joinWith('oaGoods')->asArray();
+            $query = (new Query())->select("gi.*,g.*")
+                ->from('proCenter.oa_goodsinfo gi')
+                ->join('LEFT JOIN','proCenter.oa_goods g','g.nid=gi.goodsId');
+            //$query->joinWith('oaGoods')->asArray();
             $query->where(['filterType' => self::PlatInfo]);
         }
         else {
