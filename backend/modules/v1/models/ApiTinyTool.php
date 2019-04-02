@@ -29,6 +29,8 @@ class ApiTinyTool
         $expressName = isset($condition['expressName']) ? $condition['expressName']:'';
         $trackNo = isset($condition['trackNo']) ? $condition['trackNo']:'';
         $orderTime = isset($condition['orderTime']) ? $condition['orderTime']:[];
+        $sortProperty = isset($condition['sortProperty']) && !empty($condition['sortProperty']) ? $condition['sortProperty'] : 'id';
+        $sortOrder = isset($condition['sortOrder']) && !empty($condition['sortOrder']) ? $condition['sortOrder'] : 'DESC';
         if(!empty($suffix)) {
             $query->andFilterWhere(['like','suffix'=>$suffix]);
         }
@@ -44,7 +46,7 @@ class ApiTinyTool
         if(!empty($orderTime)) {
             $query->andFilterWhere(['between','date_format(orderTime,"%Y-%m-%d")', $orderTime[0], $orderTime[1]]);
         }
-        $query->orderBy('orderTime DESC');
+        $query->orderBy($sortProperty.' '.$sortOrder);
         $provider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
