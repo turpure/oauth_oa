@@ -2,10 +2,13 @@
 
 namespace backend\modules\v1\controllers;
 
+use backend\models\AuthAssignment;
+use backend\models\User;
 use backend\modules\v1\models\ApiGoods;
 use backend\modules\v1\models\ApiTool;
 use Yii;
 use backend\models\OaGoods;
+use yii\helpers\ArrayHelper;
 
 /**
  * OaGoodsController implements the CRUD actions for OaGoods model.
@@ -148,6 +151,20 @@ class OaGoodsController extends AdminController
         $post = Yii::$app->request->post('condition');
         $status = ['create' => '待提交', 'check' => '待审批'];
         $transaction = Yii::$app->db->beginTransaction();
+        $canCreate = $this->validateCreate();
+        $canStock = $this->validateStock();
+        if(!$canCreate) {
+            return [
+                'code' => 400,
+                'message' => '您当前无可用创建数量！'
+            ];
+        }
+        if(!$canStock) {
+            return [
+                'code' => 400,
+                'message' => '您当前无可用备货数量！'
+            ];
+        }
         try {
             $cateModel = Yii::$app->py_db->createCommand("SELECT Nid,CategoryName FROM B_GoodsCats WHERE CategoryName = :CategoryName")
                 ->bindValues([':CategoryName' => $post['cate']])->queryOne();
@@ -184,7 +201,14 @@ class OaGoodsController extends AdminController
     {
         $post = Yii::$app->request->post('condition');
         $model = OaGoods::findOne($post['nid']);
-
+        $canStock = $this->validateStock();
+        //不被会改成备货时，判断备货
+        if($model->stockUp == '否' && $post['stockUp'] == '是' && !$canStock){
+            return [
+                'code' => 400,
+                'message' => '您当前无可用备货数量！'
+            ];
+        }
         $cateModel = Yii::$app->py_db->createCommand("SELECT Nid,CategoryName FROM B_GoodsCats WHERE CategoryName = :CategoryName")
             ->bindValues([':CategoryName' => $post['cate']])->queryOne();
         //根据类目ID更新类目名称
@@ -347,30 +371,38 @@ class OaGoodsController extends AdminController
      * 验证用户当月可开发数量，判断是否可备货，或是否可创建 TODO
      * @return array|bool|string
      */
-    public function actionValidateStock()
+    private function validateStock()
     {
         $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
+
+        //判断是不是超级管理员, 超级管理员无需判断
+        $ass = AuthAssignment::findAll(['user_id' => $user->id]);
+        $role = ArrayHelper::getColumn($ass,'item_name');
+        if(in_array(AuthAssignment::ACCOUNT_ADMIN,$role)) {
+            return true;
+        }
+
         $canStock = $user->canStockUp ?: 0;
-        //不备货的人才接受检查
-        if ($canStock > 0) return true;
+        //备货的人才接受检查
+        if ($canStock == 0) return false;
 
         $numberUsed = "select count(og.nid) as usedStock  from oa_goods as og  
                       LEFT JOIN oa_goodsinfo as ogs on og.nid = ogs.goodsid
-                      where isnull(og.stockUp,0)=0 and og.developer=:developer 
+                      where isnull(og.stockUp,'否')='是' and og.developer=:developer 
                       and DATEDIFF(mm, createDate, getdate()) = 0
                       and og.mineId is null AND checkStatus<>'未通过'";
         $numberHave = "select isnull(stockNumThisMonth,0) as haveStock  from oa_stock_goods_number 
-                      where isStock= 'nonstock'
+                      where isStock= 'stock'
                       and DATEDIFF(mm, createDate, getdate()) = 0
                       and developer=:developer";
         $connection = Yii::$app->db;
         try {
-            $used = $connection->createCommand($numberUsed, [':developer' => $user])->queryAll()[0]['usedStock'];
+            $used = $connection->createCommand($numberUsed, [':developer' => $user->username])->queryOne()['usedStock'];
         } catch (\Exception $e) {
             $used = 0;
         }
         try {
-            $have = $connection->createCommand($numberHave, [':developer' => $user])->queryAll()[0]['haveStock'];
+            $have = $connection->createCommand($numberHave, [':developer' => $user->username])->queryOne()['haveStock'];
         } catch (\Exception $e) {
             $have = 0;
         }
@@ -379,6 +411,49 @@ class OaGoodsController extends AdminController
         }
         return true;
 
+    }
+
+
+    private function validateCreate()
+    {
+        $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
+        //判断是不是超级管理员, 超级管理员无需判断
+        $ass = AuthAssignment::findAll(['user_id' => $user->id]);
+        $role = ArrayHelper::getColumn($ass,'item_name');
+        if(in_array(AuthAssignment::ACCOUNT_ADMIN,$role)) {
+            return true;
+        }
+
+        $canStock = $user->canStockUp?:0;
+        //不备货的人才接受检查
+        if ($canStock > 0){
+            return true;
+        }
+        $numberUsed = "select count(og.nid) as usedStock  from oa_goods as og  
+                      LEFT JOIN oa_goodsinfo as ogs on og.nid = ogs.goodsid
+                      where isnull(og.stockUp,'否')='否' and og.developer=:developer 
+                      and DATEDIFF(mm, createDate, getdate()) = 0
+                      and og.mineId is null AND checkStatus<>'未通过'";
+        $numberHave = "select isnull(stockNumThisMonth,0) as haveStock  from oa_stock_goods_number 
+                      where isStock= 'nonstock'
+                      and DATEDIFF(mm, createDate, getdate()) = 0
+                      and developer=:developer";
+        $connection = Yii::$app->db;
+        try {
+            $used = $connection->createCommand($numberUsed,[':developer'=>$user->username])->queryOne()['usedStock'];
+        } catch (\Exception $e) {
+            $used = 0;
+        }
+        try {
+            $have = $connection->createCommand($numberHave,[':developer'=>$user->username])->queryOne()['haveStock'];
+        } catch (\Exception $e) {
+            $have = 0;
+        }
+
+        if($have>0  && $have<=$used) {
+            return false;
+        }
+        return true;
     }
 
 
