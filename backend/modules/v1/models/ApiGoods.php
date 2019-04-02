@@ -84,7 +84,6 @@ class ApiGoods
                                 devNum,createDate,updateDate,salePrice,hopeMonthProfit,hopeRate,hopeWeight,hopeCost,hopeSale');
         $query->andFilterWhere(["IFNULL(developer,'')" => $userList]);//查看权限
         $query->andFilterWhere(['devStatus' => '正向认领']);//正向开发
-        $query->andFilterWhere(['checkStatus' => ['已认领','待提交','待审批','已审批','未通过']]);
         $query->andFilterWhere(["IFNULL(stockUp,'否')" => $post['stockUp']]);
         $query->andFilterWhere(['like', 'devNum', $post['devNum']]);
         $query->andFilterWhere(['like', 'checkStatus', $post['checkStatus']]);
@@ -104,9 +103,14 @@ class ApiGoods
         if($post['hopeSale'])   $query->andFilterWhere(['and',['>=', 'hopeSale', $post['hopeSale']], ['<', 'hopeSale', ceil($post['hopeSale'] + 1)]]);
         if($post['hopeCost'])   $query->andFilterWhere(['and',['>=', 'hopeCost', $post['hopeCost']], ['<', 'hopeCost', ceil($post['hopeCost'] + 1)]]);
         if($post['hopeMonthProfit'])$query->andFilterWhere(['and',['>=', 'hopeMonthProfit', $post['hopeMonthProfit']], ['<', 'hopeMonthProfit', ceil($post['hopeMonthProfit'] + 1)]]);
+        //$query->andFilterWhere(['checkStatus' => ['已认领','待提交','待审批','已审批','未通过']]);
+        if(isset($post['checkStatus']) && $post['checkStatus']) {
+            $query->andWhere(['like', 'checkStatus', $post['checkStatus']]);
+        }else{
+            $query->andWhere(['checkStatus' => ['已认领','待提交','待审批']]);
+        }
 
-
-        $query->orderBy('createDate DESC');
+        $query->orderBy(["FIELD(`checkStatus`,'已认领','待提交','待审批')" => true, 'createDate' => 'DESC']);
         $provider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
@@ -135,7 +139,6 @@ class ApiGoods
                                 devNum,createDate,updateDate,salePrice,hopeMonthProfit,hopeRate,hopeWeight,hopeCost,hopeSale');
         $query->andFilterWhere(["IFNULL(developer,'')" => $userList]);//查看权限
         $query->andFilterWhere(['devStatus' => '逆向认领']);//正向开发
-        $query->andFilterWhere(['checkStatus' => ['已认领','待提交','待审批','已审批','未通过']]);
         $query->andFilterWhere(["IFNULL(stockUp,'否')" => $post['stockUp']]);
         $query->andFilterWhere(['like', 'devNum', $post['devNum']]);
         $query->andFilterWhere(['like', 'checkStatus', $post['checkStatus']]);
@@ -155,8 +158,13 @@ class ApiGoods
         if($post['hopeSale'])   $query->andFilterWhere(['and',['>=', 'hopeSale', $post['hopeSale']], ['<', 'hopeSale', ceil($post['hopeSale'] + 1)]]);
         if($post['hopeCost'])   $query->andFilterWhere(['and',['>=', 'hopeCost', $post['hopeCost']], ['<', 'hopeCost', ceil($post['hopeCost'] + 1)]]);
         if($post['hopeMonthProfit'])$query->andFilterWhere(['and',['>=', 'hopeMonthProfit', $post['hopeMonthProfit']], ['<', 'hopeMonthProfit', ceil($post['hopeMonthProfit'] + 1)]]);
+        if(isset($post['checkStatus']) && $post['checkStatus']) {
+            $query->andWhere(['like', 'checkStatus', $post['checkStatus']]);
+        }else{
+            $query->andWhere(['checkStatus' => ['已认领','待提交','待审批']]);
+        }
 
-        $query->orderBy('createDate DESC');
+        $query->orderBy(["FIELD(`checkStatus`,'已认领','待提交','待审批')" => true, 'createDate' => 'DESC']);
         $provider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
