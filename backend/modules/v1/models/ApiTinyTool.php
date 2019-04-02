@@ -30,13 +30,13 @@ class ApiTinyTool
         $trackNo = isset($condition['trackNo']) ? $condition['trackNo']:'';
         $orderTime = isset($condition['orderTime']) ? $condition['orderTime']:[];
         if(!empty($suffix)) {
-            $query->andFilterWhere(['like','suffix'=>$suffix]);
+            $query->andFilterWhere(['like','suffix', $suffix]);
         }
         if(!empty($tradeId)) {
             $query->andFilterWhere(['tradeId'=>$tradeId]);
         }
         if(!empty($expressName)) {
-            $query->andFilterWhere(['like','expressName'=>$expressName]);
+            $query->andFilterWhere(['like','expressName', $expressName]);
         }
         if(!empty($trackNo)) {
             $query->andFilterWhere(['trackNo'=>$trackNo]);
