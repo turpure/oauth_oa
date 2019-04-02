@@ -6,6 +6,7 @@
  * Time: 9:26
  * Author: henry
  */
+
 /**
  * @name ApiGoodsinfo.php
  * @desc PhpStorm.
@@ -53,52 +54,52 @@ class ApiGoodsinfo
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $currentPage = isset($condition['currentPage']) ? $condition['currentPage'] : 1;
-        $type= $condition['type'];
+        $type = $condition['type'];
         $query = OaGoodsinfo::find();
         if ($type === 'goods-info') {
             $query->where(['filterType' => self::GoodsInfo]);
-        }
-        elseif ($type === 'picture-info')
-        {
-            $query = (new Query())->select("gi.*,g.*")
+            if (isset($condition['stockUp'])) $query->andFilterWhere(['stockUp' => $condition['stockUp']]);
+            if (isset($condition['developer'])) $query->andFilterWhere(['like', 'developer', $condition['developer']]);
+        } elseif ($type === 'picture-info') {
+            $query = (new Query())->select("gi.*,g.vendor1,g.vendor2,g.vendor3,
+             g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer")
                 ->from('proCenter.oa_goodsinfo gi')
-                ->join('LEFT JOIN','proCenter.oa_goods g','g.nid=gi.goodsId');
-            //select("oa_goodsinfo.*,oa_goods.vendor1,oa_goods.vendor2,oa_goods.vendor3,
-            //oa_goods.origin1,oa_goods.origin2,oa_goods.origin3,")
+                ->join('LEFT JOIN', 'proCenter.oa_goods g', 'g.nid=gi.goodsId');
             //$query->joinWith('oaGoods')->asArray();
             $query->where(['filterType' => self::PictureInfo]);
-        }
-        elseif ($type === 'plat-info') {
-            $query = (new Query())->select("gi.*,g.*")
+            if (isset($condition['stockUp'])) $query->andFilterWhere(['gi.stockUp' => $condition['stockUp']]);
+            if (isset($condition['developer'])) $query->andFilterWhere(['like', 'gi.developer', $condition['developer']]);
+        } elseif ($type === 'plat-info') {
+            $query = (new Query())->select("gi.*,g.vendor1,g.vendor2,g.vendor3,
+             g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer")
                 ->from('proCenter.oa_goodsinfo gi')
-                ->join('LEFT JOIN','proCenter.oa_goods g','g.nid=gi.goodsId');
+                ->join('LEFT JOIN', 'proCenter.oa_goods g', 'g.nid=gi.goodsId');
             //$query->joinWith('oaGoods')->asArray();
             $query->where(['filterType' => self::PlatInfo]);
-        }
-        else {
+            if (isset($condition['stockUp'])) $query->andFilterWhere(['gi.stockUp' => $condition['stockUp']]);
+            if (isset($condition['developer'])) $query->andFilterWhere(['like', 'gi.developer', $condition['developer']]);
+        } else {
             return [];
         }
-        if(isset($condition['goodsCode'])) $query->andFilterWhere(['like', 'goodsCode', $condition['goodsCode']]);
-        if(isset($condition['achieveStatus'])) $query->andFilterWhere(['like', 'achieveStatus', $condition['achieveStatus']]);
-        if(isset($condition['goodsName'])) $query->andFilterWhere(['like', 'goodsName', $condition['goodsName']]);
-        if(isset($condition['developer'])) $query->andFilterWhere(['like', 'developer', $condition['developer']]);
-        if(isset($condition['aliasCnName'])) $query->andFilterWhere(['like', 'aliasCnName', $condition['aliasCnName']]);
-        if(isset($condition['aliasEnName'])) $query->andFilterWhere(['like', 'aliasEnName', $condition['aliasEnName']]);
-        if(isset($condition['stockUp'])) $query->andFilterWhere(['oa_goodsinfo.stockUp' => $condition['stockUp']]);
-        if(isset($condition['isLiquid'])) $query->andFilterWhere(['isLiquid' => $condition['isLiquid']]);
-        if(isset($condition['isPowder'])) $query->andFilterWhere(['isPowder' => $condition['isPowder']]);
-        if(isset($condition['isMagnetism'])) $query->andFilterWhere(['isMagnetism' => $condition['isMagnetism']]);
-        if(isset($condition['isCharged'])) $query->andFilterWhere(['isCharged' => $condition['isCharged']]);
-        if(isset($condition['isVar'])) $query->andFilterWhere(['isVar' => $condition['isVar']]);
-        if(isset($condition['devDatetime']) && !empty($condition['devDatetime']))$query->andFilterWhere(['between', "date_format(devDatetime,'%Y-%m-%d')", $condition['devDatetime'][0], $condition['devDatetime'][1]]);
-        if(isset($condition['updateTime']) && !empty($condition['updateTime']))$query->andFilterWhere(['between', "date_format(updateTime,'%Y-%m-%d')", $condition['updateTime'][0], $condition['updateTime'][1]]);
+        if (isset($condition['goodsCode'])) $query->andFilterWhere(['like', 'goodsCode', $condition['goodsCode']]);
+        if (isset($condition['achieveStatus'])) $query->andFilterWhere(['like', 'achieveStatus', $condition['achieveStatus']]);
+        if (isset($condition['goodsName'])) $query->andFilterWhere(['like', 'goodsName', $condition['goodsName']]);
+        if (isset($condition['aliasCnName'])) $query->andFilterWhere(['like', 'aliasCnName', $condition['aliasCnName']]);
+        if (isset($condition['aliasEnName'])) $query->andFilterWhere(['like', 'aliasEnName', $condition['aliasEnName']]);
+        if (isset($condition['isLiquid'])) $query->andFilterWhere(['isLiquid' => $condition['isLiquid']]);
+        if (isset($condition['isPowder'])) $query->andFilterWhere(['isPowder' => $condition['isPowder']]);
+        if (isset($condition['isMagnetism'])) $query->andFilterWhere(['isMagnetism' => $condition['isMagnetism']]);
+        if (isset($condition['isCharged'])) $query->andFilterWhere(['isCharged' => $condition['isCharged']]);
+        if (isset($condition['isVar'])) $query->andFilterWhere(['isVar' => $condition['isVar']]);
+        if (isset($condition['devDatetime']) && !empty($condition['devDatetime'])) $query->andFilterWhere(['between', "date_format(devDatetime,'%Y-%m-%d')", $condition['devDatetime'][0], $condition['devDatetime'][1]]);
+        if (isset($condition['updateTime']) && !empty($condition['updateTime'])) $query->andFilterWhere(['between', "date_format(updateTime,'%Y-%m-%d')", $condition['updateTime'][0], $condition['updateTime'][1]]);
         $query->orderBy('id DESC');
 
         $provider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
                 'pageSize' => $pageSize,
-                'Page' => $currentPage -1
+                'Page' => $currentPage - 1
             ],
         ]);
         return $provider;
@@ -111,11 +112,11 @@ class ApiGoodsinfo
      */
     public static function getAttributeById($condition)
     {
-        $id = isset($condition['id'])? $condition['id']: '';
-        if(empty($id)){
+        $id = isset($condition['id']) ? $condition['id'] : '';
+        if (empty($id)) {
             return [];
         }
-        return OaGoodsinfo::find()->with('oaGoods')->where(['id'=>$id])->asArray()->one();
+        return OaGoodsinfo::find()->with('oaGoods')->where(['id' => $id])->asArray()->one();
     }
 
     /**
@@ -125,7 +126,7 @@ class ApiGoodsinfo
      */
     public static function deleteAttributeById($id)
     {
-        $ret = OaGoodsinfo::deleteAll(['id'=>$id]);
+        $ret = OaGoodsinfo::deleteAll(['id' => $id]);
         if ($ret) {
             return ['success'];
         }
@@ -139,17 +140,17 @@ class ApiGoodsinfo
      */
     public static function getAttributeInfo($condition)
     {
-        $id = isset($condition['id'])? $condition['id']: '';
-        if(empty($id)) {
+        $id = isset($condition['id']) ? $condition['id'] : '';
+        if (empty($id)) {
             return [];
         }
-        $goodsInfo = OaGoodsinfo::findOne(['id'=>$id]);
-        if($goodsInfo === null) {
+        $goodsInfo = OaGoodsinfo::findOne(['id' => $id]);
+        if ($goodsInfo === null) {
             return [];
         }
         $oaGoods = OaGoods::find()
             ->select('nid,cate,subCate,vendor1,vendor2,vendor3,origin1,origin2,origin3')
-            ->where(['nid'=>$goodsInfo->goodsId])->one();
+            ->where(['nid' => $goodsInfo->goodsId])->one();
         if ($oaGoods === null) {
             $oaGoods = [
                 'nid' => $goodsInfo->goodsId,
@@ -163,7 +164,7 @@ class ApiGoodsinfo
                 'origin3' => '',
             ];
         }
-        $skuInfo = OaGoodsSku::findAll(['infoId'=>$id]);
+        $skuInfo = OaGoodsSku::findAll(['infoId' => $id]);
         return [
             'basicInfo' => [
                 'goodsInfo' => $goodsInfo,
@@ -182,27 +183,26 @@ class ApiGoodsinfo
      */
     public static function finishAttribute($condition)
     {
-        $id = isset($condition['id'])? $condition['id']:'';
-        if(empty($id)) {
+        $id = isset($condition['id']) ? $condition['id'] : '';
+        if (empty($id)) {
             return ['failure'];
         }
-        $goodsInfo = OaGoodsinfo::findOne(['id'=>$id]);
-        if($goodsInfo === null) {
+        $goodsInfo = OaGoodsinfo::findOne(['id' => $id]);
+        if ($goodsInfo === null) {
             return ['failure'];
         }
         //属性信息标记完善，图片信息为待处理
         try {
             $goodsInfo->achieveStatus = '已完善';
             $goodsInfo->filterType = static::PictureInfo;
-            if(empty($goodsInfo->picStatus)) {
+            if (empty($goodsInfo->picStatus)) {
                 $goodsInfo->picStatus = '待处理';
             }
             if ($goodsInfo->update()) {
                 return ['success'];
             }
-        }
-        catch (\Exception  $why) {
-           return ['failure'];
+        } catch (\Exception  $why) {
+            return ['failure'];
         }
         return ['failure'];
     }
@@ -219,14 +219,14 @@ class ApiGoodsinfo
         $oaInfo = $condition['basicInfo']['oaGoods'];
         $skuInfo = $condition['skuInfo'];
         $infoId = $attributeInfo['id'];
-        $goodsInfo = OaGoodsinfo::findOne(['id'=>$infoId]);
-        if($goodsInfo === null) {
+        $goodsInfo = OaGoodsinfo::findOne(['id' => $infoId]);
+        if ($goodsInfo === null) {
             return ['failure'];
         }
         foreach ($skuInfo as $skuRow) {
-            $skuId = isset($skuRow['id']) ? $skuRow['id']: '';
-            $skuModel = OaGoodsSku::findOne(['id'=>$skuId]);
-            if($skuModel === null) {
+            $skuId = isset($skuRow['id']) ? $skuRow['id'] : '';
+            $skuModel = OaGoodsSku::findOne(['id' => $skuId]);
+            if ($skuModel === null) {
                 $skuModel = new OaGoodsSku();
                 $skuRow['id'] = $skuModel->id;
                 $skuRow['pid'] = $infoId;
@@ -235,15 +235,15 @@ class ApiGoodsinfo
             $skuModel->save();
         }
 
-        $oaGoods = OaGoods::findOne(['nid'=>$oaInfo['nid']]);
+        $oaGoods = OaGoods::findOne(['nid' => $oaInfo['nid']]);
         if ($oaGoods === null) {
-            $oaGoods =  new OaGoods();
+            $oaGoods = new OaGoods();
             $oaGoods->nid = $oaInfo['nid'];
         }
         $oaGoods->setAttributes($oaInfo);
         $goodsInfo->setAttributes($attributeInfo);
-        if( $goodsInfo->save() && $oaGoods->save()) {
-                return ['success'];
+        if ($goodsInfo->save() && $oaGoods->save()) {
+            return ['success'];
         }
         return ['failure'];
     }
@@ -256,7 +256,7 @@ class ApiGoodsinfo
     public static function deleteAttributeVariantById($ids)
     {
         foreach ($ids as $id) {
-            OaGoodsSku::deleteAll(['id'=>$id]);
+            OaGoodsSku::deleteAll(['id' => $id]);
         }
         return ['success'];
     }
@@ -270,13 +270,13 @@ class ApiGoodsinfo
      */
     public static function getPictureInfo($condition)
     {
-        $id = isset($condition['id'])?$condition['id']:'';
-        if(empty($id)) {
+        $id = isset($condition['id']) ? $condition['id'] : '';
+        if (empty($id)) {
             return [];
         }
         return OaGoodsSku::find()
             ->select('id,sku,linkUrl,property1,property2,property3')
-            ->where(['infoId'=>$id])
+            ->where(['infoId' => $id])
             ->all();
     }
 
@@ -292,12 +292,12 @@ class ApiGoodsinfo
         foreach ($pictureInfo as $picRow) {
             $id = $picRow['id'];
             $skuEntry = OaGoodsSku::findOne(['id' => $id]);
-            if($skuEntry === null) {
+            if ($skuEntry === null) {
                 $msg = 'failure';
                 break;
             }
             $skuEntry->setAttributes($picRow);
-            if(!$skuEntry->save()) {
+            if (!$skuEntry->save()) {
                 $msg = 'failure';
                 break;
             }
@@ -307,8 +307,8 @@ class ApiGoodsinfo
 
     public static function finishPicture($condition)
     {
-        $id = isset($condition['id'])?$condition['id']:'';
-        if(empty($id)) {
+        $id = isset($condition['id']) ? $condition['id'] : '';
+        if (empty($id)) {
             return [];
         }
         return ProductCenterTools::finishPicture($id);
@@ -322,15 +322,13 @@ class ApiGoodsinfo
         $plat = $condition['plat'];
         $infoId = $condition['id'];
         if ($plat === 'wish') {
-            $goods = OaWishGoods::findOne(['infoId'=>$infoId]);
-            $goodsSku = OaWishGoodsSku::findAll(['infoId'=>$infoId]);
+            $goods = OaWishGoods::findOne(['infoId' => $infoId]);
+            $goodsSku = OaWishGoodsSku::findAll(['infoId' => $infoId]);
 
-        }
-        elseif($plat === 'ebay') {
-            $goods = OaEbayGoods::findOne(['infoId'=>$infoId]);
-            $goodsSku = OaEbayGoodsSku::findAll(['infoId'=>$infoId]);
-        }
-        else {
+        } elseif ($plat === 'ebay') {
+            $goods = OaEbayGoods::findOne(['infoId' => $infoId]);
+            $goodsSku = OaEbayGoodsSku::findAll(['infoId' => $infoId]);
+        } else {
             $goods = [];
             $goodsSku = [];
         }
@@ -346,40 +344,16 @@ class ApiGoodsinfo
      * @param $condition
      * @return array
      */
-    public  static function saveEbayInfo($condition)
+    public static function saveEbayInfo($condition)
     {
         $goodsInfo = $condition['basicInfo'];
         $skuInfo = $condition['skuInfo'];
-        $goods = OaEbayGoods::findOne(['nid'=>$goodsInfo['nid']]);
+        $goods = OaEbayGoods::findOne(['nid' => $goodsInfo['nid']]);
         $goods->setAttributes($goodsInfo);
         foreach ($skuInfo as $row) {
-            $sku = OaEbayGoodsSku::findOne(['id'=>$row['id']]);
+            $sku = OaEbayGoodsSku::findOne(['id' => $row['id']]);
             $sku->setAttributes($row);
-            if(!$sku->save()) {
-                return ['failure'];
-            }
-        }
-        if (!$goods->save()) {
-           return ['failure'];
-        }
-        return ['success'];
-    }
-
-    /**
-     * @brief 保存wish模板
-     * @param $condition
-     * @return array
-     */
-    public  static function saveWishInfo($condition)
-    {
-        $goodsInfo = $condition['basicInfo'];
-        $skuInfo = $condition['skuInfo'];
-        $goods = OaWishGoods::findOne(['id'=>$goodsInfo['id']]);
-        $goods->setAttributes($goodsInfo);
-        foreach ($skuInfo as $row) {
-            $sku = OaWishGoodsSku::findOne(['id'=>$row['id']]);
-            $sku->setAttributes($row);
-            if(!$sku->save()) {
+            if (!$sku->save()) {
                 return ['failure'];
             }
         }
@@ -389,17 +363,42 @@ class ApiGoodsinfo
         return ['success'];
     }
 
-    public static function finishPlat($condition) {
+    /**
+     * @brief 保存wish模板
+     * @param $condition
+     * @return array
+     */
+    public static function saveWishInfo($condition)
+    {
+        $goodsInfo = $condition['basicInfo'];
+        $skuInfo = $condition['skuInfo'];
+        $goods = OaWishGoods::findOne(['id' => $goodsInfo['id']]);
+        $goods->setAttributes($goodsInfo);
+        foreach ($skuInfo as $row) {
+            $sku = OaWishGoodsSku::findOne(['id' => $row['id']]);
+            $sku->setAttributes($row);
+            if (!$sku->save()) {
+                return ['failure'];
+            }
+        }
+        if (!$goods->save()) {
+            return ['failure'];
+        }
+        return ['success'];
+    }
+
+    public static function finishPlat($condition)
+    {
         $infoId = $condition['id'];
         $plat = $condition['plat'];
-        $goodsInfo = OagoodsInfo::findOne(['id'=>$infoId]);
-        $oldPlat = $goodsInfo->completeStatus?:'';
-        $plat = array_merge($plat,explode(',',$oldPlat));
+        $goodsInfo = OagoodsInfo::findOne(['id' => $infoId]);
+        $oldPlat = $goodsInfo->completeStatus ?: '';
+        $plat = array_merge($plat, explode(',', $oldPlat));
         $plat = array_filter($plat);
         $plat = array_unique($plat);
         asort($plat);
         $goodsInfo->completeStatus = implode(',', $plat);
-        if(!$goodsInfo->save()) {
+        if (!$goodsInfo->save()) {
             return ['failure'];
         }
         return ['success'];
@@ -412,7 +411,7 @@ class ApiGoodsinfo
     public static function getEbayAccount()
     {
         $ret = OaEbaySuffix::find()->select('ebaySuffix,ebayName')->all();
-        return ArrayHelper::map($ret,'ebayName','ebaySuffix');
+        return ArrayHelper::map($ret, 'ebayName', 'ebaySuffix');
     }
 
     /**
@@ -439,8 +438,8 @@ class ApiGoodsinfo
         $row = [
             'sku' => '', 'selleruserid' => '', 'name' => '', 'inventory' => '', 'price' => '', 'msrp' => '',
             'shipping' => '', 'shipping_time' => '', 'main_image' => '', 'extra_images' => '', 'variants' => '',
-            'landing_page_url' => '', 'tags' => '', 'description' => '', 'brand'=> '', 'upc'=> '','local_price'=> '',
-            'local_shippingfee'=> '','local_currency'=> ''
+            'landing_page_url' => '', 'tags' => '', 'description' => '', 'brand' => '', 'upc' => '', 'local_price' => '',
+            'local_shippingfee' => '', 'local_currency' => ''
         ];
         $ret = [];
         foreach ($wishAccounts as $account) {
@@ -520,174 +519,174 @@ class ApiGoodsinfo
      */
     public static function preExportEbay($id, $account)
     {
-        $ebayInfo = OaEbayGoods::find()->joinWith('oaEbayGoodsSku')->where(['oa_ebayGoods.infoId'=>$id])->asArray()->one();
+        $ebayInfo = OaEbayGoods::find()->joinWith('oaEbayGoodsSku')->where(['oa_ebayGoods.infoId' => $id])->asArray()->one();
         $ret = [];
         $row = [
-            'Site'   =>  '', 'Selleruserid'   =>  '', 'ListingType'   =>  '', 'Category1'   =>  '', 'Category2'   =>  '',
-            'Condition'   =>  '', 'ConditionBewrite'   =>  '', 'Quantity'   =>  '', 'LotSize'   =>  '', 'Duration'   =>  '',
-            'ReservePrice'   =>  '', 'BestOffer'   =>  '', 'BestOfferAutoAcceptPrice'   =>  '', 'BestOfferAutoRefusedPrice'   =>  '',
-            'AcceptPayment'   =>  '', 'PayPalEmailAddress'   =>  '', 'Location'   =>  '', 'LocationCountry'   =>  '',
-            'ReturnsAccepted'   =>  '', 'RefundOptions'   =>  '', 'ReturnsWithin'   =>  '', 'ReturnPolicyShippingCostPaidBy'   =>  '',
-            'ReturnPolicyDescription'   =>  '', 'GalleryType'   =>  '', 'Bold'   =>  '', 'PrivateListing'   =>  '',
-            'HitCounter'   =>  '', 'sku'   =>  '', 'PictureURL'   =>  '', 'Title'   =>  '', 'SubTitle'   =>  '', 'IbayCategory'   =>  '',
-            'StartPrice'   =>  '', 'BuyItNowPrice'   =>  '', 'UseMobile'   =>  '', 'ShippingService1'   =>  '',
-            'ShippingServiceCost1'   =>  '', 'ShippingServiceAdditionalCost1'   =>  '', 'ShippingService2'   =>  '',
-            'ShippingServiceCost2'   =>  '', 'ShippingServiceAdditionalCost2'   =>  '', 'ShippingService3'   =>  '',
-            'ShippingServiceCost3'   =>  '', 'ShippingServiceAdditionalCost3'   =>  '', 'ShippingService4'   =>  '',
-            'ShippingServiceCost4'   =>  '', 'ShippingServiceAdditionalCost4'   =>  '', 'InternationalShippingService1'   =>  '',
-            'InternationalShippingServiceCost1'   =>  '', 'InternationalShippingServiceAdditionalCost1'   =>  '',
-            'InternationalShipToLocation1'   =>  '', 'InternationalShippingService2'   =>  '', 'InternationalShippingServiceCost2'   =>  '',
-            'InternationalShippingServiceAdditionalCost2'   =>  '', 'InternationalShipToLocation2'   =>  '',
-            'InternationalShippingService3'   =>  '', 'InternationalShippingServiceCost3'   =>  '',
-            'InternationalShippingServiceAdditionalCost3'   =>  '', 'InternationalShipToLocation3'   =>  '',
-            'InternationalShippingService4'   =>  '', 'InternationalShippingServiceCost4'   =>  '',
-            'InternationalShippingServiceAdditionalCost4'   =>  '', 'InternationalShipToLocation4'   =>  '',
-            'InternationalShippingService5'   =>  '', 'InternationalShippingServiceCost5'   =>  '',
-            'InternationalShippingServiceAdditionalCost5'   =>  '', 'InternationalShipToLocation5'   =>  '',
-            'DispatchTimeMax'   =>  '', 'ExcludeShipToLocation'   =>  '', 'StoreCategory1'   =>  '',
-            'StoreCategory2'   =>  '', 'IbayTemplate'   =>  '', 'IbayInformation'   =>  '',
-            'IbayComment'   =>  '', 'Description'   =>  '', 'Language'   =>  '', 'IbayOnlineInventoryHold'   =>  '',
-            'IbayRelistSold'   =>  '', 'IbayRelistUnsold'   =>  '', 'IBayEffectType'   =>  '', 'IbayEffectImg'   =>  '',
-            'IbayCrossSelling'   =>  '', 'Variation'   =>  '', 'outofstockcontrol'   =>  '', 'EPID'   =>  '',
-            'ISBN'   =>  '', 'UPC'   =>  '', 'EAN'   =>  '', 'SecondOffer'   =>  '', 'Immediately'   =>  '', 'Currency'   =>  '',
-            'LinkedPayPalAccount'   =>  '', 'MBPVCount'   =>  '', 'MBPVPeriod'   =>  '', 'MUISICount'   =>  '',
-            'MUISIPeriod'   =>  '', 'MaximumItemCount'   =>  '', 'MinimumFeedbackScore'   =>  '', 'Specifics1'   =>  '',
-            'Specifics2'   =>  '', 'Specifics3'   =>  '', 'Specifics4'   =>  '', 'Specifics5'   =>  '', 'Specifics6'   =>  '',
-            'Specifics7'   =>  '', 'Specifics8'   =>  '', 'Specifics9'   =>  '', 'Specifics10'   =>  '', 'Specifics11'   =>  '',
-            'Specifics12'   =>  '', 'Specifics13'   =>  '', 'Specifics14'   =>  '', 'Specifics15'   =>  '',
-            'Specifics16'   =>  '', 'Specifics17'   =>  '', 'Specifics18'   =>  '', 'Specifics19'   =>  '',
-            'Specifics20'   =>  '', 'Specifics21'   =>  '', 'Specifics22'   =>  '', 'Specifics23'   =>  '',
-            'Specifics24'   =>  '', 'Specifics25'   =>  '', 'Specifics26'   =>  '', 'Specifics27'   =>  '',
-            'Specifics28'   =>  '', 'Specifics29'   =>  '', 'Specifics30'   =>  '',
+            'Site' => '', 'Selleruserid' => '', 'ListingType' => '', 'Category1' => '', 'Category2' => '',
+            'Condition' => '', 'ConditionBewrite' => '', 'Quantity' => '', 'LotSize' => '', 'Duration' => '',
+            'ReservePrice' => '', 'BestOffer' => '', 'BestOfferAutoAcceptPrice' => '', 'BestOfferAutoRefusedPrice' => '',
+            'AcceptPayment' => '', 'PayPalEmailAddress' => '', 'Location' => '', 'LocationCountry' => '',
+            'ReturnsAccepted' => '', 'RefundOptions' => '', 'ReturnsWithin' => '', 'ReturnPolicyShippingCostPaidBy' => '',
+            'ReturnPolicyDescription' => '', 'GalleryType' => '', 'Bold' => '', 'PrivateListing' => '',
+            'HitCounter' => '', 'sku' => '', 'PictureURL' => '', 'Title' => '', 'SubTitle' => '', 'IbayCategory' => '',
+            'StartPrice' => '', 'BuyItNowPrice' => '', 'UseMobile' => '', 'ShippingService1' => '',
+            'ShippingServiceCost1' => '', 'ShippingServiceAdditionalCost1' => '', 'ShippingService2' => '',
+            'ShippingServiceCost2' => '', 'ShippingServiceAdditionalCost2' => '', 'ShippingService3' => '',
+            'ShippingServiceCost3' => '', 'ShippingServiceAdditionalCost3' => '', 'ShippingService4' => '',
+            'ShippingServiceCost4' => '', 'ShippingServiceAdditionalCost4' => '', 'InternationalShippingService1' => '',
+            'InternationalShippingServiceCost1' => '', 'InternationalShippingServiceAdditionalCost1' => '',
+            'InternationalShipToLocation1' => '', 'InternationalShippingService2' => '', 'InternationalShippingServiceCost2' => '',
+            'InternationalShippingServiceAdditionalCost2' => '', 'InternationalShipToLocation2' => '',
+            'InternationalShippingService3' => '', 'InternationalShippingServiceCost3' => '',
+            'InternationalShippingServiceAdditionalCost3' => '', 'InternationalShipToLocation3' => '',
+            'InternationalShippingService4' => '', 'InternationalShippingServiceCost4' => '',
+            'InternationalShippingServiceAdditionalCost4' => '', 'InternationalShipToLocation4' => '',
+            'InternationalShippingService5' => '', 'InternationalShippingServiceCost5' => '',
+            'InternationalShippingServiceAdditionalCost5' => '', 'InternationalShipToLocation5' => '',
+            'DispatchTimeMax' => '', 'ExcludeShipToLocation' => '', 'StoreCategory1' => '',
+            'StoreCategory2' => '', 'IbayTemplate' => '', 'IbayInformation' => '',
+            'IbayComment' => '', 'Description' => '', 'Language' => '', 'IbayOnlineInventoryHold' => '',
+            'IbayRelistSold' => '', 'IbayRelistUnsold' => '', 'IBayEffectType' => '', 'IbayEffectImg' => '',
+            'IbayCrossSelling' => '', 'Variation' => '', 'outofstockcontrol' => '', 'EPID' => '',
+            'ISBN' => '', 'UPC' => '', 'EAN' => '', 'SecondOffer' => '', 'Immediately' => '', 'Currency' => '',
+            'LinkedPayPalAccount' => '', 'MBPVCount' => '', 'MBPVPeriod' => '', 'MUISICount' => '',
+            'MUISIPeriod' => '', 'MaximumItemCount' => '', 'MinimumFeedbackScore' => '', 'Specifics1' => '',
+            'Specifics2' => '', 'Specifics3' => '', 'Specifics4' => '', 'Specifics5' => '', 'Specifics6' => '',
+            'Specifics7' => '', 'Specifics8' => '', 'Specifics9' => '', 'Specifics10' => '', 'Specifics11' => '',
+            'Specifics12' => '', 'Specifics13' => '', 'Specifics14' => '', 'Specifics15' => '',
+            'Specifics16' => '', 'Specifics17' => '', 'Specifics18' => '', 'Specifics19' => '',
+            'Specifics20' => '', 'Specifics21' => '', 'Specifics22' => '', 'Specifics23' => '',
+            'Specifics24' => '', 'Specifics25' => '', 'Specifics26' => '', 'Specifics27' => '',
+            'Specifics28' => '', 'Specifics29' => '', 'Specifics30' => '',
         ];
-        $row['Site']   =  '';
-        $row['Selleruserid']   =  '';
-        $row['ListingType']   =  '';
-        $row['Category1']   =  '';
-        $row['Category2']   =  '';
-        $row['Condition']   =  '';
-        $row['ConditionBewrite']   =  '';
-        $row['Quantity']   =  '';
-        $row['LotSize']   =  '';
-        $row['Duration']   =  '';
-        $row['ReservePrice']   =  '';
-        $row['BestOffer']   =  '';
-        $row['BestOfferAutoAcceptPrice']   =  '';
-        $row['BestOfferAutoRefusedPrice']   =  '';
-        $row['AcceptPayment']   =  '';
-        $row['PayPalEmailAddress']   =  '';
-        $row['Location']   =  '';
-        $row['LocationCountry']   =  '';
-        $row['ReturnsAccepted']   =  '';
-        $row['RefundOptions']   =  '';
-        $row['ReturnsWithin']   =  '';
-        $row['ReturnPolicyShippingCostPaidBy']   =  '';
-        $row['ReturnPolicyDescription']   =  '';
-        $row['GalleryType']   =  '';
-        $row['Bold']   =  '';
-        $row['PrivateListing']   =  '';
-        $row['HitCounter']   =  '';
-        $row['sku']   =  '';
-        $row['PictureURL']   =  '';
-        $row['Title']   =  '';
-        $row['SubTitle']   =  '';
-        $row['IbayCategory']   =  '';
-        $row['StartPrice']   =  '';
-        $row['BuyItNowPrice']   =  '';
-        $row['UseMobile']   =  '';
-        $row['ShippingService1']   =  '';
-        $row['ShippingServiceCost1']   =  '';
-        $row['ShippingServiceAdditionalCost1']   =  '';
-        $row['ShippingService2']   =  '';
-        $row['ShippingServiceCost2']   =  '';
-        $row['ShippingServiceAdditionalCost2']   =  '';
-        $row['ShippingService3']   =  '';
-        $row['ShippingServiceCost3']   =  '';
-        $row['ShippingServiceAdditionalCost3']   =  '';
-        $row['ShippingService4']   =  '';
-        $row['ShippingServiceCost4']   =  '';
-        $row['ShippingServiceAdditionalCost4']   =  '';
-        $row['InternationalShippingService1']   =  '';
-        $row['InternationalShippingServiceCost1']   =  '';
-        $row['InternationalShippingServiceAdditionalCost1']   =  '';
-        $row['InternationalShipToLocation1']   =  '';
-        $row['InternationalShippingService2']   =  '';
-        $row['InternationalShippingServiceCost2']   =  '';
-        $row['InternationalShippingServiceAdditionalCost2']   =  '';
-        $row['InternationalShipToLocation2']   =  '';
-        $row['InternationalShippingService3']   =  '';
-        $row['InternationalShippingServiceCost3']   =  '';
-        $row['InternationalShippingServiceAdditionalCost3']   =  '';
-        $row['InternationalShipToLocation3']   =  '';
-        $row['InternationalShippingService4']   =  '';
-        $row['InternationalShippingServiceCost4']   =  '';
-        $row['InternationalShippingServiceAdditionalCost4']   =  '';
-        $row['InternationalShipToLocation4']   =  '';
-        $row['InternationalShippingService5']   =  '';
-        $row['InternationalShippingServiceCost5']   =  '';
-        $row['InternationalShippingServiceAdditionalCost5']   =  '';
-        $row['InternationalShipToLocation5']   =  '';
-        $row['DispatchTimeMax']   =  '';
-        $row['ExcludeShipToLocation']   =  '';
-        $row['StoreCategory1']   =  '';
-        $row['StoreCategory2']   =  '';
-        $row['IbayTemplate']   =  '';
-        $row['IbayInformation']   =  '';
-        $row['IbayComment']   =  '';
-        $row['Description']   =  '';
-        $row['Language']   =  '';
-        $row['IbayOnlineInventoryHold']   =  '';
-        $row['IbayRelistSold']   =  '';
-        $row['IbayRelistUnsold']   =  '';
-        $row['IBayEffectType']   =  '';
-        $row['IbayEffectImg']   =  '';
-        $row['IbayCrossSelling']   =  '';
-        $row['Variation']   =  '';
-        $row['outofstockcontrol']   =  '';
-        $row['EPID']   =  '';
-        $row['ISBN']   =  '';
-        $row['UPC']   =  '';
-        $row['EAN']   =  '';
-        $row['SecondOffer']   =  '';
-        $row['Immediately']   =  '';
-        $row['Currency']   =  '';
-        $row['LinkedPayPalAccount']   =  '';
-        $row['MBPVCount']   =  '';
-        $row['MBPVPeriod']   =  '';
-        $row['MUISICount']   =  '';
-        $row['MUISIPeriod']   =  '';
-        $row['MaximumItemCount']   =  '';
-        $row['MinimumFeedbackScore']   =  '';
-        $row['Specifics1']   =  '';
-        $row['Specifics2']   =  '';
-        $row['Specifics3']   =  '';
-        $row['Specifics4']   =  '';
-        $row['Specifics5']   =  '';
-        $row['Specifics6']   =  '';
-        $row['Specifics7']   =  '';
-        $row['Specifics8']   =  '';
-        $row['Specifics9']   =  '';
-        $row['Specifics10']   =  '';
-        $row['Specifics11']   =  '';
-        $row['Specifics12']   =  '';
-        $row['Specifics13']   =  '';
-        $row['Specifics14']   =  '';
-        $row['Specifics15']   =  '';
-        $row['Specifics16']   =  '';
-        $row['Specifics17']   =  '';
-        $row['Specifics18']   =  '';
-        $row['Specifics19']   =  '';
-        $row['Specifics20']   =  '';
-        $row['Specifics21']   =  '';
-        $row['Specifics22']   =  '';
-        $row['Specifics23']   =  '';
-        $row['Specifics24']   =  '';
-        $row['Specifics25']   =  '';
-        $row['Specifics26']   =  '';
-        $row['Specifics27']   =  '';
-        $row['Specifics28']   =  '';
-        $row['Specifics29']   =  '';
-        $row['Specifics30']   =  '';
+        $row['Site'] = '';
+        $row['Selleruserid'] = '';
+        $row['ListingType'] = '';
+        $row['Category1'] = '';
+        $row['Category2'] = '';
+        $row['Condition'] = '';
+        $row['ConditionBewrite'] = '';
+        $row['Quantity'] = '';
+        $row['LotSize'] = '';
+        $row['Duration'] = '';
+        $row['ReservePrice'] = '';
+        $row['BestOffer'] = '';
+        $row['BestOfferAutoAcceptPrice'] = '';
+        $row['BestOfferAutoRefusedPrice'] = '';
+        $row['AcceptPayment'] = '';
+        $row['PayPalEmailAddress'] = '';
+        $row['Location'] = '';
+        $row['LocationCountry'] = '';
+        $row['ReturnsAccepted'] = '';
+        $row['RefundOptions'] = '';
+        $row['ReturnsWithin'] = '';
+        $row['ReturnPolicyShippingCostPaidBy'] = '';
+        $row['ReturnPolicyDescription'] = '';
+        $row['GalleryType'] = '';
+        $row['Bold'] = '';
+        $row['PrivateListing'] = '';
+        $row['HitCounter'] = '';
+        $row['sku'] = '';
+        $row['PictureURL'] = '';
+        $row['Title'] = '';
+        $row['SubTitle'] = '';
+        $row['IbayCategory'] = '';
+        $row['StartPrice'] = '';
+        $row['BuyItNowPrice'] = '';
+        $row['UseMobile'] = '';
+        $row['ShippingService1'] = '';
+        $row['ShippingServiceCost1'] = '';
+        $row['ShippingServiceAdditionalCost1'] = '';
+        $row['ShippingService2'] = '';
+        $row['ShippingServiceCost2'] = '';
+        $row['ShippingServiceAdditionalCost2'] = '';
+        $row['ShippingService3'] = '';
+        $row['ShippingServiceCost3'] = '';
+        $row['ShippingServiceAdditionalCost3'] = '';
+        $row['ShippingService4'] = '';
+        $row['ShippingServiceCost4'] = '';
+        $row['ShippingServiceAdditionalCost4'] = '';
+        $row['InternationalShippingService1'] = '';
+        $row['InternationalShippingServiceCost1'] = '';
+        $row['InternationalShippingServiceAdditionalCost1'] = '';
+        $row['InternationalShipToLocation1'] = '';
+        $row['InternationalShippingService2'] = '';
+        $row['InternationalShippingServiceCost2'] = '';
+        $row['InternationalShippingServiceAdditionalCost2'] = '';
+        $row['InternationalShipToLocation2'] = '';
+        $row['InternationalShippingService3'] = '';
+        $row['InternationalShippingServiceCost3'] = '';
+        $row['InternationalShippingServiceAdditionalCost3'] = '';
+        $row['InternationalShipToLocation3'] = '';
+        $row['InternationalShippingService4'] = '';
+        $row['InternationalShippingServiceCost4'] = '';
+        $row['InternationalShippingServiceAdditionalCost4'] = '';
+        $row['InternationalShipToLocation4'] = '';
+        $row['InternationalShippingService5'] = '';
+        $row['InternationalShippingServiceCost5'] = '';
+        $row['InternationalShippingServiceAdditionalCost5'] = '';
+        $row['InternationalShipToLocation5'] = '';
+        $row['DispatchTimeMax'] = '';
+        $row['ExcludeShipToLocation'] = '';
+        $row['StoreCategory1'] = '';
+        $row['StoreCategory2'] = '';
+        $row['IbayTemplate'] = '';
+        $row['IbayInformation'] = '';
+        $row['IbayComment'] = '';
+        $row['Description'] = '';
+        $row['Language'] = '';
+        $row['IbayOnlineInventoryHold'] = '';
+        $row['IbayRelistSold'] = '';
+        $row['IbayRelistUnsold'] = '';
+        $row['IBayEffectType'] = '';
+        $row['IbayEffectImg'] = '';
+        $row['IbayCrossSelling'] = '';
+        $row['Variation'] = '';
+        $row['outofstockcontrol'] = '';
+        $row['EPID'] = '';
+        $row['ISBN'] = '';
+        $row['UPC'] = '';
+        $row['EAN'] = '';
+        $row['SecondOffer'] = '';
+        $row['Immediately'] = '';
+        $row['Currency'] = '';
+        $row['LinkedPayPalAccount'] = '';
+        $row['MBPVCount'] = '';
+        $row['MBPVPeriod'] = '';
+        $row['MUISICount'] = '';
+        $row['MUISIPeriod'] = '';
+        $row['MaximumItemCount'] = '';
+        $row['MinimumFeedbackScore'] = '';
+        $row['Specifics1'] = '';
+        $row['Specifics2'] = '';
+        $row['Specifics3'] = '';
+        $row['Specifics4'] = '';
+        $row['Specifics5'] = '';
+        $row['Specifics6'] = '';
+        $row['Specifics7'] = '';
+        $row['Specifics8'] = '';
+        $row['Specifics9'] = '';
+        $row['Specifics10'] = '';
+        $row['Specifics11'] = '';
+        $row['Specifics12'] = '';
+        $row['Specifics13'] = '';
+        $row['Specifics14'] = '';
+        $row['Specifics15'] = '';
+        $row['Specifics16'] = '';
+        $row['Specifics17'] = '';
+        $row['Specifics18'] = '';
+        $row['Specifics19'] = '';
+        $row['Specifics20'] = '';
+        $row['Specifics21'] = '';
+        $row['Specifics22'] = '';
+        $row['Specifics23'] = '';
+        $row['Specifics24'] = '';
+        $row['Specifics25'] = '';
+        $row['Specifics26'] = '';
+        $row['Specifics27'] = '';
+        $row['Specifics28'] = '';
+        $row['Specifics29'] = '';
+        $row['Specifics30'] = '';
 
         $ret[] = $row;
         return $ret;

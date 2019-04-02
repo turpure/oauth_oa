@@ -175,7 +175,7 @@ class CheckController extends AdminController
         try {
             foreach ($post['nid'] as $id) {
                 $model = OaGoods::findOne(['nid' => $id]);
-                if(!in_array($model->checkStatus,['未通过'])){
+                if(!in_array($model->checkStatus,['未通过','待审批'])){
                     throw new \Exception('Please select the right items to cancel！');
                 }
                 $model->checkStatus = '已作废';

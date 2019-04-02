@@ -19,6 +19,10 @@ use backend\models\AuthAssignment;
  * @property integer $status
  * @property integer $created_at
  * @property integer $updated_at
+ * @property string avatar
+ * @property string mapPersons
+ * @property integer maxSupplierNum
+ * @property integer canStockUp
  */
 class User extends \yii\db\ActiveRecord implements IdentityInterface
 {
