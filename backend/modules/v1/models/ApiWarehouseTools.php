@@ -8,6 +8,7 @@
 namespace backend\modules\v1\models;
 
 use backend\models\ShopElf\BPerson;
+use backend\models\TaskPick;
 use yii\helpers\ArrayHelper;
 
 class ApiWarehouseTools
@@ -15,9 +16,17 @@ class ApiWarehouseTools
 
     public static function setBatchNumber($condition)
     {
-        $batchNumber = $condition['batchNumber'];
-        $picker = $condition['picker'];
-        return ['success'];
+        $row = [
+            'batchNumber' => $condition['batchNumber'],
+            'picker' => $condition['picker']
+        ];
+
+        $task = new TaskPick();
+        $task->setAttributes($row);
+        if ($task->save()) {
+            return ['success'];
+        }
+        return ['failed'];
     }
 
     public static function getPickMember()
