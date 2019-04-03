@@ -560,7 +560,7 @@ class ApiSupplierOrder
                 $billNumber = $order->billNumber;
                 $order->billStatus = '已审核';
                 $sql = 'UPDATE CG_StockOrderM  SET CheckFlag=1 WHERE BillNumber=:billNumber';
-                $res = $db->createCommand($sql, [':billNumber' => $billNumber])->execute();
+                $res = Yii::$app->db->createCommand($sql, [':billNumber' => $billNumber])->execute();
                 if (!$res || !$order->save()) {
                     throw new \Exception('审核失败！');
                 }
