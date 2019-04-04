@@ -395,14 +395,12 @@ class ApiReport
         if ($condition['member']){
             if ($condition['role'] == 'purchaser') {
                 $deadSql .= ' AND purchaser IN (' . $condition['member'] . ') ';
-            } elseif ($condition['role'] == 'developer2') {
-                $deadSql .= ' AND developer2 IN (' . $condition['member'] . ') ';
             } elseif ($condition['role'] == 'possessMan') {
                 $deadSql .= ' AND possessMan IN (' . $condition['member'] . ') ';
             } elseif ($condition['role'] == 'introducer') {
                 $deadSql .= ' AND introducer IN (' . $condition['member'] . ') ';
             } else {
-                $deadSql .= ' AND developer IN (' . $condition['member'] . ') ';
+                $deadSql .= ' AND (developer IN (' . $condition['member'] . ') OR developer2 IN (' . $condition['member'] . ')) ';
             }
         }
         try {

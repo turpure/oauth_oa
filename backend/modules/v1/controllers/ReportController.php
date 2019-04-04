@@ -358,7 +358,7 @@ class ReportController extends  AdminController
         $condition= [
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'member' => "'".implode("','",$cond['member'])."'",
+            'member' => $cond['member'] ? ("'".implode("','",$cond['member'])."'") : '',
             'role' => $cond['role'],
             'page' => isset($cond['page']) ? $cond['page'] : 1,
             'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 20,
