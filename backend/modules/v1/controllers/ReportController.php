@@ -314,7 +314,7 @@ class ReportController extends  AdminController
 
 
     /**
-     * 死库明细
+     * 销售死库明细
      * Date: 2019-01-04 10:21
      * Author: henry
      * @return array|ArrayDataProvider
@@ -338,10 +338,34 @@ class ReportController extends  AdminController
             'suffix' => "'".implode("','",$paramsFilter['store'])."'",
             'storename' => $storeName,
             'page' => isset($cond['page']) ? $cond['page'] : 1,
-            'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 10,
+            'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 20,
         ];
         return ApiReport::getDeadFee($condition);
     }
+
+
+    /**
+     * 其他死库明细
+     * Date: 2019-01-04 10:21
+     * Author: henry
+     * @return array|ArrayDataProvider
+     * @throws \yii\db\Exception
+     */
+    public function actionOtherDeadFee()
+    {
+        $request = Yii::$app->request->post();
+        $cond= $request['condition'];
+        $condition= [
+            'beginDate' => $cond['dateRange'][0],
+            'endDate' => $cond['dateRange'][1],
+            'member' => "'".implode("','",$cond['member'])."'",
+            'role' => $cond['role'],
+            'page' => isset($cond['page']) ? $cond['page'] : 1,
+            'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 20,
+        ];
+        return ApiReport::getOtherDeadFee($condition);
+    }
+
 
     /**
      * 杂费明细
