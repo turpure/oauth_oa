@@ -206,9 +206,10 @@ class OaGoodsinfoController extends AdminController
             return [];
         }
         $saveCondition = $request->post()['condition'];
-        $finishCondition = ['id' => $saveCondition['basicInfo']['goodsInfo']];
+        $finishCondition = ['id' => $saveCondition['basicInfo']['goodsInfo']['id']];
         ApiGoodsinfo::saveAttribute($saveCondition);
-        return ApiGoodsinfo::finishAttribute($finishCondition);
+        $res =  ApiGoodsinfo::finishAttribute($finishCondition);
+        return $res;
     }
 
     /**
