@@ -158,6 +158,9 @@ class RequirementsController extends AdminController
                 if ($require->schedule != Requirements::SCHEDULE_TO_BE_AUDITED) {
                     throw new \Exception('Can not examine the requirement again, please choose again!');
                 }
+                if (!$require->processingPerson) {
+                    throw new \Exception("Can not examine the requirement again, because there's no dealer!");
+                }
                 $require->auditor = $username;
                 $require->auditDate = date('Y-m-d H:i:s');
                 $require->schedule = $post['type'] == 'pass' ? Requirements::SCHEDULE_DEALING : Requirements::SCHEDULE_FAILED;
@@ -170,7 +173,6 @@ class RequirementsController extends AdminController
             $res = [];
         } catch (\Exception $e) {
             $transaction->rollBack();
-            $res = ['code' => 400, 'message' => '审批失败！'];
             $res = ['code' => 400, 'message' => $e->getMessage()];
         }
         return $res;

@@ -130,18 +130,22 @@ class ApiGoodsinfo
         return OaGoodsinfo::find()->with('oaGoods')->where(['id' => $id])->asArray()->one();
     }
 
-    /**
-     * @brief 删除属性信息条目的事务
+    /** 删除属性信息条目的事务
      * @param $id
-     * @return array
+     * Date: 2019-04-08 16:20
+     * Author: henry
+     * @return array|bool
      */
     public static function deleteAttributeById($id)
     {
         $ret = OaGoodsinfo::deleteAll(['id' => $id]);
         if ($ret) {
-            return ['success'];
+            return true;
         }
-        return ['failure'];
+        return [
+            'code' => 400,
+            'message' => 'failure'
+        ];
     }
 
     /**
@@ -186,21 +190,28 @@ class ApiGoodsinfo
     }
 
 
-    /**
-     * @brief 属性信息标记已完善
-     * @param array
-     * @return array
+    /** 属性信息标记已完善
+     * @param $condition
+     * Date: 2019-04-08 16:15
+     * Author: henry
+     * @return array|bool
      * @throws \Throwable
      */
     public static function finishAttribute($condition)
     {
         $id = isset($condition['id']) ? $condition['id'] : '';
         if (empty($id)) {
-            return ['failure'];
+            return [
+                'code' => 400,
+                'message' => "Goods info id can't be empty！"
+            ];
         }
         $goodsInfo = OaGoodsinfo::findOne(['id' => $id]);
         if ($goodsInfo === null) {
-            return ['failure'];
+            return [
+                'code' => 400,
+                'message' => "Can't find goods info！"
+            ];
         }
         //属性信息标记完善，图片信息为待处理
         try {
@@ -210,19 +221,21 @@ class ApiGoodsinfo
                 $goodsInfo->picStatus = '待处理';
             }
             if ($goodsInfo->update()) {
-                return ['success'];
+                return true;
             }
         } catch (\Exception  $why) {
-            return ['failure'];
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
         }
-        return ['failure'];
     }
 
-    /**
-     * @brief 保存属性信息
+    /** 保存属性信息
      * @param $condition
-     * @return array
-     * @throws \Exception
+     * Date: 2019-04-08 16:12
+     * Author: henry
+     * @return array|bool
      */
     public static function saveAttribute($condition)
     {
@@ -232,7 +245,10 @@ class ApiGoodsinfo
         $infoId = $attributeInfo['id'];
         $goodsInfo = OaGoodsinfo::findOne(['id' => $infoId]);
         if ($goodsInfo === null) {
-            return ['failure'];
+            return [
+               'code' => 400,
+               'message' => "Can't find goods info！"
+            ];
         }
         foreach ($skuInfo as $skuRow) {
             $skuId = isset($skuRow['id']) ? $skuRow['id'] : '';
@@ -254,22 +270,26 @@ class ApiGoodsinfo
         $oaGoods->setAttributes($oaInfo);
         $goodsInfo->setAttributes($attributeInfo);
         if ($goodsInfo->save() && $oaGoods->save()) {
-            return ['success'];
+            return true;
         }
-        return ['failure'];
+        return [
+            'code' => 400,
+            'message' => "Can't save goods info or goods！"
+        ];
     }
 
-    /**
-     * @brief 删除多属性信息
+    /** 删除多属性信息
      * @param $ids
-     * @return array
+     * Date: 2019-04-08 16:12
+     * Author: henry
+     * @return bool
      */
     public static function deleteAttributeVariantById($ids)
     {
         foreach ($ids as $id) {
             OaGoodsSku::deleteAll(['id' => $id]);
         }
-        return ['success'];
+        return true;
     }
 
     ###########################  picture info ########################################
@@ -365,13 +385,19 @@ class ApiGoodsinfo
             $sku = OaEbayGoodsSku::findOne(['id' => $row['id']]);
             $sku->setAttributes($row);
             if (!$sku->save()) {
-                return ['failure'];
+                return [
+                    'code' => 400,
+                    'message' => 'failure'
+                ];
             }
         }
         if (!$goods->save()) {
-            return ['failure'];
+             return [
+                'code' => 400,
+                'message' => 'failure'
+            ];
         }
-        return ['success'];
+        return true;
     }
 
     /**
@@ -389,13 +415,19 @@ class ApiGoodsinfo
             $sku = OaWishGoodsSku::findOne(['id' => $row['id']]);
             $sku->setAttributes($row);
             if (!$sku->save()) {
-                return ['failure'];
+                return [
+                    'code' => 400,
+                    'message' => 'failure'
+                ];
             }
         }
         if (!$goods->save()) {
-            return ['failure'];
+            return [
+                'code' => 400,
+                'message' => 'failure'
+            ];
         }
-        return ['success'];
+        return true;
     }
 
     public static function finishPlat($condition)
@@ -410,9 +442,12 @@ class ApiGoodsinfo
         asort($plat);
         $goodsInfo->completeStatus = implode(',', $plat);
         if (!$goodsInfo->save()) {
-            return ['failure'];
+            return [
+                'code' => 400,
+                'message' => 'failure'
+            ];
         }
-        return ['success'];
+        return true;
     }
 
     /**
