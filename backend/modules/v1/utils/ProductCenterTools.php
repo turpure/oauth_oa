@@ -293,6 +293,7 @@ class ProductCenterTools
     public static function _preGoodsSkuInfo($skuInfo, $bGoods)
     {
         $bGoodsSku = [];
+        $storeId = static::getStoreId($bGoods['storeName']);
         foreach ($skuInfo as $skuRow) {
             $Sku = [
                 'sellCount' => 0,
@@ -308,6 +309,7 @@ class ProductCenterTools
                 'CostPrice' => $skuRow['costPrice']?:0,
                 'RetailPrice' => $skuRow['retailPrice']?:0,
                 'GoodsSKUStatus' => '在售',
+                'storeId' => $storeId,
             ];
             $bGoodsSku[] = $Sku;
         }
@@ -324,7 +326,7 @@ class ProductCenterTools
         $stock = [];
         foreach ($skuInfo as $skuRow) {
             $currentStock = [
-                'StoreID' =>'7',
+                'StoreID' => $skuRow['storeId'],
                 'GoodsSKUID' => $skuRow['goodsSkuId'],
                 'GoodsID' =>$skuRow['GoodsID'],
                 'Number' =>0,
