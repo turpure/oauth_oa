@@ -301,8 +301,8 @@ class ProductCenterTools
                 'property1' => $skuRow['property1']?:'',
                 'property2' => $skuRow['property2']?:'',
                 'property3' => $skuRow['property3']?:'',
-                'SKUName' => $skuRow['sku'] . $skuRow['property1'],
-                'BmpFileName' => 'http://121.196.233.153/images/' . $skuRow['sku'] . '.jpg',
+                'SKUName' => static::getSkuName($skuRow,$bGoods['goodsName']),
+                'BmpFileName' => static::getBmpFileName($skuRow,$bGoods['goodsName']),
                 'Remark' => $bGoods['description']?:'',
                 'Weight' => $skuRow['weight']?:0,
                 'CostPrice' => $skuRow['costPrice']?:0,
@@ -735,6 +735,36 @@ class ProductCenterTools
            }
        }
        return $weight;
+   }
+
+    /**
+     * @brief 计算SkuName
+     * @param $skuInfo
+     * @param $goodsName
+     * @return string
+     */
+   public static function getSkuName($skuInfo, $goodsName)
+   {
+       $words = [$skuInfo['property1']?:'',$skuInfo['property2']?:'', $skuInfo['property3']?:''];
+       $name = $goodsName;
+       foreach ($words as $wd) {
+           if(!empty($wd)) {
+               $name = $name . ' ' . $wd;
+           }
+       }
+       return $name;
+   }
+
+    /**
+     * @brief 计算在SKU的图片路径
+     * @param $sku
+     * @return string
+     */
+   public static function getBmpFileName($sku)
+   {
+       $skuName = explode($sku, '_')[0];
+       $base = 'http://121.196.233.153/images/';
+       return $base . $skuName . '.jpg';
    }
 }
 
