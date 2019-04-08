@@ -15,8 +15,12 @@ use backend\models\OaWishGoods;
 use backend\models\OaWishGoodsSku;
 use backend\models\ShopElf\BDictionary;
 use backend\models\ShopElf\BGoods;
+use backend\models\ShopElf\BGoodSCats;
 use backend\models\ShopElf\BGoodsSku;
+use backend\models\ShopElf\BStore;
 use backend\models\ShopElf\KCCurrentStock;
+use backend\models\ShopElf\BSupplier;
+use backend\models\ShopElf\BPackInfo;
 use backend\modules\v1\models\ApiGoodsinfo;
 use Yii;
 use yii\helpers\ArrayHelper;
@@ -240,40 +244,40 @@ class ProductCenterTools
     public static function _preGoodsInfo($goodsInfo)
     {
         $bGoods = [
-            'GoodsCategoryID' => '2', //$goodsInfo['basicInfo']['oaGoods']['cate'],
-            'CategoryCode' => '6', // $goodsInfo['basicInfo']['oaGoods']['subCate'],
+            'GoodsCategoryID' => static::getCategoryID($goodsInfo['basicInfo']['oaGoods']['subCate']),
+            'CategoryCode' => static::getCategoryCode($goodsInfo['basicInfo']['oaGoods']['subCate']),
             'GoodsCode' =>  $goodsInfo['basicInfo']['goodsInfo']['goodsCode']?:'',
             'GoodsName' =>  $goodsInfo['basicInfo']['goodsInfo']['goodsName']?:'',
-            'MultiStyle' =>1,// $goodsInfo['basicInfo']['goodsInfo']['isVar'],
-            'salePrice' =>  $goodsInfo['skuInfo'][0]['retailPrice']?:0,
-            'CostPrice' =>  $goodsInfo['skuInfo'][0]['costPrice']?:0,
+            'MultiStyle' => $goodsInfo['basicInfo']['goodsInfo']['isVar'] === '否' ? 0 : 1,
+            'salePrice' =>  $goodsInfo['basicInfo']['goodsInfo']['salePrice'],
+            'CostPrice' =>  static::getMaxCostPrice($goodsInfo['basicInfo']['goodsInfo']['id']),
             'AliasCnName' => $goodsInfo['basicInfo']['goodsInfo']['aliasCnName']?:'',
             'AliasEnName' =>  $goodsInfo['basicInfo']['goodsInfo']['aliasEnName']?:'',
-            'Weight' =>  $goodsInfo['skuInfo'][0]['weight']?:0,
+            'Weight' =>  static::getMaxWeight($goodsInfo['basicInfo']['goodsInfo']['id']),
             'OriginCountry' => 'China',
             'OriginCountryCode' => 'CN',
-            'SupplierID' =>21,//  $goodsInfo['basicInfo']['goodsInfo']['SupplierID'],
+            'SupplierID' => static::getSupplierID($goodsInfo['basicInfo']['goodsInfo']['SupplierName']),
             'SalerName ' =>  $goodsInfo['basicInfo']['goodsInfo']['developer']?:'',
             'PackName' =>  $goodsInfo['basicInfo']['goodsInfo']['PackName']?:'',
             'GoodsStatus' => '在售',
             'DevDate' =>  date('Y-m-d H:i:s'),
-            'RetailPrice' =>  $goodsInfo['skuInfo'][0]['retailPrice']?:0,
-            'StoreID' => 7,// $goodsInfo['basicInfo']['goodsInfo']['StoreID'],
+            'RetailPrice' => static::getMaxRetailPrice($goodsInfo['basicInfo']['goodsInfo']['id']),
+            'StoreID' => static::getStoreId($goodsInfo['basicInfo']['goodsInfo']['StoreName']),
             'Purchaser' =>  $goodsInfo['basicInfo']['goodsInfo']['purchaser']?:'',
             'LinkUrl' =>  $goodsInfo['basicInfo']['oaGoods']['vendor1']?:'',
             'LinkUrl2' =>  $goodsInfo['basicInfo']['oaGoods']['vendor2']?:'',
             'LinkUrl3' =>  $goodsInfo['basicInfo']['oaGoods']['vendor3']?:'',
-            'IsCharged' =>1, // $goodsInfo['basicInfo']['goodsInfo']['IsCharged'],
+            'IsCharged' => $goodsInfo['basicInfo']['goodsInfo']['IsCharged'] === '是' ? 1: 0,
             'Season' =>  $goodsInfo['basicInfo']['goodsInfo']['season']?:'',
-            'IsPowder' =>1,//  $goodsInfo['basicInfo']['goodsInfo']['IsPowder'],
-            'IsLiquid' =>1,//  $goodsInfo['basicInfo']['goodsInfo']['IsLiquid'],
-            'possessMan1' =>  $goodsInfo['basicInfo']['goodsInfo']['possessMan1']?:'',
+            'IsPowder' => $goodsInfo['basicInfo']['goodsInfo']['isPowder'] === '是' ? 1 : 0,
+            'IsLiquid' => $goodsInfo['basicInfo']['goodsInfo']['isLiquid'] === '是' ? 1 : 0,
+            'possessMan1' => $goodsInfo['basicInfo']['goodsInfo']['possessMan1']?:'',
             'LinkUrl4' =>  $goodsInfo['basicInfo']['oaGoods']['origin1']?:'',
             'LinkUrl5' =>  $goodsInfo['basicInfo']['oaGoods']['origin2']?:'',
             'LinkUrl6' =>  $goodsInfo['basicInfo']['oaGoods']['origin3']?:'',
-            'isMagnetism' =>1,//  $goodsInfo['basicInfo']['goodsInfo']['isMagnetism'],
-            'DeclaredValue' =>  $goodsInfo['basicInfo']['goodsInfo']['declaredValue']?:0,
-            'PackFee' => 0,
+            'isMagnetism' => $goodsInfo['basicInfo']['goodsInfo']['isMagnetism'] === '是' ? 1 : 0,
+            'DeclaredValue' =>  static::getDeclaredValue($goodsInfo['basicInfo']['goodsInfo']['id']),
+            'PackFee' => static::getPackFee($goodsInfo['basicInfo']['goodsInfo']['packName']),
             'description' => $goodsInfo['basicInfo']['goodsInfo']['description']
         ];
         return $bGoods;
@@ -575,4 +579,162 @@ class ProductCenterTools
        return ArrayHelper::getColumn($ret,'DictionaryName');
 
    }
+
+   ############################### prepare goods-info function #######################################
+    /**
+     * @brief 获取普源类目ID
+     * @param $cateName
+     * @return integer
+     */
+   public static function getCategoryID($cateName)
+   {
+      return BGoodSCats::findOne(['CategoryName' => $cateName])->NID;
+   }
+
+    /**
+     * @brief 获取普源供应商ID
+     * @param $supplierName
+     * @return int
+     */
+   public static function getSupplierID($supplierName)
+   {
+       $supplier = BSupplier::findOne(['SupplierName' => $supplierName]);
+       if ($supplier === Null) {
+           $supplier = new BSupplier();
+           $attributes = [
+               'SupplierName' => $supplierName,
+               'Recorder' => Yii::$app->user->identity->username,
+               'InputDate' => strftime('%F %T'),
+               'Used' => 0
+           ];
+           $supplier->setAttributes($attributes);
+           if ($supplier->save()) {
+               return $supplier->NID;
+           }
+       }
+       return $supplier->NID;
+   }
+
+    /**
+     * @brief 获取普源类目编码
+     * @param $cateName
+     * @return string
+     */
+   public static function getCategoryCode($cateName)
+   {
+       return BGoodSCats::findOne(['CategoryName' => $cateName])->CategoryCode;
+   }
+
+   public static function getStoreId($storeName)
+   {
+       return BStore::findOne(['StoreName' => $storeName])->NID;
+   }
+
+    /**
+     * @brief 获取普源包装费用
+     * @param $packName
+     * @return int|string
+     */
+   public static function getPackFee ($packName)
+   {
+       $pack = BPackInfo::findOne(['PackName' => $packName]);
+       $packFee = 0;
+       if ($pack !== Null) {
+           $packFee = $pack->CostPrice;
+       }
+       return $packFee;
+   }
+
+    /**
+     * @brief 计算申报价
+     * @param $infoId
+     * @return int
+     */
+   public static function getDeclaredValue ($infoId)
+   {
+       $minPrice = static::getMaxRetailPrice($infoId);
+       if ($minPrice >= 0  && $minPrice<= 2) {
+           return 1;
+       }
+       if ($minPrice > 2  && $minPrice<= 5) {
+           return 2;
+       }
+       if ($minPrice > 5  && $minPrice<= 20) {
+           return 3;
+       }
+       if ($minPrice > 20  && $minPrice<= 40) {
+           return 4;
+       }
+       if ($minPrice > 40 ) {
+           return 5;
+       }
+
+
+   }
+
+    /**
+     * @brief 获取普源最低零售价
+     * @param $infoId
+     * @return int
+     */
+   public static function getMinRetailPrice ($infoId)
+   {
+       $SKU = OaGoodsSku::findAll(['infoId' => $infoId]);
+       if ($SKU === Null) {
+           return 0;
+       }
+       $retailPrice = $SKU[0]->retailPrice;
+       foreach ($SKU as $row) {
+           if ($row->retailPrice <$retailPrice) {
+               $retailPrice = $row->retailPrice;
+           }
+       }
+       return $retailPrice;
+   }
+
+    /**
+     * @brief 获取最大零售价格
+     * @param $infoId
+     * @return int
+     */
+   public static function getMaxRetailPrice ($infoId)
+   {
+       $SKU = OaGoodsSku::findAll(['infoId' => $infoId]);
+       $retailPrice = 0;
+       foreach ($SKU as $row) {
+           if ($row->retailPrice >= $retailPrice) {
+               $retailPrice = $row->retailPrice;
+           }
+       }
+       return $retailPrice;
+   }
+
+   public static function getMaxCostPrice($infoId)
+   {
+       $SKU = OaGoodsSku::findAll(['infoId' => $infoId]);
+       $costPrice = 0;
+       foreach ($SKU as $row) {
+           if ($row->costPrice >= $costPrice) {
+               $costPrice = $row->costPrice;
+           }
+       }
+       return $costPrice;
+   }
+   /**
+     * @brief 获取最大重量
+     * @param $infoId
+     * @return int
+     */
+   public static function getMaxWeight($infoId)
+   {
+       $SKU = OaGoodsSku::findAll(['infoId' => $infoId]);
+       $weight = 0;
+       foreach ($SKU as $row) {
+           if ($row->weight >= $weight) {
+               $weight = $row->weight;
+           }
+       }
+       return $weight;
+   }
 }
+
