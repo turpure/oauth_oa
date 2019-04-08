@@ -53,7 +53,6 @@ class ApiGoodsinfo
     public static function getOaGoodsInfoList($condition)
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-        $currentPage = isset($condition['currentPage']) ? $condition['currentPage'] : 1;
         $type = $condition['type'];
         $query = OaGoodsinfo::find();
         if ($type === 'goods-info') {
@@ -103,13 +102,15 @@ class ApiGoodsinfo
         if (isset($condition['isVar'])) $query->andFilterWhere(['isVar' => $condition['isVar']]);
         if (isset($condition['devDatetime']) && !empty($condition['devDatetime'])) $query->andFilterWhere(['between', "date_format(devDatetime,'%Y-%m-%d')", $condition['devDatetime'][0], $condition['devDatetime'][1]]);
         if (isset($condition['updateTime']) && !empty($condition['updateTime'])) $query->andFilterWhere(['between', "date_format(updateTime,'%Y-%m-%d')", $condition['updateTime'][0], $condition['updateTime'][1]]);
+        if (isset($condition['mid']) && $condition['mid'] == '是') $query->andFilterWhere(['>', "mid", 1]);
+        if (isset($condition['mid']) && $condition['mid'] == '否') $query->andFilterWhere(["IFNULL(mid,'')" => '']);
+
         $query->orderBy('id DESC');
 
         $provider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
                 'pageSize' => $pageSize,
-                'Page' => $currentPage - 1
             ],
         ]);
         return $provider;
