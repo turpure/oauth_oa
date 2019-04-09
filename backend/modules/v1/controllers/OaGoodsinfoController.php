@@ -6,6 +6,7 @@
  * Time: 9:23
  * Author: henry
  */
+
 /**
  * @name OaGoodsinfoController.php
  * @desc PhpStorm.
@@ -36,6 +37,7 @@ class OaGoodsinfoController extends AdminController
     ];
 
     ###########################  goods info ########################################
+
     /**
      * goods-info-attributes list
      * @return mixed
@@ -104,6 +106,7 @@ class OaGoodsinfoController extends AdminController
     {
         return AttributeInfoTools::getSeason();
     }
+
     /**
      * @brief get special attributes
      * @return array
@@ -208,7 +211,7 @@ class OaGoodsinfoController extends AdminController
         $saveCondition = $request->post()['condition'];
         $finishCondition = ['id' => $saveCondition['basicInfo']['goodsInfo']['id']];
         ApiGoodsinfo::saveAttribute($saveCondition);
-        $res =  ApiGoodsinfo::finishAttribute($finishCondition);
+        $res = ApiGoodsinfo::finishAttribute($finishCondition);
         return $res;
     }
 
@@ -268,6 +271,7 @@ class OaGoodsinfoController extends AdminController
             return ApiGoodsinfo::deleteAttributeById($id);
         }
     }
+
     /**
      * @brief 图片信息明细
      * @return array|mixed
@@ -365,7 +369,7 @@ class OaGoodsinfoController extends AdminController
      * @brief 保存wish模板信息
      * @return array
      */
-    public  function actionSaveWishInfo()
+    public function actionSaveWishInfo()
     {
         $request = Yii::$app->request;
         if (!$request->isPost) {
@@ -418,7 +422,7 @@ class OaGoodsinfoController extends AdminController
      */
     public function actionPlatCompletedPlat()
     {
-        return ['joom','wish', 'ebay'];
+        return ['joom', 'wish', 'ebay'];
     }
 
     /**
@@ -499,11 +503,35 @@ class OaGoodsinfoController extends AdminController
      * Author: henry
      * @return array
      */
-    public function actionJoomName(){
+    public function actionJoomName()
+    {
         $list = OaJoomSuffix::find()->asArray()->all();
-        return ArrayHelper::getColumn($list,'joomName');
+        return ArrayHelper::getColumn($list, 'joomName');
     }
 
+    /**
+     *
+     * Date: 2019-04-09 16:52
+     * Author: henry
+     * @return array
+     */
+    public function actionEbaySite()
+    {
+        return [
+            [
+                'siteName' => '美国',
+                'siteCode' => 'USD'
+            ],
+            [
+                'siteName' => '英国',
+                'siteCode' => 'GBP'
+            ],
+            [
+                'siteName' => '澳大利亚',
+                'siteCode' => 'AUD'
+            ],
+        ];
+    }
 
 
 }
