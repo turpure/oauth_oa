@@ -43,8 +43,9 @@ class OaGoodsSku extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['infoId', 'goodsSkuId', 'stockNum', 'did'], 'integer'],
+            [['sku'], 'unique'],
             [['sku'], 'required'],
+            [['infoId', 'goodsSkuId', 'stockNum', 'did'], 'integer'],
             [['weight', 'retailPrice', 'costPrice', 'joomPrice', 'joomShipping'], 'number'],
             [['sku', 'property1', 'property2', 'property3', 'memo1', 'memo2', 'memo3', 'memo4', 'linkUrl'], 'string', 'max' => 255],
         ];

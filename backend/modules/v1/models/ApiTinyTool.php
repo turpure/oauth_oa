@@ -217,6 +217,7 @@ class ApiTinyTool
         try {
             $sql = "SELECT
                         bg.possessman1,
+                        bg.SalerName AS developer,
                         bg.GoodsCode,
                         bg.GoodsName,
                         bg.CreateDate,

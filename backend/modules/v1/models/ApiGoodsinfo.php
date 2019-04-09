@@ -32,7 +32,7 @@ use yii\data\ActiveDataProvider;
 use backend\modules\v1\utils\ProductCenterTools;
 use yii\db\Query;
 use yii\helpers\ArrayHelper;
-
+use Yii;
 
 class ApiGoodsinfo
 {
@@ -231,11 +231,12 @@ class ApiGoodsinfo
         }
     }
 
-    /** 保存属性信息
+    /**保存属性信息
      * @param $condition
-     * Date: 2019-04-08 16:12
+     * Date: 2019-04-08 17:29
      * Author: henry
      * @return array|bool
+     * @throws \yii\db\Exception
      */
     public static function saveAttribute($condition)
     {
@@ -250,32 +251,45 @@ class ApiGoodsinfo
                'message' => "Can't find goods info！"
             ];
         }
-        foreach ($skuInfo as $skuRow) {
-            $skuId = isset($skuRow['id']) ? $skuRow['id'] : '';
-            $skuModel = OaGoodsSku::findOne(['id' => $skuId]);
-            if ($skuModel === null) {
-                $skuModel = new OaGoodsSku();
-                $skuRow['id'] = $skuModel->id;
-                $skuRow['pid'] = $infoId;
+        $goodsInfo->isVar = count($skuInfo) > 1 ? '是' : '否';//判断是否多属性
+        $transaction = Yii::$app->db->beginTransaction();
+        try{
+            foreach ($skuInfo as $skuRow) {
+                $skuId = isset($skuRow['id']) ? $skuRow['id'] : '';
+                $skuModel = OaGoodsSku::findOne(['id' => $skuId]);
+                if ($skuModel === null) {
+                    $skuModel = new OaGoodsSku();
+                    $skuRow['id'] = $skuModel->id;
+                    $skuRow['pid'] = $infoId;
+                }
+                $skuModel->setAttributes($skuRow);
+                $a = $skuModel->save();
+                if(!$a){
+                    throw new \Exception("Goods sku is already exists！");
+                }
             }
-            $skuModel->setAttributes($skuRow);
-            $skuModel->save();
+
+            $oaGoods = OaGoods::findOne(['nid' => $oaInfo['nid']]);
+            if ($oaGoods === null) {
+                $oaGoods = new OaGoods();
+                $oaGoods->nid = $oaInfo['nid'];
+            }
+            $oaGoods->setAttributes($oaInfo);
+            $goodsInfo->setAttributes($attributeInfo);
+            if (!$goodsInfo->save() || !$oaGoods->save()) {
+                throw new \Exception("Can't save goods info or goods！");
+            }
+            $transaction->commit();
+            return true;
+        }catch (\Exception $e){
+            $transaction->rollBack();
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
         }
 
-        $oaGoods = OaGoods::findOne(['nid' => $oaInfo['nid']]);
-        if ($oaGoods === null) {
-            $oaGoods = new OaGoods();
-            $oaGoods->nid = $oaInfo['nid'];
-        }
-        $oaGoods->setAttributes($oaInfo);
-        $goodsInfo->setAttributes($attributeInfo);
-        if ($goodsInfo->save() && $oaGoods->save()) {
-            return true;
-        }
-        return [
-            'code' => 400,
-            'message' => "Can't save goods info or goods！"
-        ];
+
     }
 
     /** 删除多属性信息
