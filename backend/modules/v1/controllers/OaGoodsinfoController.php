@@ -17,8 +17,9 @@
 
 namespace backend\modules\v1\controllers;
 
-use backend\models\OaGoodsSku;
+use backend\models\OaEbayGoodsSku;
 use backend\models\OaJoomSuffix;
+use backend\models\OaWishGoodsSku;
 use backend\modules\v1\models\ApiGoodsinfo;
 use backend\modules\v1\utils\ProductCenterTools;
 use backend\modules\v1\utils\AttributeInfoTools;
@@ -548,7 +549,11 @@ class OaGoodsinfoController extends AdminController
         }
         $condition = $request->post()['condition'];
         $skuId = $condition['id'];
-        OaGoodsSku::deleteAll(['id' => $skuId]);
+        if($condition['plat'] == 'wish'){
+            OaWishGoodsSku::deleteAll(['id' => $skuId]);
+        }else{
+            OaEbayGoodsSku::deleteAll(['id' => $skuId]);
+        }
         return true;
     }
 
