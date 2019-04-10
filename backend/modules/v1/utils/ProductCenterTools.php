@@ -272,25 +272,25 @@ class ProductCenterTools
             'GoodsCode' =>  $goodsInfo['basicInfo']['goodsInfo']['goodsCode']?:'',
             'GoodsName' =>  $goodsInfo['basicInfo']['goodsInfo']['goodsName']?:'',
             'MultiStyle' => $goodsInfo['basicInfo']['goodsInfo']['isVar'] === '否' ? 0 : 1,
-            'salePrice' =>  $goodsInfo['basicInfo']['goodsInfo']['salePrice'],
+            'salePrice' =>  $goodsInfo['basicInfo']['oaGoods']['salePrice'],
             'CostPrice' =>  static::getMaxCostPrice($goodsInfo['basicInfo']['goodsInfo']['id']),
             'AliasCnName' => $goodsInfo['basicInfo']['goodsInfo']['aliasCnName']?:'',
             'AliasEnName' =>  $goodsInfo['basicInfo']['goodsInfo']['aliasEnName']?:'',
             'Weight' =>  static::getMaxWeight($goodsInfo['basicInfo']['goodsInfo']['id']),
             'OriginCountry' => 'China',
             'OriginCountryCode' => 'CN',
-            'SupplierID' => static::getSupplierID($goodsInfo['basicInfo']['goodsInfo']['SupplierName']),
+            'SupplierID' => static::getSupplierID($goodsInfo['basicInfo']['goodsInfo']['supplierName']),
             'SalerName ' =>  $goodsInfo['basicInfo']['goodsInfo']['developer']?:'',
-            'PackName' =>  $goodsInfo['basicInfo']['goodsInfo']['PackName']?:'',
+            'PackName' =>  $goodsInfo['basicInfo']['goodsInfo']['packName']?:'',
             'GoodsStatus' => '在售',
             'DevDate' =>  date('Y-m-d H:i:s'),
             'RetailPrice' => static::getMaxRetailPrice($goodsInfo['basicInfo']['goodsInfo']['id']),
-            'StoreID' => static::getStoreId($goodsInfo['basicInfo']['goodsInfo']['StoreName']),
+            'StoreID' => static::getStoreId($goodsInfo['basicInfo']['goodsInfo']['storeName']),
             'Purchaser' =>  $goodsInfo['basicInfo']['goodsInfo']['purchaser']?:'',
             'LinkUrl' =>  $goodsInfo['basicInfo']['oaGoods']['vendor1']?:'',
             'LinkUrl2' =>  $goodsInfo['basicInfo']['oaGoods']['vendor2']?:'',
             'LinkUrl3' =>  $goodsInfo['basicInfo']['oaGoods']['vendor3']?:'',
-            'IsCharged' => $goodsInfo['basicInfo']['goodsInfo']['IsCharged'] === '是' ? 1: 0,
+            'IsCharged' => $goodsInfo['basicInfo']['goodsInfo']['isCharged'] === '是' ? 1: 0,
             'Season' =>  $goodsInfo['basicInfo']['goodsInfo']['season']?:'',
             'IsPowder' => $goodsInfo['basicInfo']['goodsInfo']['isPowder'] === '是' ? 1 : 0,
             'IsLiquid' => $goodsInfo['basicInfo']['goodsInfo']['isLiquid'] === '是' ? 1 : 0,
@@ -316,7 +316,7 @@ class ProductCenterTools
     public static function _preGoodsSkuInfo($skuInfo, $bGoods)
     {
         $bGoodsSku = [];
-        $storeId = static::getStoreId($bGoods['storeName']);
+        $storeId = $bGoods['StoreID'];
         foreach ($skuInfo as $skuRow) {
             $Sku = [
                 'sellCount' => 0,
@@ -325,8 +325,8 @@ class ProductCenterTools
                 'property1' => $skuRow['property1']?:'',
                 'property2' => $skuRow['property2']?:'',
                 'property3' => $skuRow['property3']?:'',
-                'SKUName' => static::getSkuName($skuRow,$bGoods['goodsName']),
-                'BmpFileName' => static::getBmpFileName($skuRow,$bGoods['goodsName']),
+                'SKUName' => static::getSkuName($skuRow,$bGoods['GoodsName']),
+                'BmpFileName' => static::getBmpFileName($skuRow,$bGoods['GoodsName']),
                 'Remark' => $bGoods['description']?:'',
                 'Weight' => $skuRow['weight']?:0,
                 'CostPrice' => $skuRow['costPrice']?:0,
