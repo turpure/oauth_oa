@@ -17,6 +17,7 @@
 
 namespace backend\modules\v1\controllers;
 
+use backend\models\OaGoodsSku;
 use backend\models\OaJoomSuffix;
 use backend\modules\v1\models\ApiGoodsinfo;
 use backend\modules\v1\utils\ProductCenterTools;
@@ -531,6 +532,24 @@ class OaGoodsinfoController extends AdminController
                 'siteCode' => 'AUD'
             ],
         ];
+    }
+
+
+    /** 删除单个SKU
+     * Date: 2019-04-10 16:18
+     * Author: henry
+     * @return array|bool
+     */
+    public function actionDeleteSku()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost ) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        $skuId = $condition['id'];
+        OaGoodsSku::deleteAll(['id' => $skuId]);
+        return true;
     }
 
 
