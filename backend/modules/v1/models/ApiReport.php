@@ -427,13 +427,10 @@ class ApiReport
      */
     public static function getExtraFee($condition)
     {
-        $sql = "SELECT suffix, SUM(saleOpeFeeZn) as saleOpeFeeZn, dateTime
-                    FROM(
-                        SELECT suffix, saleOpeFeeZn, saleOpeTime, CONVERT(varchar(10),saleOpeTime,121) as dateTime
-                        FROM Y_saleOpeFee
-                        WHERE CONVERT(varchar(10),saleOpeTime,121)  BETWEEN '" . $condition['beginDate'] . "' and '" . $condition['endDate'] . "'";
+        $sql = "SELECT suffix, saleOpeFeeZn, comment, saleOpeTime as dateTime
+                FROM Y_saleOpeFee
+                WHERE CONVERT(varchar(10),saleOpeTime,121)  BETWEEN '" . $condition['beginDate'] . "' and '" . $condition['endDate'] . "'";
         if ($condition['suffix']) $sql .= ' AND suffix IN (' . $condition['suffix'] . ') ';
-        $sql .= " ) ret GROUP by suffix,dateTime;";
 
         $userSql = "SELECT s.store,s.platform,IFNULL(u.username,'未分配') AS username
                     FROM `auth_store` s 
