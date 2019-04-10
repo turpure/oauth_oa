@@ -23,6 +23,7 @@ use backend\models\ShopElf\BSupplier;
 use backend\models\ShopElf\BPackInfo;
 use backend\models\ShopElf\BPerson;
 use backend\models\ShopElf\SUserGoodsRight;
+use backend\models\ShopElf\BGoodsAttribute;
 use backend\modules\v1\models\ApiGoodsinfo;
 use Yii;
 use yii\helpers\ArrayHelper;
@@ -162,6 +163,7 @@ class ProductCenterTools
             $bGoods = static::_preGoodsInfo($goodsInfo);
             $bGoods = static::_bGoodsImport($bGoods);
             static::_addUserRight($bGoods);// 增加商品权限
+            static::_addSpecialAttribute($bGoods, $goodsInfo); // 增加特殊属性
             $bGoodsSku = static::_preGoodsSkuInfo($skuInfo, $bGoods);
             $bGoodsSku = static::_bGoodsSkuImport($bGoodsSku);
             $stock = static::_preCurrentStockInfo($bGoodsSku);
@@ -199,6 +201,7 @@ class ProductCenterTools
     }
 
     /**
+     * @brief 增加商品权限
      * @param $goodsInfo
      * @throws \Exception
      */
@@ -207,12 +210,30 @@ class ProductCenterTools
         $goodsId = $goodsInfo['goodsId'];
         SUserGoodsRight::deleteAll(['GoodsID' => $goodsId ]);
         $users = BPerson::find()->select('NID')->where(['used' => 0])->asArray()->all();
+        $userRight = new SUserGoodsRight();
         foreach ($users as $row) {
-            $userRight = new SUserGoodsRight();
+            $_userRight = clone $userRight;
             $attributes = ['UserID' => $row['NID'], 'GoodsID' => $goodsId];
-            $userRight->setAttributes($attributes);
-            if (!$userRight->save()) {
+            $_userRight->setAttributes($attributes);
+            if (!$_userRight->save()) {
                 throw new \Exception('fail to add user right');
+            }
+        }
+    }
+
+    private static function _addSpecialAttribute($bgoods, $goodsInfo)
+    {
+        $goodsId = $bgoods['goodsId'];
+        $attributeName = $goodsInfo['basicInfo']['goodsInfo']['attributeName'];
+        if (!empty($attributeName)) {
+            $att = BGoodsAttribute::findOne(['GoodsID' => $goodsId]);
+            if ($att === null) {
+                $att = new BGoodsAttribute();
+            }
+            $attributes = ['GoodsID' => $goodsId, 'AttributeName' => $attributeName];
+            $att->setAttributes($attributes);
+            if(!$att->save()) {
+                throw new \Exception('fail to add special attribute');
             }
         }
     }
