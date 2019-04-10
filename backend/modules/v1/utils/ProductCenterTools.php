@@ -21,6 +21,8 @@ use backend\models\ShopElf\BStore;
 use backend\models\ShopElf\KCCurrentStock;
 use backend\models\ShopElf\BSupplier;
 use backend\models\ShopElf\BPackInfo;
+use backend\models\ShopElf\BPerson;
+use backend\models\ShopElf\SUserGoodsRight;
 use backend\modules\v1\models\ApiGoodsinfo;
 use Yii;
 use yii\helpers\ArrayHelper;
@@ -159,10 +161,12 @@ class ProductCenterTools
             $skuInfo = $goodsInfo['skuInfo'];
             $bGoods = static::_preGoodsInfo($goodsInfo);
             $bGoods = static::_bGoodsImport($bGoods);
+            static::_addUserRight($bGoods);// 增加商品权限
             $bGoodsSku = static::_preGoodsSkuInfo($skuInfo, $bGoods);
             $bGoodsSku = static::_bGoodsSkuImport($bGoodsSku);
             $stock = static::_preCurrentStockInfo($bGoodsSku);
             static::_stockImport($stock);
+            // todo 采集商品要关联店铺SKU
             $trans->commit();
             $msg = ['success!'];
         }
@@ -195,7 +199,26 @@ class ProductCenterTools
     }
 
     /**
-     * @brief 导入库存表
+     * @param $goodsInfo
+     * @throws \Exception
+     */
+    private static function _addUserRight($goodsInfo)
+    {
+        $goodsId = $goodsInfo['goodsId'];
+        SUserGoodsRight::deleteAll(['GoodsID' => $goodsId ]);
+        $users = BPerson::find()->select('NID')->where(['used' => 0])->asArray()->all();
+        foreach ($users as $row) {
+            $userRight = new SUserGoodsRight();
+            $attributes = ['UserID' => $row['NID'], 'GoodsID' => $goodsId];
+            $userRight->setAttributes($attributes);
+            if (!$userRight->save()) {
+                throw new \Exception('fail to add user right');
+            }
+        }
+    }
+
+    /**
+     * @brief 导入库存表, 只有新建的SKU才导入库存表
      * @param $stock
      * @throws \Exception
      */
@@ -205,10 +228,10 @@ class ProductCenterTools
             $currentStock = KCCurrentStock::findOne(['GoodsID'=>$stk['GoodsID'],'GoodsSKUID'=>$stk['GoodsSKUID']]);
             if($currentStock === null) {
                 $currentStock = new KCCurrentStock();
-            }
-            $currentStock->setAttributes($stk);
-            if(!$currentStock->save()) {
-                throw new \Exception('fail to import stock');
+                $currentStock->setAttributes($stk);
+                if(!$currentStock->save()) {
+                    throw new \Exception('fail to import stock');
+                }
             }
         }
     }
