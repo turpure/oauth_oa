@@ -3,6 +3,8 @@
 namespace backend\modules\v1\controllers;
 
 use backend\models\AuthAssignment;
+use backend\models\OaGoodsinfo;
+use backend\models\OaGoodsSku;
 use backend\models\User;
 use backend\modules\v1\models\ApiGoods;
 use backend\modules\v1\models\ApiTool;
@@ -229,7 +231,7 @@ class OaGoodsController extends AdminController
 
 
     /**
-     * 删除/批量删除产品推荐 //TODO
+     * 删除/批量删除产品推荐
      * If deletion is successful echo
      * @return mixed
      */
@@ -245,13 +247,13 @@ class OaGoodsController extends AdminController
         $transaction = Yii::$app->db->beginTransaction();
         try {
             foreach ($post['nid'] as $id) {
-                $sql = "select isnull(completeStatus,'') as completeStatus from oa_goodsinfo where goodsid= :id";
-                //$complete_status_query = OaGoodsinfo::findBySql($sql, [":id" => $post['id']])->one();
-                $complete_status_query = '';
+                $complete_status_query = OaGoodsinfo::findOne(["goodsid" => $post['id']]);
                 if (!empty($complete_status_query)) {
                     $completeStatus = $complete_status_query->completeStatus;
                     if (empty($completeStatus)) {
-                        OaGoods::deleteAll(['nid' => $id]);
+                        OaGoodsSku::deleteAll(['infoId' => $complete_status_query->id]);//删除SKU
+                        OaGoods::deleteAll(['nid' => $id]);//删除goods
+                        OaGoodsinfo::deleteAll(['goodsid' => $id]);//删除goodsinfo
                     } else {
                         throw new \Exception('Perfected products cannot be deleted!');
                     }
@@ -368,7 +370,7 @@ class OaGoodsController extends AdminController
 
 
     /**
-     * 验证用户当月可开发数量，判断是否可备货，或是否可创建 TODO
+     * 验证用户当月可开发数量，判断是否可备货，或是否可创建
      * @return array|bool|string
      */
     private function validateStock()

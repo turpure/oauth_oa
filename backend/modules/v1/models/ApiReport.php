@@ -427,7 +427,7 @@ class ApiReport
      */
     public static function getExtraFee($condition)
     {
-        $sql = "SELECT suffix, saleOpeFeeZn, comment, saleOpeTime as dateTime
+        $sql = "SELECT suffix, saleOpeFeeZn, comment, CONVERT(varchar(10),saleOpeTime,121) as dateTime
                 FROM Y_saleOpeFee
                 WHERE CONVERT(varchar(10),saleOpeTime,121)  BETWEEN '" . $condition['beginDate'] . "' and '" . $condition['endDate'] . "'";
         if ($condition['suffix']) $sql .= ' AND suffix IN (' . $condition['suffix'] . ') ';
