@@ -486,7 +486,7 @@ class ApiGoodsinfo
     }
 
     /**
-     * @brief prepare wish data to export
+     * @brief wish模板预处理
      * @param $id
      * @return array
      * @throws \Exception
@@ -529,7 +529,10 @@ class ApiGoodsinfo
 
     public static function preExportJoom($id, $account)
     {
-        $joomSkuInfo = OaWishGoodsSku::find()->joinWith('oaWishGoods')->where(['oa_wishGoods.infoId' => $id])->asArray()->one();
+        $joomSkuInfo = OaWishGoodsSku::find()
+            ->joinWith('oaWishGoods')
+            ->where(['oa_wishGoods.infoId' => $id])
+            ->asArray()->one();
         $joomInfo = $joomSkuInfo['oaWishGoods'];
         $joomAccounts = OaJoomSuffix::find()->where(['joomName' => $account])->asArray()->one();
         $row = [
@@ -574,12 +577,15 @@ class ApiGoodsinfo
     }
 
     /**
+     * @brief ebay模板预处理
      * @param $id
      * @param $account
+     * @return array
      */
     public static function preExportEbay($id, $account)
     {
-        $ebayInfo = OaEbayGoods::find()->joinWith('oaEbayGoodsSku')->where(['oa_ebayGoods.infoId' => $id])->asArray()->one();
+        $ebayInfo = OaEbayGoods::find()->joinWith('oaEbayGoodsSku')
+            ->where(['oa_ebayGoods.infoId' => $id])->asArray()->one();
         $ret = [];
         $row = [
             'Site' => '', 'Selleruserid' => '', 'ListingType' => '', 'Category1' => '', 'Category2' => '',
@@ -619,7 +625,7 @@ class ApiGoodsinfo
             'Specifics24' => '', 'Specifics25' => '', 'Specifics26' => '', 'Specifics27' => '',
             'Specifics28' => '', 'Specifics29' => '', 'Specifics30' => '',
         ];
-        $row['Site'] = '';
+        $row['Site'] = $ebayInfo['site'];
         $row['Selleruserid'] = '';
         $row['ListingType'] = '';
         $row['Category1'] = '';
@@ -747,7 +753,6 @@ class ApiGoodsinfo
         $row['Specifics28'] = '';
         $row['Specifics29'] = '';
         $row['Specifics30'] = '';
-
         $ret[] = $row;
         return $ret;
     }
