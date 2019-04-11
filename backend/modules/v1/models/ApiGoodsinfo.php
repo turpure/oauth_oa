@@ -44,6 +44,7 @@ class ApiGoodsinfo
     const GoodsInfo = 1;
     const PictureInfo = 2;
     const PlatInfo = 3;
+    const UsdExchange = 6.88;
 
     /**
      * @brief 属性信息列表
@@ -494,7 +495,14 @@ class ApiGoodsinfo
     public static function preExportWish($id)
     {
         $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
-        $wishAccounts = OaWishSuffix::find()->asArray()->all();
+        $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->one();
+        $goodsInfo = OaWishgoods::find()->where(['id' => $id])->asArray()->one();
+        $goods = OaGoods::find()->where(['id' => $goodsInfo['goodsId']])->asArray()->one();
+        $wishAccounts = OaWishSuffix::find()->where(['like','parentCategory',$goods['cate']])
+            ->orWhere(['parentCategory' => ''])
+            ->asArray()->all();
+        $keyWords = static::preKeywords($wishInfo);
+        $titlePool = [];
         $row = [
             'sku' => '', 'selleruserid' => '', 'name' => '', 'inventory' => '', 'price' => '', 'msrp' => '',
             'shipping' => '', 'shipping_time' => '', 'main_image' => '', 'extra_images' => '', 'variants' => '',
@@ -503,24 +511,33 @@ class ApiGoodsinfo
         ];
         $ret = [];
         foreach ($wishAccounts as $account) {
-            $row['sku'] = $wishInfo['sku'];
-            $row['selleruserid'] = $account['shortName'];
-            $row['name'] = $wishInfo['title'];
+            $title = '';
+            while (true) {
+                $title = static::getTitleName($keyWords);
+                if (empty($title) || !in_array($title, $titlePool, false)) {
+                    $titlePool[] = $title;
+                    break;
+                }
+            }
+            $variantInfo = static::getWishVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
+            $row['sku'] = $wishInfo['sku'] . $account['suffix'];
+            $row['selleruserid'] = $account['ibaySuffix'];
+            $row['name'] = $title;
             $row['inventory'] = $wishInfo['inventory'];
-            $row['price'] = $wishInfo['price'];
-            $row['msrp'] = $wishInfo['msrp'];
-            $row['shipping'] = $wishInfo['shipping'];
-            $row['shipping_time'] = $wishInfo['shippingTime'];
-            $row['main_image'] = $wishInfo['mainImage'];
+            $row['price'] = $variantInfo['price'];
+            $row['msrp'] = $variantInfo['msrp'];
+            $row['shipping'] = $variantInfo['shipping'];
+            $row['shipping_time'] = '7-21';
+            $row['main_image'] = static::getWishMainImage($goodsInfo['goodsCode'],$account['mainImage']);
             $row['extra_images'] = $wishInfo['extraImages'];
-            $row['variants'] = $wishInfo['sku'];
+            $row['variants'] = $variantInfo['variant'];
             $row['landing_page_url'] = $wishInfo['mainImage'];
             $row['tags'] = $wishInfo['tags'];
             $row['description'] = $wishInfo['description'];
             $row['brand'] = '';
             $row['upc'] = '';
-            $row['local_shippingfee'] = $wishInfo['shipping'] * 6.88;
-            $row['local_currency'] = $wishInfo['price'] * 6.88;
+            $row['local_shippingfee'] = $variantInfo['local_shippingfee'];
+            $row['local_currency'] = $variantInfo['local_currency'];
             $ret[] = $row;
         }
         return $ret;
@@ -754,6 +771,154 @@ class ApiGoodsinfo
         $row['Specifics29'] = '';
         $row['Specifics30'] = '';
         $ret[] = $row;
+        return $ret;
+    }
+
+    /**
+     * @brief 获取wish账号主图链接
+     * @param $goodsCode
+     * @param $mainImage
+     * @return string
+     */
+    private static function getWishMainImage($goodsCode, $mainImage)
+    {
+        $base = 'https://www.tupianku.com/view/full/10023/';
+        return $base . $goodsCode . '-_' . $mainImage . '_.jpg';
+    }
+
+
+    /**
+     * @brief 整合变体信息
+     * @param $isVar
+     * @param $wishInfo
+     * @param $wishSku
+     * @param $account
+     * @return array
+     */
+    private static  function getWishVariantInfo($isVar, $wishInfo, $wishSku, $account)
+    {
+        $price = ArrayHelper::getColumn($wishSku, 'price');
+        $shippingPrice = ArrayHelper::getColumn($wishSku, 'shipping');
+        $msrp = ArrayHelper::getColumn($wishSku, 'msrp');
+        $len = count($price);
+        $totalPrice = [];
+        for ($i=0; $i<$len; $i++) {
+            $totalPrice[] = ceil($price[$i] + $shippingPrice[$i]);
+        }
+
+        //获取最大最小价格
+        $maxPrice = max($totalPrice);
+        $minPrice = min($totalPrice);
+        $maxMsrp = max($msrp);
+
+        //根据总价计算运费
+        if ($minPrice <= 3) {
+            $shipping = 1;
+        }
+        else {
+            $shipping = ceil($minPrice * $account['rate']);
+        }
+
+        //打包变体
+        $variation = [];
+        foreach ($wishSku as $sku) {
+            //价格判断
+            $totalPrice = ceil($sku['price'] + $sku['shipping']);
+            $value['shipping'] = $shipping;
+            $value['price'] = $totalPrice - $shipping < 1 ? 1 : ceil($totalPrice - $shipping);
+            $var['sku'] = $sku['sku'] . $account['suffix'];
+            $var['color'] = $sku['color'];
+            $var['size'] = $sku['size'];
+            $var['inventory'] = $sku['inventory'];
+            $var['price'] = $sku['price'];
+            $var['shipping'] = $sku['shipping'];
+            $var['msrp'] = $sku['msrp'];
+            $var['shipping_time'] = $sku['shipping_time'];
+            $var['main_image'] = $sku['linkurl'];
+            $var['localized_currency_code'] = 'CNY';
+            $var['localized_price'] = (string)floor($sku['price'] * self::UsdExchange);
+            $variation[] = $var;
+        }
+        $variant = json_encode($variation);
+        $ret = [];
+        if ($isVar === '是') {
+            $ret['variant'] = $variant;
+            $ret['shipping'] = $shipping;
+            $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1;
+            $ret['msrp'] = $maxMsrp;
+            $ret['local_price'] = floor($wishInfo['price'] * self::UsdExchange);
+            $ret['local_shippingfee'] = floor($wishInfo['shipping'] * self::UsdExchange);
+            $ret['local_currency'] = 'CNY';
+        }
+        else {
+            $ret['variant'] = '';
+            $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1 ;
+            $ret['shipping'] = $shipping;
+            $ret['msrp'] = $maxMsrp;
+            $ret['local_price'] = floor($ret['price'] * self::UsdExchange);
+            $ret['local_shippingfee'] = floor($shipping * self::UsdExchange);
+            $ret['local_currency'] = 'CNY';
+        }
+        return $ret;
+    }
+
+    /**
+     * @brief 生成随机顺序的标题
+     * @param $keywords
+     * @return int|string
+     */
+    private static function getTitleName($keywords)
+    {
+        $head = [$keywords['head']];
+        $tail = [$keywords['tail']];
+        $maxLength = 80;
+        $need = array_filter($keywords['need']);
+        $random = array_filter($keywords['random']);
+        if (empty($random) || empty($need)) {
+            return '';
+        }
+        //判断固定部分的长度
+        $unchangedLen = \strlen(implode(' ', array_merge($head, $need, $tail)));
+
+        //固定长度太长，随机去掉一个词
+        if ($unchangedLen > $maxLength) {
+            shuffle($need);
+            $ret = array_merge($head,$need,$tail);
+            while (\strlen(implode(' ',$ret)) > $maxLength) {
+                array_pop($ret);
+            }
+            $real_len = implode(' ', $ret);
+            return $real_len;
+        }
+
+        //可用长度
+        $available_len = $maxLength - $unchangedLen - 1;
+        shuffle($random); //摇匀词库
+        $random_str1 = [array_shift($random)]; //从摇匀的词库里不放回抽一个
+        $random_arr = \array_slice($random, 0, 4);//从剩余的词库里抽四个
+        $real_len = \strlen(implode(' ', array_merge($random_str1, $random_arr)));
+        for ($i = 0; $i < 4; $i++) {
+            if ($real_len <= $available_len) {
+                break;
+            }
+            array_shift($random_arr); //去掉一个随机词
+            $real_len = \strlen(implode(' ', array_merge($random_str1, $random_arr)));
+        }
+        shuffle($need);
+        return implode(' ', array_merge($head, $random_str1, $need, $random_arr, $tail));
+    }
+
+    /**
+     * @brief 准备关键词
+     * @param $info
+     * @return mixed
+     */
+    private static function preKeywords($info)
+    {
+        $ret['head'] = $info['headKeywords'];
+        $ret['tail'] = $info['tailKeywords'];
+        $ret['need'] = json_decode($info['requiredKeywords']);
+        $ret['random'] = json_decode($info['randomKeywords']);
         return $ret;
     }
 }
