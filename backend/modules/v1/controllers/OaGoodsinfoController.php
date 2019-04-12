@@ -165,8 +165,15 @@ class OaGoodsinfoController extends AdminController
             return [];
         }
         $condition = $request->post()['condition'];
-        $infoId = $condition['id'];
-        return ProductCenterTools::importShopElf($infoId);
+        $infoIds = $condition['id'];
+        if (!$infoIds) {
+            return [
+                'code' => 400,
+                'message' => 'Please choose the items you want to operate on.',
+            ];
+        }else{
+            return ProductCenterTools::importShopElf($infoIds);
+        }
     }
 
     /**
@@ -245,6 +252,12 @@ class OaGoodsinfoController extends AdminController
             return [];
         }
         $infoId = $request->post()['condition']['id'];
+        if(!$infoId || !is_array($infoId)){
+            return [
+                'code' => 400,
+                'message' => "Parameter's format is not correct!",
+            ];
+        }
         return ProductCenterTools::generateCode($infoId);
     }
 
@@ -544,14 +557,14 @@ class OaGoodsinfoController extends AdminController
     public function actionDeleteSku()
     {
         $request = Yii::$app->request;
-        if (!$request->isPost ) {
+        if (!$request->isPost) {
             return [];
         }
         $condition = $request->post()['condition'];
         $skuId = $condition['id'];
-        if($condition['plat'] == 'wish'){
+        if ($condition['plat'] == 'wish') {
             OaWishGoodsSku::deleteAll(['id' => $skuId]);
-        }else{
+        } elseif ($condition['plat'] == 'eBay') {
             OaEbayGoodsSku::deleteAll(['id' => $skuId]);
         }
         return true;
