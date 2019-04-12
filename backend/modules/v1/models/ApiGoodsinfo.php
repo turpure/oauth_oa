@@ -45,6 +45,9 @@ class ApiGoodsinfo
     const PictureInfo = 2;
     const PlatInfo = 3;
     const UsdExchange = 6.88;
+    const WishTitleLength = 110;
+    const EbayTitleLength = 80;
+    const JoomTitleLength = 100;
 
     /**
      * @brief 属性信息列表
@@ -513,7 +516,7 @@ class ApiGoodsinfo
         foreach ($wishAccounts as $account) {
             $title = '';
             while (true) {
-                $title = static::getTitleName($keyWords);
+                $title = static::getTitleName($keyWords, self::WishTitleLength);
                 if (empty($title) || !in_array($title, $titlePool, false)) {
                     $titlePool[] = $title;
                     break;
@@ -544,14 +547,19 @@ class ApiGoodsinfo
     }
 
 
-    public static function preExportJoom($id, $account)
+    /**
+     * @brief 导出joom模板
+     * @param $id
+     * @param $accounts
+     * @return array
+     */
+    public static function preExportJoom($id, $accounts)
     {
-        $joomSkuInfo = OaWishGoodsSku::find()
-            ->joinWith('oaWishGoods')
-            ->where(['oa_wishGoods.infoId' => $id])
+        $goodsInfo = OaGoodsinfo::findOne(['id' => $id]);
+        $joomSku = OaWishGoodsSku::find()
+            ->where(['infoId' => $id])
             ->asArray()->one();
-        $joomInfo = $joomSkuInfo['oaWishGoods'];
-        $joomAccounts = OaJoomSuffix::find()->where(['joomName' => $account])->asArray()->one();
+        $joomInfo = OaWishGoods::find()->where(['infoId' => $id])->asArray()->one();
         $row = [
             'Parent Unique ID' => '', '*Product Name' => '', 'Description' => '', '*Tags' => '', '*Unique ID' => '', 'Color' => '',
             'Size' => '', '*Quantity' => '', '*Price' => '', '*MSRP' => '', '*Shipping' => '', 'Shipping weight' => '',
@@ -562,34 +570,41 @@ class ApiGoodsinfo
             'Declared Value' => '',
         ];
         $ret = [];
-        $row['Parent Unique ID'] = $joomInfo['sku'] . $joomAccounts['skuCode'];
-        $row['*Product Name'] = $joomInfo['title'];
-        $row['Description'] = $joomInfo['description'];
-        $row['*Tags'] = $joomInfo['tags'];
-        $row['*Unique ID'] = $joomInfo['sku'];
-        $row['Color'] = 'color';
-        $row['Size'] = $joomInfo['title'];
-        $row['*Quantity'] = $joomInfo['title'];
-        $row['*Price'] = $joomInfo['title'];
-        $row['*Shipping'] = $joomInfo['title'];
-        $row['Shipping weight'] = $joomInfo['title'];
-        $row['Shipping Time(enter without " ", just the estimated days )'] = $joomInfo['title'];
-        $row['*Product Main Image URL'] = $joomInfo['title'];
-        $row['Variant Main Image URL'] = $joomInfo['title'];
-        $row['Extra Image URL'] = $joomInfo['title'];
-        $row['Extra Image URL 1'] = $joomInfo['title'];
-        $row['Extra Image URL 2'] = $joomInfo['title'];
-        $row['Extra Image URL 3'] = $joomInfo['title'];
-        $row['Extra Image URL 4'] = $joomInfo['title'];
-        $row['Extra Image URL 5'] = $joomInfo['title'];
-        $row['Extra Image URL 6'] = $joomInfo['title'];
-        $row['Extra Image URL 7'] = $joomInfo['title'];
-        $row['Extra Image URL 8'] = $joomInfo['title'];
-        $row['Extra Image URL 9'] = $joomInfo['title'];
-        $row['Extra Image URL 10'] = $joomInfo['title'];
-        $row['Dangerous Kind'] = $joomInfo['title'];
-        $row['Declared Value'] = $joomInfo['title'];
-        $ret[] = $row;
+        $keyWords = static::preKeywords($joomInfo);
+        foreach ($accounts as $account) {
+            $joomAccounts = OaJoomSuffix::find()->where(['joomName' => $account])->asArray()->one();
+            foreach($joomSku as $sku) {
+                $row = [];
+                $row['Parent Unique ID'] = $joomInfo['sku'] . $joomAccounts['skuCode'];
+                $row['*Product Name'] = static::getTitleName($keyWords, self::JoomTitleLength);
+                $row['Description'] = $joomInfo['description'];
+                $row['*Tags'] = $joomInfo['tags'];
+                $row['*Unique ID'] = $sku['sku'] . $joomAccounts['skuCode'];
+                $row['Color'] = $sku['color'];
+                $row['Size'] = $sku['size'];
+                $row['*Quantity'] = $sku['quantity'];
+                $row['*Price'] = static::getJoomPriceInfo();
+                $row['*Shipping'] = static::getJoomPriceInfo();
+                $row['Shipping weight'] = (float)$sku['weight'];
+                $row['Shipping Time(enter without " ", just the estimated days )'] = '15-45';
+                $row['*Product Main Image URL'] = static::getJoomImageInfo();
+                $row['Variant Main Image URL'] = static::getJoomImageInfo();
+                $row['Extra Image URL'] = $joomInfo['title'];
+                $row['Extra Image URL 1'] = $joomInfo['title'];
+                $row['Extra Image URL 2'] = $joomInfo['title'];
+                $row['Extra Image URL 3'] = $joomInfo['title'];
+                $row['Extra Image URL 4'] = $joomInfo['title'];
+                $row['Extra Image URL 5'] = $joomInfo['title'];
+                $row['Extra Image URL 6'] = $joomInfo['title'];
+                $row['Extra Image URL 7'] = $joomInfo['title'];
+                $row['Extra Image URL 8'] = $joomInfo['title'];
+                $row['Extra Image URL 9'] = $joomInfo['title'];
+                $row['Extra Image URL 10'] = $joomInfo['title'];
+                $row['Dangerous Kind'] = $joomInfo['title'];
+                $row['Declared Value'] = $joomInfo['title'];
+            }
+            $ret[] = $row;
+        }
         return $ret;
     }
 
@@ -865,13 +880,14 @@ class ApiGoodsinfo
     /**
      * @brief 生成随机顺序的标题
      * @param $keywords
+     * @param $length
      * @return int|string
      */
-    private static function getTitleName($keywords)
+    private static function getTitleName($keywords, $length)
     {
         $head = [$keywords['head']];
         $tail = [$keywords['tail']];
-        $maxLength = 80;
+        $maxLength = $length;
         $need = array_filter($keywords['need']);
         $random = array_filter($keywords['random']);
         if (empty($random) || empty($need)) {
