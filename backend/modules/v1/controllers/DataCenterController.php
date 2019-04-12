@@ -138,6 +138,8 @@ class DataCenterController extends AdminController
             'store' => $cond['account']
         ];
         $params = Handler::paramsFilter($queryParams);
+        if(!$params['store']) return [];
+        //print_r($params);exit;
         $condition = [
             'store' => $params['store'] ? implode(',', $params['store']) : '',
             'trendId' => $cond['trendId'],

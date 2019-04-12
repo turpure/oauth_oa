@@ -48,25 +48,26 @@ class ProductCenterTools
                 $oaGoodsInfo = OaGoodsinfo::findOne(['id' => $id]);
                 $oaGoods = $oaGoodsInfo->getOaGoods()->one();
                 $cate = $oaGoods['cate'];
-                $proCenterMaxCode = Yii::$app->db
-                    ->createCommand(
-                        "select ifnull(goodscode,'UN0000') as maxCode from proCenter.oa_goodsinfo
-            where id in (select max(id) from proCenter.oa_goodsinfo as info LEFT join 
-            proCenter.oa_goods as og on info.goodsid=og.nid where goodscode != 'REPEAT' and cate = '$cate')")
+                $proCenterMaxCode = Yii::$app->db->createCommand(
+                    "select ifnull(goodscode,'UN0000') as maxCode from proCenter.oa_goodsinfo
+                    where id in (select max(id) from proCenter.oa_goodsinfo as info LEFT join 
+                    proCenter.oa_goods as og on info.goodsid=og.nid where goodscode != 'REPEAT' and cate = '$cate')")
                     ->queryOne();
                 $proCenterMaxCode = $proCenterMaxCode['maxCode'];
                 $head = substr($proCenterMaxCode, 0, 2);
                 $tail = (int)substr($proCenterMaxCode, 2, 4) + 1;
                 $zeroBits = substr('0000', 0, 4 - strlen($tail));
                 $code = $head . $zeroBits . $tail . '-test';
-                $oaGoodsInfo->goodsCode = $code;
-                if(!$oaGoodsInfo->save()){
-                    throw new \Exception($oaGoodsInfo->getErrors()[0]);
+                if ($oaGoodsInfo->achieveStatus != '已导入') {
+                    $oaGoodsInfo->goodsCode = $code;
+                    if (!$oaGoodsInfo->save()) {
+                        throw new \Exception($oaGoodsInfo->getErrors()[0]);
+                    }
                 }
             }
             $tran->commit();
             return true;
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             $tran->rollBack();
             return [
                 'code' => 400,

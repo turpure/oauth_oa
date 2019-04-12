@@ -6,15 +6,19 @@
  */
 
 namespace backend\modules\v1\controllers;
+
 use backend\modules\v1\models\ApiReport;
 use backend\modules\v1\models\ApiSettings;
+use backend\modules\v1\models\ApiTool;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use yii\data\ArrayDataProvider;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
 use Yii;
 use backend\modules\v1\utils\Handler;
 
-class ReportController extends  AdminController
+class ReportController extends AdminController
 {
     public $modelClass = 'backend\modules\v1\models\ApiReport';
 
@@ -27,19 +31,19 @@ class ReportController extends  AdminController
     {
 
         $behaviors = ArrayHelper::merge([
-                'verbs' => [
-                    'class' => VerbFilter::className(),
-                    'actions' => [
-                        'sales' => ['post','options'],
-                        'develop' => ['post','options'],
-                        'purchase' => ['post','options'],
-                        'Possess' => ['post','options'],
-                        'ebay-sales' => ['post','options'],
-                        'sales-trend' => ['post','options'],
-                        'profit' => ['post','options'],
-                    ],
+            'verbs' => [
+                'class' => VerbFilter::className(),
+                'actions' => [
+                    'sales' => ['post', 'options'],
+                    'develop' => ['post', 'options'],
+                    'purchase' => ['post', 'options'],
+                    'Possess' => ['post', 'options'],
+                    'ebay-sales' => ['post', 'options'],
+                    'sales-trend' => ['post', 'options'],
+                    'profit' => ['post', 'options'],
                 ],
-       ],
+            ],
+        ],
             parent::behaviors()
         );
         return $behaviors;
@@ -52,24 +56,24 @@ class ReportController extends  AdminController
      * @return array
      */
 
-    public function actionSales ()
+    public function actionSales()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
+        $cond = $request['condition'];
         $params = [
-            'platform' => isset($cond['plat'])?$cond['plat']:[],
-            'username' => isset($cond['member'])?$cond['member']:[],
-            'store' => isset($cond['account'])?$cond['account']:[]
+            'platform' => isset($cond['plat']) ? $cond['plat'] : [],
+            'username' => isset($cond['member']) ? $cond['member'] : [],
+            'store' => isset($cond['account']) ? $cond['account'] : []
         ];
         $exchangeRate = ApiSettings::getExchangeRate();
         $paramsFilter = Handler::paramsHandler($params);
-        $condition= [
-            'dateType' =>$cond['dateType']?:0,
+        $condition = [
+            'dateType' => $cond['dateType'] ?: 0,
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
             'queryType' => $paramsFilter['queryType'],
-            'store' => implode(',',$paramsFilter['store']),
-            'warehouse' => $cond['store']?implode(',',$cond['store']):'',
+            'store' => implode(',', $paramsFilter['store']),
+            'warehouse' => $cond['store'] ? implode(',', $cond['store']) : '',
             'exchangeRate' => $exchangeRate['salerRate']
         ];
         return ApiReport::getSalesReport($condition);
@@ -81,15 +85,15 @@ class ReportController extends  AdminController
      */
 
 
-    public function actionDevelop ()
+    public function actionDevelop()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
-        $condition= [
-            'dateFlag' =>$cond['dateType'],
+        $cond = $request['condition'];
+        $condition = [
+            'dateFlag' => $cond['dateType'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'seller' => $cond['member']?implode(',',$cond['member']):'',
+            'seller' => $cond['member'] ? implode(',', $cond['member']) : '',
         ];
         $ret = ApiReport::getDevelopReport($condition);
         return $ret;
@@ -99,15 +103,15 @@ class ReportController extends  AdminController
      * @brief Purchase profit report
      * @return array
      */
-    public function actionPurchase ()
+    public function actionPurchase()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
-        $condition= [
-            'dateFlag' =>$cond['dateType'],
+        $cond = $request['condition'];
+        $condition = [
+            'dateFlag' => $cond['dateType'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'purchase' => $cond['member']?implode(',',$cond['member']):'',
+            'purchase' => $cond['member'] ? implode(',', $cond['member']) : '',
         ];
         $ret = ApiReport::getPurchaseReport($condition);
         return $ret;
@@ -118,15 +122,15 @@ class ReportController extends  AdminController
      * @brief Possess profit report
      * @return array
      */
-    public function actionPossess ()
+    public function actionPossess()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
-        $condition= [
-            'dateFlag' =>$cond['dateType'],
+        $cond = $request['condition'];
+        $condition = [
+            'dateFlag' => $cond['dateType'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'possess' => $cond['member']?implode(',',$cond['member']):'',
+            'possess' => $cond['member'] ? implode(',', $cond['member']) : '',
         ];
         $ret = ApiReport::getPossessReport($condition);
         return $ret;
@@ -136,12 +140,12 @@ class ReportController extends  AdminController
      * @brief EbaySales profit report
      * @return array
      */
-    public function actionEbaySales ()
+    public function actionEbaySales()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
-        $condition= [
-            'dateFlag' =>$cond['dateType'],
+        $cond = $request['condition'];
+        $condition = [
+            'dateFlag' => $cond['dateType'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
             'possess' => $cond['member'],
@@ -151,16 +155,15 @@ class ReportController extends  AdminController
     }
 
 
-
     /**
      * @brief SalesTrend profit report
      * @return array
      * @throws  \Exception
      */
-    public function actionSalesTrend ()
+    public function actionSalesTrend()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
+        $cond = $request['condition'];
         $queryParams = [
             'department' => $cond['department'],
             'secDepartment' => $cond['secDepartment'],
@@ -169,11 +172,11 @@ class ReportController extends  AdminController
             'store' => $cond['account']
         ];
         $params = Handler::paramsFilter($queryParams);
-        $condition= [
-            'store' => $params['store']?implode(',',$params['store']):'',
+        $condition = [
+            'store' => $params['store'] ? implode(',', $params['store']) : '',
             'queryType' => $params['queryType'],
-            'dateFlag' =>$cond['dateType'],
-            'showType' => $cond['flag']?:0,
+            'dateFlag' => $cond['dateType'],
+            'showType' => $cond['flag'] ?: 0,
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1]
         ];
@@ -187,10 +190,10 @@ class ReportController extends  AdminController
      * @return array
      * @throws \Exception
      */
-    public function actionOrderCount ()
+    public function actionOrderCount()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
+        $cond = $request['condition'];
         $queryParams = [
             'department' => $cond['department'],
             'secDepartment' => $cond['secDepartment'],
@@ -199,11 +202,11 @@ class ReportController extends  AdminController
             'store' => $cond['account']
         ];
         $params = Handler::paramsFilter($queryParams);
-        $condition= [
-            'store' => $params['store']?implode(',',$params['store']):'',
+        $condition = [
+            'store' => $params['store'] ? implode(',', $params['store']) : '',
             'queryType' => $params['queryType'],
-            'dateFlag' =>$cond['dateType'],
-            'showType' => $cond['flag']?:0,
+            'dateFlag' => $cond['dateType'],
+            'showType' => $cond['flag'] ?: 0,
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1]
         ];
@@ -217,10 +220,10 @@ class ReportController extends  AdminController
      * @return array
      * @throws \Exception
      */
-    public function actionSkuCount ()
+    public function actionSkuCount()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
+        $cond = $request['condition'];
         $queryParams = [
             'department' => $cond['department'],
             'secDepartment' => $cond['secDepartment'],
@@ -229,11 +232,11 @@ class ReportController extends  AdminController
             'store' => $cond['account']
         ];
         $params = Handler::paramsFilter($queryParams);
-        $condition= [
-            'store' => $params['store']?implode(',',$params['store']):'',
+        $condition = [
+            'store' => $params['store'] ? implode(',', $params['store']) : '',
             'queryType' => $params['queryType'],
-            'dateFlag' =>$cond['dateType'],
-            'showType' => $cond['flag']?:0,
+            'dateFlag' => $cond['dateType'],
+            'showType' => $cond['flag'] ?: 0,
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1]
         ];
@@ -241,28 +244,29 @@ class ReportController extends  AdminController
         $ret = ApiReport::getSkuCountReport($condition);
         return $ret;
     }
+
     /**
      * @brief profit report
      * @return array
      */
-    public function actionAccount ()
+    public function actionAccount()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
-        $condition= [
-            'dateFlag' =>$cond['dateType'],
+        $cond = $request['condition'];
+        $condition = [
+            'dateFlag' => $cond['dateType'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
             'sku' => $cond['sku'],
-            'salesman' => $cond['member']?"'".implode(',',$cond['member'])."'":'',
+            'salesman' => $cond['member'] ? "'" . implode(',', $cond['member']) . "'" : '',
             'chanel' => $cond['plat'],
-            'suffix' => $cond['account']?("'".implode(',',$cond['account'])."'"):'',
-            'storeName' => $cond['store']?("'".implode(',',$cond['store'])."'"):'',
+            'suffix' => $cond['account'] ? ("'" . implode(',', $cond['account']) . "'") : '',
+            'storeName' => $cond['store'] ? ("'" . implode(',', $cond['store']) . "'") : '',
             'start' => $cond['start'],
             'limit' => $cond['limit'],
         ];
         $ret = ApiReport::getProfitReport($condition);
-        $num = $ret ? $ret[0]['totalNum']:0;
+        $num = $ret ? $ret[0]['totalNum'] : 0;
         return [
             'items' => $ret,
             'totalCount' => $num,
@@ -280,7 +284,7 @@ class ReportController extends  AdminController
             'dateFlag' => $cond['dateType'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'member' => $cond['member']?implode(',',$cond['member']):''
+            'member' => $cond['member'] ? implode(',', $cond['member']) : ''
         ];
         //print_r($condition);exit;
         return ApiReport::getIntroduceReport($condition);
@@ -294,18 +298,18 @@ class ReportController extends  AdminController
     public function actionRefund()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
+        $cond = $request['condition'];
         $params = [
-            'platform' => isset($cond['plat'])?$cond['plat']:[],
-            'username' => isset($cond['member'])?$cond['member']:[],
-            'store' => isset($cond['account'])?$cond['account']:[]
+            'platform' => isset($cond['plat']) ? $cond['plat'] : [],
+            'username' => isset($cond['member']) ? $cond['member'] : [],
+            'store' => isset($cond['account']) ? $cond['account'] : []
         ];
         $paramsFilter = Handler::paramsHandler($params);
-        $condition= [
-            'type' =>$cond['type'],
+        $condition = [
+            'type' => $cond['type'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'suffix' => "'".implode("','",$paramsFilter['store'])."'",
+            'suffix' => "'" . implode("','", $paramsFilter['store']) . "'",
             'page' => isset($cond['page']) ? $cond['page'] : 1,
             'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 10,
         ];
@@ -323,19 +327,19 @@ class ReportController extends  AdminController
     public function actionDeadFee()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
+        $cond = $request['condition'];
         $params = [
-            'platform' => isset($cond['plat'])?$cond['plat']:[],
-            'username' => isset($cond['member'])?$cond['member']:[],
-            'store' => isset($cond['account'])?$cond['account']:[]
+            'platform' => isset($cond['plat']) ? $cond['plat'] : [],
+            'username' => isset($cond['member']) ? $cond['member'] : [],
+            'store' => isset($cond['account']) ? $cond['account'] : []
         ];
         $paramsFilter = Handler::paramsHandler($params);
-        $storeName = $cond['storename']?"'".implode(',',$cond['storename'])."'":'';
-        $storeName = str_replace(",","','",$storeName);
-        $condition= [
+        $storeName = $cond['storename'] ? "'" . implode(',', $cond['storename']) . "'" : '';
+        $storeName = str_replace(",", "','", $storeName);
+        $condition = [
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'suffix' => "'".implode("','",$paramsFilter['store'])."'",
+            'suffix' => "'" . implode("','", $paramsFilter['store']) . "'",
             'storename' => $storeName,
             'page' => isset($cond['page']) ? $cond['page'] : 1,
             'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 20,
@@ -354,11 +358,11 @@ class ReportController extends  AdminController
     public function actionOtherDeadFee()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
-        $condition= [
+        $cond = $request['condition'];
+        $condition = [
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'member' => $cond['member'] ? ("'".implode("','",$cond['member'])."'") : '',
+            'member' => $cond['member'] ? ("'" . implode("','", $cond['member']) . "'") : '',
             'role' => $cond['role'],
             'page' => isset($cond['page']) ? $cond['page'] : 1,
             'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 20,
@@ -377,17 +381,17 @@ class ReportController extends  AdminController
     public function actionExtraFee()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
+        $cond = $request['condition'];
         $params = [
-            'platform' => isset($cond['plat'])?$cond['plat']:[],
-            'username' => isset($cond['member'])?$cond['member']:[],
-            'store' => isset($cond['account'])?$cond['account']:[]
+            'platform' => isset($cond['plat']) ? $cond['plat'] : [],
+            'username' => isset($cond['member']) ? $cond['member'] : [],
+            'store' => isset($cond['account']) ? $cond['account'] : []
         ];
         $paramsFilter = Handler::paramsHandler($params);
-        $condition= [
+        $condition = [
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'suffix' => "'".implode("','",$paramsFilter['store'])."'",
+            'suffix' => "'" . implode("','", $paramsFilter['store']) . "'",
             'page' => isset($cond['page']) ? $cond['page'] : 1,
             'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 10,
         ];
@@ -396,8 +400,97 @@ class ReportController extends  AdminController
     }
 
 
+    /** 导出excel表格
+     * Date: 2019-04-12 16:10
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     * @throws \yii\db\Exception
+     */
+    public function actionExport()
+    {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        switch ($cond['type']) {
+            case 'order'://退款订单明细下载
+                $fileName = 'refundOrderData';
+                $title = ['退款月份', '账号简称','销售员', '商品名称', '商品编码', 'SKU',
+                    '交易单号', '店铺单号', '合并单号', '仓库', '退款金额(原始币种)','退款金额(￥)', '退款时间','交易时间',
+                    '国家','平台','物流方式',];
+                $headers = ['refMonth', 'suffix','salesman', 'goodsName', 'goodsCode', 'goodsSku',
+                    'tradeId', 'orderId', 'mergeBillId', 'storeName', 'refund','refundZn', 'refundTime','orderTime',
+                    'orderCountry','platform','expressWay'];
+                $data = $this->actionRefund()->getModels();
+                break;
+            case 'goods'://退款产品明细下载
+                $fileName = 'refundGoodsData';
+                $title = ['账号简称','销售员', '商品名称', '商品编码', 'SKU', '退款次数'];
+                $headers = ['suffix','salesman', 'goodsName', 'goodsCode', 'goodsSku', 'times'];
+                $data = $this->actionRefund()->getModels();
+                break;
+            case 'extra'://杂费明细下载
+                $fileName = 'extraFeeData';
+                //$fileName = '杂费明细';
+                $title = ['账号简称', '杂费(￥)', '备注', '日期', '销售员'];
+                $headers = ['suffix', 'saleOpeFeeZn', 'comment', 'dateTime', 'salesman'];
+                $data = $this->actionExtraFee()->getModels();
+                break;
+            case 'otherDeadFee'://其他死库明细下载
+                $fileName = 'otherDeadFeeData';
+                $title = ['导入时间', '死库类型', '开发员','开发员2', '美工', '推荐人','采购','仓库',
+                    '商品编码', 'SKU', '商品名称', '创建时间', '最后采购时间','盘点数量', '盘点前单价', '盘少单价(死库)','盘后单价',
+                    '分摊死库','创建时间2'];
+                $headers = ['importDate', 'type', 'developer','developer2', 'possessMan', 'introducer','purchaser','storeName',
+                    'goodsCode', 'sku', 'goodsName', 'createDate', 'lastPurchaseDate','checkNumber', 'preCheckPrice', 'deadPrice','aftCheckPrice',
+                    'aveAmount','createDate2'];
+                $data = $this->actionOtherDeadFee()->getModels();
+                break;
+            case 'salesDeadFee'://销售死库明细下载
+                $fileName = 'salesDeadFeeData';
+                $title = ['导入时间', '死库类型', '平台','账号简称', '销售员', '仓库',
+                    '商品编码', 'SKU', '商品名称', '创建时间', '最后采购时间','盘点数量', '盘点前单价', '盘少单价(死库)','盘后单价',
+                    '账号销量', '总销量','库存金额','分摊死库'];
+                $headers = [ 'importDate', 'type', 'plat','suffix', 'salesman', 'storeName',
+                    'goodsCode', 'sku', 'goodsName', 'createDate', 'lastPurchaseDate','checkNumber', 'preCheckPrice', 'deadPrice','aftCheckPrice',
+                    'suffixSalesNumber', 'totalNumber', 'amount', 'aveAmount'];
+                $data = $this->actionDeadFee()->getModels();
+                break;
+            default://默认销售死库明细下载
+                $fileName = 'salesDeadFeeData';
+                $title = ['导入时间', '死库类型', '平台','账号简称', '销售员', '仓库',
+                    '商品编码', 'SKU', '商品名称', '创建时间', '最后采购时间','盘点数量', '盘点前单价', '盘少单价(死库)','盘后单价',
+                    '账号销量', '总销量','库存金额','分摊死库'];
+                $headers = [ 'importDate', 'type', 'plat','suffix', 'salesman', 'storeName',
+                    'goodsCode', 'sku', 'goodsName', 'createDate', 'lastPurchaseDate','checkNumber', 'preCheckPrice', 'deadPrice','aftCheckPrice',
+                    'suffixSalesNumber', 'totalNumber', 'amount', 'aveAmount'];
+                $data = $this->actionDeadFee()->getModels();
+        }
 
+        //ApiTool::exportExcel($fileName, $headers, $data);
+        $fileName = iconv('utf-8', 'GBK', $fileName);//文件名称
+        $fileName = $fileName . date('_YmdHis');//or $xlsTitle 文件名称可根据自己情况设定
+        $spreadsheet = new Spreadsheet();
+        $worksheet = $spreadsheet->getActiveSheet();
 
+        //设置表头字段名称
+        foreach ($title as $key => $value) {
+            $worksheet->setCellValueByColumnAndRow($key + 1, 1, $value);
+        }
+        //填充表内容
+        foreach ($data as $k => $rows) {
+            foreach ($headers as $i => $val) {
+                $worksheet->setCellValueByColumnAndRow($i + 1, $k + 2, $rows[$val]);
+            }
+        }
+        header('pragma:public');
+        header('Access-Control-Allow-Origin: *');
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment;filename="'.$fileName.'.xls"');
+        header('Cache-Control: max-age=0');
+        //attachment新窗口打印inline本窗口打印
+        $writer = IOFactory::createWriter($spreadsheet, 'Xls');
+        $writer->save('php://output');exit;
+    }
 
 
 }
