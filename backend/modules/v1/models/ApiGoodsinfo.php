@@ -28,6 +28,7 @@ use backend\models\OaWishGoodsSku;
 use backend\models\OaEbaySuffix;
 use backend\models\OaWishSuffix;
 use backend\models\OaJoomSuffix;
+use backend\models\OaJoomToWish;
 use yii\data\ActiveDataProvider;
 use backend\modules\v1\utils\ProductCenterTools;
 use yii\db\Query;
@@ -556,6 +557,7 @@ class ApiGoodsinfo
     public static function preExportJoom($id, $accounts)
     {
         $goodsInfo = OaGoodsinfo::findOne(['id' => $id]);
+        $goods = BGoods::findOne(['GoodsCode' =>$goodsInfo['goodsCode']]);
         $joomSku = OaWishGoodsSku::find()
             ->where(['infoId' => $id])
             ->asArray()->one();
@@ -571,8 +573,10 @@ class ApiGoodsinfo
         ];
         $ret = [];
         $keyWords = static::preKeywords($joomInfo);
+        $priceInfo = static::getJoomPriceInfo($joomSku);
         foreach ($accounts as $account) {
             $joomAccounts = OaJoomSuffix::find()->where(['joomName' => $account])->asArray()->one();
+            $imageInfo = static::getJoomImageInfo($joomInfo,$joomAccounts);
             foreach($joomSku as $sku) {
                 $row = [];
                 $row['Parent Unique ID'] = $joomInfo['sku'] . $joomAccounts['skuCode'];
@@ -583,25 +587,25 @@ class ApiGoodsinfo
                 $row['Color'] = $sku['color'];
                 $row['Size'] = $sku['size'];
                 $row['*Quantity'] = $sku['quantity'];
-                $row['*Price'] = static::getJoomPriceInfo();
-                $row['*Shipping'] = static::getJoomPriceInfo();
+                $row['*Price'] = static::getJoomAdjust($sku['weight'], $priceInfo['price']);
+                $row['*Shipping'] = $priceInfo['shipping'];
                 $row['Shipping weight'] = (float)$sku['weight'];
                 $row['Shipping Time(enter without " ", just the estimated days )'] = '15-45';
-                $row['*Product Main Image URL'] = static::getJoomImageInfo();
-                $row['Variant Main Image URL'] = static::getJoomImageInfo();
-                $row['Extra Image URL'] = $joomInfo['title'];
-                $row['Extra Image URL 1'] = $joomInfo['title'];
-                $row['Extra Image URL 2'] = $joomInfo['title'];
-                $row['Extra Image URL 3'] = $joomInfo['title'];
-                $row['Extra Image URL 4'] = $joomInfo['title'];
-                $row['Extra Image URL 5'] = $joomInfo['title'];
-                $row['Extra Image URL 6'] = $joomInfo['title'];
-                $row['Extra Image URL 7'] = $joomInfo['title'];
-                $row['Extra Image URL 8'] = $joomInfo['title'];
-                $row['Extra Image URL 9'] = $joomInfo['title'];
-                $row['Extra Image URL 10'] = $joomInfo['title'];
-                $row['Dangerous Kind'] = $joomInfo['title'];
-                $row['Declared Value'] = $joomInfo['title'];
+                $row['*Product Main Image URL'] = $imageInfo['mainImage'];
+                $row['Variant Main Image URL'] = str_replace($joomSku['linkUrl'],'/10023/', $joomAccounts['imageCode']);
+                $row['Extra Image URL'] = $imageInfo['extraImages'][0];
+                $row['Extra Image URL 1'] = $imageInfo['extraImages'][1];
+                $row['Extra Image URL 2'] = $imageInfo['extraImages'][2];
+                $row['Extra Image URL 3'] = $imageInfo['extraImages'][3];
+                $row['Extra Image URL 4'] = $imageInfo['extraImages'][4];
+                $row['Extra Image URL 5'] = $imageInfo['extraImages'][5];
+                $row['Extra Image URL 6'] = $imageInfo['extraImages'][6];
+                $row['Extra Image URL 7'] = $imageInfo['extraImages'][7];
+                $row['Extra Image URL 8'] = $imageInfo['extraImages'][8];
+                $row['Extra Image URL 9'] = $imageInfo['extraImages'][9];
+                $row['Extra Image URL 10'] = $imageInfo['extraImages'][10];
+                $row['Dangerous Kind'] = static::getJoomDangerousKind($goodsInfo);
+                $row['Declared Value'] = $goods['DeclaredValue'];
             }
             $ret[] = $row;
         }
@@ -936,5 +940,93 @@ class ApiGoodsinfo
         $ret['need'] = json_decode($info['requiredKeywords']);
         $ret['random'] = json_decode($info['randomKeywords']);
         return $ret;
+    }
+
+    /**
+     * @brief joom定价规则
+     * @param $joomSku
+     * @return array
+     */
+    private static function getJoomPriceInfo($joomSku)
+    {
+        $prices = ArrayHelper::getColumn($joomSku,'price');
+        $shippingPrices = ArrayHelper::getColumn($joomSku,'shipping');
+        $maxJoomPrice = max(ArrayHelper::getColumn($joomSku,'joomPrices'));
+        $minJoomShipping = max(ArrayHelper::getColumn($joomSku,'joomShipping'));
+        $maxMrsp = max(ArrayHelper::getColumn($joomSku, 'mrsp'));
+        $len = count($joomSku);
+        $i = 0;
+        $totalPrice = [];
+        while($i<$len) {
+            $totalPrice[] = $prices[$i] + $shippingPrices[$i];
+            $i++;
+        }
+
+        //定价规则
+        $price = max($totalPrice) - 0.01;
+        $msrp = max([$price * 5, $maxMrsp]);
+        $joomPrice = $maxJoomPrice - $minJoomShipping;
+        $price = $joomPrice > 0 ? $joomPrice : $price;
+        $shipping = $minJoomShipping;
+
+        return ['price' => $price, 'msrp' => $msrp, 'joomPrice' => $joomPrice, 'shipping' => $shipping];
+
+    }
+
+    /**
+     * @brief 根据总量调整joom价格
+     * @param $weight
+     * @param $price
+     * @return mixed
+     */
+    private static function getJoomAdjust($weight, $price)
+    {
+        $adjust = OaJoomToWish::find()->asArray()->all();
+        foreach ($adjust as $ad) {
+            if ($weight >= $adjust['greaterEqual'] && $weight < $adjust['less']) {
+                $price += $ad['addedPrice'];
+                break;
+            }
+        }
+        return $price;
+    }
+
+    /**
+     * @brief 设置joom图片信息
+     * @param $joomInfo
+     * @param $account
+     * @return array
+     */
+    private static function getJoomImageInfo($joomInfo, $account)
+    {
+        $mainImage = substr($joomInfo['mainImage'],0, stripos('-', $joomInfo['mainImage']));
+        $mainImage = str_replace($mainImage, '/10023/', $account['imageCode']);
+        $extraImages = explode($joomInfo['extraImage'],'\n');
+        array_filter($extraImages, function ($ele) {return strpos($ele,'-_00_') === false; });
+        $extraImages = array_map(function ($ele, $account) {return str_replace($ele, '/10023/',$account['imageCode']);}, $extraImages);
+        shuffle($extraImages);
+        return ['mainImage' => $mainImage, 'extraImages' => $extraImages];
+    }
+
+    /**
+     * @brief 判断joom属于哪种危险品
+     * @param $goodsInfo
+     * @return string
+     */
+    private static function getJoomDangerousKind($goodsInfo)
+    {
+        if($goodsInfo['isLiquid']) {
+            return 'liquid';
+        }
+        if($goodsInfo['isPowder']) {
+            return 'powder';
+        }
+        if($goodsInfo['isMagnetism']) {
+            return 'magnetizedItems';
+        }
+        if($goodsInfo['isCharged']) {
+            return  'withBattery';
+        }
+        return 'noDangerous';
     }
 }
