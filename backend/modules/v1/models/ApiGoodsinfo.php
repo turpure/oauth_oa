@@ -30,6 +30,7 @@ use backend\models\OaWishSuffix;
 use backend\models\OaJoomSuffix;
 use backend\models\OaJoomToWish;
 use backend\models\OaShippingService;
+use backend\models\ShopElf\BGoods;
 use yii\data\ActiveDataProvider;
 use backend\modules\v1\utils\ProductCenterTools;
 use yii\db\Query;
@@ -563,7 +564,7 @@ class ApiGoodsinfo
         $goods = BGoods::findOne(['GoodsCode' =>$goodsInfo['goodsCode']]);
         $joomSku = OaWishGoodsSku::find()
             ->where(['infoId' => $id])
-            ->asArray()->one();
+            ->asArray()->all();
         $joomInfo = OaWishGoods::find()->where(['infoId' => $id])->asArray()->one();
         $row = [
             'Parent Unique ID' => '', '*Product Name' => '', 'Description' => '', '*Tags' => '', '*Unique ID' => '', 'Color' => '',
@@ -589,13 +590,13 @@ class ApiGoodsinfo
                 $row['*Unique ID'] = $sku['sku'] . $joomAccounts['skuCode'];
                 $row['Color'] = $sku['color'];
                 $row['Size'] = $sku['size'];
-                $row['*Quantity'] = $sku['quantity'];
+                $row['*Quantity'] = $sku['inventory'];
                 $row['*Price'] = static::getJoomAdjust($sku['weight'], $priceInfo['price']);
                 $row['*Shipping'] = $priceInfo['shipping'];
                 $row['Shipping weight'] = (float)$sku['weight'];
                 $row['Shipping Time(enter without " ", just the estimated days )'] = '15-45';
                 $row['*Product Main Image URL'] = $imageInfo['mainImage'];
-                $row['Variant Main Image URL'] = str_replace($joomSku['linkUrl'],'/10023/', $joomAccounts['imageCode']);
+                $row['Variant Main Image URL'] = str_replace($sku['linkUrl'],'/10023/', $joomAccounts['imgCode']);
                 $row['Extra Image URL'] = $imageInfo['extraImages'][0];
                 $row['Extra Image URL 1'] = $imageInfo['extraImages'][1];
                 $row['Extra Image URL 2'] = $imageInfo['extraImages'][2];
@@ -1001,7 +1002,7 @@ class ApiGoodsinfo
     {
         $adjust = OaJoomToWish::find()->asArray()->all();
         foreach ($adjust as $ad) {
-            if ($weight >= $adjust['greaterEqual'] && $weight < $adjust['less']) {
+            if ($weight >= $ad['greaterEqual'] && $weight < $ad['less']) {
                 $price += $ad['addedPrice'];
                 break;
             }
@@ -1018,10 +1019,15 @@ class ApiGoodsinfo
     private static function getJoomImageInfo($joomInfo, $account)
     {
         $mainImage = substr($joomInfo['mainImage'],0, stripos('-', $joomInfo['mainImage']));
-        $mainImage = str_replace($mainImage, '/10023/', $account['imageCode']);
-        $extraImages = explode($joomInfo['extraImage'],'\n');
+        $mainImage = str_replace($mainImage, '/10023/', $account['imgCode']);
+        $extraImages = explode($joomInfo['extraImages'],'\n');
         array_filter($extraImages, function ($ele) {return strpos($ele,'-_00_') === false; });
-        $extraImages = array_map(function ($ele, $account) {return str_replace($ele, '/10023/',$account['imageCode']);}, $extraImages);
+        $extraImages = array_map(function ($ele) use ($account) {return str_replace($ele, '/10023/',$account['imgCode']);}, $extraImages);
+        $countImages = count($extraImages);
+        while($countImages <=11) {
+            $extraImages[] = '';
+            $countImages++;
+        }
         shuffle($extraImages);
         return ['mainImage' => $mainImage, 'extraImages' => $extraImages];
     }
