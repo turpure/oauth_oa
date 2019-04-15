@@ -500,9 +500,9 @@ class ApiGoodsinfo
     public static function preExportWish($id)
     {
         $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
-        $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->one();
-        $goodsInfo = OaWishgoods::find()->where(['id' => $id])->asArray()->one();
-        $goods = OaGoods::find()->where(['id' => $goodsInfo['goodsId']])->asArray()->one();
+        $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
+        $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
+        $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
         $wishAccounts = OaWishSuffix::find()->where(['like','parentCategory',$goods['cate']])
             ->orWhere(['parentCategory' => ''])
             ->asArray()->all();
@@ -517,8 +517,10 @@ class ApiGoodsinfo
         $ret = [];
         foreach ($wishAccounts as $account) {
             $title = '';
+            $len = self::WishTitleLength;
             while (true) {
-                $title = static::getTitleName($keyWords, self::WishTitleLength);
+                $title = static::getTitleName($keyWords,$len);
+                --$len;
                 if (empty($title) || !in_array($title, $titlePool, false)) {
                     $titlePool[] = $title;
                     break;
@@ -533,7 +535,7 @@ class ApiGoodsinfo
             $row['msrp'] = $variantInfo['msrp'];
             $row['shipping'] = $variantInfo['shipping'];
             $row['shipping_time'] = '7-21';
-            $row['main_image'] = static::getWishMainImage($goodsInfo['goodsCode'],$account['mainImage']);
+            $row['main_image'] = static::getWishMainImage($goodsInfo['goodsCode'],$account['mainImg']);
             $row['extra_images'] = $wishInfo['extraImages'];
             $row['variants'] = $variantInfo['variant'];
             $row['landing_page_url'] = $wishInfo['mainImage'];
@@ -825,69 +827,76 @@ class ApiGoodsinfo
      */
     private static  function getWishVariantInfo($isVar, $wishInfo, $wishSku, $account)
     {
-        $price = ArrayHelper::getColumn($wishSku, 'price');
-        $shippingPrice = ArrayHelper::getColumn($wishSku, 'shipping');
-        $msrp = ArrayHelper::getColumn($wishSku, 'msrp');
-        $len = count($price);
-        $totalPrice = [];
-        for ($i=0; $i<$len; $i++) {
-            $totalPrice[] = ceil($price[$i] + $shippingPrice[$i]);
-        }
+        try {
+            $price = ArrayHelper::getColumn($wishSku, 'price');
+            $shippingPrice = ArrayHelper::getColumn($wishSku, 'shipping');
+            $msrp = ArrayHelper::getColumn($wishSku, 'msrp');
+            $len = count($price);
+            $totalPrice = [];
+            for ($i=0; $i<$len; $i++) {
+                $totalPrice[] = ceil($price[$i] + $shippingPrice[$i]);
+            }
 
-        //获取最大最小价格
-        $maxPrice = max($totalPrice);
-        $minPrice = min($totalPrice);
-        $maxMsrp = max($msrp);
+            //获取最大最小价格
+            $maxPrice = max($totalPrice);
+            $minPrice = min($totalPrice);
+            $maxMsrp = max($msrp);
 
-        //根据总价计算运费
-        if ($minPrice <= 3) {
-            $shipping = 1;
-        }
-        else {
-            $shipping = ceil($minPrice * $account['rate']);
-        }
+            //根据总价计算运费
+            if ($minPrice <= 3) {
+                $shipping = 1;
+            }
+            else {
+                $shipping = ceil($minPrice * $account['rate']);
+            }
 
-        //打包变体
-        $variation = [];
-        foreach ($wishSku as $sku) {
-            //价格判断
-            $totalPrice = ceil($sku['price'] + $sku['shipping']);
-            $value['shipping'] = $shipping;
-            $value['price'] = $totalPrice - $shipping < 1 ? 1 : ceil($totalPrice - $shipping);
-            $var['sku'] = $sku['sku'] . $account['suffix'];
-            $var['color'] = $sku['color'];
-            $var['size'] = $sku['size'];
-            $var['inventory'] = $sku['inventory'];
-            $var['price'] = $sku['price'];
-            $var['shipping'] = $sku['shipping'];
-            $var['msrp'] = $sku['msrp'];
-            $var['shipping_time'] = $sku['shipping_time'];
-            $var['main_image'] = $sku['linkurl'];
-            $var['localized_currency_code'] = 'CNY';
-            $var['localized_price'] = (string)floor($sku['price'] * self::UsdExchange);
-            $variation[] = $var;
+            //打包变体
+            $variation = [];
+            foreach ($wishSku as $sku) {
+                //价格判断
+                $totalPrice = ceil($sku['price'] + $sku['shipping']);
+                $value['shipping'] = $shipping;
+                $value['price'] = $totalPrice - $shipping < 1 ? 1 : ceil($totalPrice - $shipping);
+                $var['sku'] = $sku['sku'] . $account['suffix'];
+                $var['color'] = $sku['color'];
+                $var['size'] = $sku['size'];
+                $var['inventory'] = $sku['inventory'];
+                $var['price'] = $sku['price'];
+                $var['shipping'] = $sku['shipping'];
+                $var['msrp'] = $sku['msrp'];
+                $var['shipping_time'] = $sku['shippingTime'];
+                $var['main_image'] = $sku['linkUrl'];
+                $var['localized_currency_code'] = 'CNY';
+                $var['localized_price'] = (string)floor($sku['price'] * self::UsdExchange);
+                $variation[] = $var;
+            }
+            $variant = json_encode($variation);
+            $ret = [];
+            if ($isVar === '是') {
+                $ret['variant'] = $variant;
+                $ret['shipping'] = $shipping;
+                $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1;
+                $ret['msrp'] = $maxMsrp;
+                $ret['local_price'] = floor($wishInfo['price'] * self::UsdExchange);
+                $ret['local_shippingfee'] = floor($wishInfo['shipping'] * self::UsdExchange);
+                $ret['local_currency'] = 'CNY';
+            }
+            else {
+                $ret['variant'] = '';
+                $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1 ;
+                $ret['shipping'] = $shipping;
+                $ret['msrp'] = $maxMsrp;
+                $ret['local_price'] = floor($ret['price'] * self::UsdExchange);
+                $ret['local_shippingfee'] = floor($shipping * self::UsdExchange);
+                $ret['local_currency'] = 'CNY';
+            }
+            return $ret;
         }
-        $variant = json_encode($variation);
-        $ret = [];
-        if ($isVar === '是') {
-            $ret['variant'] = $variant;
-            $ret['shipping'] = $shipping;
-            $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1;
-            $ret['msrp'] = $maxMsrp;
-            $ret['local_price'] = floor($wishInfo['price'] * self::UsdExchange);
-            $ret['local_shippingfee'] = floor($wishInfo['shipping'] * self::UsdExchange);
-            $ret['local_currency'] = 'CNY';
-        }
-        else {
-            $ret['variant'] = '';
-            $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1 ;
-            $ret['shipping'] = $shipping;
-            $ret['msrp'] = $maxMsrp;
-            $ret['local_price'] = floor($ret['price'] * self::UsdExchange);
-            $ret['local_shippingfee'] = floor($shipping * self::UsdExchange);
-            $ret['local_currency'] = 'CNY';
-        }
-        return $ret;
+        catch (\Exception $why) {
+            return ['variant' => '', 'price' => '', 'shipping' => '',
+                'msrp' => '', 'local_price' => '', 'local_shippingfee' => '','local_currency' => ''];
+    }
+
     }
 
     /**
