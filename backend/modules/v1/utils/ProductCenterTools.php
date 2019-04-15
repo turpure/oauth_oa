@@ -24,6 +24,7 @@ use backend\models\ShopElf\BPackInfo;
 use backend\models\ShopElf\BPerson;
 use backend\models\ShopElf\SUserGoodsRight;
 use backend\models\ShopElf\BGoodsAttribute;
+use backend\models\ShopElf\BCurrencyCode;
 use backend\modules\v1\models\ApiGoodsinfo;
 use Yii;
 use yii\helpers\ArrayHelper;
@@ -811,6 +812,12 @@ class ProductCenterTools
        $skuName = explode($sku, '_')[0];
        $base = 'http://121.196.233.153/images/';
        return $base . $skuName . '.jpg';
+   }
+
+   public static function getExchangeRate($currencyCode)
+   {
+       $code = BCurrencyCode::findOne(['CURRENCYCODE' => $currencyCode]);
+       return $code['exchangeRate'];
    }
 }
 

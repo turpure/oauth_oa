@@ -29,6 +29,7 @@ use backend\models\OaEbaySuffix;
 use backend\models\OaWishSuffix;
 use backend\models\OaJoomSuffix;
 use backend\models\OaJoomToWish;
+use backend\models\OaShippingService;
 use yii\data\ActiveDataProvider;
 use backend\modules\v1\utils\ProductCenterTools;
 use yii\db\Query;
@@ -622,6 +623,7 @@ class ApiGoodsinfo
     {
         $ebayInfo = OaEbayGoods::find()->joinWith('oaEbayGoodsSku')
             ->where(['oa_ebayGoods.infoId' => $id])->asArray()->one();
+        $goodsInfo = OaGoodsinfo::findOne(['id' => $id]);
         $ret = [];
         $row = [
             'Site' => '', 'Selleruserid' => '', 'ListingType' => '', 'Category1' => '', 'Category2' => '',
@@ -661,9 +663,11 @@ class ApiGoodsinfo
             'Specifics24' => '', 'Specifics25' => '', 'Specifics26' => '', 'Specifics27' => '',
             'Specifics28' => '', 'Specifics29' => '', 'Specifics30' => '',
         ];
+        $price = self::getEbayPrice($ebayInfo);
         foreach($accounts as $account)
         {
             $ebayAccount = OaEbaySuffix::find()->where(['ebaySuffix' => $account ])->asArray()->one();
+            $payPal = self::getEbayPayPal($price, $ebayAccount);
             $row['Site'] = $ebayInfo['site'];
             $row['Selleruserid'] = $ebayAccount['ebayName'];
             $row['ListingType'] = 'FixedPriceItem';
@@ -679,7 +683,7 @@ class ApiGoodsinfo
             $row['BestOfferAutoAcceptPrice'] = '';
             $row['BestOfferAutoRefusedPrice'] = '';
             $row['AcceptPayment'] = 'PayPal';
-            $row['PayPalEmailAddress'] = $ebayAccount['high'];
+            $row['PayPalEmailAddress'] = $payPal;
             $row['Location'] = $ebayInfo['location'];
             $row['LocationCountry'] = $ebayInfo['country'];
             $row['ReturnsAccepted'] = '1';
@@ -692,33 +696,33 @@ class ApiGoodsinfo
             $row['PrivateListing'] = '';
             $row['HitCounter'] = 'NoHitCounter';
             $row['sku'] = $ebayInfo['sku'] . $ebayAccount['nameCode'];
-            $row['PictureURL'] = ''; //todo
+            $row['PictureURL'] = static::getEbayPicture($goodsInfo, $ebayInfo);
             $row['Title'] = $ebayInfo['title'];
             $row['SubTitle'] = $ebayInfo['subTitle'];
             $row['IbayCategory'] = '';
             $row['StartPrice'] = '';
-            $row['BuyItNowPrice'] = '';//todo
-            $row['UseMobile'] = '1';//todo
-            $row['ShippingService1'] = '';//todo
-            $row['ShippingServiceCost1'] = '';//todo
-            $row['ShippingServiceAdditionalCost1'] = '';//todo
-            $row['ShippingService2'] = '';//todo
-            $row['ShippingServiceCost2'] = '';//todo
-            $row['ShippingServiceAdditionalCost2'] = '';//todo
-            $row['ShippingService3'] = '';//todo
-            $row['ShippingServiceCost3'] = '';//todo
-            $row['ShippingServiceAdditionalCost3'] = '';//todo
-            $row['ShippingService4'] = '';//todo
-            $row['ShippingServiceCost4'] = '';//todo
-            $row['ShippingServiceAdditionalCost4'] = '';//todo
-            $row['InternationalShippingService1'] = '';//todo
-            $row['InternationalShippingServiceCost1'] = '';//todo
-            $row['InternationalShippingServiceAdditionalCost1'] = '';//todo
-            $row['InternationalShipToLocation1'] = '';//todo
-            $row['InternationalShippingService2'] = '';//todo
-            $row['InternationalShippingServiceCost2'] = '';//todo
-            $row['InternationalShippingServiceAdditionalCost2'] = '';//todo
-            $row['InternationalShipToLocation2'] = '';//todo
+            $row['BuyItNowPrice'] = $price;
+            $row['UseMobile'] = '1';
+            $row['ShippingService1'] = static::getShippingService($ebayInfo['inShippingMethod1']);
+            $row['ShippingServiceCost1'] = $ebayInfo['inFirstCost1'];
+            $row['ShippingServiceAdditionalCost1'] = $ebayInfo['inSuccessorCost1'];
+            $row['ShippingService2'] = static::getShippingService($ebayInfo['inShippingMethod1']);
+            $row['ShippingServiceCost2'] = $ebayInfo['inFirstCost2'];
+            $row['ShippingServiceAdditionalCost2'] = $ebayInfo['inSuccessorCost2'];
+            $row['ShippingService3'] = '';
+            $row['ShippingServiceCost3'] = '';
+            $row['ShippingServiceAdditionalCost3'] = '';
+            $row['ShippingService4'] = '';
+            $row['ShippingServiceCost4'] = '';
+            $row['ShippingServiceAdditionalCost4'] = '';
+            $row['InternationalShippingService1'] = static::getShippingService($ebayInfo['inShippingMethod1']);
+            $row['InternationalShippingServiceCost1'] = $ebayInfo['OutFirstCost1'];
+            $row['InternationalShippingServiceAdditionalCost1'] = $ebayInfo['OutSuccessorCost1'];
+            $row['InternationalShipToLocation1'] = static::getShippingService($ebayInfo['inShippingMethod2']);
+            $row['InternationalShippingService2'] = $ebayInfo['InternationalShippingService2'];
+            $row['InternationalShippingServiceCost2'] = $ebayInfo['OutFirstCost2'];
+            $row['InternationalShippingServiceAdditionalCost2'] = $ebayInfo['OutSuccessorCost2'];
+            $row['InternationalShipToLocation2'] = static::getShippingService('@outShipping2');
             $row['InternationalShippingService3'] = '';
             $row['InternationalShippingServiceCost3'] = '';
             $row['InternationalShippingServiceAdditionalCost3'] = '';
@@ -732,19 +736,19 @@ class ApiGoodsinfo
             $row['InternationalShippingServiceAdditionalCost5'] = '';
             $row['InternationalShipToLocation5'] = '';
             $row['DispatchTimeMax'] = $ebayInfo['prepareDay'];
-            $row['ExcludeShipToLocation'] = ''; //todo
+            $row['ExcludeShipToLocation'] = static::getEbayExcludeLocation($ebayAccount);
             $row['StoreCategory1'] = '';
             $row['StoreCategory2'] = '';
             $row['IbayTemplate'] = $ebayAccount['ibayTemplate'];
             $row['IbayInformation'] = '1';
             $row['IbayComment'] = '';
-            $row['Description'] = '';  //todo
+            $row['Description'] = static::getEbayDescription($ebayInfo['description']);
             $row['Language'] = '';
             $row['IbayOnlineInventoryHold'] = '1';
             $row['IbayRelistSold'] = '';
             $row['IbayRelistUnsold'] = '';
             $row['IBayEffectType'] = '1';
-            $row['IbayEffectImg'] = ''; //todo
+            $row['IbayEffectImg'] = static::getEbayPicture($goodsInfo, $ebayInfo);
             $row['IbayCrossSelling'] = '';
             $row['Variation'] = '';
             $row['outofstockcontrol'] = '0';
@@ -1033,5 +1037,81 @@ class ApiGoodsinfo
             return  'withBattery';
         }
         return 'noDangerous';
+    }
+
+    /**
+     * @brief 获取ebay价格信息
+     * @param $ebayInfo
+     * @return int
+     */
+    private static function getEbayPrice($ebayInfo)
+    {
+        $currencyCodeMap = ['美国站' => 'USD', '英国站' => 'GBP', '澳洲站' => 'AUD' ];
+        $skuPrice = ArrayHelper::getColumn($ebayInfo['oaEbayGoodsSku'], 'retailPrice');
+        $maxPrice = max($skuPrice);
+        $currencyCode = $currencyCodeMap[$ebayInfo['site']];
+        $usdPrice = $maxPrice * ProductCenterTools::getExchangeRate($currencyCode) / ProductCenterTools::getExchangeRate('USD');
+        return $usdPrice;
+    }
+
+    /**
+     * @brief 获取payPal
+     * @param $price
+     * @param $ebayAccount
+     * @return mixed
+     */
+    private static function getEbayPayPal($price, $ebayAccount)
+    {
+        if ($price >= 8) {
+            return $ebayAccount['high'];
+        }
+        return $ebayAccount['low'];
+    }
+
+    /**
+     * @brief 获取ebay的图片信息
+     * @param $goodsInfo
+     * @param $ebayInfo
+     * @return string
+     */
+    private static function getEbayPicture($goodsInfo, $ebayInfo)
+    {
+        return 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_' .
+            $ebayInfo['mainImage'] . '_.jpg' . '\n' . $ebayInfo['extraImage'];
+    }
+    /**
+     * @brief 获取eBay描述
+     * @param $description
+     * @return string
+     */
+    private static function getEbayDescription($description)
+    {
+        return '<span style="font-family:Arial;font-size:14px;">' .
+            str_replace($description,'\n','</br>') .'</span>';
+    }
+
+    /**
+     * @brief ebay屏蔽发货国家
+     * @param $ebayAccount
+     * @return string
+     */
+    private static function getEbayExcludeLocation($ebayAccount)
+    {
+        $specialAccounts = ['03-aatq', '09-niceday'];
+        if (in_array($ebayAccount, $specialAccounts, false)) {
+            return 'US Protectorates,APO/FPO,PO Box,BO,HK,MO,TW,AS,CK,FJ,PF,GU,KI,MH,FM,NR,NC,NU,PW,PG,SB,TO,TV,VU,WF,WS,BM,GL,PM,BH,IQ,JO,KW,LB,OM,QA,SA,AE,YE,GG,IS,JE,LI,LU,ME,SM,SI,SJ,VA,AI,AG,AW,BS,BB,BZ,VG,KY,CR,DM,DO,SV,GD,GP,GT,HT,HN,JM,MQ,MS,AN,NI,PA,KN,LC,VC,TT,TC,VI,CN,AT,DE,CH,MT,PR,AL,ZM,BA,MU';
+        }
+        return 'US Protectorates,APO/FPO,PO Box,BO,HK,MO,TW,AS,CK,FJ,PF,GU,KI,MH,FM,NR,NC,NU,PW,PG,SB,TO,TV,VU,WF,WS,BM,GL,PM,BH,IQ,JO,KW,LB,OM,QA,SA,AE,YE,GG,IS,JE,LI,LU,ME,SM,SI,SJ,VA,AI,AG,AW,BS,BB,BZ,VG,KY,CR,DM,DO,SV,GD,GP,GT,HT,HN,JM,MQ,MS,AN,NI,PA,KN,LC,VC,TT,TC,VI,CN,MT,PR,AL,ZM,BA,MU';
+    }
+
+    /**
+     * @brief 获取iBay对应的运输方式
+     * @param $shippingMethod
+     * @return string
+     */
+    private static function getShippingService($shippingMethod)
+    {
+        return OaShippingService::findOne(['servicesName' => $shippingMethod])->ibayShipping;
+
     }
 }
