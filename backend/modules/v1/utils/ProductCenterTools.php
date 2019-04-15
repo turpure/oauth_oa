@@ -843,4 +843,6 @@ class ProductCenterTools
    {
        $code = BCurrencyCode::findOne(['CURRENCYCODE' => $currencyCode]);
        return $code['exchangeRate'];
+   }
+}
 
