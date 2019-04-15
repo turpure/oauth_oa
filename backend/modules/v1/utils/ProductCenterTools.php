@@ -832,15 +832,17 @@ class ProductCenterTools
      * @param $sku
      * @return string
      */
-   public static function getBmpFileName($sku)
-   {
-       $skuName = explode($sku, '_')[0];
-       $base = 'http://121.196.233.153/images/';
-       return $base . $skuName . '.jpg';
-   }
+    public static function getBmpFileName($sku)
+    {
+        $skuName = explode($sku, '_')[0];
+        $base = 'http://121.196.233.153/images/';
+        return $base . $skuName . '.jpg';
+    }
 
-   public static function getExchangeRate($currencyCode)
-   {
-       $code = BCurrencyCode::findOne(['CURRENCYCODE' => $currencyCode]);
-       return $code['exchangeRate'];
+    public static function getExchangeRate($currencyCode)
+    {
+        $code = BCurrencyCode::findOne(['CURRENCYCODE' => $currencyCode]);
+        return $code['exchangeRate'];
+    }
+}
 
