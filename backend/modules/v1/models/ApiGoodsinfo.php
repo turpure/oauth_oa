@@ -380,6 +380,9 @@ class ApiGoodsinfo
         } elseif ($plat === 'ebay') {
             $goods = OaEbayGoods::findOne(['infoId' => $infoId]);
             $goodsSku = OaEbayGoodsSku::findAll(['infoId' => $infoId]);
+            foreach ($goodsSku as $sku) {
+                $sku['property'] = json_decode($sku['property']);
+            }
         } else {
             $goods = [];
             $goodsSku = [];
@@ -404,6 +407,7 @@ class ApiGoodsinfo
         $goods->setAttributes($goodsInfo);
         foreach ($skuInfo as $row) {
             $sku = OaEbayGoodsSku::findOne(['id' => $row['id']]);
+            $row['property'] = json_decode($row['property']);
             $sku->setAttributes($row);
             if (!$sku->save()) {
                 return [
