@@ -44,8 +44,8 @@ class ApiGoodsinfo
      * @return mixed
      * @throws \Exception
      */
-    const GoodsInfo = 1;
-    const PictureInfo = 2;
+    private static $goodsInfo = ['待处理','已完善'];
+    private static $pictureInfo = ['待处理'];
     const PlatInfo = 3;
     const UsdExchange = 6.88;
     const WishTitleLength = 110;
@@ -63,7 +63,12 @@ class ApiGoodsinfo
         $type = $condition['type'];
         $query = OaGoodsinfo::find();
         if ($type === 'goods-info') {
-            $query->where(['filterType' => self::GoodsInfo]);
+            if (isset($condition['achieveStatus'])) {
+                $query->andFilterWhere(['like', 'achieveStatus', $condition['achieveStatus']]);
+            }
+            else {
+                $query->where(['in','achieveStatus',static::$goodsInfo]);
+            }
             if (isset($condition['stockUp'])) $query->andFilterWhere(['stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'developer', $condition['developer']]);
         } elseif ($type === 'picture-info') {
@@ -71,8 +76,12 @@ class ApiGoodsinfo
              g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer")
                 ->from('proCenter.oa_goodsinfo gi')
                 ->join('LEFT JOIN', 'proCenter.oa_goods g', 'g.nid=gi.goodsId');
-            //$query->joinWith('oaGoods')->asArray();
-            $query->where(['filterType' => self::PictureInfo]);
+            if (isset($condition['picStatus'])) {
+                $query->andFilterWhere(['like', 'picStatus', $condition['picStatus']]);
+            }
+            else {
+                $query->where(['in','picStatus', static::$pictureInfo]);
+            }
             if (isset($condition['stockUp'])) $query->andFilterWhere(['gi.stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'gi.developer', $condition['developer']]);
         } elseif ($type === 'plat-info') {
@@ -84,15 +93,22 @@ class ApiGoodsinfo
             $query->where(['filterType' => self::PlatInfo]);
             if (isset($condition['stockUp'])) $query->andFilterWhere(['gi.stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'gi.developer', $condition['developer']]);
+            if (isset($condition['completeStatus'])) {
+                $status = explode(',', $condition['completeStatus']);
+                $filter= ['or'];
+                foreach ($status as $st) {
+                    $row = ['like', 'completeStatus', $st];
+                    $filter[] = $row;
+                }
+                $query->andFilterWhere($filter);
+            }
         } else {
             return [];
         }
         if (isset($condition['goodsCode'])) $query->andFilterWhere(['like', 'goodsCode', $condition['goodsCode']]);
-        if (isset($condition['achieveStatus'])) $query->andFilterWhere(['like', 'achieveStatus', $condition['achieveStatus']]);
         if (isset($condition['goodsName'])) $query->andFilterWhere(['like', 'goodsName', $condition['goodsName']]);
         if (isset($condition['aliasCnName'])) $query->andFilterWhere(['like', 'aliasCnName', $condition['aliasCnName']]);
         if (isset($condition['aliasEnName'])) $query->andFilterWhere(['like', 'aliasEnName', $condition['aliasEnName']]);
-        if (isset($condition['picStatus'])) $query->andFilterWhere(['like', 'picStatus', $condition['picStatus']]);
         if (isset($condition['possessman1'])) $query->andFilterWhere(['like', 'possessman1', $condition['possessman1']]);
         if (isset($condition['purchaser'])) $query->andFilterWhere(['like', 'purchaser', $condition['purchaser']]);
         if (isset($condition['introducer'])) $query->andFilterWhere(['like', 'introducer', $condition['introducer']]);
