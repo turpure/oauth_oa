@@ -107,10 +107,10 @@ class ApiGoods
         if(isset($post['checkStatus']) && $post['checkStatus']) {
             $query->andWhere(['like', 'checkStatus', $post['checkStatus']]);
         }else{
-            $query->andWhere(['checkStatus' => ['已认领','待提交','待审批']]);
+            $query->andWhere(['checkStatus' => ['已认领','待提交','待审批','未通过']]);
         }
 
-        $query->orderBy(["FIELD(`checkStatus`,'已认领','待提交','待审批')" => true, 'createDate' => 'DESC']);
+        $query->orderBy(["FIELD(`checkStatus`,'已认领','待提交','待审批','未通过')" => true, 'createDate' => SORT_DESC]);
         $provider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
@@ -161,10 +161,10 @@ class ApiGoods
         if(isset($post['checkStatus']) && $post['checkStatus']) {
             $query->andWhere(['like', 'checkStatus', $post['checkStatus']]);
         }else{
-            $query->andWhere(['checkStatus' => ['已认领','待提交','待审批']]);
+            $query->andWhere(['checkStatus' => ['已认领','待提交','待审批','未通过']]);
         }
 
-        $query->orderBy(["FIELD(`checkStatus`,'已认领','待提交','待审批')" => true, 'createDate' => 'DESC']);
+        $query->orderBy(["FIELD(`checkStatus`,'已认领','待提交','待审批','未通过')" => true, 'createDate' => SORT_DESC]);
         $provider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
@@ -201,11 +201,9 @@ class ApiGoods
             $query->andFilterWhere(['checkStatus' => '未通过']);
         }
         $query->andFilterWhere(["IFNULL(stockUp,'否')" => $post['stockUp']]);
-        if ($post['mineId'] == 1){
-            $query->andFilterWhere(['>', 'IFNULL(mineId,0)', 0]);
-        }elseif($post['mineId'] == 0){
-            $query->andFilterWhere(['IFNULL(mineId,0)' => 0]);
-        }
+
+        if (isset($post['mineId']) && $post['mineId'] == '是') $query->andFilterWhere(['>', "mineId", 1]);
+        if (isset($post['mineId']) && $post['mineId'] == '否') $query->andFilterWhere(["IFNULL(mineId,'')" => '']);
         $query->andFilterWhere(['like', 'devNum', $post['devNum']]);
         $query->andFilterWhere(['like', 'checkStatus', $post['checkStatus']]);
         $query->andFilterWhere(['like', 'cate', $post['cate']]);
