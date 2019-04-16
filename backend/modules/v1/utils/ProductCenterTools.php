@@ -628,10 +628,10 @@ class ProductCenterTools
     {
         $ret = [
             'columns' => [
-                'Color' => $goodsSku['property1'],
-                'Size' => $goodsSku['property2'],
-                '款式3' => $goodsSku['property3'],
-                'UPC' => 'Does not apply',
+                ['Color' => $goodsSku['property1']],
+                ['Size' => $goodsSku['property2']],
+                ['款式3' => $goodsSku['property3']],
+                ['UPC' => 'Does not apply'],
             ],
             'pictureKey' => 'color',
         ];
