@@ -94,7 +94,7 @@ class ApiGoodsinfo
             if (isset($condition['stockUp'])) $query->andFilterWhere(['gi.stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'gi.developer', $condition['developer']]);
             if (isset($condition['completeStatus'])) {
-                $status = explode(',', $condition['completeStatus']);
+                $status = $condition['completeStatus'];
                 $filter= ['or'];
                 foreach ($status as $st) {
                     $row = ['like', 'completeStatus', $st];
