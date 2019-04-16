@@ -121,7 +121,7 @@ class SiteController extends AdminController
         return Helper::arrayUnique($ret);
     }
 
-//================================================================================================
+//=====================  Profit Changes  ============================
 
     /**
      * 上海销售毛利
@@ -209,6 +209,80 @@ class SiteController extends AdminController
         $query = \Yii::$app->db->createCommand($sql)->queryAll();
         return $query;
     }
+
+
+    //=====================  Amt Changes  ============================
+
+    /**
+     * 上海销售额
+     * Date: 2019-04-16 09:38
+     * Author: henry
+     * @return mixed
+     * @throws \yii\db\Exception
+     */
+    public function actionAmt()
+    {
+        $sql = "SELECT * FROM site_sales_amt 
+                WHERE depart NOT LIKE '%郑州分部%' AND role = '销售' AND IFNULL(display,0)=0
+                ORDER BY rate  DESC";
+        $query = \Yii::$app->db->createCommand($sql)->queryAll();
+        return $query;
+    }
+
+    /**
+     * 郑州销售额
+     * Date: 2019-04-16 09:14
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
+     */
+
+    public function actionZzAmt()
+    {
+        $sql = "SELECT * FROM site_sales_amt 
+                WHERE depart LIKE '%郑州分部%' AND role = '销售' AND IFNULL(display,0)=0
+                ORDER BY rate  DESC";
+        $query = \Yii::$app->db->createCommand($sql)->queryAll();
+        return $query;
+    }
+
+    /**
+     * 开发销售额
+     * Date: 2019-04-16 10:38
+     * Author: henry
+     * @return mixed
+     * @throws \yii\db\Exception
+     */
+    public function actionDevAmt()
+    {
+        $sql = "SELECT * FROM site_sales_amt 
+                WHERE role = '开发' AND IFNULL(display,0)=0
+                ORDER BY rate DESC";
+        $query = \Yii::$app->db->createCommand($sql)->queryAll();
+        return $query;
+    }
+
+
+    /**
+     * 部门销售额
+     * Date: 2019-04-16 10:38
+     * Author: henry
+     * @return mixed
+     * @throws \yii\db\Exception
+     */
+    public function actionDepartAmt()
+    {
+        $sql = "SELECT depart,SUM(lastAmt) AS lastAmt,SUM(amt) AS amt,
+                     CASE WHEN SUM(lastAmt)=0 THEN 0 ELSE SUM(amt)/SUM(lastAmt) END AS rate,
+                     MAX(dateRate) AS dateRate,MAX(updateTime) as updateTime
+                FROM site_sales_amt 
+                WHERE  role = '销售'
+                GROUP BY depart
+                ORDER BY rate DESC";
+        $query = \Yii::$app->db->createCommand($sql)->queryAll();
+        return $query;
+    }
+
 
 
 }
