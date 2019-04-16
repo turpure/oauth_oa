@@ -397,7 +397,7 @@ class ApiGoodsinfo
     /**
      * @brief save ebay info
      * @param $condition
-     * @return array
+     * @return mixed
      */
     public static function saveEbayInfo($condition)
     {
@@ -407,6 +407,9 @@ class ApiGoodsinfo
         $goods->setAttributes($goodsInfo);
         foreach ($skuInfo as $row) {
             $sku = OaEbayGoodsSku::findOne(['id' => $row['id']]);
+            if($sku === null) {
+                $sku = new OaEbayGoodsSku();
+            }
             $row['property'] = json_encode($row['property']);
             $sku->setAttributes($row);
             if (!$sku->save()) {
