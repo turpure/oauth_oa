@@ -619,7 +619,7 @@ class ApiGoodsinfo
     /**
      * @brief ebay模板预处理
      * @param $id
-     * @param $account
+     * @param $accounts
      * @return array
      */
     public static function preExportEbay($id, $accounts)
@@ -675,7 +675,7 @@ class ApiGoodsinfo
             $row['Selleruserid'] = $ebayAccount['ebayName'];
             $row['ListingType'] = 'FixedPriceItem';
             $row['Category1'] = $ebayInfo['listedCate'];
-            $row['Category2'] = $ebayInfo['listedSubCate'];
+            $row['Category2'] = $ebayInfo['listedSubcate'];
             $row['Condition'] = '1000';
             $row['ConditionBewrite'] = '';
             $row['Quantity'] = $ebayInfo['quantity'] ?: 5;
@@ -718,14 +718,14 @@ class ApiGoodsinfo
             $row['ShippingService4'] = '';
             $row['ShippingServiceCost4'] = '';
             $row['ShippingServiceAdditionalCost4'] = '';
-            $row['InternationalShippingService1'] = static::getShippingService($ebayInfo['inShippingMethod1']);
-            $row['InternationalShippingServiceCost1'] = $ebayInfo['OutFirstCost1'];
-            $row['InternationalShippingServiceAdditionalCost1'] = $ebayInfo['OutSuccessorCost1'];
-            $row['InternationalShipToLocation1'] = static::getShippingService($ebayInfo['inShippingMethod2']);
-            $row['InternationalShippingService2'] = $ebayInfo['InternationalShippingService2'];
-            $row['InternationalShippingServiceCost2'] = $ebayInfo['OutFirstCost2'];
-            $row['InternationalShippingServiceAdditionalCost2'] = $ebayInfo['OutSuccessorCost2'];
-            $row['InternationalShipToLocation2'] = static::getShippingService('@outShipping2');
+            $row['InternationalShippingService1'] = static::getShippingService($ebayInfo['outShippingMethod1']);
+            $row['InternationalShippingServiceCost1'] = $ebayInfo['outFirstCost1'];
+            $row['InternationalShippingServiceAdditionalCost1'] = $ebayInfo['outSuccessorCost1'];
+            $row['InternationalShipToLocation1'] = static::getShippingService('outShippingMethod1') ? 'Worldwide': '';
+            $row['InternationalShippingService2'] = static::getShippingService('outShippingMethod2');
+            $row['InternationalShippingServiceCost2'] = $ebayInfo['outFirstCost2'];
+            $row['InternationalShippingServiceAdditionalCost2'] = $ebayInfo['outSuccessorCost2'];
+            $row['InternationalShipToLocation2'] = static::getShippingService('outShippingMethod2') ? 'Worldwide': '';
             $row['InternationalShippingService3'] = '';
             $row['InternationalShippingServiceCost3'] = '';
             $row['InternationalShippingServiceAdditionalCost3'] = '';
@@ -1092,7 +1092,7 @@ class ApiGoodsinfo
     private static function getEbayPicture($goodsInfo, $ebayInfo)
     {
         return 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_' .
-            $ebayInfo['mainImage'] . '_.jpg' . '\n' . $ebayInfo['extraImage'];
+            $ebayInfo['mainPage'] . '_.jpg' . '\n' . $ebayInfo['extraPage'];
     }
     /**
      * @brief 获取eBay描述
@@ -1126,7 +1126,14 @@ class ApiGoodsinfo
      */
     private static function getShippingService($shippingMethod)
     {
-        return OaShippingService::findOne(['servicesName' => $shippingMethod])->ibayShipping;
+        if(!empty($shippingMethod)) {
+            $shippingService =OaShippingService::findOne(['servicesName' => $shippingMethod]);
+            if($shippingService !== null) {
+                return $shippingService->ibayShipping;
+            }
+        }
+        return '';
+
 
     }
 }

@@ -842,7 +842,7 @@ class ProductCenterTools
    public static function getExchangeRate($currencyCode)
    {
        $code = BCurrencyCode::findOne(['CURRENCYCODE' => $currencyCode]);
-       return $code['exchangeRate'];
+       return $code['ExchangeRate'];
    }
 }
 

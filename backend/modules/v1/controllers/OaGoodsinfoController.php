@@ -509,7 +509,7 @@ class OaGoodsinfoController extends AdminController
         $condition = $request->post()['condition'];
         $infoId = $condition['id'];
         $account = $condition['account'];
-        $data = ApiGoodsinfo::preExportJoom($infoId, $account);
+        $data = ApiGoodsinfo::preExportEbay($infoId, $account);
         ExportTools::toExcelOrCsv('ebay', $data, 'Xls');
     }
 
