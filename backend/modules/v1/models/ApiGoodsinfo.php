@@ -30,6 +30,7 @@ use backend\models\OaWishSuffix;
 use backend\models\OaJoomSuffix;
 use backend\models\OaJoomToWish;
 use backend\models\OaShippingService;
+use backend\models\ShopElf\BGoods;
 use yii\data\ActiveDataProvider;
 use backend\modules\v1\utils\ProductCenterTools;
 use yii\db\Query;
@@ -500,9 +501,9 @@ class ApiGoodsinfo
     public static function preExportWish($id)
     {
         $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
-        $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->one();
-        $goodsInfo = OaWishgoods::find()->where(['id' => $id])->asArray()->one();
-        $goods = OaGoods::find()->where(['id' => $goodsInfo['goodsId']])->asArray()->one();
+        $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
+        $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
+        $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
         $wishAccounts = OaWishSuffix::find()->where(['like','parentCategory',$goods['cate']])
             ->orWhere(['parentCategory' => ''])
             ->asArray()->all();
@@ -517,8 +518,10 @@ class ApiGoodsinfo
         $ret = [];
         foreach ($wishAccounts as $account) {
             $title = '';
+            $len = self::WishTitleLength;
             while (true) {
-                $title = static::getTitleName($keyWords, self::WishTitleLength);
+                $title = static::getTitleName($keyWords,$len);
+                --$len;
                 if (empty($title) || !in_array($title, $titlePool, false)) {
                     $titlePool[] = $title;
                     break;
@@ -533,7 +536,7 @@ class ApiGoodsinfo
             $row['msrp'] = $variantInfo['msrp'];
             $row['shipping'] = $variantInfo['shipping'];
             $row['shipping_time'] = '7-21';
-            $row['main_image'] = static::getWishMainImage($goodsInfo['goodsCode'],$account['mainImage']);
+            $row['main_image'] = static::getWishMainImage($goodsInfo['goodsCode'],$account['mainImg']);
             $row['extra_images'] = $wishInfo['extraImages'];
             $row['variants'] = $variantInfo['variant'];
             $row['landing_page_url'] = $wishInfo['mainImage'];
@@ -561,7 +564,7 @@ class ApiGoodsinfo
         $goods = BGoods::findOne(['GoodsCode' =>$goodsInfo['goodsCode']]);
         $joomSku = OaWishGoodsSku::find()
             ->where(['infoId' => $id])
-            ->asArray()->one();
+            ->asArray()->all();
         $joomInfo = OaWishGoods::find()->where(['infoId' => $id])->asArray()->one();
         $row = [
             'Parent Unique ID' => '', '*Product Name' => '', 'Description' => '', '*Tags' => '', '*Unique ID' => '', 'Color' => '',
@@ -587,13 +590,13 @@ class ApiGoodsinfo
                 $row['*Unique ID'] = $sku['sku'] . $joomAccounts['skuCode'];
                 $row['Color'] = $sku['color'];
                 $row['Size'] = $sku['size'];
-                $row['*Quantity'] = $sku['quantity'];
+                $row['*Quantity'] = $sku['inventory'];
                 $row['*Price'] = static::getJoomAdjust($sku['weight'], $priceInfo['price']);
                 $row['*Shipping'] = $priceInfo['shipping'];
                 $row['Shipping weight'] = (float)$sku['weight'];
                 $row['Shipping Time(enter without " ", just the estimated days )'] = '15-45';
                 $row['*Product Main Image URL'] = $imageInfo['mainImage'];
-                $row['Variant Main Image URL'] = str_replace($joomSku['linkUrl'],'/10023/', $joomAccounts['imageCode']);
+                $row['Variant Main Image URL'] = str_replace($sku['linkUrl'],'/10023/', $joomAccounts['imgCode']);
                 $row['Extra Image URL'] = $imageInfo['extraImages'][0];
                 $row['Extra Image URL 1'] = $imageInfo['extraImages'][1];
                 $row['Extra Image URL 2'] = $imageInfo['extraImages'][2];
@@ -616,7 +619,7 @@ class ApiGoodsinfo
     /**
      * @brief ebay模板预处理
      * @param $id
-     * @param $account
+     * @param $accounts
      * @return array
      */
     public static function preExportEbay($id, $accounts)
@@ -672,7 +675,7 @@ class ApiGoodsinfo
             $row['Selleruserid'] = $ebayAccount['ebayName'];
             $row['ListingType'] = 'FixedPriceItem';
             $row['Category1'] = $ebayInfo['listedCate'];
-            $row['Category2'] = $ebayInfo['listedSubCate'];
+            $row['Category2'] = $ebayInfo['listedSubcate'];
             $row['Condition'] = '1000';
             $row['ConditionBewrite'] = '';
             $row['Quantity'] = $ebayInfo['quantity'] ?: 5;
@@ -715,14 +718,14 @@ class ApiGoodsinfo
             $row['ShippingService4'] = '';
             $row['ShippingServiceCost4'] = '';
             $row['ShippingServiceAdditionalCost4'] = '';
-            $row['InternationalShippingService1'] = static::getShippingService($ebayInfo['inShippingMethod1']);
-            $row['InternationalShippingServiceCost1'] = $ebayInfo['OutFirstCost1'];
-            $row['InternationalShippingServiceAdditionalCost1'] = $ebayInfo['OutSuccessorCost1'];
-            $row['InternationalShipToLocation1'] = static::getShippingService($ebayInfo['inShippingMethod2']);
-            $row['InternationalShippingService2'] = $ebayInfo['InternationalShippingService2'];
-            $row['InternationalShippingServiceCost2'] = $ebayInfo['OutFirstCost2'];
-            $row['InternationalShippingServiceAdditionalCost2'] = $ebayInfo['OutSuccessorCost2'];
-            $row['InternationalShipToLocation2'] = static::getShippingService('@outShipping2');
+            $row['InternationalShippingService1'] = static::getShippingService($ebayInfo['outShippingMethod1']);
+            $row['InternationalShippingServiceCost1'] = $ebayInfo['outFirstCost1'];
+            $row['InternationalShippingServiceAdditionalCost1'] = $ebayInfo['outSuccessorCost1'];
+            $row['InternationalShipToLocation1'] = static::getShippingService('outShippingMethod1') ? 'Worldwide': '';
+            $row['InternationalShippingService2'] = static::getShippingService('outShippingMethod2');
+            $row['InternationalShippingServiceCost2'] = $ebayInfo['outFirstCost2'];
+            $row['InternationalShippingServiceAdditionalCost2'] = $ebayInfo['outSuccessorCost2'];
+            $row['InternationalShipToLocation2'] = static::getShippingService('outShippingMethod2') ? 'Worldwide': '';
             $row['InternationalShippingService3'] = '';
             $row['InternationalShippingServiceCost3'] = '';
             $row['InternationalShippingServiceAdditionalCost3'] = '';
@@ -750,7 +753,7 @@ class ApiGoodsinfo
             $row['IBayEffectType'] = '1';
             $row['IbayEffectImg'] = static::getEbayPicture($goodsInfo, $ebayInfo);
             $row['IbayCrossSelling'] = '';
-            $row['Variation'] = '';
+            $row['Variation'] = static::getEbayVariation($goodsInfo['isVar'],$ebayInfo['oaEbayGoodsSku'], $ebayAccount['nameCode']);
             $row['outofstockcontrol'] = '0';
             $row['EPID'] = 'Does not apply';
             $row['ISBN'] = 'Does not apply';
@@ -825,69 +828,76 @@ class ApiGoodsinfo
      */
     private static  function getWishVariantInfo($isVar, $wishInfo, $wishSku, $account)
     {
-        $price = ArrayHelper::getColumn($wishSku, 'price');
-        $shippingPrice = ArrayHelper::getColumn($wishSku, 'shipping');
-        $msrp = ArrayHelper::getColumn($wishSku, 'msrp');
-        $len = count($price);
-        $totalPrice = [];
-        for ($i=0; $i<$len; $i++) {
-            $totalPrice[] = ceil($price[$i] + $shippingPrice[$i]);
-        }
+        try {
+            $price = ArrayHelper::getColumn($wishSku, 'price');
+            $shippingPrice = ArrayHelper::getColumn($wishSku, 'shipping');
+            $msrp = ArrayHelper::getColumn($wishSku, 'msrp');
+            $len = count($price);
+            $totalPrice = [];
+            for ($i=0; $i<$len; $i++) {
+                $totalPrice[] = ceil($price[$i] + $shippingPrice[$i]);
+            }
 
-        //获取最大最小价格
-        $maxPrice = max($totalPrice);
-        $minPrice = min($totalPrice);
-        $maxMsrp = max($msrp);
+            //获取最大最小价格
+            $maxPrice = max($totalPrice);
+            $minPrice = min($totalPrice);
+            $maxMsrp = max($msrp);
 
-        //根据总价计算运费
-        if ($minPrice <= 3) {
-            $shipping = 1;
-        }
-        else {
-            $shipping = ceil($minPrice * $account['rate']);
-        }
+            //根据总价计算运费
+            if ($minPrice <= 3) {
+                $shipping = 1;
+            }
+            else {
+                $shipping = ceil($minPrice * $account['rate']);
+            }
 
-        //打包变体
-        $variation = [];
-        foreach ($wishSku as $sku) {
-            //价格判断
-            $totalPrice = ceil($sku['price'] + $sku['shipping']);
-            $value['shipping'] = $shipping;
-            $value['price'] = $totalPrice - $shipping < 1 ? 1 : ceil($totalPrice - $shipping);
-            $var['sku'] = $sku['sku'] . $account['suffix'];
-            $var['color'] = $sku['color'];
-            $var['size'] = $sku['size'];
-            $var['inventory'] = $sku['inventory'];
-            $var['price'] = $sku['price'];
-            $var['shipping'] = $sku['shipping'];
-            $var['msrp'] = $sku['msrp'];
-            $var['shipping_time'] = $sku['shipping_time'];
-            $var['main_image'] = $sku['linkurl'];
-            $var['localized_currency_code'] = 'CNY';
-            $var['localized_price'] = (string)floor($sku['price'] * self::UsdExchange);
-            $variation[] = $var;
+            //打包变体
+            $variation = [];
+            foreach ($wishSku as $sku) {
+                //价格判断
+                $totalPrice = ceil($sku['price'] + $sku['shipping']);
+                $value['shipping'] = $shipping;
+                $value['price'] = $totalPrice - $shipping < 1 ? 1 : ceil($totalPrice - $shipping);
+                $var['sku'] = $sku['sku'] . $account['suffix'];
+                $var['color'] = $sku['color'];
+                $var['size'] = $sku['size'];
+                $var['inventory'] = $sku['inventory'];
+                $var['price'] = $sku['price'];
+                $var['shipping'] = $sku['shipping'];
+                $var['msrp'] = $sku['msrp'];
+                $var['shipping_time'] = $sku['shippingTime'];
+                $var['main_image'] = $sku['linkUrl'];
+                $var['localized_currency_code'] = 'CNY';
+                $var['localized_price'] = (string)floor($sku['price'] * self::UsdExchange);
+                $variation[] = $var;
+            }
+            $variant = json_encode($variation);
+            $ret = [];
+            if ($isVar === '是') {
+                $ret['variant'] = $variant;
+                $ret['shipping'] = $shipping;
+                $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1;
+                $ret['msrp'] = $maxMsrp;
+                $ret['local_price'] = floor($wishInfo['price'] * self::UsdExchange);
+                $ret['local_shippingfee'] = floor($wishInfo['shipping'] * self::UsdExchange);
+                $ret['local_currency'] = 'CNY';
+            }
+            else {
+                $ret['variant'] = '';
+                $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1 ;
+                $ret['shipping'] = $shipping;
+                $ret['msrp'] = $maxMsrp;
+                $ret['local_price'] = floor($ret['price'] * self::UsdExchange);
+                $ret['local_shippingfee'] = floor($shipping * self::UsdExchange);
+                $ret['local_currency'] = 'CNY';
+            }
+            return $ret;
         }
-        $variant = json_encode($variation);
-        $ret = [];
-        if ($isVar === '是') {
-            $ret['variant'] = $variant;
-            $ret['shipping'] = $shipping;
-            $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1;
-            $ret['msrp'] = $maxMsrp;
-            $ret['local_price'] = floor($wishInfo['price'] * self::UsdExchange);
-            $ret['local_shippingfee'] = floor($wishInfo['shipping'] * self::UsdExchange);
-            $ret['local_currency'] = 'CNY';
-        }
-        else {
-            $ret['variant'] = '';
-            $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1 ;
-            $ret['shipping'] = $shipping;
-            $ret['msrp'] = $maxMsrp;
-            $ret['local_price'] = floor($ret['price'] * self::UsdExchange);
-            $ret['local_shippingfee'] = floor($shipping * self::UsdExchange);
-            $ret['local_currency'] = 'CNY';
-        }
-        return $ret;
+        catch (\Exception $why) {
+            return ['variant' => '', 'price' => '', 'shipping' => '',
+                'msrp' => '', 'local_price' => '', 'local_shippingfee' => '','local_currency' => ''];
+    }
+
     }
 
     /**
@@ -992,7 +1002,7 @@ class ApiGoodsinfo
     {
         $adjust = OaJoomToWish::find()->asArray()->all();
         foreach ($adjust as $ad) {
-            if ($weight >= $adjust['greaterEqual'] && $weight < $adjust['less']) {
+            if ($weight >= $ad['greaterEqual'] && $weight < $ad['less']) {
                 $price += $ad['addedPrice'];
                 break;
             }
@@ -1009,10 +1019,15 @@ class ApiGoodsinfo
     private static function getJoomImageInfo($joomInfo, $account)
     {
         $mainImage = substr($joomInfo['mainImage'],0, stripos('-', $joomInfo['mainImage']));
-        $mainImage = str_replace($mainImage, '/10023/', $account['imageCode']);
-        $extraImages = explode($joomInfo['extraImage'],'\n');
+        $mainImage = str_replace($mainImage, '/10023/', $account['imgCode']);
+        $extraImages = explode($joomInfo['extraImages'],'\n');
         array_filter($extraImages, function ($ele) {return strpos($ele,'-_00_') === false; });
-        $extraImages = array_map(function ($ele, $account) {return str_replace($ele, '/10023/',$account['imageCode']);}, $extraImages);
+        $extraImages = array_map(function ($ele) use ($account) {return str_replace($ele, '/10023/',$account['imgCode']);}, $extraImages);
+        $countImages = count($extraImages);
+        while($countImages <=11) {
+            $extraImages[] = '';
+            $countImages++;
+        }
         shuffle($extraImages);
         return ['mainImage' => $mainImage, 'extraImages' => $extraImages];
     }
@@ -1077,7 +1092,7 @@ class ApiGoodsinfo
     private static function getEbayPicture($goodsInfo, $ebayInfo)
     {
         return 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_' .
-            $ebayInfo['mainImage'] . '_.jpg' . '\n' . $ebayInfo['extraImage'];
+            $ebayInfo['mainPage'] . '_.jpg' . '\n' . $ebayInfo['extraPage'];
     }
     /**
      * @brief 获取eBay描述
@@ -1111,7 +1126,61 @@ class ApiGoodsinfo
      */
     private static function getShippingService($shippingMethod)
     {
-        return OaShippingService::findOne(['servicesName' => $shippingMethod])->ibayShipping;
+        if(!empty($shippingMethod)) {
+            $shippingService =OaShippingService::findOne(['servicesName' => $shippingMethod]);
+            if($shippingService !== null) {
+                return $shippingService->ibayShipping;
+            }
+        }
+        return '';
 
+
+    }
+
+    /**
+     * @brief 封装ebay多属性信息
+     * @param $isVar
+     * @param $skuInfo
+     * @param $account
+     * @return string
+     *
+     */
+    private static function getEbayVariation($isVar,$skuInfo, $account)
+    {
+        if($isVar === '否') {
+            return '';
+        }
+        $pictures = [];
+        $variation = [];
+        $variationSpecificsSet = ['NameValueList' => []];
+        foreach ($skuInfo as $sku) {
+            $columns = json_decode($sku['property'], true)['columns'];
+            $picKey = json_decode($sku['property'], true)['pictureKey']?:'Color';
+            $value = ['value' => ''];
+            foreach ($columns as $col) {
+                if (array_keys($col)[0] === ucfirst($picKey)) {
+                    $value['value'] = $col[ucfirst($picKey)];
+                    break;
+                }
+            }
+            foreach ($columns as $col) {
+                $map = ['Name' => array_keys($col)[0], 'Value' => array_values($col)[0]];
+                $variationSpecificsSet['NameValueList'][] = $map;
+            }
+            $pic = ['VariationSpecificPictureSet' => ['PictureURL' => [$sku['imageUrl']]], 'Value' => $value['value']];
+            $pictures[] = $pic;
+            $var = [
+                'SKU' => $sku['sku'] . $account,
+                'Quantity' => $sku['quantity'],
+                'StartPrice' => $sku['retailPrice'],
+                'VariationSpecifics' => $variationSpecificsSet,
+            ];
+            $variation[] =  $var;
+        }
+        $row = [
+            'assoc_pic_key' => '', 'assoc_pic_count' => '', 'Variation' => $variation,
+            'Pictures' => $pictures, 'VariationSpecificsSet' => $variationSpecificsSet
+        ];
+        return json_encode($row);
     }
 }
