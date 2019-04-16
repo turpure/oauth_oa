@@ -753,7 +753,7 @@ class ApiGoodsinfo
             $row['IBayEffectType'] = '1';
             $row['IbayEffectImg'] = static::getEbayPicture($goodsInfo, $ebayInfo);
             $row['IbayCrossSelling'] = '';
-            $row['Variation'] = '';
+            $row['Variation'] = static::getEbayVariation($goodsInfo['isVar'],$ebayInfo['oaEbayGoodsSku'], $ebayAccount['nameCode']);
             $row['outofstockcontrol'] = '0';
             $row['EPID'] = 'Does not apply';
             $row['ISBN'] = 'Does not apply';
@@ -1135,5 +1135,52 @@ class ApiGoodsinfo
         return '';
 
 
+    }
+
+    /**
+     * @brief 封装ebay多属性信息
+     * @param $isVar
+     * @param $skuInfo
+     * @param $account
+     * @return string
+     *
+     */
+    private static function getEbayVariation($isVar,$skuInfo, $account)
+    {
+        if($isVar === '否') {
+            return '';
+        }
+        $pictures = [];
+        $variation = [];
+        $variationSpecificsSet = ['NameValueList' => []];
+        foreach ($skuInfo as $sku) {
+            $columns = json_decode($sku['property'], true)['columns'];
+            $picKey = json_decode($sku['property'], true)['pictureKey']?:'Color';
+            $value = ['value' => ''];
+            foreach ($columns as $col) {
+                if (array_keys($col)[0] === ucfirst($picKey)) {
+                    $value['value'] = $col[ucfirst($picKey)];
+                    break;
+                }
+            }
+            foreach ($columns as $col) {
+                $map = ['Name' => array_keys($col)[0], 'Value' => array_values($col)[0]];
+                $variationSpecificsSet['NameValueList'][] = $map;
+            }
+            $pic = ['VariationSpecificPictureSet' => ['PictureURL' => [$sku['imageUrl']]], 'Value' => $value['value']];
+            $pictures[] = $pic;
+            $var = [
+                'SKU' => $sku['sku'] . $account,
+                'Quantity' => $sku['quantity'],
+                'StartPrice' => $sku['retailPrice'],
+                'VariationSpecifics' => $variationSpecificsSet,
+            ];
+            $variation[] =  $var;
+        }
+        $row = [
+            'assoc_pic_key' => '', 'assoc_pic_count' => '', 'Variation' => $variation,
+            'Pictures' => $pictures, 'VariationSpecificsSet' => $variationSpecificsSet
+        ];
+        return json_encode($row);
     }
 }

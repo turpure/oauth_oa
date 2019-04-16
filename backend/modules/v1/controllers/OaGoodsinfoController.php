@@ -460,7 +460,7 @@ class OaGoodsinfoController extends AdminController
     }
 
     /**
-     * @brief 导出ebay模板
+     * @brief 导出wish模板
      * @throws \Exception
      */
     public function actionPlatExportWish()
@@ -479,7 +479,7 @@ class OaGoodsinfoController extends AdminController
 
 
     /**
-     * @brief 导出wish模板
+     * @brief 导出joom模板
      * @throws \Exception
      */
     public function actionPlatExportJoom()
