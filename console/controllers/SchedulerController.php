@@ -166,6 +166,35 @@ class SchedulerController extends Controller
     }
 
     /**
+     * 更新主页销售额增长表
+     * Date: 2019-04-15 16:25
+     * Author: henry
+     */
+    public function actionSalesAmt()
+    {
+        try {
+
+            //插入销售销售额数据(存储过程插入)
+            Yii::$app->db->createCommand("CALL oauth_site_amt;")->execute();
+
+            //获取开发人员销售额
+            $devSql = "EXEC oauth_siteDeveloperAmt";
+            $devList = Yii::$app->py_db->createCommand($devSql)->queryAll();
+
+            //插入开发销售数据
+            Yii::$app->db->createCommand()->batchInsert('site_sales_amt',
+                ['username','depart','role','lastAmt','amt', 'rate','dateRate','updateTime'],
+                $devList)->execute();
+
+            print date('Y-m-d H:i:s')." INFO:success to update data of amt changes!\n";
+        }
+        catch (\Exception $why) {
+            print date('Y-m-d H:i:s')." INFO:fail to update data of amt changes cause of $why \n";
+        }
+
+    }
+
+    /**
      * Date: 2019-03-12 8:56
      * Author: henry
      */
