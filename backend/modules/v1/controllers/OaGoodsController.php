@@ -314,7 +314,7 @@ class OaGoodsController extends AdminController
         try {
             foreach ($post['nid'] as $id) {
                 $model = OaGoods::findOne(['nid' => $id]);
-                if (!in_array($model->checkStatus, ['待提交', '未通过', '已作废'])) {
+                if (!in_array($model->checkStatus, ['已认领', '待提交', '待审批', '未通过', '已作废'])) {
                     throw new \Exception('Please select the right items to check！');
                 }
                 $model->checkStatus = '待审批';
