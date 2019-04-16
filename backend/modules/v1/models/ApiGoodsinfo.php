@@ -407,7 +407,7 @@ class ApiGoodsinfo
         $goods->setAttributes($goodsInfo);
         foreach ($skuInfo as $row) {
             $sku = OaEbayGoodsSku::findOne(['id' => $row['id']]);
-            $row['property'] = json_decode($row['property']);
+            $row['property'] = json_encode($row['property']);
             $sku->setAttributes($row);
             if (!$sku->save()) {
                 return [
