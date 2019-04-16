@@ -460,7 +460,7 @@ class OaGoodsinfoController extends AdminController
     }
 
     /**
-     * @brief 导出ebay模板
+     * @brief 导出wish模板
      * @throws \Exception
      */
     public function actionPlatExportWish()
@@ -479,7 +479,7 @@ class OaGoodsinfoController extends AdminController
 
 
     /**
-     * @brief 导出wish模板
+     * @brief 导出joom模板
      * @throws \Exception
      */
     public function actionPlatExportJoom()
@@ -509,7 +509,7 @@ class OaGoodsinfoController extends AdminController
         $condition = $request->post()['condition'];
         $infoId = $condition['id'];
         $account = $condition['account'];
-        $data = ApiGoodsinfo::preExportJoom($infoId, $account);
+        $data = ApiGoodsinfo::preExportEbay($infoId, $account);
         ExportTools::toExcelOrCsv('ebay', $data, 'Xls');
     }
 
