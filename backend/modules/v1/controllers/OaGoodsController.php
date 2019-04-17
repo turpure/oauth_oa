@@ -247,7 +247,7 @@ class OaGoodsController extends AdminController
         $transaction = Yii::$app->db->beginTransaction();
         try {
             foreach ($post['nid'] as $id) {
-                $complete_status_query = OaGoodsinfo::findOne(["goodsid" => $post['id']]);
+                $complete_status_query = OaGoodsinfo::findOne(["goodsid" => $id]);
                 if (!empty($complete_status_query)) {
                     $completeStatus = $complete_status_query->completeStatus;
                     if (empty($completeStatus)) {
