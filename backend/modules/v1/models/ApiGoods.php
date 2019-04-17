@@ -260,7 +260,7 @@ class ApiGoods
             $_model->updateTime = strftime('%F %T');
             $_model->achieveStatus = '待处理';
             $_model->stockUp = $goodsModel->stockUp;
-            $_model->filterType = ApiGoodsinfo::GoodsInfo;
+            //$_model->filterType = ApiGoodsinfo::GoodsInfo;
             if(empty($_model->possessMan1)){
                 $arc_model = OaSysRules::find()->where(['ruleKey' => $goodsModel->developer])->andWhere(['ruleType' => 'dev-arc-map'])->one();
                 if(!$arc_model){

@@ -19,6 +19,7 @@ namespace backend\modules\v1\controllers;
 
 use backend\models\OaEbayGoodsSku;
 use backend\models\OaJoomSuffix;
+use backend\models\OaSiteCountry;
 use backend\models\OaWishGoodsSku;
 use backend\modules\v1\models\ApiGoodsinfo;
 use backend\modules\v1\utils\ProductCenterTools;
@@ -532,20 +533,7 @@ class OaGoodsinfoController extends AdminController
      */
     public function actionEbaySite()
     {
-        return [
-            [
-                'siteName' => '美国',
-                'siteCode' => 'USD'
-            ],
-            [
-                'siteName' => '英国',
-                'siteCode' => 'GBP'
-            ],
-            [
-                'siteName' => '澳大利亚',
-                'siteCode' => 'AUD'
-            ],
-        ];
+        return OaSiteCountry::find()->all();
     }
 
 

@@ -249,7 +249,7 @@ class ApiGoodsinfo
         //属性信息标记完善，图片信息为待处理
         try {
             $goodsInfo->achieveStatus = '已完善';
-            $goodsInfo->filterType = static::PictureInfo;
+            //$goodsInfo->filterType = static::PictureInfo;
             if (empty($goodsInfo->picStatus)) {
                 $goodsInfo->picStatus = '待处理';
             }
