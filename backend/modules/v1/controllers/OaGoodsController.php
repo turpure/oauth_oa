@@ -247,13 +247,13 @@ class OaGoodsController extends AdminController
         $transaction = Yii::$app->db->beginTransaction();
         try {
             foreach ($post['nid'] as $id) {
-                $complete_status_query = OaGoodsinfo::findOne(["goodsid" => $id]);
+                $complete_status_query = OaGoodsinfo::findOne(["goodsId" => $id]);
                 if (!empty($complete_status_query)) {
                     $completeStatus = $complete_status_query->completeStatus;
                     if (empty($completeStatus)) {
                         OaGoodsSku::deleteAll(['infoId' => $complete_status_query->id]);//删除SKU
                         OaGoods::deleteAll(['nid' => $id]);//删除goods
-                        OaGoodsinfo::deleteAll(['goodsid' => $id]);//删除goodsinfo
+                        OaGoodsinfo::deleteAll(['goodsId' => $id]);//删除goodsinfo
                     } else {
                         throw new \Exception('Perfected products cannot be deleted!');
                     }
