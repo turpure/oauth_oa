@@ -327,6 +327,7 @@ class OaGoodsinfoController extends AdminController
             return [];
         }
         $condition = $request->post()['condition'];
+        ApiGoodsinfo::savePictureInfo($condition);
         return ApiGoodsinfo::finishPicture($condition);
     }
 
