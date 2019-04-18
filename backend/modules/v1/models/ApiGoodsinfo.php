@@ -467,6 +467,9 @@ class ApiGoodsinfo
         $goods->setAttributes($goodsInfo);
         foreach ($skuInfo as $row) {
             $sku = OaWishGoodsSku::findOne(['id' => $row['id']]);
+            if ($sku === null) {
+                $sku = new OaWishGoodsSku();
+            }
             $sku->setAttributes($row);
             if (!$sku->save()) {
                 return [
