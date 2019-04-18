@@ -277,7 +277,11 @@ class ApiGoods
                 $pur = $pur_model?$pur_model->ruleValue:'';
                 $_model->purchaser = $pur;
             }
-            $_model->save();
+            if(!$_model->save()){
+                //print_r($_model->getErrors());exit;
+                throw new Exception('审核失败！');
+            }
+
         }
 
     }
@@ -297,12 +301,12 @@ class ApiGoods
             on bgs.GoodsCategoryID= bgc.nid where bgc.CategoryParentName='$cate' and len(goodscode)=6)"
         )->queryOne();
 
-        $oa_previous_code = Yii::$app->pro_db->createCommand(
-            "select ifnull(goodscode,'UN0000') as maxCode from oa_goodsinfo
-            where id in (select max(id) from oa_goodsinfo as info LEFT join 
-            oa_goods as og on info.goodsid=og.nid where cate = '$cate')")->queryOne();
+        $oa_previous_code = Yii::$app->db->createCommand(
+            "select ifnull(goodscode,'UN0000') as maxCode from proCenter.oa_goodsinfo
+            where id in (select max(id) from proCenter.oa_goodsinfo as info LEFT join 
+            proCenter.oa_goods as og on info.goodsid=og.nid where cate = '$cate')")->queryOne();
 
-        $oa_goodsId_query = Yii::$app->pro_db->createCommand("select max(nid) as maxNid from oa_goods")->queryOne();
+        $oa_goodsId_query = Yii::$app->db->createCommand("select max(nid) as maxNid from proCenter.oa_goods")->queryOne();
         $oa_maxNid = $oa_goodsId_query['maxNid'];
 
         //按规则生成编码
@@ -314,10 +318,10 @@ class ApiGoods
         }
         if(intval(substr($b_max_code,2,4))>=intval(substr($oa_max_code,2,4))) {
             $max_code = $b_max_code;
-        }
-        else {
+        } else {
             $max_code = $oa_max_code;
         }
+
         $head = substr($max_code,0,2);
         $tail = intval(substr($max_code,2,4));
         $code = $oa_maxNid;
@@ -327,16 +331,11 @@ class ApiGoods
             $zero_bit = substr('0000',0,4-strlen($tail));
             $code = $head.$zero_bit.$tail;
             //检查SKU是否已经存在
-            $check_oa_goods = Yii::$app->py_db->createCommand(
-                "select pid from oa_goodsinfo where goodscode like '$code"."%'"
-            )->queryOne();
-            $check_b_goods = Yii::$app->py_db->createCommand(
-                "select nid from b_goods where goodscode='$code'"
-            )->queryOne();
+            $check_oa_goods = Yii::$app->db->createCommand("select id from proCenter.oa_goodsinfo where goodscode like '$code"."%'")->queryOne();
+            $check_b_goods = Yii::$app->py_db->createCommand("select nid from b_goods where goodscode='$code'")->queryOne();
             if((empty($check_oa_goods) && empty($check_b_goods))) {
                 break;
-            }
-            else{
+            } else{
                 $code = $oa_maxNid;
             }
         }

@@ -92,11 +92,6 @@ class CheckController extends AdminController
                 if(!in_array($model->checkStatus,['待审批'])){
                     throw new \Exception('重复提交审批！');
                 }
-                $model->checkStatus = '已审批';
-                $model->approvalNote = isset($post['approvalNote'])?$post['approvalNote']:$model->approvalNote;
-                $model->updateDate = date('Y-m-d H:i:s');
-
-                $model->save();
 
                 $dictionaryName = [];
                 if($model->mineId) {
@@ -107,6 +102,12 @@ class CheckController extends AdminController
                 }
                 //保存数据到goodsinfo表中
                 ApiGoods::saveDataToInfo($id, $dictionaryName);
+                //保存oa_goods信息
+                $model->checkStatus = '已审批';
+                $model->approvalNote = isset($post['approvalNote'])?$post['approvalNote']:$model->approvalNote;
+                $model->updateDate = date('Y-m-d H:i:s');
+                $model->save();
+
             }
             $transaction->commit();
             return true;
