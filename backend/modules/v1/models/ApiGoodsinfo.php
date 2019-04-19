@@ -366,7 +366,7 @@ class ApiGoodsinfo
      */
     public static function savePictureInfo($condition)
     {
-        $pictureInfo = $condition;
+        $pictureInfo = isset($condition['pictureInfo']) ? $condition['pictureInfo'] : [];
         $msg = 'success';
         foreach ($pictureInfo as $picRow) {
             $id = $picRow['id'];
