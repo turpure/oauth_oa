@@ -371,4 +371,11 @@ class TinyToolController extends AdminController
         $cond = $request['condition'];
         return ApiTinyTool::getExceptionEdition($cond);
     }
+
+    public function actionEbayVirtualStore()
+    {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        return ApiTinyTool::getEbayVirtualStore($cond);
+    }
 }

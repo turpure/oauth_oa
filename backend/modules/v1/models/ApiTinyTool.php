@@ -9,6 +9,7 @@ namespace backend\modules\v1\models;
 
 use backend\modules\v1\utils\Handler;
 use backend\models\CacheExpress;
+use mdm\admin\models\Store;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\db\Exception;
@@ -16,6 +17,7 @@ use yii\db\Query;
 use yii\helpers\ArrayHelper;
 use \PhpOffice\PhpSpreadsheet\Reader\Csv;
 use Yii;
+
 class ApiTinyTool
 {
 
@@ -24,29 +26,29 @@ class ApiTinyTool
         $query = CacheExpress::find();
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $currentPage = isset($condition['currentPage']) ? $condition['currentPage'] : 1;
-        $suffix = isset($condition['suffix']) ? $condition['suffix']:'';
-        $tradeId = isset($condition['tradeId']) ? $condition['tradeId']:'';
-        $expressName = isset($condition['expressName']) ? $condition['expressName']:'';
-        $trackNo = isset($condition['trackNo']) ? $condition['trackNo']:'';
-        $orderTime = isset($condition['orderTime']) ? $condition['orderTime']:[];
+        $suffix = isset($condition['suffix']) ? $condition['suffix'] : '';
+        $tradeId = isset($condition['tradeId']) ? $condition['tradeId'] : '';
+        $expressName = isset($condition['expressName']) ? $condition['expressName'] : '';
+        $trackNo = isset($condition['trackNo']) ? $condition['trackNo'] : '';
+        $orderTime = isset($condition['orderTime']) ? $condition['orderTime'] : [];
         $sortProperty = isset($condition['sortProperty']) && !empty($condition['sortProperty']) ? $condition['sortProperty'] : 'id';
         $sortOrder = isset($condition['sortOrder']) && !empty($condition['sortOrder']) ? $condition['sortOrder'] : 'DESC';
-        if(!empty($suffix)) {
-            $query->andFilterWhere(['like','suffix', $suffix]);
+        if (!empty($suffix)) {
+            $query->andFilterWhere(['like', 'suffix', $suffix]);
         }
-        if(!empty($tradeId)) {
-            $query->andFilterWhere(['tradeId'=>$tradeId]);
+        if (!empty($tradeId)) {
+            $query->andFilterWhere(['tradeId' => $tradeId]);
         }
-        if(!empty($expressName)) {
-            $query->andFilterWhere(['like','expressName', $expressName]);
+        if (!empty($expressName)) {
+            $query->andFilterWhere(['like', 'expressName', $expressName]);
         }
-        if(!empty($trackNo)) {
-            $query->andFilterWhere(['trackNo'=>$trackNo]);
+        if (!empty($trackNo)) {
+            $query->andFilterWhere(['trackNo' => $trackNo]);
         }
-        if(!empty($orderTime)) {
-            $query->andFilterWhere(['between','date_format(orderTime,"%Y-%m-%d")', $orderTime[0], $orderTime[1]]);
+        if (!empty($orderTime)) {
+            $query->andFilterWhere(['between', 'date_format(orderTime,"%Y-%m-%d")', $orderTime[0], $orderTime[1]]);
         }
-        $query->orderBy($sortProperty.' '.$sortOrder);
+        $query->orderBy($sortProperty . ' ' . $sortOrder);
         $provider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
@@ -56,6 +58,7 @@ class ApiTinyTool
         ]);
         return $provider;
     }
+
     /**
      * @brief get express information
      * @return array
@@ -91,7 +94,10 @@ class ApiTinyTool
         try {
             return $con->createCommand($sql)->queryAll();
         } catch (\Exception $why) {
-            return [$why];
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
         }
     }
 
@@ -139,7 +145,10 @@ class ApiTinyTool
                 'totalCount' => $totalCount,
             ];
         } catch (\Exception $why) {
-            return [$why];
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
         }
     }
 
@@ -189,8 +198,11 @@ class ApiTinyTool
                     'message' => "订单号不能为空！"
                 ];
             }
-        } catch (\Exception $e) {
-            return [$e];
+        } catch (\Exception $why) {
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
         }
     }
 
@@ -253,7 +265,10 @@ class ApiTinyTool
             ]);
             return $data;
         } catch (\Exception $why) {
-            return [$why];
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
         }
     }
 
@@ -392,7 +407,9 @@ class ApiTinyTool
 
     /**
      * @param $data
-     * @return array
+     * Date: 2019-04-19 8:49
+     * Author: henry
+     * @return array|bool
      * @throws Exception
      */
     public static function handleRiskyOrder($data)
@@ -402,9 +419,12 @@ class ApiTinyTool
         $sql = "update riskyTrades set processor='$processor',completeStatus='已完成' where tradeNid=$trade_id ";
         $ret = \Yii::$app->db->createCommand($sql)->execute();
         if ($ret) {
-            return ['msg' => 'success'];
+            return true;
         }
-        return ['msg' => 'failed'];
+        return [
+            'code' => 400,
+            'message' => 'failed'
+        ];
     }
 
     /**
@@ -451,9 +471,12 @@ class ApiTinyTool
         ]);
         $ret = $command->execute();
         if ($ret) {
-            return ['success'];
+            return true;
         }
-        return ['fail'];
+        return [
+            'code' => 400,
+            'message' => 'failed'
+        ];
     }
 
     /**
@@ -466,11 +489,13 @@ class ApiTinyTool
         $db = \Yii::$app->py_db;
         try {
             $db->createCommand($sql)->execute();
-            $msg = 'success';
+            return true;
         } catch (\Exception $why) {
-            $msg = $why;
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
         }
-        return [$msg];
     }
 
     public static function getExceptionEdition($cond)
@@ -483,8 +508,74 @@ class ApiTinyTool
         try {
             return $db->createCommand($sql)->queryAll();
         } catch (\Exception $why) {
-            return [$why];
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
         }
+    }
 
+
+    public static function getEbayVirtualStore($cond)
+    {
+        try {
+            //判断数据表数据是不是最新数据
+            $date = Yii::$app->py_db->createCommand("SELECT DISTINCT updateDate FROM ibay365_eBayOversea_quantity_online")->queryOne();
+            if(!$date || substr($date['updateDate'],0,10) != date('Y-m-d')){
+                //执行存错过程
+                $exeSql = 'EXEC B_eBayOversea_ModifyOnlineNumberOnTheIbay365';
+                Yii::$app->py_db->createCommand($exeSql)->execute();
+            }
+
+            //获取结果
+            $sql = "SELECT * FROM ibay365_eBayOversea_quantity_online WHERE 1=1 ";
+
+            if(isset($cond['sku']) && $cond['sku']) $sql.= " AND sku LIKE '%{$cond['sku']}%'";
+            if(isset($cond['itemId']) && $cond['itemId']) $sql.= " AND itemId LIKE '%{$cond['itemId']}%'";
+            if(isset($cond['parentSku']) && $cond['parentSku']) $sql.= " AND parentSku LIKE '%{$cond['parentSku']}%'";
+            if(isset($cond['sellerUserid']) && $cond['sellerUserid']) $sql.= " AND sellerUserid LIKE '%{$cond['sellerUserid']}%'";
+            if(isset($cond['deliveryStorename']) && $cond['deliveryStorename']) $sql.= " AND deliveryStorename LIKE '%{$cond['deliveryStorename']}%'";
+            if(isset($cond['inventory']) && $cond['inventory']) $sql.= " AND inventory = '{$cond['inventory']}'";
+            if(isset($cond['useNum']) && $cond['useNum']) $sql.= " AND useNum = '{$cond['useNum']}'";
+
+            $list = Yii::$app->py_db->createCommand($sql)->queryAll();
+            //获取ebay销售员
+            $userSql = "SELECT ebayName,IFNULL(username,'未分配') AS salesName 
+                      FROM proCenter.oa_ebaySuffix es 
+                      LEFT JOIN `auth_store` s ON es.ebaySuffix=s.store
+                      LEFT JOIN `auth_store_child` sc ON s.id=sc.store_id
+                      LEFT JOIN `user` u ON u.id=sc.user_id WHERE u.status=10 AND platform='eBay'";
+            if(isset($cond['salesName']) && $cond['salesName']) $userSql.= " AND username LIKE '%{$cond['salesName']}%'";
+            $userArr = Yii::$app->db->createCommand($userSql)->queryAll();
+            $data = [];
+            foreach($list as $v){
+                $item = $v;
+                foreach($userArr as $val){
+                    if($val['ebayName'] == $v['sellerUserid']){
+                        $item['salesName'] =  $val['salesName'];
+                    }
+                }
+                if(!isset($item['salesName'])) $item['salesName'] = '';
+                //print_r($item);exit;
+                $data[] = $item;
+            }
+            //print_r($data);exit;
+            $data = array_filter($data,function ($v){
+               if($v['salesName']) return true;
+               else return false;
+            });
+            //print_r($data);exit;
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'pagination' => [
+                    'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
+                ],
+            ]);
+        } catch (\Exception $why) {
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
+        }
     }
 }
