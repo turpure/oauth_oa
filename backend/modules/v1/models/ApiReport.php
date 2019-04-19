@@ -86,7 +86,10 @@ class ApiReport
         try {
             return $con->createCommand($sql)->bindValues($params)->queryAll();
         } catch (\Exception $why) {
-            return [$why];
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
         }
 
     }
@@ -109,7 +112,10 @@ class ApiReport
         try {
             return $con->createCommand($sql)->bindValues($params)->queryAll();
         } catch (\Exception $why) {
-            return [$why];
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
         }
 
     }
@@ -134,7 +140,10 @@ class ApiReport
         try {
             return $con->createCommand($sql)->bindValues($params)->queryAll();
         } catch (\Exception $why) {
-            return [$why];
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
         }
 
     }
@@ -159,7 +168,10 @@ class ApiReport
         try {
             return $con->createCommand($sql)->bindValues($params)->queryAll();
         } catch (\Exception $why) {
-            return [$why];
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
         }
 
     }
@@ -184,7 +196,10 @@ class ApiReport
         try {
             return $con->createCommand($sql)->bindValues($params)->queryAll();
         } catch (\Exception $why) {
-            return [$why];
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
         }
 
     }
@@ -210,7 +225,10 @@ class ApiReport
         try {
             return $con->createCommand($sql)->bindValues($params)->queryAll();
         } catch (\Exception $why) {
-            return [$why];
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
         }
 
     }
@@ -240,7 +258,10 @@ class ApiReport
         try {
             return $con->createCommand($sql)->bindValues($params)->queryAll();
         } catch (\Exception $why) {
-            return [$why];
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
         }
 
     }
@@ -263,7 +284,10 @@ class ApiReport
         try {
             return $con->createCommand($sql)->bindValues($params)->queryAll();
         } catch (\Exception $why) {
-            return [$why];
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
         }
     }
 

@@ -267,7 +267,10 @@ class ApiCondition
             return ArrayHelper::getColumn($ret,'country');
         }
         catch (\Exception $why) {
-            return [$why];
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
         }
     }
 
@@ -283,7 +286,10 @@ class ApiCondition
             return ArrayHelper::getColumn($ret,'category');
         }
         catch (\Exception $why) {
-            return [$why];
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
         }
     }
 
@@ -299,7 +305,10 @@ class ApiCondition
             return ArrayHelper::getColumn($ret,'goodsStatus');
         }
         catch (\Exception $why) {
-            return [$why];
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
         }
     }
 
@@ -314,7 +323,10 @@ class ApiCondition
             return Yii::$app->py_db->createCommand($sql)->queryAll();
         }
         catch (\Exception $why) {
-            return [$why];
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
         }
     }
 

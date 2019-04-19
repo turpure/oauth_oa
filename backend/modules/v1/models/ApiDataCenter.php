@@ -50,7 +50,10 @@ class ApiDataCenter
             return $con->createCommand($sql)->queryAll();
         }
         catch (\Exception $why) {
-            return [$why];
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
         }
     }
 
@@ -128,7 +131,10 @@ class ApiDataCenter
             return $con->createCommand($sql)->bindValues($params)->queryAll();
         }
         catch (\Exception $why) {
-            return [$why];
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
         }
     }
 
@@ -167,7 +173,10 @@ class ApiDataCenter
             return $con->createCommand($sql)->queryAll();
         }
         catch (\Exception $why) {
-            return [$why];
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
         }
     }
 

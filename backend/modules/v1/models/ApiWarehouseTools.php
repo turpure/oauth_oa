@@ -24,9 +24,12 @@ class ApiWarehouseTools
         $task = new TaskPick();
         $task->setAttributes($row);
         if ($task->save()) {
-            return ['success'];
+            return true;
         }
-        return ['failed'];
+        return [
+            'code' => 400,
+            'message' => 'failed'
+        ];
     }
 
     public static function getPickMember()
