@@ -137,7 +137,7 @@ class ApiGoodsinfo
         if (isset($condition['mid']) && $condition['mid'] == '是') $query->andFilterWhere(['>', "mid", 1]);
         if (isset($condition['mid']) && $condition['mid'] == '否') $query->andFilterWhere(["IFNULL(mid,'')" => '']);
 
-        $query->orderBy('id DESC');
+        $query->orderBy('achieveStatus DESC,id DESC');
 
         $provider = new ActiveDataProvider([
             'query' => $query,
@@ -250,8 +250,8 @@ class ApiGoodsinfo
                 if (empty($goodsInfo->picStatus)) {
                     $goodsInfo->picStatus = '待处理';
                 }
-                if (!$goodsInfo->update()) {
-                    throw new \Exception('failed');
+                if (!$goodsInfo->save()) {
+                    throw new \Exception('Save sku failed');
                 }
             }
             $transaction->commit();

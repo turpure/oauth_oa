@@ -168,10 +168,11 @@ class ProductCenterTools
         return [$msg];
     }
 
-    /**
-     * @brief 数据预处理和数据导入事务
+    /** 数据预处理和数据导入事务
      * @param $infoId
-     * @return array
+     * Date: 2019-04-22 10:05
+     * Author: henry
+     * @return array|bool
      */
     private static function _preImport($infoId)
     {
@@ -190,6 +191,12 @@ class ProductCenterTools
                 $bGoodsSku = static::_bGoodsSkuImport($bGoodsSku);
                 $stock = static::_preCurrentStockInfo($bGoodsSku);
                 static::_stockImport($stock);
+                //更新产品信息状态
+                $goodsInfo['basicInfo']['goodsInfo']->achieveStatus = '已导入';
+                $goodsInfo['basicInfo']['goodsInfo']->updateTime = date('Y-m-d H:i:s');
+                if(!$goodsInfo['basicInfo']['goodsInfo']->save()){
+                    throw new \Exception('save goods info failed');
+                }
                 // todo 采集商品要关联店铺SKU
             }
             $trans->commit();
@@ -198,7 +205,7 @@ class ProductCenterTools
             $trans->rollBack();
             return [
                 'code' => 400,
-                'message' => 'failure'
+                'message' => $why->getMessage()
             ];
         }
     }
@@ -834,7 +841,8 @@ class ProductCenterTools
      */
    public static function getBmpFileName($sku)
    {
-       $skuName = explode($sku, '_')[0];
+       //print_r($sku->sku);exit;
+       $skuName = explode($sku->sku, '_')[0];
        $base = 'http://121.196.233.153/images/';
        return $base . $skuName . '.jpg';
    }
