@@ -29,6 +29,7 @@ use backend\models\OaEbaySuffix;
 use backend\models\OaWishSuffix;
 use backend\models\OaJoomSuffix;
 use backend\models\OaJoomToWish;
+use backend\models\OaSiteCountry;
 use backend\models\OaShippingService;
 use backend\models\ShopElf\BGoods;
 use yii\data\ActiveDataProvider;
@@ -664,6 +665,9 @@ class ApiGoodsinfo
         $ebayInfo = OaEbayGoods::find()->joinWith('oaEbayGoodsSku')
             ->where(['oa_ebayGoods.infoId' => $id])->asArray()->one();
         $goodsInfo = OaGoodsinfo::findOne(['id' => $id]);
+        if ($ebayInfo === null || $goodsInfo === null ) {
+            return ['code' => '400001', 'message' =>  '无效的ID'];
+        }
         $ret = [];
         $row = [
             'Site' => '', 'Selleruserid' => '', 'ListingType' => '', 'Category1' => '', 'Category2' => '',
@@ -1098,10 +1102,10 @@ class ApiGoodsinfo
      */
     private static function getEbayPrice($ebayInfo)
     {
-        $currencyCodeMap = ['美国站' => 'USD', '英国站' => 'GBP', '澳洲站' => 'AUD'];
+        $countrySite = OaSiteCountry::findOne(['name' => $ebayInfo['site']]);
         $skuPrice = ArrayHelper::getColumn($ebayInfo['oaEbayGoodsSku'], 'retailPrice');
         $maxPrice = max($skuPrice);
-        $currencyCode = $currencyCodeMap[$ebayInfo['site']];
+        $currencyCode = ($countrySite === null) ? 'USD' : $countrySite->code;
         $usdPrice = $maxPrice * ProductCenterTools::getExchangeRate($currencyCode) / ProductCenterTools::getExchangeRate('USD');
         return $usdPrice;
     }
