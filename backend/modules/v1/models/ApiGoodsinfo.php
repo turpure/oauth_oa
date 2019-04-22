@@ -421,10 +421,12 @@ class ApiGoodsinfo
         ];
     }
 
-    /**
-     * @brief save ebay info
+    /** save ebay info
      * @param $condition
-     * @return mixed
+     * Date: 2019-04-22 16:12
+     * Author: henry
+     * @return array|bool
+     * @throws \Exception
      */
     public static function saveEbayInfo($condition)
     {
@@ -440,10 +442,7 @@ class ApiGoodsinfo
             $row['property'] = json_encode($row['property']);
             $sku->setAttributes($row);
             if (!$sku->save()) {
-                return [
-                    'code' => 400,
-                    'message' => 'failure'
-                ];
+                throw new \Exception('save sku failed');
             }
         }
         if (!$goods->save()) {
@@ -545,7 +544,7 @@ class ApiGoodsinfo
             ->orWhere(['parentCategory' => ''])
             ->asArray()->all();
         $keyWords = static::preKeywords($wishInfo);
-        $titlePool = [];
+
         $row = [
             'sku' => '', 'selleruserid' => '', 'name' => '', 'inventory' => '', 'price' => '', 'msrp' => '',
             'shipping' => '', 'shipping_time' => '', 'main_image' => '', 'extra_images' => '', 'variants' => '',
@@ -554,6 +553,7 @@ class ApiGoodsinfo
         ];
         $ret = [];
         foreach ($wishAccounts as $account) {
+            $titlePool = [];
             $title = '';
             $len = self::WishTitleLength;
             while (true) {
@@ -595,7 +595,7 @@ class ApiGoodsinfo
      * @param $accounts
      * @return array
      */
-    public static function preExportJoom($id, $accounts)
+    public static function  preExportJoom($id, $accounts)
     {
         $goodsInfo = OaGoodsinfo::findOne(['id' => $id]);
         $goods = BGoods::findOne(['GoodsCode' => $goodsInfo['goodsCode']]);
