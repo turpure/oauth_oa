@@ -426,6 +426,16 @@ class ApiReport
             } else {
                 $deadSql .= ' AND (developer IN (' . $condition['member'] . ') OR developer2 IN (' . $condition['member'] . ')) ';
             }
+        }else{
+            if ($condition['role'] == 'purchaser') {
+                $deadSql .= " AND ISNULL(purchaser,'')<>'' ";
+            } elseif ($condition['role'] == 'possessMan') {
+                $deadSql .= " AND ISNULL(possessMan,'')<>'' ";
+            } elseif ($condition['role'] == 'introducer') {
+                $deadSql .= " AND ISNULL(introducer,'')<>'' ";
+            } else {
+                $deadSql .= " AND (ISNULL(developer,'')<>'' OR ISNULL(developer2,'')<>'') ";
+            }
         }
         try {
             $data = Yii::$app->py_db->createCommand($deadSql)->queryAll();
