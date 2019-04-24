@@ -422,10 +422,12 @@ class ApiGoodsinfo
         ];
     }
 
-    /**
-     * @brief save ebay info
+    /** save ebay info
      * @param $condition
-     * @return mixed
+     * Date: 2019-04-22 16:12
+     * Author: henry
+     * @return array|bool
+     * @throws \Exception
      */
     public static function saveEbayInfo($condition)
     {
@@ -433,33 +435,40 @@ class ApiGoodsinfo
         $skuInfo = $condition['skuInfo'];
         $goods = OaEbayGoods::findOne(['nid' => $goodsInfo['nid']]);
         $goods->setAttributes($goodsInfo);
-        foreach ($skuInfo as $row) {
-            $sku = OaEbayGoodsSku::findOne(['id' => $row['id']]);
-            if ($sku === null) {
-                $sku = new OaEbayGoodsSku();
+        $tran = Yii::$app->db->beginTransaction();
+        try {
+            foreach ($skuInfo as $row) {
+                $sku = OaEbayGoodsSku::findOne(['id' => $row['id']]);
+                if ($sku === null) {
+                    $sku = new OaEbayGoodsSku();
+                }
+                $row['property'] = json_encode($row['property']);
+                $sku->setAttributes($row);
+                if (!$sku->save()) {
+                    throw new \Exception('save sku failed');
+                }
             }
-            $row['property'] = json_encode($row['property']);
-            $sku->setAttributes($row);
-            if (!$sku->save()) {
-                return [
-                    'code' => 400,
-                    'message' => 'failure'
-                ];
+            if (!$goods->save()) {
+                throw new \Exception('save goods failed');
             }
-        }
-        if (!$goods->save()) {
+            $tran->commit();
+            return true;
+        } catch (\Exception $e) {
+            $tran->rollBack();
             return [
                 'code' => 400,
-                'message' => 'failure'
+                'message' => $e->getMessage(),
             ];
         }
-        return true;
+
     }
 
-    /**
-     * @brief 保存wish模板
+    /** 保存wish模板
      * @param $condition
-     * @return array
+     * Date: 2019-04-23 10:32
+     * Author: henry
+     * @return array|bool
+     * @throws \yii\db\Exception
      */
     public static function saveWishInfo($condition)
     {
@@ -467,26 +476,30 @@ class ApiGoodsinfo
         $skuInfo = $condition['skuInfo'];
         $goods = OaWishGoods::findOne(['id' => $goodsInfo['id']]);
         $goods->setAttributes($goodsInfo);
-        foreach ($skuInfo as $row) {
-            $sku = OaWishGoodsSku::findOne(['id' => $row['id']]);
-            if ($sku === null) {
-                $sku = new OaWishGoodsSku();
+        $tran = Yii::$app->db->beginTransaction();
+        try {
+            foreach ($skuInfo as $row) {
+                $sku = OaWishGoodsSku::findOne(['id' => $row['id']]);
+                if ($sku === null) {
+                    $sku = new OaWishGoodsSku();
+                }
+                $sku->setAttributes($row);
+                if (!$sku->save()) {
+                    throw new \Exception('save sku failed');
+                }
             }
-            $sku->setAttributes($row);
-            if (!$sku->save()) {
-                return [
-                    'code' => 400,
-                    'message' => 'failure'
-                ];
+            if (!$goods->save()) {
+                throw new \Exception('save goods failed');
             }
-        }
-        if (!$goods->save()) {
+            $tran->commit();
+            return true;
+        } catch (\Exception $e) {
+            $tran->rollBack();
             return [
                 'code' => 400,
-                'message' => 'failure'
+                'message' => $e->getMessage(),
             ];
         }
-        return true;
     }
 
     public static function finishPlat($condition)
@@ -546,7 +559,7 @@ class ApiGoodsinfo
             ->orWhere(['parentCategory' => ''])
             ->asArray()->all();
         $keyWords = static::preKeywords($wishInfo);
-        $titlePool = [];
+
         $row = [
             'sku' => '', 'selleruserid' => '', 'name' => '', 'inventory' => '', 'price' => '', 'msrp' => '',
             'shipping' => '', 'shipping_time' => '', 'main_image' => '', 'extra_images' => '', 'variants' => '',
@@ -555,6 +568,7 @@ class ApiGoodsinfo
         ];
         $ret = [];
         foreach ($wishAccounts as $account) {
+            $titlePool = [];
             $title = '';
             $len = self::WishTitleLength;
             while (true) {
@@ -665,8 +679,8 @@ class ApiGoodsinfo
         $ebayInfo = OaEbayGoods::find()->joinWith('oaEbayGoodsSku')
             ->where(['oa_ebayGoods.infoId' => $id])->asArray()->one();
         $goodsInfo = OaGoodsinfo::findOne(['id' => $id]);
-        if ($ebayInfo === null || $goodsInfo === null ) {
-            return ['code' => '400001', 'message' =>  '无效的ID'];
+        if ($ebayInfo === null || $goodsInfo === null) {
+            return ['code' => '400001', 'message' => '无效的ID'];
         }
         $ret = [];
         $row = [

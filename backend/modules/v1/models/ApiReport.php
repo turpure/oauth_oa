@@ -310,7 +310,7 @@ class ApiReport
 				    MAX(refund) AS refund, MAX(currencyCode) AS currencyCode,MAX(refundTime) AS refundTime,
 				    MAX(orderTime) AS orderTime, MAX(orderCountry) AS orderCountry,MAX(platform) AS platform,MAX(expressWay) AS expressWay,refundId
                     FROM `cache_refund_details` 
-                    WHERE refundTime between '{$condition['beginDate']}' AND DATE_ADD('{$condition['endDate']}', INTERVAL 1 DAY) 
+                    WHERE refundTime between '{$condition['beginDate']}' AND '".$condition['endDate']." 23:59:59"."' 
                           AND IFNULL(platform,'')<>'' 
                     GROUP BY refundId,OrderId,mergeBillId,refund,refundTime
                 ) rd 
@@ -425,6 +425,16 @@ class ApiReport
                 $deadSql .= ' AND introducer IN (' . $condition['member'] . ') ';
             } else {
                 $deadSql .= ' AND (developer IN (' . $condition['member'] . ') OR developer2 IN (' . $condition['member'] . ')) ';
+            }
+        }else{
+            if ($condition['role'] == 'purchaser') {
+                $deadSql .= " AND ISNULL(purchaser,'')<>'' ";
+            } elseif ($condition['role'] == 'possessMan') {
+                $deadSql .= " AND ISNULL(possessMan,'')<>'' ";
+            } elseif ($condition['role'] == 'introducer') {
+                $deadSql .= " AND ISNULL(introducer,'')<>'' ";
+            } else {
+                $deadSql .= " AND (ISNULL(developer,'')<>'' OR ISNULL(developer2,'')<>'') ";
             }
         }
         try {

@@ -521,7 +521,8 @@ class ApiTinyTool
         try {
             //判断数据表数据是不是最新数据
             $date = Yii::$app->py_db->createCommand("SELECT DISTINCT updateDate FROM ibay365_eBayOversea_quantity_online")->queryOne();
-            if(!$date || substr($date['updateDate'],0,10) != date('Y-m-d')){
+            if(!$date || strtotime(date('Y-m-d H:i:s')) >= strtotime(date('Y-m-d').' 14:30:00')
+                        && substr($date['updateDate'],0,10) != date('Y-m-d') ){
                 //执行存错过程
                 $exeSql = 'EXEC B_eBayOversea_ModifyOnlineNumberOnTheIbay365';
                 Yii::$app->py_db->createCommand($exeSql)->execute();
@@ -539,6 +540,7 @@ class ApiTinyTool
             if(isset($cond['useNum']) && $cond['useNum']) $sql.= " AND useNum = '{$cond['useNum']}'";
 
             $list = Yii::$app->py_db->createCommand($sql)->queryAll();
+
             //获取ebay销售员
             $userSql = "SELECT ebayName,IFNULL(username,'未分配') AS salesName 
                       FROM proCenter.oa_ebaySuffix es 
@@ -551,20 +553,16 @@ class ApiTinyTool
             foreach($list as $v){
                 $item = $v;
                 foreach($userArr as $val){
-                    if($val['ebayName'] == $v['sellerUserid']){
-                        $item['salesName'] =  $val['salesName'];
+                    if(strtolower($val['ebayName']) == strtolower($v['sellerUserid'])){
+                        $item['salesName'] = $val['salesName'];
                     }
                 }
                 if(!isset($item['salesName'])) $item['salesName'] = '';
-                //print_r($item);exit;
                 $data[] = $item;
             }
-            //print_r($data);exit;
             $data = array_filter($data,function ($v){
-               if($v['salesName']) return true;
-               else return false;
+                return $v['salesName'] ? true : false;
             });
-            //print_r($data);exit;
             return new ArrayDataProvider([
                 'allModels' => $data,
                 'pagination' => [
