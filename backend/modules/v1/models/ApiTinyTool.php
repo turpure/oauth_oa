@@ -540,6 +540,7 @@ class ApiTinyTool
             if(isset($cond['useNum']) && $cond['useNum']) $sql.= " AND useNum = '{$cond['useNum']}'";
 
             $list = Yii::$app->py_db->createCommand($sql)->queryAll();
+
             //获取ebay销售员
             $userSql = "SELECT ebayName,IFNULL(username,'未分配') AS salesName 
                       FROM proCenter.oa_ebaySuffix es 
@@ -552,20 +553,16 @@ class ApiTinyTool
             foreach($list as $v){
                 $item = $v;
                 foreach($userArr as $val){
-                    if($val['ebayName'] == $v['sellerUserid']){
-                        $item['salesName'] =  $val['salesName'];
+                    if(strtolower($val['ebayName']) == strtolower($v['sellerUserid'])){
+                        $item['salesName'] = $val['salesName'];
                     }
                 }
                 if(!isset($item['salesName'])) $item['salesName'] = '';
-                //print_r($item);exit;
                 $data[] = $item;
             }
-            //print_r($data);exit;
             $data = array_filter($data,function ($v){
-               if($v['salesName']) return true;
-               else return false;
+                return $v['salesName'] ? true : false;
             });
-            //print_r($data);exit;
             return new ArrayDataProvider([
                 'allModels' => $data,
                 'pagination' => [
