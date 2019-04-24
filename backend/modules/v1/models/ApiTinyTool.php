@@ -521,7 +521,8 @@ class ApiTinyTool
         try {
             //判断数据表数据是不是最新数据
             $date = Yii::$app->py_db->createCommand("SELECT DISTINCT updateDate FROM ibay365_eBayOversea_quantity_online")->queryOne();
-            if(!$date || substr($date['updateDate'],0,10) != date('Y-m-d')){
+            if(!$date || substr($date['updateDate'],0,10) != date('Y-m-d')
+                && substr($date['updateDate'],0,10) != date('Y-m-d',strtotime('-1 day')) ){
                 //执行存错过程
                 $exeSql = 'EXEC B_eBayOversea_ModifyOnlineNumberOnTheIbay365';
                 Yii::$app->py_db->createCommand($exeSql)->execute();

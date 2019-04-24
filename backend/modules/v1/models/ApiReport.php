@@ -310,7 +310,7 @@ class ApiReport
 				    MAX(refund) AS refund, MAX(currencyCode) AS currencyCode,MAX(refundTime) AS refundTime,
 				    MAX(orderTime) AS orderTime, MAX(orderCountry) AS orderCountry,MAX(platform) AS platform,MAX(expressWay) AS expressWay,refundId
                     FROM `cache_refund_details` 
-                    WHERE refundTime between '{$condition['beginDate']}' AND DATE_ADD('{$condition['endDate']}', INTERVAL 1 DAY) 
+                    WHERE refundTime between '{$condition['beginDate']}' AND '".$condition['endDate']." 23:59:59"."' 
                           AND IFNULL(platform,'')<>'' 
                     GROUP BY refundId,OrderId,mergeBillId,refund,refundTime
                 ) rd 
