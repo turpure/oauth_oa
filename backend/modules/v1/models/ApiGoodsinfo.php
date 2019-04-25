@@ -580,6 +580,7 @@ class ApiGoodsinfo
                 }
             }
             $variantInfo = static::getWishVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
+            print_r($variantInfo);exit;
             $row['sku'] = $wishInfo['sku'] . $account['suffix'];
             $row['selleruserid'] = $account['ibaySuffix'];
             $row['name'] = $title;
@@ -596,6 +597,7 @@ class ApiGoodsinfo
             $row['description'] = $wishInfo['description'];
             $row['brand'] = '';
             $row['upc'] = '';
+            $row['local_price'] = $variantInfo['local_price'];
             $row['local_shippingfee'] = $variantInfo['local_shippingfee'];
             $row['local_currency'] = $variantInfo['local_currency'];
             $ret[] = $row;

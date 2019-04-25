@@ -105,10 +105,11 @@ class ProductCenterTools
     }
 
 
-    /**
-     * @brief 图片信息标记完善
+    /** 图片信息标记完善
      * @param $infoId
-     * @return array
+     * Date: 2019-04-25 9:03
+     * Author: henry
+     * @return array|bool
      */
     public static function finishPicture($infoId)
     {
@@ -135,10 +136,13 @@ class ProductCenterTools
                 'picStatus' => '已完善',
             ]
         );
-        if ($pictureInfo->save()) {
-            return ['success'];
+        if (!$pictureInfo->save()) {
+            return [
+                'code' => 400,
+                'message' => 'failed'
+            ];
         }
-        return ['failure'];
+        return true;
     }
 
     public static function uploadImagesToFtp($infoId)
@@ -149,7 +153,7 @@ class ProductCenterTools
         $asynchronous = false;
         try {
             foreach ($goodsSku as $sku) {
-                $url = $sku->linkurl;
+                $url = $sku->linkUrl;
                 if (!empty($url)) {
                     $filename = explode('_', $sku->sku)[0] . '.jpg';
                     $remote_file = '/' . $filename;
@@ -161,11 +165,14 @@ class ProductCenterTools
                     }
                 }
             }
-            $msg = 'success';
+            $msg = true;
         } catch (\Exception $why) {
-            $msg = 'failure';
+            $msg = [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
         }
-        return [$msg];
+        return $msg;
     }
 
     /** 数据预处理和数据导入事务
@@ -442,8 +449,8 @@ class ProductCenterTools
             'msrp' => $goodsInfo['oaGoods']['salePrice'] * 6,
             'shipping' => '0',
             'shippingTime' => '7-21',
-            'tags' => '',
-            'mainImage' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '_0.jpg',
+            'tags' => $goodsInfo['wishTags'],
+            'mainImage' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_0_.jpg',
             'goodsId' => $goodsInfo['bgoodsId'],
             'infoId' => $goodsInfo['id'],
             'extraImages' => static::_generateImages($goodsInfo['goodsCode']),
@@ -618,9 +625,9 @@ class ProductCenterTools
         $images = '';
         for ($i = 0; $i < 20; $i++) {
             if ($i === 0) {
-                $images = $images . $baseUrl . $i . $goodsCode . '0_jpg' . '\n';
+                $images = $images . $baseUrl . $goodsCode . '-_00_.jpg' . '\n';
             } else {
-                $images = $images . $baseUrl . $i . $goodsCode . '_jpg' . '\n';
+                $images = $images . $baseUrl . $goodsCode . '-_' . $i . '_.jpg' . '\n';
             }
         }
         return $images;
