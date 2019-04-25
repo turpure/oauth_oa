@@ -41,7 +41,7 @@ class ExportTools
         // set cell value
         foreach ($data as $key => $row) {
             for ($index=0; $index<$len;$index++) {
-                $workSheet->setCellValueByColumnAndRow($index + 1, $key + 2, $row[$cellName[$index]]);
+                $workSheet->setCellValueByColumnAndRow($index + 1, $key + 2,  $row[$cellName[$index]]);
             }
         }
 

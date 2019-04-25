@@ -331,7 +331,8 @@ class ProductCenterTools
             'CategoryCode' => static::getCategoryCode($goodsInfo['basicInfo']['oaGoods']['subCate']),
             'GoodsCode' => $goodsInfo['basicInfo']['goodsInfo']['goodsCode'] ?: '',
             'GoodsName' => $goodsInfo['basicInfo']['goodsInfo']['goodsName'] ?: '',
-            'MultiStyle' => $goodsInfo['basicInfo']['goodsInfo']['isVar'] === '否' ? 0 : 1,
+            'SKU' => static::getSkuCode($goodsInfo),
+            'MultiStyle' => $goodsInfo['basicInfo']['goodsInfo']['isVar'] === '是' ? 1 : 0,
             'salePrice' => $goodsInfo['basicInfo']['oaGoods']['salePrice'],
             'CostPrice' => static::getMaxCostPrice($goodsInfo['basicInfo']['goodsInfo']['id']),
             'AliasCnName' => $goodsInfo['basicInfo']['goodsInfo']['aliasCnName'] ?: '',
@@ -340,7 +341,7 @@ class ProductCenterTools
             'OriginCountry' => 'China',
             'OriginCountryCode' => 'CN',
             'SupplierID' => static::getSupplierID($goodsInfo['basicInfo']['goodsInfo']['supplierName']),
-            'SalerName ' => $goodsInfo['basicInfo']['goodsInfo']['developer'] ?: '',
+            'SalerName' => $goodsInfo['basicInfo']['goodsInfo']['developer'] ?: '',
             'PackName' => $goodsInfo['basicInfo']['goodsInfo']['packName'] ?: '',
             'GoodsStatus' => '在售',
             'DevDate' => date('Y-m-d H:i:s'),
@@ -713,6 +714,14 @@ class ProductCenterTools
     public static function getStoreId($storeName)
     {
         return BStore::findOne(['StoreName' => $storeName])->NID;
+    }
+
+
+    public static function getSkuCode($goodsInfo)
+    {
+        $goodsCode = $goodsInfo['basicInfo']['goodsInfo']['goodsCode'] ?: '' ;
+        $multiStyle = $goodsInfo['basicInfo']['goodsInfo']['isVar'] === '是' ? 1 : 0;
+        return $multiStyle === 1 ? $goodsCode : $goodsCode . '01';
     }
 
     /**
