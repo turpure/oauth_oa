@@ -580,7 +580,6 @@ class ApiGoodsinfo
                 }
             }
             $variantInfo = static::getWishVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
-            print_r($variantInfo);exit;
             $row['sku'] = $wishInfo['sku'] . $account['suffix'];
             $row['selleruserid'] = $account['ibaySuffix'];
             $row['name'] = $title;
