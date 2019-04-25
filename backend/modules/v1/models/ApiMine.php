@@ -46,7 +46,7 @@ class ApiMine
             throw new Exception('id 不能为空', '400001');
         }
         $mine = OaDataMine::find()->where(['id' => $id])->asArray()->one();
-        $mineDetail = OaDataMineDetail::find()->where(['mid' => $id])->asArray()->one();
+        $mineDetail = OaDataMineDetail::find()->where(['mid' => $id])->asArray()->all();
         return['basicInfo' => $mine, 'detailInfo' => $mineDetail];
     }
 }
