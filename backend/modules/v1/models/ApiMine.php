@@ -65,6 +65,48 @@ class ApiMine
         return['basicInfo' => $mine, 'images' => $images, 'detailsInfo' => $mineDetail];
     }
 
+    /**
+     * @brief 添加采集任务
+     * @param $condition
+     * @throws Exception
+     */
+    public static function mine($condition)
+    {
+        $proId = isset($condition['proId']) ? $condition['proId'] : '';
+        $proId = explode(',', $proId);
+        $maxCode = static::getMaxCode();
+        $creator = Yii::$app->user->identity->username;
+        $trans = Yii::$app->db->beginTransaction();
+        $mine = new OaDataMine();
+        try {
+            foreach ($proId as $id) {
+                $newMine = clone $mine;
+                $id = trim($id);
+                $goodsCode = static::generateCode($maxCode);
+                $createTime = date('Y-m-d H:i:s');
+                $newMine->proId = $id;
+                $newMine->platForm = 'joom';
+                $newMine->creator = $creator;
+                $newMine->createTime = $createTime;
+                $newMine->updateTime = $createTime;
+                $newMine->progress = '待采集';
+                $newMine->goodsCode = $goodsCode;
+                $newMine->detailStatus = '未完善';
+                if (!$newMine->save()) {
+                    throw  new Exception("保存失败！", '400003');
+                }
+                $jobId = $newMine->id;
+                $redis = Yii::$app->redis;
+                $redis->lpush('job_list', $jobId . ',' . $id);
+                $maxCode = $goodsCode;
+            }
+            $trans->commit();
+        }
+        catch (Exception $why){
+            $trans->rollBack();
+            throw  new Exception("保存失败！",'400003');
+        }
+    }
 
     /**
      * @brief 标记玩善
@@ -512,4 +554,35 @@ class ApiMine
         return 'notDangerous';
     }
 
+    /**
+     * @brief 生成编码
+     * @param $previousCode
+     * @return string
+     */
+    private static function generateCode($previousCode)
+    {
+        $number = (int)substr($previousCode,9) + 1;
+        $base = '0000';
+        if(\strlen($number) === \strlen($base)){
+            return 'A'.date('Ymd').$number;
+        }
+        $code = substr($base,0,\strlen($base) - \strlen($number)).$number;
+        return 'A'.date('Ymd').$code;
+    }
+
+    /**
+     * @brief 获取当天最大编码
+     * @return string
+     * @throws \yii\db\Exception
+     */
+    private static function getMaxCode()
+    {
+        $db = Yii::$app->db;
+        $max_code_sql = 'select goodsCode from oa_data_mine 
+                        where datediff(createTime,now())=0 
+                        and id =(select max(id) from oa_data_mine 
+                        where datediff(createTime,now())=0 )';
+        $maxCode = $db->createCommand($max_code_sql)->queryOne()['goodsCode'] ?: 'A'.date('Ydm').'0000';
+        return $maxCode;
+    }
 }
