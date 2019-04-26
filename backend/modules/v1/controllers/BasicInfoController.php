@@ -26,6 +26,7 @@ use backend\models\OaWishSuffix;
 use backend\modules\v1\models\ApiBasicInfo;
 use Yii;
 use yii\data\ActiveDataProvider;
+use yii\db\Query;
 
 class BasicInfoController extends AdminController
 {
@@ -39,7 +40,7 @@ class BasicInfoController extends AdminController
     /** get ebay suffix list
      * Date: 2019-03-25 14:17
      * Author: henry
-     * @return \yii\data\ActiveDataProvider
+     * @return \yii\data\ArrayDataProvider
      */
     public function actionEbaySuffix()
     {
@@ -82,7 +83,11 @@ class BasicInfoController extends AdminController
     public function actionEbayInfo(){
         $condition = Yii::$app->request->post()['condition'];
         $id = isset($condition['id'])?$condition['id']:'';
-        return OaEbaySuffix::findOne(['id' => $id]);
+        return (new Query())->select('es.id id,ebayName,ebaySuffix,nameCode,mainImg,ibayTemplate,storeCountry,h.paypal high,l.paypal low')
+            ->from('proCenter.oa_ebaySuffix es')
+            ->leftJoin('proCenter.oa_paypal h','es.high=h.id')
+            ->leftJoin('proCenter.oa_paypal l','es.low=l.id')
+            ->where(['es.id' => $id])->one();
     }
 
     ##############################   wish suffix   ###############################

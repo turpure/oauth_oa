@@ -24,6 +24,8 @@ use backend\models\OaShippingService;
 use backend\models\OaSysRules;
 use backend\models\OaWishSuffix;
 use yii\data\ActiveDataProvider;
+use yii\data\ArrayDataProvider;
+use yii\db\Query;
 
 class ApiBasicInfo
 {
@@ -32,30 +34,27 @@ class ApiBasicInfo
      * @param $condition
      * Date: 2019-03-25 14:16
      * Author: henry
-     * @return ActiveDataProvider
+     * @return ArrayDataProvider
      */
     public static function getEbaySuffixList($condition)
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
-        $query = OaEbaySuffix::find();
+        $query = (new Query())->select('es.id id,ebayName,ebaySuffix,nameCode,mainImg,ibayTemplate,storeCountry,h.paypal high,l.paypal low')
+            ->from('proCenter.oa_ebaySuffix es')
+            ->leftJoin('proCenter.oa_paypal h','es.high=h.id')
+            ->leftJoin('proCenter.oa_paypal l','es.low=l.id');
         if(isset($condition['ebayName'])) $query->andFilterWhere(['like', 'ebayName', $condition['ebayName']]);
         if(isset($condition['ebaySuffix'])) $query->andFilterWhere(['like', 'ebaySuffix', $condition['ebaySuffix']]);
         if(isset($condition['nameCode'])) $query->andFilterWhere(['like', 'nameCode', $condition['nameCode']]);
         if(isset($condition['mainImg'])) $query->andFilterWhere(['like', 'mainImg', $condition['mainImg']]);
         if(isset($condition['ibayTemplate'])) $query->andFilterWhere(['like', 'ibayTemplate', $condition['ibayTemplate']]);
         if(isset($condition['storeCountry'])) $query->andFilterWhere(['like', 'storeCountry', $condition['storeCountry']]);
-        if(isset($condition['high'])) $query->andFilterWhere(['like', 'high', $condition['high']]);
-        if(isset($condition['low'])) $query->andFilterWhere(['like', 'low', $condition['low']]);
-        $dataProvider = new ActiveDataProvider([
-            'query' => $query,
+        if(isset($condition['high'])) $query->andFilterWhere(['like', 'h.paypal', $condition['high']]);
+        if(isset($condition['low'])) $query->andFilterWhere(['like', 'l.paypal', $condition['low']]);
+        $dataProvider = new ArrayDataProvider([
+            'allModels' => $query->orderBy('ebaySuffix')->all(),
             'pagination' => [
                 'pageSize' => isset($pageSize) && $pageSize ? $pageSize   : 20,
-            ],
-        ]);
-
-        $dataProvider->setSort([
-            'defaultOrder' => [
-                'id' => SORT_DESC,
             ],
         ]);
         return $dataProvider;
