@@ -50,11 +50,15 @@ class ApiMine
         if (empty($id)) {
             throw new Exception('id 不能为空', '400001');
         }
-        $mine = OaDataMine::find()->where(['id' => $id])->asArray()->one();
-        $mineDetail = OaDataMineDetail::find()->select('id,mid,parentId,proName,description,tags,childId,color,
+        $mine = OaDataMineDetail::find()->joinWith('oaDataMine')
+            ->select('oa_dataMine.*,proName,description,tags,mid')
+            ->where(['mid' => $id])->asArray()->one();
+        unset($mine['oaDataMine'],$mine['mid']);
+        $mineDetail = OaDataMineDetail::find()->select('id,mid,parentId,childId,color,
         proSize,quantity,price,msrPrice,shipping,shippingWeight,shippingTime,varMainImage')
             ->where(['mid' => $id])->asArray()->all();
-        $images = OaDataMineDetail::find()->select('extraImage0,extraImage1,extraImage2,extraImage3,extraImage4,
+
+        $images = OaDataMineDetail::find()->select('extraImage1,extraImage2,extraImage3,extraImage4,
         extraImage5,extraImage6,extraImage7,extraImage8,extraImage9,extraImage10,mainImage')->
         where(['mid' => $id])->asArray()->one();
         return['basicInfo' => $mine, 'images' => $images, 'detailsInfo' => $mineDetail];
@@ -325,10 +329,43 @@ class ApiMine
 
     }
 
+    public static function exportToJoom($condition)
+    {
+    }
+
+    /**
+     * @brief 保存信息
+     * @param $condition
+     * @return array
+     * @throws Exception
+     * @throws \yii\db\Exception
+     */
     public static function save($condition)
     {
         $basicInfo = $condition['basicInfo'];
-        $variations = $condition['variations'];
+        $variations = $condition['detailsInfo'];
+        $images = $condition['images'];
+
+        $trans = Yii::$app->db->beginTransaction();
+        try {
+            $mine = OaDataMine::findOne(['id' => $basicInfo['id']]);
+            $mine->setAttributes($basicInfo);
+            foreach ($variations as $var) {
+                $detail = OaDataMineDetail::findOne(['id' => $var['id']]);
+                $detail->setAttributes($var);
+                $detail->setAttributes($images);
+                if(!$detail->save()) {
+                    throw new Exception('保存失败！','400003');
+                }
+            }
+            $trans->commit();
+        }
+        catch (Exception $why) {
+            $trans->rollBack();
+            throw new Exception('保存失败！','400003');;
+        }
+        return [];
+
     }
     /**
      * @brief 计算价格
