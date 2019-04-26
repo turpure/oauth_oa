@@ -3,6 +3,7 @@
 namespace backend\models;
 
 use Yii;
+use backend\models\OaDataMine;
 
 /**
  * This is the model class for table "proCenter.oa_dataMineDetail".
@@ -97,5 +98,9 @@ class OaDataMineDetail extends \yii\db\ActiveRecord
             'mainImage' => 'Main Image',
             'pySku' => 'Py Sku',
         ];
+    }
+    public function getOaDataMine()
+    {
+        return $this->hasOne(OaDataMine::className(),['id'=>'mid']);
     }
 }
