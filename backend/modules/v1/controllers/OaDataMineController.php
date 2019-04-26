@@ -78,7 +78,7 @@ class OaDataMineController extends AdminController
     {
         $condition = Yii::$app->request->post()['condition'];
         try {
-            return ApiMine::ExportToJoom($condition);
+            ApiMine::exportToJoom($condition);
         }
         catch (\Exception $why) {
             $ret['code'] = $why->getCode();

@@ -12,6 +12,7 @@ use backend\models\OaDataMine;
 use backend\models\OaDataMineDetail;
 use backend\models\OaGoods;
 use backend\models\ShopElf\BGoodsSKULinkShop;
+use backend\modules\v1\utils\ExportTools;
 use Exception;
 use Yii;
 
@@ -329,8 +330,52 @@ class ApiMine
 
     }
 
+    /**
+     * @brief 导出joom模板
+     * @param $condition
+     * @throws Exception
+     */
     public static function exportToJoom($condition)
     {
+        $info = static::getMineInfo($condition);
+        $basicInfo = $info['basicInfo'];
+        $images = $info['images'];
+        $variations = $info['detailsInfo'];
+        $ret = [];
+        foreach ($variations as $var) {
+            $row = [
+                'Parent Unique ID' => $var['parentId'],
+                '*Product Name' =>  $basicInfo['proName'],
+                'Description' =>  $var['parentId'],
+                '*Tags' => $basicInfo['tags'],
+                '*Unique ID' => $var['childId'],
+                'Color' => $var['color'],
+                'Size' => $var['size'],
+                '*Quantity' => $var['quantity'],
+                '*Price' => $var['price'],
+                '*MSRP' => $var['*msrPrice'],
+                '*Shipping' => $var['shipping'],
+                'Shipping weight' => $var['shippingWeight'],
+                'Shipping Time(enter without " ", just the estimated days )' => $var['shippingTime'],
+                '*Product Main Image URL' => $images['mainImage'],
+                'Variant Main Image URL' => $var['varMainImage'],
+                'Extra Image URL' => $var['extraImage1'],
+                'Extra Image URL 1' => $var['extraImage2'],
+                'Extra Image URL 2' => $var['extraImage3'],
+                'Extra Image URL 3' => $var['extraImage4'],
+                'Extra Image URL 4' => $var['extraImage5'],
+                'Extra Image URL 5' => $var['extraImage6'],
+                'Extra Image URL 6' => $var['extraImage7'],
+                'Extra Image URL 7' => $var['extraImage8'],
+                'Extra Image URL 8' => $var['extraImage9'],
+                'Extra Image URL 9' => $var['extraImage10'],
+                'Extra Image URL 10' => '',
+                'Dangerous Kind' => static::_getDangerousKind($basicInfo)
+            ];
+            $ret[] = $row;
+        }
+        ExportTools::toExcelOrCsv('test-joom',$ret,'Csv');
+
     }
 
     /**
@@ -344,6 +389,9 @@ class ApiMine
     {
         $basicInfo = $condition['basicInfo'];
         $variations = $condition['detailsInfo'];
+        $variations['proName'] = $basicInfo['proName'];
+        $variations['description'] = $basicInfo['description'];
+        $variations['tags'] = $basicInfo['tags'];
         $images = $condition['images'];
 
         $trans = Yii::$app->db->beginTransaction();
@@ -434,6 +482,28 @@ class ApiMine
             $trans->rollBack();
             throw new Exception('转至失败！', '400007');
         }
+    }
+
+    /**
+     * @brief 计算危险类型
+     * @param $basicInfo
+     * @return string
+     */
+    private static function _getDangerousKind($basicInfo)
+    {
+        if($basicInfo['isLiquid'] === 1) {
+            return 'liquid';
+        }
+        if($basicInfo['isPowder'] === 0) {
+            return 'powder';
+        }
+        if($basicInfo['isMagnetism'] === 0) {
+            return 'withBattery';
+        }
+        if($basicInfo['isCharged'] === 0) {
+            return 'withBattery';
+        }
+        return 'notDangerous';
     }
 
 }
