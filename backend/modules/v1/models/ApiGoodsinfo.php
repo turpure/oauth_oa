@@ -528,7 +528,7 @@ class ApiGoodsinfo
      */
     public static function getEbayAccount()
     {
-        $ret = OaEbaySuffix::find()->select('ebaySuffix,ebayName,storeCountry')->all();
+        $ret = OaEbaySuffix::find()->select('ebaySuffix,ebayName,storeCountry')->orderBy('ebaySuffix DESC')->all();
         //return ArrayHelper::map($ret, 'ebayName', 'ebaySuffix');
         return $ret;
     }

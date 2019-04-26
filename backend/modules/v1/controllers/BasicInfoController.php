@@ -19,11 +19,14 @@ namespace backend\modules\v1\controllers;
 use backend\models\OaEbaySuffix;
 use backend\models\OaJoomSuffix;
 use backend\models\OaJoomToWish;
+use backend\models\OaPaypal;
 use backend\models\OaShippingService;
 use backend\models\OaSysRules;
 use backend\models\OaWishSuffix;
 use backend\modules\v1\models\ApiBasicInfo;
 use Yii;
+use yii\data\ActiveDataProvider;
+
 class BasicInfoController extends AdminController
 {
     public $modelClass = 'backend\models\OaEbaySuffix';
@@ -337,6 +340,99 @@ class BasicInfoController extends AdminController
         $condition = Yii::$app->request->post()['condition'];
         $id = isset($condition['id'])?$condition['id']:'';
         return OaJoomToWish::findOne(['id' => $id]);
+    }
+
+
+    ##############################   paypal   ###############################
+
+    /** get paypal list
+     * Date: 2019-04-26 13:38
+     * Author: henry
+     * @return \yii\data\ActiveDataProvider
+     */
+    public function actionPaypal()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
+        $query = OaPaypal::find()->andWhere(['status' => 10]);
+        if(isset($condition['paypal'])) $query->andFilterWhere(['like', 'paypal', $condition['paypal']]);
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => [
+                'pageSize' => isset($pageSize) && $pageSize ? $pageSize   : 20,
+            ],
+        ]);
+
+        $dataProvider->setSort([
+            'defaultOrder' => [
+                'paypal' => SORT_ASC,
+            ],
+        ]);
+        return $dataProvider;
+    }
+
+    /**
+     * Date: 2019-04-26 13:41
+     * Author: henry
+     * @return array|OaPaypal
+     */
+    public function actionCreatePaypal(){
+        $condition = Yii::$app->request->post()['condition'];
+        $model = new OaPaypal();
+        $model->attributes = $condition;
+        $model->createDate = date('Y-m-d H:i:s');
+        $model->status = 10;
+        $res = $model->save();
+        if($res){
+            return $model;
+        }else{
+            return [
+                'code' => 400,
+                'message' => $model->getErrors()[0]
+            ];
+        }
+    }
+
+    /**
+     * Date: 2019-04-26 13:41
+     * Author: henry
+     * @return array|bool|null|static
+     */
+    public function actionUpdatePaypal(){
+        $condition = Yii::$app->request->post()['condition'];
+        $id = isset($condition['id'])?$condition['id']:'';
+        if (!$id) return false;
+        $model = OaPaypal::findOne($id);
+        $model->attributes = $condition;
+        $model->updateDate = date('Y-m-d H:i:s');
+        $res = $model->save();
+        if($res){
+            return $model;
+        }else{
+            return [
+                'code' => 400,
+                'message' => $model->getErrors()[0]
+            ];
+        }
+    }
+
+    /**
+     * Date: 2019-03-27 09:33
+     * Author: henry
+     * @return bool|int
+     */
+    public function actionDeletePaypal()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        $id = isset($condition['id']) ? $condition['id'] : '';
+        if (!$id) return false;
+        return OaPaypal::deleteAll(['id' => $id]);
+    }
+
+    public function actionPaypalInfo(){
+        $condition = Yii::$app->request->post()['condition'];
+        $id = isset($condition['id'])?$condition['id']:'';
+        return OaPaypal::findOne(['id' => $id]);
     }
 
     }
