@@ -286,7 +286,6 @@ class ApiGoodsinfo
                 'message' => "Can't find goods info！"
             ];
         }
-        $goodsInfo->isVar = count($skuInfo) > 1 ? '是' : '否';//判断是否多属性
         $transaction = Yii::$app->db->beginTransaction();
         try {
             foreach ($skuInfo as $skuRow) {
@@ -311,6 +310,7 @@ class ApiGoodsinfo
             }
             $oaGoods->setAttributes($oaInfo);
             $goodsInfo->setAttributes($attributeInfo);
+            $goodsInfo->isVar = count($skuInfo) > 1 ? '是' : '否';//判断是否多属性
             if (!$goodsInfo->save() || !$oaGoods->save()) {
                 throw new \Exception("Can't save goods info or goods！");
             }
@@ -645,11 +645,12 @@ class ApiGoodsinfo
                 $row['Size'] = $sku['size'];
                 $row['*Quantity'] = $sku['inventory'];
                 $row['*Price'] = static::getJoomAdjust($sku['weight'], $priceInfo['price']);
+                $row['*MSRP'] = $priceInfo['msrp'];
                 $row['*Shipping'] = $priceInfo['shipping'];
-                $row['Shipping weight'] = (float)$sku['weight'];
+                $row['Shipping weight'] = (float)$sku['weight']*1.0/1000;
                 $row['Shipping Time(enter without " ", just the estimated days )'] = '15-45';
                 $row['*Product Main Image URL'] = $imageInfo['mainImage'];
-                $row['Variant Main Image URL'] = str_replace($sku['linkUrl'], '/10023/', $joomAccounts['imgCode']);
+                $row['Variant Main Image URL'] = str_replace('/10023/', '/'.$joomAccounts['imgCode'].'/', $sku['linkUrl']);
                 $row['Extra Image URL'] = $imageInfo['extraImages'][0];
                 $row['Extra Image URL 1'] = $imageInfo['extraImages'][1];
                 $row['Extra Image URL 2'] = $imageInfo['extraImages'][2];
@@ -660,11 +661,10 @@ class ApiGoodsinfo
                 $row['Extra Image URL 7'] = $imageInfo['extraImages'][7];
                 $row['Extra Image URL 8'] = $imageInfo['extraImages'][8];
                 $row['Extra Image URL 9'] = $imageInfo['extraImages'][9];
-                $row['Extra Image URL 10'] = $imageInfo['extraImages'][10];
                 $row['Dangerous Kind'] = static::getJoomDangerousKind($goodsInfo);
                 $row['Declared Value'] = $goods['DeclaredValue'];
+                $ret[] = $row;
             }
-            $ret[] = $row;
         }
         return $ret;
     }
@@ -933,7 +933,8 @@ class ApiGoodsinfo
                 $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1;
                 $ret['msrp'] = $maxMsrp;
                 $ret['local_price'] = floor($wishInfo['price'] * self::UsdExchange);
-                $ret['local_shippingfee'] = floor($wishInfo['shipping'] * self::UsdExchange);
+                //$ret['local_shippingfee'] = floor($wishInfo['shipping'] * self::UsdExchange);
+                $ret['local_shippingfee'] = floor($shipping * self::UsdExchange);
                 $ret['local_currency'] = 'CNY';
             } else {
                 $ret['variant'] = '';
@@ -1022,26 +1023,25 @@ class ApiGoodsinfo
     {
         $prices = ArrayHelper::getColumn($joomSku, 'price');
         $shippingPrices = ArrayHelper::getColumn($joomSku, 'shipping');
-        $maxJoomPrice = max(ArrayHelper::getColumn($joomSku, 'joomPrices'));
-        $minJoomShipping = max(ArrayHelper::getColumn($joomSku, 'joomShipping'));
-        $maxMrsp = max(ArrayHelper::getColumn($joomSku, 'mrsp'));
+        $joomPriceArr = ArrayHelper::getColumn($joomSku, 'joomPrice');
+        $joomShippingArr = ArrayHelper::getColumn($joomSku, 'joomShipping');
+        $minJoomShipping = min($joomShippingArr);
+        $maxMsrp = max(ArrayHelper::getColumn($joomSku, 'msrp'));
         $len = count($joomSku);
         $i = 0;
-        $totalPrice = [];
+        $totalPrice = $totalMsrp = [];
         while ($i < $len) {
             $totalPrice[] = $prices[$i] + $shippingPrices[$i];
+            $totalMsrp[] = $joomPriceArr[$i] + $joomShippingArr[$i];
             $i++;
         }
-
         //定价规则
         $price = max($totalPrice) - 0.01;
-        $msrp = max([$price * 5, $maxMrsp]);
-        $joomPrice = $maxJoomPrice - $minJoomShipping;
+        $msrp = max([max($totalMsrp) * 5, $maxMsrp]);
+        $joomPrice = max($totalMsrp) - $minJoomShipping;
         $price = $joomPrice > 0 ? $joomPrice : $price;
         $shipping = $minJoomShipping;
-
         return ['price' => $price, 'msrp' => $msrp, 'joomPrice' => $joomPrice, 'shipping' => $shipping];
-
     }
 
     /**
@@ -1070,14 +1070,13 @@ class ApiGoodsinfo
      */
     private static function getJoomImageInfo($joomInfo, $account)
     {
-        $mainImage = substr($joomInfo['mainImage'], 0, stripos('-', $joomInfo['mainImage']));
-        $mainImage = str_replace($mainImage, '/10023/', $account['imgCode']);
-        $extraImages = explode($joomInfo['extraImages'], '\n');
-        array_filter($extraImages, function ($ele) {
+        $mainImage = str_replace( '/10023/', '/'.$account['imgCode'].'/', $joomInfo['mainImage']);
+        $extraImages = explode('\n', $joomInfo['extraImages']);
+        $extraImages = array_filter($extraImages, function ($ele) {
             return strpos($ele, '-_00_') === false;
         });
         $extraImages = array_map(function ($ele) use ($account) {
-            return str_replace($ele, '/10023/', $account['imgCode']);
+            return str_replace('/10023/', '/'.$account['imgCode'].'/', $ele);
         }, $extraImages);
         $countImages = count($extraImages);
         while ($countImages <= 11) {
@@ -1095,16 +1094,16 @@ class ApiGoodsinfo
      */
     private static function getJoomDangerousKind($goodsInfo)
     {
-        if ($goodsInfo['isLiquid']) {
+        if ($goodsInfo['isLiquid'] == '是') {
             return 'liquid';
         }
-        if ($goodsInfo['isPowder']) {
+        if ($goodsInfo['isPowder'] == '是') {
             return 'powder';
         }
-        if ($goodsInfo['isMagnetism']) {
+        if ($goodsInfo['isMagnetism'] == '是') {
             return 'magnetizedItems';
         }
-        if ($goodsInfo['isCharged']) {
+        if ($goodsInfo['isCharged'] == '是') {
             return 'withBattery';
         }
         return 'noDangerous';
