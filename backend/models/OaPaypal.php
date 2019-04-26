@@ -31,7 +31,7 @@ class OaPaypal extends \yii\db\ActiveRecord
         return [
             [['createDate', 'updateDate'], 'safe'],
             [['paypal'], 'string', 'max' => 255],
-            [['status'], 'integer', 'max' => 255],
+            [['status'], 'integer'],
         ];
     }
 

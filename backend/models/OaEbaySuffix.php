@@ -32,6 +32,7 @@ class OaEbaySuffix extends \yii\db\ActiveRecord
     {
         return [
             [['ebayName', 'ebaySuffix', 'nameCode', 'mainImg', 'ibayTemplate', 'storeCountry', 'high', 'low'], 'string', 'max' => 255],
+            [['high', 'low'], 'integer'],
         ];
     }
 
