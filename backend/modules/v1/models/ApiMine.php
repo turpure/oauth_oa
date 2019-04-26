@@ -344,6 +344,9 @@ class ApiMine
     {
         $basicInfo = $condition['basicInfo'];
         $variations = $condition['detailsInfo'];
+        $variations['proName'] = $basicInfo['proName'];
+        $variations['description'] = $basicInfo['description'];
+        $variations['tags'] = $basicInfo['tags'];
         $images = $condition['images'];
 
         $trans = Yii::$app->db->beginTransaction();
