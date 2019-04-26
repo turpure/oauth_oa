@@ -328,7 +328,29 @@ class ApiMine
     public static function save($condition)
     {
         $basicInfo = $condition['basicInfo'];
-        $variations = $condition['variations'];
+        $variations = $condition['detailsInfo'];
+        $images = $condition['images'];
+
+        $trans = Yii::$app->db->beginTransaction();
+        try {
+            $mine = OaDataMine::findOne(['id' => $basicInfo['id']]);
+            $mine->setAttributes($basicInfo);
+            foreach ($variations as $var) {
+                $detail = OaDataMineDetail::findOne(['id' => $var['id']]);
+                $detail->setAttributes($var);
+                $detail->setAttributes($images);
+                if(!$detail->save()) {
+                    throw new Exception('保存失败！','400003');
+                }
+            }
+            $trans->commit();
+        }
+        catch (Exception $why) {
+            $trans->rollBack();
+            throw new Exception('保存失败！','400003');;
+        }
+        return [];
+
     }
     /**
      * @brief 计算价格
