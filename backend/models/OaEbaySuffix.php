@@ -14,6 +14,8 @@ use Yii;
  * @property string $mainImg
  * @property string $ibayTemplate
  * @property string $storeCountry
+ * @property int $high
+ * @property int $low
  */
 class OaEbaySuffix extends \yii\db\ActiveRecord
 {
@@ -31,7 +33,7 @@ class OaEbaySuffix extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['ebayName', 'ebaySuffix', 'nameCode', 'mainImg', 'ibayTemplate', 'storeCountry', 'high', 'low'], 'string', 'max' => 255],
+            [['ebayName', 'ebaySuffix', 'nameCode', 'mainImg', 'ibayTemplate', 'storeCountry'], 'string', 'max' => 255],
             [['high', 'low'], 'integer'],
         ];
     }

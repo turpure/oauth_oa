@@ -23,6 +23,7 @@ use backend\models\OaEbayGoodsSku;
 use backend\models\OaGoods;
 use backend\models\OaGoodsinfo;
 use backend\models\OaGoodsSku;
+use backend\models\OaPaypal;
 use backend\models\OaWishGoods;
 use backend\models\OaWishGoodsSku;
 use backend\models\OaEbaySuffix;
@@ -755,7 +756,8 @@ class ApiGoodsinfo
             $row['PrivateListing'] = '';
             $row['HitCounter'] = 'NoHitCounter';
             $row['sku'] = $ebayInfo['sku'] . $ebayAccount['nameCode'];
-            $row['PictureURL'] = static::getEbayPicture($goodsInfo, $ebayInfo);
+            $row['PictureURL'] = static::getEbayPicture($goodsInfo, $ebayInfo, $account);
+            print_r($row['PictureURL']);exit;
             $row['Title'] = $ebayInfo['title'];
             $row['SubTitle'] = $ebayInfo['subTitle'];
             $row['IbayCategory'] = '';
@@ -807,7 +809,7 @@ class ApiGoodsinfo
             $row['IbayRelistSold'] = '';
             $row['IbayRelistUnsold'] = '';
             $row['IBayEffectType'] = '1';
-            $row['IbayEffectImg'] = static::getEbayPicture($goodsInfo, $ebayInfo);
+            $row['IbayEffectImg'] = static::getEbayPicture($goodsInfo, $ebayInfo, $account);
             $row['IbayCrossSelling'] = '';
             $row['Variation'] = static::getEbayVariation($goodsInfo['isVar'], $ebayInfo['oaEbayGoodsSku'], $ebayAccount['nameCode']);
             $row['outofstockcontrol'] = '0';
@@ -1133,10 +1135,11 @@ class ApiGoodsinfo
      */
     private static function getEbayPayPal($price, $ebayAccount)
     {
+        $paypal = OaPaypal::findOne($ebayAccount['low']);
         if ($price >= 8) {
-            return $ebayAccount['high'];
+            $paypal = OaPaypal::findOne($ebayAccount['high']);
         }
-        return $ebayAccount['low'];
+        return $paypal ? $paypal['paypal'] : '';
     }
 
     /**
@@ -1145,10 +1148,12 @@ class ApiGoodsinfo
      * @param $ebayInfo
      * @return string
      */
-    private static function getEbayPicture($goodsInfo, $ebayInfo)
+    private static function getEbayPicture($goodsInfo, $ebayInfo, $account)
     {
+        $ebaySuffixCode = OaEbaySuffix::findOne(['ebaySuffix' => $account]);
+        //print_r($account);exit;
         return 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_' .
-            $ebayInfo['mainPage'] . '_.jpg' . '\n' . $ebayInfo['extraPage'];
+            $ebaySuffixCode['mainImg'] . "_.jpg\n" . $ebayInfo['extraPage'];
     }
 
     /**
