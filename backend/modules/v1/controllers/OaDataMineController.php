@@ -7,6 +7,7 @@
 
 namespace backend\modules\v1\controllers;
 use backend\modules\v1\models\ApiMine;
+use Codeception\Template\Api;
 use Yii;
 
 class OaDataMineController extends AdminController
@@ -130,7 +131,8 @@ class OaDataMineController extends AdminController
     {
         $condition = Yii::$app->request->post()['condition'];
         try {
-            return ApiMine::saveAndFinish($condition);
+            ApiMine::save($condition);
+            return ApiMine::finish(['id' => $condition['basicInfo']['id']]);
         }
         catch (\Exception $why) {
             $ret['code'] = $why->getCode();
