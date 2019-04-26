@@ -337,45 +337,51 @@ class ApiMine
      */
     public static function exportToJoom($condition)
     {
-        $info = static::getMineInfo($condition);
-        $basicInfo = $info['basicInfo'];
-        $images = $info['images'];
-        $variations = $info['detailsInfo'];
+        $id = isset($condition['id']) ? $condition['id'] : '';
+        if(!is_array($id)) {
+            $id = [$id];
+        }
         $ret = [];
-        foreach ($variations as $var) {
-            $row = [
-                'Parent Unique ID' => $var['parentId'],
-                '*Product Name' =>  $basicInfo['proName'],
-                'Description' =>  $var['parentId'],
-                '*Tags' => $basicInfo['tags'],
-                '*Unique ID' => $var['childId'],
-                'Color' => $var['color'],
-                'Size' => $var['size'],
-                '*Quantity' => $var['quantity'],
-                '*Price' => $var['price'],
-                '*MSRP' => $var['*msrPrice'],
-                '*Shipping' => $var['shipping'],
-                'Shipping weight' => $var['shippingWeight'],
-                'Shipping Time(enter without " ", just the estimated days )' => $var['shippingTime'],
-                '*Product Main Image URL' => $images['mainImage'],
-                'Variant Main Image URL' => $var['varMainImage'],
-                'Extra Image URL' => $var['extraImage1'],
-                'Extra Image URL 1' => $var['extraImage2'],
-                'Extra Image URL 2' => $var['extraImage3'],
-                'Extra Image URL 3' => $var['extraImage4'],
-                'Extra Image URL 4' => $var['extraImage5'],
-                'Extra Image URL 5' => $var['extraImage6'],
-                'Extra Image URL 6' => $var['extraImage7'],
-                'Extra Image URL 7' => $var['extraImage8'],
-                'Extra Image URL 8' => $var['extraImage9'],
-                'Extra Image URL 9' => $var['extraImage10'],
-                'Extra Image URL 10' => '',
-                'Dangerous Kind' => static::_getDangerousKind($basicInfo)
-            ];
-            $ret[] = $row;
+        foreach ($id as $mid) {
+            $condition = ['id' => $mid];
+            $info = static::getMineInfo($condition);
+            $basicInfo = $info['basicInfo'];
+            $images = $info['images'];
+            $variations = $info['detailsInfo'];
+            foreach ($variations as $var) {
+                $row = [
+                    'Parent Unique ID' => $var['parentId'],
+                    '*Product Name' =>  $basicInfo['proName'],
+                    'Description' =>  $var['parentId'],
+                    '*Tags' => $basicInfo['tags'],
+                    '*Unique ID' => $var['childId'],
+                    'Color' => $var['color'],
+                    'Size' => $var['size'],
+                    '*Quantity' => $var['quantity'],
+                    '*Price' => $var['price'],
+                    '*MSRP' => $var['*msrPrice'],
+                    '*Shipping' => $var['shipping'],
+                    'Shipping weight' => $var['shippingWeight'],
+                    'Shipping Time(enter without " ", just the estimated days )' => $var['shippingTime'],
+                    '*Product Main Image URL' => $images['mainImage'],
+                    'Variant Main Image URL' => $var['varMainImage'],
+                    'Extra Image URL' => $var['extraImage1'],
+                    'Extra Image URL 1' => $var['extraImage2'],
+                    'Extra Image URL 2' => $var['extraImage3'],
+                    'Extra Image URL 3' => $var['extraImage4'],
+                    'Extra Image URL 4' => $var['extraImage5'],
+                    'Extra Image URL 5' => $var['extraImage6'],
+                    'Extra Image URL 6' => $var['extraImage7'],
+                    'Extra Image URL 7' => $var['extraImage8'],
+                    'Extra Image URL 8' => $var['extraImage9'],
+                    'Extra Image URL 9' => $var['extraImage10'],
+                    'Extra Image URL 10' => '',
+                    'Dangerous Kind' => static::_getDangerousKind($basicInfo)
+                ];
+                $ret[] = $row;
+            }
         }
         ExportTools::toExcelOrCsv('test-joom',$ret,'Csv');
-
     }
 
     /**
