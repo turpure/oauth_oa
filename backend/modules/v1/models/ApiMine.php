@@ -68,6 +68,7 @@ class ApiMine
     /**
      * @brief 添加采集任务
      * @param $condition
+     * @return array
      * @throws Exception
      */
     public static function mine($condition)
@@ -106,6 +107,7 @@ class ApiMine
             $trans->rollBack();
             throw  new Exception("保存失败！",'400003');
         }
+        return [];
     }
 
     /**
@@ -573,14 +575,14 @@ class ApiMine
     /**
      * @brief 获取当天最大编码
      * @return string
-     * @throws \yii\db\Exception
+     * @throws Exception
      */
     private static function getMaxCode()
     {
-        $db = Yii::$app->db;
-        $max_code_sql = 'select goodsCode from oa_data_mine 
+        $db = Yii::$app->pro_db;
+        $max_code_sql = 'select goodsCode from oa_dataMine 
                         where datediff(createTime,now())=0 
-                        and id =(select max(id) from oa_data_mine 
+                        and id =(select max(id) from oa_dataMine 
                         where datediff(createTime,now())=0 )';
         $maxCode = $db->createCommand($max_code_sql)->queryOne()['goodsCode'] ?: 'A'.date('Ydm').'0000';
         return $maxCode;
