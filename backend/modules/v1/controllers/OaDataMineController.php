@@ -184,8 +184,8 @@ class OaDataMineController extends AdminController
      */
     public function actionSetPrice()
     {
-        $condition = Yii::$app->request->post()['condition'];
         try {
+            $condition = Yii::$app->request->post()['condition'];
             return ApiMine::setPrice($condition);
         }
         catch (\Exception $why) {

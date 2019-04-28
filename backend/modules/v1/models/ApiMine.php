@@ -156,7 +156,7 @@ class ApiMine
     public static function setPrice($condition)
     {
         $id = isset($condition['id']) ? $condition['id'] : '';
-        $price = isset($condition['price']) ? (int)$condition['price'] : 0;
+        $price = isset($condition['price']) ? (float)$condition['price'] : 0;
         $operator = isset($condition['operator']) ? $condition['operator'] : '=';
 
         if (empty($id)) {
@@ -171,8 +171,8 @@ class ApiMine
                 $mine = OaDataMineDetail::findAll(['mid' => $mid]);
                 foreach ($mine as $row) {
                     $oldPrice = $row->price;
-                    $newPrice = round(static::_calculatePrice($oldPrice, $price, $operator),2);
-                    $row->setAttribute('price', $newPrice);
+                    $newPrice = round(static::_calculatePrice((float)$oldPrice, (float)$price, $operator),2);
+                    $row->setAttribute('price', $newPrice );
                     if(!$row->save()){
                         throw  new \Exception('保存失败！', '400003');
                     }
@@ -490,6 +490,7 @@ class ApiMine
         if ($operator === '/') {
             return $oldPrice / $price;
         }
+        return $price;
 
     }
 

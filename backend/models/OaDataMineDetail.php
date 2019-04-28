@@ -23,7 +23,7 @@ use backend\models\OaDataMine;
  * @property string $shipping
  * @property string $shippingWeight
  * @property string $shippingTime
- * @property string $varmainImage
+ * @property string $varMainImage
  * @property string $extraImage0
  * @property string $extraImage1
  * @property string $extraImage2
@@ -54,9 +54,9 @@ class OaDataMineDetail extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['mid', 'childId'], 'integer'],
+            [['mid'], 'integer'],
             [['proSize', 'price', 'msrPrice', 'shippingWeight'], 'number'],
-            [['parentId', 'proName', 'description', 'tags', 'color', 'quantity', 'shipping', 'varmainImage', 'extraImage0', 'extraImage1', 'extraImage2', 'extraImage3', 'extraImage4', 'extraImage5', 'extraImage6', 'extraImage7', 'extraImage8', 'extraImage9', 'extraImage10', 'mainImage'], 'string', 'max' => 255],
+            [['parentId', 'proName', 'description', 'tags', 'childId','color', 'quantity', 'shipping', 'varMainImage', 'extraImage0', 'extraImage1', 'extraImage2', 'extraImage3', 'extraImage4', 'extraImage5', 'extraImage6', 'extraImage7', 'extraImage8', 'extraImage9', 'extraImage10', 'mainImage'], 'string', 'max' => 255],
             [['shippingTime'], 'string', 'max' => 20],
             [['pySku'], 'string', 'max' => 40],
         ];
@@ -83,7 +83,7 @@ class OaDataMineDetail extends \yii\db\ActiveRecord
             'shipping' => 'Shipping',
             'shippingWeight' => 'Shipping Weight',
             'shippingTime' => 'Shipping Time',
-            'varmainImage' => 'Var Main Image',
+            'varMainImage' => 'Var Main Image',
             'extraImage0' => 'Extra Image0',
             'extraImage1' => 'Extra Image1',
             'extraImage2' => 'Extra Image2',
