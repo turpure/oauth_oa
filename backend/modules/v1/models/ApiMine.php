@@ -210,13 +210,13 @@ class ApiMine
         $trans = Yii::$app->db->beginTransaction();
         try {
             foreach ($id as $mid) {
-                $mine = OaDataMineDetail::findAll(['mid' => $mid]);
-                foreach ($mine as $row) {
-                    $row->setAttribute('cat', $cat);
-                    $row->setAttribute('subCat', $subCat);
-                    if(!$row->save()){
-                        throw  new \Exception('保存失败！', '400003');
-                    }
+                $row = OaDataMine::findOne(['id' => $mid]);
+                if ($row === null) {
+                    throw new Exception('无效的ID', '400002');
+                }
+                $row->setAttributes(['cat' => $cat, 'subCat' => $subCat]);
+                if(!$row->save(false)){
+                    throw  new \Exception('保存失败！', '400003');
                 }
             }
             $trans->commit();
@@ -465,6 +465,7 @@ class ApiMine
         return [];
 
     }
+
     /**
      * @brief 计算价格
      * @param $oldPrice

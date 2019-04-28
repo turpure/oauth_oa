@@ -7,7 +7,7 @@
 
 namespace backend\modules\v1\controllers;
 use backend\modules\v1\models\ApiMine;
-use Codeception\Template\Api;
+use backend\modules\v1\utils\AttributeInfoTools;
 use Yii;
 
 class OaDataMineController extends AdminController
@@ -201,8 +201,8 @@ class OaDataMineController extends AdminController
      */
     public function actionSetCat()
     {
-        $condition = Yii::$app->request->post()['condition'];
         try {
+            $condition = Yii::$app->request->post()['condition'];
             return ApiMine::setCat($condition);
         }
         catch (\Exception $why) {
@@ -210,6 +210,24 @@ class OaDataMineController extends AdminController
             $ret['message'] = $why->getMessage();
             return $ret;
         }
+    }
+
+    /**
+     * @brief 获取主类目
+     * @return array
+     */
+    public function actionCat()
+    {
+        return AttributeInfoTools::getCat();
+    }
+
+    /**
+     * @brief 获取子类目
+     * @return array
+     */
+    public function actionSubCat()
+    {
+        return AttributeInfoTools::getSubCat();
     }
 
 
