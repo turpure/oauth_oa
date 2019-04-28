@@ -237,8 +237,8 @@ class OaDataMineController extends AdminController
      */
     public function actionSendToDevelop()
     {
-        $condition = Yii::$app->request->post()['condition'];
         try {
+            $condition = Yii::$app->request->post()['condition'];
             return ApiMine::sendToDevelop($condition);
         }
         catch (\Exception $why) {

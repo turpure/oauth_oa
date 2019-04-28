@@ -290,6 +290,7 @@ class ApiMine
     /**
      * @brief 转至开发
      * @param $condition
+     * @return array
      * @throws Exception
      * @throws \yii\db\Exception
      */
@@ -298,14 +299,8 @@ class ApiMine
         $id = isset($condition['id']) ? $condition['id'] : '';
         $stockUp = isset($condition['stockUp']) ? $condition['stockUp'] : 0;
         $user = Yii::$app->user->identity->username;
-        $mine = OaDataMine::findOne($id);
-        if($mine === null) {
-           throw new Exception('无效的ID', '400002');
-        }
-        if($mine->devStatus !=='未开发') {
-            throw new Exception('该状态下产品不能转至开发','400006');
-        }
-        static::_sendToDevelop($mine,$user, $stockUp);
+        static::_sendToDevelop($id,$user, $stockUp);
+        return [];
     }
 
     /**
@@ -512,28 +507,38 @@ class ApiMine
      * @throws Exception
      * @throws \yii\db\Exception
      */
-    private static function _sendToDevelop($mine, $developer, $stockUp)
+    private static function _sendToDevelop($id, $developer, $stockUp)
     {
+        $mine = OaDataMine::findOne($id);
+        if($mine === null) {
+            throw new Exception('无效的ID', '400002');
+        }
+        if($mine->devStatus !=='未开发') {
+            throw new Exception('该状态下产品不能转至开发','400006');
+        }
         $row = [
             'cate,'  => $mine['cat'],
-            'devNum,'  => $mine['goodsCode'],
-            'devStatus,'  => '正向认领',
-            'checkStatus,'  => '待审批',
-//            'createDate,'  => date('Y-m-d H:i:s'),
-//            'updateDate,'  => date('Y-m-d H:i:s'),
-            'img,'  => $mine['mainImage'],
-            'subCate,'  => $mine['subCat'],
-            'origin1,'  => 'https://www.joom.com/en/products/'. $mine['proId'],
-            'developer,'  => $developer,
-            'stockUp,'  => $stockUp,
+            'devNum'  => $mine['goodsCode'],
+            'devStatus'  => '正向认领',
+            'checkStatus'  => '待审批',
+            'createDate'  => date('Y-m-d H:i:s'),
+            'updateDate'  => date('Y-m-d H:i:s'),
+            'img'  => $mine['mainImage'],
+            'subCate'  => $mine['subCat'],
+            'origin1'  => 'https://www.joom.com/en/products/'. $mine['proId'],
+            'developer'  => $developer,
+            'stockUp'  => $stockUp === 0 ? '否': '是',
             'mineId'  => $mine['id'],
         ];
 
-        $goods = new OaGoods();
-        $trans =  Yii::$app->db->getTransaction();
+        $goods = OaGoods::findOne(['mineId' => $mine['id']]);
+        if($goods === null) {
+            $goods = new OaGoods();
+        }
+        $trans =  Yii::$app->db->beginTransaction();
         try {
             $goods->setAttributes($row);
-            $mine->setAttribute(['devStatus' => '开发中']);
+            $mine->setAttributes(['devStatus' => '开发中']);
             if(!$goods->save() || !$mine->save()) {
                 throw new Exception('转至失败！', '400007');
             }
