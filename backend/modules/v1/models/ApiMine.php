@@ -68,6 +68,7 @@ class ApiMine
     /**
      * @brief 添加采集任务
      * @param $condition
+     * @return array
      * @throws Exception
      */
     public static function mine($condition)
@@ -106,6 +107,7 @@ class ApiMine
             $trans->rollBack();
             throw  new Exception("保存失败！",'400003');
         }
+        return [];
     }
 
     /**
@@ -398,25 +400,25 @@ class ApiMine
                     '*Tags' => $basicInfo['tags'],
                     '*Unique ID' => $var['childId'],
                     'Color' => $var['color'],
-                    'Size' => $var['size'],
+                    'Size' => $var['proSize'],
                     '*Quantity' => $var['quantity'],
                     '*Price' => $var['price'],
-                    '*MSRP' => $var['*msrPrice'],
+                    '*MSRP' => $var['msrPrice'],
                     '*Shipping' => $var['shipping'],
                     'Shipping weight' => $var['shippingWeight'],
                     'Shipping Time(enter without " ", just the estimated days )' => $var['shippingTime'],
                     '*Product Main Image URL' => $images['mainImage'],
                     'Variant Main Image URL' => $var['varMainImage'],
-                    'Extra Image URL' => $var['extraImage1'],
-                    'Extra Image URL 1' => $var['extraImage2'],
-                    'Extra Image URL 2' => $var['extraImage3'],
-                    'Extra Image URL 3' => $var['extraImage4'],
-                    'Extra Image URL 4' => $var['extraImage5'],
-                    'Extra Image URL 5' => $var['extraImage6'],
-                    'Extra Image URL 6' => $var['extraImage7'],
-                    'Extra Image URL 7' => $var['extraImage8'],
-                    'Extra Image URL 8' => $var['extraImage9'],
-                    'Extra Image URL 9' => $var['extraImage10'],
+                    'Extra Image URL' => $images['extraImage1'],
+                    'Extra Image URL 1' => $images['extraImage2'],
+                    'Extra Image URL 2' => $images['extraImage3'],
+                    'Extra Image URL 3' => $images['extraImage4'],
+                    'Extra Image URL 4' => $images['extraImage5'],
+                    'Extra Image URL 5' => $images['extraImage6'],
+                    'Extra Image URL 6' => $images['extraImage7'],
+                    'Extra Image URL 7' => $images['extraImage8'],
+                    'Extra Image URL 8' => $images['extraImage9'],
+                    'Extra Image URL 9' => $images['extraImage10'],
                     'Extra Image URL 10' => '',
                     'Dangerous Kind' => static::_getDangerousKind($basicInfo)
                 ];
@@ -573,14 +575,14 @@ class ApiMine
     /**
      * @brief 获取当天最大编码
      * @return string
-     * @throws \yii\db\Exception
+     * @throws Exception
      */
     private static function getMaxCode()
     {
-        $db = Yii::$app->db;
-        $max_code_sql = 'select goodsCode from oa_data_mine 
+        $db = Yii::$app->pro_db;
+        $max_code_sql = 'select goodsCode from oa_dataMine 
                         where datediff(createTime,now())=0 
-                        and id =(select max(id) from oa_data_mine 
+                        and id =(select max(id) from oa_dataMine 
                         where datediff(createTime,now())=0 )';
         $maxCode = $db->createCommand($max_code_sql)->queryOne()['goodsCode'] ?: 'A'.date('Ydm').'0000';
         return $maxCode;
