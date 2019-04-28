@@ -439,28 +439,37 @@ class ApiMine
     {
         $basicInfo = $condition['basicInfo'];
         $variations = $condition['detailsInfo'];
-        $variations['proName'] = $basicInfo['proName'];
-        $variations['description'] = $basicInfo['description'];
-        $variations['tags'] = $basicInfo['tags'];
         $images = $condition['images'];
 
         $trans = Yii::$app->db->beginTransaction();
         try {
             $mine = OaDataMine::findOne(['id' => $basicInfo['id']]);
+            if ($mine === null) {
+                throw new Exception('无效的ID', '400002');
+            }
             $mine->setAttributes($basicInfo);
             foreach ($variations as $var) {
                 $detail = OaDataMineDetail::findOne(['id' => $var['id']]);
+                if ($detail === null) {
+                    throw new Exception('无效的ID', '400002');
+                }
+                $var['proName'] = $basicInfo['proName'];
+                $var['description'] = $basicInfo['description'];
+                $var['tags'] = $basicInfo['tags'];
                 $detail->setAttributes($var);
                 $detail->setAttributes($images);
                 if(!$detail->save()) {
                     throw new Exception('保存失败！','400003');
                 }
             }
+            if(!$mine->save()) {
+                throw new Exception('保存失败！','400003');
+            }
             $trans->commit();
         }
         catch (Exception $why) {
             $trans->rollBack();
-            throw new Exception('保存失败！','400003');;
+            throw new Exception('保存失败！','400003');
         }
         return [];
 
