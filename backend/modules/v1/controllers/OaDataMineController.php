@@ -164,10 +164,10 @@ class OaDataMineController extends AdminController
      * @brief 删除条目
      * @return array
      */
-    public function actionDelete()
+    public function actionDeleteMine()
     {
-        $condition = Yii::$app->request->post()['condition'];
         try {
+            $condition = Yii::$app->request->post()['condition'];
             return ApiMine::delete($condition);
         }
         catch (\Exception $why) {
