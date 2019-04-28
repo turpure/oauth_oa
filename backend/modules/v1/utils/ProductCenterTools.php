@@ -626,9 +626,9 @@ class ProductCenterTools
         $images = '';
         for ($i = 0; $i < 20; $i++) {
             if ($i === 0) {
-                $images = $images . $baseUrl . $goodsCode . '-_00_.jpg' . '\n';
+                $images = $images . $baseUrl . $goodsCode . '-_00_.jpg';
             } else {
-                $images = $images . $baseUrl . $goodsCode . '-_' . $i . '_.jpg' . '\n';
+                $images = $images . "\n" .  $baseUrl . $goodsCode . '-_' . $i . '_.jpg';
             }
         }
         return $images;

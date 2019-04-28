@@ -361,29 +361,28 @@ class ApiGoodsinfo
             ->all();
     }
 
-    /**
-     * @brief 保存图片信息明细
+    /** 保存图片信息明细
      * @param $condition
-     * @return array
+     * Date: 2019-04-28 10:02
+     * Author: henry
+     * @return bool
+     * @throws \Exception
      */
     public static function savePictureInfo($condition)
     {
         $pictureInfo = isset($condition['pictureInfo']) ? $condition['pictureInfo'] : [];
-        $msg = 'success';
         foreach ($pictureInfo as $picRow) {
             $id = $picRow['id'];
             $skuEntry = OaGoodsSku::findOne(['id' => $id]);
             if ($skuEntry === null) {
-                $msg = 'failure';
-                break;
+                throw new \Exception("Can't get goods sku info");
             }
             $skuEntry->setAttributes($picRow);
             if (!$skuEntry->save()) {
-                $msg = 'failure';
-                break;
+                throw new \Exception("Save goods sku info failed");
             }
         }
-        return [$msg];
+        return true;
     }
 
     public static function finishPicture($condition)
@@ -529,7 +528,7 @@ class ApiGoodsinfo
      */
     public static function getEbayAccount()
     {
-        $ret = OaEbaySuffix::find()->select('ebaySuffix,ebayName,storeCountry')->orderBy('ebaySuffix DESC')->all();
+        $ret = OaEbaySuffix::find()->select('ebaySuffix,ebayName,storeCountry')->orderBy('ebaySuffix')->all();
         //return ArrayHelper::map($ret, 'ebayName', 'ebaySuffix');
         return $ret;
     }
@@ -725,9 +724,23 @@ class ApiGoodsinfo
             'Specifics28' => '', 'Specifics29' => '', 'Specifics30' => '',
         ];
         $price = self::getEbayPrice($ebayInfo);
+        $keyWords = static::preKeywords($ebayInfo);
+
         foreach ($accounts as $account) {
             $ebayAccount = OaEbaySuffix::find()->where(['ebaySuffix' => $account])->asArray()->one();
             $payPal = self::getEbayPayPal($price, $ebayAccount);
+            $titlePool = [];
+            $title = '';
+            $len = self::EbayTitleLength;
+            while (true) {
+                $title = static::getTitleName($keyWords, $len);
+                --$len;
+                if (empty($title) || !in_array($title, $titlePool, false)) {
+                    $titlePool[] = $title;
+                    break;
+                }
+            }
+
             $row['Site'] = $ebayInfo['site'];
             $row['Selleruserid'] = $ebayAccount['ebayName'];
             $row['ListingType'] = 'FixedPriceItem';
@@ -757,8 +770,7 @@ class ApiGoodsinfo
             $row['HitCounter'] = 'NoHitCounter';
             $row['sku'] = $ebayInfo['sku'] . $ebayAccount['nameCode'];
             $row['PictureURL'] = static::getEbayPicture($goodsInfo, $ebayInfo, $account);
-            print_r($row['PictureURL']);exit;
-            $row['Title'] = $ebayInfo['title'];
+            $row['Title'] = $title;
             $row['SubTitle'] = $ebayInfo['subTitle'];
             $row['IbayCategory'] = '';
             $row['StartPrice'] = '';
@@ -858,7 +870,6 @@ class ApiGoodsinfo
             $row['Specifics29'] = '';
             $row['Specifics30'] = '';
             $ret[] = $row;
-
         }
         return $ret;
     }
