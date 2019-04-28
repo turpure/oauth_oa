@@ -94,8 +94,8 @@ class OaDataMineController extends AdminController
      */
     public function actionFinish()
     {
-        $condition = Yii::$app->request->post()['condition'];
         try {
+            $condition = Yii::$app->request->post()['condition'];
             return ApiMine::finish($condition);
         }
         catch (\Exception $why) {
