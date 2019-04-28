@@ -316,19 +316,25 @@ class OaGoodsinfoController extends AdminController
         return ApiGoodsinfo::savePictureInfo($condition);
     }
 
-    /**
-     * @brief 图片信息标记完善
-     * @return array
+    /** 图片信息标记完善
+     * Date: 2019-04-28 10:00
+     * Author: henry
+     * @return array|bool|string
      */
     public function actionFinishPicture()
     {
-        $request = Yii::$app->request;
-        if (!$request->isPost) {
-            return [];
+        try{
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            ApiGoodsinfo::savePictureInfo($condition);
+            return ApiGoodsinfo::finishPicture($condition);
+        }catch (\Exception $e){
+            return $e->getMessage();
         }
-        $condition = $request->post()['condition'];
-        ApiGoodsinfo::savePictureInfo($condition);
-        return ApiGoodsinfo::finishPicture($condition);
+
     }
 
     public function actionPictureToFtp()

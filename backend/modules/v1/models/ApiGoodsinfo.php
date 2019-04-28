@@ -361,29 +361,28 @@ class ApiGoodsinfo
             ->all();
     }
 
-    /**
-     * @brief 保存图片信息明细
+    /** 保存图片信息明细
      * @param $condition
-     * @return array
+     * Date: 2019-04-28 10:02
+     * Author: henry
+     * @return bool
+     * @throws \Exception
      */
     public static function savePictureInfo($condition)
     {
         $pictureInfo = isset($condition['pictureInfo']) ? $condition['pictureInfo'] : [];
-        $msg = 'success';
         foreach ($pictureInfo as $picRow) {
             $id = $picRow['id'];
             $skuEntry = OaGoodsSku::findOne(['id' => $id]);
             if ($skuEntry === null) {
-                $msg = 'failure';
-                break;
+                throw new \Exception("Can't get goods sku info");
             }
             $skuEntry->setAttributes($picRow);
             if (!$skuEntry->save()) {
-                $msg = 'failure';
-                break;
+                throw new \Exception("Save goods sku info failed");
             }
         }
-        return [$msg];
+        return true;
     }
 
     public static function finishPicture($condition)
