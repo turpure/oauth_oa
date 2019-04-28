@@ -148,8 +148,8 @@ class OaDataMineController extends AdminController
      */
     public function actionDeleteDetail()
     {
-        $condition = Yii::$app->request->post()['condition'];
         try {
+            $condition = Yii::$app->request->post()['condition'];
             return ApiMine::deleteDetail($condition);
         }
         catch (\Exception $why) {
