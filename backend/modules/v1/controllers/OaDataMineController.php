@@ -272,8 +272,8 @@ class OaDataMineController extends AdminController
      */
     public function actionSaveShopSku()
     {
-        $condition = Yii::$app->request->post()['condition'];
         try {
+            $condition = Yii::$app->request->post()['condition'];
             return ApiMine::saveShopSku($condition);
         }
         catch (\Exception $why) {
