@@ -195,7 +195,7 @@ class ProductCenterTools
                 static::_addUserRight($bGoods);// 增加商品权限
                 static::_addSpecialAttribute($bGoods, $goodsInfo); // 增加特殊属性
                 $bGoodsSku = static::_preGoodsSkuInfo($skuInfo, $bGoods);
-                $bGoodsSku = static::_bGoodsSkuImport($bGoodsSku);
+                $bGoodsSku = static::_bGoodsSkuImport($bGoodsSku, $bGoods);
                 $stock = static::_preCurrentStockInfo($bGoodsSku);
                 static::_stockImport($stock);
                 //更新产品信息状态
@@ -234,7 +234,7 @@ class ProductCenterTools
         if (!$bGoods->save()) {
             throw new \Exception('fail to import goods');
         }
-        $goodsInfo['goodsId'] = $bGoods->attributes['NID'];
+        $goodsInfo['goodsId'] = BGoods::findOne(['GoodsCode' => $goodsCode])['NID'];
         return $goodsInfo;
     }
 
@@ -301,8 +301,17 @@ class ProductCenterTools
      * @return mixed
      * @throws \Exception
      */
-    private static function _bGoodsSkuImport($data)
+    private static function _bGoodsSkuImport($data, $bGoods)
     {
+        $skuModel = BGoodsSku::findOne(['SKU' => $bGoods['GoodsCode']]);
+        if($skuModel){
+            $skuModel->SKU = $data ? $data[0]['SKU'] : $skuModel->SKU;
+            $skuModel->GoodsID = $bGoods['goodsId'];
+            $skuModel->LocationID = null;
+            if(!$skuModel->save()){
+                throw new \Exception('fail to update goodsSku');
+            }
+        }
         $ret = [];
         foreach ($data as $sku) {
             $bGoodsSku = BGoodsSku::findOne(['SKU' => $sku['SKU']]);
@@ -310,6 +319,9 @@ class ProductCenterTools
                 $bGoodsSku = new BGoodsSku();
             }
             $bGoodsSku->setAttributes($sku);
+            $bGoodsSku->GoodsID = $bGoods['goodsId'];
+            $bGoodsSku->MaxNum = 0;
+            $bGoodsSku->MinNum = 0;
             if (!$bGoodsSku->save()) {
                 throw new \Exception('fail to import goodsSku');
             }
