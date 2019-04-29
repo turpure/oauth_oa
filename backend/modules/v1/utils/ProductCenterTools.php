@@ -234,7 +234,7 @@ class ProductCenterTools
         if (!$bGoods->save()) {
             throw new \Exception('fail to import goods');
         }
-        $goodsInfo['goodsId'] = $bGoods['NID'];
+        $goodsInfo['goodsId'] = $bGoods->attributes['NID'];
         return $goodsInfo;
     }
 
