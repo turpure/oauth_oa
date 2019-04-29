@@ -24,6 +24,11 @@ class BGoodsSKULinkShop extends \yii\db\ActiveRecord
         return 'B_goodsSKULinkShop';
     }
 
+    public static function primaryKey()
+    {
+        return ['ShopSKU'];
+    }
+
     /**
      * @return \yii\db\Connection the database connection used by this AR class.
      */

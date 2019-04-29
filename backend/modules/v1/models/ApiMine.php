@@ -350,12 +350,18 @@ class ApiMine
                     throw new Exception('关联失败！', '400008');
                 }
                 $detail = OaDataMineDetail::findOne($var['id']);
+                if($detail === null) {
+                    throw  new Exception('无效的ID', '400002');
+                }
                 $detail->setAttributes(['pySku' => $var['pySku']]);
                 if(!$detail->save()) {
                     throw new Exception('关联失败！', '400008');
                 }
             }
             $mine = OaDataMine::findOne(['goodsCode' => $goodsCode]);
+            if($mine === null) {
+                throw  new Exception('无效的ID', '400002');
+            }
             $mine->setAttributes(['pyGoodsCode' => $pyGoodsCode, 'devStatus' => '已关联']);
             if(!$mine->save()) {
                 throw new Exception('关联失败！', '400008');
@@ -364,6 +370,7 @@ class ApiMine
         }
         catch (Exception $why) {
             $trans->rollBack();
+            throw new Exception('关联失败！', '400008');
         }
         return [];
 
