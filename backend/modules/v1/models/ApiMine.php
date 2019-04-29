@@ -346,11 +346,11 @@ class ApiMine
         $trans = Yii::$app->py_db->beginTransaction();
         try{
             foreach ($variations as $var) {
-                $shopSku = BGoodsSKULinkShop::findOne(['SKU' => $var['pySku'], 'ShopSKU' => $var['childId']]);
+                $shopSku = BGoodsSKULinkShop::findOne(['ShopSKU' => $var['childId']]);
                 if($shopSku === null) {
                     $shopSku = new BGoodsSKULinkShop();
                 }
-                $shopSku->setAttributes(['SKU' => $var['pySku'], 'ShopSKU' => $var['childId']]);
+                $shopSku->setAttributes(['SKU' => $var['pySku'] ?: '', 'ShopSKU' => $var['childId']]);
                 if(!$shopSku->save()){
                     throw new Exception('关联失败！', '400008');
                 }
