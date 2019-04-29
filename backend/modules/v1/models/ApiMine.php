@@ -454,11 +454,12 @@ class ApiMine
             if ($mine === null) {
                 throw new Exception('无效的ID', '400002');
             }
+            $basicInfo['devStatus'] = $basicInfo['devStatus']?:'未完善';
             $mine->setAttributes($basicInfo);
             foreach ($variations as $var) {
                 $detail = OaDataMineDetail::findOne(['id' => $var['id']]);
                 if ($detail === null) {
-                    throw new Exception('无效的ID', '400002');
+                    $detail = new OaDataMineDetail();
                 }
                 $var['proName'] = $basicInfo['proName'];
                 $var['description'] = $basicInfo['description'];
