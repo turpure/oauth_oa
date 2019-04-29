@@ -67,6 +67,24 @@ class ApiMine
         $images = OaDataMineDetail::find()->select('extraImage1,extraImage2,extraImage3,extraImage4,
         extraImage5,extraImage6,extraImage7,extraImage8,extraImage9,extraImage10,mainImage')->
         where(['mid' => $id])->asArray()->one();
+        if($mine === null) {
+            $mine = ['id' => '','proId'=> '', 'progress' => '', 'creator' => '', 'createTime' => '', 'updateTime' => '',
+            'detailStatus' => '', 'cat' => '', 'subCat' => '', 'goodsCode' => '', 'devStatus' => '', 'mainImage' => '',
+            'pyGoodsCode' => '', 'infoId' => '', 'spAttribute' => '', 'isLiquid' => 0, 'isPowder' => 0, 'isMagnetism' => 0,
+            'isCharged' => 0, 'proName' => 0, 'description' => 0, 'tags' => ''];
+        }
+        if($images === null) {
+            $images = [
+                'extraImage1'=> '','extraImage2'=> '','extraImage3'=> '','extraImage4'=> '','extraImage5'=> '',
+                'extraImage6'=> '','extraImage7'=> '','extraImage8'=> '','extraImage9'=> '','extraImage10'=> '',
+                'mainImage' =>''];
+        }
+        if(empty($mineDetail)) {
+            $mineDetail = [[
+                'id' => '', 'mid' => '', 'parentId' => '', 'childId' => '', 'color' => '', 'proSize' => '', 'quantity' => '',
+                'price' => '', 'msrPrice' => '', 'shipping' => '', 'shippingWeight' => '', 'shippingTime' => '', 'varMainImage' => '',
+            ]];
+        }
         return['basicInfo' => $mine, 'images' => $images, 'detailsInfo' => $mineDetail];
     }
 
