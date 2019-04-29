@@ -254,8 +254,8 @@ class OaDataMineController extends AdminController
      */
     public function actionBindShopSku()
     {
-        $condition = Yii::$app->request->post()['condition'];
         try {
+            $condition = Yii::$app->request->post()['condition'];
             return ApiMine::bindShopSku($condition);
         }
         catch (\Exception $why) {
