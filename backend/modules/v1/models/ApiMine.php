@@ -221,7 +221,7 @@ class ApiMine
     public static function setCat($condition)
     {
         $id = isset($condition['id']) ? $condition['id'] : '';
-        $cat = isset($condition['cat']) ? (int)$condition['cat'] : '';
+        $cat = isset($condition['cat']) ? $condition['cat'] : '';
         $subCat = isset($condition['subCat']) ? $condition['subCat'] : '';
 
         if (empty($id)) {
