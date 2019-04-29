@@ -30,6 +30,11 @@ class ApiMine
 
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $query = OaDataMine::find();
+        $filterFields = ['proId', 'platForm', 'progress', 'creator', 'detailStatus',
+            'cat', 'subCat', 'goodsCode', 'devStatus', 'pyGoodsCode'];
+        $filterTime = ['createTime', 'updateTime'];
+        $query =  static::_generateFilter($query, $filterFields, $condition);
+        $query =  static::_timeFilter($query, $filterTime, $condition);
         $provider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
@@ -610,4 +615,38 @@ class ApiMine
         $maxCode = $db->createCommand($max_code_sql)->queryOne()['goodsCode'] ?: 'A'.date('Ydm').'0000';
         return $maxCode;
     }
+
+    /**
+     * @brief 生成过滤语句
+     * @param $query
+     * @param $fields
+     * @param $condition
+     * @return mixed
+     */
+    private static function _generateFilter($query, $fields,$condition)
+    {
+        foreach ($fields as $attr) {
+            if (isset($condition[$attr]) && !empty($condition[$attr])) {
+                $query->andFilterWhere(['like', $attr, $condition[$attr]]);
+            }
+        }
+        return $query;
+    }
+
+    /**@brief 时间类型过滤器
+     * @param $query
+     * @param $fields
+     * @param $condition
+     * @return mixed
+     */
+    private static function _timeFilter($query, $fields, $condition)
+    {
+        foreach ($fields as $attr) {
+            if (isset($condition[$attr]) && !empty($condition[$attr])) {
+                $query->andFilterWhere(['between', "date_format($attr,'%Y-%m-%d')", $condition[$attr][0], $condition[$attr][1]]);
+            }
+        }
+        return $query;
+    }
+
 }

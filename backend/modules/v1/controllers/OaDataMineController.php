@@ -31,7 +31,7 @@ class OaDataMineController extends AdminController
      */
     public function actionMineList()
     {
-        $condition = Yii::$app->request->post();
+        $condition = Yii::$app->request->post()['condition'];
         return ApiMine::getMineList($condition);
     }
 
@@ -282,14 +282,6 @@ class OaDataMineController extends AdminController
             return $ret;
         }
     }
-
-
-
-
-
-
-
-
 
 
 }
