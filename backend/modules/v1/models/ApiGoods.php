@@ -31,7 +31,6 @@ class ApiGoods
     public static function getGoodsList($user, $post)
     {
         $pageSize = isset($post['pageSize']) ? $post['pageSize'] : 10;
-        //$page = isset($post['page']) ? $post['page'] : 1;
 
         // 返回当前用户管辖下的用户
         $userList = ApiUser::getUserList($user->username);

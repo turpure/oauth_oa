@@ -5,7 +5,6 @@ namespace backend\modules\v1\controllers;
 use backend\models\AuthAssignment;
 use backend\models\OaGoodsinfo;
 use backend\models\OaGoodsSku;
-use backend\models\User;
 use backend\modules\v1\models\ApiGoods;
 use backend\modules\v1\models\ApiTool;
 use Yii;
@@ -33,7 +32,7 @@ class OaGoodsController extends AdminController
      */
     public function actionList()
     {
-        $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
+        $user = Yii::$app->user->identity->username;
         $post = Yii::$app->request->post('condition');
         return ApiGoods::getGoodsList($user, $post);
     }

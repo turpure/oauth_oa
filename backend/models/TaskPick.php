@@ -47,7 +47,7 @@ class TaskPick extends \yii\db\ActiveRecord
             [['createdTime'], 'safe'],
             [['isDone'], 'integer'],
             [['batchNumber'], 'string', 'max' => 50],
-            [['scanning'], 'string', 'max' => 20],
+            [['scanningMan'], 'string', 'max' => 20],
             [['picker'], 'string', 'max' => 10],
         ];
     }
