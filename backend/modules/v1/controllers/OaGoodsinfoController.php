@@ -480,9 +480,8 @@ class OaGoodsinfoController extends AdminController
         }
         $condition = $request->post()['condition'];
         $infoId = $condition['id'];
-        $data = ApiGoodsinfo::preExportWish($infoId);
-        ExportTools::toExcelOrCsv('test', $data, 'Xls');
-
+        $ret = ApiGoodsinfo::preExportWish($infoId);
+        ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Xls');
     }
 
 
@@ -499,8 +498,8 @@ class OaGoodsinfoController extends AdminController
         $condition = $request->post()['condition'];
         $infoId = $condition['id'];
         $account = $condition['account'];
-        $data = ApiGoodsinfo::preExportJoom($infoId, $account);
-        ExportTools::toExcelOrCsv('csv-test', $data, 'Csv');
+        $ret = ApiGoodsinfo::preExportJoom($infoId, $account);
+        ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
     }
 
     /**
@@ -517,8 +516,8 @@ class OaGoodsinfoController extends AdminController
         $condition = $request->post()['condition'];
         $infoId = $condition['id'];
         $account = $condition['account'];
-        $data = ApiGoodsinfo::preExportEbay($infoId, $account);
-        ExportTools::toExcelOrCsv('ebay', $data, 'Xls');
+        $ret = ApiGoodsinfo::preExportEbay($infoId, $account);
+        ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Xls');
     }
 
     /** 获取需要导出的Joom没账号
