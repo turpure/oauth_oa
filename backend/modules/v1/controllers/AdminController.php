@@ -107,7 +107,7 @@ class AdminController extends ActiveController
             $data['code'] = 400;
             $data['message'] = 'error';
         }
-
+        Yii::$app->response->headers->add('Access-Control-Expose-Headers', 'Content-Disposition');
         return $this->serializeData($data);
     }
 
