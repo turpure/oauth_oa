@@ -4,11 +4,13 @@
  * @author: turpure
  * @since: 2018-08-30 14:30
  */
+
 namespace console\controllers;
 
 use yii\console\Controller;
 
 use Yii;
+
 class SchedulerController extends Controller
 {
     /**
@@ -21,7 +23,7 @@ class SchedulerController extends Controller
         $trans = $con->beginTransaction();
         try {
             $ret = $con->createCommand($clearSql)->execute();
-            if(!$ret) {
+            if (!$ret) {
                 throw new \Exception('fail to truncate table');
             }
             $dateFlags = [0, 1];
@@ -30,18 +32,17 @@ class SchedulerController extends Controller
                 foreach ($dateRanges as $range) {
                     $updateSql = "exec meta_saleProfit $flag, $range";
                     $re = $con->createCommand($updateSql)->execute();
-                    if(!$re) {
+                    if (!$re) {
                         throw new \Exception('fail to update data');
                     }
                 }
             }
-            print date('Y-m-d H:i:s')."INFO:success to get sale-report data\n";
+            print date('Y-m-d H:i:s') . "INFO:success to get sale-report data\n";
             $trans->commit();
-        }
-        catch (\Exception $why) {
-            print date('Y-m-d H:i:s')."INFO:fail to get sale-report data cause of $why \n";
+        } catch (\Exception $why) {
+            print date('Y-m-d H:i:s') . "INFO:fail to get sale-report data cause of $why \n";
             $trans->rollback();
-    }
+        }
     }
 
 
@@ -56,10 +57,9 @@ class SchedulerController extends Controller
         @PageNum='100',@PageIndex='1',@Purchaser='',@LocationName='',@Used=''";
         try {
             $con->createCommand($sql)->execute();
-            print date('Y-m-d H:i:s')."INFO:success to get sku out of stock!\n";
-        }
-        catch (\Exception $why) {
-            print date('Y-m-d H:i:s')."INFO:fail to get sku out of stock cause of $why \n";
+            print date('Y-m-d H:i:s') . "INFO:success to get sku out of stock!\n";
+        } catch (\Exception $why) {
+            print date('Y-m-d H:i:s') . "INFO:fail to get sku out of stock cause of $why \n";
         }
     }
 
@@ -72,10 +72,9 @@ class SchedulerController extends Controller
         $sql = "EXEC oauth_target_procedure";
         try {
             $con->createCommand($sql)->execute();
-            print date('Y-m-d H:i:s')." INFO:success to get data of target completion!\n";
-        }
-        catch (\Exception $why) {
-            print date('Y-m-d H:i:s')." INFO:fail to get data of target completion cause of $why \n";
+            print date('Y-m-d H:i:s') . " INFO:success to get data of target completion!\n";
+        } catch (\Exception $why) {
+            print date('Y-m-d H:i:s') . " INFO:fail to get data of target completion cause of $why \n";
         }
     }
 
@@ -90,15 +89,15 @@ class SchedulerController extends Controller
         try {
             $list = Yii::$app->py_db->createCommand($sql)->queryAll();
 
-             Yii::$app->db->createCommand()->batchInsert(
+            Yii::$app->db->createCommand()->batchInsert(
                 'cache_sales_change',
-                    ['suffix','goodsCode','goodsName','lastNum','lastAmt','num','amt','numDiff','amtDiff','createDate'],
-                    $list
-                )->execute();
+                ['suffix', 'goodsCode', 'goodsName', 'lastNum', 'lastAmt', 'num', 'amt', 'numDiff', 'amtDiff', 'createDate'],
+                $list
+            )->execute();
 
-            print date('Y-m-d H:i:s')." INFO:success to update data of sales change!\n";
+            print date('Y-m-d H:i:s') . " INFO:success to update data of sales change!\n";
         } catch (\Exception $why) {
-            print date('Y-m-d H:i:s')." INFO:fail to update data of sales change cause of $why \n";
+            print date('Y-m-d H:i:s') . " INFO:fail to update data of sales change cause of $why \n";
         }
     }
 
@@ -110,8 +109,8 @@ class SchedulerController extends Controller
     public function actionPros()
     {
         //获取昨天时间
-        $beginDate = date('Y-m-d',strtotime('-30 days'));
-        $endDate = date('Y-m-d',strtotime('-1 days'));
+        $beginDate = date('Y-m-d', strtotime('-30 days'));
+        $endDate = date('Y-m-d', strtotime('-1 days'));
         $sql = "EXEC oauth_siteGoods @DateFlag=:dateFlag,@BeginDate=:beginDate,@EndDate=:endDate";
         $params = [
             ':dateFlag' => 1,//发货时间
@@ -123,13 +122,12 @@ class SchedulerController extends Controller
             //清空数据表并插入新数据
             Yii::$app->db->createCommand("TRUNCATE TABLE site_goods")->execute();
             Yii::$app->db->createCommand()->batchInsert('site_goods',
-                ['profit', 'salesNum', 'platform','goodsCode','goodsName','endTime','img','developer','linkUrl','cate','subCate'],
+                ['profit', 'salesNum', 'platform', 'goodsCode', 'goodsName', 'endTime', 'img', 'developer', 'linkUrl', 'cate', 'subCate'],
                 $list)->execute();
 
-            print date('Y-m-d H:i:s')." INFO:success to update data of today pros!\n";
-        }
-        catch (\Exception $why) {
-            print date('Y-m-d H:i:s')." INFO:fail to update data of today pros cause of $why \n";
+            print date('Y-m-d H:i:s') . " INFO:success to update data of today pros!\n";
+        } catch (\Exception $why) {
+            print date('Y-m-d H:i:s') . " INFO:fail to update data of today pros cause of $why \n";
         }
     }
 
@@ -141,10 +139,10 @@ class SchedulerController extends Controller
     public function actionProfit()
     {
         //获取上月时间
-        $lastBeginDate = date('Y-m-01',strtotime('-1 month'));
-        $lastEndDate = date('Y-m-t',strtotime('-1 month'));
+        $lastBeginDate = date('Y-m-01', strtotime('-1 month'));
+        $lastEndDate = date('Y-m-t', strtotime('-1 month'));
         $beginDate = date('Y-m-01');
-        $endDate = date('Y-m-d',strtotime('-1 day'));
+        $endDate = date('Y-m-d', strtotime('-1 day'));
         try {
             //获取开发人员毛利
             $devSql = "EXEC oauth_siteDeveloperProfit";
@@ -154,13 +152,12 @@ class SchedulerController extends Controller
             Yii::$app->db->createCommand("CALL oauth_site_profit;")->execute();
             //插入开发毛利数据
             Yii::$app->db->createCommand()->batchInsert('site_profit',
-                ['username','depart','role','lastProfit','profit', 'rate','dateRate','updateTime'],
+                ['username', 'depart', 'role', 'lastProfit', 'profit', 'rate', 'dateRate', 'updateTime'],
                 $devList)->execute();
 
-            print date('Y-m-d H:i:s')." INFO:success to update data of profit changes!\n";
-        }
-        catch (\Exception $why) {
-            print date('Y-m-d H:i:s')." INFO:fail to update data of profit changes cause of $why \n";
+            print date('Y-m-d H:i:s') . " INFO:success to update data of profit changes!\n";
+        } catch (\Exception $why) {
+            print date('Y-m-d H:i:s') . " INFO:fail to update data of profit changes cause of $why \n";
         }
 
     }
@@ -183,13 +180,12 @@ class SchedulerController extends Controller
 
             //插入开发销售数据
             Yii::$app->db->createCommand()->batchInsert('site_sales_amt',
-                ['username','depart','role','lastAmt','amt', 'rate','dateRate','updateTime'],
+                ['username', 'depart', 'role', 'lastAmt', 'amt', 'rate', 'dateRate', 'updateTime'],
                 $devList)->execute();
 
-            print date('Y-m-d H:i:s')." INFO:success to update data of amt changes!\n";
-        }
-        catch (\Exception $why) {
-            print date('Y-m-d H:i:s')." INFO:fail to update data of amt changes cause of $why \n";
+            print date('Y-m-d H:i:s') . " INFO:success to update data of amt changes!\n";
+        } catch (\Exception $why) {
+            print date('Y-m-d H:i:s') . " INFO:fail to update data of amt changes cause of $why \n";
         }
 
     }
@@ -201,28 +197,27 @@ class SchedulerController extends Controller
     public function actionWeightDiff()
     {
         $beginDate = '2018-10-01';
-        $endDate = date('Y-m-d',strtotime('-1 day'));
+        $endDate = date('Y-m-d', strtotime('-1 day'));
         //print_r($endDate);exit;
         try {
             //获取开发人员毛利
             $sql = "EXEC oauth_weightDiff :beginDate,:endDate";
-            $list = Yii::$app->py_db->createCommand($sql)->bindValues([':beginDate' => $beginDate,':endDate' => $endDate])->queryAll();
+            $list = Yii::$app->py_db->createCommand($sql)->bindValues([':beginDate' => $beginDate, ':endDate' => $endDate])->queryAll();
             $step = 500;
-            $count = ceil(count($list)/500);
+            $count = ceil(count($list) / 500);
             //清空数据表
             Yii::$app->db->createCommand('TRUNCATE TABLE cache_weightDiff')->execute();
             //插入数据
-            if($list){
-                for ($i = 0; $i<= $count; $i++){
+            if ($list) {
+                for ($i = 0; $i <= $count; $i++) {
                     Yii::$app->db->createCommand()->batchInsert('cache_weightDiff',
-                        ['trendId','suffix','orderCloseDate','orderWeight','skuWeight', 'weightDiff', 'profit'],
-                        array_slice($list,$i*$step,$step))->execute();
+                        ['trendId', 'suffix', 'orderCloseDate', 'orderWeight', 'skuWeight', 'weightDiff', 'profit'],
+                        array_slice($list, $i * $step, $step))->execute();
                 }
             }
-            print date('Y-m-d H:i:s')." INFO:success to update data of weight diff!\n";
-        }
-        catch (\Exception $why) {
-            print date('Y-m-d H:i:s')." INFO:fail to update data of weight diff cause of $why \n";
+            print date('Y-m-d H:i:s') . " INFO:success to update data of weight diff!\n";
+        } catch (\Exception $why) {
+            print date('Y-m-d H:i:s') . " INFO:fail to update data of weight diff cause of $why \n";
         }
 
     }
@@ -230,28 +225,170 @@ class SchedulerController extends Controller
     public function actionPriceTrend()
     {
         $beginDate = '2018-10-01';
-        $endDate = date('Y-m-d',strtotime('-1 day'));
+        $endDate = date('Y-m-d', strtotime('-1 day'));
         //print_r($endDate);exit;
         try {
             //获取开发人员毛利
             $sql = "EXEC oauth_weightDiff :beginDate,:endDate";
-            $list = Yii::$app->py_db->createCommand($sql)->bindValues([':beginDate' => $beginDate,':endDate' => $endDate])->queryAll();
+            $list = Yii::$app->py_db->createCommand($sql)->bindValues([':beginDate' => $beginDate, ':endDate' => $endDate])->queryAll();
             $step = 500;
-            $count = ceil(count($list)/500);
+            $count = ceil(count($list) / 500);
             //清空数据表
             Yii::$app->db->createCommand('TRUNCATE TABLE cache_weightDiff')->execute();
             //插入数据
-            if($list){
-                for ($i = 0; $i<= $count; $i++){
+            if ($list) {
+                for ($i = 0; $i <= $count; $i++) {
                     Yii::$app->db->createCommand()->batchInsert('cache_weightDiff',
-                        ['trendId','suffix','orderCloseDate','orderWeight','skuWeight', 'weightDiff', 'profit'],
-                        array_slice($list,$i*$step,$step))->execute();
+                        ['trendId', 'suffix', 'orderCloseDate', 'orderWeight', 'skuWeight', 'weightDiff', 'profit'],
+                        array_slice($list, $i * $step, $step))->execute();
                 }
             }
-            print date('Y-m-d H:i:s')." INFO:success to update data of weight diff!\n";
+            print date('Y-m-d H:i:s') . " INFO:success to update data of weight diff!\n";
+        } catch (\Exception $why) {
+            print date('Y-m-d H:i:s') . " INFO:fail to update data of weight diff cause of $why \n";
         }
-        catch (\Exception $why) {
-            print date('Y-m-d H:i:s')." INFO:fail to update data of weight diff cause of $why \n";
+
+    }
+
+
+    /**
+     * 备货产品表现
+     * 每月第一天（1号）更新开发员在本月的可用备货数量
+     * 访问方法: php yii site/stock
+     * @return mixed
+     */
+    public function actionStock()
+    {
+        $end = date('Y-m-d');
+        $startDate = date('Y-m-d', strtotime('-75 days', strtotime($end)));
+        $endDate = date('Y-m-d', strtotime('-15 days', strtotime($end)));
+        //获取订单数详情
+        $orderList = Yii::$app->py_db->createCommand("EXEC oauth_stockGoodsNumber '" . $startDate . "','" . $endDate . "','';")->queryAll();
+
+        //获取开发产品列表
+        $goodsSql = "SELECT developer,goodsCode,stockUp FROM proCenter.oa_goodsinfo gs
+                      WHERE devDatetime BETWEEN '{$startDate}' AND '{$endDate}' AND ifnull(mid,0)=0;";
+        $goodsList = Yii::$app->db->createCommand($goodsSql)->queryAll();
+
+        //print_r($goodsList);exit;
+        //获取开发员备货产品书，不备货产品书，总产品数
+        $list = Yii::$app->db->createCommand("CALL proCenter.oa_stockGoodsNum('{$startDate}','{$endDate}');")->queryAll();
+
+        //统计出单数，爆旺款数量
+
+        $developer = [];
+
+        foreach ($goodsList as $k => $v) {
+            $orderNum = 0;
+            foreach ($orderList as $value){
+                if($v['goodsCode'] == $value['goodsCode']){
+                    $orderNum += $value['l_qty'];//出单数
+                    $v['goodsStatus'] = $value['goodsStatus'];
+                }else{
+                    $v['goodsStatus'] = '';
+                }
+            }
+            $v['orderNum'] = $orderNum;
+            $developer[$k] = $v;
+        }
+//print_r($developer);exit;
+        $orderNumlist = [];
+       foreach($list as $k => $value){
+            $stockOrderNum = $nonStockOrderNum = $hot = $exu = 0;
+            foreach ($developer as $v){
+                if($value['username'] == $v['developer']){
+                    $nonStockOrderNum = $v['stockUp'] == '否' ? $nonStockOrderNum + 1 : $stockOrderNum;
+                    $stockOrderNum = $v['stockUp'] == '是' ? $stockOrderNum + 1 : $stockOrderNum;
+                    $hot = $v['goodsStatus'] == '爆款' ? $hot + 1 : $hot;//TODO 只取备货或不备货的爆款
+                    $exu = $v['goodsStatus'] == '旺款' ? $exu + 1 : $exu;//TODO 只取备货或不备货的旺款
+                }
+            }
+           $value['nonStockOrderNum'] = $nonStockOrderNum;
+           $value['stockOrderNum'] = $stockOrderNum;
+           $value['hot'] = $hot;
+           $value['exu'] = $exu;
+            $orderNumlist[$k] = $value;
+       }
+
+
+
+        print_r($orderNumlist);exit;
+        $res = Yii::$app->db->createCommand()->batchInsert(
+            'oa_stock_goods_number',
+            ['developer', 'Number', 'orderNum', 'hotStyleNum', 'exuStyleNum', 'rate1', 'rate2', 'stockNumThisMonth', 'stockNumLastMonth', 'createDate', 'isStock'],
+            $list
+        )->execute();
+
+
+
+
+
+
+        if (substr($end, 8, 2) == '01') {
+            //获取数据库数据，查看是否已存在数据
+            $checkSql = "SELECT * FROM oa_stock_goods_number 
+                    WHERE CONVERT(VARCHAR(10),createDate,121)=CONVERT(VARCHAR(10),CAST((CONVERT(VARCHAR(7),'{$end}',121)+'-01') AS DATETIME),121)
+                    AND isStock='stock'";
+            $check = Yii::$app->db->createCommand($checkSql)->queryAll();
+            if ($check) {
+                echo date('Y-m-d H:i:s') . " The quantity of stock was updated this month. Do not repeat the operation!\n";
+            }
+        }
+
+
+
+        if ($res) {
+            echo date('Y-m-d H:i:s') . " The stock data update successful\n";
+        } else {
+            echo date('Y-m-d H:i:s') . " The stock data update failed！\n";
+        }
+
+
+    }
+
+
+    /**
+     * 不备货产品表现
+     * 每月第一天（1号）更新开发员在本月的可用备货数量
+     * 访问方法: php yii site/nonstock
+     * @return mixed
+     */
+    public function actionNonstock()
+    {
+        $end = date('Y-m-d');
+        //$end = date('2018-07-01');
+        if (substr($end, 8, 2) !== '01') {
+            echo date('Y-m-d H:i:s') . " The data can not be updated at this time. Please contact the administrator!";
+            exit();
+        }
+        $start = date('Y-m-d', strtotime('-75 days', strtotime($end)));
+
+        //获取数据库数据，查看是否已存在数据
+        $checkSql = "SELECT * FROM oa_stock_goods_number 
+                    WHERE CONVERT(VARCHAR(10),createDate,121)=CONVERT(VARCHAR(10),CAST((CONVERT(VARCHAR(7),'{$end}',121)+'-01') AS DATETIME),121)
+                    AND isStock='nonstock'";
+        $check = Yii::$app->db->createCommand($checkSql)->queryAll();
+        if ($check) {
+            echo date('Y-m-d H:i:s') . " The quantity of stock was updated this month. Do not repeat the operation!\n";
+        } else {
+            $end_time = date('Y-m-d', strtotime('-15 days', strtotime($end)));
+            $sql = "EXEC P_oa_Non_StockPerformance '" . $start . "','" . $end_time . "','',1";
+            $listRes = Yii::$app->db->createCommand($sql)->queryAll();
+            foreach ($listRes as $v) {
+                $item = $v;
+                $item['createDate'] = $end;
+                $list[] = $item;
+            }
+            $res = Yii::$app->db->createCommand()->batchInsert(
+                'oa_stock_goods_number',
+                ['developer', 'Number', 'orderNum', 'hotStyleNum', 'exuStyleNum', 'rate1', 'rate2', 'stockNumThisMonth', 'stockNumLastMonth', 'createDate', 'isStock'],
+                $list
+            )->execute();
+            if ($res) {
+                echo date('Y-m-d H:i:s') . " The stock data update successful!\n";
+            } else {
+                echo date('Y-m-d H:i:s') . " The stock data update failed!\n";
+            }
         }
 
     }
