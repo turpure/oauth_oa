@@ -73,8 +73,8 @@ class ApiGoodsinfo
             if (isset($condition['stockUp'])) $query->andFilterWhere(['stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'developer', $condition['developer']]);
         } elseif ($type === 'picture-info') {
-            $query = (new Query())->select("gi.*,g.vendor1,g.vendor2,g.vendor3,
-             g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer")
+            $query = (new Query())->select('gi.*,g.vendor1,g.vendor2,g.vendor3,
+             g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer')
                 ->from('proCenter.oa_goodsinfo gi')
                 ->join('LEFT JOIN', 'proCenter.oa_goods g', 'g.nid=gi.goodsId');
             if (isset($condition['picStatus'])) {
@@ -85,8 +85,8 @@ class ApiGoodsinfo
             if (isset($condition['stockUp'])) $query->andFilterWhere(['gi.stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'gi.developer', $condition['developer']]);
         } elseif ($type === 'plat-info') {
-            $query = (new Query())->select("gi.*,g.vendor1,g.vendor2,g.vendor3,
-             g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer")
+            $query = (new Query())->select('gi.*,g.vendor1,g.vendor2,g.vendor3,
+             g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer')
                 ->from('proCenter.oa_goodsinfo gi')
                 ->join('LEFT JOIN', 'proCenter.oa_goods g', 'g.nid=gi.goodsId');
             //$query->joinWith('oaGoods')->asArray();
@@ -136,8 +136,8 @@ class ApiGoodsinfo
         if (isset($condition['stockDays'])) $query->andFilterWhere(['stockDays' => $condition['stockDays']]);
         if (isset($condition['devDatetime']) && !empty($condition['devDatetime'])) $query->andFilterWhere(['between', "date_format(devDatetime,'%Y-%m-%d')", $condition['devDatetime'][0], $condition['devDatetime'][1]]);
         if (isset($condition['updateTime']) && !empty($condition['updateTime'])) $query->andFilterWhere(['between', "date_format(updateTime,'%Y-%m-%d')", $condition['updateTime'][0], $condition['updateTime'][1]]);
-        if (isset($condition['mid']) && $condition['mid'] == '是') $query->andFilterWhere(['>', "mid", 1]);
-        if (isset($condition['mid']) && $condition['mid'] == '否') $query->andFilterWhere(["IFNULL(mid,'')" => '']);
+        if (isset($condition['mid']) && $condition['mid'] === '是') $query->andFilterWhere(['>', "mid", 1]);
+        if (isset($condition['mid']) && $condition['mid'] === '否') $query->andFilterWhere(["IFNULL(mid,'')" => '']);
 
         $query->orderBy('achieveStatus DESC,id DESC');
 
@@ -567,7 +567,8 @@ class ApiGoodsinfo
             'landing_page_url' => '', 'tags' => '', 'description' => '', 'brand' => '', 'upc' => '', 'local_price' => '',
             'local_shippingfee' => '', 'local_currency' => ''
         ];
-        $ret = [];
+        $ret = ['name' => 'wish-'.$goodsInfo['goodsCode']];
+        $out = [];
         foreach ($wishAccounts as $account) {
             $titlePool = [];
             $title = '';
@@ -600,8 +601,9 @@ class ApiGoodsinfo
             $row['local_price'] = $variantInfo['local_price'];
             $row['local_shippingfee'] = $variantInfo['local_shippingfee'];
             $row['local_currency'] = $variantInfo['local_currency'];
-            $ret[] = $row;
+            $out[] = $row;
         }
+        $ret['data'] = $out;
         return $ret;
     }
 
@@ -629,7 +631,8 @@ class ApiGoodsinfo
             'Extra Image URL 7' => '', 'Extra Image URL 8' => '', 'Extra Image URL 9' => '', 'Dangerous Kind' => '',
             'Declared Value' => '',
         ];
-        $ret = [];
+        $ret = ['name' => 'joom-' . $goodsInfo['goodsCode']];
+        $out = [];
         $keyWords = static::preKeywords($joomInfo);
         $priceInfo = static::getJoomPriceInfo($joomSku);
         foreach ($accounts as $account) {
@@ -664,9 +667,10 @@ class ApiGoodsinfo
                 $row['Extra Image URL 9'] = $imageInfo['extraImages'][9];
                 $row['Dangerous Kind'] = static::getJoomDangerousKind($goodsInfo);
                 $row['Declared Value'] = $goods['DeclaredValue'];
-                $ret[] = $row;
+                $out[] = $row;
             }
         }
+        $ret['data'] = $out;
         return $ret;
     }
 
@@ -684,7 +688,8 @@ class ApiGoodsinfo
         if ($ebayInfo === null || $goodsInfo === null) {
             return ['code' => '400001', 'message' => '无效的ID'];
         }
-        $ret = [];
+        $ret = ['name' => 'ebay-'.$goodsInfo['goodsCode']];
+        $out = [];
         $row = [
             'Site' => '', 'Selleruserid' => '', 'ListingType' => '', 'Category1' => '', 'Category2' => '',
             'Condition' => '', 'ConditionBewrite' => '', 'Quantity' => '', 'LotSize' => '', 'Duration' => '',
@@ -869,8 +874,9 @@ class ApiGoodsinfo
             $row['Specifics28'] = '';
             $row['Specifics29'] = '';
             $row['Specifics30'] = '';
-            $ret[] = $row;
+            $out[] = $row;
         }
+        $ret['data'] = $out;
         return $ret;
     }
 

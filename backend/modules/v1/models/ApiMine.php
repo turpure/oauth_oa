@@ -13,6 +13,7 @@ use backend\models\OaDataMineDetail;
 use backend\models\OaGoods;
 use backend\models\ShopElf\BGoodsSKULinkShop;
 use backend\modules\v1\utils\ExportTools;
+use backend\modules\v1\utils\Helper;
 use Exception;
 use Yii;
 
@@ -30,11 +31,11 @@ class ApiMine
 
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $query = OaDataMine::find();
-        $filterFields = ['proId', 'platForm', 'progress', 'creator', 'detailStatus',
-            'cat', 'subCat', 'goodsCode', 'devStatus', 'pyGoodsCode'];
+        $filterFields = ['like' => ['proId', 'platForm', 'progress', 'creator', 'detailStatus',
+            'cat', 'subCat', 'goodsCode', 'devStatus', 'pyGoodsCode']];
         $filterTime = ['createTime', 'updateTime'];
-        $query =  static::_generateFilter($query, $filterFields, $condition);
-        $query =  static::_timeFilter($query, $filterTime, $condition);
+        $query =  Helper::generateFilter($query, $filterFields, $condition);
+        $query =  Helper::timeFilter($query, $filterTime, $condition);
         $provider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
@@ -67,6 +68,24 @@ class ApiMine
         $images = OaDataMineDetail::find()->select('extraImage1,extraImage2,extraImage3,extraImage4,
         extraImage5,extraImage6,extraImage7,extraImage8,extraImage9,extraImage10,mainImage')->
         where(['mid' => $id])->asArray()->one();
+        if($mine === null) {
+            $mine = ['id' => '','proId'=> '', 'progress' => '', 'creator' => '', 'createTime' => '', 'updateTime' => '',
+            'detailStatus' => '', 'cat' => '', 'subCat' => '', 'goodsCode' => '', 'devStatus' => '', 'mainImage' => '',
+            'pyGoodsCode' => '', 'infoId' => '', 'spAttribute' => '', 'isLiquid' => 0, 'isPowder' => 0, 'isMagnetism' => 0,
+            'isCharged' => 0, 'proName' => 0, 'description' => 0, 'tags' => ''];
+        }
+        if($images === null) {
+            $images = [
+                'extraImage1'=> '','extraImage2'=> '','extraImage3'=> '','extraImage4'=> '','extraImage5'=> '',
+                'extraImage6'=> '','extraImage7'=> '','extraImage8'=> '','extraImage9'=> '','extraImage10'=> '',
+                'mainImage' =>''];
+        }
+        if(empty($mineDetail)) {
+            $mineDetail = [[
+                'id' => '', 'mid' => '', 'parentId' => '', 'childId' => '', 'color' => '', 'proSize' => '', 'quantity' => '',
+                'price' => '', 'msrPrice' => '', 'shipping' => '', 'shippingWeight' => '', 'shippingTime' => '', 'varMainImage' => '',
+            ]];
+        }
         return['basicInfo' => $mine, 'images' => $images, 'detailsInfo' => $mineDetail];
     }
 
@@ -203,7 +222,7 @@ class ApiMine
     public static function setCat($condition)
     {
         $id = isset($condition['id']) ? $condition['id'] : '';
-        $cat = isset($condition['cat']) ? (int)$condition['cat'] : '';
+        $cat = isset($condition['cat']) ? $condition['cat'] : '';
         $subCat = isset($condition['subCat']) ? $condition['subCat'] : '';
 
         if (empty($id)) {
@@ -346,11 +365,11 @@ class ApiMine
         $trans = Yii::$app->py_db->beginTransaction();
         try{
             foreach ($variations as $var) {
-                $shopSku = BGoodsSKULinkShop::findOne(['SKU' => $var['pySku'], 'ShopSKU' => $var['childId']]);
+                $shopSku = BGoodsSKULinkShop::findOne(['ShopSKU' => $var['childId']]);
                 if($shopSku === null) {
                     $shopSku = new BGoodsSKULinkShop();
                 }
-                $shopSku->setAttributes(['SKU' => $var['pySku'], 'ShopSKU' => $var['childId']]);
+                $shopSku->setAttributes(['SKU' => $var['pySku'] ?: '', 'ShopSKU' => $var['childId']]);
                 if(!$shopSku->save()){
                     throw new Exception('关联失败！', '400008');
                 }
@@ -615,39 +634,6 @@ class ApiMine
                         where datediff(createTime,now())=0 )';
         $maxCode = $db->createCommand($max_code_sql)->queryOne()['goodsCode'] ?: 'A'.date('Ydm').'0000';
         return $maxCode;
-    }
-
-    /**
-     * @brief 生成过滤语句
-     * @param $query
-     * @param $fields
-     * @param $condition
-     * @return mixed
-     */
-    private static function _generateFilter($query, $fields,$condition)
-    {
-        foreach ($fields as $attr) {
-            if (isset($condition[$attr]) && !empty($condition[$attr])) {
-                $query->andFilterWhere(['like', $attr, $condition[$attr]]);
-            }
-        }
-        return $query;
-    }
-
-    /**@brief 时间类型过滤器
-     * @param $query
-     * @param $fields
-     * @param $condition
-     * @return mixed
-     */
-    private static function _timeFilter($query, $fields, $condition)
-    {
-        foreach ($fields as $attr) {
-            if (isset($condition[$attr]) && !empty($condition[$attr])) {
-                $query->andFilterWhere(['between', "date_format($attr,'%Y-%m-%d')", $condition[$attr][0], $condition[$attr][1]]);
-            }
-        }
-        return $query;
     }
 
 }
