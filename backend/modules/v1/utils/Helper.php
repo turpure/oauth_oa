@@ -75,7 +75,7 @@ class Helper
 
     /**
      * @brief 匹配字符串中URL地址并替换成a标签
-     * @param $array
+     * @param $string
      * @return array
      */
     public static function stringFilter($string)
@@ -88,6 +88,39 @@ class Helper
             }
         }
         return $string;
+    }
+
+    /**
+     * @brief 生成过滤语句
+     * @param $query
+     * @param $fields
+     * @param $condition
+     * @return mixed
+     */
+    public static function generateFilter($query, $fields,$condition)
+    {
+        foreach ($fields as $attr) {
+            if (isset($condition[$attr]) && !empty($condition[$attr])) {
+                $query->andFilterWhere(['like', $attr, $condition[$attr]]);
+            }
+        }
+        return $query;
+    }
+
+    /**@brief 时间类型过滤器
+     * @param $query
+     * @param $fields
+     * @param $condition
+     * @return mixed
+     */
+    public static function timeFilter($query, $fields, $condition)
+    {
+        foreach ($fields as $attr) {
+            if (isset($condition[$attr]) && !empty($condition[$attr])) {
+                $query->andFilterWhere(['between', "date_format($attr,'%Y-%m-%d')", $condition[$attr][0], $condition[$attr][1]]);
+            }
+        }
+        return $query;
     }
 
 }
