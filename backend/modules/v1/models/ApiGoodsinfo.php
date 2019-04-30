@@ -73,8 +73,8 @@ class ApiGoodsinfo
             if (isset($condition['stockUp'])) $query->andFilterWhere(['stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'developer', $condition['developer']]);
         } elseif ($type === 'picture-info') {
-            $query = (new Query())->select("gi.*,g.vendor1,g.vendor2,g.vendor3,
-             g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer")
+            $query = (new Query())->select('gi.*,g.vendor1,g.vendor2,g.vendor3,
+             g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer')
                 ->from('proCenter.oa_goodsinfo gi')
                 ->join('LEFT JOIN', 'proCenter.oa_goods g', 'g.nid=gi.goodsId');
             if (isset($condition['picStatus'])) {
@@ -85,8 +85,8 @@ class ApiGoodsinfo
             if (isset($condition['stockUp'])) $query->andFilterWhere(['gi.stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'gi.developer', $condition['developer']]);
         } elseif ($type === 'plat-info') {
-            $query = (new Query())->select("gi.*,g.vendor1,g.vendor2,g.vendor3,
-             g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer")
+            $query = (new Query())->select('gi.*,g.vendor1,g.vendor2,g.vendor3,
+             g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer')
                 ->from('proCenter.oa_goodsinfo gi')
                 ->join('LEFT JOIN', 'proCenter.oa_goods g', 'g.nid=gi.goodsId');
             //$query->joinWith('oaGoods')->asArray();
@@ -136,8 +136,8 @@ class ApiGoodsinfo
         if (isset($condition['stockDays'])) $query->andFilterWhere(['stockDays' => $condition['stockDays']]);
         if (isset($condition['devDatetime']) && !empty($condition['devDatetime'])) $query->andFilterWhere(['between', "date_format(devDatetime,'%Y-%m-%d')", $condition['devDatetime'][0], $condition['devDatetime'][1]]);
         if (isset($condition['updateTime']) && !empty($condition['updateTime'])) $query->andFilterWhere(['between', "date_format(updateTime,'%Y-%m-%d')", $condition['updateTime'][0], $condition['updateTime'][1]]);
-        if (isset($condition['mid']) && $condition['mid'] == '是') $query->andFilterWhere(['>', "mid", 1]);
-        if (isset($condition['mid']) && $condition['mid'] == '否') $query->andFilterWhere(["IFNULL(mid,'')" => '']);
+        if (isset($condition['mid']) && $condition['mid'] === '是') $query->andFilterWhere(['>', "mid", 1]);
+        if (isset($condition['mid']) && $condition['mid'] === '否') $query->andFilterWhere(["IFNULL(mid,'')" => '']);
 
         $query->orderBy('achieveStatus DESC,id DESC');
 

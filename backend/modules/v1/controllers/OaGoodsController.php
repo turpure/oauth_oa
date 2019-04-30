@@ -44,7 +44,7 @@ class OaGoodsController extends AdminController
      */
     public function actionForwardList()
     {
-        $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
+        $user = Yii::$app->user->identity->username;
         $post = Yii::$app->request->post('condition');
         return ApiGoods::getForwardList($user, $post);
     }
