@@ -31,8 +31,8 @@ class ApiMine
 
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $query = OaDataMine::find();
-        $filterFields = ['proId', 'platForm', 'progress', 'creator', 'detailStatus',
-            'cat', 'subCat', 'goodsCode', 'devStatus', 'pyGoodsCode'];
+        $filterFields = ['like' => ['proId', 'platForm', 'progress', 'creator', 'detailStatus',
+            'cat', 'subCat', 'goodsCode', 'devStatus', 'pyGoodsCode']];
         $filterTime = ['createTime', 'updateTime'];
         $query =  Helper::generateFilter($query, $filterFields, $condition);
         $query =  Helper::timeFilter($query, $filterTime, $condition);

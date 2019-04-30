@@ -13,6 +13,7 @@ use yii\db\Expression;
  * @property string $picker
  * @property string $createdTime
  * @property string $scanningMan
+ * @property integer $isDone
  */
 class TaskPick extends \yii\db\ActiveRecord
 {
@@ -44,6 +45,7 @@ class TaskPick extends \yii\db\ActiveRecord
     {
         return [
             [['createdTime'], 'safe'],
+            [['isDone'], 'integer'],
             [['batchNumber'], 'string', 'max' => 50],
             [['scanning'], 'string', 'max' => 20],
             [['picker'], 'string', 'max' => 10],

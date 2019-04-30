@@ -99,9 +99,16 @@ class Helper
      */
     public static function generateFilter($query, $fields,$condition)
     {
-        foreach ($fields as $attr) {
+        $like = isset($fields['like'])? $fields['like'] : [];
+        $equal = isset($fields['equal'])? $fields['equal'] : [];
+        foreach ($like as $attr) {
             if (isset($condition[$attr]) && !empty($condition[$attr])) {
                 $query->andFilterWhere(['like', $attr, $condition[$attr]]);
+            }
+        }
+        foreach ($equal as $attr) {
+            if (isset($condition[$attr])) {
+                $query->andFilterWhere(['=', $attr, $condition[$attr]]);
             }
         }
         return $query;

@@ -57,7 +57,7 @@ class ApiWarehouseTools
     public static function getScanningLog($condition)
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-        $fieldsFilter = ['batchNumber', 'picker', 'isDone', 'scanningMan'];
+        $fieldsFilter = ['like' =>['batchNumber', 'picker', 'scanningMan'], 'equal' => ['isDone']];
         $timeFilter = ['createdTime', 'updatedTime'];
         $query = TaskPick::find();
         $query = Helper::generateFilter($query,$fieldsFilter,$condition);
