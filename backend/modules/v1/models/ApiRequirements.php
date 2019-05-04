@@ -7,11 +7,56 @@
 
 namespace backend\modules\v1\models;
 use backend\models\Requirements;
+use backend\models\AuthAssignment;
 use yii\data\ActiveDataProvider;
 use Yii;
+use yii\db\Query;
+use yii\helpers\ArrayHelper;
 
 class ApiRequirements
 {
+
+
+    /**
+     * @brief 首页
+     * @return ActiveDataProvider
+     */
+    public static function index()
+    {
+        $get = Yii::$app->request->get();
+        $sortProperty = !empty($get['sortProperty']) ? $get['sortProperty'] : 'id';
+        $sortOrder = !empty($get['sortOrder']) ? $get['sortOrder'] : 'desc';
+        $pageSize = isset($get['pageSize']) ? $get['pageSize'] : 10;
+        $type = isset($get['type']) ? $get['type'] : null;
+        $priority = isset($get['priority']) && $get['priority'] ? $get['priority'] : null;
+        $schedule = isset($get['schedule']) && $get['schedule'] ? $get['schedule'] : null;
+        $user = Yii::$app->user->identity->username;
+        $userId = Yii::$app->user->id;
+        $role = (new Query())->select('item_name as role')->from('auth_assignment')->where(['user_id' => $userId])->all();
+        $roleList = ArrayHelper::getColumn($role, 'role');
+        $query = (new Query())->from('requirement');
+        if (!in_array(AuthAssignment::ACCOUNT_ADMIN, $roleList)) {
+            $query->andFilterWhere(['creator' => $user]);
+        }
+        $query->andFilterWhere(["type" => $type, "priority" => $priority, "schedule" => $schedule]);
+        $query->andFilterWhere(['like', "creator", $get['creator']]);
+        $query->andFilterWhere(['like', "name", $get['name']]);
+        $query->andFilterWhere(['like', "detail", $get['detail']]);
+        if ($sortProperty === 'priority') {
+            $query->orderBy('priority ' . $sortOrder . ' ,createdDate ' . $sortOrder);
+        }
+        else {
+            $query->orderBy($sortProperty.' '.$sortOrder);
+        }
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            'db' => Yii::$app->db,
+            'pagination' => [
+                'pageSize' => $pageSize
+            ],
+        ]);
+        return $provider;
+    }
 
     /**
      * @brief 审核
