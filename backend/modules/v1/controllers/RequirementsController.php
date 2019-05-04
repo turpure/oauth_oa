@@ -10,6 +10,9 @@ namespace backend\modules\v1\controllers;
 use backend\models\AuthAssignment;
 use backend\models\Requirements;
 use backend\modules\v1\utils\Handler;
+use backend\modules\v1\models\ApiRequirements;
+use Codeception\Template\Api;
+use yii\db\Exception;
 use yii\helpers\ArrayHelper;
 use Yii;
 use yii\data\ActiveDataProvider;
@@ -141,41 +144,23 @@ class RequirementsController extends AdminController
 
     /**
      * 审核
-     * @return array
-     * @throws \yii\db\Exception
+     * @throws \Exception
      */
+
     public function actionExamine()
     {
-        $post = $get = Yii::$app->request->post('condition', '');
-        $ids = isset($post['ids']) ? $post['ids'] : [];
-        if (!$ids) return ['code' => 400, 'message' => '请选择要审核的项目！',];
-        $transaction = Yii::$app->db->beginTransaction();
-        try {
-            foreach ($ids as $id) {
-                $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
-                $username = $user->username;
-                $require = Requirements::findOne($id);
-                if ($require->schedule != Requirements::SCHEDULE_TO_BE_AUDITED) {
-                    throw new \Exception('Can not examine the requirement again, please choose again!');
-                }
-                if (!$require->processingPerson) {
-                    throw new \Exception("Can not examine the requirement again, because there's no dealer!");
-                }
-                $require->auditor = $username;
-                $require->auditDate = date('Y-m-d H:i:s');
-                $require->schedule = $post['type'] == 'pass' ? Requirements::SCHEDULE_DEALING : Requirements::SCHEDULE_FAILED;
-                $require->status = $post['type'] == 'pass' ? 1 : 0;
-                if (!$require->save()) {
-                    throw new \Exception('failed to examine requirements!');
-                }
-            }
-            $transaction->commit();
-            $res = [];
-        } catch (\Exception $e) {
-            $transaction->rollBack();
-            $res = ['code' => 400, 'message' => $e->getMessage()];
+        try{
+            $post = Yii::$app->request->post('condition', '');
+            return ApiRequirements::examine($post);
         }
-        return $res;
+        catch (\Exception  $why) {
+            $ret['code'] = $why->getCode();
+            $ret['message'] = $why->getMessage();
+            return $ret;
+        }
+
+
+
     }
 
 
