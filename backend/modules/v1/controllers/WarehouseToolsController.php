@@ -25,7 +25,7 @@ class WarehouseToolsController extends AdminController
      */
     public function actionPick()
     {
-        $condition = \Yii::$app->request->post('condition');
+        $condition = Yii::$app->request->post('condition');
         return ApiWarehouseTools::setBatchNumber($condition);
     }
 
@@ -39,6 +39,16 @@ class WarehouseToolsController extends AdminController
     }
 
     /**
+     * @brief 拣货任务记录
+     * @return \yii\data\ActiveDataProvider
+     */
+    public function actionScanningLog()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiWarehouseTools::getScanningLog($condition);
+    }
+
+    /**
      * @brief 拣货人
      * @return array
      */
@@ -47,10 +57,23 @@ class WarehouseToolsController extends AdminController
         return ApiWarehouseTools::getSortMember();
     }
 
-    public function actionScanningLog()
+    /**
+     * @brief 保存分货任务
+     * @return array|bool
+     */
+    public function actionSort()
     {
-        $condition = Yii::$app->request->post()['condition'];
-        return ApiWarehouseTools::getScanningLog($condition);
+        $condition = Yii::$app->request->post('condition');
+        return ApiWarehouseTools::setSortBatchNumber($condition);
     }
 
+    /**
+     * @brief 分货扫描记录
+     * @return \yii\data\ActiveDataProvider
+     */
+    public function actionSortLog()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiWarehouseTools::getSortLog($condition);
+    }
 }
