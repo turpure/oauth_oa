@@ -34,7 +34,7 @@ class ApiRequirements
         $userId = Yii::$app->user->id;
         $role = (new Query())->select('item_name as role')->from('auth_assignment')->where(['user_id' => $userId])->all();
         $roleList = ArrayHelper::getColumn($role, 'role');
-        $query = (new Query())->from('requirement');
+        $query = (new Query())->from('requirement')->select('*, -DATEDIFF( createdDate, now() )  createdDays');
         if (!in_array(AuthAssignment::ACCOUNT_ADMIN, $roleList)) {
             $query->andFilterWhere(['creator' => $user]);
         }
@@ -128,8 +128,7 @@ class ApiRequirements
 //        $type = $get['type'];//isset($get['type']) && $get['type'] ? $get['type'] : null;
         $priority = isset($get['priority']) && $get['priority'] ? $get['priority'] : null;
         $status = isset($get['status']) && $get['status'] ? $get['status'] : null;
-
-        $query = Requirements::find();
+        $query = (new Query())->from('requirement')->select('*, -DATEDIFF( createdDate, now() )  createdDays');
         $query->andFilterWhere(["type" => $type, "priority" => $priority, 'status' => $status]);
         if ($scheduleType === Requirements::SCHEDULE_DEALING)
         {
@@ -149,6 +148,7 @@ class ApiRequirements
 
         $provider = new ActiveDataProvider([
             'query' => $query,
+            'db' => Yii::$app->db,
             'pagination' => [
                 'pageSize' => $pageSize
             ],

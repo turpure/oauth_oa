@@ -46,7 +46,7 @@ class RequirementsController extends AdminController
         $type = isset($get['type']) ? $get['type'] : null;
         $priority = isset($get['priority']) && $get['priority'] ? $get['priority'] : null;
 
-        $query = (new Query())->from('requirement');
+        $query = (new Query())->from('requirement')->select('*, -DATEDIFF( createdDate, now() )  createdDays');
         $query->andFilterWhere(["type" => $type, "priority" => $priority, "schedule" => Requirements::SCHEDULE_TO_BE_AUDITED]);
         $query->andFilterWhere(['like', "name", $get['name']]);
         $query->andFilterWhere(['like', "detail", $get['detail']]);
