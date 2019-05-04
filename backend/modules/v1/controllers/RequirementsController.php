@@ -36,7 +36,7 @@ class RequirementsController extends AdminController
     }
 
     /**
-     * 审核列表
+     * @brief 审核列表
      * @return ActiveDataProvider
      */
     public function actionExamineList()

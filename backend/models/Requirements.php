@@ -25,6 +25,7 @@ use \yii\db\ActiveRecord;
  * @property string $result
  * @property string $feedBack
  * @property string $processingPerson
+ * @property string $deadline
  */
 class Requirements extends ActiveRecord
 {
@@ -88,7 +89,7 @@ class Requirements extends ActiveRecord
         return [
             [['name', 'detail', 'creator', 'auditor', 'result', 'feedBack', 'processingPerson', 'img'], 'string'],
             [['priority', 'type', 'status', 'schedule'], 'integer'],
-            [['createdDate', 'beginDate', 'endDate', 'auditDate'], 'safe'],
+            [['createdDate', 'beginDate', 'endDate', 'auditDate','deadline'], 'safe'],
         ];
     }
 
