@@ -54,6 +54,18 @@ class ApiWarehouseTools
         return ArrayHelper::getColumn($ret, 'PersonName');
     }
 
+    /**
+     * @brief 获取分拣人
+     * @return array
+     */
+    public static function getSortMember()
+    {
+
+        $ret = BPerson::find()->andWhere(['CategoryID' => '79'])
+            ->andWhere(['in', 'Duty', ['拣货-分拣']])->all();
+        return ArrayHelper::getColumn($ret, 'PersonName');
+    }
+
     public static function getScanningLog($condition)
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
