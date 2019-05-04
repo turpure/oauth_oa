@@ -50,7 +50,7 @@ class RequirementsController extends AdminController
         $sortProperty = !empty($get['sortProperty']) ? $get['sortProperty'] : 'id';
         $sortOrder = !empty($get['sortOrder']) ? $get['sortOrder'] : 'desc';
         $pageSize = isset($get['pageSize']) ? $get['pageSize'] : 10;
-        $type = $get['type'];//isset($get['type']) && $get['type'] ? $get['type'] : null;
+        $type = isset($get['type']) ? $get['type'] : null;
         $priority = isset($get['priority']) && $get['priority'] ? $get['priority'] : null;
         $schedule = isset($get['schedule']) && $get['schedule'] ? $get['schedule'] : null;
         $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
@@ -64,7 +64,12 @@ class RequirementsController extends AdminController
         $query->andFilterWhere(['like', "creator", $get['creator']]);
         $query->andFilterWhere(['like', "name", $get['name']]);
         $query->andFilterWhere(['like', "detail", $get['detail']]);
-        $query->orderBy($sortProperty.' '.$sortOrder);
+        if ($sortProperty === 'priority') {
+            $query->orderBy('priority ' . $sortOrder . ' ,createdDate ' . $sortOrder);
+        }
+        else {
+            $query->orderBy($sortProperty.' '.$sortOrder);
+        }
         $provider = new ActiveDataProvider([
             'query' => $query,
             'db' => Yii::$app->db,
@@ -83,7 +88,7 @@ class RequirementsController extends AdminController
     {
         $get = Yii::$app->request->get();
         $pageSize = isset($get['pageSize']) ? $get['pageSize'] : 10;
-        $type = $get['type'];//isset($get['type']) && $get['type'] ? $get['type'] : null;
+        $type = isset($get['type']) ? $get['type'] : null;
         $priority = isset($get['priority']) && $get['priority'] ? $get['priority'] : null;
 
         $query = (new Query())->from('requirement');
