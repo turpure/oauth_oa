@@ -67,7 +67,7 @@ class ApiRequirements
      */
     public static function getCompletedList()
     {
-        return static::_getExaminedList(Requirements::SCHEDULE_DEALING);
+        return static::_getExaminedList(Requirements::SCHEDULE_DEALT);
     }
     /**
      * @param $scheduleType
