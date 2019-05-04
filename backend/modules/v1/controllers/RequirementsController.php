@@ -11,8 +11,6 @@ use backend\models\AuthAssignment;
 use backend\models\Requirements;
 use backend\modules\v1\utils\Handler;
 use backend\modules\v1\models\ApiRequirements;
-use Codeception\Template\Api;
-use yii\db\Exception;
 use yii\helpers\ArrayHelper;
 use Yii;
 use yii\data\ActiveDataProvider;
@@ -104,42 +102,26 @@ class RequirementsController extends AdminController
                 'pageSize' => $pageSize
             ],
         ]);
-        //print_r($query->createCommand()->getRawSql());exit;
         return $provider;
     }
 
     /**
-     * 处理
+     * @brief 处理中
      * @return ActiveDataProvider
      */
     public function actionDealList()
     {
-        $get = Yii::$app->request->get();
-        $sortProperty = !empty($get['sortProperty']) ? $get['sortProperty'] : 'id';
-        $sortOrder = !empty($get['sortOrder']) ? $get['sortOrder'] : 'desc';
-        $pageSize = isset($get['pageSize']) ? $get['pageSize'] : 10;
-        $type = $get['type'];//isset($get['type']) && $get['type'] ? $get['type'] : null;
-        $priority = isset($get['priority']) && $get['priority'] ? $get['priority'] : null;
-        $status = isset($get['status']) && $get['status'] ? $get['status'] : null;
+       return ApiRequirements::getDealList();
+    }
 
-        $query = (new Query())->from('requirement');
-        $query->andFilterWhere(["type" => $type, "priority" => $priority, 'status' => $status]);
-        $query->andFilterWhere(["schedule" => [Requirements::SCHEDULE_DEALING, Requirements::SCHEDULE_DEALT]]);
-        $query->andFilterWhere(['like', "processingPerson", $get['processingPerson']]);
-        $query->andFilterWhere(['like', "name", $get['name']]);
-        $query->andFilterWhere(['like', "detail", $get['detail']]);
-        $query->andFilterWhere(['like', "creator", $get['creator']]);
-        $query->orderBy($sortProperty.' '.$sortOrder);
 
-        $provider = new ActiveDataProvider([
-            'query' => $query,
-            'db' => Yii::$app->db,
-            'pagination' => [
-                'pageSize' => $pageSize
-            ],
-        ]);
-        //print_r($query->createCommand()->getRawSql());exit;
-        return $provider;
+    /**
+     * @brief 已完成列表
+     * @return ActiveDataProvider
+     */
+    public function actionCompletedList()
+    {
+        return ApiRequirements::getCompletedList();
     }
 
     /**
