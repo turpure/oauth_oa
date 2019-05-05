@@ -18,12 +18,24 @@ class RequirementsController extends AdminController
 {
     public $modelClass = 'backend\models\Requirements';
 
+    public $isRest = true;
+
 
     public $serializer = [
         'class' => 'yii\rest\Serializer',
         'collectionEnvelope' => 'items',
     ];
 
+    /**
+     * @brief set pageSize
+     */
+    public function actions()
+    {
+        $actions = parent::actions();
+        // 注销系统自带的实现方法
+        unset($actions['index'], $actions['create'], $actions['update']);
+        return $actions;
+    }
 
 
     /**
