@@ -75,7 +75,7 @@ class ApiWarehouseTools
     public static function getPickMember()
     {
         $ret = BPerson::find()->andWhere(['CategoryID' => '79'])
-            ->andWhere(['in', 'Duty', ['拣货','拣货组长']])->all();
+            ->andWhere(['in', 'Duty', ['拣货','拣货组长','拣货-分拣']])->all();
         return ArrayHelper::getColumn($ret, 'PersonName');
     }
 
