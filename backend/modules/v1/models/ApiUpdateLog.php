@@ -7,6 +7,7 @@
 
 namespace backend\modules\v1\models;
 use backend\models\UpdateLog;
+use Symfony\Component\Yaml\Tests\YamlTest;
 use yii\data\ActiveDataProvider;
 class ApiUpdateLog
 {
@@ -40,6 +41,7 @@ class ApiUpdateLog
        $log = UpdateLog::findOne(['id' => $id]);
        if($log === null) {
            $log = new UpdateLog();
+           $condition['creator'] = \Yii::$app->user->identity->username;
        }
        $log->setAttributes($condition);
        if(!$log->save()) {
