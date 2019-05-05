@@ -51,7 +51,7 @@ class ExportTools
         header('Content-Type: application/vnd.ms-excel');
         header('Content-Disposition: attachment;filename="'.$fileName.'.'.$type.'"');
         header('Cache-Control: max-age=0');
-
+        header('Access-Control-Expose-Headers: Content-Disposition');
         $writer = IOFactory::createWriter($sheet, $type);
         $writer->save('php://output');exit;
     }
