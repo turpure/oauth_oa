@@ -44,4 +44,36 @@ class UpdateLogController extends AdminController
         }
     }
 
+
+    /**
+     * @brief  获取详情
+     * @return array
+     */
+    public function actionInfo()
+    {
+        try{
+
+            $condition = \Yii::$app->request->post()['condition'];
+            return ApiUpdateLog::getInfo($condition);
+        }
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(),'message' => $why->getMessage()];
+        }
+    }
+
+    /**
+     * @brief 删除
+     * @return array
+     */
+    public function actionDelete()
+    {
+        try {
+            $condition = \Yii::$app->request->post()['condition'];
+            return ApiUpdateLog::delete($condition);
+        }
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(),'message' => $why->getMessage()];
+        }
+    }
+
 }

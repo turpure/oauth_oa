@@ -49,4 +49,27 @@ class ApiUpdateLog
        }
        return [];
     }
+
+    /**
+     * @brief 获取详情
+     * @param $condition
+     * @return array
+     */
+    public static function getInfo($condition)
+    {
+        $id = isset($condition['id']) ? $condition['id'] : '';
+        return UpdateLog::find()->where(['id' => $id])->asArray()->one();
+    }
+
+    /**
+     * @brief 删除
+     * @param $condition
+     * @return array
+     */
+    public static function delete($condition)
+    {
+        $id = isset($condition['id']) ? $condition['id'] : '';
+        UpdateLog::deleteAll(['id' => $id]);
+        return [];
+    }
 }
