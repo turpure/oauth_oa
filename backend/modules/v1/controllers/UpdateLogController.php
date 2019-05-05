@@ -65,7 +65,7 @@ class UpdateLogController extends AdminController
      * @brief 删除
      * @return array
      */
-    public function actionDelete()
+    public function actionInfoDelete()
     {
         try {
             $condition = \Yii::$app->request->post()['condition'];
