@@ -107,7 +107,6 @@ class AdminController extends ActiveController
             $data['code'] = 400;
             $data['message'] = 'error';
         }
-
         return $this->serializeData($data);
     }
 

@@ -9,10 +9,60 @@
 namespace backend\modules\v1\controllers;
 
 use backend\modules\v1\utils\Helper;
+use Yii;
+use yii\helpers\ArrayHelper;
+use yii\filters\VerbFilter;
+
 
 class SiteController extends AdminController
 {
     public $modelClass = 'backend\modules\v1\models\ApiTool';
+
+
+    /**
+     * @brief 获取分部的部门
+     * @return array
+     */
+    public function actionBranchDepart()
+    {
+        try {
+
+            $sql = "select  DISTINCT department from auth_department where department like '郑州%'" ;
+            $query = Yii::$app->db->createCommand($sql)->queryAll();
+            return ArrayHelper::getColumn($query,'department');
+        }
+        catch (\Exception $why) {
+            return ['msg' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+    }
+
+    /**
+     * @brief 获取总部的运营部门
+     * @return array
+     */
+    public function actionHeadDepart()
+    {
+        try {
+            $sql = "select  DISTINCT department from auth_department where parent=0 and department like '运营%'" ;
+            $query = Yii::$app->db->createCommand($sql)->queryAll();
+            return ArrayHelper::getColumn($query,'department');
+        }
+        catch (\Exception $why) {
+            return ['msg' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+
+    }
+
+    /**
+     * @brief 获取所有部门
+     * @return array
+     */
+    public function actionAllDepart()
+    {
+        $head = $this->actionHeadDepart();
+        $branch = $this->actionBranchDepart();
+        return array_merge($head, $branch);
+    }
 
 
     /**
@@ -21,12 +71,22 @@ class SiteController extends AdminController
      */
     public function actionIndex()
     {
-        $sql = "SELECT * FROM oauth_target 
+        $condition = Yii::$app->request->post()['condition'];
+        $depart = isset($condition['depart']) ? $condition['depart'] : '';
+        if(empty($depart)) {
+            $sql = "SELECT * FROM oauth_target 
                 WHERE depart NOT LIKE '%郑州分部%' AND role = '销售' AND isnull(display,0)=0
                 ORDER BY primaryRate DESC";
+        }
+        else {
+            $sql = "SELECT * FROM oauth_target 
+                WHERE depart = '{$depart}' AND role = '销售'
+                ORDER BY primaryRate DESC";
+        }
         $query = \Yii::$app->py_db->createCommand($sql)->queryAll();
         return $query;
     }
+
 
     /**
      * 获取郑州销售目标
@@ -34,21 +94,41 @@ class SiteController extends AdminController
      */
     public function actionSales()
     {
-        $sql = "SELECT * FROM oauth_target 
+        $condition = Yii::$app->request->post()['condition'];
+        $depart = isset($condition['depart']) ? $condition['depart'] : '';
+        if(empty($depart)) {
+            $sql = "SELECT * FROM oauth_target 
                 WHERE  depart LIKE '%郑州分部%' AND role = '销售' AND isnull(display,0)=0
                 ORDER BY highRate DESC";
+        }
+        else {
+            $sql = "SELECT * FROM oauth_target 
+                WHERE depart = '{$depart}' AND role = '销售'
+                ORDER BY primaryRate DESC";
+        }
         $query = \Yii::$app->py_db->createCommand($sql)->queryAll();
         return $query;
     }
+
     /**
      * 获取开发目标
      * @return mixed
      */
     public function actionDevelop()
     {
-        $sql = "SELECT * FROM oauth_target 
+        $condition = Yii::$app->request->post()['condition'];
+        $depart = isset($condition['depart']) ? $condition['depart'] : '';
+        if(empty($depart)) {
+            $sql = "SELECT * FROM oauth_target 
                 WHERE role = '开发' AND isnull(display,0)=0
                 ORDER BY primaryRate DESC";
+        }
+        else {
+            $sql = "SELECT * FROM oauth_target 
+                WHERE depart = '{$depart}' and role = '开发'
+                ORDER BY primaryRate DESC";
+        }
+
         $query = \Yii::$app->py_db->createCommand($sql)->queryAll();
         return $query;
     }
@@ -128,15 +208,30 @@ class SiteController extends AdminController
      * Date: 2019-01-10 18:38
      * Author: henry
      * @return mixed
-     * @throws \yii\db\Exception
      */
     public function actionProfit()
     {
-        $sql = "SELECT * FROM site_profit 
-                WHERE depart NOT LIKE '%郑州分部%' AND role = '销售' AND IFNULL(display,0)=0
-                ORDER BY rate  DESC";
-        $query = \Yii::$app->db->createCommand($sql)->queryAll();
-        return $query;
+
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $depart = isset($condition['depart']) ? $condition['depart'] : '';
+            if(empty($depart)) {
+                $sql = "SELECT * FROM site_profit 
+                WHERE depart NOT LIKE '%郑州分部%' AND role = '销售' AND ifnull(display,0)=0
+                ORDER BY Rate DESC";
+            }
+            else {
+                $sql = "SELECT * FROM site_profit 
+                WHERE depart = '{$depart}' AND role = '销售'
+                ORDER BY Rate DESC";
+            }
+            $query = \Yii::$app->db->createCommand($sql)->queryAll();
+            return $query;
+        }
+        catch (\Exception $why) {
+            return ['msg' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+
     }
 
     /**
@@ -144,16 +239,30 @@ class SiteController extends AdminController
      * Date: 2019-01-10 19:14
      * Author: henry
      * @return array
-     * @throws \yii\db\Exception
      */
 
     public function actionZzProfit()
     {
-        $sql = "SELECT * FROM site_profit 
+
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $depart = isset($condition['depart']) ? $condition['depart'] : '';
+            if(empty($depart)) {
+                $sql = "SELECT * FROM site_profit 
                 WHERE depart LIKE '%郑州分部%' AND role = '销售' AND IFNULL(display,0)=0
-                ORDER BY rate  DESC";
-        $query = \Yii::$app->db->createCommand($sql)->queryAll();
-        return $query;
+                ORDER BY Rate DESC";
+            }
+            else {
+                $sql = "SELECT * FROM site_profit 
+                WHERE depart = '{$depart}' AND role = '销售'
+                ORDER BY Rate DESC";
+            }
+            $query = \Yii::$app->db->createCommand($sql)->queryAll();
+            return $query;
+        }
+        catch (\Exception $why) {
+            return ['msg' => $why->getMessage(), 'code' => $why->getCode()];
+        }
     }
 
     /**
@@ -161,15 +270,28 @@ class SiteController extends AdminController
      * Date: 2019-01-10 18:38
      * Author: henry
      * @return mixed
-     * @throws \yii\db\Exception
      */
     public function actionDevProfit()
     {
-        $sql = "SELECT * FROM site_profit 
-                WHERE role = '开发' AND IFNULL(display,0)=0
-                ORDER BY rate DESC";
-        $query = \Yii::$app->db->createCommand($sql)->queryAll();
-        return $query;
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $depart = isset($condition['depart']) ? $condition['depart'] : '';
+            if(empty($depart)) {
+                $sql = "SELECT * FROM site_profit 
+                WHERE  role = '开发' AND ifnull(display,0)=0
+                ORDER BY Rate DESC";
+            }
+            else {
+                $sql = "SELECT * FROM site_profit 
+                WHERE depart = '{$depart}' AND role = '开发'
+                ORDER BY Rate DESC";
+            }
+            $query = \Yii::$app->db->createCommand($sql)->queryAll();
+            return $query;
+        }
+        catch (\Exception $why) {
+            return ['msg' => $why->getMessage(), 'code' => $why->getCode()];
+        }
     }
 
 
@@ -178,19 +300,36 @@ class SiteController extends AdminController
      * Date: 2019-01-10 18:38
      * Author: henry
      * @return mixed
-     * @throws \yii\db\Exception
      */
     public function actionDepartProfit()
     {
-        $sql = "SELECT depart,SUM(lastProfit) AS lastProfit,SUM(profit) AS profit,
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $depart = isset($condition['depart']) ? $condition['depart'] : '';
+            if(empty($depart)) {
+                $sql = "SELECT depart,SUM(lastProfit) AS lastProfit,SUM(profit) AS profit,
                      CASE WHEN SUM(lastProfit)=0 THEN 0 ELSE SUM(profit)/SUM(lastProfit) END AS rate,
                      MAX(dateRate) AS dateRate,MAX(updateTime) as updateTime
                 FROM site_profit 
                 WHERE  role = '销售'
                 GROUP BY depart
                 ORDER BY rate DESC";
-        $query = \Yii::$app->db->createCommand($sql)->queryAll();
-        return $query;
+            }
+            else {
+                $sql = "SELECT depart,SUM(lastProfit) AS lastProfit,SUM(profit) AS profit,
+                     CASE WHEN SUM(lastProfit)=0 THEN 0 ELSE SUM(profit)/SUM(lastProfit) END AS rate,
+                     MAX(dateRate) AS dateRate,MAX(updateTime) as updateTime
+                FROM site_profit 
+                WHERE  role = '销售' and depart = '{$depart}'
+                GROUP BY depart
+                ORDER BY rate DESC";
+            }
+            $query = \Yii::$app->db->createCommand($sql)->queryAll();
+            return $query;
+        }
+        catch (\Exception $why) {
+            return ['msg' => $why->getMessage(), 'code' => $why->getCode()];
+        }
     }
 
     /**
@@ -218,15 +357,29 @@ class SiteController extends AdminController
      * Date: 2019-04-16 09:38
      * Author: henry
      * @return mixed
-     * @throws \yii\db\Exception
      */
     public function actionAmt()
     {
-        $sql = "SELECT * FROM site_sales_amt 
-                WHERE depart NOT LIKE '%郑州分部%' AND role = '销售' AND IFNULL(display,0)=0
-                ORDER BY rate  DESC";
-        $query = \Yii::$app->db->createCommand($sql)->queryAll();
-        return $query;
+
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $depart = isset($condition['depart']) ? $condition['depart'] : '';
+            if(empty($depart)) {
+                $sql = "SELECT * FROM site_sales_amt
+                WHERE depart NOT LIKE '%郑州分部%' AND role = '销售' AND ifnull(display,0)=0
+                ORDER BY Rate DESC";
+            }
+            else {
+                $sql = "SELECT * FROM site_sales_amt 
+                WHERE depart = '{$depart}' AND role = '销售'
+                ORDER BY Rate DESC";
+            }
+            $query = \Yii::$app->db->createCommand($sql)->queryAll();
+            return $query;
+        }
+        catch (\Exception $why) {
+            return ['msg' => $why->getMessage(), 'code' => $why->getCode()];
+        }
     }
 
     /**
@@ -234,16 +387,29 @@ class SiteController extends AdminController
      * Date: 2019-04-16 09:14
      * Author: henry
      * @return array
-     * @throws \yii\db\Exception
      */
 
     public function actionZzAmt()
     {
-        $sql = "SELECT * FROM site_sales_amt 
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $depart = isset($condition['depart']) ? $condition['depart'] : '';
+            if(empty($depart)) {
+                $sql = "SELECT * FROM site_sales_amt 
                 WHERE depart LIKE '%郑州分部%' AND role = '销售' AND IFNULL(display,0)=0
-                ORDER BY rate  DESC";
-        $query = \Yii::$app->db->createCommand($sql)->queryAll();
-        return $query;
+                ORDER BY Rate DESC";
+            }
+            else {
+                $sql = "SELECT * FROM site_sales_amt
+                WHERE depart = '{$depart}' AND role = '销售'
+                ORDER BY Rate DESC";
+            }
+            $query = \Yii::$app->db->createCommand($sql)->queryAll();
+            return $query;
+        }
+        catch (\Exception $why) {
+            return ['msg' => $why->getMessage(), 'code' => $why->getCode()];
+        }
     }
 
     /**
@@ -251,15 +417,28 @@ class SiteController extends AdminController
      * Date: 2019-04-16 10:38
      * Author: henry
      * @return mixed
-     * @throws \yii\db\Exception
      */
     public function actionDevAmt()
     {
-        $sql = "SELECT * FROM site_sales_amt 
-                WHERE role = '开发' AND IFNULL(display,0)=0
-                ORDER BY rate DESC";
-        $query = \Yii::$app->db->createCommand($sql)->queryAll();
-        return $query;
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $depart = isset($condition['depart']) ? $condition['depart'] : '';
+            if(empty($depart)) {
+                $sql = "SELECT * FROM site_sales_amt 
+                WHERE  role = '开发' AND ifnull(display,0)=0
+                ORDER BY Rate DESC";
+            }
+            else {
+                $sql = "SELECT * FROM site_sales_amt
+                WHERE depart = '{$depart}' AND role = '开发'
+                ORDER BY Rate DESC";
+            }
+            $query = \Yii::$app->db->createCommand($sql)->queryAll();
+            return $query;
+        }
+        catch (\Exception $why) {
+            return ['msg' => $why->getMessage(), 'code' => $why->getCode()];
+        }
     }
 
 
@@ -268,21 +447,46 @@ class SiteController extends AdminController
      * Date: 2019-04-16 10:38
      * Author: henry
      * @return mixed
-     * @throws \yii\db\Exception
      */
     public function actionDepartAmt()
     {
         $sql = "SELECT depart,SUM(lastAmt) AS lastAmt,SUM(amt) AS amt,
                      CASE WHEN SUM(lastAmt)=0 THEN 0 ELSE SUM(amt)/SUM(lastAmt) END AS rate,
                      MAX(dateRate) AS dateRate,MAX(updateTime) as updateTime
-                FROM site_sales_amt 
+                FROM site_sales_amt
                 WHERE  role = '销售'
                 GROUP BY depart
                 ORDER BY rate DESC";
-        $query = \Yii::$app->db->createCommand($sql)->queryAll();
-        return $query;
+//        $query = \Yii::$app->db->createCommand($sql)->queryAll();
+//        return $query;
+
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $depart = isset($condition['depart']) ? $condition['depart'] : '';
+            if(empty($depart)) {
+                $sql = "SELECT depart,SUM(lastAmt) AS lastAmt,SUM(amt) AS amt,
+                     CASE WHEN SUM(lastAmt)=0 THEN 0 ELSE SUM(amt)/SUM(lastAmt) END AS rate,
+                     MAX(dateRate) AS dateRate,MAX(updateTime) as updateTime
+                FROM site_sales_amt
+                WHERE  role = '销售'
+                GROUP BY depart
+                ORDER BY rate DESC";
+            }
+            else {
+                $sql = "SELECT depart,SUM(lastAmt) AS lastAmt,SUM(amt) AS amt,
+                     CASE WHEN SUM(lastAmt)=0 THEN 0 ELSE SUM(amt)/SUM(lastAmt) END AS rate,
+                     MAX(dateRate) AS dateRate,MAX(updateTime) as updateTime
+                FROM site_sales_amt
+                WHERE  role = '销售' and depart = '{$depart}'
+                GROUP BY depart
+                ORDER BY rate DESC";
+            }
+            $query = \Yii::$app->db->createCommand($sql)->queryAll();
+            return $query;
+        }
+        catch (\Exception $why) {
+            return ['msg' => $why->getMessage(), 'code' => $why->getCode()];
+        }
     }
-
-
 
 }

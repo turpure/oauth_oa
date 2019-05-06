@@ -18,6 +18,7 @@ use \yii\db\ActiveRecord;
  * @property int $type
  * @property int $priority
  * @property string $createdDate
+ * @property string $auditDate
  * @property string $beginDate
  * @property string $endDate
  * @property string $finishedDate
@@ -25,6 +26,9 @@ use \yii\db\ActiveRecord;
  * @property string $result
  * @property string $feedBack
  * @property string $processingPerson
+ * @property string $deadline
+ * @property string $auditor
+ * @property string $schedule
  */
 class Requirements extends ActiveRecord
 {
@@ -88,7 +92,7 @@ class Requirements extends ActiveRecord
         return [
             [['name', 'detail', 'creator', 'auditor', 'result', 'feedBack', 'processingPerson', 'img'], 'string'],
             [['priority', 'type', 'status', 'schedule'], 'integer'],
-            [['createdDate', 'beginDate', 'endDate', 'auditDate'], 'safe'],
+            [['createdDate', 'beginDate', 'endDate', 'auditDate','deadline'], 'safe'],
         ];
     }
 
@@ -118,6 +122,7 @@ class Requirements extends ActiveRecord
         ];
     }
 
+    /*
     public function afterSave($insert, $changedAttributes)
     {
         parent::afterSave($insert, $changedAttributes);
@@ -191,4 +196,5 @@ class Requirements extends ActiveRecord
             $this->trigger(self::EVENT_SEND_EMAIL, $event);
         }
     }
+   */
 }
