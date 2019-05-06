@@ -251,33 +251,29 @@ class SchedulerController extends Controller
     }
 
 
-    /**
-     * 备货产品表现
-     * 每月第一天（1号）更新开发员在本月的可用备货数量
-     * 访问方法: php yii site/stock
-     * @return mixed
+    /** 备货产品计算
+     * 每天更新开发员在本月的可用备货数量，每月第一天（1号）更新备份数据
+     * 访问方法: php yii scheduler/stock
+     * Date: 2019-05-06 15:58
+     * Author: henry
+     * @throws \yii\db\Exception
      */
     public function actionStock()
     {
         $end = date('Y-m-d');
+        //$end = '2019-06-01';
         $startDate = date('Y-m-d', strtotime('-75 days', strtotime($end)));
         $endDate = date('Y-m-d', strtotime('-15 days', strtotime($end)));
         //获取订单数详情
         $orderList = Yii::$app->py_db->createCommand("EXEC oauth_stockGoodsNumber '" . $startDate . "','" . $endDate . "','';")->queryAll();
-
         //获取开发产品列表
         $goodsSql = "SELECT developer,goodsCode,stockUp FROM proCenter.oa_goodsinfo gs
                       WHERE devDatetime BETWEEN '{$startDate}' AND '{$endDate}' AND ifnull(mid,0)=0;";
         $goodsList = Yii::$app->db->createCommand($goodsSql)->queryAll();
-
-        //print_r($goodsList);exit;
         //获取开发员备货产品书，不备货产品书，总产品数
         $list = Yii::$app->db->createCommand("CALL proCenter.oa_stockGoodsNum('{$startDate}','{$endDate}');")->queryAll();
-
         //统计出单数，爆旺款数量
-
         $developer = [];
-
         foreach ($goodsList as $k => $v) {
             $orderNum = 0;
             foreach ($orderList as $value){
@@ -291,107 +287,98 @@ class SchedulerController extends Controller
             $v['orderNum'] = $orderNum;
             $developer[$k] = $v;
         }
-//print_r($developer);exit;
-        $orderNumlist = [];
+        $orderNumList = $nonOrderNumList = [];
        foreach($list as $k => $value){
-            $stockOrderNum = $nonStockOrderNum = $hot = $exu = 0;
+            $stockOrderNum = $nonStockOrderNum = $hot = $exu = $nonHot = $nonExu = 0;
             foreach ($developer as $v){
                 if($value['username'] == $v['developer']){
                     $nonStockOrderNum = $v['stockUp'] == '否' ? $nonStockOrderNum + 1 : $stockOrderNum;
                     $stockOrderNum = $v['stockUp'] == '是' ? $stockOrderNum + 1 : $stockOrderNum;
-                    $hot = $v['goodsStatus'] == '爆款' ? $hot + 1 : $hot;//TODO 只取备货或不备货的爆款
-                    $exu = $v['goodsStatus'] == '旺款' ? $exu + 1 : $exu;//TODO 只取备货或不备货的旺款
+                    $hot = $v['goodsStatus'] == '爆款' && $v['stockUp'] == '是' ? $hot + 1 : $hot;
+                    $exu = $v['goodsStatus'] == '旺款' && $v['stockUp'] == '是' ? $exu + 1 : $exu;
+                    $nonHot = $v['goodsStatus'] == '爆款' && $v['stockUp'] == '否' ? $nonHot + 1 : $nonHot;
+                    $nonExu = $v['goodsStatus'] == '旺款' && $v['stockUp'] == '否' ? $nonExu + 1 : $nonExu;
                 }
             }
-           $value['nonStockOrderNum'] = $nonStockOrderNum;
-           $value['stockOrderNum'] = $stockOrderNum;
-           $value['hot'] = $hot;
-           $value['exu'] = $exu;
-            $orderNumlist[$k] = $value;
+           //计算 备货和不备货的爆旺款率
+           $hotAndExuRate = $value['stockNum'] == 0 ? 0 : round(($hot+$exu)*1.0/$value['stockNum'], 2)*100;
+           $nonHotAndExuRate = $value['nonStockNum'] == 0 ? 0 : round(($nonHot+$nonExu)*1.0/$value['nonStockNum'], 2)*100;
+           //计算 备货和不备货的出单率
+           $orderRate = $value['stockNum'] == 0 ? 0 : round($stockOrderNum*1.0/$value['stockNum'], 2);
+           $nonOrderRate = $value['nonStockNum'] == 0 ? 0 : round($nonStockOrderNum*1.0/$value['nonStockNum'], 2);
+           //计算 出单率评分
+           $rate1 = round(max(1-max((80-$orderRate),0)*0.025,0.5),2);
+           $nonRate1 = round(max(1-max((80-$nonOrderRate),0)*0.025,0.5),2);
+           //计算 爆旺款率评分
+           $rate2 = round(2-max((30-$hotAndExuRate)*0.04,0),2);
+           $nonRate2 = round(2-max((30-$nonHotAndExuRate)*0.04,0),2);
+
+           $item1['developer'] = $item2['developer'] = $value['username'];
+           $item1['number'] = (int)$value['stockNum'];
+           $item1['orderNum'] = $stockOrderNum;
+           $item1['hotStyleNum'] = $hot;
+           $item1['exuStyleNum'] = $exu;
+           $item1['rate1'] = $rate1;
+           $item1['rate2'] = $rate2;
+           $item1['createDate'] = $end;
+           $item1['isStock'] = 'stock';
+
+           $item2['number'] = (int)$value['nonStockNum'];
+           $item2['orderNum'] = $nonStockOrderNum;
+           $item2['hotStyleNum'] = $nonHot;
+           $item2['exuStyleNum'] = $nonExu;
+           $item2['rate1'] = $nonRate1;
+           $item2['rate2'] = $nonRate2;
+           $item2['createDate'] = $end;
+           $item2['isStock'] = 'nonstock';
+
+           $orderNumList[$k] = $item1;
+           $nonOrderNumList[$k] = $item2;
        }
 
-
-
-        print_r($orderNumlist);exit;
-        $res = Yii::$app->db->createCommand()->batchInsert(
-            'oa_stock_goods_number',
-            ['developer', 'Number', 'orderNum', 'hotStyleNum', 'exuStyleNum', 'rate1', 'rate2', 'stockNumThisMonth', 'stockNumLastMonth', 'createDate', 'isStock'],
-            $list
-        )->execute();
-
-
-
-
-
-
-        if (substr($end, 8, 2) == '01') {
-            //获取数据库数据，查看是否已存在数据
-            $checkSql = "SELECT * FROM oa_stock_goods_number 
-                    WHERE CONVERT(VARCHAR(10),createDate,121)=CONVERT(VARCHAR(10),CAST((CONVERT(VARCHAR(7),'{$end}',121)+'-01') AS DATETIME),121)
-                    AND isStock='stock'";
-            $check = Yii::$app->db->createCommand($checkSql)->queryAll();
-            if ($check) {
-                echo date('Y-m-d H:i:s') . " The quantity of stock was updated this month. Do not repeat the operation!\n";
-            }
-        }
-
-
-
-        if ($res) {
-            echo date('Y-m-d H:i:s') . " The stock data update successful\n";
-        } else {
-            echo date('Y-m-d H:i:s') . " The stock data update failed！\n";
-        }
-
-
-    }
-
-
-    /**
-     * 不备货产品表现
-     * 每月第一天（1号）更新开发员在本月的可用备货数量
-     * 访问方法: php yii site/nonstock
-     * @return mixed
-     */
-    public function actionNonstock()
-    {
-        $end = date('Y-m-d');
-        //$end = date('2018-07-01');
-        if (substr($end, 8, 2) !== '01') {
-            echo date('Y-m-d H:i:s') . " The data can not be updated at this time. Please contact the administrator!";
-            exit();
-        }
-        $start = date('Y-m-d', strtotime('-75 days', strtotime($end)));
-
-        //获取数据库数据，查看是否已存在数据
-        $checkSql = "SELECT * FROM oa_stock_goods_number 
-                    WHERE CONVERT(VARCHAR(10),createDate,121)=CONVERT(VARCHAR(10),CAST((CONVERT(VARCHAR(7),'{$end}',121)+'-01') AS DATETIME),121)
-                    AND isStock='nonstock'";
-        $check = Yii::$app->db->createCommand($checkSql)->queryAll();
-        if ($check) {
-            echo date('Y-m-d H:i:s') . " The quantity of stock was updated this month. Do not repeat the operation!\n";
-        } else {
-            $end_time = date('Y-m-d', strtotime('-15 days', strtotime($end)));
-            $sql = "EXEC P_oa_Non_StockPerformance '" . $start . "','" . $end_time . "','',1";
-            $listRes = Yii::$app->db->createCommand($sql)->queryAll();
-            foreach ($listRes as $v) {
-                $item = $v;
-                $item['createDate'] = $end;
-                $list[] = $item;
-            }
-            $res = Yii::$app->db->createCommand()->batchInsert(
-                'oa_stock_goods_number',
-                ['developer', 'Number', 'orderNum', 'hotStyleNum', 'exuStyleNum', 'rate1', 'rate2', 'stockNumThisMonth', 'stockNumLastMonth', 'createDate', 'isStock'],
-                $list
-            )->execute();
-            if ($res) {
-                echo date('Y-m-d H:i:s') . " The stock data update successful!\n";
+        $tran = Yii::$app->db->beginTransaction();
+        try {
+            //插入数据表oa_stockGoodsNum
+            Yii::$app->db->createCommand()->truncateTable('proCenter.oa_stockGoodsNumReal')->execute();
+            Yii::$app->db->createCommand()->batchInsert('proCenter.oa_stockGoodsNumReal',
+                ['developer', 'number', 'orderNum', 'hotStyleNum', 'exuStyleNum', 'rate1', 'rate2', 'createDate', 'isStock'], $orderNumList)->execute();
+            Yii::$app->db->createCommand()->batchInsert('proCenter.oa_stockGoodsNumReal',
+                ['developer', 'number', 'orderNum', 'hotStyleNum', 'exuStyleNum', 'rate1', 'rate2', 'createDate', 'isStock'], $nonOrderNumList)->execute();
+            //更新 可用数量  判断当前日期是本月1号，数据还要插入备份表
+            if (substr($end, 8, 2) !== '01') {
+                $sql = " UPDATE proCenter.oa_stockGoodsNumReal r,proCenter.oa_stockGoodsNum s 
+                    SET r.stockNumThisMonth= s.stockNumThisMonth,r.stockNumLastMonth =s. stockNumLastMonth
+                    WHERE r.developer=s.developer AND substring(r.createDate,1,7) = substring(s.createDate,1,7) AND r.isStock=s.isStock ";
+                Yii::$app->db->createCommand($sql)->execute();
             } else {
-                echo date('Y-m-d H:i:s') . " The stock data update failed!\n";
+                //如果当前日期是本月1号，先查询有没有备份数据，在插入备份表
+                $sql = " UPDATE proCenter.oa_stockGoodsNumReal r,proCenter.oa_stockGoodsNum s 
+                    SET r.stockNumThisMonth = CASE when ifnull(s.number,0)=0 THEN s.stockNumThisMonth 
+				                              ELSE ROUND(ifnull(s.stockNumThisMonth, 30)*r.rate1*r.rate2,0) END,
+				        r.stockNumLastMonth = CASE when ifnull(s.number,0)=0 THEN s.stockNumThisMonth 
+				                              ELSE ROUND(ifnull(s.stockNumThisMonth, 30)*r.rate1*r.rate2,0) END
+                    WHERE r.developer=s.developer AND r.isStock=s.isStock
+                    AND substring(date_add(r.createDate, interval -1 month),1,10) = substring(s.createDate,1,10)  ";
+                Yii::$app->db->createCommand($sql)->execute();
+                //判断备份表是否有备份数据, 没有则插入
+                $checkSql = "SELECT * FROM proCenter.oa_stockGoodsNum WHERE substring(createDate,1,10)='{$end}'";
+                $check = Yii::$app->db->createCommand($checkSql)->queryAll();
+                if (!$check) {
+                    $sqlRes = "INSERT INTO proCenter.oa_stockGoodsNum(developer,number,orderNum,hotStyleNum,exuStyleNum,rate1,rate2,discount,stockNumThisMonth,stockNumLastMonth,createDate,isStock)
+                            SELECT developer,number,orderNum,hotStyleNum,exuStyleNum,rate1,rate2,discount,stockNumThisMonth,stockNumLastMonth,createDate,isStock 
+                            FROM  proCenter.oa_stockGoodsNumReal WHERE substring(createDate,1,10) = '{$end}'";
+                    Yii::$app->db->createCommand($sqlRes)->execute();
+                }
             }
+            $tran->commit();
+            echo date('Y-m-d H:i:s')." (new)The stock data update successful!\n";;
+        }catch (\Exception $e){
+            $tran->rollBack();
+            echo date('Y-m-d H:i:s')." (new)The stock data update failed!\n";
         }
 
     }
+
 
 
 }

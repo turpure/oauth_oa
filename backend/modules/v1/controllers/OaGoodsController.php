@@ -387,12 +387,12 @@ class OaGoodsController extends AdminController
         //备货的人才接受检查
         if ($canStock == 0) return false;
 
-        $numberUsed = "select count(og.nid) as usedStock  from oa_goods as og  
-                      LEFT JOIN oa_goodsinfo as ogs on og.nid = ogs.goodsid
+        $numberUsed = "select count(og.nid) as usedStock  from proCenter.oa_goods as og  
+                      LEFT JOIN proCenter.oa_goodsinfo as ogs on og.nid = ogs.goodsid
                       where isnull(og.stockUp,'否')='是' and og.developer=:developer 
                       and DATEDIFF(mm, createDate, getdate()) = 0
                       and og.mineId is null AND checkStatus<>'未通过'";
-        $numberHave = "select isnull(stockNumThisMonth,0) as haveStock  from oa_stock_goods_number 
+        $numberHave = "select isnull(stockNumThisMonth,0) as haveStock  from proCenter.oa_stockGoodsNum 
                       where isStock= 'stock'
                       and DATEDIFF(mm, createDate, getdate()) = 0
                       and developer=:developer";
@@ -430,12 +430,12 @@ class OaGoodsController extends AdminController
         if ($canStock > 0){
             return true;
         }
-        $numberUsed = "select count(og.nid) as usedStock  from oa_goods as og  
-                      LEFT JOIN oa_goodsinfo as ogs on og.nid = ogs.goodsid
+        $numberUsed = "select count(og.nid) as usedStock  from proCenter.oa_goods as og  
+                      LEFT JOIN proCenter.oa_goodsinfo as ogs on og.nid = ogs.goodsid
                       where isnull(og.stockUp,'否')='否' and og.developer=:developer 
                       and DATEDIFF(mm, createDate, getdate()) = 0
                       and og.mineId is null AND checkStatus<>'未通过'";
-        $numberHave = "select isnull(stockNumThisMonth,0) as haveStock  from oa_stock_goods_number 
+        $numberHave = "select isnull(stockNumThisMonth,0) as haveStock  from proCenter.oa_stockGoodsNum 
                       where isStock= 'nonstock'
                       and DATEDIFF(mm, createDate, getdate()) = 0
                       and developer=:developer";

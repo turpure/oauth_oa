@@ -12,6 +12,7 @@ class m190430_035146_oa_goods_info extends Migration
      */
     public function safeUp()
     {
+        /*
         $pySql = "SELECT TOP 10 goodsId,supplierID,storeID,bgoodsId,stockDays,number,mid,
                         description,supplierName,declaredValue,devDatetime,updateTime,picCompleteTime,
                         goodsName,aliasCnName,aliasEnName,packName,purchaser,developer,
@@ -31,6 +32,7 @@ class m190430_035146_oa_goods_info extends Migration
             'possessMan1', 'possessMan2','achieveStatus', 'attributeName','picStatus',
             'isVar', 'stockUp', 'isLiquid', 'isPowder', 'isMagnetism', 'isCharged', 'wishPublish','headKeywords', 'tailKeywords'
         ], $list);
+        */
     }
 
     /**
