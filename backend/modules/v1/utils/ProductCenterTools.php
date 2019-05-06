@@ -683,10 +683,16 @@ class ProductCenterTools
      * @brief 获取普源类目ID
      * @param $cateName
      * @return integer
+     * @throws \Exception
      */
     public static function getCategoryID($cateName)
     {
-        return BGoodSCats::findOne(['CategoryName' => $cateName])->NID;
+        try {
+            return BGoodSCats::findOne(['CategoryName' => $cateName])->NID;
+        }
+        catch (\Exception $why) {
+            throw new \Exception('无效的类目名称！', 400);
+        }
     }
 
     /**
@@ -714,18 +720,36 @@ class ProductCenterTools
     }
 
     /**
-     * @brief 获取普源类目编码
+     * @brief 查找类目编码
      * @param $cateName
      * @return string
+     * @throws \Exception
      */
     public static function getCategoryCode($cateName)
     {
-        return BGoodSCats::findOne(['CategoryName' => $cateName])->CategoryCode;
+        try {
+            return BGoodSCats::findOne(['CategoryName' => $cateName])->CategoryCode;
+        }
+        catch (\Exception $why) {
+            throw new \Exception('无效的类目名称！', 400);
+        }
+
     }
 
+    /**
+     * @brief 查找仓库ID
+     * @param $storeName
+     * @return int
+     * @throws \Exception
+     */
     public static function getStoreId($storeName)
     {
-        return BStore::findOne(['StoreName' => $storeName])->NID;
+        try {
+            return BStore::findOne(['StoreName' => $storeName])->NID;
+        }
+        catch (\Exception $why) {
+            throw new \Exception('无效的仓库名称！', 400);
+        }
     }
 
 
