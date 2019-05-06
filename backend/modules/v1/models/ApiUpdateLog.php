@@ -20,6 +20,7 @@ class ApiUpdateLog
     {
         $pageSize = isset($condition['pageSize'])? $condition['pageSize'] : 10;
         $query = UpdateLog::find();
+        $query = $query->orderBy('id DESC');
         $provider = new ActiveDataProvider([
              'query' => $query,
                'pagination' => [
