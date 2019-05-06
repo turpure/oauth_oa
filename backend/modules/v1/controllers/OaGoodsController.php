@@ -151,21 +151,21 @@ class OaGoodsController extends AdminController
         $model = new OaGoods();
         $post = Yii::$app->request->post('condition');
         $status = ['create' => '待提交', 'check' => '待审批'];
-        $transaction = Yii::$app->db->beginTransaction();
         $canCreate = $this->validateCreate();
         $canStock = $this->validateStock();
-        if(!$canCreate) {
+        if($post['stockUp'] == '否' && !$canCreate) {
             return [
                 'code' => 400,
                 'message' => '您当前无可用创建数量！'
             ];
         }
-        if(!$canStock) {
+        if($post['stockUp'] == '是' && !$canStock) {
             return [
                 'code' => 400,
                 'message' => '您当前无可用备货数量！'
             ];
         }
+        $transaction = Yii::$app->db->beginTransaction();
         try {
             $cateModel = Yii::$app->py_db->createCommand("SELECT Nid,CategoryName FROM B_GoodsCats WHERE CategoryName = :CategoryName")
                 ->bindValues([':CategoryName' => $post['cate']])->queryOne();
@@ -389,12 +389,12 @@ class OaGoodsController extends AdminController
 
         $numberUsed = "select count(og.nid) as usedStock  from proCenter.oa_goods as og  
                       LEFT JOIN proCenter.oa_goodsinfo as ogs on og.nid = ogs.goodsid
-                      where isnull(og.stockUp,'否')='是' and og.developer=:developer 
-                      and DATEDIFF(mm, createDate, getdate()) = 0
+                      where ifnull(og.stockUp,'否')='是' and og.developer=:developer 
+                      and substring(createDate,1,7) = substring(NOW(),1,7)
                       and og.mineId is null AND checkStatus<>'未通过'";
-        $numberHave = "select isnull(stockNumThisMonth,0) as haveStock  from proCenter.oa_stockGoodsNum 
+        $numberHave = "select ifnull(stockNumThisMonth,0) as haveStock  from proCenter.oa_stockGoodsNum 
                       where isStock= 'stock'
-                      and DATEDIFF(mm, createDate, getdate()) = 0
+                      and substring(createDate,1,7) = substring(NOW(),1,7)
                       and developer=:developer";
         $connection = Yii::$app->db;
         try {
@@ -407,7 +407,8 @@ class OaGoodsController extends AdminController
         } catch (\Exception $e) {
             $have = 0;
         }
-        if ($have > 0 && $have <= $used) {
+
+        if ($have >= 0 && $have <= $used) {
             return false;
         }
         return true;
@@ -432,12 +433,12 @@ class OaGoodsController extends AdminController
         }
         $numberUsed = "select count(og.nid) as usedStock  from proCenter.oa_goods as og  
                       LEFT JOIN proCenter.oa_goodsinfo as ogs on og.nid = ogs.goodsid
-                      where isnull(og.stockUp,'否')='否' and og.developer=:developer 
-                      and DATEDIFF(mm, createDate, getdate()) = 0
+                      where ifnull(og.stockUp,'否')='否' and og.developer=:developer 
+                      and substring(createDate,1,7) = substring(NOW(),1,7)
                       and og.mineId is null AND checkStatus<>'未通过'";
-        $numberHave = "select isnull(stockNumThisMonth,0) as haveStock  from proCenter.oa_stockGoodsNum 
+        $numberHave = "select ifnull(stockNumThisMonth,0) as haveStock  from proCenter.oa_stockGoodsNum 
                       where isStock= 'nonstock'
-                      and DATEDIFF(mm, createDate, getdate()) = 0
+                      and substring(createDate,1,7) = substring(NOW(),1,7)
                       and developer=:developer";
         $connection = Yii::$app->db;
         try {
@@ -451,7 +452,7 @@ class OaGoodsController extends AdminController
             $have = 0;
         }
 
-        if($have>0  && $have<=$used) {
+        if($have>=0  && $have<=$used) {
             return false;
         }
         return true;
