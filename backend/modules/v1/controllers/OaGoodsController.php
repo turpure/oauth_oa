@@ -32,7 +32,7 @@ class OaGoodsController extends AdminController
      */
     public function actionList()
     {
-        $user = Yii::$app->user->identity->username;
+        $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
         $post = Yii::$app->request->post('condition');
         return ApiGoods::getGoodsList($user, $post);
     }
@@ -44,7 +44,7 @@ class OaGoodsController extends AdminController
      */
     public function actionForwardList()
     {
-        $user = Yii::$app->user->identity->username;
+        $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
         $post = Yii::$app->request->post('condition');
         return ApiGoods::getForwardList($user, $post);
     }
