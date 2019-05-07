@@ -390,17 +390,15 @@ class ApiReport
                 $data[] = $item;
             }
             $totalAveAmount = array_sum(ArrayHelper::getColumn($data,'aveAmount'));
-            $ret = [['total' => $totalAveAmount], ['detail' => $data]];
 
             $provider = new ArrayDataProvider([
-                'allModels' => $ret,
+                'allModels' => $data,
                 'pagination' => [
                     'pageSize' => isset($condition['pageSize']) && $condition['pageSize'] ? $condition['pageSize'] : 20,
                 ],
             ]);
 
-//            return [$provider, 'total' => $totalAveAmount];
-            return $provider;
+            return ['provider' => $provider,'extra' => ['totalAveAmount' => $totalAveAmount]];
         } catch (\Exception $why) {
             return [
                 'code' => 400,
@@ -443,14 +441,13 @@ class ApiReport
         try {
             $data = Yii::$app->py_db->createCommand($deadSql)->queryAll();
             $totalAveAmount = array_sum(ArrayHelper::getColumn($data,'aveAmount'));
-            $ret = [['total' => $totalAveAmount], ['detail' => $data]];
             $provider = new ArrayDataProvider([
-                'allModels' => $ret,
+                'allModels' => $data,
                 'pagination' => [
                     'pageSize' => isset($condition['pageSize']) && $condition['pageSize'] ? $condition['pageSize'] : 20,
                 ],
             ]);
-            return $provider;
+            return ['provider' => $provider,'extra' => ['totalAveAmount' => $totalAveAmount]];
         } catch (\Exception $why) {
             return [
                 'code' => 400,
@@ -488,15 +485,14 @@ class ApiReport
                 $data[] = $item;
             }
             $totalAveAmount = array_sum(ArrayHelper::getColumn($data,'aveAmount'));
-            $ret = [['total' => $totalAveAmount], ['detail' => $data]];
             $provider = new ArrayDataProvider([
-                'allModels' => $ret,
+                'allModels' => $data,
                 'pagination' => [
                     'pageSize' => $condition['pageSize'],
                 ],
             ]);
 
-            return $provider;
+            return ['provider' => $provider,'extra' => ['totalAveAmount' => $totalAveAmount]];
         } catch (\Exception $why) {
             return [
                 'code' => 400,
