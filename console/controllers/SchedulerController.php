@@ -149,7 +149,7 @@ class SchedulerController extends Controller
             $devList = Yii::$app->py_db->createCommand($devSql)->queryAll();
 
             //插入销售毛利数据(存储过程插入)
-            Yii::$app->db->createCommand("CALL oauth_site_profit;")->execute();
+            Yii::$app->db->createCommand("CALL oauth_site_profit(0);")->execute();
             //插入开发毛利数据
             Yii::$app->db->createCommand()->batchInsert('site_profit',
                 ['username', 'depart', 'role', 'lastProfit', 'profit', 'rate', 'dateRate', 'updateTime'],
@@ -250,6 +250,20 @@ class SchedulerController extends Controller
 
     }
 
+    /**
+     *  销售排名
+     * Date: 2019-05-07 16:15
+     * Author: henry
+     */
+    public function actionSalesRanking(){
+        try {
+            //插入销售毛利数据(存储过程插入)
+            Yii::$app->db->createCommand("CALL oauth_site_profit(1);")->execute();
+            print date('Y-m-d H:i:s') . " INFO:success to update data of sales profit ranking!\n";
+        } catch (\Exception $why) {
+            print date('Y-m-d H:i:s') . " INFO:fail to update data of sales profit ranking cause of $why \n";
+        }
+    }
 
     /** 备货产品计算
      * 每天更新开发员在本月的可用备货数量，每月第一天（1号）更新备份数据
