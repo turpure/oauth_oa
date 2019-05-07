@@ -23,7 +23,7 @@ class ReportController extends AdminController
     public $modelClass = 'backend\modules\v1\models\ApiReport';
 
     public $serializer = [
-        'class' => 'yii\rest\Serializer',
+        'class' => 'backend\modules\v1\utils\PowerfulSerializer',
         'collectionEnvelope' => 'items',
     ];
 

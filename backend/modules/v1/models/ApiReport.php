@@ -351,7 +351,6 @@ class ApiReport
                     'page' => $condition['page'] - 1,
                 ],
             ]);
-
             return $provider;
         } catch (\Exception $why) {
             return [
@@ -389,6 +388,7 @@ class ApiReport
                 $item['salesman'] = isset($userData[$v['suffix']]) ? $userData[$v['suffix']] : '未分配';
                 $data[] = $item;
             }
+            $totalAveAmount = array_sum(ArrayHelper::getColumn($data,'aveAmount'));
 
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
@@ -397,7 +397,7 @@ class ApiReport
                 ],
             ]);
 
-            return $provider;
+            return ['provider' => $provider,'extra' => ['totalAveAmount' => $totalAveAmount]];
         } catch (\Exception $why) {
             return [
                 'code' => 400,
@@ -439,13 +439,14 @@ class ApiReport
         }
         try {
             $data = Yii::$app->py_db->createCommand($deadSql)->queryAll();
+            $totalAveAmount = array_sum(ArrayHelper::getColumn($data,'aveAmount'));
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'pagination' => [
                     'pageSize' => isset($condition['pageSize']) && $condition['pageSize'] ? $condition['pageSize'] : 20,
                 ],
             ]);
-            return $provider;
+            return ['provider' => $provider,'extra' => ['totalAveAmount' => $totalAveAmount]];
         } catch (\Exception $why) {
             return [
                 'code' => 400,
@@ -482,6 +483,7 @@ class ApiReport
                 $item['salesman'] = isset($userData[$v['suffix']]) ? $userData[$v['suffix']] : '未分配';
                 $data[] = $item;
             }
+            $totalAveAmount = array_sum(ArrayHelper::getColumn($data,'aveAmount'));
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'pagination' => [
@@ -489,7 +491,7 @@ class ApiReport
                 ],
             ]);
 
-            return $provider;
+            return ['provider' => $provider,'extra' => ['totalAveAmount' => $totalAveAmount]];
         } catch (\Exception $why) {
             return [
                 'code' => 400,
