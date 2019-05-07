@@ -351,7 +351,6 @@ class ApiReport
                     'page' => $condition['page'] - 1,
                 ],
             ]);
-
             return $provider;
         } catch (\Exception $why) {
             return [

@@ -16,7 +16,7 @@ class PowerfulSerializer extends Serializer
 
     public function serialize($data)
     {
-        if(isset($data['provider'], $data['extra'])) {
+        if(is_array($data) && isset($data['provider'], $data['extra'])) {
             $provider = $data['provider'];
             $extra = $data['extra'];
             $ret = parent::serialize($provider);
@@ -24,6 +24,5 @@ class PowerfulSerializer extends Serializer
             return $ret;
         }
         return parent::serialize($data);
-
     }
 }
