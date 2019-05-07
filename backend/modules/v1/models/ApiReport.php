@@ -389,14 +389,17 @@ class ApiReport
                 $item['salesman'] = isset($userData[$v['suffix']]) ? $userData[$v['suffix']] : '未分配';
                 $data[] = $item;
             }
+            $totalAveAmount = array_sum(ArrayHelper::getColumn($data,'aveAmount'));
+            $ret = [['total' => $totalAveAmount], ['detail' => $data]];
 
             $provider = new ArrayDataProvider([
-                'allModels' => $data,
+                'allModels' => $ret,
                 'pagination' => [
                     'pageSize' => isset($condition['pageSize']) && $condition['pageSize'] ? $condition['pageSize'] : 20,
                 ],
             ]);
 
+//            return [$provider, 'total' => $totalAveAmount];
             return $provider;
         } catch (\Exception $why) {
             return [
@@ -439,8 +442,10 @@ class ApiReport
         }
         try {
             $data = Yii::$app->py_db->createCommand($deadSql)->queryAll();
+            $totalAveAmount = array_sum(ArrayHelper::getColumn($data,'aveAmount'));
+            $ret = [['total' => $totalAveAmount], ['detail' => $data]];
             $provider = new ArrayDataProvider([
-                'allModels' => $data,
+                'allModels' => $ret,
                 'pagination' => [
                     'pageSize' => isset($condition['pageSize']) && $condition['pageSize'] ? $condition['pageSize'] : 20,
                 ],
@@ -482,8 +487,10 @@ class ApiReport
                 $item['salesman'] = isset($userData[$v['suffix']]) ? $userData[$v['suffix']] : '未分配';
                 $data[] = $item;
             }
+            $totalAveAmount = array_sum(ArrayHelper::getColumn($data,'aveAmount'));
+            $ret = [['total' => $totalAveAmount], ['detail' => $data]];
             $provider = new ArrayDataProvider([
-                'allModels' => $data,
+                'allModels' => $ret,
                 'pagination' => [
                     'pageSize' => $condition['pageSize'],
                 ],
