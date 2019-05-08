@@ -486,7 +486,7 @@ class ApiMine
                 $var['tags'] = $basicInfo['tags'];
                 $detail->setAttributes($var);
                 $detail->setAttributes($images);
-                if(!$detail->save()) {
+                if(!$detail->save(false)) {
                     throw new Exception('保存失败！','400003');
                 }
             }
