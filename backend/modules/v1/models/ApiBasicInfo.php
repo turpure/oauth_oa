@@ -272,7 +272,7 @@ class ApiBasicInfo
             ->leftJoin('proCenter.oa_siteCountry c', 's.site=c.code');
         if(isset($condition['servicesName'])) $query->andFilterWhere(['like', 'servicesName', $condition['servicesName']]);
         if(isset($condition['type'])) $query->andFilterWhere(['like', 'type', $condition['type']]);
-        if(isset($condition['site'])) $query->andFilterWhere(['like', 'site', $condition['site']]);
+        if(isset($condition['site'])) $query->andFilterWhere(['like', 'name', $condition['site']]);
         if(isset($condition['ibayShipping'])) $query->andFilterWhere(['like', 'ibayShipping', $condition['ibayShipping']]);
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
