@@ -267,7 +267,9 @@ class ApiBasicInfo
     public static function getShippingServiceList($condition)
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
-        $query = OaShippingService::find();
+        $query = (new Query())->select('s.id,servicesName,type,c.name as site,ibayShipping')
+            ->from('proCenter.oa_shippingService s')
+            ->leftJoin('proCenter.oa_siteCountry c', 's.site=c.code');
         if(isset($condition['servicesName'])) $query->andFilterWhere(['like', 'servicesName', $condition['servicesName']]);
         if(isset($condition['type'])) $query->andFilterWhere(['like', 'type', $condition['type']]);
         if(isset($condition['site'])) $query->andFilterWhere(['like', 'site', $condition['site']]);
@@ -279,11 +281,7 @@ class ApiBasicInfo
             ],
         ]);
 
-        $dataProvider->setSort([
-            'defaultOrder' => [
-                'id' => SORT_DESC,
-            ],
-        ]);
+
         return $dataProvider;
     }
 

@@ -29,7 +29,9 @@ class m190508_093010_oa_ebay_goods extends Migration
                 title, subTitle, outShipToCountry1, outShipToCountry2, mainPage,
                 UPC, EAN, MPN, color, type, material, headKeywords, tailKeywords,
                 intendedUse, reserveField, requiredKeywords, randomKeywords
-                        FROM oa_templates WHERE pid BETWEEN " . ($i*$step + 1) . " AND " . ($i + 1)*$step;
+                FROM oa_templates 
+                LEFT JOIN oa
+                WHERE nid BETWEEN " . ($i*$step + 1) . " AND " . ($i + 1)*$step;
             $list = Yii::$app->py_db->createCommand($pySql)->queryAll();
             // print_r($list);exit;
             $this->batchInsert('proCenter.oa_ebayGoods', [
@@ -49,21 +51,19 @@ class m190508_093010_oa_ebay_goods extends Migration
 
         //ebay_goodssku 数据
 
-        $this->truncateTable('proCenter.oa_ebayGoodsSku');
-        $count = Yii::$app->py_db->createCommand("SELECT max(sid) as num from oa_templatesVar")->queryOne()['num'];
+        /*$this->truncateTable('proCenter.oa_ebayGoodsSku');
+        $count = Yii::$app->py_db->createCommand("SELECT max(nid) as num from oa_templatesVar")->queryOne()['num'];
         $step = 400;
         $max = ceil($count/$step);
         for ($i = 0;$i<=$max;$i++) {
-            $pySql = "SELECT sid AS id,pid AS infoId,sku,property1,property2,property3,weight,memo1,memo2,memo3,memo4,
-                        linkUrl,goodsSkuId,retailPrice,costPrice,stockNum,did,joomPrice,joomShipping
-                        FROM oa_goodssku WHERE sid BETWEEN " . ($i*$step + 1) . " AND " . ($i + 1)*$step;
+            $pySql = "SELECT nid AS id,tid AS itemId, sid, pid AS infoId,sku,quantity,retailPrice, imageUrl,property
+                        FROM oa_templatesVar WHERE nid BETWEEN " . ($i*$step + 1) . " AND " . ($i + 1)*$step;
             $list = Yii::$app->py_db->createCommand($pySql)->queryAll();
             // print_r($list);exit;
             $this->batchInsert('proCenter.oa_ebayGoodsSku', [
-                'id', 'infoId','sku','property1','property2','property3','weight','memo1','memo2','memo3','memo4',
-                'linkUrl','goodsSkuId','retailPrice','costPrice','stockNum','did','joomPrice','joomShipping'
+                'id','itemId', 'sid', 'infoId','sku','quantity','retailPrice', 'imageUrl','property'
             ], $list);
-        }
+        }*/
     }
 
     /**
