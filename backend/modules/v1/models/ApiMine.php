@@ -379,7 +379,7 @@ class ApiMine
                     throw  new Exception('无效的ID', '400002');
                 }
                 $detail->setAttributes(['pySku' => $var['pySku']]);
-                if(!$detail->save()) {
+                if(!$detail->save(false)) {
                     throw new Exception('关联失败！', '400008');
                 }
             }
