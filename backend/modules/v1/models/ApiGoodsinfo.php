@@ -58,17 +58,22 @@ class ApiGoodsinfo
      * @brief 属性信息列表
      * @param $condition
      * @return ActiveDataProvider
+     * @throws \Exception
      */
     public static function getOaGoodsInfoList($condition)
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $type = $condition['type'];
         $query = OaGoodsinfo::find();
+        $user = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($user);
         if ($type === 'goods-info') {
+
+            $query->andWhere(['in','developer', $userList]);
             if (isset($condition['achieveStatus'])) {
                 $query->andFilterWhere(['like', 'achieveStatus', $condition['achieveStatus']]);
             } else {
-                $query->where(['in', 'achieveStatus', static::$goodsInfo]);
+                $query->andWhere(['in', 'achieveStatus', static::$goodsInfo]);
             }
             if (isset($condition['stockUp'])) $query->andFilterWhere(['stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'developer', $condition['developer']]);
@@ -77,10 +82,11 @@ class ApiGoodsinfo
              g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer')
                 ->from('proCenter.oa_goodsinfo gi')
                 ->join('LEFT JOIN', 'proCenter.oa_goods g', 'g.nid=gi.goodsId');
+            $query->andWhere(['or',['in','gi.developer', $userList],['in', 'possessMan1', $userList]]);
             if (isset($condition['picStatus'])) {
                 $query->andFilterWhere(['like', 'picStatus', $condition['picStatus']]);
             } else {
-                $query->where(['in', 'picStatus', static::$pictureInfo]);
+                $query->andWhere(['in', 'picStatus', static::$pictureInfo]);
             }
             if (isset($condition['stockUp'])) $query->andFilterWhere(['gi.stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'gi.developer', $condition['developer']]);
