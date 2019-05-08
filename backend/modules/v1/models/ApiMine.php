@@ -36,6 +36,7 @@ class ApiMine
         $filterTime = ['createTime', 'updateTime'];
         $query =  Helper::generateFilter($query, $filterFields, $condition);
         $query =  Helper::timeFilter($query, $filterTime, $condition);
+        $query = $query->orderBy('id DESC');
         $provider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
