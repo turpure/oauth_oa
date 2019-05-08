@@ -48,7 +48,7 @@ class ApiGoodsinfo
      */
     private static $goodsInfo = ['待处理', '已完善'];
     private static $pictureInfo = ['待处理'];
-    const PlatInfo = 3;
+    const PlatInfo = '已完善';
     const UsdExchange = 6.88;
     const WishTitleLength = 110;
     const EbayTitleLength = 80;
@@ -89,8 +89,7 @@ class ApiGoodsinfo
              g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer')
                 ->from('proCenter.oa_goodsinfo gi')
                 ->join('LEFT JOIN', 'proCenter.oa_goods g', 'g.nid=gi.goodsId');
-            //$query->joinWith('oaGoods')->asArray();
-            $query->where(['filterType' => self::PlatInfo]);
+            $query->where(['picStatus' => self::PlatInfo]);
             if (isset($condition['stockUp'])) $query->andFilterWhere(['gi.stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'gi.developer', $condition['developer']]);
             if (isset($condition['completeStatus'])) {
