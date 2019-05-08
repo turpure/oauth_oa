@@ -403,10 +403,60 @@ class ApiGoodsinfo
         if ($plat === 'wish') {
             $goods = OaWishGoods::findOne(['infoId' => $infoId]);
             $goodsSku = OaWishGoodsSku::findAll(['infoId' => $infoId]);
+            if($goods === null & $goodsSku === null ) {
+                $ret = [
+                    'basicInfo'=> [
+                    'id'=> '', 'sku'=> '', 'title'=> '', 'description'=> '', 'inventory'=> '', 'price'=> '', 'msrp'=> '',
+                    'shipping'=> '', 'shippingTime'=> '', 'tags'=> '', 'mainImage'=> '', 'goodsId'=> '', 'infoId'=> '',
+                    'extraImages'=> '', 'headKeywords'=> '', 'requiredKeywords'=> '', 'randomKeywords'=> '', 'tailKeywords'=> '',
+                    'wishTags'=> '', 'stockUp' => ''
+                ],
+                    'skuInfo' => [[
+                        'id'=> '', 'infoId'=> '', 'sid'=> '', 'sku'=> '', 'color'=> '', 'size'=> '', 'inventory'=> '',
+                        'price'=> '', 'shipping'=> '', 'msrp'=> '', 'shippingTime'=> '', 'linkUrl'=> '', 'goodsSkuId'=> '',
+                        'weight'=> '', 'joomPrice'=> '', 'joomShipping' => ''
+                    ]]];
+                return $ret;
+            }
 
         } elseif ($plat === 'ebay') {
             $goods = OaEbayGoods::findOne(['infoId' => $infoId]);
             $goodsSku = OaEbayGoodsSku::findAll(['infoId' => $infoId]);
+            if ($goods ===null && $goodsSku === null) {
+                $ret = [
+                    'basicInfo'=> [
+                        'nid'=>'', 'goodsId'=>'', 'location'=>'', 'country'=>'', 'postCode'=>'', 'prepareDay'=>'',
+                        'site'=>'', 'listedCate'=>'', 'listedSubcate'=>'', 'title'=>'', 'subTitle'=>'', 'description'=>'',
+                        'quantity'=>'', 'nowPrice'=>'', 'UPC'=>'', 'EAN'=>'', 'brand'=>'', 'MPN'=>'', 'color'=>'', 'type'=>'',
+                        'material'=>'', 'intendedUse'=>'', 'unit'=>'', 'bundleListing'=>'', 'shape'=>'', 'features'=>'',
+                        'regionManufacture'=>'', 'reserveField'=>'', 'inShippingMethod1'=>'', 'inFirstCost1'=>'', 'inSuccessorCost1'=>'',
+                        'inShippingMethod2'=>'', 'inFirstCost2'=>'', 'inSuccessorCost2'=>'', 'outShippingMethod1'=>'',
+                        'outFirstCost1'=>'', 'outSuccessorCost1'=>'', 'outShipToCountry1'=>'', 'outShippingMethod2'=>'',
+                        'outFirstCost2'=>'', 'outSuccessorCost2'=>'', 'outShipToCountry2'=>'', 'mainPage'=>'', 'extraPage'=>'',
+                        'sku'=>'', 'infoId'=>'', 'specifics'=>'{"specifics":[{"Brand":"Unbranded"}]}', 'iBayTemplate'=>'', 'headKeywords'=>'',
+                        'requiredKeywords'=>'["","","","","",""]',
+                        'randomKeywords'=>'["","","","","","","","","",""]',
+                        'tailKeywords'=>'', 'stockUp'=> '否'
+                ],
+                    'skuInfo'=> [[
+                        'id'=>'', 'itemId'=>'', 'sid'=>'', 'infoId'=>'', 'sku'=>'', 'quantity'=>'', 'retailPrice'=>'',
+                        'imageUrl'=>'',
+                        'property'=> [
+                            'columns'=> [[
+                                'Color'=> ''
+                            ], [
+                                'Size'=> ''
+                            ], [
+                                '款式3'=> ''
+                            ], [
+                                'UPC'=> 'Does not apply'
+                            ]],
+                            'pictureKey'=> 'color'
+                        ]
+                    ]
+                    ]];
+                return $ret;
+            }
             foreach ($goodsSku as $sku) {
                 $sku['property'] = json_decode($sku['property']);
             }
