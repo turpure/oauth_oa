@@ -44,18 +44,14 @@ class SettingsController extends AdminController
         if ($request->isPost) {
             $post = $request->post();
             $cond = $post['condition'];
-            if (!$cond['devRate'] && !$cond['saleRate']) {
+            if (!$cond['devRate'] && !$cond['saleRate'] && !$cond['devRate1'] && !$cond['devRate5']) {
                 return [
                     'code' => 400,
                     'message' => 'The salerRate and the devRate can not be empty at the same time！',
                     //'message' => '销售汇率和开发汇率不能同时为空！',
                 ];
             }
-            $condition = [
-                'devRate' => $cond['devRate'],
-                'salerRate' => $cond['saleRate'],
-            ];
-            $ret = ApiSettings::updateExchangeRate($condition);
+            $ret = ApiSettings::updateExchangeRate($cond);
             return $ret;
         }
         if ($request->isGet) {

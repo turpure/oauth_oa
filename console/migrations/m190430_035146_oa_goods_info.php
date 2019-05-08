@@ -12,9 +12,10 @@ class m190430_035146_oa_goods_info extends Migration
      */
     public function safeUp()
     {
-        $this->truncateTable('proCenter.oa_goodsinfo');
-        $count = Yii::$app->py_db->createCommand("SELECT max(nid) as num from oa_goods")->queryOne()['num'];
-        $step = 300;
+        //goodsinfo数据
+        /*$this->truncateTable('proCenter.oa_goodsinfo');
+        $count = Yii::$app->py_db->createCommand("SELECT max(nid) as num from oa_goodsinfo")->queryOne()['num'];
+        $step = 400;
         $max = ceil($count/$step);
         for ($i = 0;$i<=$max;$i++) {
             $pySql = "SELECT pid AS id,goodsId,supplierID,storeID,bgoodsId,stockDays,number,mid,
@@ -42,7 +43,28 @@ class m190430_035146_oa_goods_info extends Migration
                 'possessMan1', 'possessMan2', 'achieveStatus', 'attributeName', 'picStatus',
                 'isVar', 'stockUp', 'isLiquid', 'isPowder', 'isMagnetism', 'isCharged', 'wishPublish', 'headKeywords', 'tailKeywords'
             ], $list);
+        }*/
+
+
+        //goodssku 数据
+
+        $this->truncateTable('proCenter.oa_goodssku');
+        $count = Yii::$app->py_db->createCommand("SELECT max(sid) as num from oa_goodssku")->queryOne()['num'];
+        $step = 400;
+        $max = ceil($count/$step);
+        for ($i = 0;$i<=$max;$i++) {
+            $pySql = "SELECT sid AS id,pid AS infoId,sku,property1,property2,property3,weight,memo1,memo2,memo3,memo4,
+                        linkUrl,goodsSkuId,retailPrice,costPrice,stockNum,did,joomPrice,joomShipping
+                        FROM oa_goodssku WHERE sid BETWEEN " . ($i*$step + 1) . " AND " . ($i + 1)*$step;
+            $list = Yii::$app->py_db->createCommand($pySql)->queryAll();
+            // print_r($list);exit;
+            $this->batchInsert('proCenter.oa_goodssku', [
+                'id', 'infoId','sku','property1','property2','property3','weight','memo1','memo2','memo3','memo4',
+                'linkUrl','goodsSkuId','retailPrice','costPrice','stockNum','did','joomPrice','joomShipping'
+            ], $list);
         }
+
+
     }
 
     /**

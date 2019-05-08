@@ -40,7 +40,8 @@ class ApiSettings
      */
     public static function updateExchangeRate($condition)
     {
-        $sql = "UPDATE Y_RateManagement SET salerRate='{$condition['salerRate']}',devRate='{$condition['devRate']}'";
+        $sql = "UPDATE Y_RateManagement SET salerRate='{$condition['salerRate']}',
+                devRate='{$condition['devRate']}',devRate1='{$condition['devRate1']}',devRate5='{$condition['devRate5']}'";
         $res = Yii::$app->py_db->createCommand($sql)->execute();
         if ($res) {
             $result = true;
