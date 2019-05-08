@@ -489,4 +489,24 @@ class SiteController extends AdminController
         }
     }
 
+
+    /**
+     * 今日爆款
+     * Date: 2019-01-10 18:38
+     * Author: henry
+     * @return mixed
+     * @throws \yii\db\Exception
+     */
+    public function actionSalesRanking()
+    {
+        $plat = \Yii::$app->request->get('plat','eBay-义乌仓');
+        $sql = "SELECT * FROM cache_siteSalesRanking 
+                WHERE  platform = '{$plat}'
+                ORDER BY thisProfit DESC";
+        $query = \Yii::$app->db->createCommand($sql)->queryAll();
+        return $query;
+    }
+
+
+
 }

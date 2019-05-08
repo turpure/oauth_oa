@@ -12,10 +12,10 @@ class m190426_052733_oa_paypal extends Migration
      */
     public function safeUp()
     {
-        $pySql = "SELECT paypalName,GETDATE() AS createDate FROM oa_paypal";
+        $pySql = "SELECT paypalName AS paypal,GETDATE() AS createDate FROM oa_paypal";
         $list = Yii::$app->py_db->createCommand($pySql)->queryAll();
         foreach ($list as $v){
-            $re = Yii::$app->db->createCommand("SELECT * FROM proCenter.oa_paypal WHERE paypalName='{$v['paypalName']}'")->queryOne();
+            $re = Yii::$app->db->createCommand("SELECT * FROM proCenter.oa_paypal WHERE paypal='{$v['paypal']}'")->queryOne();
             //print_r($v);exit;
             if(!$re){
                 $this->insert('proCenter.oa_paypal',  $v);

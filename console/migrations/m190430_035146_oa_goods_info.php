@@ -12,27 +12,37 @@ class m190430_035146_oa_goods_info extends Migration
      */
     public function safeUp()
     {
-        /*
-        $pySql = "SELECT TOP 10 goodsId,supplierID,storeID,bgoodsId,stockDays,number,mid,
+        $this->truncateTable('proCenter.oa_goodsinfo');
+        $count = Yii::$app->py_db->createCommand("SELECT max(nid) as num from oa_goods")->queryOne()['num'];
+        $step = 300;
+        $max = ceil($count/$step);
+        for ($i = 0;$i<=$max;$i++) {
+            $pySql = "SELECT pid AS id,goodsId,supplierID,storeID,bgoodsId,stockDays,number,mid,
                         description,supplierName,declaredValue,devDatetime,updateTime,picCompleteTime,
                         goodsName,aliasCnName,aliasEnName,packName,purchaser,developer,
                         season,goodsCode,completeStatus,goodsStatus,
                         dictionaryName,storeName,picUrl,requiredKeywords,randomKeywords,wishTags,extendStatus,mapPersons,
                         possessMan1,possessMan2,achieveStatus,attributeName,picStatus,
-                        isVar,stockUp,isLiquid,isPowder,isMagnetism,isCharged,wishPublish,headKeywords,tailKeywords
-                        FROM oa_goodsinfo WHERE devDatetime BETWEEN '2019-01-01' AND '2019-04-15' AND isnull(mid,0)=0 ORDER BY pid DESC ";
-        $list = Yii::$app->py_db->createCommand($pySql)->queryAll();
-       // print_r($list);exit;
-        $lis = $this->batchInsert('proCenter.oa_goodsinfo', [
-            'goodsId', 'supplierID', 'storeID', 'bgoodsId', 'stockDays', 'number', 'mid',
-            'description', 'supplierName', 'declaredValue','devDatetime', 'updateTime', 'picCompleteTime',
-            'goodsName', 'aliasCnName', 'aliasEnName','packName', 'purchaser', 'developer',
-            'season', 'goodsCode', 'completeStatus', 'goodsStatus',
-            'dictionaryName', 'storeName', 'picUrl', 'requiredKeywords', 'randomKeywords', 'wishTags', 'extendStatus', 'mapPersons',
-            'possessMan1', 'possessMan2','achieveStatus', 'attributeName','picStatus',
-            'isVar', 'stockUp', 'isLiquid', 'isPowder', 'isMagnetism', 'isCharged', 'wishPublish','headKeywords', 'tailKeywords'
-        ], $list);
-        */
+                        isVar,
+                        CASE WHEN stockUp=1 THEN '是' ELSE '否' END AS stockUp,
+                        CASE WHEN isLiquid=1 THEN '是' ELSE '否' END AS isLiquid,
+                        CASE WHEN isPowder=1 THEN '是' ELSE '否' END AS isPowder,
+                        CASE WHEN isMagnetism=1 THEN '是' ELSE '否' END AS isMagnetism,
+                        CASE WHEN isCharged=1 THEN '是' ELSE '否' END AS isCharged,
+                        wishPublish,headKeywords,tailKeywords
+                        FROM oa_goodsinfo WHERE pid BETWEEN " . ($i*$step + 1) . " AND " . ($i + 1)*$step;
+            $list = Yii::$app->py_db->createCommand($pySql)->queryAll();
+            // print_r($list);exit;
+            $this->batchInsert('proCenter.oa_goodsinfo', [
+                'id', 'goodsId', 'supplierID', 'storeID', 'bgoodsId', 'stockDays', 'number', 'mid',
+                'description', 'supplierName', 'declaredValue', 'devDatetime', 'updateTime', 'picCompleteTime',
+                'goodsName', 'aliasCnName', 'aliasEnName', 'packName', 'purchaser', 'developer',
+                'season', 'goodsCode', 'completeStatus', 'goodsStatus',
+                'dictionaryName', 'storeName', 'picUrl', 'requiredKeywords', 'randomKeywords', 'wishTags', 'extendStatus', 'mapPersons',
+                'possessMan1', 'possessMan2', 'achieveStatus', 'attributeName', 'picStatus',
+                'isVar', 'stockUp', 'isLiquid', 'isPowder', 'isMagnetism', 'isCharged', 'wishPublish', 'headKeywords', 'tailKeywords'
+            ], $list);
+        }
     }
 
     /**

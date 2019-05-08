@@ -25,14 +25,16 @@ class m190419_041157_oa_ebay_suffix extends Migration
         $list = Yii::$app->py_db->createCommand($pySql)->queryAll();
 
         foreach ($list as $v){
-            //$re = Yii::$app->db->createCommand("SELECT * FROM proCenter.oa_ebaySuffix WHERE ebayName='{$v['ebayName']}'")->queryOne();
-            $high = \backend\models\OaPaypal::findOne(['paypal' => $v['high']])['id'];
-            $low = \backend\models\OaPaypal::findOne(['paypal' => $v['low']])['id'];
-            $this->update('proCenter.oa_ebaySuffix',['high' => $high, 'low' => $low],['ebaySuffix' => $v['ebaySuffix']]);
-            //print_r($v);exit;
-            /*if(!$re){
+            $re = Yii::$app->db->createCommand("SELECT * FROM proCenter.oa_ebaySuffix WHERE ebayName='{$v['ebayName']}'")->queryOne();
+            $v['high']  = \backend\models\OaPaypal::findOne(['paypal' => $v['high']])['id'];
+            $v['low'] = \backend\models\OaPaypal::findOne(['paypal' => $v['low']])['id'];
+
+           // print_r($v);exit;
+            if(!$re){
                 $this->insert('proCenter.oa_ebaySuffix',  $v);
-            }*/
+            }else{
+                $this->update('proCenter.oa_ebaySuffix',$v,['ebaySuffix' => $v['ebaySuffix']]);
+            }
         }
     }
 
