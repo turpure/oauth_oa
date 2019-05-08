@@ -67,9 +67,14 @@ class ApiGoodsinfo
         $query = OaGoodsinfo::find();
         $user = Yii::$app->user->identity->username;
         $userList = ApiUser::getUserList($user);
+        $userRole = implode('',ApiUser::getUserRole($user));
         if ($type === 'goods-info') {
+            $query->andWhere(['in','developer', $userList]); //开发看自己
 
-            $query->andWhere(['in','developer', $userList]);
+            //销售看自己推荐
+            if(strpos($userRole, '销售') !== false) {
+                $query->andFilterWhere(['in', 'introducer', $userList]);
+            }
             if (isset($condition['achieveStatus'])) {
                 $query->andFilterWhere(['like', 'achieveStatus', $condition['achieveStatus']]);
             } else {
@@ -82,7 +87,14 @@ class ApiGoodsinfo
              g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer')
                 ->from('proCenter.oa_goodsinfo gi')
                 ->join('LEFT JOIN', 'proCenter.oa_goods g', 'g.nid=gi.goodsId');
+
+            //美工,开发看自己
             $query->andWhere(['or',['in','gi.developer', $userList],['in', 'possessMan1', $userList]]);
+
+            //销售看自己推荐
+            if(strpos($userRole, '销售') !== false) {
+                $query->andFilterWhere(['in', 'introducer', $userList]);
+            }
             if (isset($condition['picStatus'])) {
                 $query->andFilterWhere(['like', 'picStatus', $condition['picStatus']]);
             } else {
@@ -96,6 +108,12 @@ class ApiGoodsinfo
                 ->from('proCenter.oa_goodsinfo gi')
                 ->join('LEFT JOIN', 'proCenter.oa_goods g', 'g.nid=gi.goodsId');
             $query->where(['picStatus' => self::PlatInfo]);
+
+            //美工,开发看自己
+            if(strpos($userRole, '销售') === false) {
+                $query->andWhere(['or',['in','gi.developer', $userList],['in', 'possessMan1', $userList]]);
+            }
+
             if (isset($condition['stockUp'])) $query->andFilterWhere(['gi.stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'gi.developer', $condition['developer']]);
             if (isset($condition['completeStatus'])) {
