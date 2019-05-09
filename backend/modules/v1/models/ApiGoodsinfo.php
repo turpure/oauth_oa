@@ -62,6 +62,7 @@ class ApiGoodsinfo
      */
     public static function getOaGoodsInfoList($condition)
     {
+        //todo 权限需要重写
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $type = $condition['type'];
         $user = Yii::$app->user->identity->username;
@@ -367,6 +368,19 @@ class ApiGoodsinfo
         return true;
     }
 
+    /**
+     * @brief 生成采购单
+     * @param $condition
+     * @return array
+     */
+    public static function makePurchasingOrder($condition)
+    {
+
+        $id = $condition['id'];
+        $goodsInfo = OaGoodsinfo::findOne(['id' =>$id]);
+        $goodsCode = $goodsInfo->goodsCode;
+        return ProductCenterTools::generatePurchasingOrder($goodsCode);
+    }
     ###########################  picture info ########################################
 
     /**

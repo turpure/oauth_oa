@@ -101,7 +101,7 @@ class ProductCenterTools
         if ($bill_number === 0) {
             return [];
         }
-        return [$bill_number];
+        return ['生成采购单:'. $bill_number];
     }
 
 
