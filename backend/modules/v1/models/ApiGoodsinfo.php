@@ -82,7 +82,6 @@ class ApiGoodsinfo
             }
             if (isset($condition['stockUp'])) $query->andFilterWhere(['stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'developer', $condition['developer']]);
-            $query->orderBy('updateTime DESC,id DESC');
         } elseif ($type === 'picture-info') {
             $query = (new Query())->select('gi.*,g.vendor1,g.vendor2,g.vendor3,
              g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer')
@@ -103,7 +102,6 @@ class ApiGoodsinfo
             }
             if (isset($condition['stockUp'])) $query->andFilterWhere(['gi.stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'gi.developer', $condition['developer']]);
-            $query->orderBy('updateTime DESC,id DESC');
         } elseif ($type === 'plat-info') {
             $query = (new Query())->select('gi.*,g.vendor1,g.vendor2,g.vendor3,
              g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer')
@@ -127,7 +125,6 @@ class ApiGoodsinfo
                 }
                 $query->andFilterWhere($filter);
             }
-            $query->orderBy('achieveStatus DESC,id DESC');
         } else {
             return [];
         }
@@ -164,7 +161,7 @@ class ApiGoodsinfo
         if (isset($condition['updateTime']) && !empty($condition['updateTime'])) $query->andFilterWhere(['between', "date_format(updateTime,'%Y-%m-%d')", $condition['updateTime'][0], $condition['updateTime'][1]]);
         if (isset($condition['mid']) && $condition['mid'] === '是') $query->andFilterWhere(['>', "mid", 1]);
         if (isset($condition['mid']) && $condition['mid'] === '否') $query->andFilterWhere(["IFNULL(mid,'')" => '']);
-
+        $query->orderBy('updateTime DESC,id DESC');
 
         $provider = new ActiveDataProvider([
             'query' => $query,
