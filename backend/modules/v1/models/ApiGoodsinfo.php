@@ -137,7 +137,7 @@ class ApiGoodsinfo
         if (isset($condition['aliasCnName'])) $query->andFilterWhere(['like', 'aliasCnName', $condition['aliasCnName']]);
         if (isset($condition['aliasEnName'])) $query->andFilterWhere(['like', 'aliasEnName', $condition['aliasEnName']]);
         if (isset($condition['picStatus'])) $query->andFilterWhere(['like', 'picStatus', $condition['picStatus']]);
-        if (isset($condition['completeStatus'])) $query->andFilterWhere(['like', 'completeStatus', $condition['completeStatus']]);
+        $query = static::completedStatusFilter($query, $condition);
         if (isset($condition['goodsStatus'])) $query->andFilterWhere(['like', 'goodsStatus', $condition['goodsStatus']]);
         if (isset($condition['possessMan1'])) $query->andFilterWhere(['like', 'possessMan1', $condition['possessMan1']]);
         if (isset($condition['purchaser'])) $query->andFilterWhere(['like', 'purchaser', $condition['purchaser']]);
@@ -1337,5 +1337,23 @@ class ApiGoodsinfo
             'Pictures' => $pictures, 'VariationSpecificsSet' => $variationSpecificsSet
         ];
         return json_encode($row);
+    }
+
+    /**
+     * @brief 平台信息完善状态过滤
+     * @param $query
+     * @param $condition
+     * @return mixed
+     */
+    private static function completedStatusFilter($query, $condition)
+    {
+        if (isset($condition['completeStatus'])) {
+            $status = $condition['completeStatus'];
+            asort($status);
+            $status = implode(',', $status);
+            $query->andWhere(['=', 'completeStatus', $status]);
+            return $query;
+        }
+        return $query;
     }
 }
