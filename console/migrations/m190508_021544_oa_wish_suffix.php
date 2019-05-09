@@ -20,20 +20,20 @@ class m190508_021544_oa_wish_suffix extends Migration
         ], $list);*/
 
        //运输方式
-        /*$pySql = "SELECT servicesName,type,siteId AS site,ibayShipping FROM oa_shippingService";
+        $pySql = "SELECT nid AS id,servicesName,type,siteId AS site,ibayShipping FROM oa_shippingService";
         $list = Yii::$app->py_db->createCommand($pySql)->queryAll();
         $this->truncateTable('proCenter.oa_shippingService');
         $this->batchInsert('proCenter.oa_shippingService', [
-            'servicesName','type','site','ibayShipping'
-        ], $list);*/
+            'id','servicesName','type','site','ibayShipping'
+        ], $list);
 
         //开发采购对应关系
-        $pySql = "SELECT ruleName,ruleKey,ruleValue,ruleType FROM oa_sysRules";
+       /* $pySql = "SELECT ruleName,ruleKey,ruleValue,ruleType FROM oa_sysRules";
         $list = Yii::$app->py_db->createCommand($pySql)->queryAll();
         $this->truncateTable('proCenter.oa_sysRules');
         $this->batchInsert('proCenter.oa_sysRules', [
             'ruleName','ruleKey','ruleValue','ruleType'
-        ], $list);
+        ], $list);*/
 
 
     }

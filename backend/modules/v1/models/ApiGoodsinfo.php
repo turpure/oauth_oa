@@ -65,10 +65,11 @@ class ApiGoodsinfo
         $type = $condition['type'];
         $query = OaGoodsinfo::find();
         if ($type === 'goods-info') {
-            if (isset($condition['achieveStatus'])) {
+            if (isset($condition['achieveStatus']) && $condition['achieveStatus']) {
                 $query->andFilterWhere(['like', 'achieveStatus', $condition['achieveStatus']]);
             } else {
-                $query->where(['in', 'achieveStatus', static::$goodsInfo]);
+                $query->where(['in', 'achieveStatus', ['待处理']]);
+                //$query->where(['in', 'achieveStatus', static::$goodsInfo]);
             }
             if (isset($condition['stockUp'])) $query->andFilterWhere(['stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'developer', $condition['developer']]);

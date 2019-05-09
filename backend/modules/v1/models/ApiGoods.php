@@ -245,9 +245,9 @@ class ApiGoods
         $user = User::findOne(['username' => $goodsModel->developer]);
         $_model = new OaGoodsinfo();
         if($goodsModel->mineId){
-            $sql = 'CALL proCenter.oa_joomCheckToGoodsInfo(@mid=:mid,@dictionaryName=:dictionaryName)';
+            $sql = "CALL proCenter.oa_joomCheckToGoodsInfo('{$goodsModel->mineId}','{$dictionary}')";
             $db = Yii::$app->db;
-            $db->createCommand($sql)->bindValues([':mid' => $goodsModel->mineId, ':dictionaryName' => $dictionary])->execute();
+            $db->createCommand($sql)->execute();
         }else{
             $code = self::generateCode($goodsModel->cate);
             $_model->mapPersons = $user->mapPersons;

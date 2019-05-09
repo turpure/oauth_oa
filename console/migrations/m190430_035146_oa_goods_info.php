@@ -13,8 +13,8 @@ class m190430_035146_oa_goods_info extends Migration
     public function safeUp()
     {
         //goodsinfo数据
-        /*$this->truncateTable('proCenter.oa_goodsinfo');
-        $count = Yii::$app->py_db->createCommand("SELECT max(nid) as num from oa_goodsinfo")->queryOne()['num'];
+        $this->truncateTable('proCenter.oa_goodsinfo');
+        $count = Yii::$app->py_db->createCommand("SELECT max(pid) as num from oa_goodsinfo")->queryOne()['num'];
         $step = 400;
         $max = ceil($count/$step);
         for ($i = 0;$i<=$max;$i++) {
@@ -43,7 +43,7 @@ class m190430_035146_oa_goods_info extends Migration
                 'possessMan1', 'possessMan2', 'achieveStatus', 'attributeName', 'picStatus',
                 'isVar', 'stockUp', 'isLiquid', 'isPowder', 'isMagnetism', 'isCharged', 'wishPublish', 'headKeywords', 'tailKeywords'
             ], $list);
-        }*/
+        }
 
 
         //goodssku 数据

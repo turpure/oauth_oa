@@ -316,6 +316,9 @@ class OaGoodsController extends AdminController
                 if (!in_array($model->checkStatus, ['已认领', '待提交', '待审批', '未通过', '已作废'])) {
                     throw new \Exception('Please select the right items to check！');
                 }
+                if(!$model->cate || !$model->subCate || !$model->img || !$model->vendor1){
+                    throw new \Exception('Please perfect the information first！');
+                }
                 $model->checkStatus = '待审批';
                 $model->updateDate = date('Y-m-d H:i:s');
                 $model->save();
