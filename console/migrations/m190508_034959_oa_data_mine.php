@@ -12,7 +12,7 @@ class m190508_034959_oa_data_mine extends Migration
      */
     public function safeUp()
     {
-        $pySql = "select top 10 id,proId,platForm,progress,creator,createTime,updateTime,detailStatus,cat,subCat,goodsCode,devStatus,mainImage,pyGoodsCode,infoId,spAttribute,isLiquid,isPowder,isMagnetism,isCharged from oa_data_mine ";
+        $pySql = "select id,proId,platForm,progress,creator,createTime,updateTime,detailStatus,cat,subCat,goodsCode,devStatus,mainImage,pyGoodsCode,infoId,spAttribute,isLiquid,isPowder,isMagnetism,isCharged from oa_data_mine ";
         $ret = Yii::$app->py_db->createCommand($pySql)->queryAll();
         foreach ($ret as $row) {
             $this->insert('proCenter.oa_dataMine', $row);
