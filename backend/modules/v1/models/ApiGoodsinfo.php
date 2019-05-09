@@ -58,39 +58,68 @@ class ApiGoodsinfo
      * @brief 属性信息列表
      * @param $condition
      * @return ActiveDataProvider
+     * @throws \Exception
      */
     public static function getOaGoodsInfoList($condition)
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $type = $condition['type'];
         $query = OaGoodsinfo::find();
+        $user = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($user);
+        $userRole = implode('',ApiUser::getUserRole($user));
         if ($type === 'goods-info') {
+
             if (isset($condition['achieveStatus']) && $condition['achieveStatus']) {
                 $query->andFilterWhere(['like', 'achieveStatus', $condition['achieveStatus']]);
             } else {
                 $query->where(['in', 'achieveStatus', ['待处理']]);
                 //$query->where(['in', 'achieveStatus', static::$goodsInfo]);
             }
+
+            $query->andWhere(['in','developer', $userList]); //开发看自己
+
+            //销售看自己推荐
+            if(strpos($userRole, '销售') !== false) {
+                $query->andFilterWhere(['in', 'introducer', $userList]);
+            }
+
             if (isset($condition['stockUp'])) $query->andFilterWhere(['stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'developer', $condition['developer']]);
+            $query->orderBy('updateTime DESC,id DESC');
         } elseif ($type === 'picture-info') {
             $query = (new Query())->select('gi.*,g.vendor1,g.vendor2,g.vendor3,
              g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer')
                 ->from('proCenter.oa_goodsinfo gi')
                 ->join('LEFT JOIN', 'proCenter.oa_goods g', 'g.nid=gi.goodsId');
+
+            //美工,开发看自己
+            $query->andWhere(['or',['in','gi.developer', $userList],['in', 'possessMan1', $userList]]);
+
+            //销售看自己推荐
+            if(strpos($userRole, '销售') !== false) {
+                $query->andFilterWhere(['in', 'introducer', $userList]);
+            }
             if (isset($condition['picStatus'])) {
                 $query->andFilterWhere(['like', 'picStatus', $condition['picStatus']]);
             } else {
-                $query->where(['in', 'picStatus', static::$pictureInfo]);
+                $query->andWhere(['in', 'picStatus', static::$pictureInfo]);
             }
             if (isset($condition['stockUp'])) $query->andFilterWhere(['gi.stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'gi.developer', $condition['developer']]);
+            $query->orderBy('updateTime DESC,id DESC');
         } elseif ($type === 'plat-info') {
             $query = (new Query())->select('gi.*,g.vendor1,g.vendor2,g.vendor3,
              g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer')
                 ->from('proCenter.oa_goodsinfo gi')
                 ->join('LEFT JOIN', 'proCenter.oa_goods g', 'g.nid=gi.goodsId');
             $query->where(['picStatus' => self::PlatInfo]);
+
+            //美工,开发看自己
+            if(strpos($userRole, '销售') === false) {
+                $query->andWhere(['or',['in','gi.developer', $userList],['in', 'possessMan1', $userList]]);
+            }
+
             if (isset($condition['stockUp'])) $query->andFilterWhere(['gi.stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'gi.developer', $condition['developer']]);
             if (isset($condition['completeStatus'])) {
@@ -102,6 +131,7 @@ class ApiGoodsinfo
                 }
                 $query->andFilterWhere($filter);
             }
+            $query->orderBy('achieveStatus DESC,id DESC');
         } else {
             return [];
         }
@@ -139,7 +169,6 @@ class ApiGoodsinfo
         if (isset($condition['mid']) && $condition['mid'] === '是') $query->andFilterWhere(['>', "mid", 1]);
         if (isset($condition['mid']) && $condition['mid'] === '否') $query->andFilterWhere(["IFNULL(mid,'')" => '']);
 
-        $query->orderBy('achieveStatus DESC,id DESC');
 
         $provider = new ActiveDataProvider([
             'query' => $query,

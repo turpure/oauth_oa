@@ -56,7 +56,8 @@ class OaDataMineDetail extends \yii\db\ActiveRecord
         return [
             [['mid'], 'integer'],
             [['proSize', 'price', 'msrPrice', 'shippingWeight'], 'number'],
-            [['parentId', 'proName', 'description', 'tags', 'childId','color', 'quantity', 'shipping', 'varMainImage', 'extraImage0', 'extraImage1', 'extraImage2', 'extraImage3', 'extraImage4', 'extraImage5', 'extraImage6', 'extraImage7', 'extraImage8', 'extraImage9', 'extraImage10', 'mainImage'], 'string', 'max' => 255],
+            [['parentId', 'proName', 'description', 'tags', 'childId','color', 'quantity', 'shipping', 'varMainImage', 'extraImage0', 'extraImage1', 'extraImage2', 'extraImage3', 'extraImage4', 'extraImage5', 'extraImage6', 'extraImage7', 'extraImage8', 'extraImage9', 'extraImage10'], 'string', 'max' => 355],
+            [['mainImage'], 'string', 'max' => 500],
             [['shippingTime'], 'string', 'max' => 20],
             [['pySku'], 'string', 'max' => 40],
         ];

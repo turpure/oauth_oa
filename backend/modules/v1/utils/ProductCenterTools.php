@@ -134,6 +134,7 @@ class ProductCenterTools
             [
                 'filterType' => static::PlatInfo,
                 'picStatus' => '已完善',
+                'picCompleteTime' => date('Y-m-d H:i:s'),
             ]
         );
         if (!$pictureInfo->save()) {
