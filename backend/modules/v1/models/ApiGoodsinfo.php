@@ -74,7 +74,6 @@ class ApiGoodsinfo
                 $query->andFilterWhere(['like', 'achieveStatus', $condition['achieveStatus']]);
             } else {
                 $query->where(['in', 'achieveStatus', ['待处理']]);
-                //$query->where(['in', 'achieveStatus', static::$goodsInfo]);
             }
 
             $query->andWhere(['in','developer', $userList]); //开发看自己
@@ -1347,7 +1346,7 @@ class ApiGoodsinfo
      */
     private static function completedStatusFilter($query, $condition)
     {
-        if (isset($condition['completeStatus'])) {
+        if (isset($condition['completeStatus']) && !empty($condition['completeStatus'])) {
             $status = $condition['completeStatus'];
             asort($status);
             $status = implode(',', $status);
