@@ -64,25 +64,31 @@ class ApiGoodsinfo
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $type = $condition['type'];
-        $query = OaGoodsinfo::find();
         $user = Yii::$app->user->identity->username;
         $userList = ApiUser::getUserList($user);
         $userRole = implode('',ApiUser::getUserRole($user));
         if ($type === 'goods-info') {
-
-            if (isset($condition['achieveStatus']) && $condition['achieveStatus']) {
+            $query = (new Query())->select('gi.*,g.vendor1,g.vendor2,g.vendor3,
+             g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer')
+                ->from('proCenter.oa_goodsinfo gi')
+                ->join('LEFT JOIN', 'proCenter.oa_goods g', 'g.nid=gi.goodsId');
+            if (isset($condition['achieveStatus']) && $condition['achieveStatus'] ||
+                isset($condition['goodsCode']) && $condition['goodsCode']
+            ) {
                 $query->andFilterWhere(['like', 'achieveStatus', $condition['achieveStatus']]);
             } else {
                 $query->where(['in', 'achieveStatus', ['待处理']]);
-                //$query->where(['in', 'achieveStatus', static::$goodsInfo]);
             }
+            //print_r($userRole);exit;
 
-            $query->andWhere(['in','developer', $userList]); //开发看自己
-
-            //销售看自己推荐
-            if(strpos($userRole, '销售') !== false) {
+            if(strpos($userRole, '开发') !== false) {
+                $query->andWhere(['or',['in','gi.developer', $userList],['in', 'introducer', $userList]]);
+            }else if(strpos($userRole, '美工') !== false) {
+                $query->andWhere(['or',['in','possessMan1', $userList],['in', 'introducer', $userList]]);
+            }else if(strpos($userRole, '销售') !== false) {
                 $query->andFilterWhere(['in', 'introducer', $userList]);
             }
+
 
             if (isset($condition['stockUp'])) $query->andFilterWhere(['stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'developer', $condition['developer']]);
