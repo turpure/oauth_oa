@@ -98,13 +98,15 @@ class ApiGoodsinfo
                 ->from('proCenter.oa_goodsinfo gi')
                 ->join('LEFT JOIN', 'proCenter.oa_goods g', 'g.nid=gi.goodsId');
 
-            //美工,开发看自己
-            $query->andWhere(['or',['in','gi.developer', $userList],['in', 'possessMan1', $userList]]);
-
-            //销售看自己推荐
-            if(strpos($userRole, '销售') !== false) {
+            if(strpos($userRole, '开发') !== false) {
+                $query->andWhere(['or',['in','gi.developer', $userList],['in', 'introducer', $userList]]);
+            }else if(strpos($userRole, '美工') !== false) {
+                $query->andWhere(['or',['in','possessMan1', $userList],['in', 'introducer', $userList]]);
+            }else if(strpos($userRole, '销售') !== false) {
                 $query->andFilterWhere(['in', 'introducer', $userList]);
             }
+
+
             if (isset($condition['picStatus'])) {
                 $query->andFilterWhere(['like', 'picStatus', $condition['picStatus']]);
             } else {
@@ -172,7 +174,7 @@ class ApiGoodsinfo
         if (isset($condition['mid']) && $condition['mid'] === '是') $query->andFilterWhere(['>', "mid", 1]);
         if (isset($condition['mid']) && $condition['mid'] === '否') $query->andFilterWhere(["IFNULL(mid,'')" => '']);
         $query->orderBy('updateTime DESC,id DESC');
-
+        //print_r($query->createCommand()->getRawSql());exit;
         $provider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
