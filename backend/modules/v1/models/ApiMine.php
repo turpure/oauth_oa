@@ -357,7 +357,7 @@ class ApiMine
             throw  new Exception('无效的ID', '400002');
         }
         $goodsCode = $mine->goodsCode;
-        $variations = OaDataMineDetail::find()->select('id,childId,color,proSize,pySku,mainImage')
+        $variations = OaDataMineDetail::find()->select('id,childId,color,proSize,pySku,varMainImage')
             ->where(['mid' => $id])->asArray()->all();
         return ['goodsCode' => $goodsCode, 'pyGoodsCode' => '', 'variations' => $variations];
     }
