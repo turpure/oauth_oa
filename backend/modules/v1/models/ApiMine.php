@@ -25,6 +25,7 @@ class ApiMine
      * @brief 获取采集数据列表
      * @param $condition
      * @return ActiveDataProvider
+     * @throws Exception
      */
     public static function getMineList($condition)
     {
@@ -36,6 +37,12 @@ class ApiMine
         $filterTime = ['createTime', 'updateTime'];
         $query =  Helper::generateFilter($query, $filterFields, $condition);
         $query =  Helper::timeFilter($query, $filterTime, $condition);
+
+        //产品权限
+        $user = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($user);
+        $query->andWhere(['in', 'creator', $userList]);
+
         $query = $query->orderBy('id DESC');
         $provider = new ActiveDataProvider([
             'query' => $query,
