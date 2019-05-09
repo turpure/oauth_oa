@@ -633,7 +633,7 @@ class ApiGoodsinfo
         $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
         $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
         $wishAccounts = OaWishSuffix::find()->where(['like', 'parentCategory', $goods['cate']])
-            ->orWhere(['parentCategory' => ''])
+            ->orWhere(["IFNULL(parentCategory,'')" => ''])
             ->asArray()->all();
         $keyWords = static::preKeywords($wishInfo);
 
