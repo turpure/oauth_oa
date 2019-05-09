@@ -3,7 +3,8 @@
 namespace backend\models;
 
 use Yii;
-
+use yii\behaviors\TimestampBehavior;
+use yii\db\Expression;
 /**
  * This is the model class for table "proCenter.oa_goodsinfo".
  *
@@ -65,6 +66,20 @@ class OaGoodsinfo extends \yii\db\ActiveRecord
     public static function tableName()
     {
         return 'proCenter.oa_goodsinfo';
+    }
+
+
+    public function behaviors()
+    {
+        return [[
+            /**
+             * TimestampBehavior：
+             */
+            'class' => TimestampBehavior::className(),
+            'createdAtAttribute' => false,
+            'updatedAtAttribute' => 'updateTime',
+            'value' => new Expression('NOW()'),
+        ],];
     }
 
     /**
