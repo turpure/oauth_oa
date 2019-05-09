@@ -29,6 +29,7 @@ class ApiMine
      */
     public static function getMineList($condition)
     {
+        // todo 权限需要重写
 
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $query = OaDataMine::find();
@@ -41,7 +42,11 @@ class ApiMine
         //产品权限
         $user = Yii::$app->user->identity->username;
         $userList = ApiUser::getUserList($user);
-        $query->andWhere(['in', 'creator', $userList]);
+        $userRole = implode('',ApiUser::getUserRole($user));
+        //销售看自己
+        if(strpos($userRole, '销售') !== false) {
+            $query->andWhere(['in', 'creator', $userList]);
+        }
 
         $query = $query->orderBy('id DESC');
         $provider = new ActiveDataProvider([
