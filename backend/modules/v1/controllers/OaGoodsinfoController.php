@@ -240,6 +240,20 @@ class OaGoodsinfoController extends AdminController
         return ApiGoodsinfo::saveAttribute($condition);
     }
 
+    /**
+     * @brief 生成采购单
+     * @return array
+     */
+    public function actionMakePurchasingOrder()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiGoodsinfo::makePurchasingOrder($condition);
+        }
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(),'message' => $why->getMessage()];
+        }
+    }
 
     /**
      * @brief 生成商品编码
