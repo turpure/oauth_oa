@@ -119,15 +119,15 @@ class ApiGoodsinfo
 
             if (isset($condition['stockUp'])) $query->andFilterWhere(['gi.stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'gi.developer', $condition['developer']]);
-            if (isset($condition['completeStatus'])) {
-                $status = $condition['completeStatus'];
-                $filter = ['or'];
-                foreach ($status as $st) {
-                    $row = ['like', 'completeStatus', $st];
-                    $filter[] = $row;
-                }
-                $query->andFilterWhere($filter);
-            }
+//            if (isset($condition['completeStatus'])) {
+//                $status = $condition['completeStatus'];
+//                $filter = ['or'];
+//                foreach ($status as $st) {
+//                    $row = ['like', 'completeStatus', $st];
+//                    $filter[] = $row;
+//                }
+//                $query->andFilterWhere($filter);
+//            }
         } else {
             return [];
         }
@@ -1348,10 +1348,26 @@ class ApiGoodsinfo
     {
         if (isset($condition['completeStatus']) && !empty($condition['completeStatus'])) {
             $status = $condition['completeStatus'];
-            asort($status);
-            $status = implode(',', $status);
-            $query->andWhere(['=', 'completeStatus', $status]);
-            return $query;
+            if(in_array('未设置', $status)) {
+                $status = array_filter($status,function($ele) { return $ele !=='未设置';});
+                asort($status);
+                if(empty($status)) {
+                    $query->andWhere(['is','completeStatus' , null]);
+                    return $query;
+                }
+                else {
+                    $status = implode(',', $status);
+                    $query->andWhere(['or',['is','completeStatus' , null],['=', 'completeStatus', $status]]);
+                    return $query;
+                }
+
+            }
+            else {
+                asort($status);
+                $status = implode(',', $status);
+                $query->andWhere(['=', 'completeStatus', $status]);
+                return $query;
+            }
         }
         return $query;
     }
