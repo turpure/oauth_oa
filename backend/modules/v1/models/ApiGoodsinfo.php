@@ -139,12 +139,12 @@ class ApiGoodsinfo
         if (isset($condition['aliasEnName'])) $query->andFilterWhere(['like', 'aliasEnName', $condition['aliasEnName']]);
         if (isset($condition['picStatus'])) $query->andFilterWhere(['like', 'picStatus', $condition['picStatus']]);
         $query = static::completedStatusFilter($query, $condition);
+//        $query = static::forbiddenPlatFilter($query, $condition);
         if (isset($condition['goodsStatus'])) $query->andFilterWhere(['like', 'goodsStatus', $condition['goodsStatus']]);
         if (isset($condition['possessMan1'])) $query->andFilterWhere(['like', 'possessMan1', $condition['possessMan1']]);
         if (isset($condition['purchaser'])) $query->andFilterWhere(['like', 'purchaser', $condition['purchaser']]);
         if (isset($condition['introducer'])) $query->andFilterWhere(['like', 'introducer', $condition['introducer']]);
         if (isset($condition['mapPersons'])) $query->andFilterWhere(['like', 'mapPersons', $condition['mapPersons']]);
-        if (isset($condition['dictionaryName'])) $query->andFilterWhere(['like', 'dictionaryName', $condition['dictionaryName']]);
         if (isset($condition['supplierName'])) $query->andFilterWhere(['like', 'supplierName', $condition['supplierName']]);
         if (isset($condition['cate'])) $query->andFilterWhere(['like', 'cate', $condition['cate']]);
         if (isset($condition['subCate'])) $query->andFilterWhere(['like', 'subCate', $condition['subCate']]);
@@ -1388,6 +1388,35 @@ class ApiGoodsinfo
                 asort($status);
                 $status = implode(',', $status);
                 $query->andWhere(['=', 'completeStatus', $status]);
+                return $query;
+            }
+        }
+        return $query;
+    }
+
+    private static function forbinddenPlatFilter($query, $condition)
+    {
+        //todo 禁售平台过滤
+        if (isset($condition['dictionaryName']) && !empty($condition['dictionaryName'])) {
+            $status = $condition['dictionaryName'];
+            if(in_array('未设置', $status)) {
+                $status = array_filter($status,function($ele) { return $ele !=='未设置';});
+                asort($status);
+                if(empty($status)) {
+                    $query->andWhere(['=',"ifnull(dictionaryName,'')" , '']);
+                    return $query;
+                }
+                else {
+                    $status = implode(',', $status);
+                    $query->andWhere(['or',['=',"ifnull(dictionaryName,'')" , ''],['like', 'dictionaryName', $status]]);
+                    return $query;
+                }
+
+            }
+            else {
+                asort($status);
+                $status = implode(',', $status);
+                $query->andWhere(['=', 'dictionaryName', $status]);
                 return $query;
             }
         }
