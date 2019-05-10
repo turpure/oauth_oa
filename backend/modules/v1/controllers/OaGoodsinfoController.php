@@ -368,6 +368,7 @@ class OaGoodsinfoController extends AdminController
     /**
      * @brief get all entries in plat module
      * @return ActiveDataProvider
+     * @throws \Exception
      */
     public function actionPlatList()
     {

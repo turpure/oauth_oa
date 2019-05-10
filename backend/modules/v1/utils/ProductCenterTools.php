@@ -18,6 +18,7 @@ use backend\models\ShopElf\BDictionary;
 use backend\models\ShopElf\BGoods;
 use backend\models\ShopElf\BGoodSCats;
 use backend\models\ShopElf\BGoodsSku;
+use backend\models\ShopElf\BGoodsSKULinkShop;
 use backend\models\ShopElf\BStore;
 use backend\models\ShopElf\CGStockOrdeD;
 use backend\models\ShopElf\CGStockOrderM;
@@ -200,6 +201,8 @@ class ProductCenterTools
                 $condition = ['id' => $id];
                 $goodsInfo = ApiGoodsinfo::getAttributeInfo($condition);
                 $skuInfo = $goodsInfo['skuInfo'];
+                // todo 采集商品要关联店铺SKU
+                static::_bindShopSku($goodsInfo);
                 $bGoods = static::_preGoodsInfo($goodsInfo);
                 $bGoods = static::_bGoodsImport($bGoods);
                 static::_addUserRight($bGoods);// 增加商品权限
@@ -208,13 +211,14 @@ class ProductCenterTools
                 $bGoodsSku = static::_bGoodsSkuImport($bGoodsSku, $bGoods);
                 $stock = static::_preCurrentStockInfo($bGoodsSku);
                 static::_stockImport($stock);
+
                 //更新产品信息状态
                 $goodsInfo['basicInfo']['goodsInfo']->achieveStatus = '已导入';
                 $goodsInfo['basicInfo']['goodsInfo']->updateTime = date('Y-m-d H:i:s');
                 if(!$goodsInfo['basicInfo']['goodsInfo']->save()){
                     throw new \Exception('save goods info failed');
                 }
-                // todo 采集商品要关联店铺SKU
+
             }
             $trans->commit();
             return true;
@@ -266,6 +270,25 @@ class ProductCenterTools
             if (!$_userRight->save()) {
                 throw new \Exception('fail to add user right');
             }
+        }
+    }
+
+    private static function _bindShopSku($goodsInfo)
+    {
+        $mid = $goodsInfo['basicInfo']['goodsInfo']['mid'] ?: '';
+        if(!empty($mid)) {
+           $sql = "SELECT ogs.sku as SKU,amd.childId as ShopSKU FROM proCenter.oa_goodssku AS ogs LEFT JOIN proCenter.oa_dataMineDetail AS amd ON ogs.did = amd.id WHERE amd.mid = $mid";
+           $ret = Yii::$app->db->createCommand($sql)->queryAll();
+           foreach ($ret as $row) {
+               $linkShop =  BGoodsSKULinkShop::findOne(['ShopSKU' => $row['ShopSKU']]);
+               if ($linkShop === null) {
+                   $linkShop = new BGoodsSKULinkShop();
+               }
+               $linkShop->setAttributes($row);
+               if(!$linkShop->save()) {
+                   throw new \Exception('关联店铺SKU失败！','400');
+               }
+           }
         }
     }
 
