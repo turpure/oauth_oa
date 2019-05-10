@@ -38,6 +38,15 @@ class OaGoodsController extends AdminController
     }
 
     /**
+     * @brief 获取所有开发
+     * @return array
+     */
+    public function actionDeveloper()
+    {
+        return ApiGoods::getDeveloper();
+    }
+
+    /**
      * 正向开发列表
      * @return \yii\data\ActiveDataProvider
      * @throws \yii\db\Exception
