@@ -775,7 +775,7 @@ class ApiGoodsinfo
     {
         $ebayInfo = OaEbayGoods::find()->joinWith('oaEbayGoodsSku')
             ->where(['oa_ebayGoods.infoId' => $id])->asArray()->one();
-        $goodsInfo = OaGoodsinfo::findOne(['id' => $id]);
+        $goodsInfo = OaGoodsinfo::findOne($id);
         if ($ebayInfo === null || $goodsInfo === null) {
             return ['code' => '400001', 'message' => '无效的ID'];
         }
@@ -821,7 +821,6 @@ class ApiGoodsinfo
         ];
         $price = self::getEbayPrice($ebayInfo);
         $keyWords = static::preKeywords($ebayInfo);
-
         foreach ($accounts as $account) {
             $ebayAccount = OaEbaySuffix::find()->where(['ebaySuffix' => $account])->asArray()->one();
             $payPal = self::getEbayPayPal($price, $ebayAccount);
@@ -919,7 +918,7 @@ class ApiGoodsinfo
             $row['IBayEffectType'] = '1';
             $row['IbayEffectImg'] = static::getEbayPicture($goodsInfo, $ebayInfo, $account);
             $row['IbayCrossSelling'] = '';
-            $row['Variation'] = static::getEbayVariation($goodsInfo['isVar'], $ebayInfo['oaEbayGoodsSku'], $ebayAccount['nameCode']);
+            $row['Variation'] = static::getEbayVariation($goodsInfo['isVar'], $ebayInfo, $ebayAccount['nameCode']);
             $row['outofstockcontrol'] = '0';
             $row['EPID'] = 'Does not apply';
             $row['ISBN'] = 'Does not apply';
@@ -1272,7 +1271,7 @@ class ApiGoodsinfo
     private static function getEbayDescription($description)
     {
         return '<span style="font-family:Arial;font-size:14px;">' .
-            str_replace($description, '\n', '</br>') . '</span>';
+            str_replace( "\n", '</br>', $description) . '</span>';
     }
 
     /**
@@ -1315,8 +1314,9 @@ class ApiGoodsinfo
      * @return string
      *
      */
-    private static function getEbayVariation($isVar, $skuInfo, $account)
+    private static function getEbayVariation($isVar, $ebayInfo, $account )
     {
+        $skuInfo = $ebayInfo['oaEbayGoodsSku'];
         if ($isVar === '否') {
             return '';
         }
@@ -1333,10 +1333,12 @@ class ApiGoodsinfo
                     break;
                 }
             }
+            $item = [];
             foreach ($columns as $col) {
                 $map = ['Name' => array_keys($col)[0], 'Value' => array_values($col)[0]];
-                $variationSpecificsSet['NameValueList'][] = $map;
+                $item[] = $map;
             }
+            $variationSpecificsSet['NameValueList'] = $item;
             $pic = ['VariationSpecificPictureSet' => ['PictureURL' => [$sku['imageUrl']]], 'Value' => $value['value']];
             $pictures[] = $pic;
             $var = [
@@ -1347,8 +1349,10 @@ class ApiGoodsinfo
             ];
             $variation[] = $var;
         }
+       // print_r($variation);exit;
+        $extraImages = explode("\n", $ebayInfo['extraPage']);
         $row = [
-            'assoc_pic_key' => '', 'assoc_pic_count' => '', 'Variation' => $variation,
+            'assoc_pic_key' => $picKey, 'assoc_pic_count' => count($extraImages), 'Variation' => $variation,
             'Pictures' => $pictures, 'VariationSpecificsSet' => $variationSpecificsSet
         ];
         return json_encode($row);
