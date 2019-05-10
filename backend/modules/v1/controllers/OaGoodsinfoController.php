@@ -464,6 +464,11 @@ class OaGoodsinfoController extends AdminController
         return ['未设置','joom', 'wish', 'ebay'];
     }
 
+    public function actionPlatForbiddenPlat()
+    {
+        return array_merge(['未设置'],AttributeInfoTools::getPlat());
+    }
+
     /**
      * @brief 所有的ebay账号
      * @return array
@@ -472,7 +477,6 @@ class OaGoodsinfoController extends AdminController
     {
         return ApiGoodsinfo::getEbayAccount();
     }
-
 
     /**
      * @brief 所有的eBay仓库
