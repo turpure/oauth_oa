@@ -281,6 +281,7 @@ class OaGoodsinfoController extends AdminController
     /**
      * @brief get all entries in picture module
      * @return ActiveDataProvider
+     * @throws \Exception
      */
     public function actionPictureList()
     {

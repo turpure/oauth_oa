@@ -373,6 +373,7 @@ class ApiGoodsinfo
      * @brief 生成采购单
      * @param $condition
      * @return array
+     * @throws \Exception
      */
     public static function makePurchasingOrder($condition)
     {
@@ -380,7 +381,7 @@ class ApiGoodsinfo
         $id = $condition['id'];
         $goodsInfo = OaGoodsinfo::findOne(['id' =>$id]);
         $goodsCode = $goodsInfo->goodsCode;
-        return ProductCenterTools::generatePurchasingOrder($goodsCode);
+        return ProductCenterTools::purchasingOrder($goodsCode);
     }
     ###########################  picture info ########################################
 
