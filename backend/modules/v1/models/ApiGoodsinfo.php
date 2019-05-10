@@ -670,6 +670,7 @@ class ApiGoodsinfo
                     break;
                 }
             }
+
             $variantInfo = static::getWishVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
             $row['sku'] = $wishInfo['sku'] . $account['suffix'];
             $row['selleruserid'] = $account['ibaySuffix'];
@@ -683,7 +684,7 @@ class ApiGoodsinfo
             $row['extra_images'] = $wishInfo['extraImages'];
             $row['variants'] = $variantInfo['variant'];
             $row['landing_page_url'] = $wishInfo['mainImage'];
-            $row['tags'] = $wishInfo['tags'];
+            $row['tags'] = $wishInfo['wishTags'];
             $row['description'] = $wishInfo['description'];
             $row['brand'] = '';
             $row['upc'] = '';
