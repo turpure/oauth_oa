@@ -102,6 +102,7 @@ class ApiGoodsinfo
             if(strpos($userRole, '开发') !== false) {
                 $query->andWhere(['or',['in','gi.developer', $userList],['in', 'introducer', $userList]]);
             }else if(strpos($userRole, '美工') !== false) {
+                $userList = array_merge($userList, array_map(function ($user) {return $user.'-2';}, $userList));
                 $query->andWhere(['or',['in','possessMan1', $userList],['in', 'introducer', $userList]]);
             }else if(strpos($userRole, '销售') !== false) {
                 $query->andFilterWhere(['in', 'introducer', $userList]);
