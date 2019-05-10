@@ -96,7 +96,7 @@ class ProductCenterTools
     {
         $sql = 'exec oa_P_make_orders :goodsCode';
         $connection = yii::$app->py_db;
-        $ret = $connection->createCommand($sql)->bindValue('goodsCOde', $goodsCode)->queryOne();
+        $ret = $connection->createCommand($sql)->bindValue(':goodsCode', $goodsCode)->queryOne();
         $bill_number = $ret['billNumber'];
         if ($bill_number === 0) {
             return [];
