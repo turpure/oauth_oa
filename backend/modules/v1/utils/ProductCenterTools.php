@@ -7,6 +7,7 @@
 
 namespace backend\modules\v1\utils;
 
+use backend\models\OaGoods;
 use backend\models\OaGoodsinfo;
 use backend\models\OaGoodsSku;
 use backend\models\OaEbayGoods;
@@ -17,7 +18,10 @@ use backend\models\ShopElf\BDictionary;
 use backend\models\ShopElf\BGoods;
 use backend\models\ShopElf\BGoodSCats;
 use backend\models\ShopElf\BGoodsSku;
+use backend\models\ShopElf\BGoodsSKULinkShop;
 use backend\models\ShopElf\BStore;
+use backend\models\ShopElf\CGStockOrdeD;
+use backend\models\ShopElf\CGStockOrderM;
 use backend\models\ShopElf\KCCurrentStock;
 use backend\models\ShopElf\BSupplier;
 use backend\models\ShopElf\BPackInfo;
@@ -87,21 +91,27 @@ class ProductCenterTools
         return static::_preImport($infoId);
     }
 
+
     /**
-     * @brief 自动生成采购单
-     * @param string
+     * @brief 生成采购单事务
+     * @param $goodsCode
      * @return array
+     * @throws \Exception
      */
-    public static function generatePurchasingOrder($goodsCode)
+    public static function purchasingOrder($goodsCode)
     {
-        $sql = 'exec oa_P_make_orders :goodsCode';
-        $connection = yii::$app->py_db;
-        $ret = $connection->createCommand($sql)->bindValue(':goodsCode', $goodsCode)->queryOne();
-        $bill_number = $ret['billNumber'];
-        if ($bill_number === 0) {
-            return [];
+        $trans = Yii::$app->py_db->beginTransaction();
+        try {
+            $billNumber = static::_getBillNumber();
+            $stockOrderId = static::_generatePurchasingOrderM($billNumber, $goodsCode);
+            static::_generatePurchasingOrderD($stockOrderId, $goodsCode);
+            $trans->commit();
+            return ['生成采购单:' . $billNumber];
         }
-        return ['生成采购单:'. $bill_number];
+        catch (\Exception $why) {
+            $trans->rollback();
+            throw new \Exception($why->getMessage(), $why->getCode());
+        }
     }
 
 
@@ -191,6 +201,8 @@ class ProductCenterTools
                 $condition = ['id' => $id];
                 $goodsInfo = ApiGoodsinfo::getAttributeInfo($condition);
                 $skuInfo = $goodsInfo['skuInfo'];
+                // todo 采集商品要关联店铺SKU
+                static::_bindShopSku($goodsInfo);
                 $bGoods = static::_preGoodsInfo($goodsInfo);
                 $bGoods = static::_bGoodsImport($bGoods);
                 static::_addUserRight($bGoods);// 增加商品权限
@@ -199,13 +211,14 @@ class ProductCenterTools
                 $bGoodsSku = static::_bGoodsSkuImport($bGoodsSku, $bGoods);
                 $stock = static::_preCurrentStockInfo($bGoodsSku);
                 static::_stockImport($stock);
+
                 //更新产品信息状态
                 $goodsInfo['basicInfo']['goodsInfo']->achieveStatus = '已导入';
                 $goodsInfo['basicInfo']['goodsInfo']->updateTime = date('Y-m-d H:i:s');
                 if(!$goodsInfo['basicInfo']['goodsInfo']->save()){
                     throw new \Exception('save goods info failed');
                 }
-                // todo 采集商品要关联店铺SKU
+
             }
             $trans->commit();
             return true;
@@ -257,6 +270,25 @@ class ProductCenterTools
             if (!$_userRight->save()) {
                 throw new \Exception('fail to add user right');
             }
+        }
+    }
+
+    private static function _bindShopSku($goodsInfo)
+    {
+        $mid = $goodsInfo['basicInfo']['goodsInfo']['mid'] ?: '';
+        if(!empty($mid)) {
+           $sql = "SELECT ogs.sku as SKU,amd.childId as ShopSKU FROM proCenter.oa_goodssku AS ogs LEFT JOIN proCenter.oa_dataMineDetail AS amd ON ogs.did = amd.id WHERE amd.mid = $mid";
+           $ret = Yii::$app->db->createCommand($sql)->queryAll();
+           foreach ($ret as $row) {
+               $linkShop =  BGoodsSKULinkShop::findOne(['ShopSKU' => $row['ShopSKU']]);
+               if ($linkShop === null) {
+                   $linkShop = new BGoodsSKULinkShop();
+               }
+               $linkShop->setAttributes($row);
+               if(!$linkShop->save()) {
+                   throw new \Exception('关联店铺SKU失败！','400');
+               }
+           }
         }
     }
 
@@ -907,6 +939,94 @@ class ProductCenterTools
    {
        $code = BCurrencyCode::findOne(['CURRENCYCODE' => $currencyCode]);
        return $code['ExchangeRate'];
+   }
+
+   private static function _getBillNumber()
+   {
+       $billNumberQuery = "P_S_CodeRuleGet 22328,'' ";
+       $connection = yii::$app->py_db;
+       $ret = $connection->createCommand($billNumberQuery)->queryOne();
+       return $ret['MaxBillCode'];
+   }
+
+    /**
+     * @brief 生成采购单主表
+     * @param $billNumber
+     * @param $goodsCode
+     * @return mixed
+     * @throws \Exception
+     */
+   private static function _generatePurchasingOrderM($billNumber, $goodsCode)
+   {
+       $order = new CGStockOrderM();
+       $goods = BGoods::findOne(['GoodsCode' => $goodsCode]);
+       $purchaser = $goods['Purchaser'];
+       $personId = BPerson::findOne(['PersonName' => $purchaser])['NID'];
+       $row = [
+           'CheckFlag' => 0,
+           'BillNumber' => $billNumber,
+           'PayMoney' => 0,
+           'DisCountMoney' => 0,
+           'MakeDate' => date('Y-m-d H:i:s'),
+           'DelivDate' => date('Y-m-d'),
+           'SupplierID' => $goods['SupplierID'],
+           'SalerID' => $personId,
+           'DeptID' => '11',
+           'BalanceID' => '2',
+           'Memo' => '新品采购单',
+           'DeptMan' => '',
+           'StockMan' => '',
+           'Phone' => '',
+           'Recorder' => 'pro-center',
+           'Note' => '',
+           'PlanBillCode' => '',
+           'ExpressFee' => 0.00,
+           'ExpressName' => '',
+           'StoreID' => '',
+       ];
+       $order->setAttributes($row);
+       if(!$order->save()) {
+           throw new \Exception('保存失败！', 400);
+       }
+       return $order['NID'];
+   }
+
+    /**
+     * @brief 生成采购单明细
+     * @param $stockOrderID
+     * @param $goodsCode
+     * @throws \Exception
+     */
+   private static function _generatePurchasingOrderD($stockOrderID,$goodsCode)
+   {
+       //1.所有备货SKU
+       $info = OaGoodsinfo::findOne(['goodsCode' => $goodsCode]);
+       $infoId = $info['id'];
+       $goodsSku = OaGoodsSku::find()->where(['infoId' => $infoId])->andWhere(['>','ifnull(stockNum ,0)',0])->all();
+       $oderDetail = new CGStockOrdeD();
+       foreach ($goodsSku as $sku) {
+           $detail = clone $oderDetail;
+           $bgSku = BGoodsSku::findOne(['SKU' => $sku['sku']]);
+           $row = [
+               'StockOrderNID' => $stockOrderID,
+               'GoodsID' => $bgSku['GoodsID'],
+               'GoodsSKUID' => $bgSku['NID'],
+               'Amount' => $sku['stockNum']?:0,
+               'TaxPrice' => $sku['costPrice']?:0,
+               'MinPrice' => $sku['costPrice']?:0,
+               'TaxRate' => 0,
+               'Price' => $sku['costPrice']?:0,
+               'Money' => ($sku['stockNum']?:0) * ($sku['costPrice']?:0),
+               'TaxMoney' => 0,
+               'AllMoney' => ($sku['stockNum']?:0) * ($sku['costPrice']?:0),
+               'Remark' => '',
+               'BeforeAvgPrice' => $sku['costPrice']?:0,
+           ];
+           $detail->setAttributes($row);
+           if(!$detail->save()) {
+              throw new \Exception('保存失败！', '400');
+           }
+       }
    }
 }
 

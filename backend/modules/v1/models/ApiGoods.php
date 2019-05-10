@@ -16,6 +16,9 @@ use Yii;
 use backend\models\OaGoods;
 use yii\data\ActiveDataProvider;
 use yii\db\Exception;
+use backend\modules\v1\models\ApiCondition;
+use yii\helpers\ArrayHelper;
+
 
 class ApiGoods
 {
@@ -61,6 +64,18 @@ class ApiGoods
             ],
         ]);
         return $provider;
+
+    }
+
+    /**
+     * @brief 获取所有开发
+     * @return array
+     */
+    public static function getDeveloper()
+    {
+        $users = ApiCondition::getUsers(true);
+        $users =  array_filter($users, function ($ele) {return strpos($ele['position'],'开发') !==false;});
+        return array_values(ArrayHelper::getColumn($users,'username'));
 
     }
 

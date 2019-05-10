@@ -28,6 +28,7 @@ class OaDataMineController extends AdminController
     /**
      * @brief 获取采集数据列表
      * @return \yii\data\ActiveDataProvider
+     * @throws \Exception
      */
     public function actionMineList()
     {

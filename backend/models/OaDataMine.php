@@ -3,6 +3,8 @@
 namespace backend\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
+use yii\db\Expression;
 
 /**
  * This is the model class for table "proCenter.oa_dataMine".
@@ -38,6 +40,18 @@ class OaDataMine extends \yii\db\ActiveRecord
         return 'proCenter.oa_dataMine';
     }
 
+    public function behaviors()
+    {
+        return [[
+            /**
+             * TimestampBehavior：
+             */
+            'class' => TimestampBehavior::className(),
+            'createdAtAttribute' => false,
+            'updatedAtAttribute' => 'updateTime',
+            'value' => new Expression('NOW()'),
+        ],];
+    }
     /**
      * {@inheritdoc}
      */

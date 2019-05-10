@@ -18,6 +18,7 @@ use Exception;
 use Yii;
 
 
+
 class ApiMine
 {
 
@@ -48,7 +49,7 @@ class ApiMine
             $query->andWhere(['in', 'creator', $userList]);
         }
 
-        $query = $query->orderBy('id DESC');
+        $query = $query->orderBy('updateTime DESC');
         $provider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
