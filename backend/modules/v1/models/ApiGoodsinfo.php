@@ -91,8 +91,8 @@ class ApiGoodsinfo
             }
 
 
-            if (isset($condition['stockUp'])) $query->andFilterWhere(['stockUp' => $condition['stockUp']]);
-            if (isset($condition['developer'])) $query->andFilterWhere(['like', 'developer', $condition['developer']]);
+            if (isset($condition['stockUp'])) $query->andFilterWhere(['gi.stockUp' => $condition['stockUp']]);
+            if (isset($condition['developer'])) $query->andFilterWhere(['like', 'gi.developer', $condition['developer']]);
         } elseif ($type === 'picture-info') {
             $query = (new Query())->select('gi.*,g.vendor1,g.vendor2,g.vendor3,
              g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer')
@@ -727,13 +727,14 @@ class ApiGoodsinfo
         $out = [];
         $keyWords = static::preKeywords($joomInfo);
         $priceInfo = static::getJoomPriceInfo($joomSku);
+        $title = static::getTitleName($keyWords, self::JoomTitleLength);
         foreach ($accounts as $account) {
             $joomAccounts = OaJoomSuffix::find()->where(['joomName' => $account])->asArray()->one();
             $imageInfo = static::getJoomImageInfo($joomInfo, $joomAccounts);
             foreach ($joomSku as $sku) {
                 $row = [];
                 $row['Parent Unique ID'] = $joomInfo['sku'] . $joomAccounts['skuCode'];
-                $row['*Product Name'] = static::getTitleName($keyWords, self::JoomTitleLength);
+                $row['*Product Name'] = $title;
                 $row['Description'] = $joomInfo['description'];
                 $row['*Tags'] = $joomInfo['tags'];
                 $row['*Unique ID'] = $sku['sku'] . $joomAccounts['skuCode'];
@@ -1217,7 +1218,7 @@ class ApiGoodsinfo
         if ($goodsInfo['isCharged'] == '是') {
             return 'withBattery';
         }
-        return 'noDangerous';
+        return 'notDangerous';
     }
 
     /**
