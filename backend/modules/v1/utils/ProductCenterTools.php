@@ -929,8 +929,8 @@ class ProductCenterTools
      */
    public static function getBmpFileName($sku)
    {
-       //print_r($sku->sku);exit;
-       $skuName = explode($sku->sku, '_')[0];
+       $skuName = explode('_',$sku->sku)[0];
+       //print_r($skuName);exit;
        $base = 'http://121.196.233.153/images/';
        return $base . $skuName . '.jpg';
    }
