@@ -506,20 +506,25 @@ class OaGoodsinfoController extends AdminController
 
 
     /**
-     * @brief 导出joom模板
-     * @throws \Exception
+     * @brief joom批量导出
+     * @return array
      */
-    public function actionPlatExportJoom()
-    {
-        $request = Yii::$app->request;
-        if (!$request->isPost) {
-            return [];
+    public function actionPlatExportJoom() {
+        try {
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            $infoId = $condition['id'];
+            $account = $condition['account'];
+            $ret = ApiGoodsinfo::preExportJoom($infoId, $account);
+            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
         }
-        $condition = $request->post()['condition'];
-        $infoId = $condition['id'];
-        $account = $condition['account'];
-        $ret = ApiGoodsinfo::preExportJoom($infoId, $account);
-        ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
+        catch (\Exception $why) {
+            return ['message' => $why->getMessage(),'code' => $why->getCode()];
+        }
+
     }
 
     /**

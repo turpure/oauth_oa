@@ -702,18 +702,20 @@ class ApiGoodsinfo
 
     /**
      * @brief 导出joom模板
-     * @param $id
+     * @param $ids
      * @param $accounts
      * @return array
      */
-    public static function preExportJoom($id, $accounts)
+    public static function preExportJoom($ids, $accounts)
     {
-        $goodsInfo = OaGoodsinfo::findOne(['id' => $id]);
-        $goods = BGoods::findOne(['GoodsCode' => $goodsInfo['goodsCode']]);
-        $joomSku = OaWishGoodsSku::find()
-            ->where(['infoId' => $id])
-            ->asArray()->all();
-        $joomInfo = OaWishGoods::find()->where(['infoId' => $id])->asArray()->one();
+        if(!is_array($ids)) {
+            $goodsInfo = OaGoodsinfo::findOne(['id' => $ids]);
+            $ret = ['name' => 'joom-' . $goodsInfo['goodsCode']];
+            $ids = [$ids];
+        }
+        else {
+            $ret = ['name' => 'joom-batch-'];
+        }
         $row = [
             'Parent Unique ID' => '', '*Product Name' => '', 'Description' => '', '*Tags' => '', '*Unique ID' => '', 'Color' => '',
             'Size' => '', '*Quantity' => '', '*Price' => '', '*MSRP' => '', '*Shipping' => '', 'Shipping weight' => '',
@@ -723,44 +725,56 @@ class ApiGoodsinfo
             'Extra Image URL 7' => '', 'Extra Image URL 8' => '', 'Extra Image URL 9' => '', 'Dangerous Kind' => '',
             'Declared Value' => '',
         ];
-        $ret = ['name' => 'joom-' . $goodsInfo['goodsCode']];
         $out = [];
-        $keyWords = static::preKeywords($joomInfo);
-        $priceInfo = static::getJoomPriceInfo($joomSku);
-        $title = static::getTitleName($keyWords, self::JoomTitleLength);
-        foreach ($accounts as $account) {
-            $joomAccounts = OaJoomSuffix::find()->where(['joomName' => $account])->asArray()->one();
-            $imageInfo = static::getJoomImageInfo($joomInfo, $joomAccounts);
-            foreach ($joomSku as $sku) {
-                $row = [];
-                $row['Parent Unique ID'] = $joomInfo['sku'] . $joomAccounts['skuCode'];
-                $row['*Product Name'] = $title;
-                $row['Description'] = $joomInfo['description'];
-                $row['*Tags'] = $joomInfo['tags'];
-                $row['*Unique ID'] = $sku['sku'] . $joomAccounts['skuCode'];
-                $row['Color'] = $sku['color'];
-                $row['Size'] = $sku['size'];
-                $row['*Quantity'] = $sku['inventory'];
-                $row['*Price'] = static::getJoomAdjust($sku['weight'], $priceInfo['price']);
-                $row['*MSRP'] = $priceInfo['msrp'];
-                $row['*Shipping'] = $priceInfo['shipping'];
-                $row['Shipping weight'] = (float)$sku['weight']*1.0/1000;
-                $row['Shipping Time(enter without " ", just the estimated days )'] = '15-45';
-                $row['*Product Main Image URL'] = $imageInfo['mainImage'];
-                $row['Variant Main Image URL'] = str_replace('/10023/', '/'.$joomAccounts['imgCode'].'/', $sku['linkUrl']);
-                $row['Extra Image URL'] = $imageInfo['extraImages'][0];
-                $row['Extra Image URL 1'] = $imageInfo['extraImages'][1];
-                $row['Extra Image URL 2'] = $imageInfo['extraImages'][2];
-                $row['Extra Image URL 3'] = $imageInfo['extraImages'][3];
-                $row['Extra Image URL 4'] = $imageInfo['extraImages'][4];
-                $row['Extra Image URL 5'] = $imageInfo['extraImages'][5];
-                $row['Extra Image URL 6'] = $imageInfo['extraImages'][6];
-                $row['Extra Image URL 7'] = $imageInfo['extraImages'][7];
-                $row['Extra Image URL 8'] = $imageInfo['extraImages'][8];
-                $row['Extra Image URL 9'] = $imageInfo['extraImages'][9];
-                $row['Dangerous Kind'] = static::getJoomDangerousKind($goodsInfo);
-                $row['Declared Value'] = $goods['DeclaredValue'];
-                $out[] = $row;
+        foreach ($ids as $id) {
+            if(is_numeric($id)) {
+                $goodsInfo = OaGoodsinfo::findOne(['id' => $id]);
+            }
+            else {
+                $goodsInfo = OaGoodsinfo::findOne(['goodsCode' => $id]);
+                $id = $goodsInfo['id'];
+            }
+            $goods = BGoods::findOne(['GoodsCode' => $goodsInfo['goodsCode']]);
+            $joomSku = OaWishGoodsSku::find()
+                ->where(['infoId' => $id])
+                ->asArray()->all();
+            $joomInfo = OaWishGoods::find()->where(['infoId' => $id])->asArray()->one();
+            $keyWords = static::preKeywords($joomInfo);
+            $priceInfo = static::getJoomPriceInfo($joomSku);
+            $title = static::getTitleName($keyWords, self::JoomTitleLength);
+            foreach ($accounts as $account) {
+                $joomAccounts = OaJoomSuffix::find()->where(['joomName' => $account])->asArray()->one();
+                $imageInfo = static::getJoomImageInfo($joomInfo, $joomAccounts);
+                foreach ($joomSku as $sku) {
+                    $row['Parent Unique ID'] = $joomInfo['sku'] . $joomAccounts['skuCode'];
+                    $row['*Product Name'] = $title;
+                    $row['Description'] = $joomInfo['description'];
+                    $row['*Tags'] = $joomInfo['tags'];
+                    $row['*Unique ID'] = $sku['sku'] . $joomAccounts['skuCode'];
+                    $row['Color'] = $sku['color'];
+                    $row['Size'] = $sku['size'];
+                    $row['*Quantity'] = $sku['inventory'];
+                    $row['*Price'] = static::getJoomAdjust($sku['weight'], $priceInfo['price']);
+                    $row['*MSRP'] = $priceInfo['msrp'];
+                    $row['*Shipping'] = $priceInfo['shipping'];
+                    $row['Shipping weight'] = (float)$sku['weight']*1.0/1000;
+                    $row['Shipping Time(enter without " ", just the estimated days )'] = '15-45';
+                    $row['*Product Main Image URL'] = $imageInfo['mainImage'];
+                    $row['Variant Main Image URL'] = str_replace('/10023/', '/'.$joomAccounts['imgCode'].'/', $sku['linkUrl']);
+                    $row['Extra Image URL'] = $imageInfo['extraImages'][0];
+                    $row['Extra Image URL 1'] = $imageInfo['extraImages'][1];
+                    $row['Extra Image URL 2'] = $imageInfo['extraImages'][2];
+                    $row['Extra Image URL 3'] = $imageInfo['extraImages'][3];
+                    $row['Extra Image URL 4'] = $imageInfo['extraImages'][4];
+                    $row['Extra Image URL 5'] = $imageInfo['extraImages'][5];
+                    $row['Extra Image URL 6'] = $imageInfo['extraImages'][6];
+                    $row['Extra Image URL 7'] = $imageInfo['extraImages'][7];
+                    $row['Extra Image URL 8'] = $imageInfo['extraImages'][8];
+                    $row['Extra Image URL 9'] = $imageInfo['extraImages'][9];
+                    $row['Dangerous Kind'] = static::getJoomDangerousKind($goodsInfo);
+                    $row['Declared Value'] = $goods['DeclaredValue'];
+                    $out[] = $row;
+                }
             }
         }
         $ret['data'] = $out;
