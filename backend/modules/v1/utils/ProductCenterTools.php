@@ -641,7 +641,7 @@ class ProductCenterTools
                 'sid' => $sku['id'],
                 'infoId' => $sku['infoId'],
                 'sku' => $sku['sku'],
-                'quantity' => '',
+                'quantity' => 5,
                 'retailPrice' => $sku['retailPrice'],
                 'imageUrl' => $sku['linkUrl'],
                 'property' => static::_generateProperty($sku),
