@@ -1022,7 +1022,7 @@ class ApiGoodsinfo
             //获取最大最小价格
             $maxPrice = max($totalPrice);
             $minPrice = min($totalPrice);
-            $maxMsrp = max($msrp);
+            $maxMsrp = ceil(max($msrp));
 
             //根据总价计算运费
             if ($minPrice <= 3) {
@@ -1036,15 +1036,15 @@ class ApiGoodsinfo
             foreach ($wishSku as $sku) {
                 //价格判断
                 $totalPrice = ceil($sku['price'] + $sku['shipping']);
-                $value['shipping'] = $shipping;
-                $value['price'] = $totalPrice - $shipping < 1 ? 1 : ceil($totalPrice - $shipping);
+                $sku['shipping'] = $shipping;
+                $sku['price'] = $totalPrice - $shipping < 1 ? 1 : ceil($totalPrice - $shipping);
                 $var['sku'] = $sku['sku'] . $account['suffix'];
                 $var['color'] = $sku['color'];
                 $var['size'] = $sku['size'];
                 $var['inventory'] = $sku['inventory'];
                 $var['price'] = $sku['price'];
                 $var['shipping'] = $sku['shipping'];
-                $var['msrp'] = $sku['msrp'];
+                $var['msrp'] = ceil($sku['msrp']);
                 $var['shipping_time'] = $sku['shippingTime'];
                 $var['main_image'] = $sku['linkUrl'];
                 $var['localized_currency_code'] = 'CNY';
