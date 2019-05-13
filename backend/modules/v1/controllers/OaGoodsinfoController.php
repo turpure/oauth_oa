@@ -523,6 +523,28 @@ class OaGoodsinfoController extends AdminController
     }
 
     /**
+     * @brief joom批量导出
+     * @return array
+     */
+    public function actionPlatExportBatchJoom() {
+        try {
+            $request = Yii::$app->request;
+            if (!$request->isPost()) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            $infoId = $condition['id'];
+            $account = $condition['account'];
+            $ret = ApiGoodsinfo::preExportJoom($infoId, $account);
+            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
+        }
+        catch (\Exception $why) {
+            return ['message' => $why->getMessage(),'code' => $why->getCode()];
+        }
+
+    }
+
+    /**
      * @brief 导出ebay模板
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
