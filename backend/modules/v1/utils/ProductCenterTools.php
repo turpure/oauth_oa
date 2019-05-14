@@ -497,7 +497,7 @@ class ProductCenterTools
     private static function _goodsInfoToWishGoods($goodsInfo)
     {
         $wishGoodsAttributes = [
-            'sku' => $goodsInfo['goodsCode'],
+            'sku' => $goodsInfo['isVar'] == '是' ? $goodsInfo['goodsCode'] : ($goodsInfo['goodsCode'].'01'),
             'title' => '',
             'description' => $goodsInfo['description'],
             'inventory' => 10000,
@@ -617,7 +617,7 @@ class ProductCenterTools
             'outShipToCountry2' => '',
             'mainPage' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_0.jpg',
             'extraPage' => static::_generateImages($goodsInfo['goodsCode']),
-            'sku' => $goodsInfo['goodsCode'],
+            'sku' => $goodsInfo['isVar'] == '是' ? $goodsInfo['goodsCode'] : ($goodsInfo['goodsCode'].'01'),
             'infoId' => $goodsInfo['id'],
             'specifics' => '{"specifics":[{"Brand":"Unbranded"}]}',
             'iBayTemplate' => 'pr110',
