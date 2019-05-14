@@ -144,7 +144,13 @@ class ApiRequirements
         $query->andFilterWhere(['like', "name", isset($get['name']) ? $get['name']:'']);
         $query->andFilterWhere(['like', "detail", isset($get['detail']) ? $get['detail'] : '']);
         $query->andFilterWhere(['like', "creator", isset($get['creator']) ? $get['creator'] : '']);
-        $query->orderBy($sortProperty.' '.$sortOrder);
+        if ($sortProperty === 'priority') {
+            $query->orderBy('priority ' . $sortOrder . ' ,createdDate ' . $sortOrder);
+        }
+        else {
+
+            $query->orderBy($sortProperty.' '.$sortOrder);
+        }
 
         $provider = new ActiveDataProvider([
             'query' => $query,
