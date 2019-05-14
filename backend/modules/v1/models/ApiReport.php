@@ -183,7 +183,7 @@ class ApiReport
      */
     public static function getProfitTrendReport($condition)
     {
-        $sql = 'call report_profitTrend(:store,:queryType,:showType,:dateFlag,:beginDate,:endDate)';
+        $sql = 'call report_profitTrend(:store,:queryType,:showType,:dateFlag,:beginDate,:endDate,:exchangeRate)';
         $con = Yii::$app->db;
         $params = [
             ':store' => $condition['store'],
@@ -191,7 +191,8 @@ class ApiReport
             ':showType' => $condition['showType'],
             ':dateFlag' => $condition['dateFlag'],
             ':beginDate' => $condition['beginDate'],
-            ':endDate' => $condition['endDate']
+            ':endDate' => $condition['endDate'],
+            ':exchangeRate' => $condition['exchangeRate']
         ];
         try {
             return $con->createCommand($sql)->bindValues($params)->queryAll();

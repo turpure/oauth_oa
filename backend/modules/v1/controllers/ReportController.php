@@ -202,13 +202,15 @@ class ReportController extends AdminController
             'store' => $cond['account']
         ];
         $params = Handler::paramsFilter($queryParams);
+        $exchangeRate = ApiSettings::getExchangeRate();
         $condition = [
             'store' => $params['store'] ? implode(',', $params['store']) : '',
             'queryType' => $params['queryType'],
             'dateFlag' => $cond['dateType'],
             'showType' => $cond['flag'] ?: 0,
             'beginDate' => $cond['dateRange'][0],
-            'endDate' => $cond['dateRange'][1]
+            'endDate' => $cond['dateRange'][1],
+            'exchangeRate' => $exchangeRate['salerRate']
         ];
 
         return ApiReport::getProfitTrendReport($condition);
