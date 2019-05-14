@@ -216,8 +216,8 @@ class ApiGoods
         }
         $query->andFilterWhere(["IFNULL(stockUp,'否')" => $post['stockUp']]);
 
-        if (isset($post['mineId']) && $post['mineId'] == '是') $query->andFilterWhere(['>', "mineId", 1]);
-        if (isset($post['mineId']) && $post['mineId'] == '否') $query->andFilterWhere(["IFNULL(mineId,'')" => '']);
+        if (isset($post['mineId']) && $post['mineId'] === '是') $query->andFilterWhere(['>', "IFnull(mineId,0)", 0]);
+        if (isset($post['mineId']) && $post['mineId'] === '否') $query->andFilterWhere(["IFNULL(mineId,0)" => 0]);
         $query->andFilterWhere(['like', 'devNum', $post['devNum']]);
         $query->andFilterWhere(['like', 'checkStatus', $post['checkStatus']]);
         $query->andFilterWhere(['like', 'cate', $post['cate']]);

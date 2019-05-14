@@ -164,8 +164,8 @@ class ApiGoodsinfo
         if (isset($condition['stockDays'])) $query->andFilterWhere(['stockDays' => $condition['stockDays']]);
         if (isset($condition['devDatetime']) && !empty($condition['devDatetime'])) $query->andFilterWhere(['between', "date_format(devDatetime,'%Y-%m-%d')", $condition['devDatetime'][0], $condition['devDatetime'][1]]);
         if (isset($condition['updateTime']) && !empty($condition['updateTime'])) $query->andFilterWhere(['between', "date_format(updateTime,'%Y-%m-%d')", $condition['updateTime'][0], $condition['updateTime'][1]]);
-        if (isset($condition['mid']) && $condition['mid'] === '是') $query->andFilterWhere(['>', "mid", 1]);
-        if (isset($condition['mid']) && $condition['mid'] === '否') $query->andFilterWhere(["IFNULL(mid,'')" => '']);
+        if (isset($condition['mid']) && $condition['mid'] === '是') $query->andFilterWhere(['>', "ifnull(mid,1)", 1]);
+        if (isset($condition['mid']) && $condition['mid'] === '否') $query->andFilterWhere(["IFNULL(mid,0)" => 0]);
         $query->orderBy('updateTime DESC,id DESC');
         //print_r($query->createCommand()->getRawSql());exit;
         $provider = new ActiveDataProvider([
