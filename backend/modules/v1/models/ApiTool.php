@@ -25,21 +25,23 @@ class ApiTool
     {
 
         switch ($condition['type']) {
-
             case 'eBay' :
-                $sql = "SELECT ebayName,ebaySuffix FROM oa_ebay_suffix";
+                $sql = "SELECT ebayName,ebaySuffix FROM proCenter.oa_ebaySuffix";
+                return Yii::$app->db->createCommand($sql)->queryAll();
                 break;
             case 'Wish' :
-                $sql = "SELECT shortName,ibaySuffix FROM oa_WishSuffixDictionary";
+                $sql = "SELECT shortName,ibaySuffix FROM proCenter.oa_wishSuffix";
+                return Yii::$app->db->createCommand($sql)->queryAll();
                 break;
             case 'SMT':
                 $sql = "SELECT DictionaryName FROM B_Dictionary WHERE CategoryID=12 AND FitCode='SMT'";
+                return Yii::$app->py_db->createCommand($sql)->queryAll();
                 break;
             default:
-                $sql = "SELECT ebayName,ebaySuffix FROM oa_ebay_suffix";
+                $sql = "SELECT ebayName,ebaySuffix FROM proCenter.oa_ebaySuffix";
+                return Yii::$app->db->createCommand($sql)->queryAll();
                 break;
         }
-        return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
 
     /**

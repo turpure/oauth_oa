@@ -394,5 +394,13 @@ class SchedulerController extends Controller
     }
 
 
+    /** 查询wish平台商品状态、采购到货天数并更新oa_goodsinfo表数据
+     * Date: 2019-05-14 11:59
+     * Author: henry
+     */
+    public function actionWish(){
+        $res = Yii::$app->py_db->createCommand("P_oa_updateGoodsStatusToTableOaGoodsInfo")->queryAll();
+        print_r($res);exit;
+    }
 
 }
