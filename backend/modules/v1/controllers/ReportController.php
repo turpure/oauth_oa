@@ -186,6 +186,35 @@ class ReportController extends AdminController
     }
 
     /**
+     * @brief profit trend  report
+     * @return array
+     * @throws  \Exception
+     */
+    public function actionProfitTrend()
+    {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        $queryParams = [
+            'department' => $cond['department'],
+            'secDepartment' => $cond['secDepartment'],
+            'platform' => $cond['plat'],
+            'username' => $cond['member'],
+            'store' => $cond['account']
+        ];
+        $params = Handler::paramsFilter($queryParams);
+        $condition = [
+            'store' => $params['store'] ? implode(',', $params['store']) : '',
+            'queryType' => $params['queryType'],
+            'dateFlag' => $cond['dateType'],
+            'showType' => $cond['flag'] ?: 0,
+            'beginDate' => $cond['dateRange'][0],
+            'endDate' => $cond['dateRange'][1]
+        ];
+
+        return ApiReport::getProfitTrendReport($condition);
+    }
+
+    /**
      * @brief 订单销量报表
      * @return array
      * @throws \Exception

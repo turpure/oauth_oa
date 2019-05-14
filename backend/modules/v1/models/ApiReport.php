@@ -177,6 +177,34 @@ class ApiReport
     }
 
     /**
+     * @brief profit Trend  report
+     * @params $condition
+     * @return array
+     */
+    public static function getProfitTrendReport($condition)
+    {
+        $sql = 'call report_profitTrend(:store,:queryType,:showType,:dateFlag,:beginDate,:endDate)';
+        $con = Yii::$app->db;
+        $params = [
+            ':store' => $condition['store'],
+            ':queryType' => $condition['queryType'],
+            ':showType' => $condition['showType'],
+            ':dateFlag' => $condition['dateFlag'],
+            ':beginDate' => $condition['beginDate'],
+            ':endDate' => $condition['endDate']
+        ];
+        try {
+            return $con->createCommand($sql)->bindValues($params)->queryAll();
+        } catch (\Exception $why) {
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
+        }
+
+    }
+
+    /**
      * @brief 订单销量统计
      * @param $condition
      * @return array
