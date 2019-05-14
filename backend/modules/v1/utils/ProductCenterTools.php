@@ -123,21 +123,7 @@ class ProductCenterTools
      */
     public static function finishPicture($infoId)
     {
-        $goodsInfo = OaGoodsinfo::find()->with('oaGoods')->where(['id' => $infoId])->asArray()->one();
-        $goodsSku = OaGoodsSku::findAll(['infoId' => $infoId]);
-
-        //oa-goodsInfo to oa-wish-goods
-        static::_goodsInfoToWishGoods($goodsInfo);
-
-        //oa-goodsInfo to oa-ebay-goods
-        static::_goodsInfoToEbayGoods($goodsInfo);
-
-        // oa-goodsSku to oa-wish-goodsSku
-        static::_goodsInfoToWishGoodsSku($goodsSku);
-
-        //oa-goodsSku to oa-ebay-goodsSku
-        static::_goodsSkuToEbayGoodsSku($goodsSku);
-
+        self::saveAttributeToPlat($infoId);
         //update oa-goodsInfo status
         $pictureInfo = Oagoodsinfo::findOne(['id' => $infoId]);
         $pictureInfo->setAttributes(
@@ -154,6 +140,30 @@ class ProductCenterTools
             ];
         }
         return true;
+    }
+
+    /**
+     * @param $infoId
+     * Date: 2019-05-14 9:48
+     * Author: henry
+     * @return bool
+     */
+    public static function saveAttributeToPlat($infoId){
+        $goodsInfo = OaGoodsinfo::find()->with('oaGoods')->where(['id' => $infoId])->asArray()->one();
+        $goodsSku = OaGoodsSku::findAll(['infoId' => $infoId]);
+
+        //oa-goodsInfo to oa-wish-goods
+        static::_goodsInfoToWishGoods($goodsInfo);
+
+        //oa-goodsInfo to oa-ebay-goods
+        static::_goodsInfoToEbayGoods($goodsInfo);
+
+        // oa-goodsSku to oa-wish-goodsSku
+        static::_goodsInfoToWishGoodsSku($goodsSku);
+
+        //oa-goodsSku to oa-ebay-goodsSku
+        $res = static::_goodsSkuToEbayGoodsSku($goodsSku);
+        return $res;
     }
 
     public static function uploadImagesToFtp($infoId)

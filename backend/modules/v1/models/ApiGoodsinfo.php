@@ -275,6 +275,8 @@ class ApiGoodsinfo
                 if ($goodsInfo === null) {
                     throw new \Exception("Can't find goods info！");
                 }
+                // 同步信息 到wishGoods，wishGoodsSku，ebayGoods，ebayGoodsSku
+                ProductCenterTools::saveAttributeToPlat($id);
                 $goodsInfo->achieveStatus = '已完善';
                 if (empty($goodsInfo->picStatus)) {
                     $goodsInfo->picStatus = '待处理';
@@ -324,6 +326,7 @@ class ApiGoodsinfo
                     $skuRow['id'] = $skuModel->id;
                     $skuRow['pid'] = $infoId;
                 }
+                $skuRow['sku'] = trim($skuRow['sku']);//移除SKU中空格
                 $skuModel->setAttributes($skuRow);
                 $a = $skuModel->save();
                 if (!$a) {
@@ -337,6 +340,7 @@ class ApiGoodsinfo
                 $oaGoods->nid = $oaInfo['nid'];
             }
             $oaGoods->setAttributes($oaInfo);
+            $attributeInfo['goodsCode'] = trim($attributeInfo['goodsCode']);//移除goodsCode中空格
             $goodsInfo->setAttributes($attributeInfo);
             $goodsInfo->isVar = count($skuInfo) > 1 ? '是' : '否';//判断是否多属性
             if (!$goodsInfo->save() || !$oaGoods->save()) {
