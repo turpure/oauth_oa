@@ -838,14 +838,12 @@ class ProductCenterTools
         if ($minPrice > 20 && $minPrice <= 30) {
             return 4;
         }
-        if ($minPrice > 30 && $minPrice <= 40) {
+        if ($minPrice > 30 && $minPrice <= 50) {
             return 8;
         }
         if ($minPrice > 50) {
             return 10;
         }
-
-
     }
 
     /**

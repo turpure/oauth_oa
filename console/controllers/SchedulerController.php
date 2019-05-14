@@ -7,9 +7,11 @@
 
 namespace console\controllers;
 
+use backend\models\OaGoodsinfo;
 use yii\console\Controller;
 
 use Yii;
+use yii\helpers\ArrayHelper;
 
 class SchedulerController extends Controller
 {
@@ -395,12 +397,27 @@ class SchedulerController extends Controller
 
 
     /** 查询wish平台商品状态、采购到货天数并更新oa_goodsinfo表数据
-     * Date: 2019-05-14 11:59
+     * Date: 2019-05-14 16:54
      * Author: henry
+     * @throws \yii\db\Exception
      */
     public function actionWish(){
         $res = Yii::$app->py_db->createCommand("P_oa_updateGoodsStatusToTableOaGoodsInfo")->queryAll();
-        print_r($res);exit;
+        //更新 oa_goodsinfo 表的stockDays，goodsStatus
+        foreach ($res as $v){
+            Yii::$app->db->createCommand()->update('proCenter.oa_goodsinfo',$v,['goodsCode' => $v['goodsCode']])->execute();
+        }
+
+        // 更新 oa_goodsinfo 表的wishPublish
+        $sql = "UPDATE proCenter.oa_goodsinfo SET wishPublish=
+	            CASE WHEN stockDays>0 AND storeName='义乌仓' AND IFNULL(dictionaryName,'') not like '%wish%' and  (completeStatus NOT LIKE '%Wish%' OR completeStatus IS NULL) then 'Y' 
+			          ELSE 'N' END ";
+        $ss = Yii::$app->db->createCommand($sql)->execute();
+        if($ss){
+            echo date('Y-m-d H:i:s')." 更新成功！\n";
+        }else{
+            echo date('Y-m-d H:i:s')."更新失败！\n";
+        }
     }
 
 }
