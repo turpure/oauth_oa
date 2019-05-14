@@ -139,7 +139,7 @@ class ApiGoodsinfo
         if (isset($condition['aliasEnName'])) $query->andFilterWhere(['like', 'aliasEnName', $condition['aliasEnName']]);
         if (isset($condition['picStatus'])) $query->andFilterWhere(['like', 'picStatus', $condition['picStatus']]);
         $query = static::completedStatusFilter($query, $condition);
-//        $query = static::forbiddenPlatFilter($query, $condition);
+        $query = static::forbidPlatFilter($query, $condition);
         if (isset($condition['goodsStatus'])) $query->andFilterWhere(['like', 'goodsStatus', $condition['goodsStatus']]);
         if (isset($condition['possessMan1'])) $query->andFilterWhere(['like', 'possessMan1', $condition['possessMan1']]);
         if (isset($condition['purchaser'])) $query->andFilterWhere(['like', 'purchaser', $condition['purchaser']]);
@@ -164,8 +164,9 @@ class ApiGoodsinfo
         if (isset($condition['stockDays'])) $query->andFilterWhere(['stockDays' => $condition['stockDays']]);
         if (isset($condition['devDatetime']) && !empty($condition['devDatetime'])) $query->andFilterWhere(['between', "date_format(devDatetime,'%Y-%m-%d')", $condition['devDatetime'][0], $condition['devDatetime'][1]]);
         if (isset($condition['updateTime']) && !empty($condition['updateTime'])) $query->andFilterWhere(['between', "date_format(updateTime,'%Y-%m-%d')", $condition['updateTime'][0], $condition['updateTime'][1]]);
-        if (isset($condition['mid']) && $condition['mid'] === '是') $query->andFilterWhere(['>', "mid", 1]);
-        if (isset($condition['mid']) && $condition['mid'] === '否') $query->andWhere(["IFNULL(mid,'')" => '']);
+
+        if (isset($condition['mid']) && $condition['mid'] === '是') $query->andFilterWhere(['>', "ifnull(mid,1)", 1]);
+        if (isset($condition['mid']) && $condition['mid'] === '否') $query->andFilterWhere(["IFNULL(mid,0)" => 0]);
         $query->orderBy('updateTime DESC,id DESC');
         //print_r($query->createCommand()->getRawSql());exit;
         $provider = new ActiveDataProvider([
@@ -1026,7 +1027,7 @@ class ApiGoodsinfo
             //获取最大最小价格
             $maxPrice = max($totalPrice);
             $minPrice = min($totalPrice);
-            $maxMsrp = max($msrp);
+            $maxMsrp = ceil(max($msrp));
 
             //根据总价计算运费
             if ($minPrice <= 3) {
@@ -1040,15 +1041,15 @@ class ApiGoodsinfo
             foreach ($wishSku as $sku) {
                 //价格判断
                 $totalPrice = ceil($sku['price'] + $sku['shipping']);
-                $value['shipping'] = $shipping;
-                $value['price'] = $totalPrice - $shipping < 1 ? 1 : ceil($totalPrice - $shipping);
+                $sku['shipping'] = $shipping;
+                $sku['price'] = $totalPrice - $shipping < 1 ? 1 : ceil($totalPrice - $shipping);
                 $var['sku'] = $sku['sku'] . $account['suffix'];
                 $var['color'] = $sku['color'];
                 $var['size'] = $sku['size'];
                 $var['inventory'] = $sku['inventory'];
                 $var['price'] = $sku['price'];
                 $var['shipping'] = $sku['shipping'];
-                $var['msrp'] = $sku['msrp'];
+                $var['msrp'] = ceil($sku['msrp']);
                 $var['shipping_time'] = $sku['shippingTime'];
                 $var['main_image'] = $sku['linkUrl'];
                 $var['localized_currency_code'] = 'CNY';
@@ -1412,7 +1413,7 @@ class ApiGoodsinfo
         return $query;
     }
 
-    private static function forbinddenPlatFilter($query, $condition)
+    private static function forbidPlatFilter($query, $condition)
     {
         //todo 禁售平台过滤
         if (isset($condition['dictionaryName']) && !empty($condition['dictionaryName'])) {

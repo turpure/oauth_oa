@@ -464,7 +464,7 @@ class OaGoodsinfoController extends AdminController
         return ['未设置','joom', 'wish', 'ebay'];
     }
 
-    public function actionPlatForbiddenPlat()
+    public function actionPlatForbidPlat()
     {
         return array_merge(['未设置'],AttributeInfoTools::getPlat());
     }
