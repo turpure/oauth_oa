@@ -60,6 +60,17 @@ class OaDataController extends AdminController
         return ApiOaData::getOaData($condition,'wish');
     }
 
+    /** 备货表现  不备货表现
+     * Date: 2019-05-15 11:53
+     * Author: henry
+     * @return array
+     */
+    public function actionStock(){
+        $condition = Yii::$app->request->post()['condition'];
+        $stock = isset($condition['isStock']) && $condition['isStock'] ? $condition['isStock'] : 'stock';
+        return ApiOaData::getStockData($stock);
+    }
+
 
     /**
      * 最近30天类目表现

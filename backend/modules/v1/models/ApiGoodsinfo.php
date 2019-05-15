@@ -109,10 +109,10 @@ class ApiGoodsinfo
             }
 
 
-            if (isset($condition['picStatus'])) {
+            if (isset($condition['picStatus']) && $condition['picStatus']) {
                 $query->andFilterWhere(['like', 'picStatus', $condition['picStatus']]);
             } else {
-                $query->andWhere(['in', 'picStatus', static::$pictureInfo]);
+                $query->andFilterWhere(['in', "IFNULL(picStatus,'')", static::$pictureInfo]);
             }
             if (isset($condition['stockUp'])) $query->andFilterWhere(['gi.stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'gi.developer', $condition['developer']]);

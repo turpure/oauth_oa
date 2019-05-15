@@ -96,6 +96,24 @@ class ApiOaData
 
     }
 
+    /** 获取
+     * Date: 2019-05-15 11:08
+     * Author: henry
+     * @return array
+     */
+
+    public static function getStockData($param = 'stock'){
+        try{
+            return Yii::$app->db->createCommand("SELECT * FROM proCenter.oa_stockGoodsNumReal WHERE isStock='{$param}' ORDER BY number DESC ")->queryAll();
+        }catch (\Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+
     /**
      * @param $condition
      * Date: 2019-03-08 9:00
