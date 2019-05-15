@@ -64,6 +64,9 @@ $this->params['breadcrumbs'][] = $this->title;
                     }
                 },
             ],
+            'mapPersons',
+            'mapWarehouse',
+            'mapPlat',
             'created_at:date',
             [
                 'attribute' => 'status',

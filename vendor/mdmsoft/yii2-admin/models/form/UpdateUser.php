@@ -10,6 +10,9 @@ use mdm\admin\models\PositionChild;
 use yii\base\Model;
 use yii\base\InvalidParamException;
 use yii\helpers\ArrayHelper;
+use backend\modules\v1\models\ApiCondition;
+
+
 /**
  * update-user form
  */
@@ -19,6 +22,9 @@ class UpdateUser extends Model
     public $child_depart;
     public $position;
     public $store;
+    public $mapPersons;
+    public $mapWarehouse;
+    public $mapPlat;
     public $user_id;
     public $username;
     private $_position;
@@ -36,10 +42,16 @@ class UpdateUser extends Model
         if (empty($userid)) {
             throw new InvalidParamException('user id cannot be blank.');
         }
+        $user = User::findOne($userid);
+        $mapPersons = explode(',',$user->mapPersons);
+        $mapPlat = explode(',',$user->mapPlat);
+        $mapWarehouse = explode(',',$user->mapWarehouse);
         $this->user_id = (int)$userid;
-        $this->username = User::findOne($userid)->username;
+        $this->username = $user->username;
+        $this->mapPersons = $mapPersons;
+        $this->mapPlat = $mapPlat;
+        $this->mapWarehouse = $mapWarehouse;
         $department = DepartmentChild::find()->where(['user_id'=>$userid])->one();
-        //print_r($department);exit;
         if($department){
             $departInfo = Department::findOne($department['department_id']);
 
@@ -67,7 +79,7 @@ class UpdateUser extends Model
             [['user_id'],'integer'],
             [['department','child_depart'],'string'],
             [['department',],'required'],
-            [['store','position'],'safe']
+            [['store','position','mapPersons','mapPlat','mapWarehouse'],'safe']
         ];
     }
 
@@ -81,6 +93,13 @@ class UpdateUser extends Model
         if ($this->validate()) {
 
             $userid = $this->user_id;
+            $user = User::findOne($userid);
+            $user->mapPersons = !empty($this->mapPersons)?implode(',',$this->mapPersons):'';
+            $user->mapPlat = !empty($this->mapPlat)? implode(',',$this->mapPlat):'';
+            $user->mapWarehouse = !empty($this->mapWarehouse) ?implode(',',$this->mapWarehouse):'';
+            if(!$user->save()) {
+               throw new \Exception('user保存失败！');
+            }
             $this->position = !empty($this->position)?$this->position:[];
             $this->store = !empty($this->store)?$this->store:[];
 
@@ -147,6 +166,43 @@ class UpdateUser extends Model
             'department' => '部门',
             'store' => '店铺',
             'position' => '职位',
+            'mapPersons' => '对应销售',
+            'mapPlat' => '对应平台',
+            'mapWarehouse' => '对应仓库',
         ];
     }
+
+    /**
+     *@brief 获取销售人员
+     **/
+
+    public static function getMapPersons()
+    {
+        $ret = ApiCondition::getUsers();
+        $salers = array_values(array_filter($ret, function ($ele) {return $ele['position'] === '销售'; }));
+        $name = ArrayHelper::getColumn($salers, 'username');
+        return array_combine($name, $name);
+    }
+
+    /**
+     * @brief 获取仓库
+     * @return array
+     */
+    public static function getWarehouse()
+    {
+        $store = array_values(ApiCondition::getStore());
+        return array_combine($store, $store);
+    }
+
+    /**
+     * @brief 获取所有平台
+     * @return array
+     */
+    public static function getMapPlat()
+    {
+        $ret = ApiCondition::getUserPlat();
+        $plat = array_values(ArrayHelper::getColumn($ret, 'plat'));
+        return array_combine($plat, $plat);
+    }
+
 }
