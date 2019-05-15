@@ -1,6 +1,7 @@
 <?php
 namespace mdm\admin\models\form;
 
+use backend\models\AuthAssignment;
 use mdm\admin\models\Department;
 use mdm\admin\models\DepartmentChild;
 use Yii;
@@ -11,6 +12,8 @@ use yii\base\Model;
 use yii\base\InvalidParamException;
 use yii\helpers\ArrayHelper;
 use backend\modules\v1\models\ApiCondition;
+use mdm\admin\models\AdminAuthItem;
+use mdm\admin\models\AdminAuthAssignment;
 
 
 /**
@@ -25,6 +28,7 @@ class UpdateUser extends Model
     public $mapPersons;
     public $mapWarehouse;
     public $mapPlat;
+    public $role;
     public $user_id;
     public $username;
     private $_position;
@@ -51,6 +55,7 @@ class UpdateUser extends Model
         $this->mapPersons = $mapPersons;
         $this->mapPlat = $mapPlat;
         $this->mapWarehouse = $mapWarehouse;
+        $this->role = ArrayHelper::getColumn(AdminAuthAssignment::findAll(['user_id' =>$userid]),'item_name');
         $department = DepartmentChild::find()->where(['user_id'=>$userid])->one();
         if($department){
             $departInfo = Department::findOne($department['department_id']);
@@ -118,6 +123,17 @@ class UpdateUser extends Model
                 $child->save();
             }
 
+            //修改角色
+            foreach ($this->role as $roleName) {
+                $role = AdminAuthAssignment::findOne(['user_id' =>$userid, 'item_name' => $roleName]);
+                if ($role === null) {
+                    $role = new AdminAuthAssignment();
+                }
+                $role->setAttributes(['item_name' =>$roleName, 'user_id' => $userid,'created_at' => time()]);
+                if(!$role->save(false)) {
+                    throw new \Exception('保存失败！');
+                }
+            }
 
             // 增改删职位
             foreach ($this->position as $pos) {
@@ -191,6 +207,17 @@ class UpdateUser extends Model
         $ret = ApiCondition::getUserPlat();
         $plat = array_values(ArrayHelper::getColumn($ret, 'plat'));
         return array_combine($plat, $plat);
+    }
+
+    /**
+     * @brief 获取所有角色
+     * @return array
+     */
+    public static function getRole()
+    {
+        $ret = AdminAuthItem::findAll(['type' => 1]);
+        $role = ArrayHelper::getColumn($ret,'name');
+        return array_combine($role, $role);
     }
 
 }

@@ -71,6 +71,15 @@ $controllerId = $this->context->uniqueId . '/';
                 $model->department?ArrayHelper::map(Department::findAll(['parent' => $model->department]), 'id', 'department'):[],
                 ['prompt' => '--请选择二级部门--',]
             )->label(false) ?>
+            <?= $form->field($model, 'role')->widget(Select2::classname(), [
+                'data' => UpdateUser::getRole(),
+                'options' => ['placeholder' => '--如果是销售请选择店铺--',
+                    'multiple' => true,
+                ],
+                'pluginOptions' => [
+                    'allowClear' => true
+                ],
+            ]) ?>
             <?= $form->field($model, 'position')->widget(Select2::classname(), [
                 'data' => ArrayHelper::map(Position::find()->all(), 'id', 'position'),
                 'options' => ['placeholder' => '--请选择该员工的职位--',
