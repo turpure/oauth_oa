@@ -355,6 +355,22 @@ class ProductCenterTools
                 throw new \Exception('fail to update goodsSku');
             }
         }
+        //删除B_goodsSku中已存在且$data中不存在的错误SKU信息
+        $skuArrNew = ArrayHelper::getColumn($data, 'SKU');
+        $skuList = BGoodsSku::findAll(['GoodsID' => $bGoods['goodsId']]);
+        $skuArrOld = ArrayHelper::getColumn($skuList, 'SKU');
+        $skuDiff = array_diff($skuArrOld, $skuArrNew);
+        if($skuDiff){
+            foreach($skuList as $item){
+                foreach($skuDiff as $v){
+                    if($item['SKU'] == $v){
+                        $item->delete();
+                        //print_r($item);exit;
+                    }
+                }
+            }
+        }
+
         $ret = [];
         foreach ($data as $sku) {
             $bGoodsSku = BGoodsSku::findOne(['SKU' => $sku['SKU']]);

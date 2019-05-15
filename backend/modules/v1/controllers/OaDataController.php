@@ -60,6 +60,24 @@ class OaDataController extends AdminController
         return ApiOaData::getOaData($condition,'wish');
     }
 
+    /** 备货表现  不备货表现
+     * Date: 2019-05-15 11:53
+     * Author: henry
+     * @return array
+     */
+    public function actionStock(){
+        return ApiOaData::getStockData('stock');
+    }
+
+    /**  不备货表现
+     * Date: 2019-05-15 11:53
+     * Author: henry
+     * @return array
+     */
+    public function actionNonstock(){
+        return ApiOaData::getStockData('nonstock');
+    }
+
 
     /**
      * 最近30天类目表现
