@@ -20,7 +20,7 @@ class User extends UserModel
         return [
             [['id', 'status', 'created_at', 'updated_at'], 'integer'],
             [['username', 'auth_key', 'password_hash', 'password_reset_token', 'email','depart',
-                'position','role','mapPersons','mapWarehouse','mapPlat'], 'safe'],
+                'position','role','mapPersons','mapWarehouse','mapPlat','canStockUp'], 'safe'],
         ];
     }
 
@@ -80,6 +80,9 @@ class User extends UserModel
         $query->andFilterWhere(['like', 'username', $this->username])
             ->andFilterWhere(['like', 'auth_key', $this->auth_key])
             ->andFilterWhere(['like', 'mapPersons', $this->mapPersons])
+            ->andFilterWhere(['like', 'mapPlat', $this->mapPlat])
+            ->andFilterWhere(['like', 'mapWarehouse', $this->mapWarehouse])
+            ->andFilterWhere(['=', 'canStockUp', $this->canStockUp])
             ->andFilterWhere(['like', 'password_hash', $this->password_hash])
             ->andFilterWhere(['like', 'password_reset_token', $this->password_reset_token])
             ->andFilterWhere(['like', 'email', $this->email]);

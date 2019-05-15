@@ -54,7 +54,6 @@ class UpdateUser extends Model
         $department = DepartmentChild::find()->where(['user_id'=>$userid])->one();
         if($department){
             $departInfo = Department::findOne($department['department_id']);
-
             $this->department = empty($departInfo->parent)?$departInfo['id']:$departInfo->parent;
             $this->child_depart = empty($departInfo['parent'])?0:$departInfo['id'];
         }else{
@@ -118,17 +117,6 @@ class UpdateUser extends Model
                 $child->store_id = $sto;
                 $child->save();
             }
-            /*foreach ($this->store as $sto) {
-                $child = StoreChild::find()->where(['user_id'=>$userid,'store_id'=>$sto])->one();
-                $child = $child?$child:new StoreChild();
-                $child->user_id = $this->user_id;
-                $child->store_id = $sto;
-                $child->save();
-            }
-            $diff_stores = \array_diff($this->_store, $this->store);
-            foreach ($diff_stores as $diff_sto) {
-                $stores = StoreChild::deleteAll(['user_id'=>$userid,'store_id'=>$diff_sto]);
-            }*/
 
 
             // 增改删职位

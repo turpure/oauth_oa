@@ -26,7 +26,7 @@ use mdm\admin\components\Configs;
  * @property string $mapPerson
  * @property string $mapWarehouse
  * @property string $mapPlat
- * @property string $canStockUp
+ * @property integer $canStockUp
  * @property string $maxSupplierNum
  *
  * @property UserProfile $profile
@@ -217,6 +217,7 @@ class User extends ActiveRecord implements IdentityInterface
             'status' => '状态',
             'depart' => '部门',
             'position' => '职位',
+            'canStockUp' => '备货权限',
             'mapPersons' => '对应销售',
             'mapWarehouse' => '对应仓库',
             'mapPlat' => '对应平台',

@@ -64,6 +64,26 @@ $this->params['breadcrumbs'][] = $this->title;
                     }
                 },
             ],
+            [
+                'attribute' => 'canStockUp',
+                'value' => function ($model) {
+                    if($model->canStockUp === 0) {
+                        return '不能备货';
+                    }
+                    if($model->canStockUp === 1) {
+                        return '可以备货';
+                    }
+                    if($model->canStockUp === 2) {
+                        return '不受限制';
+                    }
+                    return '不能备货';
+                },
+                'filter' => [
+                    0 => '不能备货',
+                    1 => '可以备货',
+                    2 => '不受限制',
+                ]
+            ],
             'mapPersons',
             'mapWarehouse',
             'mapPlat',
