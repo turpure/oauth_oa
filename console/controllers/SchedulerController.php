@@ -414,9 +414,9 @@ class SchedulerController extends Controller
 			          ELSE 'N' END ";
         $ss = Yii::$app->db->createCommand($sql)->execute();
         if($ss){
-            echo date('Y-m-d H:i:s')." 更新成功！\n";
+            echo date('Y-m-d H:i:s')." Update successful!\n";
         }else{
-            echo date('Y-m-d H:i:s')."更新失败！\n";
+            echo date('Y-m-d H:i:s')." Update failed!\n";
         }
     }
 

@@ -24,6 +24,11 @@ class OaDataController extends AdminController
 {
     public $modelClass = 'backend\modules\v1\models\ApiOaData';
 
+    public $serializer = [
+        'class' => 'yii\rest\Serializer',
+        'collectionEnvelope' => 'items',
+    ];
+
     public function behaviors()
     {
         return parent::behaviors();
