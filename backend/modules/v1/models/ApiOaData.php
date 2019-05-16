@@ -33,6 +33,9 @@ class ApiOaData
      */
     public static function getOaData($condition, $param = null)
     {
+        $user = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($user);
+        $roles = implode('',ApiUser::getUserRole($user));
         //$query = OaGoodsinfo::find()
         $query = (new Query())
             ->select('gi.*,g.cate,g.subCate')
@@ -40,25 +43,27 @@ class ApiOaData
             ->leftJoin('proCenter.oa_goods g','g.nid=goodsid');
         if(isset($condition['goodsCode'])) $query->andFilterWhere(['like', 'goodsCode', $condition['goodsCode']]);
         if(isset($condition['mapPersons'])) $query->andFilterWhere(['like', 'mapPersons', $condition['mapPersons']]);
-        if(isset($condition['StoreName'])) $query->andFilterWhere(['like', 'StoreName', $condition['StoreName']]);
+        if(isset($condition['storeName'])) $query->andFilterWhere(['like', 'storeName', $condition['storeName']]);
         if(isset($condition['stockUp'])) $query->andFilterWhere(['like', 'stockUp', $condition['stockUp']]);
-        if(isset($condition['wishpublish'])) $query->andFilterWhere(['like', 'wishpublish', $condition['wishpublish']]);
+        if(isset($condition['wishPublish'])) $query->andFilterWhere(['like', 'wishPublish', $condition['wishPublish']]);
         if(isset($condition['goodsName'])) $query->andFilterWhere(['like', 'goodsName', $condition['goodsName']]);
         if(isset($condition['cate'])) $query->andFilterWhere(['like', 'cate', $condition['cate']]);
         if(isset($condition['subCate'])) $query->andFilterWhere(['like', 'subCate', $condition['subCate']]);
-        if(isset($condition['SupplierName'])) $query->andFilterWhere(['like', 'SupplierName', $condition['SupplierName']]);
+        if(isset($condition['supplierName'])) $query->andFilterWhere(['like', 'supplierName', $condition['supplierName']]);
         if(isset($condition['introducer'])) $query->andFilterWhere(['like', 'introducer', $condition['introducer']]);
         if(isset($condition['developer'])) $query->andFilterWhere(['like', 'developer', $condition['developer']]);
-        if(isset($condition['Purchaser'])) $query->andFilterWhere(['like', 'Purchaser', $condition['Purchaser']]);
+        if(isset($condition['purchaser'])) $query->andFilterWhere(['like', 'purchaser', $condition['purchaser']]);
         if(isset($condition['possessMan1'])) $query->andFilterWhere(['like', 'possessMan1', $condition['possessMan1']]);
         if(isset($condition['completeStatus'])) $query->andFilterWhere(['like', 'completeStatus', $condition['completeStatus']]);
-        if(isset($condition['DictionaryName'])) $query->andFilterWhere(['like', 'DictionaryName', $condition['DictionaryName']]);
+        if(isset($condition['dictionaryName'])) $query->andFilterWhere(['like', 'dictionaryName', $condition['dictionaryName']]);
         if(isset($condition['isVar'])) $query->andFilterWhere(['like', 'isVar', $condition['isVar']]);
-        if(isset($condition['goodsstatus'])) $query->andFilterWhere(['like', 'goodsstatus', $condition['goodsstatus']]);
+        if(isset($condition['goodsStatus'])) $query->andFilterWhere(['like', 'goodsStatus', $condition['goodsStatus']]);
         if(isset($condition['devDatetime']) && $condition['devDatetime']) $query->andFilterWhere(['between', 'devDatetime', $condition['devDatetime'][0], $condition['devDatetime'][1]]);
         if(isset($condition['updateDate']) && $condition['updateDate']) $query->andFilterWhere(['between', 'updateDate', $condition['updateDate'][0], $condition['updateDate'][1]]);
         //判断推广状态
-        if(isset($condition['extendStatus'])) $query->andFilterWhere(['like', 'extendStatus', $condition['extendStatus']]);//TODO
+        if(isset($condition['extendStatus']) && $condition['extendStatus'] == '已推广'){
+            $query->andFilterWhere(['like', 'extendStatus', $condition['extendStatus']]);
+        }//TODO
         //判断是否为采集数据
         if(isset($condition['mid'])){
             if($condition['mid'] == '是'){
@@ -68,7 +73,7 @@ class ApiOaData
             }
         }
         //备货天数
-        if(isset($condition['stockdays'])) $query->andFilterWhere(['stockdays' => $condition['stockdays']]);
+        if(isset($condition['stockDays'])) $query->andFilterWhere(['stockDays' => $condition['stockDays']]);
         //库存
         if(isset($condition['number'])) $query->andFilterWhere(['number' => $condition['number']]);
 
@@ -77,11 +82,29 @@ class ApiOaData
             //print_r($param);exit;
             $query->andWhere(['<>', "IFNULL(completeStatus,'')", '']);
         }
+        if($param == 'sales'){
+            if (strpos($roles, '销售') !== false) {
+                $map[0] = 'or';
+                foreach ($userList as $k => $username) {
+                    $map[$k + 1] = ['like', 'mapPersons', $username];
+                }
+                $query->andWhere($map);
+            } elseif (strpos($roles, '开发') !== false) {
+                $query->andWhere(['in', 'g.developer', $userList]);
+                $query->andWhere(['<>', "IFNULL(mapPersons,'')", '']);
+            }else{
+                $map[0] = 'or';
+                foreach ($userList as $k => $username) {
+                    $map[$k + 1] = ['like', 'mapPersons', $username];
+                }
+                $query->andWhere($map);
+            }
+        }
         //Wish待刊登模块，只返回wish平台未完善数据
         if ($param == 'wish') {
-            $query->andFilterWhere(['wishpublish' => 'Y']);
-            $query->andFilterWhere(['not like', "IFNULL(DictionaryName,'')", 'wish']);
-            $query->andFilterWhere(['not like', "IFNULL(completeStatus,'')", 'Wish已完善']);
+            $query->andFilterWhere(['wishPublish' => 'Y']);
+            $query->andFilterWhere(['not like', "IFNULL(dictionaryName,'')", 'wish']);
+            $query->andFilterWhere(['not like', "IFNULL(completeStatus,'')", 'Wish']);
         }
         
         $query->orderBy('id DESC');
@@ -96,7 +119,7 @@ class ApiOaData
 
     }
 
-    /** 获取
+    /** 获取 备货产品/不备货产品
      * Date: 2019-05-15 11:08
      * Author: henry
      * @return array

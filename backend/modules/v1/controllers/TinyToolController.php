@@ -16,6 +16,7 @@ use Codeception\Template\Api;
 use common\models\User;
 use PhpOffice\PhpSpreadsheet\Calculation\Exception;
 use Yii;
+
 class TinyToolController extends AdminController
 {
     public $modelClass = 'backend\modules\v1\models\ApiTinyTool';
@@ -81,8 +82,6 @@ class TinyToolController extends AdminController
     }
 
 
-
-
     /**
      * @brief fyndiq upload csv to backend
      * @return array
@@ -117,11 +116,9 @@ class TinyToolController extends AdminController
                 }
             }
             return 'job done!';
-        }
-        catch(\Exception  $why) {
+        } catch (\Exception  $why) {
             return [$why];
         }
-
 
 
     }
@@ -132,14 +129,14 @@ class TinyToolController extends AdminController
     public function actionUkFic()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
-        if(!$cond['sku']){
+        $cond = $request['condition'];
+        if (!$cond['sku']) {
             return [
                 'code' => 400,
                 'message' => 'The SKU attribute can not be empty!',
             ];
         }
-        $post= [
+        $post = [
             'sku' => $cond['sku'],
             'num' => $cond['num'] ? $cond['num'] : 1,
             'price' => $cond['price'],
@@ -162,7 +159,7 @@ class TinyToolController extends AdminController
                 -- LEFT JOIN B_PackInfo s ON g.packName = s.packName
                 WHERE r.SKU='{$post['sku']}' ";
         $res = Yii::$app->py_db->createCommand($sql)->queryOne();
-        if(!$res) return $data;
+        if (!$res) return $data;
 
         $post['num'] = $post['num'] ? $post['num'] : 1;
         $post['rate'] = $post['rate'] ? $post['rate'] : 0;
@@ -173,29 +170,50 @@ class TinyToolController extends AdminController
         $res['Weight'] = $res['Weight'] * $post['num'];
         $data['detail'] = $res;
 
-        if($res['Weight'] < Yii::$app->params['weight1']){
+        if ($res['Weight'] < Yii::$app->params['weight1']) {
             $name = Yii::$app->params['transport1'];
             $cost = Yii::$app->params['swBasic'] + Yii::$app->params['swPrice'] * $res['Weight'];
-        }elseif($res['Weight'] < Yii::$app->params['weight2']){
+
+            $name2 = Yii::$app->params['transport2'];
+            $cost2 = Yii::$app->params['wBasic'] + Yii::$app->params['price2'] * $res['Weight'];
+        } elseif ($res['Weight'] < Yii::$app->params['weight2']) {
             $name = Yii::$app->params['transport1'];
             $cost = Yii::$app->params['bwBasic'] + Yii::$app->params['bwPrice'] * $res['Weight'];
-        }elseif($res['Weight'] < Yii::$app->params['weight3']){
-            $name = Yii::$app->params['transport2'];
-            $cost = Yii::$app->params['wBasic'] + Yii::$app->params['price2'] * $res['Weight'];
-        }else{
-            $name = Yii::$app->params['transport2'];
-            $cost = Yii::$app->params['wBasic'] + Yii::$app->params['price3'] * $res['Weight'];
+
+            $name2 = Yii::$app->params['transport2'];
+            $cost2 = Yii::$app->params['wBasic'] + Yii::$app->params['price2'] * $res['Weight'];
+        } elseif ($res['Weight'] < Yii::$app->params['weight3']) {
+            $name = $name2 = Yii::$app->params['transport2'];
+            $cost = $cost2 = Yii::$app->params['wBasic'] + Yii::$app->params['price2'] * $res['Weight'];
+        } else {
+            $name = $name2 = Yii::$app->params['transport2'];
+            $cost = $cost2 = Yii::$app->params['wBasic'] + Yii::$app->params['price3'] * $res['Weight'];
         }
 
         //根据售价获取利润率
-        if($post['price']){
-            $data['rate'] = ApiUkFic::getRate($post['price'], $cost ,$res['costprice']);
+        if ($post['price']) {
+            $rate = ApiUkFic::getRate($post['price'], $cost, $res['costprice']);
+            $rate['transport'] = $name;
+            $rate2 = ApiUkFic::getRate($post['price'], $cost2, $res['costprice']);
+            $rate2['transport'] = $name2;
+            $data['rate'] = [$rate,$rate2];
         }
         //根据利润率获取售价
-        $data['price'] = ApiUkFic::getPrice($post['rate'], $cost ,$res['costprice']);
+        $price = ApiUkFic::getPrice($post['rate'], $cost, $res['costprice']);
+        $price['transport'] = $name;
+        $price2 = ApiUkFic::getPrice($post['rate'], $cost2, $res['costprice']);
+        $price2['transport'] = $name2;
+        $data['price'] = [$price,$price2];
+        //print_r($data['price']);exit;
         $data['transport'] = [
-            'name' => $name,
-            'cost' => round($cost,2),
+            [
+                'name' => $name,
+                'cost' => round($cost, 2),
+            ],
+            [
+                'name' => $name2,
+                'cost' => round($cost2, 2),
+            ]
         ];
         //print_r($data);exit;
         return $data;
@@ -205,16 +223,17 @@ class TinyToolController extends AdminController
      * UK 真仓定价器
      * @return array
      */
-    public function actionUk(){
+    public function actionUk()
+    {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
-        if(!$cond['sku']){
+        $cond = $request['condition'];
+        if (!$cond['sku']) {
             return [
                 'code' => 400,
                 'message' => 'The SKU attribute can not be empty!',
             ];
         }
-        $post= [
+        $post = [
             'sku' => $cond['sku'],
             'num' => $cond['num'] ? $cond['num'] : 1,
             'price' => $cond['price'],
@@ -228,7 +247,7 @@ class TinyToolController extends AdminController
         ];
         //获取SKU信息
         $res = ApiUk::getDetail($post['sku']);
-        if(!$res) return $data;
+        if (!$res) return $data;
 
         $post['num'] = $post['num'] ? $post['num'] : 1;
         $post['rate'] = $post['rate'] ? $post['rate'] : 0;
@@ -242,11 +261,11 @@ class TinyToolController extends AdminController
         $data['detail'] = $res;
 
         //获取运费和出库费
-        $data['transport'] = ApiUk::getTransport($res['weight'],$res['length'],$res['width'],$res['height']);
+        $data['transport'] = ApiUk::getTransport($res['weight'], $res['length'], $res['width'], $res['height']);
 
         //根据售价获取利润率
-        if($post['price']){
-            $data['rate'] = ApiUk::getRate($post['price'], $data['transport']['cost'] , $data['transport']['out'], $res['price']);
+        if ($post['price']) {
+            $data['rate'] = ApiUk::getRate($post['price'], $data['transport']['cost'], $data['transport']['out'], $res['price']);
         }
 
         //根据利润率获取售价
@@ -263,14 +282,14 @@ class TinyToolController extends AdminController
     public function actionAu()
     {
         $request = Yii::$app->request->post();
-        $cond= $request['condition'];
-        if(!$cond['sku']){
+        $cond = $request['condition'];
+        if (!$cond['sku']) {
             return [
                 'code' => 400,
                 'message' => 'The SKU attribute can not be empty!',
             ];
         }
-        $post= [
+        $post = [
             'sku' => $cond['sku'],
             'num' => $cond['num'] ? $cond['num'] : 1,
             'price' => $cond['price'],
@@ -285,7 +304,7 @@ class TinyToolController extends AdminController
         //获取SKU信息
         //获取SKU信息
         $res = ApiAu::getDetail($post['sku']);
-        if(!$res) return $data;
+        if (!$res) return $data;
 
         $post['num'] = $post['num'] ? $post['num'] : 1;
         $post['rate'] = $post['rate'] ? $post['rate'] : 0;
@@ -298,10 +317,10 @@ class TinyToolController extends AdminController
         $data['detail'] = $res;
 
         //获取运费和出库费
-        $data['transport'] = ApiAu::getTransport($res['weight'],$res['length'],$res['width'],$res['height']);
+        $data['transport'] = ApiAu::getTransport($res['weight'], $res['length'], $res['width'], $res['height']);
 
         //根据售价获取利润率
-        if($post['price']){
+        if ($post['price']) {
             $data['rate'] = ApiAu::getRate($post['price'], $data['transport']['cost'], $data['transport']['out'], $res['price']);
         }
         //根据利润率获取售价
@@ -338,7 +357,8 @@ class TinyToolController extends AdminController
      * @return array
      * @throws \yii\db\Exception
      */
-    public function actionHandleRiskyOrder() {
+    public function actionHandleRiskyOrder()
+    {
         $request = Yii::$app->request;
         $data = $request->post()['data'];
         return ApiTinyTool::handleRiskyOrder($data);
@@ -351,15 +371,15 @@ class TinyToolController extends AdminController
     public function actionBlacklist()
     {
         $request = Yii::$app->request;
-        if($request->isGet) {
+        if ($request->isGet) {
             $cond = $request->get();
             return ApiTinyTool::getBlacklist($cond);
         }
-        if($request->isPost) {
+        if ($request->isPost) {
             $data = $request->post()['data'];
             return ApiTinyTool::saveBlacklist($data);
         }
-        if($request->isDelete) {
+        if ($request->isDelete) {
             $id = $request->get()['id'];
             return ApiTinyTool::deleteBlacklist($id);
         }
