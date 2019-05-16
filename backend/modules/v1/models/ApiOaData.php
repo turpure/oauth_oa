@@ -165,7 +165,14 @@ class ApiOaData
 
     public static function getStockData($param = 'stock'){
         try{
-            return Yii::$app->db->createCommand("SELECT * FROM proCenter.oa_stockGoodsNumReal WHERE isStock='{$param}' ORDER BY number DESC ")->queryAll();
+            $sql = "SELECT developer,number,orderNum,hotStyleNum,exuStyleNum,
+                    CASE WHEN number=0 THEN 0 ELSE round(orderNum*1.0/number,2) END AS orderRate,
+                    CASE WHEN number=0 THEN 0 ELSE round(hotStyleNum*1.0/number,2) END AS hotRate,
+                    CASE WHEN number=0 THEN 0 ELSE round(exuStyleNum*1.0/number,2) END AS exuRate,
+                    stockNumThisMonth,stockNumLastMonth,createDate
+                    FROM proCenter.oa_stockGoodsNumReal 
+                    WHERE isStock='{$param}' ORDER BY number DESC ";
+            return Yii::$app->db->createCommand($sql)->queryAll();
         }catch (\Exception $e){
             return [
                 'code' => 400,
