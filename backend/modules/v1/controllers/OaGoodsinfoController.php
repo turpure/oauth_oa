@@ -552,7 +552,7 @@ class OaGoodsinfoController extends AdminController
      */
     public function actionJoomName()
     {
-        $list = OaJoomSuffix::find()->asArray()->all();
+        $list = OaJoomSuffix::find()->orderBy('joomName ASC')->asArray()->all();
         return ArrayHelper::getColumn($list, 'joomName');
     }
 

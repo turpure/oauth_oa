@@ -1201,7 +1201,7 @@ class ApiGoodsinfo
     private static function getJoomImageInfo($joomInfo, $account)
     {
         $mainImage = str_replace( '/10023/', '/'.$account['imgCode'].'/', $joomInfo['mainImage']);
-        $extraImages = explode('\n', $joomInfo['extraImages']);
+        $extraImages = explode("\n", $joomInfo['extraImages']);
         $extraImages = array_filter($extraImages, function ($ele) {
             return strpos($ele, '-_00_') === false;
         });

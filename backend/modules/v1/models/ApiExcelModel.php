@@ -198,14 +198,14 @@ class ApiExcelModel
     ];
 
     public static function getZhanghao(){
-        $sql = "SELECT ebayName,nameCode FROM oa_ebay_suffix";
-        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $sql = "SELECT ebayName,nameCode FROM proCenter.oa_ebaySuffix";
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
         $data = ArrayHelper::map($data,'ebayName','nameCode');
         return $data;
     }
     public static function getPublicationStyle(){
-        $sql = "SELECT ebayName,ibayTemplate FROM oa_ebay_suffix";
-        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $sql = "SELECT ebayName,ibayTemplate FROM proCenter.oa_ebaySuffix";
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
         $data = ArrayHelper::map($data,'ebayName','ibayTemplate');
         return $data;
     }
