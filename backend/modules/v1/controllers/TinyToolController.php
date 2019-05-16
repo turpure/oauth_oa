@@ -12,9 +12,8 @@ use backend\modules\v1\models\ApiAu;
 use backend\modules\v1\models\ApiTinyTool;
 use backend\modules\v1\models\ApiUk;
 use backend\modules\v1\models\ApiUkFic;
-use Codeception\Template\Api;
 use common\models\User;
-use PhpOffice\PhpSpreadsheet\Calculation\Exception;
+use backend\modules\v1\services\ExpressExpired;
 use Yii;
 
 class TinyToolController extends AdminController
@@ -397,5 +396,15 @@ class TinyToolController extends AdminController
         $request = Yii::$app->request->post();
         $cond = $request['condition'];
         return ApiTinyTool::getEbayVirtualStore($cond);
+    }
+
+    public function actionExpressExpired()
+    {
+        try {
+            return ExpressExpired::run();
+        }
+        catch (\Exception $why) {
+            return ['message' => $why->getMessage(),'code' => $why->getCode()];
+        }
     }
 }
