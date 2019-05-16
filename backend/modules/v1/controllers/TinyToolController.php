@@ -398,6 +398,10 @@ class TinyToolController extends AdminController
         return ApiTinyTool::getEbayVirtualStore($cond);
     }
 
+    /**
+     * @brief 超时物流
+     * @return array|mixed
+     */
     public function actionExpressExpired()
     {
         try {
