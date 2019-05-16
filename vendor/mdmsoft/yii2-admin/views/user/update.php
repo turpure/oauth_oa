@@ -8,6 +8,7 @@ use mdm\admin\components\Helper;
 use mdm\admin\models\Department;
 use mdm\admin\models\Position;
 use mdm\admin\models\Store;
+use mdm\admin\models\form\UpdateUser;
 use yii\bootstrap\ActiveForm;
 use kartik\select2\Select2;
 /* @var $this yii\web\View */
@@ -70,6 +71,15 @@ $controllerId = $this->context->uniqueId . '/';
                 $model->department?ArrayHelper::map(Department::findAll(['parent' => $model->department]), 'id', 'department'):[],
                 ['prompt' => '--请选择二级部门--',]
             )->label(false) ?>
+            <?= $form->field($model, 'role')->widget(Select2::classname(), [
+                'data' => UpdateUser::getRole(),
+                'options' => ['placeholder' => '--如果是销售请选择店铺--',
+                    'multiple' => true,
+                ],
+                'pluginOptions' => [
+                    'allowClear' => true
+                ],
+            ]) ?>
             <?= $form->field($model, 'position')->widget(Select2::classname(), [
                 'data' => ArrayHelper::map(Position::find()->all(), 'id', 'position'),
                 'options' => ['placeholder' => '--请选择该员工的职位--',
@@ -82,6 +92,34 @@ $controllerId = $this->context->uniqueId . '/';
             <?= $form->field($model, 'store')->widget(Select2::classname(), [
                 'data' => ArrayHelper::map(Store::find()->all(), 'id', 'store'),
                 'options' => ['placeholder' => '--如果是销售请选择店铺--',
+                    'multiple' => true,
+                ],
+                'pluginOptions' => [
+                    'allowClear' => true
+                ],
+            ]) ?>
+
+            <?= $form->field($model, 'mapPersons')->widget(Select2::classname(), [
+                'data' => UpdateUser::getMapPersons(),
+                'options' => ['placeholder' => '--如果是开发请选择对应销售--',
+                    'multiple' => true,
+                ],
+                'pluginOptions' => [
+                    'allowClear' => true
+                ],
+            ]) ?>
+            <?= $form->field($model, 'mapWarehouse')->widget(Select2::classname(), [
+                'data' => UpdateUser::getWarehouse(),
+                'options' => ['placeholder' => '--如果是开发请选择对应仓库--',
+                    'multiple' => true,
+                ],
+                'pluginOptions' => [
+                    'allowClear' => true
+                ],
+            ]) ?>
+            <?= $form->field($model, 'mapPlat')->widget(Select2::classname(), [
+                'data' => UpdateUser::getMapPlat(),
+                'options' => ['placeholder' => '--请选择对应平台--',
                     'multiple' => true,
                 ],
                 'pluginOptions' => [

@@ -9,6 +9,7 @@ use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
 use mdm\admin\components\Configs;
 
+
 /**
  * User model
  *
@@ -22,6 +23,11 @@ use mdm\admin\components\Configs;
  * @property integer $created_at
  * @property integer $updated_at
  * @property string $password write-only password
+ * @property string $mapPerson
+ * @property string $mapWarehouse
+ * @property string $mapPlat
+ * @property integer $canStockUp
+ * @property string $maxSupplierNum
  *
  * @property UserProfile $profile
  */
@@ -211,6 +217,10 @@ class User extends ActiveRecord implements IdentityInterface
             'status' => '状态',
             'depart' => '部门',
             'position' => '职位',
+            'canStockUp' => '备货权限',
+            'mapPersons' => '对应销售',
+            'mapWarehouse' => '对应仓库',
+            'mapPlat' => '对应平台',
             'role' => '角色'
         ];
     }
