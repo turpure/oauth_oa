@@ -182,6 +182,7 @@ class UpdateUser extends Model
             'mapPersons' => '对应销售',
             'mapPlat' => '对应平台',
             'mapWarehouse' => '对应仓库',
+            'role' => '角色',
         ];
     }
 
