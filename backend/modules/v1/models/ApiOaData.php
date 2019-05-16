@@ -16,6 +16,7 @@
 
 namespace backend\modules\v1\models;
 
+use backend\models\OaGoodsinfoExtendsStatus;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\db\Query;
@@ -62,8 +63,45 @@ class ApiOaData
         if(isset($condition['updateDate']) && $condition['updateDate']) $query->andFilterWhere(['between', 'updateDate', $condition['updateDate'][0], $condition['updateDate'][1]]);
         //判断推广状态
         if(isset($condition['extendStatus']) && $condition['extendStatus'] == '已推广'){
-            $query->andFilterWhere(['like', 'extendStatus', $condition['extendStatus']]);
-        }//TODO
+            $query->andWhere([
+                'OR',
+                [
+                    'AND',
+                    ['like', 'extendStatus', '已推广'],
+                    ['not like', 'mapPersons', $user]
+                ],
+                [
+                    'AND',
+                    ['exists', OaGoodsinfoExtendsStatus::find()
+                        ->where( 'infoId=gi.id')
+                        ->andWhere(['saler' => $user, 'status' => '已推广'])],
+                    ['like', 'mapPersons', $user]
+                ]
+            ]);
+        }
+        if(isset($condition['extendStatus']) && $condition['extendStatus'] == '未推广'){
+            $query->andWhere([
+                'OR',
+                [
+                    'AND',
+                    ['like', "IFNULL(extendStatus,'未推广')", '未推广'],
+                    ['not like', 'mapPersons', $user]
+                ],
+                [
+                    'AND',
+                    ['like', 'mapPersons', $user],
+                    [
+                        'OR',
+                        ['exists', OaGoodsinfoExtendsStatus::find()
+                            ->where( 'infoId=gi.id')
+                            ->andWhere(['saler' => $user, 'status' => '未推广'])],
+                        ['not exists', OaGoodsinfoExtendsStatus::find()
+                             ->where( 'infoId=gi.id')
+                            ->andWhere(['saler' => $user])],
+                    ]
+                ],
+            ]);
+        }
         //判断是否为采集数据
         if(isset($condition['mid'])){
             if($condition['mid'] == '是'){
