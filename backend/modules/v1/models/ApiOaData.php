@@ -45,18 +45,20 @@ class ApiOaData
         if(isset($condition['goodsCode'])) $query->andFilterWhere(['like', 'goodsCode', $condition['goodsCode']]);
         if(isset($condition['mapPersons'])) $query->andFilterWhere(['like', 'mapPersons', $condition['mapPersons']]);
         if(isset($condition['storeName'])) $query->andFilterWhere(['like', 'storeName', $condition['storeName']]);
-        if(isset($condition['stockUp'])) $query->andFilterWhere(['like', 'stockUp', $condition['stockUp']]);
+        if(isset($condition['stockUp'])) $query->andFilterWhere(['like', 'gi.stockUp', $condition['stockUp']]);
         if(isset($condition['wishPublish'])) $query->andFilterWhere(['like', 'wishPublish', $condition['wishPublish']]);
         if(isset($condition['goodsName'])) $query->andFilterWhere(['like', 'goodsName', $condition['goodsName']]);
         if(isset($condition['cate'])) $query->andFilterWhere(['like', 'cate', $condition['cate']]);
         if(isset($condition['subCate'])) $query->andFilterWhere(['like', 'subCate', $condition['subCate']]);
         if(isset($condition['supplierName'])) $query->andFilterWhere(['like', 'supplierName', $condition['supplierName']]);
         if(isset($condition['introducer'])) $query->andFilterWhere(['like', 'introducer', $condition['introducer']]);
-        if(isset($condition['developer'])) $query->andFilterWhere(['like', 'developer', $condition['developer']]);
+        if(isset($condition['developer'])) $query->andFilterWhere(['like', 'gi.developer', $condition['developer']]);
         if(isset($condition['purchaser'])) $query->andFilterWhere(['like', 'purchaser', $condition['purchaser']]);
         if(isset($condition['possessMan1'])) $query->andFilterWhere(['like', 'possessMan1', $condition['possessMan1']]);
-        if(isset($condition['completeStatus'])) $query->andFilterWhere(['like', 'completeStatus', $condition['completeStatus']]);
-        if(isset($condition['dictionaryName'])) $query->andFilterWhere(['like', 'dictionaryName', $condition['dictionaryName']]);
+
+        $query = ApiGoodsinfo::completedStatusFilter($query, $condition);
+        $query = ApiGoodsinfo::forbidPlatFilter($query, $condition);
+
         if(isset($condition['isVar'])) $query->andFilterWhere(['like', 'isVar', $condition['isVar']]);
         if(isset($condition['goodsStatus'])) $query->andFilterWhere(['like', 'goodsStatus', $condition['goodsStatus']]);
         if(isset($condition['devDatetime']) && $condition['devDatetime']) $query->andFilterWhere(['between', 'devDatetime', $condition['devDatetime'][0], $condition['devDatetime'][1]]);
@@ -67,15 +69,15 @@ class ApiOaData
                 'OR',
                 [
                     'AND',
-                    ['like', 'extendStatus', '已推广'],
+                    ['extendStatus' => '已推广'],
                     ['not like', 'mapPersons', $user]
                 ],
                 [
                     'AND',
+                    ['like', 'mapPersons', $user],
                     ['exists', OaGoodsinfoExtendsStatus::find()
                         ->where( 'infoId=gi.id')
                         ->andWhere(['saler' => $user, 'status' => '已推广'])],
-                    ['like', 'mapPersons', $user]
                 ]
             ]);
         }
@@ -84,7 +86,7 @@ class ApiOaData
                 'OR',
                 [
                     'AND',
-                    ['like', "IFNULL(extendStatus,'未推广')", '未推广'],
+                    ["IFNULL(extendStatus,'未推广')" => '未推广'],
                     ['not like', 'mapPersons', $user]
                 ],
                 [
@@ -103,13 +105,8 @@ class ApiOaData
             ]);
         }
         //判断是否为采集数据
-        if(isset($condition['mid'])){
-            if($condition['mid'] == '是'){
-                $query->andFilterWhere(['>', 'mid', 0]);
-            }else {
-                $query->andFilterWhere(["IFNULL(mid,0)" => 0]);
-            }
-        }
+        if(isset($condition['mid']) && $condition['mid'] == '是') $query->andFilterWhere(['>', 'mid', 0]);
+        if(isset($condition['mid']) && $condition['mid'] == '否') $query->andFilterWhere(["IFNULL(mid,0)" => 0]);
         //备货天数
         if(isset($condition['stockDays'])) $query->andFilterWhere(['stockDays' => $condition['stockDays']]);
         //库存
@@ -133,7 +130,7 @@ class ApiOaData
             }else{
                 $map[0] = 'or';
                 foreach ($userList as $k => $username) {
-                    $map[$k + 1] = ['like', 'mapPersons', $username];
+                    $map[$k + 1] = ['like', "IFNULL(mapPersons,'')", $username];
                 }
                 $query->andWhere($map);
             }

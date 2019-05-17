@@ -1384,7 +1384,7 @@ class ApiGoodsinfo
      * @param $condition
      * @return mixed
      */
-    private static function completedStatusFilter($query, $condition)
+    public static function completedStatusFilter($query, $condition)
     {
         if (isset($condition['completeStatus']) && !empty($condition['completeStatus'])) {
             $status = $condition['completeStatus'];
@@ -1412,7 +1412,7 @@ class ApiGoodsinfo
         return $query;
     }
 
-    private static function forbidPlatFilter($query, $condition)
+    public static function forbidPlatFilter($query, $condition)
     {
         //todo 禁售平台过滤
         if (isset($condition['dictionaryName']) && !empty($condition['dictionaryName'])) {

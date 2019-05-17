@@ -48,7 +48,7 @@ class ApiReport
      */
     public static function getDevelopReport($condition)
     {
-        $sql = "EXEC P_DevNetprofit_advanced @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate," .
+        $sql = "EXEC P_DevNetprofit_advanced_backup @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate," .
             "@Sku='',@SalerName=:seller,@SalerName2='',@chanel='',@SaleType='',@SalerAliasName='',@DevDate=''," .
             "@DevDateEnd='',@Purchaser=0,@SupplierName=0,@possessMan1=0,@possessMan2=0";
         $con = Yii::$app->py_db;
@@ -59,12 +59,69 @@ class ApiReport
             ':seller' => $condition['seller'],
         ];
         try {
-            return $con->createCommand($sql)->bindValues($params)->queryAll();
+            //return $con->createCommand($sql)->bindValues($params)->queryAll();
+            $list = $con->createCommand($sql)->bindValues($params)->queryAll();
+            //获取现有开发以及部门
+            $userSql = "SELECT u.username,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart
+                        FROM user u
+                        LEFT JOIN auth_department_child dc ON dc.user_id=u.id
+                        LEFT JOIN auth_department d ON d.id=dc.department_id
+                        LEFT JOIN auth_department p ON p.id=d.parent
+                        LEFT JOIN auth_assignment a ON a.user_id=u.id
+                        WHERE u.`status`=10 AND a.item_name='产品开发'";
+            $userList = Yii::$app->db->createCommand($userSql)->queryAll();
+            $rateArr = Yii::$app->py_db->createCommand("select * from Y_Ratemanagement")->queryOne();
+            $result = [];
+            foreach ($list as $value) {
+                $item = $value;
+                foreach ($userList as $u) {
+                    if($value['salernameZero'] === $u['username']){
+                        if ($u['depart'] === '运营一部') {
+                            $rate = $rateArr['devRate1'];
+                        } elseif ($u['depart'] === '运营五部') {
+                            $rate = $rateArr['devRate5'];
+                        } else {
+                            $rate = $rateArr['devRate'];
+                        }
+                        break;//跳出内层循环
+                    }else{
+                        $rate = $rateArr['devRate'];
+                    }
+                }
+                //print_r($rate);exit;
+                //重新计算各时间段销售额（￥）、pp交易费（￥）、毛利润、毛利率
+                //0-6月
+                $item['salemoneyrmbznZero'] *= $rate;
+                $item['ppebayznZero'] *= $rate;
+                $item['netprofitZero'] = $item['salemoneyrmbznZero'] - $item['costmoneyrmbZero'] - $item['ppebayznZero']
+                    - $item['inpackagefeermbZero'] - $item['expressfarermbZero'] - $item['devofflinefeeZero'] - $item['devOpeFeeZero'];
+                $item['netrateZero'] = $item['salemoneyrmbznZero'] == 0 ? 0 : round($item['netprofitZero']/$item['salemoneyrmbznZero'], 4)*100;
+                //6-12月
+                $item['salemoneyrmbznSix'] *= $rate;
+                $item['ppebayznSix'] *= $rate;
+                $item['netprofitSix'] = $item['salemoneyrmbznSix'] - $item['costmoneyrmbSix'] - $item['ppebayznSix']
+                    - $item['inpackagefeermbSix'] - $item['expressfarermbSix'] - $item['devofflinefeeSix'] - $item['devOpeFeeSix'];
+                $item['netrateSix'] = $item['salemoneyrmbznSix'] == 0 ? 0 : round($item['netprofitSix']/$item['salemoneyrmbznSix'], 4)*100;
+                //12月以上
+                $item['salemoneyrmbznTwe'] *= $rate;
+                $item['ppebayznTwe'] *= $rate;
+                $item['netprofitTwe'] = $item['salemoneyrmbznTwe'] - $item['costmoneyrmbTwe'] - $item['ppebayznTwe']
+                    - $item['inpackagefeermbTwe'] - $item['expressfarermbTwe'] - $item['devofflinefeeTwe'] - $item['devOpeFeeTwe'];
+                $item['netrateTwe'] = $item['salemoneyrmbznTwe'] == 0 ? 0 : round($item['netprofitTwe']/$item['salemoneyrmbznTwe'], 4)*100;
+                //汇总
+                $item['salemoneyrmbtotal'] *= $rate;
+                $item['netprofittotal'] = $item['netprofitZero'] + $item['netprofitSix'] + $item['netprofitTwe'];
+                $item['netratetotal'] = $item['salemoneyrmbtotal'] == 0 ? 0 : round($item['netprofittotal']/$item['salemoneyrmbtotal'], 4)*100;
+                $result[] = $item;
+            }
+            //print_r($result);exit;
+            return $result;
         } catch (\Exception $why) {
             return [$why];
         }
 
     }
+
 
     /**
      * @brief Purchase profit report
@@ -339,7 +396,7 @@ class ApiReport
 				    MAX(refund) AS refund, MAX(currencyCode) AS currencyCode,MAX(refundTime) AS refundTime,
 				    MAX(orderTime) AS orderTime, MAX(orderCountry) AS orderCountry,MAX(platform) AS platform,MAX(expressWay) AS expressWay,refundId
                     FROM `cache_refund_details` 
-                    WHERE refundTime between '{$condition['beginDate']}' AND '".$condition['endDate']." 23:59:59"."' 
+                    WHERE refundTime between '{$condition['beginDate']}' AND '" . $condition['endDate'] . " 23:59:59" . "' 
                           AND IFNULL(platform,'')<>'' 
                     GROUP BY refundId,OrderId,mergeBillId,refund,refundTime
                 ) rd 
@@ -417,7 +474,7 @@ class ApiReport
                 $item['salesman'] = isset($userData[$v['suffix']]) ? $userData[$v['suffix']] : '未分配';
                 $data[] = $item;
             }
-            $totalAveAmount = array_sum(ArrayHelper::getColumn($data,'aveAmount'));
+            $totalAveAmount = array_sum(ArrayHelper::getColumn($data, 'aveAmount'));
 
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
@@ -426,7 +483,7 @@ class ApiReport
                 ],
             ]);
 
-            return ['provider' => $provider,'extra' => ['totalAveAmount' => $totalAveAmount]];
+            return ['provider' => $provider, 'extra' => ['totalAveAmount' => $totalAveAmount]];
         } catch (\Exception $why) {
             return [
                 'code' => 400,
@@ -445,7 +502,7 @@ class ApiReport
     {
         $deadSql = "SELECT * FROM oauth_otherOfflineClearn 
                       WHERE convert(VARCHAR(10),importDate,121) BETWEEN '" . $condition['beginDate'] . "' AND '" . $condition['endDate'] . "'";
-        if ($condition['member']){
+        if ($condition['member']) {
             if ($condition['role'] == 'purchaser') {
                 $deadSql .= ' AND purchaser IN (' . $condition['member'] . ') ';
             } elseif ($condition['role'] == 'possessMan') {
@@ -455,7 +512,7 @@ class ApiReport
             } else {
                 $deadSql .= ' AND (developer IN (' . $condition['member'] . ') OR developer2 IN (' . $condition['member'] . ')) ';
             }
-        }else{
+        } else {
             if ($condition['role'] == 'purchaser') {
                 $deadSql .= " AND ISNULL(purchaser,'')<>'' ";
             } elseif ($condition['role'] == 'possessMan') {
@@ -468,14 +525,14 @@ class ApiReport
         }
         try {
             $data = Yii::$app->py_db->createCommand($deadSql)->queryAll();
-            $totalAveAmount = array_sum(ArrayHelper::getColumn($data,'aveAmount'));
+            $totalAveAmount = array_sum(ArrayHelper::getColumn($data, 'aveAmount'));
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'pagination' => [
                     'pageSize' => isset($condition['pageSize']) && $condition['pageSize'] ? $condition['pageSize'] : 20,
                 ],
             ]);
-            return ['provider' => $provider,'extra' => ['totalAveAmount' => $totalAveAmount]];
+            return ['provider' => $provider, 'extra' => ['totalAveAmount' => $totalAveAmount]];
         } catch (\Exception $why) {
             return [
                 'code' => 400,
@@ -512,7 +569,7 @@ class ApiReport
                 $item['salesman'] = isset($userData[$v['suffix']]) ? $userData[$v['suffix']] : '未分配';
                 $data[] = $item;
             }
-            $totalAveAmount = array_sum(ArrayHelper::getColumn($data,'aveAmount'));
+            $totalAveAmount = array_sum(ArrayHelper::getColumn($data, 'aveAmount'));
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'pagination' => [
@@ -520,7 +577,7 @@ class ApiReport
                 ],
             ]);
 
-            return ['provider' => $provider,'extra' => ['totalAveAmount' => $totalAveAmount]];
+            return ['provider' => $provider, 'extra' => ['totalAveAmount' => $totalAveAmount]];
         } catch (\Exception $why) {
             return [
                 'code' => 400,
