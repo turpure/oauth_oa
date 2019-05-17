@@ -75,9 +75,9 @@ class ApiOaData
                 [
                     'AND',
                     ['like', 'mapPersons', $user],
-                    ['exists', OaGoodsinfoExtendsStatus::find()
-                        ->where( 'infoId=gi.id')
-                        ->andWhere(['saler' => $user, 'status' => '已推广'])],
+                    ['in', 'gi.id' ,OaGoodsinfoExtendsStatus::find()
+                        ->select('infoId')
+                        ->where(['saler' => $user, 'status' => '已推广'])],
                 ]
             ]);
         }
