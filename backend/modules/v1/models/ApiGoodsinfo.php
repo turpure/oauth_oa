@@ -597,24 +597,40 @@ class ApiGoodsinfo
         }
     }
 
+    /** 平台信息标记完善
+     * @param $condition
+     * Date: 2019-05-17 13:16
+     * Author: henry
+     * @return array|bool
+     * @throws \yii\db\Exception
+     */
     public static function finishPlat($condition)
     {
-        $infoId = $condition['id'];
+        $ids = is_array($condition['id']) ? $condition['id'] : [$condition['id']];
         $plat = $condition['plat'];
-        $goodsInfo = OagoodsInfo::findOne(['id' => $infoId]);
-        $oldPlat = $goodsInfo->completeStatus ?: '';
-        $plat = array_merge($plat, explode(',', $oldPlat));
-        $plat = array_filter($plat);
-        $plat = array_unique($plat);
-        asort($plat);
-        $goodsInfo->completeStatus = implode(',', $plat);
-        if (!$goodsInfo->save()) {
+        $tran = Yii::$app->db->beginTransaction();
+        try{
+            foreach ($ids as $infoId){
+                $goodsInfo = OagoodsInfo::findOne(['id' => $infoId]);
+                $oldPlat = $goodsInfo->completeStatus ?: '';
+                $plat = array_merge($plat, explode(',', $oldPlat));
+                $plat = array_filter($plat);
+                $plat = array_unique($plat);
+                asort($plat);
+                $goodsInfo->completeStatus = implode(',', $plat);
+                if (!$goodsInfo->save()) {
+                    throw new \Exception('标记完善失败!');
+                }
+            }
+            $tran->commit();
+            return true;
+        }catch (\Exception $e){
+            $tran->rollBack();
             return [
                 'code' => 400,
-                'message' => 'failure'
+                'message' => $e->getMessage()
             ];
         }
-        return true;
     }
 
     /**
