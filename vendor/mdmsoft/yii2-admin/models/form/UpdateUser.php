@@ -33,6 +33,7 @@ class UpdateUser extends Model
     public $username;
     private $_position;
     private $_store;
+    private $_role;
 
     /**
      * Creates a form model given a token.
@@ -66,6 +67,7 @@ class UpdateUser extends Model
         }
         $this->_position = ArrayHelper::getColumn(ArrayHelper::toArray(PositionChild::find()->where(['user_id'=>$userid])->all()),'position_id');
         $this->_store = ArrayHelper::getColumn(ArrayHelper::toArray(StoreChild::find()->where(['user_id'=>$userid])->all()),'store_id');
+        $this->_role = ArrayHelper::getColumn(ArrayHelper::toArray(AdminAuthAssignment::find()->where(['user_id'=>$userid])->all()),'item_name');
         $this->position = $this->_position;
         $this->store = $this->_store;
         if (!$this->username) {
@@ -83,7 +85,7 @@ class UpdateUser extends Model
             [['user_id'],'integer'],
             [['department','child_depart'],'string'],
             [['department',],'required'],
-            [['store','position','mapPersons','mapPlat','mapWarehouse'],'safe']
+            [['store','position','mapPersons','mapPlat','mapWarehouse','role'],'safe']
         ];
     }
 
@@ -98,9 +100,9 @@ class UpdateUser extends Model
 
             $userid = $this->user_id;
             $user = User::findOne($userid);
-            $user->mapPersons = !empty($this->mapPersons)?implode(',',$this->mapPersons):'';
-            $user->mapPlat = !empty($this->mapPlat)? implode(',',$this->mapPlat):'';
-            $user->mapWarehouse = !empty($this->mapWarehouse) ?implode(',',$this->mapWarehouse):'';
+            $user->mapPersons = !empty($this->mapPersons)?implode(',',$this->mapPersons):null;
+            $user->mapPlat = !empty($this->mapPlat)? implode(',',$this->mapPlat):null;
+            $user->mapWarehouse = !empty($this->mapWarehouse) ?implode(',',$this->mapWarehouse):null;
             if(!$user->save()) {
                throw new \Exception('user保存失败！');
             }
@@ -123,15 +125,22 @@ class UpdateUser extends Model
                 $child->save();
             }
 
-            //修改角色
+            //增改删角色
             foreach ($this->role as $roleName) {
                 $role = AdminAuthAssignment::findOne(['user_id' =>$userid, 'item_name' => $roleName]);
                 if ($role === null) {
                     $role = new AdminAuthAssignment();
                 }
                 $role->setAttributes(['item_name' =>$roleName, 'user_id' => $userid,'created_at' => time()]);
-                if(!$role->save(false)) {
-                    throw new \Exception('保存失败！');
+                if(!$role->save()) {
+                    throw new \Exception('角色保存失败！');
+                }
+            }
+            $diff_roles = \array_diff($this->_role, $this->role);
+            foreach ($diff_roles as $diff_role) {
+                $roles = AdminAuthAssignment::find()->where(['user_id'=>$userid,'item_name'=>$diff_role])->all();
+                foreach ($roles as $role) {
+                    $role->delete();
                 }
             }
 
@@ -173,6 +182,7 @@ class UpdateUser extends Model
             'mapPersons' => '对应销售',
             'mapPlat' => '对应平台',
             'mapWarehouse' => '对应仓库',
+            'role' => '角色',
         ];
     }
 
