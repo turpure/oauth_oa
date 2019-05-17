@@ -48,7 +48,7 @@ class ApiReport
      */
     public static function getDevelopReport($condition)
     {
-        $sql = "EXEC P_DevNetprofit_advanced_backup @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate," .
+        $sql = "EXEC P_DevNetprofit_advanced @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate," .
             "@Sku='',@SalerName=:seller,@SalerName2='',@chanel='',@SaleType='',@SalerAliasName='',@DevDate=''," .
             "@DevDateEnd='',@Purchaser=0,@SupplierName=0,@possessMan1=0,@possessMan2=0";
         $con = Yii::$app->py_db;
@@ -62,14 +62,7 @@ class ApiReport
             //return $con->createCommand($sql)->bindValues($params)->queryAll();
             $list = $con->createCommand($sql)->bindValues($params)->queryAll();
             //获取现有开发以及部门
-            $userSql = "SELECT u.username,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart
-                        FROM user u
-                        LEFT JOIN auth_department_child dc ON dc.user_id=u.id
-                        LEFT JOIN auth_department d ON d.id=dc.department_id
-                        LEFT JOIN auth_department p ON p.id=d.parent
-                        LEFT JOIN auth_assignment a ON a.user_id=u.id
-                        WHERE u.`status`=10 AND a.item_name='产品开发'";
-            $userList = Yii::$app->db->createCommand($userSql)->queryAll();
+            $userList = self::getAllDeveloper();
             $rateArr = Yii::$app->py_db->createCommand("select * from Y_Ratemanagement")->queryOne();
             $result = [];
             foreach ($list as $value) {
@@ -141,7 +134,57 @@ class ApiReport
             ':purchase' => $condition['purchase'],
         ];
         try {
-            return $con->createCommand($sql)->bindValues($params)->queryAll();
+            //return $con->createCommand($sql)->bindValues($params)->queryAll();
+            $userList = self::getAllDeveloper();
+            $list = $con->createCommand($sql)->bindValues($params)->queryAll();
+            $purchaser = array_unique(ArrayHelper::getColumn($list,'purchaser'));//获取采购员数组并去重
+            $rateArr = Yii::$app->py_db->createCommand("select * from Y_Ratemanagement")->queryOne();
+            $result = $data = [];
+            foreach ($list as $value) {
+                $item = $value;
+                foreach ($userList as $u) {
+                    if($value['salerName'] === $u['username']){
+                        if ($u['depart'] === '运营一部') {
+                            $rate = $rateArr['devRate1'];
+                        } elseif ($u['depart'] === '运营五部') {
+                            $rate = $rateArr['devRate5'];
+                        } else {
+                            $rate = $rateArr['devRate'];
+                        }
+                        break;//跳出内层循环
+                    }else{
+                        $rate = $rateArr['devRate'];
+                    }
+                }
+                //重新计算各时间段销售额（￥）、pp交易费（￥）
+                $item['salemoneyrmbzn'] *= $rate;
+                $item['ppebayzn'] *= $rate;
+                $data[] = $item;
+            }
+            foreach ($purchaser as $value){
+                $res['purchaser'] = $value;
+                $res['salemoneyrmbus'] = $res['salemoneyrmbzn'] = $res['ppebayus'] = $res['ppebayzn'] =
+                $res['costmoneyrmb'] = $res['expressfarermb'] = $res['inpackagefeermb'] = 0;
+                foreach ($data as $v){
+                    if($value === $v['purchaser']){
+                        $res['salemoneyrmbus'] += $v['salemoneyrmbus'];
+                        $res['salemoneyrmbzn'] += $v['salemoneyrmbzn'];
+                        $res['ppebayus'] += $v['ppebayus'];
+                        $res['ppebayzn'] += $v['ppebayzn'];
+                        $res['costmoneyrmb'] += $v['costmoneyrmb'];
+                        $res['expressfarermb'] += $v['expressfarermb'];
+                        $res['inpackagefeermb'] += $v['inpackagefeermb'];
+                        $res['devofflinefee'] = $v['devofflinefee'];
+                        $res['devopefee'] = $v['devopefee'];
+                        $res['totalamount'] = $v['totalamount'];
+                    }
+                }
+                $res['netprofit'] = $res['salemoneyrmbzn'] - $res['ppebayzn'] - $res['costmoneyrmb']
+                    - $res['expressfarermb'] - $res['inpackagefeermb'] - $res['devofflinefee'] - $res['devopefee'];
+                $res['netrate'] = $res['salemoneyrmbzn'] == 0 ? 0 : round($res['netprofit']/$res['salemoneyrmbzn'], 4)*100;
+                $result[] = $res;
+            }
+            return $result;
         } catch (\Exception $why) {
             return [
                 'code' => 400,
@@ -175,6 +218,24 @@ class ApiReport
             ];
         }
 
+    }
+
+    /** 获取现有开发人员及部门
+     * Date: 2019-05-17 14:44
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    private static function getAllDeveloper(){
+        //获取现有开发以及部门
+        $userSql = "SELECT u.username,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart
+                        FROM user u
+                        LEFT JOIN auth_department_child dc ON dc.user_id=u.id
+                        LEFT JOIN auth_department d ON d.id=dc.department_id
+                        LEFT JOIN auth_department p ON p.id=d.parent
+                        LEFT JOIN auth_assignment a ON a.user_id=u.id
+                        WHERE u.`status`=10 AND a.item_name='产品开发'";
+         return Yii::$app->db->createCommand($userSql)->queryAll();
     }
 
 
