@@ -21,7 +21,7 @@ class ExpressExpired
      */
     public static function getTrades()
     {
-        $sql = "select pt.nid, logs,name from p_tradeun(nolock) as pt 
+        $sql = "select pt.nid, logs,name,addressOwner from p_tradeun(nolock) as pt 
           LEFT JOIN P_TradeLogs(nolock) as plog on cast(pt.Nid as varchar(20)) = plog.tradenid 
           LEFT JOIN b_logisticWay as bw on pt.logicsWayNid = bw.nid where PROTECTIONELIGIBILITYTYPE='缺货订单'  
           and (pt.trackNo is not null and plog.logs like 
@@ -59,11 +59,11 @@ class ExpressExpired
             preg_match('/\d{4}-\d{2}-\d{2}/',$row['logs'],$ret);
             $date = $ret[0];
             if(!in_array($row['nid'],$out,true)) {
-                $out[$row['nid']] = ['express' => $row['name'], 'date' => $date];
+                $out[$row['nid']] = ['express' => $row['name'], 'date' => $date, 'addressOwner' => $row['addressOwner']];
             }
             else {
                 if ($out[$row['nid']]['date'] < $date) {
-                    $out[$row['nid']] = ['express' => $row['name'], 'date' => $date];
+                    $out[$row['nid']] = ['express' => $row['name'], 'date' => $date, 'addressOwner' => $row['addressOwner']];
                 }
                 }
         }
@@ -128,15 +128,29 @@ class ExpressExpired
             $date = $row['date'];
             $express = $row['express'];
             if (in_array($express, $expressSet,true)) {
-                if(static::diffBetweenTwoDays($today, $date) >= $expressInfo[$express]) {
-                    $ret = static::mark($nid);
-                    if($ret) {
-                        $out[] = ['tradeNid' => $ret];
+                if($row['addressOwner'] === 'aliexpress') {
+                    if(static::diffBetweenTwoDays($today, $date) >= $expressInfo[$express] + 2) {
+                        $ret = static::mark($nid);
+                        if($ret) {
+                            $out[] = ['tradeNid' => $ret];
+                        }
+                    }
+                    else {
+                        static::unMark($nid);
                     }
                 }
                 else {
-                    static::unMark($nid);
+                    if(static::diffBetweenTwoDays($today, $date) >= $expressInfo[$express]) {
+                        $ret = static::mark($nid);
+                        if($ret) {
+                            $out[] = ['tradeNid' => $ret];
+                        }
+                    }
+                    else {
+                        static::unMark($nid);
+                    }
                 }
+
             }
         }
         return $out;
