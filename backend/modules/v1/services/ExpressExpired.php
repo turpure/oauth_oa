@@ -131,7 +131,7 @@ class ExpressExpired
                 if(static::diffBetweenTwoDays($today, $date) >= $expressInfo[$express]) {
                     $ret = static::mark($nid);
                     if($ret) {
-                        $out[] = $ret;
+                        $out[] = ['tradeNid' => $ret];
                     }
                 }
                 else {
