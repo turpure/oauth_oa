@@ -863,7 +863,7 @@ class ApiGoodsinfo
             $row['Category2'] = $ebayInfo['listedSubcate'];
             $row['Condition'] = '1000';
             $row['ConditionBewrite'] = '';
-            $row['Quantity'] = $ebayInfo['quantity'] ?: 5;
+            $row['Quantity'] = !empty($ebayInfo['quantity']) ? $ebayInfo['quantity'] : 5;
             $row['LotSize'] = '';
             $row['Duration'] = 'GTC';
             $row['ReservePrice'] = '';
