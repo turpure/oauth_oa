@@ -39,7 +39,17 @@ class ApiOaData
         $roles = implode('',ApiUser::getUserRole($user));
         //$query = OaGoodsinfo::find()
         $query = (new Query())
-            ->select('gi.*,g.cate,g.subCate')
+            ->select("gi.id, goodsId, supplierID, storeID, gi.bgoodsId, stockDays, number, mid,filterType,
+            description, supplierName,declaredValue,devDatetime, updateTime, picCompleteTime,goodsName, 
+            aliasCnName, aliasEnName,packName, purchaser, gi.developer,season, goodsCode, completeStatus, 
+            goodsStatus,dictionaryName, storeName, picUrl, requiredKeywords, randomKeywords, wishTags, 
+            mapPersons,possessMan1, possessMan2,achieveStatus, attributeName,picStatus,isVar, gi.stockUp, 
+            isLiquid, isPowder, isMagnetism, isCharged, wishPublish,headKeywords, tailKeywords,g.cate,g.subCate,
+            CASE WHEN  INSTR(mapPersons,'" . $user .
+                "')>0 AND (SELECT COUNT(1) FROM proCenter.oa_goodsinfoExtendsStatus ge WHERE ge.infoId=gi.id AND status='已推广' AND saler='" . $user .
+                "')>0  THEN '已推广' WHEN  INSTR(mapPersons,'" . $user .
+                "')>0 AND (SELECT COUNT(1) FROM proCenter.oa_goodsinfoExtendsStatus ges WHERE ges.infoId=gi.id AND saler='" . $user .
+                "')=0 THEN '未推广' WHEN extendStatus is not null then extendStatus ELSE '未推广' END  AS extendStatus")
             ->from('proCenter.oa_goodsinfo gi')
             ->leftJoin('proCenter.oa_goods g','g.nid=goodsid');
         if(isset($condition['goodsCode'])) $query->andFilterWhere(['like', 'goodsCode', $condition['goodsCode']]);
@@ -92,14 +102,9 @@ class ApiOaData
                 [
                     'AND',
                     ['like', 'mapPersons', $user],
-                    [
-                        'OR',
-                        ['exists', OaGoodsinfoExtendsStatus::find()
-                            ->where( 'infoId=gi.id')
-                            ->andWhere(['saler' => $user, 'status' => '未推广'])],
-                        ['not exists', OaGoodsinfoExtendsStatus::find()
+                    ['not exists', OaGoodsinfoExtendsStatus::find()
                              ->where( 'infoId=gi.id')
-                            ->andWhere(['saler' => $user])],
+                            ->andWhere(['saler' => $user])
                     ]
                 ],
             ]);
