@@ -57,16 +57,22 @@ class OaDataController extends AdminController
     }
 
     /** 标记推广已完成
-     * Date: 2019-05-15 18:20
+     * Date: 2019-05-17 11:52
      * Author: henry
-     * @return string
-     * @throws \Exception
+     * @return array|bool
      * @throws \yii\db\Exception
      */
     public function actionExtend()
     {
         $username = yii::$app->user->identity->username;
-        $ids = yii::$app->request->post()["id"];
+        $cond = yii::$app->request->post()["condition"];
+        $ids = isset($cond['id']) && $cond['id'] ? $cond['id'] : [];
+        if(!$ids){
+            return [
+                'code' => 400,
+                'message' => 'ID can not be empty!'
+            ];
+        }
         $connection = yii::$app->db;
         $trans = $connection->beginTransaction();
         try {
@@ -104,13 +110,16 @@ class OaDataController extends AdminController
                 }
             }
             $trans->commit();
-            $msg = "批量标记推广完成成功";
+            return true;
         } catch (\Exception $e) {
             $trans->rollBack();
             $msg = "批量标记推广完成失败！";
             $msg = $e->getMessage();
+            return [
+                'code' => 400,
+                'message' => $msg
+            ];
         }
-        return $msg;
     }
 
     /**
