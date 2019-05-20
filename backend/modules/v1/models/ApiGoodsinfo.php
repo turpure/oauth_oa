@@ -613,11 +613,11 @@ class ApiGoodsinfo
             foreach ($ids as $infoId){
                 $goodsInfo = OagoodsInfo::findOne(['id' => $infoId]);
                 $oldPlat = $goodsInfo->completeStatus ?: '';
-                $plat = array_merge($plat, explode(',', $oldPlat));
-                $plat = array_filter($plat);
-                $plat = array_unique($plat);
-                asort($plat);
-                $goodsInfo->completeStatus = implode(',', $plat);
+                $newPlat = array_merge($plat, explode(',', $oldPlat));
+                $newPlat = array_filter($newPlat);
+                $newPlat = array_unique($newPlat);
+                asort($newPlat);
+                $goodsInfo->completeStatus = implode(',', $newPlat);
                 if (!$goodsInfo->save()) {
                     throw new \Exception('标记完善失败!');
                 }

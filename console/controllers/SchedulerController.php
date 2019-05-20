@@ -146,16 +146,23 @@ class SchedulerController extends Controller
         $beginDate = date('Y-m-01');
         $endDate = date('Y-m-d', strtotime('-1 day'));
         try {
-            //获取开发人员毛利
+            //获取开发人员上月和本月毛利的初步数据.
             $devSql = "EXEC oauth_siteDeveloperProfit";
-            $devList = Yii::$app->py_db->createCommand($devSql)->queryAll();
+            $devData = Yii::$app->py_db->createCommand($devSql)->queryAll();
+            //初步数据保存到Mysql数据库cache_developProfitTmp，进一步进行计算
+            Yii::$app->db->createCommand('TRUNCATE TABLE cache_developProfitTmp')->execute();
+            Yii::$app->db->createCommand()->batchInsert('cache_developProfitTmp',
+                ['tableType','timegroupZero','salernameZero','salemoneyrmbusZero','salemoneyrmbznZero','costmoneyrmbZero',
+                    'ppebayusZero','ppebayznZero','inpackagefeermbZero','expressfarermbZero','devofflinefeeZero','devOpeFeeZero',
+                    'netprofitZero','netrateZero','timegroupSix','salemoneyrmbusSix','salemoneyrmbznSix','costmoneyrmbSix',
+                    'ppebayusSix','ppebayznSix','inpackagefeermbSix','expressfarermbSix','devofflinefeeSix','devOpeFeeSix',
+                    'netprofitSix','netrateSix','timegroupTwe','salemoneyrmbusTwe','salemoneyrmbznTwe','costmoneyrmbTwe',
+                    'ppebayusTwe','ppebayznTwe','inpackagefeermbTwe','expressfarermbTwe','devofflinefeeTwe','devOpeFeeTwe',
+                    'netprofitTwe','netrateTwe','salemoneyrmbtotal','netprofittotal','netratetotal','devRate','devRate1','devRate5','type'],
+                $devData)->execute();
 
-            //插入销售毛利数据(存储过程插入)
+            //插入销售和开发毛利数据(存储过程插入)
             Yii::$app->db->createCommand("CALL oauth_site_profit(0);")->execute();
-            //插入开发毛利数据
-            Yii::$app->db->createCommand()->batchInsert('site_profit',
-                ['username', 'depart', 'role', 'lastProfit', 'profit', 'rate', 'dateRate', 'updateTime'],
-                $devList)->execute();
 
             print date('Y-m-d H:i:s') . " INFO:success to update data of profit changes!\n";
         } catch (\Exception $why) {
