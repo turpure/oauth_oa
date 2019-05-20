@@ -169,7 +169,7 @@ class ProductCenterTools
     public static function uploadImagesToFtp($infoId)
     {
         $goodsSku = OaGoodsSku::findAll(['infoId' => $infoId]);
-        $tmpDir = Yii::$app->basePath . '\\runtime\\image\\';
+        $tmpDir = Yii::getAlias('@app'). '\\runtime\\image\\';
         $mode = FTP_BINARY;
         $asynchronous = false;
         try {
