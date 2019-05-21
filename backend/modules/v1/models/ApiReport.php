@@ -676,6 +676,11 @@ class ApiReport
         return $query;
     }
 
+    /**
+     * @brief 获取开发产品利润
+     * @param $condition
+     * @return array
+     */
     public static function getDevGoodsProfit($condition)
     {
 
@@ -684,6 +689,26 @@ class ApiReport
         $dateFlag = $condition['dateFlag'];
         $query = (new yii\db\Query())
             ->select('*')->from('cache_devGoodsProfit')
+            ->where(['in','developer',$developer])
+            ->where(['between','date_format(orderTime,"%Y-%m-%d")',$dateRange[0], $dateRange[1]])
+            ->where(['dateFlag' => $dateFlag])
+            ->all();
+        return $query;
+    }
+
+    /**
+     * @brief 获取开发产品利润明细
+     * @param $condition
+     * @return array
+     */
+     public static function getDevGoodsProfitDetail($condition)
+    {
+
+        $developer = $condition['developer'];
+        $dateRange = $condition['dateRange'];
+        $dateFlag = $condition['dateFlag'];
+        $query = (new yii\db\Query())
+            ->select('*')->from('cache_devGoodsProfitDetail')
             ->where(['in','developer',$developer])
             ->where(['between','date_format(orderTime,"%Y-%m-%d")',$dateRange[0], $dateRange[1]])
             ->where(['dateFlag' => $dateFlag])

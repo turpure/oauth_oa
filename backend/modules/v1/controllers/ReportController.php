@@ -693,7 +693,7 @@ class ReportController extends AdminController
     }
 
     /**
-     * @brief 开发款数限制
+     * @brief 开发产品利润表
      * @return array
      */
     public function actionDevGoodsProfit()
@@ -701,6 +701,18 @@ class ReportController extends AdminController
         $request = Yii::$app->request->post();
         $condition = $request['condition'];
         return ApiReport::getDevGoodsProfit($condition);
+    }
+
+
+     /**
+         * @brief 开发产品利润表
+         * @return array
+         */
+    public function actionDevGoodsProfitDetail()
+    {
+        $request = Yii::$app->request->post();
+        $condition = $request['condition'];
+        return ApiReport::getDevGoodsProfitDetail($condition);
     }
 
 }
