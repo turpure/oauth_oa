@@ -681,5 +681,16 @@ class ReportController extends AdminController
         $writer->save('php://output');exit;
     }
 
+    /**
+     * @brief
+     * @return array
+     */
+    public function actionDevLimit()
+    {
+        $request = Yii::$app->request->post();
+        $condition = $request['condition'];
+        return ApiReport::getDevLimit($condition);
+    }
+
 
 }

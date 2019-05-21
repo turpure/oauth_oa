@@ -657,4 +657,22 @@ class ApiReport
         return static::getRefundDetails($condition)->allModels;
     }
 
+    /**
+     * @brief 获取开发数量限制表
+     * @param $condition
+     * @return array
+     */
+    public static function getDevLimit($condition)
+    {
+        $developer = $condition['developer'];
+        $dateRange = $condition['dateRange'];
+        $dateFlag = $condition['dateFlag'];
+        $query = (new yii\db\Query())
+            ->select('*')->from('cache_devNumLimit')
+            ->where(['in','developer',$developer])
+            ->where(['between','date_format(orderTime,"%Y-%m-%d")',$dateRange[0], $dateRange[1]])
+            ->where(['dateFlag' => $dateFlag])
+            ->all();
+        return $query;
+    }
 }
