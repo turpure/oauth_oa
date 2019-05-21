@@ -436,7 +436,7 @@ class ApiMine
                 $row = [
                     'Parent Unique ID' => $var['parentId'],
                     '*Product Name' =>  $basicInfo['proName'],
-                    'Description' =>  $var['description'],
+                    'Description' =>  $basicInfo['description'],
                     '*Tags' => $basicInfo['tags'],
                     '*Unique ID' => $var['childId'],
                     'Color' => $var['color'],
