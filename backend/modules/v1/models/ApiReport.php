@@ -647,5 +647,14 @@ class ApiReport
         }
     }
 
+    /**
+     * @brief 获取退款分析数据
+     * @param $condition
+     * @return array
+     */
+    public static function getRefundAnalysisData($condition)
+    {
+        return static::getRefundDetails($condition)->allModels;
+    }
 
 }

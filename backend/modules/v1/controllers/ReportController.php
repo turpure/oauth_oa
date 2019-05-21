@@ -347,6 +347,164 @@ class ReportController extends AdminController
         return ApiReport::getRefundDetails($condition);
     }
 
+    /**
+     * @brief 退款账号分析
+     */
+    public function actionRefundAnalysisSuffix()
+    {
+        try {
+            $refund = $this->actionRefund()->allModels;
+            $ret = [];
+            foreach ($refund as $row) {
+                if(array_key_exists($row['suffix'], $ret)) {
+                    $ret[$row['suffix']] += $row['refundZn'];
+                }
+                else {
+                    $ret[$row['suffix']] = $row['refundZn'];
+                }
+            }
+            $total = array_sum(array_values($ret));
+            foreach ($ret as $suffix => $refund) {
+                $ret[$suffix] = $refund / $total;
+            }
+            arsort($ret);
+
+            $out = [];
+            if (count($ret) <= 10) {
+                $out['item'] = $ret;
+            }
+            else {
+                $out['item'] = array_slice($ret,0,10);
+            }
+            $out['total'] = $total;
+            $out['unit'] = '￥';
+            return $out;
+        }
+        catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+
+    }
+
+    /**
+     * @brief 退款平台分析
+     * @return array|ArrayDataProvider
+     */
+    public function actionRefundAnalysisPlat()
+    {
+        try {
+            $refund = $this->actionRefund()->allModels;
+            $ret = [];
+            foreach ($refund as $row) {
+                if(array_key_exists($row['platform'], $ret)) {
+                    $ret[$row['platform']] += (float)$row['refundZn'];
+                }
+                else {
+                    $ret[$row['platform']] = (float)$row['refundZn'];
+                }
+            }
+            $total = array_sum(array_values($ret));
+            foreach ($ret as $suffix => $refund) {
+                $ret[$suffix] = $refund / $total;
+            }
+            arsort($ret);
+
+            $out = [];
+            if (count($ret) <= 10) {
+                $out['item'] = $ret;
+            }
+            else {
+                $out['item'] = array_slice($ret,0,10);
+            }
+            $out['total'] = $total;
+            $out['unit'] = '￥';
+            return $out;
+        }
+        catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+
+    }
+
+    /**
+     * @brief 退款产品分析
+     * @return array|ArrayDataProvider
+     */
+    public function actionRefundAnalysisGoods()
+    {
+        try {
+            $refund = $this->actionRefund()->allModels;
+            $ret = [];
+            foreach ($refund as $row) {
+                if(array_key_exists($row['goodsCode'], $ret)) {
+                    $ret[$row['goodsCode']] += (int)$row['times'];
+                }
+                else {
+                    $ret[$row['goodsCode']] = (int)$row['times'];
+                }
+            }
+            $total = array_sum(array_values($ret));
+            foreach ($ret as $suffix => $refund) {
+                $ret[$suffix] = $refund / $total;
+            }
+            arsort($ret);
+
+            $out = [];
+            if (count($ret) <= 10) {
+                $out['item'] = $ret;
+            }
+            else {
+                $out['item'] = array_slice($ret,0,10);
+            }
+            $out['total'] = $total;
+            $out['unit'] = '次';
+            return $out;
+        }
+        catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+    }
+
+
+    /**
+     * @brief 退款物流分析
+     * @return array|ArrayDataProvider
+     */
+    public function actionRefundAnalysisExpress()
+    {
+        try {
+            $refund = $this->actionRefund()->allModels;
+            $ret = [];
+            foreach ($refund as $row) {
+                if(array_key_exists($row['expressWay'], $ret)) {
+                    ++$ret[$row['expressWay']];
+                }
+                else {
+                    $ret[$row['expressWay']] = 1;
+                }
+            }
+            $total = array_sum(array_values($ret));
+            foreach ($ret as $suffix => $refund) {
+                $ret[$suffix] = $refund / $total;
+            }
+            arsort($ret);
+
+            $out = [];
+            if (count($ret) <= 10) {
+                $out['item'] = $ret;
+            }
+            else {
+                $out['item'] = array_slice($ret,0,10);
+            }
+            $out['total'] = $total;
+            $out['unit'] = '次';
+            return $out;
+        }
+        catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+    }
+
 
     /**
      * 销售死库明细
