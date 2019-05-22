@@ -773,7 +773,7 @@ class ApiReport
     {
         $developer = $condition['developer'];
         $dateRange = $condition['dateRange'];
-        $dateFlag = $condition['dateFlag'];
+        $dateFlag = $condition['dateType'];
         $query = (new yii\db\Query())
             ->select('*')->from('cache_devNumLimit')
             ->where(['in','developer',$developer])
@@ -793,7 +793,7 @@ class ApiReport
 
         $developer = $condition['developer'];
         $dateRange = $condition['dateRange'];
-        $dateFlag = $condition['dateFlag'];
+        $dateFlag = $condition['dateType'];
         $query = (new yii\db\Query())
             ->select('*')->from('cache_devGoodsProfit')
             ->where(['in','developer',$developer])
@@ -815,7 +815,7 @@ class ApiReport
         try {
         $developer = $condition['developer'];
         $dateRange = $condition['dateRange'];
-        $dateFlag = $condition['dateFlag'];
+        $dateFlag = $condition['dateType'];
         $goodsCode = $condition['goodsCode'];
         $query = (new yii\db\Query())
             ->select('*')->from('cache_devGoodsProfitDetail')
