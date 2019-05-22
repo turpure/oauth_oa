@@ -754,5 +754,83 @@ class ApiReport
         }
     }
 
+    /**
+     * @brief 获取退款分析数据
+     * @param $condition
+     * @return array
+     */
+    public static function getRefundAnalysisData($condition)
+    {
+        return static::getRefundDetails($condition)->allModels;
+    }
+
+    /**
+     * @brief 获取开发数量限制表
+     * @param $condition
+     * @return array
+     */
+    public static function getDevLimit($condition)
+    {
+        $developer = $condition['developer'];
+        $dateRange = $condition['dateRange'];
+        $dateFlag = $condition['dateFlag'];
+        $query = (new yii\db\Query())
+            ->select('*')->from('cache_devNumLimit')
+            ->where(['in','developer',$developer])
+            ->where(['between','date_format(orderTime,"%Y-%m-%d")',$dateRange[0], $dateRange[1]])
+            ->where(['dateFlag' => $dateFlag])
+            ->all();
+        return $query;
+    }
+
+    /**
+     * @brief 获取开发产品利润
+     * @param $condition
+     * @return array
+     */
+    public static function getDevGoodsProfit($condition)
+    {
+
+        $developer = $condition['developer'];
+        $dateRange = $condition['dateRange'];
+        $dateFlag = $condition['dateFlag'];
+        $query = (new yii\db\Query())
+            ->select('*')->from('cache_devGoodsProfit')
+            ->where(['in','developer',$developer])
+            ->where(['between','date_format(orderTime,"%Y-%m-%d")',$dateRange[0], $dateRange[1]])
+            ->where(['dateFlag' => $dateFlag])
+            ->all();
+        return $query;
+    }
+
+    /**
+     * @brief 获取开发产品利润明细
+     * @param $condition
+     * @return array
+     * @throws \Exception
+     */
+     public static function getDevGoodsProfitDetail($condition)
+    {
+
+        try {
+        $developer = $condition['developer'];
+        $dateRange = $condition['dateRange'];
+        $dateFlag = $condition['dateFlag'];
+        $goodsCode = $condition['goodsCode'];
+        $query = (new yii\db\Query())
+            ->select('*')->from('cache_devGoodsProfitDetail')
+            ->where(['in','developer',$developer])
+            ->where(['goodsCode' => $goodsCode])
+            ->where(['in','developer',$developer])
+            ->where(['in','developer',$developer])
+            ->where(['between','date_format(orderTime,"%Y-%m-%d")',$dateRange[0], $dateRange[1]])
+            ->where(['dateFlag' => $dateFlag])
+            ->all();
+        return $query;
+        }
+        catch (\Exception $why) {
+            throw  new \Exception($why->getMessage(), '400');
+        }
+    }
 
 }
