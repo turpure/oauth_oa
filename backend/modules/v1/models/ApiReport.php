@@ -813,14 +813,12 @@ class ApiReport
     {
 
         try {
-        $developer = $condition['developer'];
         $dateRange = $condition['dateRange'];
         $dateFlag = $condition['dateType'];
         $goodsCode = $condition['goodsCode'];
         $query = (new yii\db\Query())
             ->select('*')->from('cache_devGoodsProfitDetail')
-            ->where(['in','developer',$developer])
-            ->andWhere(['goodsCode' => $goodsCode])
+            ->where(['goodsCode' => $goodsCode])
             ->andWhere(['between','date_format(orderTime,"%Y-%m-%d")',$dateRange[0], $dateRange[1]])
             ->andWhere(['dateFlag' => $dateFlag])
             ->all();
