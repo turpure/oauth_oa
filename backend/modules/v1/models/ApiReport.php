@@ -700,19 +700,30 @@ class ApiReport
      * @brief 获取开发产品利润明细
      * @param $condition
      * @return array
+     * @throws \Exception
      */
      public static function getDevGoodsProfitDetail($condition)
     {
 
+        try {
         $developer = $condition['developer'];
         $dateRange = $condition['dateRange'];
         $dateFlag = $condition['dateFlag'];
+        $goodsCode = $condition['goodsCode'];
         $query = (new yii\db\Query())
             ->select('*')->from('cache_devGoodsProfitDetail')
+            ->where(['in','developer',$developer])
+            ->where(['goodsCode' => $goodsCode])
+            ->where(['in','developer',$developer])
             ->where(['in','developer',$developer])
             ->where(['between','date_format(orderTime,"%Y-%m-%d")',$dateRange[0], $dateRange[1]])
             ->where(['dateFlag' => $dateFlag])
             ->all();
         return $query;
+        }
+        catch (\Exception $why) {
+            throw  new \Exception($why->getMessage(), '400');
+        }
     }
+
 }
