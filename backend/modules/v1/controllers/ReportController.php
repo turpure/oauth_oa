@@ -364,19 +364,18 @@ class ReportController extends AdminController
                 }
             }
             $total = array_sum(array_values($ret));
-            foreach ($ret as $suffix => $refund) {
-                $ret[$suffix] = $refund / $total;
-            }
             arsort($ret);
-
-            $out = [];
             if (count($ret) <= 10) {
-                $out['item'] = $ret;
+                $item = $ret;
             }
             else {
-                $out['item'] = array_slice($ret,0,10);
+                $item = array_slice($ret,0,(int)(0.2 * count($ret)));
+                $item['other'] = $total - array_sum(array_values($item));
             }
-            $out['total'] = $total;
+            $out = [];
+            foreach ($item as $key => $value) {
+                $out['item'][] = ['name' => $key, 'value' => $value];
+            }
             $out['unit'] = '￥';
             return $out;
         }
@@ -404,19 +403,18 @@ class ReportController extends AdminController
                 }
             }
             $total = array_sum(array_values($ret));
-            foreach ($ret as $suffix => $refund) {
-                $ret[$suffix] = $refund / $total;
-            }
             arsort($ret);
-
-            $out = [];
             if (count($ret) <= 10) {
-                $out['item'] = $ret;
+                $item = $ret;
             }
             else {
-                $out['item'] = array_slice($ret,0,10);
+                $item = array_slice($ret,0,(int)(0.2 * count($ret)));
+                $item['other'] = $total - array_sum(array_values($item));
             }
-            $out['total'] = $total;
+            $out = [];
+            foreach ($item as $key => $value) {
+                $out['item'][] = ['name' => $key, 'value' => $value];
+            }
             $out['unit'] = '￥';
             return $out;
         }
@@ -444,19 +442,18 @@ class ReportController extends AdminController
                 }
             }
             $total = array_sum(array_values($ret));
-            foreach ($ret as $suffix => $refund) {
-                $ret[$suffix] = $refund / $total;
-            }
             arsort($ret);
-
-            $out = [];
             if (count($ret) <= 10) {
-                $out['item'] = $ret;
+                $item = $ret;
             }
             else {
-                $out['item'] = array_slice($ret,0,10);
+                $item = array_slice($ret,0,(int)(0.2 * count($ret)));
+                $item['other'] = $total - array_sum(array_values($item));
             }
-            $out['total'] = $total;
+            $out = [];
+            foreach ($item as $key => $value) {
+                $out['item'][] = ['name' => $key, 'value' => $value];
+            }
             $out['unit'] = '次';
             return $out;
         }
@@ -484,19 +481,18 @@ class ReportController extends AdminController
                 }
             }
             $total = array_sum(array_values($ret));
-            foreach ($ret as $suffix => $refund) {
-                $ret[$suffix] = $refund / $total;
-            }
             arsort($ret);
-
-            $out = [];
             if (count($ret) <= 10) {
-                $out['item'] = $ret;
+                $item = $ret;
             }
             else {
-                $out['item'] = array_slice($ret,0,10);
+                $item = array_slice($ret,0,(int)(0.2 * count($ret)));
+                $item['other'] = $total - array_sum(array_values($item));
             }
-            $out['total'] = $total;
+            $out = [];
+            foreach ($item as $key => $value) {
+                $out['item'][] = ['name' => $key, 'value' => $value];
+            }
             $out['unit'] = '次';
             return $out;
         }
