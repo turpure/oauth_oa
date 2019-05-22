@@ -68,7 +68,7 @@ class ApiReport
             foreach ($list as $value) {
                 $item = $value;
                 foreach ($userList as $u) {
-                    if($value['salernameZero'] === $u['username']){
+                    if ($value['salernameZero'] === $u['username']) {
                         if ($u['depart'] === '运营一部') {
                             $rate = $rateArr['devRate1'];
                         } elseif ($u['depart'] === '运营五部') {
@@ -77,7 +77,7 @@ class ApiReport
                             $rate = $rateArr['devRate'];
                         }
                         break;//跳出内层循环
-                    }else{
+                    } else {
                         $rate = $rateArr['devRate'];
                     }
                 }
@@ -88,23 +88,23 @@ class ApiReport
                 $item['ppebayznZero'] *= $rate;
                 $item['netprofitZero'] = $item['salemoneyrmbznZero'] - $item['costmoneyrmbZero'] - $item['ppebayznZero']
                     - $item['inpackagefeermbZero'] - $item['expressfarermbZero'] - $item['devofflinefeeZero'] - $item['devOpeFeeZero'];
-                $item['netrateZero'] = $item['salemoneyrmbznZero'] == 0 ? 0 : round($item['netprofitZero']/$item['salemoneyrmbznZero'], 4)*100;
+                $item['netrateZero'] = $item['salemoneyrmbznZero'] == 0 ? 0 : round($item['netprofitZero'] / $item['salemoneyrmbznZero'], 4) * 100;
                 //6-12月
                 $item['salemoneyrmbznSix'] *= $rate;
                 $item['ppebayznSix'] *= $rate;
                 $item['netprofitSix'] = $item['salemoneyrmbznSix'] - $item['costmoneyrmbSix'] - $item['ppebayznSix']
                     - $item['inpackagefeermbSix'] - $item['expressfarermbSix'] - $item['devofflinefeeSix'] - $item['devOpeFeeSix'];
-                $item['netrateSix'] = $item['salemoneyrmbznSix'] == 0 ? 0 : round($item['netprofitSix']/$item['salemoneyrmbznSix'], 4)*100;
+                $item['netrateSix'] = $item['salemoneyrmbznSix'] == 0 ? 0 : round($item['netprofitSix'] / $item['salemoneyrmbznSix'], 4) * 100;
                 //12月以上
                 $item['salemoneyrmbznTwe'] *= $rate;
                 $item['ppebayznTwe'] *= $rate;
                 $item['netprofitTwe'] = $item['salemoneyrmbznTwe'] - $item['costmoneyrmbTwe'] - $item['ppebayznTwe']
                     - $item['inpackagefeermbTwe'] - $item['expressfarermbTwe'] - $item['devofflinefeeTwe'] - $item['devOpeFeeTwe'];
-                $item['netrateTwe'] = $item['salemoneyrmbznTwe'] == 0 ? 0 : round($item['netprofitTwe']/$item['salemoneyrmbznTwe'], 4)*100;
+                $item['netrateTwe'] = $item['salemoneyrmbznTwe'] == 0 ? 0 : round($item['netprofitTwe'] / $item['salemoneyrmbznTwe'], 4) * 100;
                 //汇总
                 $item['salemoneyrmbtotal'] *= $rate;
                 $item['netprofittotal'] = $item['netprofitZero'] + $item['netprofitSix'] + $item['netprofitTwe'];
-                $item['netratetotal'] = $item['salemoneyrmbtotal'] == 0 ? 0 : round($item['netprofittotal']/$item['salemoneyrmbtotal'], 4)*100;
+                $item['netratetotal'] = $item['salemoneyrmbtotal'] == 0 ? 0 : round($item['netprofittotal'] / $item['salemoneyrmbtotal'], 4) * 100;
                 $result[] = $item;
             }
             //print_r($result);exit;
@@ -137,13 +137,13 @@ class ApiReport
             //return $con->createCommand($sql)->bindValues($params)->queryAll();
             $userList = self::getAllDeveloper();
             $list = $con->createCommand($sql)->bindValues($params)->queryAll();
-            $purchaser = array_unique(ArrayHelper::getColumn($list,'purchaser'));//获取采购员数组并去重
+            $purchaser = array_unique(ArrayHelper::getColumn($list, 'purchaser'));//获取采购员数组并去重
             $rateArr = Yii::$app->py_db->createCommand("select * from Y_Ratemanagement")->queryOne();
             $result = $data = [];
             foreach ($list as $value) {
                 $item = $value;
                 foreach ($userList as $u) {
-                    if($value['salerName'] === $u['username']){
+                    if ($value['salerName'] === $u['username']) {
                         if ($u['depart'] === '运营一部') {
                             $rate = $rateArr['devRate1'];
                         } elseif ($u['depart'] === '运营五部') {
@@ -152,7 +152,7 @@ class ApiReport
                             $rate = $rateArr['devRate'];
                         }
                         break;//跳出内层循环
-                    }else{
+                    } else {
                         $rate = $rateArr['devRate'];
                     }
                 }
@@ -161,12 +161,12 @@ class ApiReport
                 $item['ppebayzn'] *= $rate;
                 $data[] = $item;
             }
-            foreach ($purchaser as $value){
+            foreach ($purchaser as $value) {
                 $res['purchaser'] = $value;
                 $res['salemoneyrmbus'] = $res['salemoneyrmbzn'] = $res['ppebayus'] = $res['ppebayzn'] =
                 $res['costmoneyrmb'] = $res['expressfarermb'] = $res['inpackagefeermb'] = 0;
-                foreach ($data as $v){
-                    if($value === $v['purchaser']){
+                foreach ($data as $v) {
+                    if ($value === $v['purchaser']) {
                         $res['salemoneyrmbus'] += $v['salemoneyrmbus'];
                         $res['salemoneyrmbzn'] += $v['salemoneyrmbzn'];
                         $res['ppebayus'] += $v['ppebayus'];
@@ -181,7 +181,7 @@ class ApiReport
                 }
                 $res['netprofit'] = $res['salemoneyrmbzn'] - $res['ppebayzn'] - $res['costmoneyrmb']
                     - $res['expressfarermb'] - $res['inpackagefeermb'] - $res['devofflinefee'] - $res['devopefee'];
-                $res['netrate'] = $res['salemoneyrmbzn'] == 0 ? 0 : round($res['netprofit']/$res['salemoneyrmbzn'], 4)*100;
+                $res['netrate'] = $res['salemoneyrmbzn'] == 0 ? 0 : round($res['netprofit'] / $res['salemoneyrmbzn'], 4) * 100;
                 $result[] = $res;
             }
             return $result;
@@ -201,7 +201,7 @@ class ApiReport
      */
     public static function getPossessReport($condition)
     {
-        $sql = "EXEC Z_P_PossessNetProfit @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,@possessMan1=:possess";
+        $sql = "EXEC Z_P_PossessNetProfit_backup @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,@possessMan1=:possess";
         $con = Yii::$app->py_db;
         $params = [
             ':dateFlag' => $condition['dateFlag'],
@@ -210,7 +210,113 @@ class ApiReport
             ':possess' => $condition['possess'],
         ];
         try {
-            return $con->createCommand($sql)->bindValues($params)->queryAll();
+            $userList = self::getAllDeveloper();
+            //print_r($con->createCommand($sql)->bindValues($params)->getRawSql());exit;
+            $list = $con->createCommand($sql)->bindValues($params)->queryAll();
+            $possess = array_unique(ArrayHelper::getColumn($list, 'possessman1Zero'));//获取美工数组并去重
+            $rateArr = Yii::$app->py_db->createCommand("select * from Y_Ratemanagement")->queryOne();
+            $result = $data = [];
+            //return $con->createCommand($sql)->bindValues($params)->queryAll();
+            foreach ($list as $value) {
+                $item = $value;
+                foreach ($userList as $u) {
+                    if ($value['salerNameZero'] === $u['username']) {
+                        if ($u['depart'] === '运营一部') {
+                            $rate = $rateArr['devRate1'];
+                        } elseif ($u['depart'] === '运营五部') {
+                            $rate = $rateArr['devRate5'];
+                        } else {
+                            $rate = $rateArr['devRate'];
+                        }
+                        break;//跳出内层循环
+                    } else {
+                        $rate = $rateArr['devRate'];
+                    }
+                }
+                //重新计算各时间段销售额（￥）、pp交易费（￥）
+                //0-6月
+                $item['salemoneyrmbznZero'] *= $rate;
+                $item['ppebayznZero'] *= $rate;
+                //6-12月
+                $item['salemoneyrmbznSix'] *= $rate;
+                $item['ppebayznSix'] *= $rate;
+                //12月以上
+                $item['salemoneyrmbznTwe'] *= $rate;
+                $item['ppebayznTwe'] *= $rate;
+                //汇总
+                $item['salemoneyrmbtotal'] *= $rate;
+                $data[] = $item;
+            }
+            //print_r(array_keys($data[0]));exit;
+            foreach ($possess as $value) {
+                $res = $list[0];
+                array_walk($res, function (&$v,$k){$v = 0;});
+                unset($res['salerNameZero']);
+                $res['possessman1Zero'] = $value;
+                $possessofflinefeeZero = $possessOpeFeeZero =
+                $possessofflinefeeSix = $possessOpeFeeSix =
+                $possessofflinefeeTwe = $possessOpeFeeTwe = 0;
+                foreach ($data as $v) {
+                    if ($value === $v['possessman1Zero']) {
+                        $res['tableType'] = $v['tableType'];
+                        $res['timegroupZero'] = $v['timegroupZero'];
+                        $res['timegroupSix'] = $v['timegroupSix'];
+                        $res['timegroupTwe'] = $v['timegroupTwe'];
+                        //0-6月
+                        $res['salemoneyrmbusZero'] += $v['salemoneyrmbusZero'];
+                        $res['salemoneyrmbznZero'] += $v['salemoneyrmbznZero'];
+                        $res['costmoneyrmbZero'] += $v['costmoneyrmbZero'];
+                        $res['ppebayusZero'] += $v['ppebayusZero'];
+                        $res['ppebayznZero'] += $v['ppebayznZero'];
+                        $res['inpackagefeermbZero'] += $v['inpackagefeermbZero'];
+                        $res['expressfarermbZero'] += $v['expressfarermbZero'];
+                        $res['possessofflinefeeZero'] = $v['possessofflinefeeZero'];
+                        $res['possessOpeFeeZero'] = $v['possessOpeFeeZero'];
+                        //$possessofflinefeeZero = max($v['possessofflinefeeZero'],$possessofflinefeeZero);
+                        //$possessOpeFeeZero = max($v['possessOpeFeeZero'],$possessOpeFeeZero);
+                        //6-12月
+                        $res['salemoneyrmbusSix'] += $v['salemoneyrmbusSix'];
+                        $res['salemoneyrmbznSix'] += $v['salemoneyrmbznSix'];
+                        $res['costmoneyrmbSix'] += $v['costmoneyrmbSix'];
+                        $res['ppebayusSix'] += $v['ppebayusSix'];
+                        $res['ppebayznSix'] += $v['ppebayznSix'];
+                        $res['inpackagefeermbSix'] += $v['inpackagefeermbSix'];
+                        $res['expressfarermbSix'] += $v['expressfarermbSix'];
+                        $res['possessofflinefeeSix'] = $v['possessofflinefeeSix'];
+                        $res['possessOpeFeeSix'] = $v['possessOpeFeeSix'];
+                        //12月以上
+                        $res['salemoneyrmbusTwe'] += $v['salemoneyrmbusTwe'];
+                        $res['salemoneyrmbznTwe'] += $v['salemoneyrmbznTwe'];
+                        $res['costmoneyrmbTwe'] += $v['costmoneyrmbTwe'];
+                        $res['ppebayusTwe'] += $v['ppebayusTwe'];
+                        $res['ppebayznTwe'] += $v['ppebayznTwe'];
+                        $res['inpackagefeermbTwe'] += $v['inpackagefeermbTwe'];
+                        $res['expressfarermbTwe'] += $v['expressfarermbTwe'];
+                        $res['possessofflinefeeTwe'] = $v['possessofflinefeeTwe'];
+                        $res['possessOpeFeeTwe'] = $v['possessOpeFeeTwe'];
+                        //总计
+                        $res['salemoneyrmbtotal'] += $v['salemoneyrmbtotal'];
+                    }
+                }
+                //0-6月
+                $res['netprofitZero'] = $res['salemoneyrmbznZero'] - $res['costmoneyrmbZero'] - $res['ppebayznZero']
+                    - $res['inpackagefeermbZero'] - $res['expressfarermbZero'] - $res['possessofflinefeeZero'] - $res['possessOpeFeeZero'];
+                $res['netrateZero'] = $res['salemoneyrmbznZero'] == 0 ? 0 : round($res['netprofitZero']/$res['salemoneyrmbznZero'], 4)*100;
+                //6-12月
+                $res['netprofitSix'] = $res['salemoneyrmbznSix'] - $res['costmoneyrmbSix'] - $res['ppebayznSix']
+                    - $res['inpackagefeermbSix'] - $res['expressfarermbSix'] - $res['possessofflinefeeSix'] - $res['possessOpeFeeSix'];
+                $res['netrateSix'] = $res['salemoneyrmbznSix'] == 0 ? 0 : round($res['netprofitSix']/$res['salemoneyrmbznSix'], 4)*100;
+                //12月以上
+                $res['netprofitTwe'] = $res['salemoneyrmbznTwe'] - $res['costmoneyrmbTwe'] - $res['ppebayznTwe']
+                    - $res['inpackagefeermbTwe'] - $res['expressfarermbTwe'] - $res['possessofflinefeeTwe'] - $res['possessOpeFeeTwe'];
+                $res['netrateTwe'] = $res['salemoneyrmbznTwe'] == 0 ? 0 : round($res['netprofitTwe']/$res['salemoneyrmbznTwe'], 4)*100;
+                //总计
+                $res['netprofittotal'] = $res['netprofitZero'] + $res['netprofitSix'] + $res['netprofitTwe'];
+                $res['netratetotal'] = $res['salemoneyrmbtotal'] == 0 ? 0 : round($res['netprofittotal']/$res['salemoneyrmbtotal'], 4)*100;
+
+                $result[] = $res;
+            }
+            return $result;
         } catch (\Exception $why) {
             return [
                 'code' => 400,
@@ -226,7 +332,8 @@ class ApiReport
      * @return array
      * @throws \yii\db\Exception
      */
-    private static function getAllDeveloper(){
+    private static function getAllDeveloper()
+    {
         //获取现有开发以及部门
         $userSql = "SELECT u.username,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart
                         FROM user u
@@ -235,7 +342,7 @@ class ApiReport
                         LEFT JOIN auth_department p ON p.id=d.parent
                         LEFT JOIN auth_assignment a ON a.user_id=u.id
                         WHERE u.`status`=10 AND a.item_name='产品开发'";
-         return Yii::$app->db->createCommand($userSql)->queryAll();
+        return Yii::$app->db->createCommand($userSql)->queryAll();
     }
 
 

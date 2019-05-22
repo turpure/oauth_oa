@@ -247,8 +247,8 @@ class TinyToolController extends AdminController
         $post = [
             'sku' => $cond['sku'],
             'num' => $cond['num'] ? $cond['num'] : 1,
-            'price' => $cond['price'],
-            'rate' => $cond['rate'],
+            'price' => $cond['price'] ? $cond['price'] : 0,
+            'rate' => $cond['rate'] ? $cond['rate'] : 0,
         ];
 
         $data = [

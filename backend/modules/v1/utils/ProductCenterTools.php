@@ -377,10 +377,12 @@ class ProductCenterTools
             if ($bGoodsSku === null) {
                 $bGoodsSku = new BGoodsSku();
             }
+            $oldSkuStatus = $bGoodsSku->GoodsSKUStatus;
             $bGoodsSku->setAttributes($sku);
             $bGoodsSku->GoodsID = $bGoods['goodsId'];
             $bGoodsSku->MaxNum = 0;
             $bGoodsSku->MinNum = 0;
+            if($oldSkuStatus) $bGoodsSku->GoodsSKUStatus = $oldSkuStatus;
             if (!$bGoodsSku->save()) {
                 throw new \Exception('fail to import goodsSku');
             }
