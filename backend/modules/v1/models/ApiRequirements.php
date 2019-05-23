@@ -16,7 +16,7 @@ use yii\helpers\ArrayHelper;
 class ApiRequirements
 {
 
-
+    const TOCHECK = 1;
     /**
      * @brief 首页
      * @return ActiveDataProvider
@@ -29,13 +29,10 @@ class ApiRequirements
         $pageSize = isset($get['pageSize']) ? $get['pageSize'] : 10;
         $type = isset($get['type']) ? $get['type'] : null;
         $priority = isset($get['priority']) && $get['priority'] ? $get['priority'] : null;
-        $schedule = isset($get['schedule']) && $get['schedule'] ? $get['schedule'] : null;
+        $schedule = isset($get['schedule']) && $get['schedule'] ? $get['schedule'] : static::TOCHECK;
         $user = Yii::$app->user->identity->username;
-        $userId = Yii::$app->user->id;
-        $role = (new Query())->select('item_name as role')->from('auth_assignment')->where(['user_id' => $userId])->all();
-        $roleList = ArrayHelper::getColumn($role, 'role');
         $query = (new Query())->from('requirement')->select('*, -DATEDIFF( createdDate, now() )  createdDays');
-        if (!in_array(AuthAssignment::ACCOUNT_ADMIN, $roleList)) {
+        if ($user !=='admin') {
             $query->andFilterWhere(['creator' => $user]);
         }
         $query->andFilterWhere(["type" => $type, "priority" => $priority, "schedule" => $schedule]);
