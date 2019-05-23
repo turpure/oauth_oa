@@ -527,7 +527,7 @@ class ApiReport
      */
     public static function getIntroduceReport($condition)
     {
-        $sql = 'exec P_RefereeProfit_advanced_backup @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,@SalerName=:salerName';
+        $sql = 'exec P_RefereeProfit_advanced @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,@SalerName=:salerName';
         $params = [
             ':dateFlag' => $condition['dateFlag'],
             ':beginDate' => $condition['beginDate'],
@@ -536,6 +536,7 @@ class ApiReport
         ];
         try {
             return Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+
 
         } catch (\Exception $why) {
             return [
