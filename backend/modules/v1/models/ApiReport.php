@@ -773,12 +773,12 @@ class ApiReport
     {
         $developer = $condition['developer'];
         $dateRange = $condition['dateRange'];
-        $dateFlag = $condition['dateFlag'];
+        $dateFlag = $condition['dateType'];
         $query = (new yii\db\Query())
             ->select('*')->from('cache_devNumLimit')
             ->where(['in','developer',$developer])
-            ->where(['between','date_format(orderTime,"%Y-%m-%d")',$dateRange[0], $dateRange[1]])
-            ->where(['dateFlag' => $dateFlag])
+            ->andWhere(['between','date_format(orderTime,"%Y-%m-%d")',$dateRange[0], $dateRange[1]])
+            ->andWhere(['dateFlag' => $dateFlag])
             ->all();
         return $query;
     }
@@ -793,12 +793,12 @@ class ApiReport
 
         $developer = $condition['developer'];
         $dateRange = $condition['dateRange'];
-        $dateFlag = $condition['dateFlag'];
+        $dateFlag = $condition['dateType'];
         $query = (new yii\db\Query())
             ->select('*')->from('cache_devGoodsProfit')
             ->where(['in','developer',$developer])
-            ->where(['between','date_format(orderTime,"%Y-%m-%d")',$dateRange[0], $dateRange[1]])
-            ->where(['dateFlag' => $dateFlag])
+            ->andWhere(['between','date_format(orderTime,"%Y-%m-%d")',$dateRange[0], $dateRange[1]])
+            ->andWhere(['dateFlag' => $dateFlag])
             ->all();
         return $query;
     }
@@ -813,18 +813,14 @@ class ApiReport
     {
 
         try {
-        $developer = $condition['developer'];
         $dateRange = $condition['dateRange'];
-        $dateFlag = $condition['dateFlag'];
+        $dateFlag = $condition['dateType'];
         $goodsCode = $condition['goodsCode'];
         $query = (new yii\db\Query())
             ->select('*')->from('cache_devGoodsProfitDetail')
-            ->where(['in','developer',$developer])
             ->where(['goodsCode' => $goodsCode])
-            ->where(['in','developer',$developer])
-            ->where(['in','developer',$developer])
-            ->where(['between','date_format(orderTime,"%Y-%m-%d")',$dateRange[0], $dateRange[1]])
-            ->where(['dateFlag' => $dateFlag])
+            ->andWhere(['between','date_format(orderTime,"%Y-%m-%d")',$dateRange[0], $dateRange[1]])
+            ->andWhere(['dateFlag' => $dateFlag])
             ->all();
         return $query;
         }

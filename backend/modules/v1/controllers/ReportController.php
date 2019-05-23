@@ -9,7 +9,6 @@ namespace backend\modules\v1\controllers;
 
 use backend\modules\v1\models\ApiReport;
 use backend\modules\v1\models\ApiSettings;
-use backend\modules\v1\models\ApiTool;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use yii\data\ArrayDataProvider;
@@ -684,9 +683,14 @@ class ReportController extends AdminController
      */
     public function actionDevLimit()
     {
-        $request = Yii::$app->request->post();
-        $condition = $request['condition'];
-        return ApiReport::getDevLimit($condition);
+        try {
+            $request = Yii::$app->request->post();
+            $condition = $request['condition'];
+            return ApiReport::getDevLimit($condition);
+        }
+        catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
     }
 
     /**
@@ -695,9 +699,14 @@ class ReportController extends AdminController
      */
     public function actionDevGoodsProfit()
     {
-        $request = Yii::$app->request->post();
-        $condition = $request['condition'];
-        return ApiReport::getDevGoodsProfit($condition);
+        try {
+            $request = Yii::$app->request->post();
+            $condition = $request['condition'];
+            return ApiReport::getDevGoodsProfit($condition);
+        }
+        catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
     }
 
 
@@ -707,9 +716,14 @@ class ReportController extends AdminController
          */
     public function actionDevGoodsProfitDetail()
     {
-        $request = Yii::$app->request->post();
-        $condition = $request['condition'];
-        return ApiReport::getDevGoodsProfitDetail($condition);
+       try {
+           $request = Yii::$app->request->post();
+           $condition = $request['condition'];
+           return ApiReport::getDevGoodsProfitDetail($condition);
+       }
+        catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
     }
 
 }
