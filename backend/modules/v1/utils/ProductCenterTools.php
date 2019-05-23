@@ -553,6 +553,21 @@ class ProductCenterTools
      */
     private static function _goodsInfoToWishGoodsSku($goodsSku)
     {
+        //删除OaWishGoodsSku中已存在且$goodsSku中不存在的错误SKU信息
+        $skuArrNew = ArrayHelper::getColumn($goodsSku, 'sku');
+        $skuList = OaWishGoodsSku::findAll(['infoId' => $goodsSku[0]['infoId']]);
+        $skuArrOld = ArrayHelper::getColumn($skuList, 'sku');
+        $skuDiff = array_diff($skuArrOld, $skuArrNew);
+        if($skuDiff){
+            foreach($skuList as $item){
+                foreach($skuDiff as $v){
+                    if($item['sku'] == $v){
+                        $item->delete();
+                        //print_r($item);exit;
+                    }
+                }
+            }
+        }
         foreach ($goodsSku as $sku) {
             $wishGoodsSkuAttributes = [
                 'infoId' => $sku['infoId'],
@@ -663,6 +678,21 @@ class ProductCenterTools
      */
     private static function _goodsSkuToEbayGoodsSku($goodsSku)
     {
+        //删除OaEbayGoodsSku中已存在且$goodsSku中不存在的错误SKU信息
+        $skuArrNew = ArrayHelper::getColumn($goodsSku, 'sku');
+        $skuList = OaEbayGoodsSku::findAll(['infoId' => $goodsSku[0]['infoId']]);
+        $skuArrOld = ArrayHelper::getColumn($skuList, 'sku');
+        $skuDiff = array_diff($skuArrOld, $skuArrNew);
+        if($skuDiff){
+            foreach($skuList as $item){
+                foreach($skuDiff as $v){
+                    if($item['sku'] == $v){
+                        $item->delete();
+                        //print_r($item);exit;
+                    }
+                }
+            }
+        }
         foreach ($goodsSku as $sku) {
             $ebayGoodsSkuAttributes = [
                 'itemId' => '',

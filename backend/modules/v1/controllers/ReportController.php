@@ -618,7 +618,7 @@ class ReportController extends AdminController
                 //$fileName = '杂费明细';
                 $title = ['账号简称', '杂费(￥)', '备注', '日期', '销售员'];
                 $headers = ['suffix', 'saleOpeFeeZn', 'comment', 'dateTime', 'salesman'];
-                $data = $this->actionExtraFee()->getModels();
+                $data = $this->actionExtraFee()['provider']->getModels();
                 break;
             case 'otherDeadFee'://其他死库明细下载
                 $fileName = 'otherDeadFeeData';
@@ -628,7 +628,8 @@ class ReportController extends AdminController
                 $headers = ['importDate', 'type', 'developer','developer2', 'possessMan', 'introducer','purchaser','storeName',
                     'goodsCode', 'sku', 'goodsName', 'createDate', 'lastPurchaseDate','checkNumber', 'preCheckPrice', 'deadPrice','aftCheckPrice',
                     'aveAmount','createDate2'];
-                $data = $this->actionOtherDeadFee()->getModels();
+                //print_r($this->actionOtherDeadFee());exit;
+                $data = $this->actionOtherDeadFee()['provider']->getModels();
                 break;
             case 'salesDeadFee'://销售死库明细下载
                 $fileName = 'salesDeadFeeData';
@@ -638,7 +639,7 @@ class ReportController extends AdminController
                 $headers = [ 'importDate', 'type', 'plat','suffix', 'salesman', 'storeName',
                     'goodsCode', 'sku', 'goodsName', 'createDate', 'lastPurchaseDate','checkNumber', 'preCheckPrice', 'deadPrice','aftCheckPrice',
                     'suffixSalesNumber', 'totalNumber', 'amount', 'aveAmount'];
-                $data = $this->actionDeadFee()->getModels();
+                $data = $this->actionDeadFee()['provider']->getModels();
                 break;
             default://默认销售死库明细下载
                 $fileName = 'salesDeadFeeData';
@@ -648,7 +649,7 @@ class ReportController extends AdminController
                 $headers = [ 'importDate', 'type', 'plat','suffix', 'salesman', 'storeName',
                     'goodsCode', 'sku', 'goodsName', 'createDate', 'lastPurchaseDate','checkNumber', 'preCheckPrice', 'deadPrice','aftCheckPrice',
                     'suffixSalesNumber', 'totalNumber', 'amount', 'aveAmount'];
-                $data = $this->actionDeadFee()->getModels();
+                $data = $this->actionDeadFee()['provider']->getModels();
         }
 
         //ApiTool::exportExcel($fileName, $headers, $data);
