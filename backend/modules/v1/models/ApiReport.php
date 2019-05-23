@@ -201,7 +201,7 @@ class ApiReport
      */
     public static function getPossessReport($condition)
     {
-        $sql = "EXEC Z_P_PossessNetProfit_backup @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,@possessMan1=:possess";
+        $sql = "EXEC Z_P_PossessNetProfit @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,@possessMan1=:possess";
         $con = Yii::$app->py_db;
         $params = [
             ':dateFlag' => $condition['dateFlag'],
@@ -535,9 +535,94 @@ class ApiReport
             ':salerName' => $condition['member']
         ];
         try {
-            return Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+            //return Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
 
+            $list = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+            //插入MySql数据库进行进一步计算
+            Yii::$app->db->createCommand("TRUNCATE TABLE cache_introduceProfitTmp;")->execute();
+            Yii::$app->db->createCommand()->batchInsert('cache_introduceProfitTmp',
+                ['goodsCode','salerName','createDate','costMoneyRmb','saleMoneyRmb','ppEbayRmb',
+                    'inPackageFeeRmb','expressFareRmb','devRateUs','devRate','devRate1','devRate5'],
+                $list
+            )->execute();
+            //获取初步计算结果
+            $dataList = Yii::$app->db->createCommand("CALL report_introduceProfitTmp('{$condition['endDate']}');")->queryAll();
+            //获取 运营费用
+            $operateSql = "select dev1.salername as introducer,dev1.timegroup,sum(dev1.amount)as amount
+                          from (
+                              SELECT
+                               CASE WHEN ISNULL(SalerName,'')='' THEN '无人' ELSE SalerName END AS SalerName,
+                               timegroup,
+                               sum(amount) as amount,
+                               devOperateTime
+                             FROM Y_devOperateFee
+                             WHERE devOperateTime  BETWEEN '{$condition['beginDate']}'  AND '{$condition['endDate']}'
+                             group by salername,timegroup,devOperateTime) dev1
+                          group  by dev1.salername,dev1.timegroup";
+            $operateList = Yii::$app->py_db->createCommand($operateSql)->queryAll();
+            //获取 清仓
+            $offlineSql = "select dev1.introducer,dev1.timegroup,sum(dev1.amount)as amount
+                          from (
+                            SELECT
+                               CASE WHEN ISNULL(introducer,'')='' THEN '无人' ELSE introducer END AS introducer,
+                               timegroup,
+                               sum(amount) as amount,
+                               clearnTime
+                             FROM Y_introOfflineClearn
+                             WHERE clearnTime  BETWEEN '{$condition['beginDate']}'  AND '{$condition['endDate']}'
+                             group by introducer,timegroup,clearnTime) dev1
+                          group  by dev1.introducer,dev1.timegroup";
+            $offlineList = Yii::$app->py_db->createCommand($offlineSql)->queryAll();
+            $data = [];
+            foreach ($dataList as $value){
+                $item = $value;
+                $item['devOpeFeeZero'] = $item['devofflinefeeZero'] =
+                $item['devOpeFeeSix'] = $item['devofflinefeeSix'] =
+                $item['devOpeFeeTwe'] = $item['devofflinefeeTwe'] = 0;
+                foreach ($operateList as $val){
+                    if($value['salernameZero'] == $val['introducer'] && $value['timegroupZero'] == $val['timegroup']){
+                        $item['devOpeFeeZero'] = $val['amount'];
+                    }
+                    if($value['salernameZero'] == $val['introducer'] && $value['timegroupSix'] == $val['timegroup']){
+                        $item['devOpeFeeSix'] = $val['amount'];
+                    }
+                    if($value['salernameZero'] == $val['introducer'] && $value['timegroupTwe'] == $val['timegroup']){
+                        $item['devOpeFeeTwe'] = $val['amount'];
+                    }
+                }
+                foreach ($offlineList as $v){
+                    if($value['salernameZero'] == $v['introducer'] && $value['timegroupZero'] == $v['timegroup']){
+                        $item['devofflinefeeZero'] = $v['amount'];
+                    }
+                    if($value['salernameZero'] == $v['introducer'] && $value['timegroupSix'] == $v['timegroup']){
+                        $item['devofflinefeeSix'] = $v['amount'];
+                    }
+                    if($value['salernameZero'] == $v['introducer'] && $value['timegroupTwe'] == $v['timegroup']){
+                        $item['devofflinefeeTwe'] = $v['amount'];
+                    }
+                }
+                //0-6月
+                $item['netprofitZero'] = $item['salemoneyrmbznZero'] - $item['costmoneyrmbZero'] - $item['ppebayznZero']
+                    - $item['inpackagefeermbZero'] - $item['expressfarermbZero'] - $item['devofflinefeeZero'] - $item['devOpeFeeZero'];
+                $item['netrateZero'] = $item['salemoneyrmbznZero'] == 0 ? 0 : round($item['netprofitZero']/$item['salemoneyrmbznZero'],4)*100;
+                //6-12月
+                $item['netprofitSix'] = $item['salemoneyrmbznSix'] - $item['costmoneyrmbSix'] - $item['ppebayznSix']
+                    - $item['inpackagefeermbSix'] - $item['expressfarermbSix'] - $item['devofflinefeeSix'] - $item['devOpeFeeSix'];
+                $item['netrateSix'] = $item['salemoneyrmbznSix'] == 0 ? 0 : round($item['netprofitSix']/$item['salemoneyrmbznSix'],4)*100;
+                //12月以上
+                $item['netprofitTwe'] = $item['salemoneyrmbznTwe'] - $item['costmoneyrmbTwe'] - $item['ppebayznTwe']
+                    - $item['inpackagefeermbTwe'] - $item['expressfarermbTwe'] - $item['devofflinefeeTwe'] - $item['devOpeFeeTwe'];
+                $item['netrateTwe'] = $item['salemoneyrmbznTwe'] == 0 ? 0 : round($item['netprofitTwe']/$item['salemoneyrmbznTwe'],4)*100;
+                //总计
+                $item['salemoneyrmbtotal'] = $item['salemoneyrmbznZero'] + $item['salemoneyrmbznSix'] + $item['salemoneyrmbznTwe'];
+                $item['netprofittotal'] = $item['netprofitZero'] + $item['netprofitSix'] +$item['netprofitTwe'];
+                $item['netratetotal'] = $item['salemoneyrmbtotal'] == 0 ? 0 : round($item['netprofittotal']/$item['salemoneyrmbtotal'],4)*100;
+                //print_r($item);exit;
+                $data[] = $item;
+            }
 
+            //print_r($data);exit;
+            return $data;
         } catch (\Exception $why) {
             return [
                 'code' => 400,

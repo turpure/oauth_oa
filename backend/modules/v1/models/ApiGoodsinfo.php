@@ -109,7 +109,9 @@ class ApiGoodsinfo
             }
 
 
-            if (isset($condition['picStatus']) && $condition['picStatus']) {
+            if (isset($condition['picStatus']) && $condition['picStatus'] ||
+                isset($condition['goodsCode']) && $condition['goodsCode']
+            ) {
                 $query->andFilterWhere(['like', 'picStatus', $condition['picStatus']]);
             } else {
                 $query->andFilterWhere(['in', "IFNULL(picStatus,'')", static::$pictureInfo]);

@@ -224,6 +224,7 @@ class ProductCenterTools
 
                 //更新产品信息状态
                 $goodsInfo['basicInfo']['goodsInfo']->achieveStatus = '已导入';
+                $goodsInfo['basicInfo']['goodsInfo']->picStatus = '待处理';
                 $goodsInfo['basicInfo']['goodsInfo']->updateTime = date('Y-m-d H:i:s');
                 if(!$goodsInfo['basicInfo']['goodsInfo']->save()){
                     throw new \Exception('save goods info failed');
