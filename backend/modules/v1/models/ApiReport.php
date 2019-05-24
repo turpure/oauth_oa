@@ -883,20 +883,23 @@ class ApiReport
     /**
      * @brief 获取开发数量限制表
      * @param $condition
-     * @return array
+     * @return mixed
+     * @throws \Exception
      */
     public static function getDevLimit($condition)
     {
         $developer = $condition['developer'];
-        $dateRange = $condition['dateRange'];
+        list($beginDate, $endDate) = $condition['dateRange'];
         $dateFlag = $condition['dateType'];
-        $query = (new yii\db\Query())
-            ->select('*')->from('cache_devNumLimit')
-            ->where(['in','developer',$developer])
-            ->andWhere(['between','date_format(orderTime,"%Y-%m-%d")',$dateRange[0], $dateRange[1]])
-            ->andWhere(['dateFlag' => $dateFlag])
-            ->all();
-        return $query;
+        $sql = 'call report_devNumLimit (:developer,:beginDate,:endDate,:dateFlag)';
+        $param = [
+            ':developer' => implode(',', $developer),
+            ':beginDate' => $beginDate,
+            ':endDate' => $endDate,
+            'dateFlag' => $dateFlag
+        ];
+        $db = Yii::$app->db;
+        return $db->createCommand($sql)->bindValues($param)->queryAll();
     }
 
     /**
