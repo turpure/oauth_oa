@@ -532,6 +532,7 @@ class ApiReport
             return new ArrayDataProvider([
                 'allModels' => $data,
                 'pagination' => [
+                    'page' => $condition['start'] - 1,
                     'pageSize' => isset($condition['limit']) && $condition['limit'] ? $condition['limit'] : 20,
                 ],
             ]);
