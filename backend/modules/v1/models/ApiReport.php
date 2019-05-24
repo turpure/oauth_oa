@@ -10,6 +10,7 @@ namespace backend\modules\v1\models;
 use Yii;
 use yii\data\ArrayDataProvider;
 use yii\helpers\ArrayHelper;
+use backend\models\ShopElf\BDictionary;
 
 class ApiReport
 {
@@ -946,6 +947,16 @@ class ApiReport
         catch (\Exception $why) {
             throw  new \Exception($why->getMessage(), '400');
         }
+    }
+
+    /**
+     * @brief 获取开发状态
+     * @return array
+     */
+    public static function getDevStatus()
+    {
+        $status = BDictionary::findAll(['CategoryID' => 15]);
+        return ArrayHelper::getColumn($status,'DictionaryName');
     }
 
 }

@@ -722,4 +722,11 @@ class ReportController extends AdminController
         }
     }
 
+    /**
+     * @brief 开发状态
+     * @return array
+     */
+    public function actionDevStatus() {
+        return ApiReport::getDevStatus();
+    }
 }
