@@ -487,30 +487,55 @@ class ApiReport
 
     }
 
-    /**
-     * @brief  profit report
-     * @params $condition
-     * @return array
+    /** profit report
+     * @param $condition
+     * Date: 2019-05-24 11:51
+     * Author: henry
+     * @return array|ArrayDataProvider
      */
     public static function getProfitReport($condition)
     {
+        $salesman = $condition['salesman'] ? "'" . implode(',', $condition['salesman']) . "'" : '';
         $sql = "EXEC Z_P_AccountProductProfit @chanel=:chanel,@DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate," .
             "@SalerAliasName=:suffix,@SalerName=:salesman,@StoreName=:storeName,@sku=:sku,@PageIndex=:PageIndex,@PageNum=:PageNum";
-        $con = Yii::$app->py_db;
         $params = [
             ':chanel' => $condition['chanel'],
             ':dateFlag' => $condition['dateFlag'],
             ':beginDate' => $condition['beginDate'],
             ':endDate' => $condition['endDate'],
             ':suffix' => $condition['suffix'],
-            ':salesman' => $condition['salesman'],
+            ':salesman' => $salesman,
             ':storeName' => $condition['storeName'],
             ':sku' => $condition['sku'],
             ':PageIndex' => $condition['start'],
             ':PageNum' => $condition['limit'],
         ];
         try {
-            return $con->createCommand($sql)->bindValues($params)->queryAll();
+            //return Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+            $list = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+            $data = [];
+            foreach ($list as $value){
+                $item = $value;
+                $saler = Yii::$app->db->createCommand("SELECT u.username,d.store AS suffix,d.platform
+                        FROM user u
+                        LEFT JOIN auth_store_child dc ON dc.user_id=u.id
+                        LEFT JOIN auth_store d ON d.id=dc.store_id
+                       WHERE u.`status`=10 AND d.store='{$value['suffix']}'")->queryOne();
+                //print_r($saler);exit;
+                if($saler && in_array($saler['username'], $condition['salesman'])){
+                    $item['salesman'] = $saler['username'];
+                    $item['pingtai'] = $saler['platform'];
+                    $data[] = $item;
+                }
+
+            }
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'pagination' => [
+                    'pageSize' => isset($condition['limit']) && $condition['limit'] ? $condition['limit'] : 20,
+                ],
+            ]);
+
         } catch (\Exception $why) {
             return [
                 'code' => 400,
@@ -527,12 +552,13 @@ class ApiReport
      */
     public static function getIntroduceReport($condition)
     {
+        $member = $condition['member'] ? implode(',', $condition['member']) : '';
         $sql = 'exec P_RefereeProfit_advanced @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,@SalerName=:salerName';
         $params = [
             ':dateFlag' => $condition['dateFlag'],
             ':beginDate' => $condition['beginDate'],
             ':endDate' => $condition['endDate'],
-            ':salerName' => $condition['member']
+            ':salerName' => $member
         ];
         try {
             //return Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
@@ -601,24 +627,28 @@ class ApiReport
                         $item['devofflinefeeTwe'] = $v['amount'];
                     }
                 }
-                //0-6月
-                $item['netprofitZero'] = $item['salemoneyrmbznZero'] - $item['costmoneyrmbZero'] - $item['ppebayznZero']
-                    - $item['inpackagefeermbZero'] - $item['expressfarermbZero'] - $item['devofflinefeeZero'] - $item['devOpeFeeZero'];
-                $item['netrateZero'] = $item['salemoneyrmbznZero'] == 0 ? 0 : round($item['netprofitZero']/$item['salemoneyrmbznZero'],4)*100;
-                //6-12月
-                $item['netprofitSix'] = $item['salemoneyrmbznSix'] - $item['costmoneyrmbSix'] - $item['ppebayznSix']
-                    - $item['inpackagefeermbSix'] - $item['expressfarermbSix'] - $item['devofflinefeeSix'] - $item['devOpeFeeSix'];
-                $item['netrateSix'] = $item['salemoneyrmbznSix'] == 0 ? 0 : round($item['netprofitSix']/$item['salemoneyrmbznSix'],4)*100;
-                //12月以上
-                $item['netprofitTwe'] = $item['salemoneyrmbznTwe'] - $item['costmoneyrmbTwe'] - $item['ppebayznTwe']
-                    - $item['inpackagefeermbTwe'] - $item['expressfarermbTwe'] - $item['devofflinefeeTwe'] - $item['devOpeFeeTwe'];
-                $item['netrateTwe'] = $item['salemoneyrmbznTwe'] == 0 ? 0 : round($item['netprofitTwe']/$item['salemoneyrmbznTwe'],4)*100;
-                //总计
-                $item['salemoneyrmbtotal'] = $item['salemoneyrmbznZero'] + $item['salemoneyrmbznSix'] + $item['salemoneyrmbznTwe'];
-                $item['netprofittotal'] = $item['netprofitZero'] + $item['netprofitSix'] +$item['netprofitTwe'];
-                $item['netratetotal'] = $item['salemoneyrmbtotal'] == 0 ? 0 : round($item['netprofittotal']/$item['salemoneyrmbtotal'],4)*100;
-                //print_r($item);exit;
-                $data[] = $item;
+                //筛选推荐人
+                if(!$condition['member'] || in_array($value['salernameZero'], $condition['member'])){
+                    //0-6月
+                    $item['netprofitZero'] = $item['salemoneyrmbznZero'] - $item['costmoneyrmbZero'] - $item['ppebayznZero']
+                        - $item['inpackagefeermbZero'] - $item['expressfarermbZero'] - $item['devofflinefeeZero'] - $item['devOpeFeeZero'];
+                    $item['netrateZero'] = $item['salemoneyrmbznZero'] == 0 ? 0 : round($item['netprofitZero']/$item['salemoneyrmbznZero'],4)*100;
+                    //6-12月
+                    $item['netprofitSix'] = $item['salemoneyrmbznSix'] - $item['costmoneyrmbSix'] - $item['ppebayznSix']
+                        - $item['inpackagefeermbSix'] - $item['expressfarermbSix'] - $item['devofflinefeeSix'] - $item['devOpeFeeSix'];
+                    $item['netrateSix'] = $item['salemoneyrmbznSix'] == 0 ? 0 : round($item['netprofitSix']/$item['salemoneyrmbznSix'],4)*100;
+                    //12月以上
+                    $item['netprofitTwe'] = $item['salemoneyrmbznTwe'] - $item['costmoneyrmbTwe'] - $item['ppebayznTwe']
+                        - $item['inpackagefeermbTwe'] - $item['expressfarermbTwe'] - $item['devofflinefeeTwe'] - $item['devOpeFeeTwe'];
+                    $item['netrateTwe'] = $item['salemoneyrmbznTwe'] == 0 ? 0 : round($item['netprofitTwe']/$item['salemoneyrmbznTwe'],4)*100;
+                    //总计
+                    $item['salemoneyrmbtotal'] = $item['salemoneyrmbznZero'] + $item['salemoneyrmbznSix'] + $item['salemoneyrmbznTwe'];
+                    $item['netprofittotal'] = $item['netprofitZero'] + $item['netprofitSix'] +$item['netprofitTwe'];
+                    $item['netratetotal'] = $item['salemoneyrmbtotal'] == 0 ? 0 : round($item['netprofittotal']/$item['salemoneyrmbtotal'],4)*100;
+                    //print_r($item);exit;
+                    $data[] = $item;
+                }
+
             }
 
             //print_r($data);exit;
