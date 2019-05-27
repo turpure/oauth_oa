@@ -897,7 +897,7 @@ class ApiReport
             ':developer' => implode(',', $developer),
             ':beginDate' => $beginDate,
             ':endDate' => $endDate,
-            'dateFlag' => $dateFlag
+            ':dateFlag' => $dateFlag
         ];
         $db = Yii::$app->db;
         return $db->createCommand($sql)->bindValues($param)->queryAll();
