@@ -768,6 +768,7 @@ class ApiGoodsinfo
                 $joomAccounts = OaJoomSuffix::find()->where(['joomName' => $account])->asArray()->one();
                 $imageInfo = static::getJoomImageInfo($joomInfo, $joomAccounts);
                 foreach ($joomSku as $sku) {
+                    $price = static::getJoomAdjust($sku['weight'], $priceInfo['price']);
                     $row['Parent Unique ID'] = $joomInfo['sku'] . $joomAccounts['skuCode'];
                     $row['*Product Name'] = $title;
                     $row['Description'] = $joomInfo['description'];
@@ -776,7 +777,7 @@ class ApiGoodsinfo
                     $row['Color'] = $sku['color'];
                     $row['Size'] = $sku['size'];
                     $row['*Quantity'] = $sku['inventory'];
-                    $row['*Price'] = static::getJoomAdjust($sku['weight'], $priceInfo['price']);
+                    $row['*Price'] = $price ;
                     $row['*MSRP'] = $priceInfo['msrp'];
                     $row['*Shipping'] = $priceInfo['shipping'];
                     $row['Shipping weight'] = (float)$sku['weight']*1.0/1000;
@@ -794,7 +795,7 @@ class ApiGoodsinfo
                     $row['Extra Image URL 8'] = $imageInfo['extraImages'][8];
                     $row['Extra Image URL 9'] = $imageInfo['extraImages'][9];
                     $row['Dangerous Kind'] = static::getJoomDangerousKind($goodsInfo);
-                    $row['Declared Value'] = $goods['DeclaredValue'];
+                    $row['Declared Value'] = static::getJoomDeclaredValue($price);
                     $out[] = $row;
                 }
             }
@@ -1457,5 +1458,29 @@ class ApiGoodsinfo
             }
         }
         return $query;
+    }
+
+    /**
+     * @计算joom申报价
+     * @param $price
+     * @return float|int
+     */
+    private static function getJoomDeclaredValue($price)
+    {
+        if( $price > 0 && $price <= 1) {
+            return 0.1;
+        }
+        if( $price > 1 && $price <= 2) {
+            return 1;
+        }
+        if( $price > 2 && $price <= 5) {
+            return 2;
+        }
+        if( $price > 5 && $price <= 20) {
+            return 3;
+        }
+        if( $price > 20) {
+            return 5;
+        }
     }
 }

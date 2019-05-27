@@ -460,7 +460,8 @@ class ApiMine
                     'Extra Image URL 8' => $images['extraImage9'],
                     'Extra Image URL 9' => $images['extraImage10'],
                     'Extra Image URL 10' => '',
-                    'Dangerous Kind' => static::_getDangerousKind($basicInfo)
+                    'Dangerous Kind' => static::_getDangerousKind($basicInfo),
+                    'Declared Value' => static::getJoomDeclaredValue($var['price'])
                 ];
                 $ret[] = $row;
             }
@@ -648,6 +649,30 @@ class ApiMine
                         where datediff(createTime,now())=0 )';
         $maxCode = $db->createCommand($max_code_sql)->queryOne()['goodsCode'] ?: 'A'.date('Ydm').'0000';
         return $maxCode;
+    }
+
+    /**
+     * @计算joom申报价
+     * @param $price
+     * @return float|int
+     */
+    private static function getJoomDeclaredValue($price)
+    {
+        if( $price > 0 && $price <= 1) {
+            return 0.1;
+        }
+        if( $price > 1 && $price <= 2) {
+            return 1;
+        }
+        if( $price > 2 && $price <= 5) {
+            return 2;
+        }
+        if( $price > 5 && $price <= 20) {
+            return 3;
+        }
+        if( $price > 20) {
+            return 5;
+        }
     }
 
 }
