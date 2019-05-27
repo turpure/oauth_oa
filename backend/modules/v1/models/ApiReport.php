@@ -11,6 +11,7 @@ use Yii;
 use yii\data\ArrayDataProvider;
 use yii\helpers\ArrayHelper;
 use backend\models\ShopElf\BDictionary;
+use yii\data\ActiveDataProvider;
 
 class ApiReport
 {
@@ -906,21 +907,29 @@ class ApiReport
     /**
      * @brief 获取开发产品利润
      * @param $condition
-     * @return array
+     * @return ActiveDataProvider
      */
     public static function getDevGoodsProfit($condition)
     {
 
         $developer = $condition['developer'];
+        $goodsStatus = $condition['goodsStatus'];
         $dateRange = $condition['dateRange'];
         $dateFlag = $condition['dateType'];
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $query = (new yii\db\Query())
             ->select('*')->from('cache_devGoodsProfit')
             ->where(['in','developer',$developer])
+            ->andWhere(['in','goodsStatus', $goodsStatus])
             ->andWhere(['between','date_format(orderTime,"%Y-%m-%d")',$dateRange[0], $dateRange[1]])
-            ->andWhere(['dateFlag' => $dateFlag])
-            ->all();
-        return $query;
+            ->andWhere(['dateFlag' => $dateFlag]);
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
     }
 
     /**
