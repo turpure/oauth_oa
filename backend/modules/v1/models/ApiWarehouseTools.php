@@ -74,7 +74,7 @@ class ApiWarehouseTools
      */
     public static function getPickMember()
     {
-        $ret = BPerson::find()->andWhere(['CategoryID' => '79'])
+        $ret = BPerson::find()
             ->andWhere(['in', 'Duty', ['拣货','拣货组长','拣货-分拣']])->all();
         return ArrayHelper::getColumn($ret, 'PersonName');
     }
@@ -86,7 +86,7 @@ class ApiWarehouseTools
     public static function getSortMember()
     {
 
-        $ret = BPerson::find()->andWhere(['CategoryID' => '79'])
+        $ret = BPerson::find()
             ->andWhere(['in', 'Duty', ['拣货-分拣']])->all();
         return ArrayHelper::getColumn($ret, 'PersonName');
     }
