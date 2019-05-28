@@ -287,48 +287,52 @@ class SchedulerController extends Controller
         //$end = '2019-06-01';
         $startDate = date('Y-m-d', strtotime('-75 days', strtotime($end)));
         $endDate = date('Y-m-d', strtotime('-15 days', strtotime($end)));
+        //print_r($startDate);
+        //print_r($endDate);exit;
         //获取订单数详情
         $orderList = Yii::$app->py_db->createCommand("EXEC oauth_stockGoodsNumber '" . $startDate . "','" . $endDate . "','';")->queryAll();
         //获取开发产品列表
         $goodsSql = "SELECT developer,goodsCode,stockUp FROM proCenter.oa_goodsinfo gs
                       WHERE devDatetime BETWEEN '{$startDate}' AND '{$endDate}' AND ifnull(mid,0)=0;";
         $goodsList = Yii::$app->db->createCommand($goodsSql)->queryAll();
-        //获取开发员备货产品书，不备货产品书，总产品数
+        //获取开发员备货产品数，不备货产品数，总产品数
         $list = Yii::$app->db->createCommand("CALL proCenter.oa_stockGoodsNum('{$startDate}','{$endDate}');")->queryAll();
         //统计出单数，爆旺款数量
         $developer = [];
         foreach ($goodsList as $k => $v) {
             $orderNum = 0;
+            $goodsStatus = '';
             foreach ($orderList as $value){
                 if($v['goodsCode'] == $value['goodsCode']){
                     $orderNum += $value['l_qty'];//出单数
-                    $v['goodsStatus'] = $value['goodsStatus'];
-                }else{
-                    $v['goodsStatus'] = '';
+                    $goodsStatus = $value['goodsStatus'];
+                    break;
                 }
             }
             $v['orderNum'] = $orderNum;
+            $v['goodsStatus'] = $goodsStatus;
             $developer[$k] = $v;
         }
+        //print_r($developer);exit;
         $orderNumList = $nonOrderNumList = [];
        foreach($list as $k => $value){
             $stockOrderNum = $nonStockOrderNum = $hot = $exu = $nonHot = $nonExu = 0;
             foreach ($developer as $v){
                 if($value['username'] == $v['developer']){
-                    $nonStockOrderNum = $v['stockUp'] == '否' ? $nonStockOrderNum + 1 : $stockOrderNum;
-                    $stockOrderNum = $v['stockUp'] == '是' ? $stockOrderNum + 1 : $stockOrderNum;
-                    $hot = $v['goodsStatus'] == '爆款' && $v['stockUp'] == '是' ? $hot + 1 : $hot;
-                    $exu = $v['goodsStatus'] == '旺款' && $v['stockUp'] == '是' ? $exu + 1 : $exu;
-                    $nonHot = $v['goodsStatus'] == '爆款' && $v['stockUp'] == '否' ? $nonHot + 1 : $nonHot;
-                    $nonExu = $v['goodsStatus'] == '旺款' && $v['stockUp'] == '否' ? $nonExu + 1 : $nonExu;
+                    $nonStockOrderNum = $v['stockUp'] == '否' && $v['orderNum'] > 0 ? $nonStockOrderNum + 1 : $stockOrderNum;
+                    $stockOrderNum = $v['stockUp'] == '是' && $v['orderNum'] ? $stockOrderNum + 1 : $stockOrderNum;
+                    $hot = $v['goodsStatus'] == '爆款' && $v['stockUp'] == '是' && $v['orderNum'] ? $hot + 1 : $hot;
+                    $exu = $v['goodsStatus'] == '旺款' && $v['stockUp'] == '是' && $v['orderNum'] ? $exu + 1 : $exu;
+                    $nonHot = $v['goodsStatus'] == '爆款' && $v['stockUp'] == '否' && $v['orderNum'] ? $nonHot + 1 : $nonHot;
+                    $nonExu = $v['goodsStatus'] == '旺款' && $v['stockUp'] == '否' && $v['orderNum'] ? $nonExu + 1 : $nonExu;
                 }
             }
            //计算 备货和不备货的爆旺款率
-           $hotAndExuRate = $value['stockNum'] == 0 ? 0 : round(($hot+$exu)*1.0/$value['stockNum'], 2)*100;
-           $nonHotAndExuRate = $value['nonStockNum'] == 0 ? 0 : round(($nonHot+$nonExu)*1.0/$value['nonStockNum'], 2)*100;
+           $hotAndExuRate = $value['stockNum'] == 0 ? 0 : round(($hot+$exu)*1.0/$value['stockNum'], 4)*100;
+           $nonHotAndExuRate = $value['nonStockNum'] == 0 ? 0 : round(($nonHot+$nonExu)*1.0/$value['nonStockNum'], 4)*100;
            //计算 备货和不备货的出单率
-           $orderRate = $value['stockNum'] == 0 ? 0 : round($stockOrderNum*1.0/$value['stockNum'], 2);
-           $nonOrderRate = $value['nonStockNum'] == 0 ? 0 : round($nonStockOrderNum*1.0/$value['nonStockNum'], 2);
+           $orderRate = $value['stockNum'] == 0 ? 0 : round($stockOrderNum*1.0/$value['stockNum'], 4)*100;
+           $nonOrderRate = $value['nonStockNum'] == 0 ? 0 : round($nonStockOrderNum*1.0/$value['nonStockNum'], 4)*100;
            //计算 出单率评分
            $rate1 = round(max(1-max((80-$orderRate),0)*0.025,0.5),2);
            $nonRate1 = round(max(1-max((80-$nonOrderRate),0)*0.025,0.5),2);
@@ -358,7 +362,7 @@ class SchedulerController extends Controller
            $orderNumList[$k] = $item1;
            $nonOrderNumList[$k] = $item2;
        }
-
+        //print_r($orderNumList);exit;
         $tran = Yii::$app->db->beginTransaction();
         try {
             //插入数据表oa_stockGoodsNum
@@ -370,7 +374,9 @@ class SchedulerController extends Controller
             //更新 可用数量  判断当前日期是本月1号，数据还要插入备份表
             if (substr($end, 8, 2) !== '01') {
                 $sql = " UPDATE proCenter.oa_stockGoodsNumReal r,proCenter.oa_stockGoodsNum s 
-                    SET r.stockNumThisMonth= s.stockNumThisMonth,r.stockNumLastMonth =s. stockNumLastMonth
+                    SET r.stockNumThisMonth = s.stockNumThisMonth,
+				        r.stockNumLastMonth = CASE when ifnull(s.number,0)=0 THEN s.stockNumThisMonth 
+				                              ELSE ROUND(ifnull(s.stockNumThisMonth, 30)*r.rate1*r.rate2,0) END
                     WHERE r.developer=s.developer AND substring(r.createDate,1,7) = substring(s.createDate,1,7) AND r.isStock=s.isStock ";
                 Yii::$app->db->createCommand($sql)->execute();
             } else {
@@ -381,7 +387,7 @@ class SchedulerController extends Controller
 				        r.stockNumLastMonth = CASE when ifnull(s.number,0)=0 THEN s.stockNumThisMonth 
 				                              ELSE ROUND(ifnull(s.stockNumThisMonth, 30)*r.rate1*r.rate2,0) END
                     WHERE r.developer=s.developer AND r.isStock=s.isStock
-                    AND substring(date_add(r.createDate, interval -1 month),1,10) = substring(s.createDate,1,10)  ";
+                    AND substring(date_add(r.createDate, interval -1 month),1,10) = substring(s.createDate,1,10) AND r.isStock=s.isStock ";
                 Yii::$app->db->createCommand($sql)->execute();
                 //判断备份表是否有备份数据, 没有则插入
                 $checkSql = "SELECT * FROM proCenter.oa_stockGoodsNum WHERE substring(createDate,1,10)='{$end}'";

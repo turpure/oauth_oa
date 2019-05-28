@@ -15,6 +15,7 @@ use backend\modules\v1\models\ApiUkFic;
 use common\models\User;
 use backend\modules\v1\services\ExpressExpired;
 use Yii;
+use yii\data\ArrayDataProvider;
 
 class TinyToolController extends AdminController
 {
@@ -533,4 +534,68 @@ class TinyToolController extends AdminController
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
     }
+
+    /** UK虚拟仓补货
+     * Date: 2019-05-28 16:31
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionUkReplenish()
+    {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        $sql = "EXEC oauth_ukVirtualReplenish @sku=:sku,@salerName=:salerName,@purchaser=:purchaser,@trend=:trend,@isPurchaser=:isPurchaser;";
+        $params = [
+            ':sku' => $cond['sku'],
+            ':salerName' => $cond['salerName'],
+            ':purchaser' => $cond['purchaser'],
+            ':trend' => $cond['trend'],
+            ':isPurchaser' => $cond['isPurchaser'],
+        ];
+        try {
+            $list = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+            return new ArrayDataProvider([
+                'allModels' => $list,
+                'pagination' => [
+                    //'page' => $condition['start'] - 1,
+                    'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
+                ],
+            ]);
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+    }
+    public function actionAuRealReplenish()
+    {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        $sql = "EXEC oauth_auRealReplenish @sku=:sku,@salerName=:salerName,@purchaser=:purchaser,
+        @trend=:trend,@isPurchaser=:isPurchaser,@isShipping=:isShipping;";
+        $params = [
+            ':sku' => $cond['sku'],
+            ':salerName' => $cond['salerName'],
+            ':purchaser' => $cond['purchaser'],
+            ':trend' => $cond['trend'],
+            ':isPurchaser' => $cond['isPurchaser'],
+            ':isShipping' => $cond['isShipping'],
+        ];
+        try {
+            $list = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+            return new ArrayDataProvider([
+                'allModels' => $list,
+                'pagination' => [
+                    //'page' => $condition['start'] - 1,
+                    'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
+                ],
+            ]);
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+    }
+
+
+
+
+
+
 }
