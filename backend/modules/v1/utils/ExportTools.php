@@ -18,24 +18,33 @@ class ExportTools
      * @param $fileName
      * @param $data
      * @param $type
+     * @param $title
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    public static function toExcelOrCsv($fileName,$data, $type='Xls')
+    public static function toExcelOrCsv($fileName,$data, $type='Xls',$title=[])
     {
         $fileName = iconv('utf-8', 'gb2312', $fileName);
         $fileName .= date('-YmdHis');
         $sheet = new Spreadsheet();
         $workSheet = $sheet->getActiveSheet();
-
         $cellName = array_keys($data[0]);
         $len = count($cellName);
 
         //set title
-        foreach ($cellName as $index => $value) {
-            $workSheet->setCellValueByColumnAndRow($index + 1, 1, $value);
-            $workSheet->getStyleByColumnAndRow($index + 1, 1)->getFont()->setBold(true);
-            $workSheet->getColumnDimensionByColumn($index + 1)->setAutoSize(count($value));
+        if(!empty($title)) {
+            foreach ($title as $index => $value) {
+                $workSheet->setCellValueByColumnAndRow($index + 1, 1, $value);
+                $workSheet->getStyleByColumnAndRow($index + 1, 1)->getFont()->setBold(true);
+                $workSheet->getColumnDimensionByColumn($index + 1)->setAutoSize(2 * count($value));
+            }
+        }
+        else {
+            foreach ($cellName as $index => $value) {
+                $workSheet->setCellValueByColumnAndRow($index + 1, 1, $value);
+                $workSheet->getStyleByColumnAndRow($index + 1, 1)->getFont()->setBold(true);
+                $workSheet->getColumnDimensionByColumn($index + 1)->setAutoSize(count($value));
+            }
         }
 
         // set cell value
