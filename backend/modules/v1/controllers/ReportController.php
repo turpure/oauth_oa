@@ -16,6 +16,7 @@ use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
 use Yii;
 use backend\modules\v1\utils\Handler;
+use backend\modules\v1\utils\ExportTools;
 
 class ReportController extends AdminController
 {
@@ -691,7 +692,7 @@ class ReportController extends AdminController
 
     /**
      * @brief 开发产品利润表
-     * @return array
+     * @return mixed
      */
     public function actionDevGoodsProfit()
     {
@@ -706,6 +707,23 @@ class ReportController extends AdminController
     }
 
 
+    public function actionExportDevGoodsProfit()
+    {
+        try {
+            $request = Yii::$app->request->post();
+            $condition = $request['condition'];
+            $condition['pageSize'] = 100000;
+            $data = ApiReport::getDevGoodsProfit($condition)->models;
+            $title = ['编号','开发员','产品编码','开发日期','产品状态','销量','销售额(￥)','总利润(￥)','利润率',
+                'eBay销量','eBay利润(￥)','Wish销量','Wish利润(￥)','SMT销量','SMT利润(￥)','Joom销量',
+                'Joom利润(￥)','Amazon销量','Amazon利润(￥)','时间类型(0交易时间，1发货时间)', '时间'];
+            ExportTools::toExcelOrCsv('dev-profit', $data, 'Xls', $title);
+        }
+        catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+    }
+
      /**
          * @brief 开发产品利润表
          * @return array
@@ -716,10 +734,18 @@ class ReportController extends AdminController
            $request = Yii::$app->request->post();
            $condition = $request['condition'];
            return ApiReport::getDevGoodsProfitDetail($condition);
+
        }
         catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
     }
 
+    /**
+     * @brief 开发状态
+     * @return array
+     */
+    public function actionDevStatus() {
+        return ApiReport::getDevStatus();
+    }
 }

@@ -10,6 +10,8 @@ namespace backend\modules\v1\models;
 use Yii;
 use yii\data\ArrayDataProvider;
 use yii\helpers\ArrayHelper;
+use backend\models\ShopElf\BDictionary;
+use yii\data\ActiveDataProvider;
 
 class ApiReport
 {
@@ -884,40 +886,54 @@ class ApiReport
     /**
      * @brief 获取开发数量限制表
      * @param $condition
-     * @return array
+     * @return mixed
+     * @throws \Exception
      */
     public static function getDevLimit($condition)
     {
         $developer = $condition['developer'];
-        $dateRange = $condition['dateRange'];
+        list($beginDate, $endDate) = $condition['dateRange'];
         $dateFlag = $condition['dateType'];
-        $query = (new yii\db\Query())
-            ->select('*')->from('cache_devNumLimit')
-            ->where(['in','developer',$developer])
-            ->andWhere(['between','date_format(orderTime,"%Y-%m-%d")',$dateRange[0], $dateRange[1]])
-            ->andWhere(['dateFlag' => $dateFlag])
-            ->all();
-        return $query;
+        $sql = 'call report_devNumLimit (:developer,:beginDate,:endDate,:dateFlag)';
+        $param = [
+            ':developer' => implode(',', $developer),
+            ':beginDate' => $beginDate,
+            ':endDate' => $endDate,
+            ':dateFlag' => $dateFlag
+        ];
+        $db = Yii::$app->db;
+        return $db->createCommand($sql)->bindValues($param)->queryAll();
     }
 
     /**
      * @brief 获取开发产品利润
      * @param $condition
-     * @return array
+     * @return ActiveDataProvider
      */
     public static function getDevGoodsProfit($condition)
     {
 
         $developer = $condition['developer'];
+        $goodsStatus = $condition['goodsStatus'];
         $dateRange = $condition['dateRange'];
         $dateFlag = $condition['dateType'];
+        $sortField = isset($condition['sortField']) ? $condition['sortField'] : 'id';
+        $sortOrder = isset($condition['sortOrder']) ? $condition['sortOrder'] : 'desc';
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $query = (new yii\db\Query())
             ->select('*')->from('cache_devGoodsProfit')
             ->where(['in','developer',$developer])
+            ->andWhere(['in','goodsStatus', $goodsStatus])
             ->andWhere(['between','date_format(orderTime,"%Y-%m-%d")',$dateRange[0], $dateRange[1]])
-            ->andWhere(['dateFlag' => $dateFlag])
-            ->all();
-        return $query;
+            ->andWhere(['dateFlag' => $dateFlag]);
+        $query->orderBy($sortField . ' ' . $sortOrder);
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
     }
 
     /**
@@ -930,20 +946,27 @@ class ApiReport
     {
 
         try {
-        $dateRange = $condition['dateRange'];
+        list($beginDate, $endDate) = $condition['dateRange'];
         $dateFlag = $condition['dateType'];
         $goodsCode = $condition['goodsCode'];
-        $query = (new yii\db\Query())
-            ->select('*')->from('cache_devGoodsProfitDetail')
-            ->where(['goodsCode' => $goodsCode])
-            ->andWhere(['between','date_format(orderTime,"%Y-%m-%d")',$dateRange[0], $dateRange[1]])
-            ->andWhere(['dateFlag' => $dateFlag])
-            ->all();
-        return $query;
+        $sql = 'call report_devGoodsProfitDetailAPI (:goodsCode,:beginDate,:endDate,:dateFlag)';
+        $params = [':goodsCode' => $goodsCode,':beginDate' => $beginDate, ':endDate' => $endDate, ':dateFlag' => $dateFlag];
+        $db = Yii::$app->db;
+        return $db->createCommand($sql)->bindValues($params)->queryAll();
         }
         catch (\Exception $why) {
             throw  new \Exception($why->getMessage(), '400');
         }
+    }
+
+    /**
+     * @brief 获取开发状态
+     * @return array
+     */
+    public static function getDevStatus()
+    {
+        $status = BDictionary::findAll(['CategoryID' => 15]);
+        return ArrayHelper::getColumn($status,'DictionaryName');
     }
 
 }
