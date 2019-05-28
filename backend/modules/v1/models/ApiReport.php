@@ -916,6 +916,8 @@ class ApiReport
         $goodsStatus = $condition['goodsStatus'];
         $dateRange = $condition['dateRange'];
         $dateFlag = $condition['dateType'];
+        $sortField = isset($condition['sortField']) ? $condition['sortField'] : 'id';
+        $sortOrder = isset($condition['sortOrder']) ? $condition['sortOrder'] : 'desc';
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $query = (new yii\db\Query())
             ->select('*')->from('cache_devGoodsProfit')
@@ -923,6 +925,7 @@ class ApiReport
             ->andWhere(['in','goodsStatus', $goodsStatus])
             ->andWhere(['between','date_format(orderTime,"%Y-%m-%d")',$dateRange[0], $dateRange[1]])
             ->andWhere(['dateFlag' => $dateFlag]);
+        $query->orderBy($sortField . ' ' . $sortOrder);
         $provider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
