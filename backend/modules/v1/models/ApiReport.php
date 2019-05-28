@@ -942,16 +942,13 @@ class ApiReport
     {
 
         try {
-        $dateRange = $condition['dateRange'];
+        list($beginDate, $endDate) = $condition['dateRange'];
         $dateFlag = $condition['dateType'];
         $goodsCode = $condition['goodsCode'];
-        $query = (new yii\db\Query())
-            ->select('*')->from('cache_devGoodsProfitDetail')
-            ->where(['goodsCode' => $goodsCode])
-            ->andWhere(['between','date_format(orderTime,"%Y-%m-%d")',$dateRange[0], $dateRange[1]])
-            ->andWhere(['dateFlag' => $dateFlag])
-            ->all();
-        return $query;
+        $sql = 'call report_devGoodsProfitDetailAPI (:goodsCode,:beginDate,:endDate,:dateFlag)';
+        $params = [':goodsCode' => $goodsCode,':beginDate' => $beginDate, ':endDate' => $endDate, ':dateFlag' => $dateFlag];
+        $db = Yii::$app->db;
+        return $db->createCommand($sql)->bindValues($params)->queryAll();
         }
         catch (\Exception $why) {
             throw  new \Exception($why->getMessage(), '400');
