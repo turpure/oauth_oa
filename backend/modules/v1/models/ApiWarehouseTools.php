@@ -87,7 +87,7 @@ class ApiWarehouseTools
     {
 
         $ret = BPerson::find()
-            ->andWhere(['in', 'Duty', ['拣货-分拣']])->all();
+            ->andWhere(['in', 'Duty', ['拣货','拣货组长','拣货-分拣']])->all();
         return ArrayHelper::getColumn($ret, 'PersonName');
     }
 
