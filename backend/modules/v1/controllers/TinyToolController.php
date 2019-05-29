@@ -18,13 +18,14 @@ use common\models\User;
 use backend\modules\v1\services\ExpressExpired;
 use Yii;
 use yii\data\ArrayDataProvider;
+use yii\helpers\ArrayHelper;
 
 class TinyToolController extends AdminController
 {
     public $modelClass = 'backend\modules\v1\models\ApiTinyTool';
 
     public $serializer = [
-        'class' => 'yii\rest\Serializer',
+        'class' => 'backend\modules\v1\utils\PowerfulSerializer',
         'collectionEnvelope' => 'items',
     ];
 
@@ -555,17 +556,20 @@ class TinyToolController extends AdminController
             ':isPurchaser' => $cond['isPurchaser'],
         ];
         try {
-            $list = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
-            return new ArrayDataProvider([
-                'allModels' => $list,
+            $data = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+            $totalPurCost = array_sum(ArrayHelper::getColumn($data, 'purCost'));
+
+            $provider = new ArrayDataProvider([
+                'allModels' => $data,
                 'pagination' => [
-                    //'page' => $condition['start'] - 1,
                     'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
                 ],
             ]);
+            return ['provider' => $provider, 'extra' => ['totalPurCost' => $totalPurCost]];
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
+
     }
 
     /** AU真仓补货
@@ -588,14 +592,17 @@ class TinyToolController extends AdminController
             ':isShipping' => $cond['isShipping'],
         ];
         try {
-            $list = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
-            return new ArrayDataProvider([
-                'allModels' => $list,
+            $data = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+            $totalPurCost = array_sum(ArrayHelper::getColumn($data, 'purCost'));
+            $totalShipWeight = array_sum(ArrayHelper::getColumn($data, 'shipWeight'));
+
+            $provider = new ArrayDataProvider([
+                'allModels' => $data,
                 'pagination' => [
-                    //'page' => $condition['start'] - 1,
                     'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
                 ],
             ]);
+            return ['provider' => $provider, 'extra' => ['totalPurCost' => $totalPurCost,'totalShipWeight' => $totalShipWeight]];
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
@@ -621,14 +628,17 @@ class TinyToolController extends AdminController
             ':isShipping' => $cond['isShipping'],
         ];
         try {
-            $list = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
-            return new ArrayDataProvider([
-                'allModels' => $list,
+            $data = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+            $totalPurCost = array_sum(ArrayHelper::getColumn($data, 'purCost'));
+            $totalShipWeight = array_sum(ArrayHelper::getColumn($data, 'shipWeight'));
+
+            $provider = new ArrayDataProvider([
+                'allModels' => $data,
                 'pagination' => [
-                    //'page' => $condition['start'] - 1,
                     'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
                 ],
             ]);
+            return ['provider' => $provider, 'extra' => ['totalPurCost' => $totalPurCost,'totalShipWeight' => $totalShipWeight]];
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
