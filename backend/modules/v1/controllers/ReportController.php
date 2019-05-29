@@ -9,6 +9,7 @@ namespace backend\modules\v1\controllers;
 
 use backend\modules\v1\models\ApiReport;
 use backend\modules\v1\models\ApiSettings;
+use Codeception\Template\Api;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use yii\data\ArrayDataProvider;
@@ -754,12 +755,32 @@ class ReportController extends AdminController
     }
 
     /**
-     * @brief 销售历史利润排名
+     * @brief 销售历史利润
      * @return mixed
      */
     public function actionHistorySalesProfit()
     {
         $condition = Yii::$app->request->post()['condition'];
         return ApiReport::getHistorySalesProfit($condition);
+    }
+
+    /**
+     * @brief 历史利润走势
+     * @return array
+     */
+    public function actionHistoryProfit()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiReport::getHistoryProfit($condition);
+    }
+
+    /**
+     * @brief 历史利润排名
+     * @return array
+     */
+    public function actionHistoryRank()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiReport::getHistoryProfit($condition);
     }
 }
