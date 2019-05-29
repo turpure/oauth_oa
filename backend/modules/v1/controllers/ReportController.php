@@ -707,6 +707,10 @@ class ReportController extends AdminController
     }
 
 
+    /**
+     * @brief 导出开发利润
+     * @return array
+     */
     public function actionExportDevGoodsProfit()
     {
         try {
@@ -747,5 +751,15 @@ class ReportController extends AdminController
      */
     public function actionDevStatus() {
         return ApiReport::getDevStatus();
+    }
+
+    /**
+     * @brief 销售历史利润排名
+     * @return mixed
+     */
+    public function actionHistorySalesProfit()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiReport::getHistorySalesProfit($condition);
     }
 }

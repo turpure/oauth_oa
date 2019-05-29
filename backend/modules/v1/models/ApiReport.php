@@ -9,6 +9,7 @@ namespace backend\modules\v1\models;
 
 use Yii;
 use yii\data\ArrayDataProvider;
+use yii\db\ActiveQuery;
 use yii\helpers\ArrayHelper;
 use backend\models\ShopElf\BDictionary;
 use yii\data\ActiveDataProvider;
@@ -969,4 +970,19 @@ class ApiReport
         return ArrayHelper::getColumn($status,'DictionaryName');
     }
 
+    public static function getHistorySalesProfit($condition)
+    {
+        $department = isset($condition['department']) ? $condition['department'] :'';
+        $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '' ;
+        $plat = isset($condition['plat']) ? $condition['plat'] : '';
+        $salesMan = isset($condition['member']) ? $condition['member'] : '';
+        list($beginDate, $endDate) = $condition['dateRange'];
+        $query = (new yii\db\Query())->select('*')->from('cache_historySalesProfit')->andWhere(['in','username',$salesMan])
+        ->andWhere(['between','monthName',$beginDate, $endDate])->all();
+//        $ret = [];
+//        foreach ($query as $row) {
+//
+//        }
+        return $query;
+    }
 }
