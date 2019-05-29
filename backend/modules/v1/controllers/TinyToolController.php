@@ -565,6 +565,12 @@ class TinyToolController extends AdminController
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
     }
+
+    /** AU真仓补货
+     * Date: 2019-05-29 8:40
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
     public function actionAuRealReplenish()
     {
         $request = Yii::$app->request->post();
@@ -592,6 +598,9 @@ class TinyToolController extends AdminController
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
     }
+
+
+
 
 
 
