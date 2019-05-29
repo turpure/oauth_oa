@@ -220,7 +220,7 @@ class ApiTinyTool
         $possessMan2 = ArrayHelper::getValue($condition, 'possessMan2', '');
         $beginDate = ArrayHelper::getValue($condition, 'beginDate', '') ?: '2015-06-01';
         $endDate = ArrayHelper::getValue($condition, 'endDate', '') ?: date('Y-m-d');
-        $goodsName = ArrayHelper::getValue($condition, 'goodsName', '');
+        $goodsName = explode(',', ArrayHelper::getValue($condition, 'goodsName', ''));
         $supplierName = ArrayHelper::getValue($condition, 'supplierName', '');
         $goodsSkuStatus = ArrayHelper::getValue($condition, 'goodsSkuStatus', '');
         $categoryParentName = ArrayHelper::getValue($condition, 'categoryParentName', '');
@@ -251,7 +251,12 @@ class ApiTinyTool
             if ($possessMan1) $sql .= " AND bg.possessman1 LIKE '%$possessMan1%' ";
             if ($possessMan2) $sql .= " AND bg.possessman2 LIKE '%$possessMan2%' ";
             if ($salerName) $sql .= " AND bg.SalerName LIKE '%$salerName%' ";
-            if ($goodsName) $sql .= " AND bg.GoodsName LIKE '%$goodsName%' ";
+            if ($goodsName) {
+                foreach ($goodsName as $v){
+                    $sql .= " AND bg.GoodsName LIKE '%$v%' ";
+                }
+            }
+
             if ($goodsSkuStatus) $sql .= " AND bgs.GoodsSKUStatus LIKE '%$goodsSkuStatus%' ";
             if ($categoryParentName) $sql .= " AND bgc.CategoryParentName LIKE '%$categoryParentName%' ";
             if ($categoryName) $sql .= " AND bgc.CategoryName LIKE '%$categoryName%'";

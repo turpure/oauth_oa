@@ -9,9 +9,11 @@ namespace backend\modules\v1\controllers;
 
 
 use backend\modules\v1\models\ApiAu;
+use backend\modules\v1\models\ApiGoodsinfo;
 use backend\modules\v1\models\ApiTinyTool;
 use backend\modules\v1\models\ApiUk;
 use backend\modules\v1\models\ApiUkFic;
+use backend\modules\v1\utils\ExportTools;
 use common\models\User;
 use backend\modules\v1\services\ExpressExpired;
 use Yii;
@@ -599,11 +601,107 @@ class TinyToolController extends AdminController
         }
     }
 
+    /** AU真仓补货
+     * Date: 2019-05-29 8:40
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionUkRealReplenish()
+    {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        $sql = "EXEC oauth_ukRealReplenish @sku=:sku,@salerName=:salerName,@purchaser=:purchaser,
+        @trend=:trend,@isPurchaser=:isPurchaser,@isShipping=:isShipping;";
+        $params = [
+            ':sku' => $cond['sku'],
+            ':salerName' => $cond['salerName'],
+            ':purchaser' => $cond['purchaser'],
+            ':trend' => $cond['trend'],
+            ':isPurchaser' => $cond['isPurchaser'],
+            ':isShipping' => $cond['isShipping'],
+        ];
+        try {
+            $list = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+            return new ArrayDataProvider([
+                'allModels' => $list,
+                'pagination' => [
+                    //'page' => $condition['start'] - 1,
+                    'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
+                ],
+            ]);
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+    }
 
 
+    /** 下载表格
+     * Date: 2019-05-29 11:49
+     * Author: henry
+     * @return array
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionExportReplenish()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $cond = $request->post()['condition'];
 
+        switch($cond['type']){
+            case 'uk':
+                $name = 'ukVirtualReplenish';
+                $sql = "EXEC oauth_ukVirtualReplenish @sku=:sku,@salerName=:salerName,@purchaser=:purchaser,@trend=:trend,@isPurchaser=:isPurchaser;";
+                $params = [
+                    ':sku' => $cond['sku'],
+                    ':salerName' => $cond['salerName'],
+                    ':purchaser' => $cond['purchaser'],
+                    ':trend' => $cond['trend'],
+                    ':isPurchaser' => $cond['isPurchaser'],
+                ];
+                break;
+            case 'auReal':
+                $name = 'auRealReplenish';
+                $sql = "EXEC oauth_auRealReplenish @sku=:sku,@salerName=:salerName,@purchaser=:purchaser,@trend=:trend,@isPurchaser=:isPurchaser,@isShipping=:isShipping;";
+                $params = [
+                    ':sku' => $cond['sku'],
+                    ':salerName' => $cond['salerName'],
+                    ':purchaser' => $cond['purchaser'],
+                    ':trend' => $cond['trend'],
+                    ':isPurchaser' => $cond['isPurchaser'],
+                    ':isShipping' => $cond['isShipping'],
+                ];
+                break;
+            case 'ukReal':
+                $name = 'ukRealReplenish';
+                $sql = "EXEC oauth_ukRealReplenish @sku=:sku,@salerName=:salerName,@purchaser=:purchaser,@trend=:trend,@isPurchaser=:isPurchaser,@isShipping=:isShipping;";
+                $params = [
+                    ':sku' => $cond['sku'],
+                    ':salerName' => $cond['salerName'],
+                    ':purchaser' => $cond['purchaser'],
+                    ':trend' => $cond['trend'],
+                    ':isPurchaser' => $cond['isPurchaser'],
+                    ':isShipping' => $cond['isShipping'],
+                ];
+                break;
+            default :
+                $name = 'ukVirtualReplenish';
+                $sql = "EXEC oauth_ukVirtualReplenish @sku=:sku,@salerName=:salerName,@purchaser=:purchaser,@trend=:trend,@isPurchaser=:isPurchaser;";
+                $params = [
+                    ':sku' => $cond['sku'],
+                    ':salerName' => $cond['salerName'],
+                    ':purchaser' => $cond['purchaser'],
+                    ':trend' => $cond['trend'],
+                    ':isPurchaser' => $cond['isPurchaser'],
+                ];
+                break;
+        }
+        $data = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
 
-
+        ExportTools::toExcelOrCsv($name, $data, 'Xls');
+    }
 
 
 
