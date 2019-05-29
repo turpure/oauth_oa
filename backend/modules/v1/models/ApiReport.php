@@ -969,6 +969,11 @@ class ApiReport
         return ArrayHelper::getColumn($status,'DictionaryName');
     }
 
+    /**
+     * @brief 获取历史利润汇总表
+     * @param $condition
+     * @return array
+     */
     public static function getHistorySalesProfit($condition)
     {
         $plat = isset($condition['plat']) ? $condition['plat'] : [];
@@ -1005,6 +1010,56 @@ class ApiReport
                 $out[] = $ret;
             }
 
+        }
+        return $out;
+    }
+
+    /**
+     * @brief 获取历史利润走势
+     * @param $condition
+     * @return array
+     */
+    public static function getHistoryProfit($condition)
+    {
+        $plat = isset($condition['plat']) ? $condition['plat'] : [];
+        $salesMan = isset($condition['member']) ? $condition['member'] : [];
+        list($beginDate, $endDate) = $condition['dateRange'];
+        $query = (new yii\db\Query())->select('username,plat,profit as profit, monthName,')->from('cache_historySalesProfit')->andWhere(['in','username',$salesMan])
+            ->andWhere(['between','monthName',$beginDate, $endDate]);
+        if(!empty($plat)) {
+            $query->andWhere(['in','plat',$plat]);
+        }
+        $query = $query->orderBy('monthName desc')->all();
+        $out = [];
+        foreach ($query as $row) {
+            $row['title'] = $row['username'] . '-' . $row['plat'];
+            unset($row['username'],$row['plat']);
+            $out[] = $row;
+        }
+        return $out;
+    }
+
+    /**
+     * @brief 获取历史排名走势
+     * @param $condition
+     * @return array
+     */
+    public static function getHistoryRank($condition)
+    {
+        $plat = isset($condition['plat']) ? $condition['plat'] : [];
+        $salesMan = isset($condition['member']) ? $condition['member'] : [];
+        list($beginDate, $endDate) = $condition['dateRange'];
+        $query = (new yii\db\Query())->select('username,plat,rank, monthName,')->from('cache_historySalesProfit')->andWhere(['in','username',$salesMan])
+            ->andWhere(['between','monthName',$beginDate, $endDate]);
+        if(!empty($plat)) {
+            $query->andWhere(['in','plat',$plat]);
+        }
+        $query = $query->orderBy('monthName desc')->all();
+        $out = [];
+        foreach ($query as $row) {
+            $row['title'] = $row['username'] . '-' . $row['plat'];
+            unset($row['username'],$row['plat']);
+            $out[] = $row;
         }
         return $out;
     }
