@@ -1006,6 +1006,9 @@ class ApiReport
                 $ret['department'] = $row['department'];
                 $ret['plat'] = $row['plat'];
                 $ret['hireDate'] = $row['hireDate'];
+                $ret['avgProfit'] = $row['avgProfit'];
+                $ret['rank'] = $row['rank'];
+                $ret['departmentTotal'] = $row['departmentTotal'];
                 $ret['historyProfit'] = [['month' => $row['monthName'],'profit' =>$row['profit']]];
                 $ret['historyRank'] = [['month' => $row['monthName'],'rank' =>$row['rank']]];
                 $out[] = $ret;
