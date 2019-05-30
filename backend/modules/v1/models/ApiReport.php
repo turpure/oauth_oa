@@ -1034,13 +1034,38 @@ class ApiReport
             $query->andWhere(['in','plat',$plat]);
         }
         $query = $query->orderBy('monthName desc')->all();
+        $monthList = static::getMonth($beginDate, $endDate);
         $out = [];
+        $userList = [];
         foreach ($query as $row) {
             $row['title'] = $row['username'] . '-' . $row['plat'];
             unset($row['username'],$row['plat']);
             $out[] = $row;
+            if(!in_array($row['title'], $userList,true)) {
+                $userList[] =  $row['title'];
+            }
         }
-        return $out;
+        // 补充空数据
+        $ret = [];
+        foreach ($monthList as $month) {
+            foreach ($userList as $title) {
+                $ele = [];
+                $ele['monthName'] = $month;
+                $ele['title'] = $title ;
+                $ele['profit'] = 0;
+                $ret[] = $ele;
+            }
+        }
+
+        //重新计算数据
+        foreach ($ret as &$item) {
+            foreach ($out as $row) {
+                if ($row['monthName'] === $item['monthName'] && $row['title'] === $item['title']) {
+                    $item['profit'] = $row['profit'];
+                }
+            }
+        }
+        return $ret;
     }
 
     /**
@@ -1060,12 +1085,58 @@ class ApiReport
             $query->andWhere(['in','plat',$plat]);
         }
         $query = $query->orderBy('monthName desc')->all();
+        $monthList = static::getMonth($beginDate, $endDate);
         $out = [];
+        $userList = [];
         foreach ($query as $row) {
             $row['title'] = $row['username'] . '-' . $row['plat'];
             unset($row['username'],$row['plat']);
             $out[] = $row;
+            if(!in_array($row['title'], $userList,true)) {
+                $userList[] =  $row['title'];
+            }
         }
-        return $out;
+
+        // 补充空数据
+        $ret = [];
+        foreach ($monthList as $month) {
+            foreach ($userList as $title) {
+                $ele = [];
+                $ele['monthName'] = $month;
+                $ele['title'] = $title ;
+                $ele['rank'] = 0;
+                $ret[] = $ele;
+            }
+        }
+
+        //重新计算数据
+        foreach ($ret as &$item) {
+            foreach ($out as $row) {
+                if ($row['monthName'] === $item['monthName'] && $row['title'] === $item['title']) {
+                    $item['rank'] = $row['rank'];
+                }
+            }
+        }
+        return $ret;
+    }
+
+
+    /**
+     * @brief 获取月份
+     * @param $start
+     * @param $end
+     * @return array
+     */
+    private static function getMonth($start, $end)
+    {
+        $month = strtotime($start);
+        $end = strtotime($end);
+        $ret = [];
+        while ($month <= $end) {
+            $thisMonth = date('Y-m', $month);
+            $ret[] = $thisMonth;
+            $month = strtotime('+1 month', $month);
+        }
+        return $ret;
     }
 }
