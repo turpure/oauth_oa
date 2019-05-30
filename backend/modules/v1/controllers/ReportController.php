@@ -781,6 +781,6 @@ class ReportController extends AdminController
     public function actionHistoryRank()
     {
         $condition = Yii::$app->request->post()['condition'];
-        return ApiReport::getHistoryProfit($condition);
+        return ApiReport::getHistoryRank($condition);
     }
 }
