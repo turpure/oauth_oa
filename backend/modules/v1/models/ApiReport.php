@@ -987,6 +987,7 @@ class ApiReport
         }
         $query = $query->orderBy('monthName asc')->all();
         $out = [];
+        $monthList = static::getMonth($beginDate, $endDate);
         foreach ($query as $row) {
             $unique = $row['username'].'-'.$row['plat'];
             $ret = [];
@@ -1013,6 +1014,51 @@ class ApiReport
                 $ret['historyRank'] = [['month' => $row['monthName'],'rank' =>$row['rank']]];
                 $out[] = $ret;
             }
+
+        }
+        $historyProfit = [];
+        $historyRank = [];
+        foreach ($monthList as $month) {
+            $row = [];
+            $row['month'] = $month;
+            $row['profit'] = 0;
+            $historyProfit[] = $row;
+        }
+
+        foreach ($monthList as $month) {
+            $row = [];
+            $row['month'] = $month;
+            $row['rank'] = 0;
+            $historyRank[] = $row;
+        }
+
+        foreach ($out as  &$item) {
+            $myHistoryProfit= $item['historyProfit'];
+            $myHistoryRank= $item['historyRank'];
+            $hProfit = $historyProfit;
+            $hRank = $historyRank;
+
+            //填充历史利润
+            foreach($hProfit as &$pro) {
+                foreach ($myHistoryProfit as $oldEle) {
+                    if ($pro['month'] === $oldEle['month']) {
+                        $pro['profit'] = $oldEle['profit'];
+                    }
+                }
+            }
+
+            //填充历史排名
+            foreach($hRank as &$rank) {
+                foreach ($myHistoryRank as $oldEle) {
+                    if ($rank['month'] === $oldEle['month']) {
+                        $rank['rank'] = $oldEle['rank'];
+                    }
+                }
+            }
+
+            $item['historyProfit'] = $hProfit;
+            $item['historyRank'] = $hRank;
+
 
         }
         return $out;
