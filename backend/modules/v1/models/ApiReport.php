@@ -10,6 +10,7 @@ namespace backend\modules\v1\models;
 use Yii;
 use yii\data\ArrayDataProvider;
 use yii\db\ActiveQuery;
+use yii\db\Query;
 use yii\helpers\ArrayHelper;
 use backend\models\ShopElf\BDictionary;
 use yii\data\ActiveDataProvider;
@@ -882,6 +883,29 @@ class ApiReport
     public static function getRefundAnalysisData($condition)
     {
         return static::getRefundDetails($condition)->allModels;
+    }
+
+    /**
+     * @brief 获取退款物流所占比例
+     * @param $condition
+     * @throws \Exception
+     * @return mixed
+     */
+    public static function getRefundExpressRate($condition)
+    {
+        $suffix = $condition['account'];
+        $dateFlag = $condition['dateType'];
+        list($beginDate, $endDate) = $condition['dateRange'];
+        $sql = 'call report_refundExPressRateAPI (:suffix, :beginDate, :endDate, :dateFlag)';
+        $query = Yii::$app->db->createCommand($sql)->bindValues([
+            ':suffix' => implode(',', $suffix),
+            ':beginDate' => $beginDate,
+            ':endDate' => $endDate,
+            ':dateFlag' => $dateFlag
+        ])->queryAll();
+        return $query;
+
+
     }
 
     /**

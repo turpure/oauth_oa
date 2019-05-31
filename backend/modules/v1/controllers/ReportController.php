@@ -498,7 +498,23 @@ class ReportController extends AdminController
         }
     }
 
+    /**
+     * @brief 物流退款比例
+     * @return array|mixed
+     *
+     */
+    public function actionRefundExpressRate()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiReport::getRefundExpressRate($condition);
+        }
+        catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+    }
 
+  ##################### 退款分析-结束 #############################################
     /**
      * 销售死库明细
      * Date: 2019-01-04 10:21
