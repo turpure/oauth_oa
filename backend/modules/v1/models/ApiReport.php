@@ -893,7 +893,7 @@ class ApiReport
      */
     public static function getRefundExpressRate($condition)
     {
-        $suffix = $condition['account'];
+        $suffix = $condition['suffix'];
         $dateFlag = $condition['dateType'];
         list($beginDate, $endDate) = $condition['dateRange'];
         $sql = 'call report_refundExPressRateAPI (:suffix, :beginDate, :endDate, :dateFlag)';
