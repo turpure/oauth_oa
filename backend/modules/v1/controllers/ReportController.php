@@ -811,4 +811,13 @@ class ReportController extends AdminController
         $condition = Yii::$app->request->post()['condition'];
         return ApiReport::getHistoryRank($condition);
     }
+
+    /**
+     * @brief 销售平台
+     * @return array
+     */
+    public function actionHistoryPlat()
+    {
+        return ['eBay-义乌仓', 'eBay-海外仓', 'Wish', 'SMT', 'Amazon', 'Joom'];
+    }
 }
