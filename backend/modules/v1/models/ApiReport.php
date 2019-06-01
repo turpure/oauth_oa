@@ -1025,7 +1025,8 @@ class ApiReport
         $salesMan = isset($condition['member']) ? $condition['member'] : [];
         list($beginDate, $endDate) = $condition['dateRange'];
         $query = (new yii\db\Query())->select('*')->from('cache_historySalesProfit')->andWhere(['in','username',$salesMan])
-        ->andWhere(['between','monthName',$beginDate, $endDate]);
+        ->andWhere(['between','monthName',$beginDate, $endDate])
+        ->andWhere(['in','plat', $plat]);
         if(!empty($plat)) {
             $query->andWhere(['in','plat',$plat]);
         }
