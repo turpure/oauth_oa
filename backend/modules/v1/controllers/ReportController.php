@@ -514,6 +514,18 @@ class ReportController extends AdminController
         }
     }
 
+    public function actionRefundSuffixRate()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiReport::getRefundSuffixRate($condition);
+        }
+        catch (\Exception $why)
+        {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+    }
+
   ##################### 退款分析-结束 #############################################
     /**
      * 销售死库明细
