@@ -318,15 +318,18 @@ class SchedulerController extends Controller
        foreach($list as $k => $value){
             $stockOrderNum = $nonStockOrderNum = $hot = $exu = $nonHot = $nonExu = 0;
             foreach ($developer as $v){
-                if($value['username'] == $v['developer']){
-                    $nonStockOrderNum = $v['stockUp'] == '否' && $v['orderNum'] > 0 ? $nonStockOrderNum + 1 : $stockOrderNum;
-                    $stockOrderNum = $v['stockUp'] == '是' && $v['orderNum'] ? $stockOrderNum + 1 : $stockOrderNum;
-                    $hot = $v['goodsStatus'] == '爆款' && $v['stockUp'] == '是' && $v['orderNum'] ? $hot + 1 : $hot;
-                    $exu = $v['goodsStatus'] == '旺款' && $v['stockUp'] == '是' && $v['orderNum'] ? $exu + 1 : $exu;
-                    $nonHot = $v['goodsStatus'] == '爆款' && $v['stockUp'] == '否' && $v['orderNum'] ? $nonHot + 1 : $nonHot;
-                    $nonExu = $v['goodsStatus'] == '旺款' && $v['stockUp'] == '否' && $v['orderNum'] ? $nonExu + 1 : $nonExu;
+
+                if($value['username'] === $v['developer']){
+                    $nonStockOrderNum = ($v['stockUp'] === '否' && $v['orderNum'] > 0) ? $nonStockOrderNum + 1 : $nonStockOrderNum;
+                    $stockOrderNum = ($v['stockUp'] == '是' && $v['orderNum'] > 0) ? $stockOrderNum + 1 : $stockOrderNum;
+                    $hot = ($v['goodsStatus'] == '爆款' && $v['stockUp'] == '是' && $v['orderNum'] > 0) ? $hot + 1 : $hot;
+                    $exu = ($v['goodsStatus'] == '旺款' && $v['stockUp'] == '是' && $v['orderNum'] > 0) ? $exu + 1 : $exu;
+                    $nonHot = ($v['goodsStatus'] == '爆款' && $v['stockUp'] == '否' && $v['orderNum'] > 0) ? $nonHot + 1 : $nonHot;
+                    $nonExu = ($v['goodsStatus'] == '旺款' && $v['stockUp'] == '否' && $v['orderNum'] > 0) ? $nonExu + 1 : $nonExu;
                 }
             }
+
+
            //计算 备货和不备货的爆旺款率
            $hotAndExuRate = $value['stockNum'] == 0 ? 0 : round(($hot+$exu)*1.0/$value['stockNum'], 4)*100;
            $nonHotAndExuRate = $value['nonStockNum'] == 0 ? 0 : round(($nonHot+$nonExu)*1.0/$value['nonStockNum'], 4)*100;
@@ -362,7 +365,6 @@ class SchedulerController extends Controller
            $orderNumList[$k] = $item1;
            $nonOrderNumList[$k] = $item2;
        }
-        //print_r($orderNumList);exit;
         $tran = Yii::$app->db->beginTransaction();
         try {
             //插入数据表oa_stockGoodsNum

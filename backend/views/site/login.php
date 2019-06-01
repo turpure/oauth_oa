@@ -54,7 +54,7 @@ $this->registerJs($js);
         <?= $form
             ->field($model, 'password', $fieldOptions2)
             ->label(false)
-            ->passwordInput(['placeholder' => $model->getAttributeLabel('密码')]) ?>
+            ->passwordInput(['placeholder' => $model->getAttributeLabel('密码'), 'autocomplete' => 'off']) ?>
 
         <div class="row">
             <div class="col-xs-8">
