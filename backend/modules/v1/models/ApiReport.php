@@ -893,7 +893,7 @@ class ApiReport
      */
     public static function getRefundExpressRate($condition)
     {
-        $suffix = $condition['suffix'];
+        $suffix = $condition['account'];
         $dateFlag = $condition['dateType'];
         list($beginDate, $endDate) = $condition['dateRange'];
         $sql = 'call report_refundExPressRateAPI (:suffix, :beginDate, :endDate, :dateFlag)';
@@ -904,9 +904,29 @@ class ApiReport
             ':dateFlag' => $dateFlag
         ])->queryAll();
         return $query;
-
-
     }
+
+    /**
+     * @brief 获取账号退款率
+     * @param $condition
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    public static function getRefundSuffixRate($condition)
+    {
+        $suffix = $condition['account'];
+        $dateFlag = $condition['dateType'];
+        list($beginDate, $endDate) = $condition['dateRange'];
+        $sql = 'call report_refundSuffixRateAPI (:suffix, :beginDate, :endDate, :dateFlag)';
+        $query = Yii::$app->db->createCommand($sql)->bindValues([
+            ':suffix' => implode(',', $suffix),
+            ':beginDate' => $beginDate,
+            ':endDate' => $endDate,
+            ':dateFlag' => $dateFlag
+        ])->queryAll();
+        return $query;
+    }
+
 
     /**
      * @brief 获取开发数量限制表
