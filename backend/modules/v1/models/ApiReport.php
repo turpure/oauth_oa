@@ -1034,7 +1034,7 @@ class ApiReport
         $out = [];
         $monthList = static::getMonth($beginDate, $endDate);
         foreach ($query as $row) {
-            $unique = $row['username'].'-'.$row['plat'];
+            $unique = $row['plat']. '-' .$row['username'];
             $ret = [];
             if (in_array($unique,ArrayHelper::getColumn($out,'unique'),true)) {
                 foreach ($out as &$ele) {
@@ -1129,7 +1129,7 @@ class ApiReport
         $out = [];
         $userList = [];
         foreach ($query as $row) {
-            $row['title'] = $row['username'] . '-' . $row['plat'];
+            $row['title'] = $row['plat'] . '-' . $row['username'];
             unset($row['username'],$row['plat']);
             $out[] = $row;
             if(!in_array($row['title'], $userList,true)) {
@@ -1180,7 +1180,7 @@ class ApiReport
         $out = [];
         $userList = [];
         foreach ($query as $row) {
-            $row['title'] = $row['username'] . '-' . $row['plat'];
+            $row['title'] = $row['plat'] . '-' . $row['username'];
             unset($row['username'],$row['plat']);
             $out[] = $row;
             if(!in_array($row['title'], $userList,true)) {
