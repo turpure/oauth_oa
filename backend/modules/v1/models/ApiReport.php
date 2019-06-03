@@ -1101,6 +1101,13 @@ class ApiReport
                 }
             }
 
+            //修正排名
+            foreach ($hRank as &$rank) {
+                if ($rank['rank'] === 0 && strtotime($rank['month']) < strtotime(date('Y-m'))) {
+                    $rank['rank'] = $item['departmentTotal'];
+                }
+            }
+
             $item['historyProfit'] = $hProfit;
             $item['historyRank'] = $hRank;
 
