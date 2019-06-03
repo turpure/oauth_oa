@@ -77,8 +77,11 @@ class ApiAu{
                 $data['cost'] = Yii::$app->params['w_au_tran_fee_2_4'];
             }else if($weight <= Yii::$app->params['w_au_tran_2_5']){//<=4000
                 $data['cost'] = Yii::$app->params['w_au_tran_fee_2_5'];
-            }else{                                                //<=5000
-                $data['cost'] = Yii::$app->params['w_au_tran_fee_2_3'];
+            }else if($weight <= Yii::$app->params['w_au_tran_2_6']){//<=5000
+                $data['cost'] = Yii::$app->params['w_au_tran_fee_2_6'];
+            }else{//>5000
+                $wei = ceil($weight*1.0/1000);
+                $data['cost'] = Yii::$app->params['w_au_tran_fee_base'] + $wei*Yii::$app->params['w_au_tran_fee_per'];
             }
         }else{
             $data['name'] = Yii::$app->params['transport_au1'];
