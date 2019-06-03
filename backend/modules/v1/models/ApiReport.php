@@ -1170,6 +1170,7 @@ class ApiReport
      * @brief 获取历史排名走势
      * @param $condition
      * @return array
+     * @throws \Exception
      */
     public static function getHistoryRank($condition)
     {
