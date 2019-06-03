@@ -1215,6 +1215,13 @@ class ApiReport
                 }
             }
         }
+
+        //修正排名
+        foreach ($ret as &$rank) {
+            if ($rank['rank'] === 0) {
+                $rank['rank'] = static::getDepartmentTotal($rank['title']);
+            }
+        }
         return $ret;
     }
 
@@ -1235,6 +1242,19 @@ class ApiReport
             $ret[] = $thisMonth;
             $month = strtotime('+1 month', $month);
         }
+        return $ret;
+    }
+
+    /**
+     * @param $title
+     * @return false|null|string
+     * @throws \yii\db\Exception
+     */
+    private static function getDepartmentTotal($title)
+    {
+        $plat = explode('-', $title)[0];
+        $sql = 'select departmentTotal from cache_historySalesProfit where plat=:plat limit 1';
+        $ret = Yii::$app->db->createCommand($sql)->bindValues([':plat' => $plat])->queryScalar();
         return $ret;
     }
 }
