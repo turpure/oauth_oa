@@ -350,7 +350,7 @@ class ReportController extends AdminController
     public function actionRefundAnalysisSuffix()
     {
         try {
-            $refund = $this->actionRefund()->allModels;
+            $refund = $this->actionRefund()['provider']->allModels;
             $ret = [];
             foreach ($refund as $row) {
                 if(array_key_exists($row['suffix'], $ret)) {
@@ -389,7 +389,7 @@ class ReportController extends AdminController
     public function actionRefundAnalysisPlat()
     {
         try {
-            $refund = $this->actionRefund()->allModels;
+            $refund = $this->actionRefund()['provider']->allModels;
             $ret = [];
             foreach ($refund as $row) {
                 if(array_key_exists($row['platform'], $ret)) {
@@ -428,7 +428,7 @@ class ReportController extends AdminController
     public function actionRefundAnalysisGoods()
     {
         try {
-            $refund = $this->actionRefund()->allModels;
+            $refund = $this->actionRefund()['provider']->allModels;
             $ret = [];
             foreach ($refund as $row) {
                 if(array_key_exists($row['goodsCode'], $ret)) {
@@ -467,7 +467,7 @@ class ReportController extends AdminController
     public function actionRefundAnalysisExpress()
     {
         try {
-            $refund = $this->actionRefund()->allModels;
+            $refund = $this->actionRefund()['provider']->allModels;
             $ret = [];
             foreach ($refund as $row) {
                 if(array_key_exists($row['expressWay'], $ret)) {
