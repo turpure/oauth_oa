@@ -905,18 +905,6 @@ class ApiReport
             ':endDate' => $endDate,
             ':dateFlag' => $dateFlag
         ])->queryAll();
-        $totalCount = ArrayHelper::getColumn($query,'totalCount');
-        $expressRate = ArrayHelper::getColumn($query,'expressRate');
-        $maxTotal = max($totalCount);
-        $maxRate = max($expressRate);
-        $minTotal = min($totalCount);
-        $minRate = min($expressRate);
-        $deltaTotal = $maxTotal - $minTotal;
-        $deltaRate = $maxRate - $minRate;
-        foreach ($query as &$item) {
-            $item['standardTotalCount'] = ($item['totalCount'] - $minTotal) / $deltaTotal;
-            $item['standardExpressRate'] = ($item['expressRate'] - $minRate) / $deltaRate;
-        }
         return $query;
     }
 
