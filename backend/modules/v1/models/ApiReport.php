@@ -905,6 +905,13 @@ class ApiReport
             ':endDate' => $endDate,
             ':dateFlag' => $dateFlag
         ])->queryAll();
+        $totalCount = ArrayHelper::getColumn($query,'totalCount');
+        $maxTotal = max($totalCount);
+        $minTotal = min($totalCount);
+        $delta = $maxTotal - $minTotal;
+        foreach ($query as &$item) {
+            $item['totalCount'] = ($item['totalCount'] - $minTotal) / $delta;
+        }
         return $query;
     }
 
