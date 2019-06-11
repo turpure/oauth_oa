@@ -435,4 +435,62 @@ class SchedulerController extends Controller
         }
     }
 
+    /** 海外仓备货
+     * Date: 2019-06-14 16:54
+     * Author: henry
+     * @throws \yii\db\Exception
+     */
+    public function actionOverseasReplenish(){
+        $step = 400;
+        try{
+            //清空数据表
+            Yii::$app->db->createCommand("TRUNCATE TABLE cache_overseasReplenish;")->execute();
+
+            //插入UK虚拟仓补货数据
+            $ukVirtualList = Yii::$app->py_db->createCommand("EXEC oauth_ukVirtualReplenish;")->queryAll();
+            $max = ceil(count($ukVirtualList)/$step);
+            for ($i = 0; $i < $max; $i++){
+                Yii::$app->db->createCommand()->batchInsert('cache_overseasReplenish',
+                    [
+                        'SKU', 'SKUName', 'goodsCode', 'salerName', 'goodsStatus', 'purchaser', 'supplierName',
+                        'saleNum3days', 'saleNum7days', 'saleNum15days', 'saleNum30days', 'trend', 'saleNumDailyAve', 'hopeUseNum',
+                        'amount', 'totalHopeUN', 'hopeSaleDays', 'purchaseNum', 'price', 'purCost', 'type'
+                    ],
+                    array_slice($ukVirtualList,$i*$step, $step))->execute();
+            }
+
+            //插入AU真仓补货数据
+            $auRealList = Yii::$app->py_db->createCommand("EXEC oauth_auRealReplenish")->queryAll();
+            $max = ceil(count($auRealList)/$step);
+            for ($i = 0; $i < $max; $i++){
+                Yii::$app->db->createCommand()->batchInsert('cache_overseasReplenish',
+                    [
+                        'SKU', 'SKUName', 'goodsCode', 'salerName', 'goodsStatus', 'price', 'weight', 'purchaser', 'supplierName',
+                        'saleNum3days', 'saleNum7days', 'saleNum15days', 'saleNum30days', 'trend', 'saleNumDailyAve', '399HopeUseNum',
+                        'uHopeUseNum', 'totalHopeUseNum', 'uHopeSaleDays', 'hopeSaleDays', 'purchaseNum', 'shipNum', 'purCost', 'shipWeight', 'type'
+                    ],
+                    array_slice($auRealList,$i*$step, $step))->execute();
+            }
+
+            //插入UK真仓补货数据
+            $ukRealList = Yii::$app->py_db->createCommand("EXEC oauth_ukRealReplenish")->queryAll();
+            $max = ceil(count($ukRealList)/$step);
+            for ($i = 0; $i < $max; $i++){
+                Yii::$app->db->createCommand()->batchInsert('cache_overseasReplenish',
+                    [
+                        'SKU', 'SKUName', 'goodsCode', 'salerName', 'goodsStatus', 'price', 'weight', 'purchaser', 'supplierName',
+                        'saleNum3days', 'saleNum7days', 'saleNum15days', 'saleNum30days', 'trend', 'saleNumDailyAve', '399HopeUseNum',
+                        'uHopeUseNum', 'totalHopeUseNum', 'uHopeSaleDays', 'hopeSaleDays', 'purchaseNum', 'shipNum', 'purCost', 'shipWeight', 'type'
+                    ],
+                    array_slice($ukRealList,$i*$step, $step))->execute();
+            }
+
+            echo date('Y-m-d H:i:s')." Get overseas replenish data successful!\n";
+        }catch (\Exception $e){
+            echo date('Y-m-d H:i:s')." Get overseas replenish data failed!\n";
+            //echo $e->getMessage();
+        }
+
+    }
+
 }
