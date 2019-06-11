@@ -9,6 +9,7 @@ namespace backend\modules\v1\models;
 
 use backend\modules\v1\utils\Handler;
 use backend\modules\v1\utils\Helper;
+use backend\modules\v1\utils\ExportTools;
 use backend\models\CacheExpress;
 use backend\models\TaskJoomTracking;
 use yii\data\ActiveDataProvider;
@@ -589,24 +590,25 @@ class ApiTinyTool
      * @brief 上传joom单号
      * @param $file
      * @throws \Exception
+     * @return array
      */
     public static function uploadJoomTracking($file)
     {
         $path = Helper::file($file);
         $extension = explode('.', $file['name']);
         $extension = end($extension);
-        if ($extension !== 'xlsx') {
+        if (strtolower($extension) !== 'xlsx') {
             throw new \Exception('请上传xlsx文件！');
         }
         $data = Helper::readExcel($path);
         $taskJoomTracking = new TaskJoomTracking();
         $creator = Yii::$app->user->identity->username;
-        $creatDate = date('Y-m-d H:i:s');
+        $createDate = date('Y-m-d H:i:s');
         foreach ($data as $row) {
             $task = clone $taskJoomTracking;
             $row['creator'] = $creator;
-            $row['createDate'] = $creatDate;
-            $row['updateDate'] = $creatDate;
+            $row['createDate'] = $createDate;
+            $row['updateDate'] = $createDate;
             $row['isDone'] = 0;
             $task->setAttributes($row,false);
             if(!$task->save()) {
@@ -614,6 +616,18 @@ class ApiTinyTool
             }
         }
         return ['上传成功'];
+    }
+
+    /**
+     * @brief 下载物流单号模板
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public static function downLoadJoomTrackingTemplate()
+    {
+        $data = [['订单编号' =>'', '物流单号' => '', '承运商名称' => '', '是否合并单号(1代表合并订单，0代表非合并订单)' => '']];
+        $fileName = 'JoomTrackingTemplate';
+        ExportTools::toExcelOrCsv($fileName, $data=$data, $type='Xlsx');
     }
 
 

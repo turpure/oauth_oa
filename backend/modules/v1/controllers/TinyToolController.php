@@ -737,6 +737,11 @@ class TinyToolController extends AdminController
        }
     }
 
+    public function actionDownJoomTrackingTemplate()
+    {
+        ApiTinyTool::downLoadJoomTrackingTemplate();
+    }
+
 
     /* public function actionEbayCompPerform()
    {
