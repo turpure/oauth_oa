@@ -597,7 +597,7 @@ class ApiTinyTool
         $path = Helper::file($file);
         $extension = explode('.', $file['name']);
         $extension = end($extension);
-        if ($extension !== 'xlsx') {
+        if (strtolower($extension) !== 'xlsx') {
             throw new \Exception('请上传xlsx文件！');
         }
         $data = Helper::readExcel($path);
