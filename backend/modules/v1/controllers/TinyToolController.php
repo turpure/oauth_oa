@@ -731,6 +731,11 @@ class TinyToolController extends AdminController
        }
     }
 
+    public function actionDownJoomTrackingTemplate()
+    {
+        ApiTinyTool::downLoadJoomTrackingTemplate();
+    }
+
 
 
 }
