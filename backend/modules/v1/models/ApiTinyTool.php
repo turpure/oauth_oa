@@ -8,8 +8,9 @@
 namespace backend\modules\v1\models;
 
 use backend\modules\v1\utils\Handler;
+use backend\modules\v1\utils\Helper;
 use backend\models\CacheExpress;
-use mdm\admin\models\Store;
+use backend\models\TaskJoomTracking;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\db\Exception;
@@ -582,4 +583,38 @@ class ApiTinyTool
             ];
         }
     }
+
+
+    /**
+     * @brief 上传joom单号
+     * @param $file
+     * @throws \Exception
+     */
+    public static function uploadJoomTracking($file)
+    {
+        $path = Helper::file($file);
+        $extension = explode('.', $file['name']);
+        $extension = end($extension);
+        if ($extension !== 'xlsx') {
+            throw new \Exception('请上传xlsx文件！');
+        }
+        $data = Helper::readExcel($path);
+        $taskJoomTracking = new TaskJoomTracking();
+        $creator = Yii::$app->user->identity->username;
+        $creatDate = date('Y-m-d H:i:s');
+        foreach ($data as $row) {
+            $task = clone $taskJoomTracking;
+            $row['creator'] = $creator;
+            $row['createDate'] = $creatDate;
+            $row['updateDate'] = $creatDate;
+            $row['isDone'] = 0;
+            $task->setAttributes($row,false);
+            if(!$task->save()) {
+                throw new \Exception('上传失败！', $code='400');
+            }
+        }
+        return ['上传成功'];
+    }
+
+
 }
