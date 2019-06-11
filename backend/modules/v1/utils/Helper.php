@@ -6,6 +6,9 @@
  */
 
 namespace backend\modules\v1\utils;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Yii;
 
 
 class Helper
@@ -128,6 +131,43 @@ class Helper
             }
         }
         return $query;
+    }
+
+
+    /**
+     * @brief 上传文件
+     * @param $file
+     * @return bool|string
+     */
+    public static function file($file)
+    {
+        $file_name = mt_rand(9000, 10000) . iconv('utf-8', 'GBK',$file['name']);
+        $savePath = '/uploads/'  . date('Ymd');
+        $model_path = Yii::$app->basePath . '/uploads/';
+        $path = Yii::$app->basePath . $savePath . '/';
+        if (!file_exists($model_path)) mkdir($model_path, 0777);
+        if (!file_exists($path)) mkdir($path, 0777);
+        $targetFile = str_replace('//', '/', $path) . $file_name;
+        if (!move_uploaded_file($file['tmp_name'], $targetFile)) return false;
+        return Yii::$app->basePath. '/' . $savePath . '/' . $file_name;
+    }
+
+    public static function readExcel($path)
+    {
+        $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
+        $reader->setReadDataOnly(TRUE);
+        $spreadsheet = $reader->load($path);
+        $worksheet = $spreadsheet->getActiveSheet();
+        $highestRow = $worksheet->getHighestRow(); // 取得总行数
+        $ret = [];
+        for ($row = 2; $row <= $highestRow; $row++) {
+            $ele['tradeNid'] = (int)$worksheet->getCell('A'. $row)->getValue();
+            $ele['trackNumber'] = (string)$worksheet->getCell('B'. $row)->getValue();
+            $ele['expressName'] = (string)$worksheet->getCell('C'. $row)->getValue();
+            $ele['isMerged'] = (int)$worksheet->getCell('D'. $row)->getValue();
+            $ret[] = $ele;
+        }
+        return $ret;
     }
 
 }

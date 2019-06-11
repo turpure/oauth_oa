@@ -709,8 +709,26 @@ class TinyToolController extends AdminController
                 break;
         }
         $data = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
-
         ExportTools::toExcelOrCsv($name, $data, 'Xls');
+    }
+
+    /**
+     * @brief 上传joom单号
+     * @return array
+     * @throws \Exception
+     */
+    public function actionUploadJoomTracking()
+    {
+        try {
+            $file = $_FILES['file'];
+            if (!$file) {
+                return ['code' => 400, 'message' => 'The file can not be empty!'];
+            }
+            return ApiTinyTool::uploadJoomTracking($file);
+        }
+       catch (\Exception $why) {
+            return ['code' => $why->getCode(),  'message' => $why->getMessage()];
+       }
     }
 
 
