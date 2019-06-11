@@ -630,13 +630,13 @@ class ReportController extends AdminController
                 $headers = ['refMonth', 'suffix','salesman', 'goodsName', 'goodsCode', 'goodsSku',
                     'tradeId', 'orderId', 'mergeBillId', 'storeName', 'refund','refundZn', 'refundTime','orderTime',
                     'orderCountry','platform','expressWay'];
-                $data = $this->actionRefund()->getModels();
+                $data = $this->actionRefund()['provider']->getModels();
                 break;
             case 'goods'://退款产品明细下载
                 $fileName = 'refundGoodsData';
                 $title = ['账号简称','销售员', '商品名称', '商品编码', 'SKU', '退款次数'];
                 $headers = ['suffix','salesman', 'goodsName', 'goodsCode', 'goodsSku', 'times'];
-                $data = $this->actionRefund()->getModels();
+                $data = $this->actionRefund()['provider']->getModels();
                 break;
             case 'extra'://杂费明细下载
                 $fileName = 'extraFeeData';

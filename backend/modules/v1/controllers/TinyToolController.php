@@ -602,7 +602,7 @@ class TinyToolController extends AdminController
                     'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
                 ],
             ]);
-            return ['provider' => $provider, 'extra' => ['totalPurCost' => $totalPurCost,'totalShipWeight' => $totalShipWeight]];
+            return ['provider' => $provider, 'extra' => ['totalPurCost' => $totalPurCost, 'totalShipWeight' => $totalShipWeight]];
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
@@ -638,7 +638,7 @@ class TinyToolController extends AdminController
                     'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
                 ],
             ]);
-            return ['provider' => $provider, 'extra' => ['totalPurCost' => $totalPurCost,'totalShipWeight' => $totalShipWeight]];
+            return ['provider' => $provider, 'extra' => ['totalPurCost' => $totalPurCost, 'totalShipWeight' => $totalShipWeight]];
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
@@ -660,7 +660,7 @@ class TinyToolController extends AdminController
         }
         $cond = $request->post()['condition'];
 
-        switch($cond['type']){
+        switch ($cond['type']) {
             case 'uk':
                 $name = 'ukVirtualReplenish';
                 $sql = "EXEC oauth_ukVirtualReplenish @sku=:sku,@salerName=:salerName,@purchaser=:purchaser,@trend=:trend,@isPurchaser=:isPurchaser;";
@@ -713,6 +713,32 @@ class TinyToolController extends AdminController
         ExportTools::toExcelOrCsv($name, $data, 'Xls');
     }
 
+
+    /* public function actionEbayCompPerform()
+   {
+       $request = Yii::$app->request;
+       if (!$request->isPost) {
+           return [];
+       }
+       $cond = $request->post()['condition'];
+
+       $sql = "EXEC oauth_ebayCompetitorPerformance @dateFlag=:dateFlag,@beginDate=:beginDate,@endDate=:endDate;";
+       $params = [
+           ':dateFlag' => $cond['dateFlag'],
+           ':beginDate' => $cond['beginDate'],
+           ':endDate' => $cond['endDate'],
+       ];
+       return Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+   }
+
+   public function actionEbay(){
+       $request = Yii::$app->request;
+       if(!$request->isPost){
+           return [];
+       }
+       $sql = "SELECT * FROM proCenter.oa_goodsinfo WHERE goodsCode='8G0006'";
+       return Yii::$app->db->createCommand($sql)->queryAll();
+   }*/
 
 
 }
