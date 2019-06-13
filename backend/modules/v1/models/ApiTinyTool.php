@@ -631,4 +631,23 @@ class ApiTinyTool
     }
 
 
+    public static function getTaskJoomTracking($condition)
+    {
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $fieldsFilter = ['like' =>['creator', 'tradeNid', 'trackNumber', 'expressName'], 'equal' => ['isDone']];
+        $timeFilter = ['createDate', 'updateDate'];
+        $query = TaskJoomTracking::find();
+        $query = Helper::generateFilter($query,$fieldsFilter,$condition);
+        $query = Helper::timeFilter($query,$timeFilter,$condition);
+        $query->orderBy('id DESC');
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
+    }
+
+
 }

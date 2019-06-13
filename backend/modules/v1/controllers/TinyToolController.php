@@ -9,7 +9,6 @@ namespace backend\modules\v1\controllers;
 
 
 use backend\modules\v1\models\ApiAu;
-use backend\modules\v1\models\ApiGoodsinfo;
 use backend\modules\v1\models\ApiTinyTool;
 use backend\modules\v1\models\ApiUk;
 use backend\modules\v1\models\ApiUkFic;
@@ -737,10 +736,28 @@ class TinyToolController extends AdminController
        }
     }
 
+    /**
+     * @brief 下载joom单号模板
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
     public function actionDownJoomTrackingTemplate()
     {
         ApiTinyTool::downLoadJoomTrackingTemplate();
     }
+
+    public function actionJoomTrackingLog()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiTinyTool::getTaskJoomTracking($condition);
+        }
+
+        catch (\Exception  $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+    }
+    }
+
 
 
     /* public function actionEbayCompPerform()
