@@ -493,4 +493,47 @@ class SchedulerController extends Controller
 
     }
 
+    /** 库存情况
+     * Date: 2019-06-14 16:54
+     * Author: henry
+     * @throws \yii\db\Exception
+     */
+    public function actionStockStatus(){
+        $step = 100;
+        try{
+            //插入库存预警数据
+            Yii::$app->db->createCommand("TRUNCATE TABLE cache_stockWaringTmpData;")->execute();
+
+            $stockList = Yii::$app->py_db->createCommand("EXEC oauth_stockStatus 1;")->queryAll();
+            $max = ceil(count($stockList)/$step);
+            for ($i = 0; $i < $max; $i++){
+                Yii::$app->db->createCommand()->batchInsert('cache_stockWaringTmpData',
+                    [
+                        'sku', 'storeName', 'goodsStatus', 'salerName', 'costPrice', 'useNum', 'costmoney',
+                        'notInStore', 'notInCostmoney', 'hopeUseNum', 'totalCostmoney'
+                    ],
+                    array_slice($stockList,$i*$step, $step))->execute();
+            }
+
+            //插入30天销售数据
+            Yii::$app->db->createCommand("TRUNCATE TABLE cache_30DayOrderTmpData;")->execute();
+
+            $saleList = Yii::$app->py_db->createCommand("EXEC oauth_stockStatus")->queryAll();
+            $max = ceil(count($saleList)/$step);
+            for ($i = 0; $i < $max; $i++){
+                Yii::$app->db->createCommand()->batchInsert('cache_30DayOrderTmpData',
+                    [
+                        'sku','salerName', 'storeName', 'goodsStatus', 'costMoney',
+                    ],
+                    array_slice($saleList,$i*$step, $step))->execute();
+            }
+
+            echo date('Y-m-d H:i:s')." Get stock status data successful!\n";
+        }catch (\Exception $e){
+            echo date('Y-m-d H:i:s')." Get stock status data failed!\n";
+            //echo $e->getMessage();
+        }
+
+    }
+
 }
