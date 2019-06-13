@@ -9,6 +9,7 @@ namespace backend\modules\v1\models;
 
 use Yii;
 use yii\data\ArrayDataProvider;
+use yii\data\SqlDataProvider;
 use yii\db\ActiveQuery;
 use yii\db\Query;
 use yii\helpers\ArrayHelper;
@@ -955,27 +956,31 @@ class ApiReport
     /**
      * @brief 获取开发产品利润
      * @param $condition
-     * @return ActiveDataProvider
+     * @return ArrayDataProvider
+     * @throws \Exception
      */
     public static function getDevGoodsProfit($condition)
     {
 
         $developer = $condition['developer'];
         $goodsStatus = $condition['goodsStatus'];
-        $dateRange = $condition['dateRange'];
+        list($beginDate, $endDate) = $condition['dateRange'];
         $dateFlag = $condition['dateType'];
-        $sortField = isset($condition['sortField']) ? $condition['sortField'] : 'id';
-        $sortOrder = isset($condition['sortOrder']) ? $condition['sortOrder'] : 'desc';
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-        $query = (new yii\db\Query())
-            ->select('*')->from('cache_devGoodsProfit')
-            ->where(['in','developer',$developer])
-            ->andWhere(['in','goodsStatus', $goodsStatus])
-            ->andWhere(['between','date_format(orderTime,"%Y-%m-%d")',$dateRange[0], $dateRange[1]])
-            ->andWhere(['dateFlag' => $dateFlag]);
-        $query->orderBy($sortField . ' ' . $sortOrder);
-        $provider = new ActiveDataProvider([
-            'query' => $query,
+        $sql = 'call report_devGoodsProfitAPI (:developer,:goodsStatus, :beginDate, :endDate, :dateFlag) ';
+        $params = [':developer' => implode(',', $developer), ':goodsStatus' => implode(',', $goodsStatus),
+            ':beginDate' => $beginDate, ':endDate' => $endDate, ':dateFlag' => (int)$dateFlag ];
+        $query = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
+        $provider = new ArrayDataProvider([
+            'allModels' => $query,
+            'sort' => ['attributes' =>
+                [
+                    'developer','goodsCode', 'devDate', 'goodsStatus',
+                    'sold','amt','profit','rate','ebaySold','ebayProfit',
+                    'wishSold','wishProfit','smtSold','smtProfit',
+                    'joomSold','joomProfit','amazonSold','amazonProfit'
+                ]
+            ],
             'pagination' => [
                 'pageSize' => $pageSize,
             ],
