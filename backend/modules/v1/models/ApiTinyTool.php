@@ -529,7 +529,7 @@ class ApiTinyTool
             //判断数据表数据是不是最新数据
             $date = Yii::$app->py_db->createCommand("SELECT DISTINCT updateDate FROM ibay365_eBayOversea_quantity_online")->queryOne();
             if(!$date || strtotime(date('Y-m-d H:i:s')) >= strtotime(date('Y-m-d').' 14:30:00')
-                        && substr($date['updateDate'],0,10) != date('Y-m-d', strtotime('-1 day'))
+                        && substr($date['updateDate'],0,10) == date('Y-m-d', strtotime('-1 day'))
                       || strtotime(substr($date['updateDate'],0,10)) <=  strtotime(date('Y-m-d', strtotime('-2 day'))) ){
 
                 //执行存错过程

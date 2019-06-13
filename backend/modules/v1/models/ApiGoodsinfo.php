@@ -279,8 +279,18 @@ class ApiGoodsinfo
                 }
                 // 同步信息 到wishGoods，wishGoodsSku，ebayGoods，ebayGoodsSku
                 ProductCenterTools::saveAttributeToPlat($id);
+                //判断是否需要美工做图
+                $skuList = OaGoodsSku::findAll(['infoId' => $id]);
+                $skuArrNew = ArrayHelper::getColumn($skuList, 'linkUrl');
+                $flag = 0;//不需要重新做图
+                foreach ($skuArrNew as $v){
+                    if(!$v) {
+                        $flag = 1;//需要重新做图
+                        break;
+                    }
+                }
                 $goodsInfo->achieveStatus = '已完善';
-                if (empty($goodsInfo->picStatus)) {
+                if (empty($goodsInfo->picStatus) || $flag == 1) {
                     $goodsInfo->picStatus = '待处理';
                 }
                 if (!$goodsInfo->save()) {

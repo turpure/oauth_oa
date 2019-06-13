@@ -546,16 +546,18 @@ class TinyToolController extends AdminController
     {
         $request = Yii::$app->request->post();
         $cond = $request['condition'];
-        $sql = "EXEC oauth_ukVirtualReplenish @sku=:sku,@salerName=:salerName,@purchaser=:purchaser,@trend=:trend,@isPurchaser=:isPurchaser;";
-        $params = [
-            ':sku' => $cond['sku'],
-            ':salerName' => $cond['salerName'],
-            ':purchaser' => $cond['purchaser'],
-            ':trend' => $cond['trend'],
-            ':isPurchaser' => $cond['isPurchaser'],
-        ];
         try {
-            $data = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+            $sql = "SELECT SKU, SKUName, goodsCode, salerName, goodsStatus, purchaser, supplierName,
+                        saleNum3days, saleNum7days, saleNum15days, saleNum30days, trend, saleNumDailyAve, hopeUseNum,
+                        amount, totalHopeUN, hopeSaleDays, purchaseNum, price, purCost 
+                    FROM cache_overseasReplenish WHERE type='UK虚拟仓'";
+            if(isset($cond['sku']) && $cond['sku']) $sql .= " AND SKU LIKE '%{$cond['sku']}%'";
+            if(isset($cond['salerName']) && $cond['salerName']) $sql .= " AND SKU LIKE '%{$cond['salerName']}%'";
+            if(isset($cond['purchaser']) && $cond['purchaser']) $sql .= " AND SKU LIKE '%{$cond['purchaser']}%'";
+            if(isset($cond['trend']) && $cond['trend']) $sql .= " AND SKU LIKE '%{$cond['trend']}%'";
+            if(isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
+            if(isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
+            $data = Yii::$app->db->createCommand($sql)->queryAll();
             $totalPurCost = array_sum(ArrayHelper::getColumn($data, 'purCost'));
 
             $provider = new ArrayDataProvider([
@@ -580,18 +582,20 @@ class TinyToolController extends AdminController
     {
         $request = Yii::$app->request->post();
         $cond = $request['condition'];
-        $sql = "EXEC oauth_auRealReplenish @sku=:sku,@salerName=:salerName,@purchaser=:purchaser,
-        @trend=:trend,@isPurchaser=:isPurchaser,@isShipping=:isShipping;";
-        $params = [
-            ':sku' => $cond['sku'],
-            ':salerName' => $cond['salerName'],
-            ':purchaser' => $cond['purchaser'],
-            ':trend' => $cond['trend'],
-            ':isPurchaser' => $cond['isPurchaser'],
-            ':isShipping' => $cond['isShipping'],
-        ];
         try {
-            $data = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+            $sql = "SELECT SKU, SKUName, goodsCode, salerName, goodsStatus, price, weight, purchaser, supplierName,
+                        saleNum3days, saleNum7days, saleNum15days, saleNum30days, trend, saleNumDailyAve, 399HopeUseNum,
+                        uHopeUseNum, totalHopeUseNum, uHopeSaleDays, hopeSaleDays, purchaseNum, shipNum, purCost, shipWeight 
+                    FROM cache_overseasReplenish WHERE type='AU真仓'";
+            if(isset($cond['sku']) && $cond['sku']) $sql .= " AND SKU LIKE '%{$cond['sku']}%'";
+            if(isset($cond['salerName']) && $cond['salerName']) $sql .= " AND SKU LIKE '%{$cond['salerName']}%'";
+            if(isset($cond['purchaser']) && $cond['purchaser']) $sql .= " AND SKU LIKE '%{$cond['purchaser']}%'";
+            if(isset($cond['trend']) && $cond['trend']) $sql .= " AND SKU LIKE '%{$cond['trend']}%'";
+            if(isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
+            if(isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
+            if(isset($cond['isShipping']) && $cond['isShipping'] == '是') $sql .= " AND shipNum>0 ";
+            if(isset($cond['isShipping']) && $cond['isShipping'] == '否') $sql .= " AND shipNum=0 ";
+            $data = Yii::$app->db->createCommand($sql)->queryAll();
             $totalPurCost = array_sum(ArrayHelper::getColumn($data, 'purCost'));
             $totalShipWeight = array_sum(ArrayHelper::getColumn($data, 'shipWeight'));
 
@@ -601,7 +605,7 @@ class TinyToolController extends AdminController
                     'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
                 ],
             ]);
-            return ['provider' => $provider, 'extra' => ['totalPurCost' => $totalPurCost,'totalShipWeight' => $totalShipWeight]];
+            return ['provider' => $provider, 'extra' => ['totalPurCost' => $totalPurCost, 'totalShipWeight' => $totalShipWeight]];
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
@@ -616,18 +620,20 @@ class TinyToolController extends AdminController
     {
         $request = Yii::$app->request->post();
         $cond = $request['condition'];
-        $sql = "EXEC oauth_ukRealReplenish @sku=:sku,@salerName=:salerName,@purchaser=:purchaser,
-        @trend=:trend,@isPurchaser=:isPurchaser,@isShipping=:isShipping;";
-        $params = [
-            ':sku' => $cond['sku'],
-            ':salerName' => $cond['salerName'],
-            ':purchaser' => $cond['purchaser'],
-            ':trend' => $cond['trend'],
-            ':isPurchaser' => $cond['isPurchaser'],
-            ':isShipping' => $cond['isShipping'],
-        ];
         try {
-            $data = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+            $sql = "SELECT SKU, SKUName, goodsCode, salerName, goodsStatus, price, weight, purchaser, supplierName,
+                        saleNum3days, saleNum7days, saleNum15days, saleNum30days, trend, saleNumDailyAve, 399HopeUseNum,
+                        uHopeUseNum, totalHopeUseNum, uHopeSaleDays, hopeSaleDays, purchaseNum, shipNum, purCost, shipWeight 
+                    FROM cache_overseasReplenish WHERE type='UK真仓'";
+            if(isset($cond['sku']) && $cond['sku']) $sql .= " AND SKU LIKE '%{$cond['sku']}%'";
+            if(isset($cond['salerName']) && $cond['salerName']) $sql .= " AND SKU LIKE '%{$cond['salerName']}%'";
+            if(isset($cond['purchaser']) && $cond['purchaser']) $sql .= " AND SKU LIKE '%{$cond['purchaser']}%'";
+            if(isset($cond['trend']) && $cond['trend']) $sql .= " AND SKU LIKE '%{$cond['trend']}%'";
+            if(isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
+            if(isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
+            if(isset($cond['isShipping']) && $cond['isShipping'] == '是') $sql .= " AND shipNum>0 ";
+            if(isset($cond['isShipping']) && $cond['isShipping'] == '否') $sql .= " AND shipNum=0 ";
+            $data = Yii::$app->db->createCommand($sql)->queryAll();
             $totalPurCost = array_sum(ArrayHelper::getColumn($data, 'purCost'));
             $totalShipWeight = array_sum(ArrayHelper::getColumn($data, 'shipWeight'));
 
@@ -637,7 +643,7 @@ class TinyToolController extends AdminController
                     'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
                 ],
             ]);
-            return ['provider' => $provider, 'extra' => ['totalPurCost' => $totalPurCost,'totalShipWeight' => $totalShipWeight]];
+            return ['provider' => $provider, 'extra' => ['totalPurCost' => $totalPurCost, 'totalShipWeight' => $totalShipWeight]];
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
@@ -659,7 +665,7 @@ class TinyToolController extends AdminController
         }
         $cond = $request->post()['condition'];
 
-        switch($cond['type']){
+        switch ($cond['type']) {
             case 'uk':
                 $name = 'ukVirtualReplenish';
                 $sql = "EXEC oauth_ukVirtualReplenish @sku=:sku,@salerName=:salerName,@purchaser=:purchaser,@trend=:trend,@isPurchaser=:isPurchaser;";
@@ -753,6 +759,32 @@ class TinyToolController extends AdminController
     }
 
 
+
+    /* public function actionEbayCompPerform()
+   {
+       $request = Yii::$app->request;
+       if (!$request->isPost) {
+           return [];
+       }
+       $cond = $request->post()['condition'];
+
+       $sql = "EXEC oauth_ebayCompetitorPerformance @dateFlag=:dateFlag,@beginDate=:beginDate,@endDate=:endDate;";
+       $params = [
+           ':dateFlag' => $cond['dateFlag'],
+           ':beginDate' => $cond['beginDate'],
+           ':endDate' => $cond['endDate'],
+       ];
+       return Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+   }
+
+   public function actionEbay(){
+       $request = Yii::$app->request;
+       if(!$request->isPost){
+           return [];
+       }
+       $sql = "SELECT * FROM proCenter.oa_goodsinfo WHERE goodsCode='8G0006'";
+       return Yii::$app->db->createCommand($sql)->queryAll();
+   }*/
 
 
 }
