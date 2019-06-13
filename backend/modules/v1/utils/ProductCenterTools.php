@@ -587,7 +587,7 @@ class ProductCenterTools
                 'joomPrice' => $sku['joomPrice'],
                 'joomShipping' => $sku['joomShipping'],
             ];
-            $wishGoodsSku = OaWishGoodsSku::findOne(['sid' => $sku['id']]);
+            $wishGoodsSku = OaWishGoodsSku::findOne(['sku' => $sku['sku']]);
             if ($wishGoodsSku === null) {
                 $wishGoodsSku = new OaWishGoodsSku();
             }
@@ -705,7 +705,7 @@ class ProductCenterTools
                 'imageUrl' => $sku['linkUrl'],
                 'property' => static::_generateProperty($sku),
             ];
-            $ebayGoodsSku = OaEbayGoodsSku::findOne(['sid' => $sku['id']]);
+            $ebayGoodsSku = OaEbayGoodsSku::findOne(['sku' => $sku['sku']]);
             if ($ebayGoodsSku === null) {
                 $ebayGoodsSku = new OaEbayGoodsSku();
             }

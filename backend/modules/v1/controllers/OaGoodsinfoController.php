@@ -347,7 +347,10 @@ class OaGoodsinfoController extends AdminController
             ApiGoodsinfo::savePictureInfo($condition);
             return ApiGoodsinfo::finishPicture($condition);
         }catch (\Exception $e){
-            return $e->getMessage();
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
         }
 
     }
