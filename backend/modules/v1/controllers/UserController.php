@@ -37,7 +37,6 @@ class UserController extends AdminController
         if ($user = $model->login()) {
             if ($user instanceof IdentityInterface) {
                 return ['access_token'=> $user->access_token];
-//                return $user;
             } else {
                 return $user->errors;
             }
