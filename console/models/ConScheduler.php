@@ -60,14 +60,16 @@ class ConScheduler{
         $saleList = Yii::$app->db->createCommand("SELECT * FROM site_target")->queryAll();
         foreach ($saleList as $v){
             $item = $v;
+            $amt = 0;
             foreach ($profit as $value){
                 if($v['username'] == $value['salesman']){
-                    $item['amt'] += $value['grossprofit'];
+                    $amt += $value['grossprofit'];
                 }
             }
+            $item['amt'] = $amt;
             $item['rate'] = round($item['amt']/$item['target'],4);
             $item['dateRate'] = $dateRate;
-            $item['updateTime'] = date('Y-m-d H:i:s');
+            $item['updateTime'] = $endDate;
 
             $res = Yii::$app->db->createCommand()->update('site_target',$item,['id' => $item['id']])->execute();
             if(!$res){

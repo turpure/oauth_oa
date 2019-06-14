@@ -500,6 +500,7 @@ class SchedulerController extends Controller
      * @throws \yii\db\Exception
      */
     public function actionStockStatus(){
+        $beginTime = time();
         $step = 100;
         try{
             //插入库存预警数据
@@ -511,7 +512,7 @@ class SchedulerController extends Controller
                 Yii::$app->db->createCommand()->batchInsert('cache_stockWaringTmpData',
                     [
                         'sku', 'storeName', 'goodsStatus', 'salerName', 'costPrice', 'useNum', 'costmoney',
-                        'notInStore', 'notInCostmoney', 'hopeUseNum', 'totalCostmoney'
+                        'notInStore', 'notInCostmoney', 'hopeUseNum', 'totalCostmoney', 'updateTime'
                     ],
                     array_slice($stockList,$i*$step, $step))->execute();
             }
@@ -524,14 +525,29 @@ class SchedulerController extends Controller
             for ($i = 0; $i < $max; $i++){
                 Yii::$app->db->createCommand()->batchInsert('cache_30DayOrderTmpData',
                     [
-                        'sku','salerName', 'storeName', 'goodsStatus', 'costMoney',
+                        'sku','salerName', 'storeName', 'goodsStatus', 'costMoney', 'updateTime'
                     ],
                     array_slice($saleList,$i*$step, $step))->execute();
             }
-
-            echo date('Y-m-d H:i:s')." Get stock status data successful!\n";
+            //计算耗时
+            $endTime = time();
+            $diff = $endTime - $beginTime;
+            if($diff >= 3600){
+                $hour = floor($diff/3600);
+                $diff = $diff%3600;
+                $minute = floor($diff/60);
+                $second = $diff%60;
+                $message = "It takes {$hour} hours,{$minute} minutes and {$second} seconds!";
+            }elseif ($diff >= 60){
+                $minute = floor($diff/60);
+                $second = $diff%60;
+                $message = "It takes {$minute} minutes and {$second} seconds!";
+            }else{
+                $message = "It takes {$diff} seconds!";
+            }
+            echo date('Y-m-d H:i:s')." Get stock status data successful! $message\n";
         }catch (\Exception $e){
-            echo date('Y-m-d H:i:s')." Get stock status data failed!\n";
+            echo date('Y-m-d H:i:s')." Get stock status data failed! \n";
             //echo $e->getMessage();
         }
 
@@ -549,6 +565,7 @@ class SchedulerController extends Controller
         $dateRate = round((strtotime($endDate) - strtotime($startDate))/86400/92,4);
         //计算销售数据
         $startDate = date('Y-m-01');
+        $startDate = date('2019-06-01');
         try {
             ConScheduler::getZzTargetData($startDate, $endDate, $dateRate);
             print date('Y-m-d H:i:s') . " INFO:success to update data of target completion!\n";

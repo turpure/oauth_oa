@@ -243,6 +243,146 @@ class DataCenterController extends AdminController
     }
 
 
+    /** 库存情况
+     * Date: 2019-06-14 14:20
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    public function actionStockStatus()
+    {
+        $sql = "SELECT aa.storeName,aa.useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
+                        IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
+                        IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) AS sellDays
+                FROM(
+                        SELECT storeName,
+                        SUM(useNum) AS useNum,
+                        SUM(costmoney) costmoney,
+                        SUM(notInStore) notInStore,
+                        SUM(notInCostmoney) notInCostmoney,
+                        SUM(hopeUseNum) hopeUseNum,
+                        SUM(totalCostmoney) totalCostmoney
+                        FROM `cache_stockWaringTmpData`
+                        GROUP BY storeName
+                ) aa LEFT JOIN 
+                (
+                        SELECT storeName,
+                        SUM(costMoney) AS 30DayCostmoney,
+                        ROUND(SUM(costMoney)/30,4) AS aveCostmoney
+                        FROM `cache_30DayOrderTmpData`
+                        GROUP BY storeName
+                ) bb ON aa.storeName=bb.storeName
+                ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
+        try{
+            return Yii::$app->db->createCommand($sql)->queryAll();
+        }catch (\Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /** 库存情况状态明细
+     * Date: 2019-06-14 15:11
+     * Author: henry
+     * @return array
+     */
+    public function actionStockStatusDetail(){
+        $request = Yii::$app->request;
+        if(!$request->isPost){
+            return [];
+        }
+        $cond = $request->post('condition');
+        if(!isset($cond['storeName']) || !$cond['storeName']){
+            return [];
+        }
+        $sql = "SELECT aa.storeName,aa.goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
+                        IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
+                        IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) AS sellDays
+                FROM(
+                        SELECT storeName,IFNULL(goodsStatus,'无状态') goodsStatus,
+                        SUM(useNum) AS useNum,
+                        SUM(costmoney) costmoney,
+                        SUM(notInStore) notInStore,
+                        SUM(notInCostmoney) notInCostmoney,
+                        SUM(hopeUseNum) hopeUseNum,
+                        SUM(totalCostmoney) totalCostmoney
+                        FROM `cache_stockWaringTmpData`
+                        WHERE storeName = '{$cond['storeName']}'
+                        GROUP BY storeName,IFNULL(goodsStatus,'无状态')
+                ) aa LEFT JOIN 
+                (
+                        SELECT storeName,IFNULL(goodsStatus,'无状态') goodsStatus,
+                        SUM(costMoney) AS 30DayCostmoney,
+                        ROUND(SUM(costMoney)/30,4) AS aveCostmoney
+                        FROM `cache_30DayOrderTmpData`
+                        WHERE storeName = '{$cond['storeName']}'
+                        GROUP BY storeName,IFNULL(goodsStatus,'无状态')
+                ) bb ON aa.storeName=bb.storeName AND IFNULL(aa.goodsStatus,'无状态')=IFNULL(bb.goodsStatus,'无状态')
+                ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
+        try{
+            $data = Yii::$app->db->createCommand($sql)->queryAll();
+            return $data;
+        }catch (\Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /** 库存情况开发明细
+     * Date: 2019-06-14 15:11
+     * Author: henry
+     * @return array
+     */
+    public function actionStockDeveloperDetail(){
+        $request = Yii::$app->request;
+        if(!$request->isPost){
+            return [];
+        }
+        $cond = $request->post('condition');
+        if(!isset($cond['storeName']) || !$cond['storeName']){
+            return [];
+        }
+        $sql = "SELECT aa.storeName,aa.salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
+                        IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
+                        IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) AS sellDays
+                FROM(
+                        SELECT storeName,
+                        CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END AS salerName,
+                        SUM(useNum) AS useNum,
+                        SUM(costmoney) costmoney,
+                        SUM(notInStore) notInStore,
+                        SUM(notInCostmoney) notInCostmoney,
+                        SUM(hopeUseNum) hopeUseNum,
+                        SUM(totalCostmoney) totalCostmoney
+                        FROM `cache_stockWaringTmpData`
+                        WHERE storeName = '{$cond['storeName']}'
+                        GROUP BY storeName,CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END
+                ) aa LEFT JOIN 
+                (
+                        SELECT storeName,
+                        CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END AS salerName,
+                        SUM(costMoney) AS 30DayCostmoney,
+                        ROUND(SUM(costMoney)/30,4) AS aveCostmoney
+                        FROM `cache_30DayOrderTmpData`
+                        WHERE storeName = '{$cond['storeName']}'
+                        GROUP BY storeName,CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END
+                ) bb ON aa.storeName=bb.storeName AND IFNULL(aa.salerName,'无人')=IFNULL(bb.salerName,'无人')
+                ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
+        try{
+            return Yii::$app->db->createCommand($sql)->queryAll();
+        }catch (\Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+
 
     /**
      * Date: 2019-03-04 13:12

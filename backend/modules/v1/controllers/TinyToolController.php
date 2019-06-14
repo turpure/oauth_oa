@@ -760,31 +760,4 @@ class TinyToolController extends AdminController
 
 
 
-    /* public function actionEbayCompPerform()
-   {
-       $request = Yii::$app->request;
-       if (!$request->isPost) {
-           return [];
-       }
-       $cond = $request->post()['condition'];
-
-       $sql = "EXEC oauth_ebayCompetitorPerformance @dateFlag=:dateFlag,@beginDate=:beginDate,@endDate=:endDate;";
-       $params = [
-           ':dateFlag' => $cond['dateFlag'],
-           ':beginDate' => $cond['beginDate'],
-           ':endDate' => $cond['endDate'],
-       ];
-       return Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
-   }
-
-   public function actionEbay(){
-       $request = Yii::$app->request;
-       if(!$request->isPost){
-           return [];
-       }
-       $sql = "SELECT * FROM proCenter.oa_goodsinfo WHERE goodsCode='8G0006'";
-       return Yii::$app->db->createCommand($sql)->queryAll();
-   }*/
-
-
 }
