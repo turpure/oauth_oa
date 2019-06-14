@@ -8,6 +8,7 @@
 namespace console\controllers;
 
 use backend\models\OaGoodsinfo;
+use console\models\ConScheduler;
 use yii\console\Controller;
 
 use Yii;
@@ -535,5 +536,26 @@ class SchedulerController extends Controller
         }
 
     }
+
+
+    /**
+     * @brief 更新主页各人员目标完成度
+     */
+    public function actionZzTarget()
+    {
+        $startDate = '2019-05-31';
+        $endDate =  date('Y-m-d',strtotime('-1 day'));
+        //计算时间进度
+        $dateRate = round((strtotime($endDate) - strtotime($startDate))/86400/92,4);
+        //计算销售数据
+        $startDate = date('Y-m-01');
+        try {
+            ConScheduler::getZzTargetData($startDate, $endDate, $dateRate);
+            print date('Y-m-d H:i:s') . " INFO:success to update data of target completion!\n";
+        } catch (\Exception $why) {
+            print date('Y-m-d H:i:s') . " INFO:fail to update data of target completion cause of $why \n";
+        }
+    }
+
 
 }

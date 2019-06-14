@@ -507,6 +507,26 @@ class SiteController extends AdminController
         return $query;
     }
 
+//==================================================================
+
+    /**
+     * 郑州6-8月销售目标完成度
+     * Date: 2019-06-14 18:38
+     * Author: henry
+     * @return mixed
+     * @throws \yii\db\Exception
+     */
+    public function actionZzTarget()
+    {
+        $plat = \Yii::$app->request->get('plat','eBay');
+        $sql = "SELECT * FROM site_target
+                WHERE  plat = '{$plat}'
+                ORDER BY rate DESC";
+        $query = \Yii::$app->db->createCommand($sql)->queryAll();
+        return $query;
+    }
+
+
 
 
 }
