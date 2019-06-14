@@ -2,7 +2,7 @@
 return [
     'adminEmail' => 'admin@example.com',
     // token 有效期默认1天
-    'user.apiTokenExpire' => 2*24*3600,
+    'user.apiTokenExpire' => 7*24*3600,
 //    'user.apiTokenExpire' => 1*60,
 
 //=========================================================================
