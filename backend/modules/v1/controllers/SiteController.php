@@ -180,24 +180,22 @@ class SiteController extends AdminController
         $salesRet = $db->createCommand($salesCheck,[':position'=>'销售'])->queryOne();
         if(!empty($salesRet)) {
             if(strpos($salesRet['department'],'郑州分部') !==false) {
-                $ret[] = ['label'=>'郑州销售','name'=>'zhengzhou'];
-                $ret[] = ['label'=>'所有部门','name'=>'depart'];
+                $ret[] = ['label'=>'销售排名','name'=>'ranking'];
+                $ret[] = ['label'=>'利润增长表','name'=>'profit'];
+                $ret[] = ['label'=>'销售额增长表','name'=>'sale'];
+                $ret[] = ['label'=>'郑州分部魔表完成度','name'=>'target'];
             }
             else {
-               $ret[] = ['label'=>'上海销售','name'=>'shanghai'];
-               $ret[] = ['label'=>'所有部门','name'=>'depart'];
+                $ret[] = ['label'=>'销售排名','name'=>'ranking'];
+                $ret[] = ['label'=>'利润增长表','name'=>'profit'];
+                $ret[] = ['label'=>'销售额增长表','name'=>'sale'];
             }
+        }else {
+            $ret[] = ['label'=>'销售排名','name'=>'ranking'];
+            $ret[] = ['label'=>'利润增长表','name'=>'profit'];
+            $ret[] = ['label'=>'销售额增长表','name'=>'sale'];
+            $ret[] = ['label'=>'郑州分部魔表完成度','name'=>'target'];
         }
-        $devRet = $db->createCommand($salesCheck,[':position'=>'开发'])->queryOne();
-        if(!empty($devRet)) {
-            $ret[] = ['label'=>'所有开发','name'=>'developer'];
-        }
-        else {
-            $ret[] = ['label'=>'上海销售','name'=>'shanghai'];
-            $ret[] = ['label'=>'郑州销售','name'=>'zhengzhou'];
-            $ret[] = ['label'=>'所有部门','name'=>'depart'];
-            $ret[] = ['label'=>'所有开发','name'=>'developer'];
-            }
         return Helper::arrayUnique($ret);
     }
 
