@@ -67,7 +67,6 @@ class RestLoginForm extends Model
     {
         if ($this->validate()) {
             // 登录就生成新token
-            $this->_user->generateApiToken();
             $this->trigger(self::GET_API_TOKEN);
             return $this->_user;
         } else {
