@@ -558,9 +558,9 @@ class TinyToolController extends AdminController
                         amount, totalHopeUN, hopeSaleDays, purchaseNum, price, purCost 
                     FROM cache_overseasReplenish WHERE type='UK虚拟仓'";
             if(isset($cond['sku']) && $cond['sku']) $sql .= " AND SKU LIKE '%{$cond['sku']}%'";
-            if(isset($cond['salerName']) && $cond['salerName']) $sql .= " AND SKU LIKE '%{$cond['salerName']}%'";
-            if(isset($cond['purchaser']) && $cond['purchaser']) $sql .= " AND SKU LIKE '%{$cond['purchaser']}%'";
-            if(isset($cond['trend']) && $cond['trend']) $sql .= " AND SKU LIKE '%{$cond['trend']}%'";
+            if(isset($cond['salerName']) && $cond['salerName']) $sql .= " AND salerName LIKE '%{$cond['salerName']}%'";
+            if(isset($cond['purchaser']) && $cond['purchaser']) $sql .= " AND purchaser LIKE '%{$cond['purchaser']}%'";
+            if(isset($cond['trend']) && $cond['trend']) $sql .= " AND trend LIKE '%{$cond['trend']}%'";
             if(isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
             if(isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
             $data = Yii::$app->db->createCommand($sql)->queryAll();
@@ -594,9 +594,9 @@ class TinyToolController extends AdminController
                         uHopeUseNum, totalHopeUseNum, uHopeSaleDays, hopeSaleDays, purchaseNum, shipNum, purCost, shipWeight 
                     FROM cache_overseasReplenish WHERE type='AU真仓'";
             if(isset($cond['sku']) && $cond['sku']) $sql .= " AND SKU LIKE '%{$cond['sku']}%'";
-            if(isset($cond['salerName']) && $cond['salerName']) $sql .= " AND SKU LIKE '%{$cond['salerName']}%'";
-            if(isset($cond['purchaser']) && $cond['purchaser']) $sql .= " AND SKU LIKE '%{$cond['purchaser']}%'";
-            if(isset($cond['trend']) && $cond['trend']) $sql .= " AND SKU LIKE '%{$cond['trend']}%'";
+            if(isset($cond['salerName']) && $cond['salerName']) $sql .= " AND salerName LIKE '%{$cond['salerName']}%'";
+            if(isset($cond['purchaser']) && $cond['purchaser']) $sql .= " AND purchaser LIKE '%{$cond['purchaser']}%'";
+            if(isset($cond['trend']) && $cond['trend']) $sql .= " AND trend LIKE '%{$cond['trend']}%'";
             if(isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
             if(isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
             if(isset($cond['isShipping']) && $cond['isShipping'] == '是') $sql .= " AND shipNum>0 ";
@@ -632,9 +632,9 @@ class TinyToolController extends AdminController
                         uHopeUseNum, totalHopeUseNum, uHopeSaleDays, hopeSaleDays, purchaseNum, shipNum, purCost, shipWeight 
                     FROM cache_overseasReplenish WHERE type='UK真仓'";
             if(isset($cond['sku']) && $cond['sku']) $sql .= " AND SKU LIKE '%{$cond['sku']}%'";
-            if(isset($cond['salerName']) && $cond['salerName']) $sql .= " AND SKU LIKE '%{$cond['salerName']}%'";
-            if(isset($cond['purchaser']) && $cond['purchaser']) $sql .= " AND SKU LIKE '%{$cond['purchaser']}%'";
-            if(isset($cond['trend']) && $cond['trend']) $sql .= " AND SKU LIKE '%{$cond['trend']}%'";
+            if(isset($cond['salerName']) && $cond['salerName']) $sql .= " AND salerName LIKE '%{$cond['salerName']}%'";
+            if(isset($cond['purchaser']) && $cond['purchaser']) $sql .= " AND purchaser LIKE '%{$cond['purchaser']}%'";
+            if(isset($cond['trend']) && $cond['trend']) $sql .= " AND trend LIKE '%{$cond['trend']}%'";
             if(isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
             if(isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
             if(isset($cond['isShipping']) && $cond['isShipping'] == '是') $sql .= " AND shipNum>0 ";
