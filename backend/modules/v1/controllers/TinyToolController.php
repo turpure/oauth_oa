@@ -173,24 +173,30 @@ class TinyToolController extends AdminController
         $data['detail'] = $res;
 
 
-        if ($res['Weight'] < Yii::$app->params['weight1']) {
+        if ($res['Weight'] < Yii::$app->params['weight']) {
             $name = Yii::$app->params['transport1'];
             $cost = Yii::$app->params['swBasic'] + Yii::$app->params['swPrice'] * $res['Weight'];
 
-            $name2 = Yii::$app->params['transport2'];
-            $cost2 = Yii::$app->params['wBasic'] + Yii::$app->params['price2'] * $res['Weight'];
-        } elseif ($res['Weight'] < Yii::$app->params['weight2']) {
+            $name2 = Yii::$app->params['transport3'];
+            $cost2 = Yii::$app->params['wBasic2'] + Yii::$app->params['price2'] * $res['Weight'];
+        } elseif ($res['Weight'] >= Yii::$app->params['weight'] && $res['Weight'] < Yii::$app->params['weight1']) {
             $name = Yii::$app->params['transport1'];
             $cost = Yii::$app->params['bwBasic'] + Yii::$app->params['bwPrice'] * $res['Weight'];
 
-            $name2 = Yii::$app->params['transport2'];
-            $cost2 = Yii::$app->params['wBasic'] + Yii::$app->params['price2'] * $res['Weight'];
+            $name2 = Yii::$app->params['transport3'];
+            $cost2 = Yii::$app->params['wBasic2'] + Yii::$app->params['price2'] * $res['Weight'];
+        }elseif ($res['Weight'] >= Yii::$app->params['weight1'] && $res['Weight'] < Yii::$app->params['weight2']) {
+            $name = Yii::$app->params['transport2'];
+            $cost = Yii::$app->params['wBasic1'] + Yii::$app->params['price1'] * $res['Weight'];
+
+            $name2 = Yii::$app->params['transport3'];
+            $cost2 = Yii::$app->params['wBasic2'] + Yii::$app->params['price2'] * $res['Weight'];
         } elseif ($res['Weight'] < Yii::$app->params['weight3']) {
-            $name = $name2 = Yii::$app->params['transport2'];
-            $cost = $cost2 = Yii::$app->params['wBasic'] + Yii::$app->params['price2'] * $res['Weight'];
+            $name = $name2 = Yii::$app->params['transport3'];
+            $cost = $cost2 = Yii::$app->params['wBasic2'] + Yii::$app->params['price2'] * $res['Weight'];
         } else {
             $name = $name2 = Yii::$app->params['transport2'];
-            $cost = $cost2 = Yii::$app->params['wBasic'] + Yii::$app->params['price3'] * $res['Weight'];
+            $cost = $cost2 = Yii::$app->params['wBasic3'] + Yii::$app->params['price3'] * $res['Weight'];
         }
 
         $param1 = $param2 = [
@@ -235,7 +241,7 @@ class TinyToolController extends AdminController
     }
 
     /**
-     * @brief UK 虚拟仓定价器2
+     * @brief UK 虚拟仓定价器2(所有国家)
      */
     public function actionUkFic2()
     {
@@ -281,9 +287,9 @@ class TinyToolController extends AdminController
 
         //获取物流方式及其报价
 
-        $list = Yii::$app->db->createCommand("SELECT * FROM shipping_countFee")->queryAll();
+        $list = Yii::$app->db->createCommand("SELECT * FROM shipping_countFee ORDER BY country")->queryAll();
         foreach ($list as $v) {
-            if ($v['weight1'] && $v['wBasic'] && $v['wPrice'] && $res['Weight'] < $v['weight1']) {
+            if ($v['weight1'] && $v['wBasic'] && $v['wPrice'] && $v['startWeight'] <= $res['Weight'] && $res['Weight'] < $v['weight1']) {
                 $cost = $v['wBasic'] + $v['wPrice'] * $res['Weight'];
             } elseif ($v['weight2'] && $v['wBasic1'] && $v['wPrice1'] && $res['Weight'] < $v['weight2']) {
                 $cost = $v['wBasic1'] + $v['wPrice1'] * $res['Weight'];
@@ -758,6 +764,35 @@ class TinyToolController extends AdminController
     }
     }
 
-
+    public function actionKeywordAnalysis()
+    {
+        $cond = Yii::$app->request->post()['condition'];
+        try{
+            $sql = "SELECT keyword FROM proCenter.oa_ebayKeyword WHERE 1=1";
+            if(isset($cond['keyword']) && $cond['keyword']) $sql .= " AND keyword LIKE '%{$cond['keyword']}%' ";
+            $list =  Yii::$app->db->createCommand($sql)->queryAll();
+            $data = [];
+            foreach ($list as $v){
+                $item['keyword'] = $v['keyword'];
+                $keyword = explode(' ', $v['keyword']);
+                $item['url'] = 'https://www.ebay.com/sch/i.html?_from=R40&_trksid=m570.l1313&_nkw=';
+                foreach ($keyword as $k => $value){
+                    if($k == 0){
+                        $item['url'] .= $value;
+                    }else{
+                        $item['url'] .= '+'.$value;
+                    }
+                }
+                $item['url'] .= '&_sacat=0';
+                $data[] = $item;
+            }
+            return $data;
+        }catch(\Exception $e){
+            return [
+                'code' => $e->getCode(),
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
 
 }
