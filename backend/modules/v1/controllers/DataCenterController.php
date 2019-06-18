@@ -294,12 +294,10 @@ class DataCenterController extends AdminController
             return [];
         }
         $cond = $request->post('condition');
-        if(!isset($cond['storeName']) || !$cond['storeName']){
-            return [];
-        }
+
         $sql = "SELECT aa.storeName,aa.goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
                         IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
-                        IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) AS sellDays
+                        CASE WHEN IFNULL(aveCostmoney,0)=0 AND totalCostmoney>0 THEN 10000 ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
                 FROM(
                         SELECT storeName,IFNULL(goodsStatus,'无状态') goodsStatus,
                         SUM(useNum) AS useNum,
@@ -309,16 +307,18 @@ class DataCenterController extends AdminController
                         SUM(hopeUseNum) hopeUseNum,
                         SUM(totalCostmoney) totalCostmoney
                         FROM `cache_stockWaringTmpData`
-                        WHERE storeName = '{$cond['storeName']}'
-                        GROUP BY storeName,IFNULL(goodsStatus,'无状态')
+                        WHERE 1=1 ";
+        if(isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
+        $sql .=                " GROUP BY storeName,IFNULL(goodsStatus,'无状态')
                 ) aa LEFT JOIN 
                 (
                         SELECT storeName,IFNULL(goodsStatus,'无状态') goodsStatus,
                         SUM(costMoney) AS 30DayCostmoney,
                         ROUND(SUM(costMoney)/30,4) AS aveCostmoney
                         FROM `cache_30DayOrderTmpData`
-                        WHERE storeName = '{$cond['storeName']}'
-                        GROUP BY storeName,IFNULL(goodsStatus,'无状态')
+                        WHERE 1=1 ";
+        if(isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
+        $sql .=                " GROUP BY storeName,IFNULL(goodsStatus,'无状态')
                 ) bb ON aa.storeName=bb.storeName AND IFNULL(aa.goodsStatus,'无状态')=IFNULL(bb.goodsStatus,'无状态')
                 ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
         try{
@@ -343,12 +343,9 @@ class DataCenterController extends AdminController
             return [];
         }
         $cond = $request->post('condition');
-        if(!isset($cond['storeName']) || !$cond['storeName']){
-            return [];
-        }
         $sql = "SELECT aa.storeName,aa.salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
                         IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
-                        IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) AS sellDays
+                        CASE WHEN IFNULL(aveCostmoney,0)=0 AND totalCostmoney>0 THEN 10000 ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
                 FROM(
                         SELECT storeName,
                         CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END AS salerName,
@@ -359,8 +356,9 @@ class DataCenterController extends AdminController
                         SUM(hopeUseNum) hopeUseNum,
                         SUM(totalCostmoney) totalCostmoney
                         FROM `cache_stockWaringTmpData`
-                        WHERE storeName = '{$cond['storeName']}'
-                        GROUP BY storeName,CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END
+                        WHERE 1=1 ";
+        if(isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
+        $sql .=                " GROUP BY storeName,CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END
                 ) aa LEFT JOIN 
                 (
                         SELECT storeName,
@@ -368,8 +366,9 @@ class DataCenterController extends AdminController
                         SUM(costMoney) AS 30DayCostmoney,
                         ROUND(SUM(costMoney)/30,4) AS aveCostmoney
                         FROM `cache_30DayOrderTmpData`
-                        WHERE storeName = '{$cond['storeName']}'
-                        GROUP BY storeName,CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END
+                        WHERE 1=1 ";
+        if(isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
+        $sql .=                " GROUP BY storeName,CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END
                 ) bb ON aa.storeName=bb.storeName AND IFNULL(aa.salerName,'无人')=IFNULL(bb.salerName,'无人')
                 ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
         try{
