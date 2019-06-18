@@ -950,7 +950,7 @@ class ApiReport
             ':beginDate' => $beginDate,
             ':endDate' => $endDate,
             ':dateFlag' => $dateFlag,
-            ':minNumber' => $$minNumber,
+            ':minNumber' => $minNumber,
             ':minAvgNumber' => $minAvgNumber,
         ];
         $db = Yii::$app->db;
