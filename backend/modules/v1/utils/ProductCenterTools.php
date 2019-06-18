@@ -110,7 +110,7 @@ class ProductCenterTools
         }
         catch (\Exception $why) {
             $trans->rollback();
-            throw new \Exception($why->getMessage(), $why->getCode());
+            throw new \Exception($why->getMessage());
         }
     }
 
