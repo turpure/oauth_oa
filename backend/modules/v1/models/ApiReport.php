@@ -942,12 +942,16 @@ class ApiReport
         $developer = $condition['developer'];
         list($beginDate, $endDate) = $condition['dateRange'];
         $dateFlag = $condition['dateType'];
-        $sql = 'call report_devNumLimit (:developer,:beginDate,:endDate,:dateFlag)';
+        $minNumber = isset($condition['minNumber']) && !empty($condition['minNumber']) ? $condition['minNumber']: 200;
+        $minAvgNumber = isset($condition['minAvgNumber']) && !empty($condition['minNumber']) ? $condition['minNumber'] : 300;
+        $sql = 'call report_devNumLimit (:developer,:beginDate,:endDate,:dateFlag, :minNumber, :minAvgNumber)';
         $param = [
             ':developer' => implode(',', $developer),
             ':beginDate' => $beginDate,
             ':endDate' => $endDate,
-            ':dateFlag' => $dateFlag
+            ':dateFlag' => $dateFlag,
+            ':minNumber' => $minNumber,
+            ':minAvgNumber' => $minAvgNumber,
         ];
         $db = Yii::$app->db;
         return $db->createCommand($sql)->bindValues($param)->queryAll();
