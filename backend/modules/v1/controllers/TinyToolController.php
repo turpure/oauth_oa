@@ -8,6 +8,7 @@
 namespace backend\modules\v1\controllers;
 
 
+use backend\models\OaEbayKeyword;
 use backend\modules\v1\models\ApiAu;
 use backend\modules\v1\models\ApiTinyTool;
 use backend\modules\v1\models\ApiUk;
@@ -774,35 +775,84 @@ class TinyToolController extends AdminController
     }
     }
 
+    /** 竞品分析
+     * Date: 2019-06-20 15:57
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
     public function actionKeywordAnalysis()
     {
         $cond = Yii::$app->request->post()['condition'];
         try{
-            $sql = "SELECT keyword FROM proCenter.oa_ebayKeyword WHERE 1=1";
+            $sql = "SELECT * FROM proCenter.oa_ebayKeyword WHERE 1=1";
             if(isset($cond['keyword']) && $cond['keyword']) $sql .= " AND keyword LIKE '%{$cond['keyword']}%' ";
-            $list =  Yii::$app->db->createCommand($sql)->queryAll();
-            $data = [];
-            foreach ($list as $v){
-                $item['keyword'] = $v['keyword'];
-                $keyword = explode(' ', $v['keyword']);
-                $item['url'] = 'https://www.ebay.com/sch/i.html?_from=R40&_trksid=m570.l1313&_nkw=';
-                foreach ($keyword as $k => $value){
-                    if($k == 0){
-                        $item['url'] .= $value;
-                    }else{
-                        $item['url'] .= '+'.$value;
-                    }
-                }
-                $item['url'] .= '&_sacat=0';
-                $data[] = $item;
-            }
-            return $data;
+            $data =  Yii::$app->db->createCommand($sql)->queryAll();
+            $provider = new ArrayDataProvider([
+                'allModels' => $data,
+                'pagination' => [
+                    'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
+                ],
+            ]);
+            return $provider;
         }catch(\Exception $e){
             return [
                 'code' => $e->getCode(),
                 'message' => $e->getMessage(),
             ];
         }
+    }
+
+    /** 从普源获取要搜索的产品
+     * Date: 2019-06-20 16:23
+     * Author: henry
+     * @return array
+     */
+    public function actionKeywordList(){
+        $cond = Yii::$app->request->post()['condition'];
+        return ApiTinyTool::getKeywordGoodsListFromShopElf($cond);
+    }
+
+    /** 编辑信息
+     * Date: 2019-06-20 16:24
+     * Author: henry
+     * @return array|bool
+     */
+    public function actionUpdateKeywordInfo(){
+        try{
+            $cond = Yii::$app->request->post()['condition'];
+            if(!isset($cond['id']) || !$cond['id']){
+                $model = new OaEbayKeyword();
+            }else{
+                $model = OaEbayKeyword::findOne($cond['id']);
+            }
+            $model->setAttributes($cond);
+            if($cond['keyword']){
+                $keyword = explode(' ', $cond['keyword']);
+                $url = 'https://www.ebay.com/sch/i.html?_from=R40&_trksid=m570.l1313&_nkw=';
+                foreach ($keyword as $k => $value){
+                    if($k == 0){
+                        $url .= $value;
+                    }else{
+                        $url .= '+'.$value;
+                    }
+                }
+                $url .= '&_sacat=0';
+                $model->url = $url;
+            }
+
+            if(!$model->save()){
+                //print_r($model->getErrors());exit;
+                throw new \Exception('save keyword info failed!');
+            }
+            return true;
+        }catch (\Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+
+
     }
 
     /**
