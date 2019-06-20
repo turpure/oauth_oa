@@ -820,6 +820,10 @@ class TinyToolController extends AdminController
         }
     }
 
+    /**
+     * @brief 更新joom空运费订单
+     * @return array
+     */
     public function actionJoomUpdateNullExpressFare()
     {
         try {
