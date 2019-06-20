@@ -649,5 +649,23 @@ class ApiTinyTool
         return $provider;
     }
 
+    /** 获取普源商品信息
+     * @param $condition
+     * Date: 2019-06-20 16:33
+     * Author: henry
+     * @return array
+     */
+    public static function getKeywordGoodsListFromShopElf($condition){
+        if (!(isset($condition['goodsCode']) && $condition['goodsCode']) && !(isset($condition['goodsName']) && $condition['goodsName'])){
+            return [];
+        }
+        $sql = "SELECT goodsCode,goodsName,sum(goodsprice)/count(goodsCode) AS costPrice,round(sum(weight)/count(goodsCode),0) AS weight 
+                    FROM Y_R_tStockingWaring WHERE 1=1 ";
+        if (isset($condition['goodsCode']) && $condition['goodsCode']) $sql .= " AND goodsCode LIKE '%{$condition['goodsCode']}%'";
+        if (isset($condition['goodsName']) && $condition['goodsName']) $sql .= " AND goodsName LIKE '%{$condition['goodsName']}%'";
+        $sql .= " GROUP BY goodsCode,goodsName";
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
+    }
+
 
 }
