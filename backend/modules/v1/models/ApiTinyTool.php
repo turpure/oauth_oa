@@ -666,6 +666,7 @@ class ApiTinyTool
         $beginDate = date('Y-m-d',strtotime('-30day')); // 默认查询近30天
         Yii::$app->py_db->createCommand($sql)->bindValues([':beginDate' => $beginDate])->execute();
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $currentPage = isset($condition['currentPage']) ? $condition['currentPage'] : 1;
         $fieldsFilter = ['like' =>['suffix', 'nid', 'shipToCountryCode', 'name', 'sku']];
         $timeFilter = ['orderTime'];
         $query = OauthJoomUpdateExpressFare::find()->select(['tradeNid','suffix', 'shipToCountryCode','orderTime', 'expressName', 'sku']);
@@ -676,7 +677,9 @@ class ApiTinyTool
             'query' => $query,
             'pagination' => [
                 'pageSize' => $pageSize,
+                'page' => $currentPage - 1
             ],
+
         ]);
         return $provider;
     }
