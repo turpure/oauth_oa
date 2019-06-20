@@ -667,7 +667,7 @@ class ApiTinyTool
         Yii::$app->py_db->createCommand($sql)->bindValues([':beginDate' => $beginDate])->execute();
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $currentPage = isset($condition['currentPage']) ? $condition['currentPage'] : 1;
-        $fieldsFilter = ['like' =>['suffix', 'tradeNid', 'shipToCountryCode', 'expressName', 'sku']];
+        $fieldsFilter = ['like' =>['suffix', 'shipToCountryCode', 'expressName', 'sku']];
         $timeFilter = ['orderTime'];
         $query = OauthJoomUpdateExpressFare::find()->select(['tradeNid','suffix', 'shipToCountryCode','orderTime', 'expressName', 'sku']);
         $query = Helper::generateFilter($query,$fieldsFilter,$condition);
