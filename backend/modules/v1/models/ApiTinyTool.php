@@ -687,10 +687,10 @@ class ApiTinyTool
      */
     public static function updateJoomNullExpressFare()
     {
-        $sql = ['update  p_trade set profitMoney=  profitMoney + expressFare ,expressFare=0 
-                where nid in (select nid from oauth_joomUpdateExpressFare(nolock));',
-                'update  p_trade_his set profitMoney=  profitMoney + expressFare, expressFare=0 
-                 where nid in (select nid from oauth_joomUpdateExpressFare(nolock));',
+        $sql = ["update  p_trade set profitMoney=  profitMoney + expressFare ,expressFare=0 
+                where addressOwner='joom' and  nid in (select tradeNid from oauth_joomUpdateExpressFare(nolock));",
+                "update  p_trade_his set profitMoney=  profitMoney + expressFare, expressFare=0 
+                 where addressOwner='joom' and nid in (select tradeNid from oauth_joomUpdateExpressFare(nolock));",
                 'truncate table  oauth_joomUpdateExpressFare;'
         ];
         $sql = implode('', $sql);
