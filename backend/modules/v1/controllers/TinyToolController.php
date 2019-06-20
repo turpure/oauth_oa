@@ -13,6 +13,7 @@ use backend\modules\v1\models\ApiTinyTool;
 use backend\modules\v1\models\ApiUk;
 use backend\modules\v1\models\ApiUkFic;
 use backend\modules\v1\utils\ExportTools;
+use Codeception\Template\Api;
 use common\models\User;
 use backend\modules\v1\services\ExpressExpired;
 use Yii;
@@ -803,5 +804,33 @@ class TinyToolController extends AdminController
             ];
         }
     }
+
+    /**
+     * @brief 查询joom空运费订单
+     * @return array|\yii\data\ActiveDataProvider
+     */
+    public function actionJoomNullExpressFare()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiTinyTool::getJoomNullExpressFare($condition);
+        }
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+
+    public function actionJoomUpdateNullExpressFare()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiTinyTool::updateJoomNullExpressFare($condition);
+        }
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+
+
 
 }

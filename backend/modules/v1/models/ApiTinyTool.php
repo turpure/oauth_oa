@@ -12,6 +12,7 @@ use backend\modules\v1\utils\Helper;
 use backend\modules\v1\utils\ExportTools;
 use backend\models\CacheExpress;
 use backend\models\TaskJoomTracking;
+use backend\models\ShopElf\OauthJoomUpdateExpressFare;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\db\Exception;
@@ -631,6 +632,11 @@ class ApiTinyTool
     }
 
 
+    /**
+     * @brief 获取上传物流单号记录
+     * @param $condition
+     * @return ActiveDataProvider
+     */
     public static function getTaskJoomTracking($condition)
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
@@ -647,6 +653,49 @@ class ApiTinyTool
             ],
         ]);
         return $provider;
+    }
+
+    /**
+     * @brief joom空运费
+     * @param $condition
+     * @return ActiveDataProvider
+     */
+    public static function getJoomNullExpressFare($condition)
+    {
+        $sql = 'oa_p_joomNullExpressFare :beginDate';
+        $beginDate = date('Y-m-d',strtotime('-30day')); // 默认查询近30天
+        Yii::$app->py_db->createCommand($sql)->bindValues([':beginDate' => $beginDate])->execute();
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $fieldsFilter = ['like' =>['suffix', 'nid', 'shipToCountryCode', 'name', 'sku']];
+        $timeFilter = ['orderTime'];
+        $query = OauthJoomUpdateExpressFare::find()->select(['tradeNid','suffix', 'orderTime', 'expressName', 'sku']);
+        $query = Helper::generateFilter($query,$fieldsFilter,$condition);
+        $query = Helper::timeFilter($query,$timeFilter,$condition);
+        $query->orderBy('tradeNid DESC');
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
+    }
+
+    /**
+     * @brief 更新空运费订单
+     * @return array
+     */
+    public static function updateJoomNullExpressFare()
+    {
+        $sql = ['update  p_trade set profitMoney=  profitMoney + expressFare ,expressFare=0 
+                where nid in (select nid from oauth_joomUpdateExpressFare(nolock));',
+                'update  p_trade_his set profitMoney=  profitMoney + expressFare, expressFare=0 
+                 where nid in (select nid from oauth_joomUpdateExpressFare(nolock));',
+                'truncate table  oauth_joomUpdateExpressFare;'
+        ];
+        $sql = implode('', $sql);
+        Yii::$app->py_db->createCommand($sql)->execute();
+        return [];
     }
 
 
