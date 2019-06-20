@@ -671,7 +671,7 @@ class ApiTinyTool
         $timeFilter = ['orderTime'];
         $query = OauthJoomUpdateExpressFare::find()->select(['tradeNid','suffix', 'shipToCountryCode','orderTime', 'expressName', 'sku']);
         $query = Helper::generateFilter($query,$fieldsFilter,$condition);
-        $query = Helper::timeFilter($query,$timeFilter,$condition);
+        $query = Helper::timeFilter($query,$timeFilter,$condition, 'mssql');
         $query->orderBy('tradeNid DESC');
         $provider = new ActiveDataProvider([
             'query' => $query,
