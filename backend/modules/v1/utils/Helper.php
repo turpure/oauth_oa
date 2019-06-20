@@ -123,14 +123,27 @@ class Helper
      * @param $condition
      * @return mixed
      */
-    public static function timeFilter($query, $fields, $condition)
+    public static function timeFilter($query, $fields, $condition, $type='mysql')
     {
-        foreach ($fields as $attr) {
-            if (isset($condition[$attr]) && !empty($condition[$attr])) {
-                $query->andFilterWhere(['between', "date_format($attr,'%Y-%m-%d')", $condition[$attr][0], $condition[$attr][1]]);
+        if ($type === 'mysql') {
+            foreach ($fields as $attr) {
+                if (isset($condition[$attr]) && !empty($condition[$attr])) {
+                    $query->andFilterWhere(['between', "date_format($attr,'%Y-%m-%d')", $condition[$attr][0], $condition[$attr][1]]);
+                }
             }
+            return $query;
         }
-        return $query;
+
+        if ($type === 'mssql') {
+            foreach ($fields as $attr) {
+                if (isset($condition[$attr]) && !empty($condition[$attr])) {
+                    $query->andFilterWhere(['between', "convert(varchar(10),$attr,121)", $condition[$attr][0], $condition[$attr][1]]);
+                }
+            }
+            return $query;
+        }
+
+
     }
 
 

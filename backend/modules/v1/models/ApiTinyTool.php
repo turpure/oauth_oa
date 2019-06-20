@@ -12,6 +12,7 @@ use backend\modules\v1\utils\Helper;
 use backend\modules\v1\utils\ExportTools;
 use backend\models\CacheExpress;
 use backend\models\TaskJoomTracking;
+use backend\models\ShopElf\OauthJoomUpdateExpressFare;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\db\Exception;
@@ -631,6 +632,11 @@ class ApiTinyTool
     }
 
 
+    /**
+     * @brief 获取上传物流单号记录
+     * @param $condition
+     * @return ActiveDataProvider
+     */
     public static function getTaskJoomTracking($condition)
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
@@ -649,6 +655,7 @@ class ApiTinyTool
         return $provider;
     }
 
+
     /** 获取普源商品信息
      * @param $condition
      * Date: 2019-06-20 16:33
@@ -665,6 +672,48 @@ class ApiTinyTool
         if (isset($condition['goodsName']) && $condition['goodsName']) $sql .= " AND goodsName LIKE '%{$condition['goodsName']}%'";
         $sql .= " GROUP BY goodsCode,goodsName";
         return Yii::$app->py_db->createCommand($sql)->queryAll();
+    }
+
+
+    /**
+     * @brief joom空运费
+     * @param $condition
+     * @return ActiveDataProvider
+     */
+    public static function getJoomNullExpressFare($condition)
+    {
+        $sql = 'oa_p_joomNullExpressFare :beginDate';
+        $beginDate = date('Y-m-d',strtotime('-30day')); // 默认查询近30天
+        Yii::$app->py_db->createCommand($sql)->bindValues([':beginDate' => $beginDate])->execute();
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $currentPage = isset($condition['currentPage']) ? $condition['currentPage'] : 1;
+        $fieldsFilter = ['like' =>['suffix', 'tradeNid', 'shipToCountryCode', 'expressName', 'sku']];
+        $timeFilter = ['orderTime'];
+        $query = OauthJoomUpdateExpressFare::find()->select(['tradeNid','suffix', 'shipToCountryCode','orderTime', 'expressName', 'sku']);
+        $query = Helper::generateFilter($query,$fieldsFilter,$condition);
+        $query = Helper::timeFilter($query,$timeFilter,$condition, 'mssql');
+        $query->orderBy('tradeNid DESC');
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => [
+                'pageSize' => $pageSize,
+                'page' => $currentPage - 1
+            ],
+
+        ]);
+        return $provider;
+    }
+
+    /**
+     * @brief 更新空运费订单
+     * @return array
+     */
+    public static function updateJoomNullExpressFare()
+    {
+//        $sql = 'oa_p_updateJoomNullExpressFare';
+        $sql = '';
+        Yii::$app->py_db->createCommand($sql)->execute();
+        return [];
     }
 
 
