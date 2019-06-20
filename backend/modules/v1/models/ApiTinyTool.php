@@ -668,7 +668,7 @@ class ApiTinyTool
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $fieldsFilter = ['like' =>['suffix', 'nid', 'shipToCountryCode', 'name', 'sku']];
         $timeFilter = ['orderTime'];
-        $query = OauthJoomUpdateExpressFare::find()->select(['tradeNid','suffix', 'orderTime', 'expressName', 'sku']);
+        $query = OauthJoomUpdateExpressFare::find()->select(['tradeNid','suffix', 'shipToCountryCode','orderTime', 'expressName', 'sku']);
         $query = Helper::generateFilter($query,$fieldsFilter,$condition);
         $query = Helper::timeFilter($query,$timeFilter,$condition);
         $query->orderBy('tradeNid DESC');
