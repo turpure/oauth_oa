@@ -834,16 +834,21 @@ class TinyToolController extends AdminController
             $model->setAttributes($cond);
             if($cond['keyword']){
                 $keyword = explode(' ', $cond['keyword']);
-                $url = 'https://www.ebay.com/sch/i.html?_from=R40&_trksid=m570.l1313&_nkw=';
+                $url1 = 'https://www.ebay.co.uk/sch/i.html?_from=R40&_nkw=';
+                $url2 = 'https://www.ebay.com.au/sch/i.html?_from=R40&_nkw=';
                 foreach ($keyword as $k => $value){
                     if($k == 0){
-                        $url .= $value;
+                        $url1 .= $value;
+                        $url2 .= $value;
                     }else{
-                        $url .= '+'.$value;
+                        $url1 .= '+'.$value;
+                        $url2 .= '+'.$value;
                     }
                 }
-                $url .= '&_sacat=0';
-                $model->url = $url;
+                $url1 .= '&_sacat=0&_dmd=1&rt=nc';
+                $url2 .= '&_sacat=0&_dmd=1&rt=nc';
+                $model->url = $url1;
+                $model->url2 = $url2;
             }
 
             if(!$model->save()){
