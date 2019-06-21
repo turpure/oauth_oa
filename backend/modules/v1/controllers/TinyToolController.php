@@ -821,6 +821,10 @@ class TinyToolController extends AdminController
         try{
             $cond = Yii::$app->request->post()['condition'];
             if(!isset($cond['id']) || !$cond['id']){
+                $q = OaEbayKeyword::findOne(['goodsCode' => $cond['goodsCode']]);
+                if ($q){
+                    throw new \Exception('SKU already exists and cannot be added repeatedly!');
+                }
                 $model = new OaEbayKeyword();
             }else{
                 $model = OaEbayKeyword::findOne($cond['id']);
