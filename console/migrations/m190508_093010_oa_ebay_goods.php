@@ -21,7 +21,7 @@ class m190508_093010_oa_ebay_goods extends Migration
             $pySql = "SELECT s.goodsCode,s.goodsName
                 FROM proCenter.oa_ebayGoods t
                 LEFT JOIN proCenter.oa_goodsinfo s ON s.id=t.infoId
-                WHERE t.nid BETWEEN " . ($i*$step + 1) . " AND " . ($i + 1)*$step;
+                WHERE s.goodsCode is not null t.nid BETWEEN " . ($i*$step + 1) . " AND " . ($i + 1)*$step;
             $list = Yii::$app->db->createCommand($pySql)->queryAll();
             //print_r($list);exit;
             $this->batchInsert('proCenter.oa_ebayKeyword', [

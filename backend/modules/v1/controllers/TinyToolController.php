@@ -786,6 +786,8 @@ class TinyToolController extends AdminController
         try{
             $sql = "SELECT * FROM proCenter.oa_ebayKeyword WHERE 1=1";
             if(isset($cond['keyword']) && $cond['keyword']) $sql .= " AND keyword LIKE '%{$cond['keyword']}%' ";
+            if(isset($cond['goodsCode']) && $cond['goodsCode']) $sql .= " AND goodsCode LIKE '%{$cond['goodsCode']}%' ";
+            if(isset($cond['goodsName']) && $cond['goodsName']) $sql .= " AND goodsName LIKE '%{$cond['goodsName']}%' ";
             $data =  Yii::$app->db->createCommand($sql)->queryAll();
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
