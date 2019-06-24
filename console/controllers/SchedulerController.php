@@ -88,15 +88,21 @@ class SchedulerController extends Controller
      */
     public function actionSalesChange()
     {
-        $sql = "EXEC oauth_salesChangeOfTwoDateBlock";
+        $sql = "EXEC oauth_salesChangeOfTwoDateBlock_backup";
         try {
             $list = Yii::$app->py_db->createCommand($sql)->queryAll();
 
-            Yii::$app->db->createCommand()->batchInsert(
-                'cache_sales_change',
-                ['suffix', 'goodsCode', 'goodsName', 'lastNum', 'lastAmt', 'num', 'amt', 'numDiff', 'amtDiff', 'createDate'],
-                $list
-            )->execute();
+            Yii::$app->db->createCommand()->truncateTable('cache_sales_change')->execute();
+            $step = 200;
+            $num = ceil(count($list)/$step);
+            for ($i = 0; $i < $num; $i++){
+                Yii::$app->db->createCommand()->batchInsert(
+                    'cache_sales_change',
+                    ['orderId', 'suffix', 'goodsCode', 'goodsName', 'qty', 'amt', 'orderTime', 'createDate'],
+                    array_slice($list, $i * $step, $step)
+                )->execute();
+            }
+
 
             print date('Y-m-d H:i:s') . " INFO:success to update data of sales change!\n";
         } catch (\Exception $why) {

@@ -253,7 +253,8 @@ class DataCenterController extends AdminController
     {
         $sql = "SELECT aa.storeName,aa.useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
                         IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
-                        IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) AS sellDays
+                        CASE WHEN IFNULL(aveCostmoney,0)=0 AND IFNULL(totalCostmoney,0)<>0 THEN 10000 
+                              ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
                 FROM(
                         SELECT storeName,
                         SUM(useNum) AS useNum,

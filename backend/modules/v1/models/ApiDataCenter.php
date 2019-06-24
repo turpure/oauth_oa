@@ -67,40 +67,23 @@ class ApiDataCenter
      */
     public static function getSalesChangeData($condition)
     {
-        $updateSql = "oauth_salesChangeOfTwoDateBlock @lastBeginDate=:lastBeginDate,@lastEndDate=:lastEndDate,@beginDate=:beginDate,@endDate=:endDate ";
-        $items = [
+        $params = [
             ':lastBeginDate' => $condition['lastBeginDate'],
             ':lastEndDate' => $condition['lastEndDate'],
             ':beginDate' => $condition['beginDate'],
-            ':endDate' => $condition['endDate']
+            ':endDate' => $condition['endDate'],
+            ':suffix' => $condition['suffix'],
+            ':salesman' => $condition['salesman'],
+            ':goodsName' => $condition['goodsName'],
+            ':goodsCode' => $condition['goodsCode'],
         ];
-        $data = Yii::$app->py_db->createCommand($updateSql)->bindValues($items)->queryAll();
-
-        //清空数据表并插入新数据
-        Yii::$app->db->createCommand("TRUNCATE TABLE cache_sales_change")->execute();
-        //更新cache_sales_change 表数据
-        Yii::$app->db->createCommand()->batchInsert(
-            'cache_sales_change',
-            ['suffix','goodsCode','goodsName','lastNum','lastAmt','num','amt','numDiff','amtDiff','createDate'],
-            $data
-        )->execute();
-
-        $sql = "SELECT username,sc.* FROM cache_sales_change sc
-                LEFT JOIN auth_store s ON s.store=sc.suffix
-                LEFT JOIN auth_store_child scc ON scc.store_id=s.id
-                LEFT JOIN `user` u ON u.id=scc.user_id 
-                WHERE 1=1 ";
-        if ($condition['suffix']) $sql .= " AND sc.suffix IN(" . $condition['suffix'] . ') ';
-        if ($condition['salesman']) $sql .= " AND u.username IN(" . $condition['salesman'] . ') ';
-        if ($condition['goodsName']) $sql .= " AND sc.goodsName LIKE '%" . $condition['goodsName'] . "%'";
-        if ($condition['goodsCode']) $sql .= " AND sc.goodsCode LIKE '%" . $condition['goodsCode'] . "%'";
-        //$sql .= " ORDER BY numDiff DESC";
-        $list = Yii::$app->db->createCommand($sql)->queryAll();
+        $sql = "CALL data_salesChange(:lastBeginDate,:lastEndDate,:beginDate,:endDate,:suffix,:salesman,:goodsCode,:goodsName);";
+        $list = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
         $data = new ArrayDataProvider([
             'allModels' => $list,
             'sort' => [
                 'defaultOrder' => ['numDiff' => SORT_DESC],
-                'attributes' => ['suffix', 'salesman', 'goodsName','goodsCode','lastNum','lastAmt','num','amt','numDiff','amtDiff','createDate'],
+                'attributes' => ['suffix', 'username', 'goodsName','goodsCode','lastNum','lastAmt','num','amt','numDiff','amtDiff'],
             ],
             'pagination' => [
                 'pageSize' => $condition['pageSize'],
