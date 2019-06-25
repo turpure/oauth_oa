@@ -35,7 +35,7 @@ class OaEbayKeyword extends \yii\db\ActiveRecord
     {
         return [
             [['costPrice', 'weight'], 'number'],
-            [['keyword', 'goodsCode', 'goodsName', 'developer', 'ukUrl', 'ukUrl2', 'auUrl', 'auUrl2'], 'string', 'max' => 255],
+            [['keyword', 'keyword2', 'goodsCode', 'goodsName', 'developer', 'ukUrl', 'ukUrl2', 'auUrl', 'auUrl2'], 'string', 'max' => 255],
         ];
     }
 

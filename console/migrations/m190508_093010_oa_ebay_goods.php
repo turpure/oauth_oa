@@ -13,21 +13,21 @@ class m190508_093010_oa_ebay_goods extends Migration
     public function safeUp()
     {
 
-        /*$this->truncateTable('proCenter.oa_ebayKeyword');
+        $this->truncateTable('proCenter.oa_ebayKeyword');
         $count = Yii::$app->db->createCommand("SELECT max(nid) as num from proCenter.oa_ebayGoods")->queryOne()['num'];
         $step = 400;
         $max = ceil($count/$step);
         for ($i = 0;$i<=$max;$i++) {
-            $pySql = "SELECT s.goodsCode,s.goodsName
+            $pySql = "SELECT s.goodsCode,s.goodsName,s.developer
                 FROM proCenter.oa_ebayGoods t
                 LEFT JOIN proCenter.oa_goodsinfo s ON s.id=t.infoId
-                WHERE s.goodsCode is not null t.nid BETWEEN " . ($i*$step + 1) . " AND " . ($i + 1)*$step;
+                WHERE s.goodsCode is not null AND t.nid BETWEEN " . ($i*$step + 1) . " AND " . ($i + 1)*$step;
             $list = Yii::$app->db->createCommand($pySql)->queryAll();
             //print_r($list);exit;
             $this->batchInsert('proCenter.oa_ebayKeyword', [
-                'goodsCode', 'goodsName'
+                'goodsCode', 'goodsName', 'developer'
             ], $list);
-        }*/
+        }
 
 
 
