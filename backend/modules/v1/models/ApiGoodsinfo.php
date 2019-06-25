@@ -1091,8 +1091,7 @@ class ApiGoodsinfo
                 $ret['shipping'] = $shipping;
                 $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1;
                 $ret['msrp'] = $maxMsrp;
-                $ret['local_price'] = floor($wishInfo['price'] * self::UsdExchange);
-                //$ret['local_shippingfee'] = floor($wishInfo['shipping'] * self::UsdExchange);
+                $ret['local_price'] = floor($ret['price'] * self::UsdExchange);
                 $ret['local_shippingfee'] = floor($shipping * self::UsdExchange);
                 $ret['local_currency'] = 'CNY';
             } else {
