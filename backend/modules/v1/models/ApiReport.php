@@ -724,7 +724,7 @@ class ApiReport
                 'allModels' => $data,
                 'pagination' => [
                     'pageSize' => $condition['pageSize'],
-                    'page' => $condition['page'] - 1,
+                    //'page' => $condition['page'] - 1,
                 ],
             ]);
             $totalRefundZn = round(array_sum(ArrayHelper::getColumn($data, 'refundZn')),2);
