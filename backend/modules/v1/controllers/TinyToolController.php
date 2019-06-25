@@ -789,6 +789,7 @@ class TinyToolController extends AdminController
             if(isset($cond['keyword2']) && $cond['keyword2']) $sql .= " AND keyword2 LIKE '%{$cond['keyword2']}%' ";
             if(isset($cond['goodsCode']) && $cond['goodsCode']) $sql .= " AND goodsCode LIKE '%{$cond['goodsCode']}%' ";
             if(isset($cond['goodsName']) && $cond['goodsName']) $sql .= " AND goodsName LIKE '%{$cond['goodsName']}%' ";
+            if(isset($cond['developer']) && $cond['developer']) $sql .= " AND developer LIKE '%{$cond['developer']}%' ";
             $sql .= " ORDER BY id DESC";
             $data =  Yii::$app->db->createCommand($sql)->queryAll();
             $provider = new ArrayDataProvider([
