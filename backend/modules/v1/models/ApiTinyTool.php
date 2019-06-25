@@ -667,11 +667,11 @@ class ApiTinyTool
             return [];
         }
         try{
-            $sql = "SELECT goodsCode,goodsName,sum(goodsprice)/count(goodsCode) AS costPrice,round(sum(weight)/count(goodsCode),0) AS weight 
+            $sql = "SELECT goodsCode,goodsName,salerName AS developer,sum(goodsprice)/count(goodsCode) AS costPrice,round(sum(weight)/count(goodsCode),0) AS weight 
                     FROM Y_R_tStockingWaring WHERE 1=1 ";
             if (isset($condition['goodsCode']) && $condition['goodsCode']) $sql .= " AND goodsCode LIKE '%{$condition['goodsCode']}%'";
             if (isset($condition['goodsName']) && $condition['goodsName']) $sql .= " AND goodsName LIKE '%{$condition['goodsName']}%'";
-            $sql .= " GROUP BY goodsCode,goodsName";
+            $sql .= " GROUP BY goodsCode,goodsName,salerName";
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             return new ArrayDataProvider([
                 'allModels' => $data,

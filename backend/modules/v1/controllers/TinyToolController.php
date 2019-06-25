@@ -786,6 +786,7 @@ class TinyToolController extends AdminController
         try{
             $sql = "SELECT * FROM proCenter.oa_ebayKeyword WHERE 1=1";
             if(isset($cond['keyword']) && $cond['keyword']) $sql .= " AND keyword LIKE '%{$cond['keyword']}%' ";
+            if(isset($cond['keyword2']) && $cond['keyword2']) $sql .= " AND keyword2 LIKE '%{$cond['keyword2']}%' ";
             if(isset($cond['goodsCode']) && $cond['goodsCode']) $sql .= " AND goodsCode LIKE '%{$cond['goodsCode']}%' ";
             if(isset($cond['goodsName']) && $cond['goodsName']) $sql .= " AND goodsName LIKE '%{$cond['goodsName']}%' ";
             $sql .= " ORDER BY id DESC";
@@ -848,9 +849,29 @@ class TinyToolController extends AdminController
                 }
                 $url1 .= '&_sacat=0&_dmd=1&rt=nc';
                 $url2 .= '&_sacat=0&_dmd=1&rt=nc';
-                $model->url = $url1;
-                $model->url2 = $url2;
+                $model->ukUrl = $url1;
+                $model->auUrl = $url2;
             }
+
+            if($cond['keyword2']){
+                $keyword2 = explode(' ', $cond['keyword2']);
+                $url3 = 'https://www.ebay.co.uk/sch/i.html?_from=R40&_nkw=';
+                $url4 = 'https://www.ebay.com.au/sch/i.html?_from=R40&_nkw=';
+                foreach ($keyword2 as $k => $value){
+                    if($k == 0){
+                        $url3 .= $value;
+                        $url4 .= $value;
+                    }else{
+                        $url3 .= '+'.$value;
+                        $url4 .= '+'.$value;
+                    }
+                }
+                $url3 .= '&_sacat=0&_dmd=1&rt=nc';
+                $url4 .= '&_sacat=0&_dmd=1&rt=nc';
+                $model->ukUrl2 = $url3;
+                $model->auUrl2 = $url4;
+            }
+
 
             if(!$model->save()){
                 //print_r($model->getErrors());exit;

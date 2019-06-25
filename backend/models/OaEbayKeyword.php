@@ -13,8 +13,10 @@ use Yii;
  * @property string $goodsName
  * @property string $costPrice
  * @property int $weight
- * @property string $url
- * @property string $url2
+ * @property string $ukUrl
+ * @property string $auUrl
+ * @property string $ukUrl2
+ * @property string $auUrl2
  */
 class OaEbayKeyword extends \yii\db\ActiveRecord
 {
@@ -33,7 +35,7 @@ class OaEbayKeyword extends \yii\db\ActiveRecord
     {
         return [
             [['costPrice', 'weight'], 'number'],
-            [['keyword', 'goodsCode', 'goodsName', 'url', 'url2'], 'string', 'max' => 255],
+            [['keyword', 'goodsCode', 'goodsName', 'ukUrl', 'ukUrl2', 'auUrl', 'auUrl2'], 'string', 'max' => 255],
         ];
     }
 
