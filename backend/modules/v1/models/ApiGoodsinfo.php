@@ -1155,7 +1155,9 @@ class ApiGoodsinfo
             $real_len = \strlen(implode(' ', array_merge($random_str1, $random_arr)));
         }
         shuffle($need);
-        return implode(' ', array_merge($head, $random_str1, $need, $random_arr, $tail));
+        $ret = array_merge($head, $random_str1, $need, $random_arr, $tail);
+        $ret = array_map(function ($ele) {return trim($ele);}, $ret);
+        return implode(' ', $ret);
     }
 
     /**
