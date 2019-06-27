@@ -410,20 +410,29 @@ class OaGoodsinfoController extends AdminController
     /**
      * @brief 保存wish模板信息
      * @return array
+     * @throws \Exception
      */
     public function actionSaveWishInfo()
     {
-        $request = Yii::$app->request;
-        if (!$request->isPost) {
-            return [];
+        try {
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            return ApiGoodsinfo::saveWishInfo($condition);
         }
-        $condition = $request->post()['condition'];
-        return ApiGoodsinfo::saveWishInfo($condition);
+        catch (\Exception $why) {
+            return ['code' => 400, 'message' => $why->getMessage()];
+        }
     }
+
+
 
     /**
      * @brief 保存ebay模板信息
      * @return array
+     * @throws \Exception
      */
     public function actionSaveEbayInfo()
     {
@@ -438,6 +447,7 @@ class OaGoodsinfoController extends AdminController
     /**
      * @brief 标记完善
      * @return array
+     * @throws \Exception
      */
     public function actionFinishPlat()
     {
@@ -447,6 +457,46 @@ class OaGoodsinfoController extends AdminController
         }
         $condition = $request->post()['condition'];
         return ApiGoodsinfo::finishPlat($condition);
+    }
+
+    /**
+     * @brief wish保存并完善
+     * @return array
+     */
+    public function actionWishSaveFinishPlat()
+    {
+        try {
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            return ApiGoodsinfo::wishSaveFinishPlat($condition);
+        }
+        catch (\Exception $why) {
+            return ['code' => 400, 'message' => $why->getMessage()];
+        }
+
+    }
+
+    /**
+     * @brief wish保存并完善
+     * @return array
+     */
+    public function actionEbaySaveFinishPlat()
+    {
+        try {
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            return ApiGoodsinfo::ebaySaveFinishPlat($condition);
+        }
+        catch (\Exception $why) {
+            return ['code' => 400, 'message' => $why->getMessage()];
+        }
+
     }
 
     /**
