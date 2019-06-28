@@ -300,7 +300,7 @@ class SchedulerController extends Controller
         $orderList = Yii::$app->py_db->createCommand("EXEC oauth_stockGoodsNumber '" . $startDate . "','" . $endDate . "','';")->queryAll();
         //获取开发产品列表
         $goodsSql = "SELECT developer,goodsCode,stockUp FROM proCenter.oa_goodsinfo gs
-                      WHERE devDatetime BETWEEN '{$startDate}' AND '{$endDate}' AND ifnull(mid,0)=0;";
+                      WHERE LEFT(devDatetime,10) BETWEEN '{$startDate}' AND '{$endDate}' AND ifnull(mid,0)=0;";
         $goodsList = Yii::$app->db->createCommand($goodsSql)->queryAll();
         //获取开发员备货产品数，不备货产品数，总产品数
         $list = Yii::$app->db->createCommand("CALL proCenter.oa_stockGoodsNum('{$startDate}','{$endDate}');")->queryAll();
@@ -357,7 +357,7 @@ class SchedulerController extends Controller
            $item1['exuStyleNum'] = $exu;
            $item1['rate1'] = $rate1;
            $item1['rate2'] = $rate2;
-           $item1['createDate'] = $end;
+           $item1['createDate'] = date('Y-m-d H:i:s');
            $item1['isStock'] = 'stock';
 
            $item2['number'] = (int)$value['nonStockNum'];
@@ -366,7 +366,7 @@ class SchedulerController extends Controller
            $item2['exuStyleNum'] = $nonExu;
            $item2['rate1'] = $nonRate1;
            $item2['rate2'] = $nonRate2;
-           $item2['createDate'] = $end;
+           $item2['createDate'] = date('Y-m-d H:i:s');
            $item2['isStock'] = 'nonstock';
 
            $orderNumList[$k] = $item1;
