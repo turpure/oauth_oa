@@ -7,12 +7,15 @@
 
 namespace backend\modules\v1\models;
 
+use backend\models\OaEbayKeyword;
 use backend\modules\v1\utils\Handler;
 use backend\modules\v1\utils\Helper;
 use backend\modules\v1\utils\ExportTools;
 use backend\models\CacheExpress;
 use backend\models\TaskJoomTracking;
 use backend\models\ShopElf\OauthJoomUpdateExpressFare;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\db\Exception;
@@ -656,6 +659,38 @@ class ApiTinyTool
     }
 
 
+    /** 获取关键词列表
+     * @param $cond
+     * Date: 2019-06-28 16:50
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public static function getKeywordGoodsList($cond){
+        try {
+            $sql = "SELECT * FROM proCenter.oa_ebayKeyword WHERE 1=1";
+            if (isset($cond['keyword']) && $cond['keyword']) $sql .= " AND keyword LIKE '%{$cond['keyword']}%' ";
+            if (isset($cond['keyword2']) && $cond['keyword2']) $sql .= " AND keyword2 LIKE '%{$cond['keyword2']}%' ";
+            if (isset($cond['goodsCode']) && $cond['goodsCode']) $sql .= " AND goodsCode LIKE '%{$cond['goodsCode']}%' ";
+            if (isset($cond['goodsName']) && $cond['goodsName']) $sql .= " AND goodsName LIKE '%{$cond['goodsName']}%' ";
+            if (isset($cond['developer']) && $cond['developer']) $sql .= " AND developer LIKE '%{$cond['developer']}%' ";
+            $sql .= " ORDER BY id DESC";
+            $data = Yii::$app->db->createCommand($sql)->queryAll();
+            $provider = new ArrayDataProvider([
+                'allModels' => $data,
+                'pagination' => [
+                    'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
+                ],
+            ]);
+            return $provider;
+        } catch (\Exception $e) {
+            return [
+                'code' => $e->getCode(),
+                'message' => $e->getMessage(),
+            ];
+        }
+
+    }
+
     /** 获取普源商品信息
      * @param $condition
      * Date: 2019-06-21 9:03
@@ -687,6 +722,135 @@ class ApiTinyTool
             ];
         }
 
+    }
+
+    /** 导出关键词
+     * @param $cond
+     * Date: 2019-06-28 16:53
+     * Author: henry
+     * @throws Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public static function exportKeyword($cond){
+        $sql = "SELECT * FROM proCenter.oa_ebayKeyword WHERE 1=1 ";
+        if (isset($cond['keyword']) && $cond['keyword']) $sql .= " AND keyword LIKE '%{$cond['keyword']}%' ";
+        if (isset($cond['keyword2']) && $cond['keyword2']) $sql .= " AND keyword2 LIKE '%{$cond['keyword2']}%' ";
+        if (isset($cond['goodsCode']) && $cond['goodsCode']) $sql .= " AND goodsCode LIKE '%{$cond['goodsCode']}%' ";
+        if (isset($cond['goodsName']) && $cond['goodsName']) $sql .= " AND goodsName LIKE '%{$cond['goodsName']}%' ";
+        if (isset($cond['developer']) && $cond['developer']) $sql .= " AND developer LIKE '%{$cond['developer']}%' ";
+        $sql .= " ORDER BY id DESC";
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
+
+
+        $fileName = 'keywordAnalysis';
+        //$fileName = '竞品分析';
+        $title = ['关键词1', '关键词2', '商品编码', '商品名称', '开发员', '平均单价(￥)', '重量(g)', '关键词1UK链接', '关键词2UK链接', '关键词1AU链接', '关键词2AU链接'];
+        $headers = ['keyword', 'keyword2', 'goodsCode', 'goodsName', 'developer', 'ukUrl', 'ukUrl2', 'auUrl', 'auUrl2'];
+        $fileName = iconv('utf-8', 'GBK', $fileName);//文件名称
+        $fileName = $fileName . date('_YmdHis');//or $xlsTitle 文件名称可根据自己情况设定
+        $spreadsheet = new Spreadsheet();
+        $worksheet = $spreadsheet->getActiveSheet();
+
+        //设置表头字段名称
+        foreach ($title as $key => $value) {
+            $worksheet->setCellValueByColumnAndRow($key + 1, 1, $value);
+        }
+        //填充表内容
+        foreach ($data as $k => $rows) {
+            foreach ($headers as $i => $val) {
+                $worksheet->setCellValueByColumnAndRow($i + 1, $k + 2, $rows[$val]);
+            }
+        }
+        header('pragma:public');
+        header('Access-Control-Allow-Origin: *');
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment;filename="' . $fileName . '.xls"');
+        header('Cache-Control: max-age=0');
+        //attachment新窗口打印inline本窗口打印
+        $writer = IOFactory::createWriter($spreadsheet, 'Xls');
+        $writer->save('php://output');
+        exit;
+    }
+
+
+    /** 导入关键词
+     * Date: 2019-06-28 17:38
+     * Author: henry
+     * @return array|bool
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     */
+    public static function importKeyword(){
+        $file = $_FILES['file'];
+        if (!$file) {
+            return ['code' => 400, 'message' => 'The file can not be empty!'];
+        }
+        //判断文件后缀
+        $extension = ApiSettings::get_extension($file['name']);
+        if($extension != '.xlsx' && $extension != '.xls') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' or 'xls' format"];
+
+        //文件上传
+        $result = ApiSettings::file($file, 'keyword');
+        if (!$result) {
+            return ['code' => 400, 'message' => 'File upload failed'];
+        }else{
+            //获取上传excel文件的内容并保存
+            if($extension === '.xlsx'){
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+            }else{
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+            }
+            $spreadsheet = $reader->load(Yii::$app->basePath . $result);
+            $sheet = $spreadsheet->getSheet(0);
+            $highestRow = $sheet->getHighestRow(); // 取得总行数
+
+            try {
+                for ($i = 2; $i <= $highestRow; $i++) {
+                    //销售死库
+                    $data['keyword'] = $sheet->getCell("A" . $i)->getValue();
+                    $data['keyword2'] = $sheet->getCell("B" . $i)->getValue();
+                    $data['goodsCode'] = $sheet->getCell("C" . $i)->getValue();
+                    $data['goodsName'] = $sheet->getCell("D" . $i)->getValue();
+                    $data['developer'] = $sheet->getCell("E" . $i)->getValue();
+                    $data['costPrice'] = $sheet->getCell("F" . $i)->getValue();
+                    $data['weight'] = $sheet->getCell("G" . $i)->getValue();
+                    //根据关键词获取链接
+                    list($url1,$url2) = ApiTinyTool::handelKeyword($data['keyword']);
+                    $data['ukUrl'] = $url1;
+                    $data['auUrl'] = $url2;
+                    list($url3,$url4) = ApiTinyTool::handelKeyword($data['keyword2']);
+                    $data['ukUrl2'] = $url3;
+                    $data['auUrl2'] = $url4;
+                    //根据商品编码获取平均价格或重量
+                    $sql = "SELECT goodsCode,goodsName,salerName AS developer,sum(goodsprice)/count(goodsCode) AS costPrice,round(sum(weight)/count(goodsCode),0) AS weight 
+                    FROM Y_R_tStockingWaring WHERE  goodsCode LIKE '%{$data['goodsCode']}%' GROUP BY goodsCode,goodsName,salerName";
+                    $priceArr = Yii::$app->py_db->createCommand($sql)->queryOne();
+                    if($priceArr){
+                        $data['goodsName'] = $data['goodsName'] ? : $priceArr['goodsName'];
+                        $data['developer'] = $data['developer'] ? : $priceArr['developer'];
+                        $data['costPrice'] = $data['costPrice'] ? : $priceArr['costPrice'];
+                        $data['weight'] = $data['weight'] ? : $priceArr['weight'];
+                    }
+
+                    //保存数据
+                    $model = OaEbayKeyword::findOne(['goodsCode' => $data['goodsCode']]);
+                    if (!$model) {//插入
+                        $model = new OaEbayKeyword();
+                    }
+                    $model->setAttributes($data);
+                    if(!$model->save()){
+                        //print_r($model->getErrors());exit;
+                        throw new \Exception('save keyword data failed!');
+                    }
+                }
+                return true;
+            } catch (\Exception $e) {
+                return [
+                    'code' =>400,
+                    'message' => $e->getMessage()
+                ];
+            }
+        }
     }
 
 
@@ -731,5 +895,27 @@ class ApiTinyTool
         return [];
     }
 
+
+    public static function handelKeyword($keyword){
+        $keyword = explode(' ', $keyword);
+        if($keyword){
+            $url1 = 'https://www.ebay.co.uk/sch/i.html?_from=R40&_nkw=';
+            $url2 = 'https://www.ebay.com.au/sch/i.html?_from=R40&_nkw=';
+            foreach ($keyword as $k => $value) {
+                if ($k == 0) {
+                    $url1 .= $value;
+                    $url2 .= $value;
+                } else {
+                    $url1 .= '+' . $value;
+                    $url2 .= '+' . $value;
+                }
+            }
+            $url1 .= '&_sacat=0&_dmd=1&rt=nc';
+            $url2 .= '&_sacat=0&_dmd=1&rt=nc';
+        }else{
+            $url1 = $url2 = '';
+        }
+        return [$url1, $url2];
+    }
 
 }

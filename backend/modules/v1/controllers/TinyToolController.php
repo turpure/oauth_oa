@@ -10,6 +10,7 @@ namespace backend\modules\v1\controllers;
 
 use backend\models\OaEbayKeyword;
 use backend\modules\v1\models\ApiAu;
+use backend\modules\v1\models\ApiSettings;
 use backend\modules\v1\models\ApiTinyTool;
 use backend\modules\v1\models\ApiUk;
 use backend\modules\v1\models\ApiUkFic;
@@ -17,6 +18,8 @@ use backend\modules\v1\utils\ExportTools;
 use Codeception\Template\Api;
 use common\models\User;
 use backend\modules\v1\services\ExpressExpired;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Yii;
 use yii\data\ArrayDataProvider;
 use yii\helpers\ArrayHelper;
@@ -178,7 +181,7 @@ class TinyToolController extends AdminController
         $name = Yii::$app->params['transport1'];
         if ($res['Weight'] < Yii::$app->params['weight']) {
             $cost = Yii::$app->params['swBasic'] + Yii::$app->params['swPrice'] * $res['Weight'];
-        }else {
+        } else {
             $cost = $cost = Yii::$app->params['bwBasic'] + Yii::$app->params['bwPrice'] * $res['Weight'];
         }
 
@@ -191,7 +194,7 @@ class TinyToolController extends AdminController
         $name3 = Yii::$app->params['transport3'];
         if ($res['Weight'] < Yii::$app->params['weight3']) {
             $cost3 = Yii::$app->params['wBasic2'] + Yii::$app->params['price2'] * $res['Weight'];
-        }else {
+        } else {
             $cost3 = Yii::$app->params['wBasic2'] + Yii::$app->params['price3'] * $res['Weight'];
         }
 
@@ -568,12 +571,12 @@ class TinyToolController extends AdminController
                         saleNum3days, saleNum7days, saleNum15days, saleNum30days, trend, saleNumDailyAve, hopeUseNum,
                         amount, totalHopeUN, hopeSaleDays, purchaseNum, price, purCost 
                     FROM cache_overseasReplenish WHERE type='UK虚拟仓'";
-            if(isset($cond['sku']) && $cond['sku']) $sql .= " AND SKU LIKE '%{$cond['sku']}%'";
-            if(isset($cond['salerName']) && $cond['salerName']) $sql .= " AND salerName LIKE '%{$cond['salerName']}%'";
-            if(isset($cond['purchaser']) && $cond['purchaser']) $sql .= " AND purchaser LIKE '%{$cond['purchaser']}%'";
-            if(isset($cond['trend']) && $cond['trend']) $sql .= " AND trend LIKE '%{$cond['trend']}%'";
-            if(isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
-            if(isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
+            if (isset($cond['sku']) && $cond['sku']) $sql .= " AND SKU LIKE '%{$cond['sku']}%'";
+            if (isset($cond['salerName']) && $cond['salerName']) $sql .= " AND salerName LIKE '%{$cond['salerName']}%'";
+            if (isset($cond['purchaser']) && $cond['purchaser']) $sql .= " AND purchaser LIKE '%{$cond['purchaser']}%'";
+            if (isset($cond['trend']) && $cond['trend']) $sql .= " AND trend LIKE '%{$cond['trend']}%'";
+            if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
+            if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
             $data = Yii::$app->db->createCommand($sql)->queryAll();
             $totalPurCost = array_sum(ArrayHelper::getColumn($data, 'purCost'));
 
@@ -604,14 +607,14 @@ class TinyToolController extends AdminController
                         saleNum3days, saleNum7days, saleNum15days, saleNum30days, trend, saleNumDailyAve, 399HopeUseNum,
                         uHopeUseNum, totalHopeUseNum, uHopeSaleDays, hopeSaleDays, purchaseNum, shipNum, purCost, shipWeight 
                     FROM cache_overseasReplenish WHERE type='AU真仓'";
-            if(isset($cond['sku']) && $cond['sku']) $sql .= " AND SKU LIKE '%{$cond['sku']}%'";
-            if(isset($cond['salerName']) && $cond['salerName']) $sql .= " AND salerName LIKE '%{$cond['salerName']}%'";
-            if(isset($cond['purchaser']) && $cond['purchaser']) $sql .= " AND purchaser LIKE '%{$cond['purchaser']}%'";
-            if(isset($cond['trend']) && $cond['trend']) $sql .= " AND trend LIKE '%{$cond['trend']}%'";
-            if(isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
-            if(isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
-            if(isset($cond['isShipping']) && $cond['isShipping'] == '是') $sql .= " AND shipNum>0 ";
-            if(isset($cond['isShipping']) && $cond['isShipping'] == '否') $sql .= " AND shipNum=0 ";
+            if (isset($cond['sku']) && $cond['sku']) $sql .= " AND SKU LIKE '%{$cond['sku']}%'";
+            if (isset($cond['salerName']) && $cond['salerName']) $sql .= " AND salerName LIKE '%{$cond['salerName']}%'";
+            if (isset($cond['purchaser']) && $cond['purchaser']) $sql .= " AND purchaser LIKE '%{$cond['purchaser']}%'";
+            if (isset($cond['trend']) && $cond['trend']) $sql .= " AND trend LIKE '%{$cond['trend']}%'";
+            if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
+            if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
+            if (isset($cond['isShipping']) && $cond['isShipping'] == '是') $sql .= " AND shipNum>0 ";
+            if (isset($cond['isShipping']) && $cond['isShipping'] == '否') $sql .= " AND shipNum=0 ";
             $data = Yii::$app->db->createCommand($sql)->queryAll();
             $totalPurCost = array_sum(ArrayHelper::getColumn($data, 'purCost'));
             $totalShipWeight = array_sum(ArrayHelper::getColumn($data, 'shipWeight'));
@@ -642,14 +645,14 @@ class TinyToolController extends AdminController
                         saleNum3days, saleNum7days, saleNum15days, saleNum30days, trend, saleNumDailyAve, 399HopeUseNum,
                         uHopeUseNum, totalHopeUseNum, uHopeSaleDays, hopeSaleDays, purchaseNum, shipNum, purCost, shipWeight 
                     FROM cache_overseasReplenish WHERE type='UK真仓'";
-            if(isset($cond['sku']) && $cond['sku']) $sql .= " AND SKU LIKE '%{$cond['sku']}%'";
-            if(isset($cond['salerName']) && $cond['salerName']) $sql .= " AND salerName LIKE '%{$cond['salerName']}%'";
-            if(isset($cond['purchaser']) && $cond['purchaser']) $sql .= " AND purchaser LIKE '%{$cond['purchaser']}%'";
-            if(isset($cond['trend']) && $cond['trend']) $sql .= " AND trend LIKE '%{$cond['trend']}%'";
-            if(isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
-            if(isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
-            if(isset($cond['isShipping']) && $cond['isShipping'] == '是') $sql .= " AND shipNum>0 ";
-            if(isset($cond['isShipping']) && $cond['isShipping'] == '否') $sql .= " AND shipNum=0 ";
+            if (isset($cond['sku']) && $cond['sku']) $sql .= " AND SKU LIKE '%{$cond['sku']}%'";
+            if (isset($cond['salerName']) && $cond['salerName']) $sql .= " AND salerName LIKE '%{$cond['salerName']}%'";
+            if (isset($cond['purchaser']) && $cond['purchaser']) $sql .= " AND purchaser LIKE '%{$cond['purchaser']}%'";
+            if (isset($cond['trend']) && $cond['trend']) $sql .= " AND trend LIKE '%{$cond['trend']}%'";
+            if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
+            if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
+            if (isset($cond['isShipping']) && $cond['isShipping'] == '是') $sql .= " AND shipNum>0 ";
+            if (isset($cond['isShipping']) && $cond['isShipping'] == '否') $sql .= " AND shipNum=0 ";
             $data = Yii::$app->db->createCommand($sql)->queryAll();
             $totalPurCost = array_sum(ArrayHelper::getColumn($data, 'purCost'));
             $totalShipWeight = array_sum(ArrayHelper::getColumn($data, 'shipWeight'));
@@ -747,10 +750,9 @@ class TinyToolController extends AdminController
                 return ['code' => 400, 'message' => 'The file can not be empty!'];
             }
             return ApiTinyTool::uploadJoomTracking($file);
+        } catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
-       catch (\Exception $why) {
-            return ['code' => $why->getCode(),  'message' => $why->getMessage()];
-       }
     }
 
     /**
@@ -768,12 +770,12 @@ class TinyToolController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiTinyTool::getTaskJoomTracking($condition);
-        }
-
-        catch (\Exception  $why) {
+        } catch (\Exception  $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
     }
-    }
+
+    //================竞品分析===================
 
     /** 竞品分析
      * Date: 2019-06-20 15:57
@@ -783,28 +785,7 @@ class TinyToolController extends AdminController
     public function actionKeywordAnalysis()
     {
         $cond = Yii::$app->request->post()['condition'];
-        try{
-            $sql = "SELECT * FROM proCenter.oa_ebayKeyword WHERE 1=1";
-            if(isset($cond['keyword']) && $cond['keyword']) $sql .= " AND keyword LIKE '%{$cond['keyword']}%' ";
-            if(isset($cond['keyword2']) && $cond['keyword2']) $sql .= " AND keyword2 LIKE '%{$cond['keyword2']}%' ";
-            if(isset($cond['goodsCode']) && $cond['goodsCode']) $sql .= " AND goodsCode LIKE '%{$cond['goodsCode']}%' ";
-            if(isset($cond['goodsName']) && $cond['goodsName']) $sql .= " AND goodsName LIKE '%{$cond['goodsName']}%' ";
-            if(isset($cond['developer']) && $cond['developer']) $sql .= " AND developer LIKE '%{$cond['developer']}%' ";
-            $sql .= " ORDER BY id DESC";
-            $data =  Yii::$app->db->createCommand($sql)->queryAll();
-            $provider = new ArrayDataProvider([
-                'allModels' => $data,
-                'pagination' => [
-                    'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
-                ],
-            ]);
-            return $provider;
-        }catch(\Exception $e){
-            return [
-                'code' => $e->getCode(),
-                'message' => $e->getMessage(),
-            ];
-        }
+        return ApiTinyTool::getKeywordGoodsList($cond);
     }
 
     /** 从普源获取要搜索的产品
@@ -812,7 +793,8 @@ class TinyToolController extends AdminController
      * Author: henry
      * @return array
      */
-    public function actionKeywordList(){
+    public function actionKeywordList()
+    {
         $cond = Yii::$app->request->post()['condition'];
         return ApiTinyTool::getKeywordGoodsListFromShopElf($cond);
     }
@@ -822,64 +804,33 @@ class TinyToolController extends AdminController
      * Author: henry
      * @return array|bool
      */
-    public function actionUpdateKeywordInfo(){
-        try{
+    public function actionUpdateKeywordInfo()
+    {
+        try {
             $cond = Yii::$app->request->post()['condition'];
-            if(!isset($cond['id']) || !$cond['id']){
+            if (!isset($cond['id']) || !$cond['id']) {
                 $q = OaEbayKeyword::findOne(['goodsCode' => $cond['goodsCode']]);
-                if ($q){
+                if ($q) {
                     throw new \Exception('SKU already exists and cannot be added repeatedly!');
                 }
                 $model = new OaEbayKeyword();
-            }else{
+            } else {
                 $model = OaEbayKeyword::findOne($cond['id']);
             }
             $model->setAttributes($cond);
-            if($cond['keyword']){
-                $keyword = explode(' ', $cond['keyword']);
-                $url1 = 'https://www.ebay.co.uk/sch/i.html?_from=R40&_nkw=';
-                $url2 = 'https://www.ebay.com.au/sch/i.html?_from=R40&_nkw=';
-                foreach ($keyword as $k => $value){
-                    if($k == 0){
-                        $url1 .= $value;
-                        $url2 .= $value;
-                    }else{
-                        $url1 .= '+'.$value;
-                        $url2 .= '+'.$value;
-                    }
-                }
-                $url1 .= '&_sacat=0&_dmd=1&rt=nc';
-                $url2 .= '&_sacat=0&_dmd=1&rt=nc';
-                $model->ukUrl = $url1;
-                $model->auUrl = $url2;
-            }
+            list($url1,$url2) = ApiTinyTool::handelKeyword($cond['keyword']);
+            $model->ukUrl = $url1;
+            $model->auUrl = $url2;
+            list($url3,$url4) = ApiTinyTool::handelKeyword($cond['keyword2']);
+            $model->ukUrl2 = $url3;
+            $model->auUrl2 = $url4;
 
-            if($cond['keyword2']){
-                $keyword2 = explode(' ', $cond['keyword2']);
-                $url3 = 'https://www.ebay.co.uk/sch/i.html?_from=R40&_nkw=';
-                $url4 = 'https://www.ebay.com.au/sch/i.html?_from=R40&_nkw=';
-                foreach ($keyword2 as $k => $value){
-                    if($k == 0){
-                        $url3 .= $value;
-                        $url4 .= $value;
-                    }else{
-                        $url3 .= '+'.$value;
-                        $url4 .= '+'.$value;
-                    }
-                }
-                $url3 .= '&_sacat=0&_dmd=1&rt=nc';
-                $url4 .= '&_sacat=0&_dmd=1&rt=nc';
-                $model->ukUrl2 = $url3;
-                $model->auUrl2 = $url4;
-            }
-
-
-            if(!$model->save()){
+            if (!$model->save()) {
                 //print_r($model->getErrors());exit;
                 throw new \Exception('save keyword info failed!');
             }
             return true;
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),
@@ -888,6 +839,33 @@ class TinyToolController extends AdminController
 
 
     }
+
+
+    /** 导出关键词
+     * Date: 2019-06-28 16:20
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     * @throws \yii\db\Exception
+     */
+    public static function actionKeywordExport()
+    {
+        $cond = Yii::$app->request->post()['condition'];
+        ApiTinyTool::exportKeyword($cond);
+    }
+
+    /** 导入关键词
+     * Date: 2019-06-28 17:39
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     */
+
+    public static function actionKeywordImport(){
+        ApiTinyTool::importKeyword();
+    }
+
+
+    //================================
 
     /**
      * @brief 查询joom空运费订单
@@ -898,8 +876,7 @@ class TinyToolController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiTinyTool::getJoomNullExpressFare($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
@@ -913,12 +890,10 @@ class TinyToolController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiTinyTool::updateJoomNullExpressFare($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
-
 
 
 }
