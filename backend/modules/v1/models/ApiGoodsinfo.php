@@ -649,29 +649,26 @@ class ApiGoodsinfo
      * @brief wish保存并完善
      * @param $condition
      * @return array
-     * @throws \yii\db\Exception
+     * @throws \Exception
      */
-    public static function wishSaveFinishPlat($condition)
+    public static function saveFinishPlat($condition)
     {
-        static::saveWishInfo($condition);
-        $platCondition = ['id'=> $condition['basicInfo']['id'], 'plat' => 'wish'];
+        $plat = $condition['plat'];
+        if ($plat === 'wish') {
+            static::saveWishInfo($condition);
+        }
+        if ($plat === 'ebay') {
+            static::saveEbayInfo($condition);
+        }
+        if ($plat === 'joom') {
+            static::saveWishInfo($condition);
+        }
+        $platCondition = ['id'=> $condition['basicInfo']['id'], 'plat' => $plat];
         static::finishPlat($platCondition);
         return [];
     }
 
-    /**
-     * @brief ebay保存并完善
-     * @param $condition
-     * @return array
-     * @throws \yii\db\Exception
-     */
-    public static function ebaySaveFinishPlat($condition)
-    {
-        static::saveWishInfo($condition);
-        $platCondition = ['id'=> $condition['basicInfo']['id'], 'plat' => 'ebay'];
-        static::finishPlat($platCondition);
-        return [];
-    }
+
 
     /**
      * @brief get all ebay accounts
