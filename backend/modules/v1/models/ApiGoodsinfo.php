@@ -663,7 +663,7 @@ class ApiGoodsinfo
         if ($plat === 'joom') {
             static::saveWishInfo($condition);
         }
-        $platCondition = ['id'=> $condition['basicInfo']['id'], 'plat' => $plat];
+        $platCondition = ['id'=> $condition['id'], 'plat' => $plat];
         static::finishPlat($platCondition);
         return [];
     }
