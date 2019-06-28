@@ -463,7 +463,7 @@ class OaGoodsinfoController extends AdminController
      * @brief wish保存并完善
      * @return array
      */
-    public function actionWishSaveFinishPlat()
+    public function actionSaveFinishPlat()
     {
         try {
             $request = Yii::$app->request;
@@ -471,7 +471,7 @@ class OaGoodsinfoController extends AdminController
                 return [];
             }
             $condition = $request->post()['condition'];
-            return ApiGoodsinfo::wishSaveFinishPlat($condition);
+            return ApiGoodsinfo::saveFinishPlat($condition);
         }
         catch (\Exception $why) {
             return ['code' => 400, 'message' => $why->getMessage()];
@@ -479,25 +479,7 @@ class OaGoodsinfoController extends AdminController
 
     }
 
-    /**
-     * @brief wish保存并完善
-     * @return array
-     */
-    public function actionEbaySaveFinishPlat()
-    {
-        try {
-            $request = Yii::$app->request;
-            if (!$request->isPost) {
-                return [];
-            }
-            $condition = $request->post()['condition'];
-            return ApiGoodsinfo::ebaySaveFinishPlat($condition);
-        }
-        catch (\Exception $why) {
-            return ['code' => 400, 'message' => $why->getMessage()];
-        }
 
-    }
 
     /**
      * @brief 产品状态
