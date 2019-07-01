@@ -746,7 +746,7 @@ class ApiTinyTool
         $fileName = 'keywordAnalysis';
         //$fileName = '竞品分析';
         $title = ['关键词1', '关键词2', '商品编码', '商品名称', '开发员', '平均单价(￥)', '重量(g)', '关键词1UK链接', '关键词2UK链接', '关键词1AU链接', '关键词2AU链接'];
-        $headers = ['keyword', 'keyword2', 'goodsCode', 'goodsName', 'developer', 'ukUrl', 'ukUrl2', 'auUrl', 'auUrl2'];
+        $headers = ['keyword', 'keyword2', 'goodsCode', 'goodsName', 'developer', 'costPrice', 'weight', 'ukUrl', 'ukUrl2', 'auUrl', 'auUrl2'];
         $fileName = iconv('utf-8', 'GBK', $fileName);//文件名称
         $fileName = $fileName . date('_YmdHis');//or $xlsTitle 文件名称可根据自己情况设定
         $spreadsheet = new Spreadsheet();
