@@ -58,6 +58,7 @@ class OaDataMine extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
+            [['goodsCode'], 'unique'],
             [['createTime', 'updateTime','infoId'], 'safe'],
             [['isLiquid', 'isPowder', 'isMagnetism', 'isCharged'], 'integer'],
             [['proId', 'platForm', 'progress', 'creator', 'detailStatus', 'cat', 'subCat', 'goodsCode', 'devStatus', 'mainImage', 'pyGoodsCode', 'spAttribute'], 'string', 'max' => 255],

@@ -119,6 +119,10 @@ class ApiMine
         $mine = new OaDataMine();
         try {
             foreach ($proId as $id) {
+                $queryPro = OaDataMine::findOne(['proId' => $id]);
+                if($queryPro){
+                    throw  new Exception("该产品已采集过，请勿重复采集!",'400003');
+                }
                 $newMine = clone $mine;
                 $id = trim($id);
                 $goodsCode = static::generateCode($maxCode);
@@ -629,10 +633,18 @@ class ApiMine
         $number = (int)substr($previousCode,9) + 1;
         $base = '0000';
         if(\strlen($number) === \strlen($base)){
-            return 'A'.date('Ymd').$number;
+            $goodsCode = 'A'.date('Ymd').$number;
+        }else{
+            $code = substr($base,0,\strlen($base) - \strlen($number)).$number;
+            $goodsCode = 'A'.date('Ymd').$code;
         }
-        $code = substr($base,0,\strlen($base) - \strlen($number)).$number;
-        return 'A'.date('Ymd').$code;
+        $queryCode = OaDataMine::findOne(['goodsCode' => $goodsCode]);
+        if($queryCode === null){
+            return $goodsCode;
+        }else{
+            return static::generateCode($goodsCode);
+        }
+
     }
 
     /**
