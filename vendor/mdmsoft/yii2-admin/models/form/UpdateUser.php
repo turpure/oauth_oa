@@ -214,9 +214,17 @@ class UpdateUser extends Model
      */
     public static function getMapPlat()
     {
-        $ret = ApiCondition::getUserPlat();
+        /*$ret = ApiCondition::getUserPlat();
         $plat = array_values(ArrayHelper::getColumn($ret, 'plat'));
-        return array_combine($plat, $plat);
+        return array_combine($plat, $plat);*/
+        return [
+            'eBay-义乌仓' => 'eBay-义乌仓',
+            'eBay-海外仓' => 'eBay-海外仓',
+            'Wish' => 'Wish',
+            'SMT' => 'SMT',
+            'Amazon' => 'Amazon',
+            'Joom' => 'Joom',
+        ];
     }
 
     /**

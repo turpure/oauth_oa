@@ -220,7 +220,7 @@ class User extends ActiveRecord implements IdentityInterface
             'canStockUp' => '备货权限',
             'mapPersons' => '对应销售',
             'mapWarehouse' => '对应仓库',
-            'mapPlat' => '对应平台',
+            'mapPlat' => '销售平台',
             'role' => '角色'
         ];
     }
