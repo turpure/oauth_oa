@@ -85,8 +85,19 @@ class UpdateUser extends Model
             [['user_id'],'integer'],
             [['department','child_depart'],'string'],
             [['department',],'required'],
-            [['store','position','mapPersons','mapPlat','mapWarehouse','role'],'safe']
+            [['store','position','mapPersons','mapPlat','mapWarehouse','role'],'safe'],
+            [['mapPlat'],'requiredByRule'],
         ];
+    }
+
+    public function requiredByRule()
+    {
+        if(in_array('产品销售', $this->role)){
+            if ($this->mapPlat === ''){
+                $this->addError('mapPlat', "销售平台不能为空.");
+            }
+        }
+
     }
 
     /**

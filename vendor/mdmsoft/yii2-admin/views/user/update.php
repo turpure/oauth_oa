@@ -119,7 +119,7 @@ $controllerId = $this->context->uniqueId . '/';
             ]) ?>
             <?= $form->field($model, 'mapPlat')->widget(Select2::classname(), [
                 'data' => UpdateUser::getMapPlat(),
-                'options' => ['placeholder' => '--请选择对应平台--',
+                'options' => ['placeholder' => '--请选择销售平台--',
                     'multiple' => true,
                 ],
                 'pluginOptions' => [
