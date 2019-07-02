@@ -93,7 +93,7 @@ class UpdateUser extends Model
     public function requiredByRule()
     {
         if(in_array('产品销售', $this->role)){
-            if ($this->mapPlat === ''){
+            if (!$this->mapPlat){
                 $this->addError('mapPlat', "销售平台不能为空.");
             }
         }
@@ -191,7 +191,7 @@ class UpdateUser extends Model
             'store' => '店铺',
             'position' => '职位',
             'mapPersons' => '对应销售',
-            'mapPlat' => '对应平台',
+            'mapPlat' => '销售平台',
             'mapWarehouse' => '对应仓库',
             'role' => '角色',
         ];
@@ -229,6 +229,7 @@ class UpdateUser extends Model
         $plat = array_values(ArrayHelper::getColumn($ret, 'plat'));
         return array_combine($plat, $plat);*/
         return [
+            '' => '',
             'eBay-义乌仓' => 'eBay-义乌仓',
             'eBay-海外仓' => 'eBay-海外仓',
             'Wish' => 'Wish',
