@@ -22,7 +22,7 @@ $controllerId = $this->context->uniqueId . '/';
 ?>
 <div class="site-update">
     <h1><?= Html::encode($this->title) ?></h1>
-    <?= Html::errorSummary($model) ?>
+<!--    --><?//= Html::errorSummary($model) ?>
     <div class="row">
         <div class="col-lg-5">
             <?php $form = ActiveForm::begin(['id' => 'form-update-user']); ?>

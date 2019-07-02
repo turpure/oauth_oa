@@ -86,7 +86,7 @@ class UpdateUser extends Model
             [['department','child_depart'],'string'],
             [['department',],'required'],
             [['store','position','mapPersons','mapWarehouse','role'],'safe'],
-            [['mapPlat'],'requiredByRule'],
+            [['mapPlat'],'requiredByRule','skipOnEmpty' => false, 'skipOnError' => false],
         ];
     }
 
@@ -170,15 +170,13 @@ class UpdateUser extends Model
                     $pos->delete();
                 }
             }
+
+            if($DepartmentChild->save()) {
+                return True;
+            }
         }
 
-
-        if($DepartmentChild->save()) {
-            return True;
-        }
-
-
-        return null;
+        return false;
     }
 
     /**
@@ -229,13 +227,13 @@ class UpdateUser extends Model
         $plat = array_values(ArrayHelper::getColumn($ret, 'plat'));
         return array_combine($plat, $plat);*/
         return [
-            '' => '',
             'eBay-义乌仓' => 'eBay-义乌仓',
             'eBay-海外仓' => 'eBay-海外仓',
             'Wish' => 'Wish',
             'SMT' => 'SMT',
             'Amazon' => 'Amazon',
             'Joom' => 'Joom',
+            '其他' => '其他'
         ];
     }
 
