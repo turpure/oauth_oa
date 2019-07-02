@@ -696,7 +696,7 @@ class ApiReport
             if ($condition['suffix']) {
                 $sql .= ' AND suffix IN (' . $condition['suffix'] . ') ';
             }
-            $sql .= ' ORDER BY refund DESC;';
+            $sql .= ' ORDER BY refund DESC,goodsSku ASC;';
         }
 
         //按SKU汇总退款
@@ -714,7 +714,7 @@ class ApiReport
             if ($condition['suffix']) {
                 $sql .= 'AND suffix IN (' . $condition['suffix'] . ') ';
             }
-            $sql .= 'ORDER BY times DESC';
+            $sql .= 'ORDER BY times DESC,goodsSku ASC';
         }
 
         $con = Yii::$app->db;
@@ -724,7 +724,6 @@ class ApiReport
                 'allModels' => $data,
                 'pagination' => [
                     'pageSize' => $condition['pageSize'],
-                    //'page' => $condition['page'] - 1,
                 ],
             ]);
             $totalRefundZn = round(array_sum(ArrayHelper::getColumn($data, 'refundZn')),2);
