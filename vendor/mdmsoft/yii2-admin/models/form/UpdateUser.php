@@ -85,7 +85,7 @@ class UpdateUser extends Model
             [['user_id'],'integer'],
             [['department','child_depart'],'string'],
             [['department',],'required'],
-            [['store','position','mapPersons','mapPlat','mapWarehouse','role'],'safe'],
+            [['store','position','mapPersons','mapWarehouse','role'],'safe'],
             [['mapPlat'],'requiredByRule'],
         ];
     }
