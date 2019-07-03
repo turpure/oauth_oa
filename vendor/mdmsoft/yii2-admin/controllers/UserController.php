@@ -388,5 +388,17 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * @brief user表单验证
+     * @param $id int
+     * @return array
+     */
+    public function actionValidateUser ($id) {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        $model = new UpdateUser($id);
+        $model->load(Yii::$app->request->post());
+        return \yii\widgets\ActiveForm::validate($model);
+    }
+
 
 }

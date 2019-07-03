@@ -25,7 +25,11 @@ $controllerId = $this->context->uniqueId . '/';
 <!--    --><?//= Html::errorSummary($model) ?>
     <div class="row">
         <div class="col-lg-5">
-            <?php $form = ActiveForm::begin(['id' => 'form-update-user']); ?>
+            <?php $form = ActiveForm::begin([
+                    'id' => 'form-update-user',
+                    'enableAjaxValidation' => true,
+                    'validationUrl' => Url::to(['validate-user','id' =>$model->user_id])]
+            ); ?>
             <?= $form->field($model, 'department')->widget(Select2::classname(), [
                 'data' => ArrayHelper::map(Department::findAll(['parent' => 0]), 'id', 'department'),
                 'pluginEvents' => [
