@@ -791,19 +791,17 @@ class ApiGoodsinfo
                 $goodsInfo = OaGoodsinfo::findOne(['goodsCode' => $id]);
                 $id = $goodsInfo['id'];
             }
-            $goods = BGoods::findOne(['GoodsCode' => $goodsInfo['goodsCode']]);
             $joomSku = OaWishGoodsSku::find()
                 ->where(['infoId' => $id])
                 ->asArray()->all();
             $joomInfo = OaWishGoods::find()->where(['infoId' => $id])->asArray()->one();
             $keyWords = static::preKeywords($joomInfo);
-            $priceInfo = static::getJoomPriceInfo($joomSku);
             $title = static::getTitleName($keyWords, self::JoomTitleLength);
             foreach ($accounts as $account) {
                 $joomAccounts = OaJoomSuffix::find()->where(['joomName' => $account])->asArray()->one();
                 $imageInfo = static::getJoomImageInfo($joomInfo, $joomAccounts);
                 foreach ($joomSku as $sku) {
-                    $price = static::getJoomAdjust($sku['weight'], $priceInfo['price']);
+//                    $price = static::getJoomAdjust($sku['weight'], $priceInfo['price']);
                     $row['Parent Unique ID'] = $joomInfo['sku'] . $joomAccounts['skuCode'];
                     $row['*Product Name'] = $title;
                     $row['Description'] = $joomInfo['description'];
@@ -812,9 +810,9 @@ class ApiGoodsinfo
                     $row['Color'] = $sku['color'];
                     $row['Size'] = $sku['size'];
                     $row['*Quantity'] = $sku['inventory'];
-                    $row['*Price'] = $price ;
-                    $row['*MSRP'] = $priceInfo['msrp'];
-                    $row['*Shipping'] = $priceInfo['shipping'];
+                    $row['*Price'] = $joomSku['joomPrice'] ;
+                    $row['*MSRP'] = ($joomSku['joomPrice'] + $joomSku['joomShipping']) * 5;
+                    $row['*Shipping'] = $joomSku['joomShipping'];
                     $row['Shipping weight'] = (float)$sku['weight']*1.0/1000;
                     $row['Shipping Time(enter without " ", just the estimated days )'] = '15-45';
                     $row['*Product Main Image URL'] = $imageInfo['mainImage'];
@@ -830,7 +828,7 @@ class ApiGoodsinfo
                     $row['Extra Image URL 8'] = $imageInfo['extraImages'][8];
                     $row['Extra Image URL 9'] = $imageInfo['extraImages'][9];
                     $row['Dangerous Kind'] = static::getJoomDangerousKind($goodsInfo);
-                    $row['Declared Value'] = static::getJoomDeclaredValue($price);
+                    $row['Declared Value'] = static::getJoomDeclaredValue($joomSku['joomPrice']);
                     $out[] = $row;
                 }
             }
@@ -1199,35 +1197,6 @@ class ApiGoodsinfo
         return $ret;
     }
 
-    /**
-     * @brief joom定价规则
-     * @param $joomSku
-     * @return array
-     */
-    private static function getJoomPriceInfo($joomSku)
-    {
-        $prices = ArrayHelper::getColumn($joomSku, 'price');
-        $shippingPrices = ArrayHelper::getColumn($joomSku, 'shipping');
-        $joomPriceArr = ArrayHelper::getColumn($joomSku, 'joomPrice');
-        $joomShippingArr = ArrayHelper::getColumn($joomSku, 'joomShipping');
-        $minJoomShipping = min($joomShippingArr);
-        $maxMsrp = max(ArrayHelper::getColumn($joomSku, 'msrp'));
-        $len = count($joomSku);
-        $i = 0;
-        $totalPrice = $totalMsrp = [];
-        while ($i < $len) {
-            $totalPrice[] = $prices[$i] + $shippingPrices[$i];
-            $totalMsrp[] = $joomPriceArr[$i] + $joomShippingArr[$i];
-            $i++;
-        }
-        //定价规则
-        $price = max($totalPrice) - 0.01;
-        $msrp = max([max($totalMsrp) * 5, $maxMsrp]);
-        $joomPrice = max($totalMsrp) - $minJoomShipping;
-        $price = $joomPrice > 0 ? $joomPrice : $price;
-        $shipping = $minJoomShipping;
-        return ['price' => $price, 'msrp' => $msrp, 'joomPrice' => $joomPrice, 'shipping' => $shipping];
-    }
 
     /**
      * @brief 根据总量调整joom价格
