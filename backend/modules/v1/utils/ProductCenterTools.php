@@ -269,15 +269,15 @@ class ProductCenterTools
         else {
             $excludeFields = ['GoodsName','GoodsStatus','Weight', 'RetailPrice', 'CostPrice'];
             foreach ($excludeFields as $field) {
-                unset($goodsInfo,$field);
+                unset($goodsInfo[$field]);
             }
         }
         $bGoods->setAttributes($goodsInfo);
         if (!$bGoods->save()) {
             throw new \Exception('fail to import goods');
         }
-        $goodsInfo['goodsId'] = BGoods::findOne(['GoodsCode' => $goodsCode])['NID'];
-        return $goodsInfo;
+        $_goodsInfo['goodsId'] = BGoods::findOne(['GoodsCode' => $goodsCode])['NID'];
+        return $_goodsInfo;
     }
 
     /**
@@ -399,7 +399,7 @@ class ProductCenterTools
             else {
                 $excludeFields = ['SKUName','property1', 'property2', 'property3','GoodsSKUStatus','Weight','CostPrice','RetailPrice'];
                 foreach ($excludeFields as $field) {
-                    unset($sku, $field);
+                    unset($sku[$field]);
                 }
             }
             $oldSkuStatus = $bGoodsSku->GoodsSKUStatus;
