@@ -84,10 +84,19 @@ class ProductCenterTools
     /**
      * @brief 导入普源系统
      * @param $infoId
+     * @param $repeat
      * @return mixed
      */
-    public static function importShopElf($infoId)
+    public static function importShopElf($infoId, $repeat)
     {
+        // 如果已经导入，返回提示信息
+        if ((int)$repeat === 0) {
+            $goodsCode = OaGoodsinfo::find()->select('goodsCode')->where(['id' => $infoId])->scalar();
+            $pyGoodsCode = BGoods::find()->select('goodsCode')->where(['goodsCode' => $goodsCode])->scalar();
+            if(!empty($pyGoodsCode)) {
+                return ['该商品已导入普源，确定重新导入？'];
+            }
+        }
         return static::_preImport($infoId);
     }
 
@@ -244,16 +253,24 @@ class ProductCenterTools
 
     /**
      * @brief 导入到bGoods里面
-     * @param $goodsInfo
+     * @param $_goodsInfo
      * @return mixed
      * @throws \Exception
      */
-    private static function _bGoodsImport($goodsInfo)
+    private static function _bGoodsImport($_goodsInfo)
     {
+        $goodsInfo = $_goodsInfo;
         $goodsCode = $goodsInfo['GoodsCode'];
         $bGoods = BGoods::findOne(['GoodsCode' => $goodsCode]);
         if ($bGoods === null) {
             $bGoods = new BGoods();
+        }
+        //如果存在则部分字段不更新
+        else {
+            $excludeFields = ['GoodsName','GoodsStatus','Weight', 'RetailPrice', 'CostPrice'];
+            foreach ($excludeFields as $field) {
+                unset($goodsInfo,$field);
+            }
         }
         $bGoods->setAttributes($goodsInfo);
         if (!$bGoods->save()) {
@@ -342,6 +359,7 @@ class ProductCenterTools
     /**
      * @brief 导入到bGoodsSku里面
      * @param $data
+     * @param $bGoods
      * @return mixed
      * @throws \Exception
      */
@@ -364,9 +382,8 @@ class ProductCenterTools
         if($skuDiff){
             foreach($skuList as $item){
                 foreach($skuDiff as $v){
-                    if($item['SKU'] == $v){
+                    if($item['SKU'] === $v){
                         $item->delete();
-                        //print_r($item);exit;
                     }
                 }
             }
@@ -377,6 +394,13 @@ class ProductCenterTools
             $bGoodsSku = BGoodsSku::findOne(['SKU' => $sku['SKU']]);
             if ($bGoodsSku === null) {
                 $bGoodsSku = new BGoodsSku();
+            }
+            //如果SKU已存在，部分字段保留不变
+            else {
+                $excludeFields = ['SKUName','property1', 'property2', 'property3','GoodsSKUStatus','Weight','CostPrice','RetailPrice'];
+                foreach ($excludeFields as $field) {
+                    unset($sku, $field);
+                }
             }
             $oldSkuStatus = $bGoodsSku->GoodsSKUStatus;
             $bGoodsSku->setAttributes($sku);
@@ -397,6 +421,7 @@ class ProductCenterTools
      * @brief B_Goods格式
      * @param $goodsInfo
      * @return array
+     * @throws \Exception
      */
     public static function _preGoodsInfo($goodsInfo)
     {
@@ -461,7 +486,7 @@ class ProductCenterTools
                 'property2' => $skuRow['property2'] ?: '',
                 'property3' => $skuRow['property3'] ?: '',
                 'SKUName' => static::getSkuName($skuRow, $bGoods['GoodsName']),
-                'BmpFileName' => static::getBmpFileName($skuRow, $bGoods['GoodsName']),
+                'BmpFileName' => static::getBmpFileName($skuRow),
                 'Remark' => $bGoods['description'] ?: '',
                 'Weight' => $skuRow['weight'] ?: 0,
                 'CostPrice' => $skuRow['costPrice'] ?: 0,

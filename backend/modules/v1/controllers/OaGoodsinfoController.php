@@ -167,13 +167,14 @@ class OaGoodsinfoController extends AdminController
         }
         $condition = $request->post()['condition'];
         $infoIds = $condition['id'];
+        $repeat = isset($condition['repeat']) && !empty($condition['repeat']) ? $condition['repeat'] : 0;
         if (!$infoIds) {
             return [
                 'code' => 400,
                 'message' => 'Please choose the items you want to operate on.',
             ];
         }else{
-            return ProductCenterTools::importShopElf($infoIds);
+            return ProductCenterTools::importShopElf($infoIds,$repeat);
         }
     }
 
