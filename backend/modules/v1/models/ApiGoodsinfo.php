@@ -810,9 +810,9 @@ class ApiGoodsinfo
                     $row['Color'] = $sku['color'];
                     $row['Size'] = $sku['size'];
                     $row['*Quantity'] = $sku['inventory'];
-                    $row['*Price'] = $joomSku['joomPrice'] ;
-                    $row['*MSRP'] = ($joomSku['joomPrice'] + $joomSku['joomShipping']) * 5;
-                    $row['*Shipping'] = $joomSku['joomShipping'];
+                    $row['*Price'] = $sku['joomPrice'] ;
+                    $row['*MSRP'] = ($sku['joomPrice'] + $sku['joomShipping']) * 5;
+                    $row['*Shipping'] = $sku['joomShipping'];
                     $row['Shipping weight'] = (float)$sku['weight']*1.0/1000;
                     $row['Shipping Time(enter without " ", just the estimated days )'] = '15-45';
                     $row['*Product Main Image URL'] = $imageInfo['mainImage'];
@@ -828,7 +828,7 @@ class ApiGoodsinfo
                     $row['Extra Image URL 8'] = $imageInfo['extraImages'][8];
                     $row['Extra Image URL 9'] = $imageInfo['extraImages'][9];
                     $row['Dangerous Kind'] = static::getJoomDangerousKind($goodsInfo);
-                    $row['Declared Value'] = static::getJoomDeclaredValue($joomSku['joomPrice']);
+                    $row['Declared Value'] = static::getJoomDeclaredValue($sku['joomPrice']);
                     $out[] = $row;
                 }
             }
