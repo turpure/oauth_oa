@@ -94,7 +94,7 @@ class ProductCenterTools
             $goodsCode = OaGoodsinfo::find()->select('goodsCode')->where(['id' => $infoId])->scalar();
             $pyGoodsCode = BGoods::find()->select('goodsCode')->where(['goodsCode' => $goodsCode])->scalar();
             if(!empty($pyGoodsCode)) {
-                return ['该商品已导入普源，确定重新导入？'];
+                return ['code' => 0, 'message' =>'该商品已导入过普源'];
             }
         }
         return static::_preImport($infoId);
@@ -241,7 +241,7 @@ class ProductCenterTools
 
             }
             $trans->commit();
-            return true;
+            return ['code' => 1, 'message' => '导入成功' ];
         } catch (\Exception $why) {
             $trans->rollBack();
             return [
