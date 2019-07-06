@@ -397,7 +397,8 @@ class ProductCenterTools
             }
             //如果SKU已存在，部分字段保留不变
             else {
-                $excludeFields = ['SKUName','property1', 'property2', 'property3','GoodsSKUStatus','Weight','CostPrice','RetailPrice'];
+                //$excludeFields = ['SKUName','property1', 'property2', 'property3','GoodsSKUStatus','Weight','CostPrice','RetailPrice'];
+                $excludeFields = ['Weight','CostPrice','RetailPrice'];
                 foreach ($excludeFields as $field) {
                     unset($sku[$field]);
                 }
