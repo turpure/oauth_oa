@@ -267,7 +267,10 @@ class ProductCenterTools
         }
         //如果存在则部分字段不更新
         else {
-            $excludeFields = ['GoodsName','GoodsStatus','Weight', 'RetailPrice', 'CostPrice'];
+            $excludeFields = [
+                'GoodsName','GoodsStatus','Weight', 'RetailPrice', 'CostPrice',
+                'LinkUrl','LinkUrl2','LinkUrl3','LinkUrl4','LinkUrl5','LinkUrl6',
+            ];
             foreach ($excludeFields as $field) {
                 unset($goodsInfo[$field]);
             }
