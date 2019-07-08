@@ -370,12 +370,7 @@ class ProductCenterTools
     {
         $skuModel = BGoodsSku::findOne(['SKU' => $bGoods['GoodsCode']]);
         if($skuModel){
-            $skuModel->SKU = $data ? $data[0]['SKU'] : $skuModel->SKU;
-            $skuModel->GoodsID = $bGoods['goodsId'];
-            $skuModel->LocationID = null;
-            if(!$skuModel->save()){
-                throw new \Exception('fail to update goodsSku');
-            }
+            $skuModel->delete();
         }
         //删除B_goodsSku中已存在且$data中不存在的错误SKU信息
         $skuArrNew = ArrayHelper::getColumn($data, 'SKU');
@@ -400,8 +395,7 @@ class ProductCenterTools
             }
             //如果SKU已存在，部分字段保留不变
             else {
-                //$excludeFields = ['SKUName','property1', 'property2', 'property3','GoodsSKUStatus','Weight','CostPrice','RetailPrice'];
-                $excludeFields = ['Weight','CostPrice','RetailPrice'];
+                $excludeFields = ['SKUName','property1', 'property2', 'property3','GoodsSKUStatus','Weight','CostPrice','RetailPrice'];
                 foreach ($excludeFields as $field) {
                     unset($sku[$field]);
                 }
