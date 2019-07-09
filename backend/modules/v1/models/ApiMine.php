@@ -11,12 +11,13 @@ use yii\data\ActiveDataProvider;
 use backend\models\OaDataMine;
 use backend\models\OaDataMineDetail;
 use backend\models\OaGoods;
+use backend\models\JoomCategory;
 use backend\models\ShopElf\BGoodsSKULinkShop;
 use backend\modules\v1\utils\ExportTools;
 use backend\modules\v1\utils\Helper;
 use Exception;
 use Yii;
-
+use yii\helpers\ArrayHelper;
 
 
 class ApiMine
@@ -686,5 +687,31 @@ class ApiMine
             return 5;
         }
     }
+
+    ###################### joom 类目采集 #############################
+
+    /**
+     * @brief joom平台类目
+     * @return array
+     */
+    public static function getJoomCate()
+    {
+      $ret = JoomCategory::find()->select(['cateName', 'cateId'])->all();
+      return ArrayHelper::map($ret,'cateId', 'cateName');
+    }
+
+    /**
+     * @brief 增加task
+     * @param $condition
+     * @return array
+     */
+    public static function subscribeJoomCate($condition)
+    {
+        $cateId = $condition['cateId'];
+        $redis = Yii::$app->redis;
+        $redis->lpush('joom_task', $cateId . ',');
+        return [$cateId];
+    }
+
 
 }

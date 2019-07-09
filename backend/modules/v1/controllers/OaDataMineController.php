@@ -284,5 +284,25 @@ class OaDataMineController extends AdminController
         }
     }
 
+    ########################### joom 类目采集 ############################################
 
+    /**
+     * @brief joom平台的主类目
+     * @return array
+     */
+    public function actionJoomCate()
+    {
+        return ApiMine::getJoomCate();
+    }
+
+    public function actionSubscribeJoomCate()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiMine::subscribeJoomCate($condition);
+        }
+        catch (\Exception $why) {
+            return ['code' => 400, 'message' => $why->getMessage()];
+        }
+    }
 }
