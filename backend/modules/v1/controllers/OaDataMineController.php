@@ -295,6 +295,10 @@ class OaDataMineController extends AdminController
         return ApiMine::getJoomCate();
     }
 
+    /**
+     * @brief 订阅类目
+     * @return array
+     */
     public function actionSubscribeJoomCate()
     {
         try {
@@ -305,4 +309,14 @@ class OaDataMineController extends AdminController
             return ['code' => 400, 'message' => $why->getMessage()];
         }
     }
+
+    /**
+     * @brief 订阅列表
+     * @return array|\yii\db\ActiveRecord[]
+     */
+    public function actionSubscribeJoomList()
+    {
+        return ApiMine::subscribeJoomList();
+    }
+
 }

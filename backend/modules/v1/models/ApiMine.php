@@ -7,6 +7,7 @@
 
 namespace backend\modules\v1\models;
 
+use backend\models\JoomSubscribeCate;
 use yii\data\ActiveDataProvider;
 use backend\models\OaDataMine;
 use backend\models\OaDataMineDetail;
@@ -704,14 +705,30 @@ class ApiMine
      * @brief 增加task
      * @param $condition
      * @return array
+     * @throws Exception
      */
     public static function subscribeJoomCate($condition)
     {
         $cateId = $condition['cateId'];
+        $cateName = JoomCategory::find()->select('cateName')->where(['cateId' => $cateId])->scalar();
+        $userName = Yii::$app->user->identity->username;
+        $now = date('Y-m-d H:i:s');
+        $sub = new JoomSubscribeCate();
+        $sub->setAttributes(['cateId' => $cateId, 'cateName' => $cateName, 'creator' => $userName, 'createdDate' => $now]);
+        if(!$sub->save()) {
+            throw new Exception('订阅失败');
+        }
         $redis = Yii::$app->redis;
         $redis->lpush('joom_task', $cateId . ',');
         return [$cateId];
     }
 
+
+    /**
+     * @return array|\yii\db\ActiveRecord[]
+     */
+    public static function subscribeJoomList() {
+        return JoomSubscribeCate::find()->all();
+    }
 
 }
