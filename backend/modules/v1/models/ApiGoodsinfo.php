@@ -318,6 +318,11 @@ class ApiGoodsinfo
     public static function saveAttribute($condition)
     {
         $attributeInfo = $condition['basicInfo']['goodsInfo'];
+        // 处理特殊商品信息
+        $map = ['带磁商品' => 'isMagnetism', '带电商品' => 'isCharged', '液体商品' => 'isLiquid', '粉末商品' => 'isPowder'];
+        if (array_key_exists($attributeInfo['attributeName'], $map)) {
+            $attributeInfo[$map[$attributeInfo['attributeName']]] = '是';
+        }
         $oaInfo = $condition['basicInfo']['oaGoods'];
         $skuInfo = $condition['skuInfo'];
         $infoId = $attributeInfo['id'];
