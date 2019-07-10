@@ -319,4 +319,19 @@ class OaDataMineController extends AdminController
         return ApiMine::subscribeJoomList();
     }
 
+    /**
+     * @brief 查看类目下产品
+     * @return array
+     */
+    public function actionJoomCateProduct()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiMine::getJoomCateProduct($condition);
+        }
+        catch (\Exception $why) {
+            return ['code' => 400, 'message' => $why->getMessage()];
+        }
+    }
+
 }

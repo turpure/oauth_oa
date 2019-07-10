@@ -13,6 +13,7 @@ use backend\models\OaDataMine;
 use backend\models\OaDataMineDetail;
 use backend\models\OaGoods;
 use backend\models\JoomCategory;
+use backend\models\JoomCateProduct;
 use backend\models\ShopElf\BGoodsSKULinkShop;
 use backend\modules\v1\utils\ExportTools;
 use backend\modules\v1\utils\Helper;
@@ -725,10 +726,18 @@ class ApiMine
 
 
     /**
+     * @brief 订阅列表
      * @return array|\yii\db\ActiveRecord[]
      */
-    public static function subscribeJoomList() {
+    public static function subscribeJoomList()
+    {
         return JoomSubscribeCate::find()->all();
+    }
+
+    public static function getJoomCateProduct($condition)
+    {
+        $cateId = $condition['cateId'];
+        return JoomCateProduct::findAll(['cateId' => $cateId]);
     }
 
 }
