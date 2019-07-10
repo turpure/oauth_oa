@@ -736,8 +736,16 @@ class ApiMine
 
     public static function getJoomCateProduct($condition)
     {
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $cateId = $condition['cateId'];
-        return JoomCateProduct::findAll(['cateId' => $cateId]);
+        $query = JoomCateProduct::find()->where(['cateId' => $cateId]);
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
     }
 
 }
