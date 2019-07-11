@@ -7,16 +7,19 @@
 
 namespace backend\modules\v1\models;
 
+use backend\models\JoomSubscribeCate;
 use yii\data\ActiveDataProvider;
 use backend\models\OaDataMine;
 use backend\models\OaDataMineDetail;
 use backend\models\OaGoods;
+use backend\models\JoomCategory;
+use backend\models\JoomCateProduct;
 use backend\models\ShopElf\BGoodsSKULinkShop;
 use backend\modules\v1\utils\ExportTools;
 use backend\modules\v1\utils\Helper;
 use Exception;
 use Yii;
-
+use yii\helpers\ArrayHelper;
 
 
 class ApiMine
@@ -685,6 +688,68 @@ class ApiMine
         if( $price > 20) {
             return 5;
         }
+    }
+
+    ###################### joom 类目采集 #############################
+
+    /**
+     * @brief joom平台类目
+     * @return array
+     */
+    public static function getJoomCate()
+    {
+      $ret = JoomCategory::find()->select(['cateName', 'cateId'])->all();
+      return ArrayHelper::map($ret,'cateId', 'cateName');
+    }
+
+    /**
+     * @brief 增加task
+     * @param $condition
+     * @return array
+     * @throws Exception
+     */
+    public static function subscribeJoomCate($condition)
+    {
+        $cateId = $condition['cateId'];
+        $cateName = JoomCategory::find()->select('cateName')->where(['cateId' => $cateId])->scalar();
+        $userName = Yii::$app->user->identity->username;
+        $now = date('Y-m-d H:i:s');
+        $sub = new JoomSubscribeCate();
+        $sub->setAttributes(['cateId' => $cateId, 'cateName' => $cateName, 'creator' => $userName, 'createdDate' => $now]);
+        if(!$sub->save()) {
+            throw new Exception('订阅失败');
+        }
+        $redis = Yii::$app->redis;
+        $redis->lpush('joom_task', $cateId . ',');
+        return [$cateId];
+    }
+
+
+    /**
+     * @brief 订阅列表
+     * @return array|\yii\db\ActiveRecord[]
+     */
+    public static function subscribeJoomList()
+    {
+        return JoomSubscribeCate::find()->all();
+    }
+
+    public static function getJoomCateProduct($condition)
+    {
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $cateId = $condition['cateId'];
+        $query = (new  yii\db\Query())
+            ->select('jp.*,jc.cateName')
+            ->from('proCenter.joom_cateProduct as jp')
+            ->leftJoin('proCenter.joom_category as jc', 'jc.cateId = jp.cateId' )
+            ->where(['jp.cateId' => $cateId]);
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
     }
 
 }
