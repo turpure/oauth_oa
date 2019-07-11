@@ -738,7 +738,11 @@ class ApiMine
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $cateId = $condition['cateId'];
-        $query = JoomCateProduct::find()->where(['cateId' => $cateId]);
+        $query = (new  yii\db\Query())
+            ->select('jp.*,jc.cateName')
+            ->from('proCenter.joom_cateProduct as jp')
+            ->leftJoin('proCenter.joom_category as jc', 'jc.cateId = jp.cateId' )
+            ->where(['jp.cateId' => $cateId]);
         $provider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
