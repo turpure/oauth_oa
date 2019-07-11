@@ -1232,12 +1232,12 @@ class ApiGoodsinfo
         $extraImages = array_map(function ($ele) use ($account) {
             return str_replace('/10023/', '/'.$account['imgCode'].'/', $ele);
         }, $extraImages);
+        shuffle($extraImages);
         $countImages = count($extraImages);
-        while ($countImages <= 11) {
+        while ($countImages < 11) {
             $extraImages[] = '';
             $countImages++;
         }
-        shuffle($extraImages);
         return ['mainImage' => $mainImage, 'extraImages' => $extraImages];
     }
 
