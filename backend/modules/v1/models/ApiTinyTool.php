@@ -910,7 +910,7 @@ class ApiTinyTool
         $filterFields = ['like' => ['accountName', 'currency']];
         $filterTime = ['updatedDate'];
         $query = Helper::generateFilter($query, $filterFields, $condition);
-        $query = Helper::generateFilter($query, $filterTime, $condition);
+        $query = Helper::timeFilter($query, $filterTime, $condition);
         $query = $query->orderBy('updatedDate DESC');
         $provider = new ActiveDataProvider([
             'query' => $query,
