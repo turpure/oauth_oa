@@ -911,9 +911,9 @@ class ApiTinyTool
         $filterTime = ['updatedDate'];
         $query = Helper::generateFilter($query, $filterFields, $condition);
         $query = Helper::timeFilter($query, $filterTime, $condition);
-        $query = $query->orderBy('updatedDate DESC');
         $provider = new ActiveDataProvider([
             'query' => $query,
+            'sort'=> ['defaultOrder' => ['updatedDate'=>SORT_ASC]],
             'pagination' => [
                 'pageSize' => $pageSize
             ]
