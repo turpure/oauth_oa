@@ -905,8 +905,8 @@ class ApiTinyTool
      */
     public static function getEbayBalance($condition)
     {
-        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-        $query = EbayBalance::find();
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 100000;
+        $query = EbayBalance::find()->asArray();
         $filterFields = ['like' => ['accountName', 'currency']];
         $filterTime = ['updatedDate'];
         $query = Helper::generateFilter($query, $filterFields, $condition);

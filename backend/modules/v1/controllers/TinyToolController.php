@@ -10,6 +10,7 @@ namespace backend\modules\v1\controllers;
 
 use backend\models\OaEbayKeyword;
 use backend\modules\v1\models\ApiAu;
+use backend\modules\v1\models\ApiGoodsinfo;
 use backend\modules\v1\models\ApiSettings;
 use backend\modules\v1\models\ApiTinyTool;
 use backend\modules\v1\models\ApiUk;
@@ -908,6 +909,21 @@ class TinyToolController extends AdminController
         } catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
 
+        }
+    }
+
+    public function actionExportEbayBalance()
+    {
+        try {
+            $request = Yii::$app->request->post();
+            $condition = $request['condition'];
+            $condition['pageSize'] = 100000;
+            $data = ApiTinyTool::getEbayBalance($condition)->models;
+            $title = ['ID','账号名称','余额', '货币','更新时间'];
+            ExportTools::toExcelOrCsv('ebay-balance', $data, 'Xls', $title);
+        }
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
 
