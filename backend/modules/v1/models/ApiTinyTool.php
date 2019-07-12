@@ -20,6 +20,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\db\Exception;
+use yii\db\Expression;
 use yii\db\Query;
 use yii\helpers\ArrayHelper;
 use \PhpOffice\PhpSpreadsheet\Reader\Csv;
@@ -906,14 +907,29 @@ class ApiTinyTool
     public static function getEbayBalance($condition)
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 100000;
-        $query = EbayBalance::find()->asArray();
-        $filterFields = ['like' => ['accountName', 'currency']];
+        $department = new Expression('case when ad.parent=0 then ad.department else adp.department end');
+        $query = EbayBalance::find()->alias('eb')
+            ->asArray()
+            ->select([
+                'eb.id','eb.accountName','username', 'department' => $department,
+                'eb.balance','currency','updatedDate'])
+            ->leftJoin('auth_store as str','str.store=eb.accountName')
+            ->leftJoin('auth_store_child as stc','str.id=stc.store_id')
+            ->leftJoin('`user` as usr','usr.id=stc.user_id')
+            ->leftJoin('`auth_department_child` as adc','usr.id=adc.user_id')
+            ->leftJoin('`auth_department` as ad ','ad.id=adc.department_id')
+            ->leftJoin('`auth_department` as adp ','ad.parent=adp.id')
+        ;
+        $filterFields = ['like' => ['accountName', 'currency','username','department']];
         $filterTime = ['updatedDate'];
         $query = Helper::generateFilter($query, $filterFields, $condition);
         $query = Helper::timeFilter($query, $filterTime, $condition);
         $provider = new ActiveDataProvider([
             'query' => $query,
-            'sort'=> ['defaultOrder' => ['updatedDate'=>SORT_ASC]],
+            'sort'=> [
+                'defaultOrder' => ['updatedDate'=>SORT_ASC],
+                'attributes' => ['id','balance','accountName', 'currency','username','department','updatedDate'],
+            ],
             'pagination' => [
                 'pageSize' => $pageSize
             ]
