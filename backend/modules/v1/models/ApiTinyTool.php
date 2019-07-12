@@ -12,6 +12,7 @@ use backend\modules\v1\utils\Handler;
 use backend\modules\v1\utils\Helper;
 use backend\modules\v1\utils\ExportTools;
 use backend\models\CacheExpress;
+use backend\models\EbayBalance;
 use backend\models\TaskJoomTracking;
 use backend\models\ShopElf\OauthJoomUpdateExpressFare;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -895,6 +896,31 @@ class ApiTinyTool
         return [];
     }
 
+    ##################### ebay 账号余额 ################################
+
+    /**
+     * @brief 获取eBay账号余额
+     * @param $condition
+     * @return ActiveDataProvider
+     */
+    public static function getEbayBalance($condition)
+    {
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $query = EbayBalance::find();
+        $filterFields = ['like' => ['accountName', 'currency']];
+        $filterTime = ['updatedDate'];
+        $query = Helper::generateFilter($query, $filterFields, $condition);
+        $query = Helper::generateFilter($query, $filterTime, $condition);
+        $query = $query->orderBy('updatedDate DESC');
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => [
+                'pageSize' => $pageSize
+            ]
+        ]);
+        return $provider;
+    }
+
 
     public static function handelKeyword($keyword){
         $keyword = explode(' ', $keyword);
@@ -917,5 +943,7 @@ class ApiTinyTool
         }
         return [$url1, $url2];
     }
+
+
 
 }

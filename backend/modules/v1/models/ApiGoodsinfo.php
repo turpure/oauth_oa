@@ -32,7 +32,6 @@ use backend\models\OaJoomSuffix;
 use backend\models\OaJoomToWish;
 use backend\models\OaSiteCountry;
 use backend\models\OaShippingService;
-use backend\models\ShopElf\BGoods;
 use yii\data\ActiveDataProvider;
 use backend\modules\v1\utils\ProductCenterTools;
 use yii\db\Query;

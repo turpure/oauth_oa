@@ -896,4 +896,20 @@ class TinyToolController extends AdminController
     }
 
 
+    /***
+     * @brief 获取eBay账号余额
+     * @return array|\yii\data\ActiveDataProvider
+     */
+    public  function actionEbayBalance()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiTinyTool::getEbayBalance($condition);
+        } catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+
+        }
+    }
+
+
 }
