@@ -907,6 +907,7 @@ class ApiTinyTool
     public static function getEbayBalance($condition)
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 100000;
+        $departmentFilter = isset($condition['department']) ? $condition['department']: '';
         $department = new Expression('case when ad.parent=0 then ad.department else adp.department end');
         $query = EbayBalance::find()->alias('eb')
             ->asArray()
@@ -920,7 +921,13 @@ class ApiTinyTool
             ->leftJoin('`auth_department` as ad ','ad.id=adc.department_id')
             ->leftJoin('`auth_department` as adp ','ad.parent=adp.id')
         ;
-        $filterFields = ['like' => ['accountName', 'currency','username','department']];
+        if (!empty($departmentFilter)) {
+            $query->andWhere(['or',
+                ['like', 'ad.department', $departmentFilter],
+                ['like', 'adp.department', $departmentFilter],
+                ]);
+        }
+        $filterFields = ['like' => ['accountName', 'currency','username']];
         $filterTime = ['updatedDate'];
         $query = Helper::generateFilter($query, $filterFields, $condition);
         $query = Helper::timeFilter($query, $filterTime, $condition);
