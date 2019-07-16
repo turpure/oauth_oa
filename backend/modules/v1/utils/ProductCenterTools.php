@@ -400,6 +400,10 @@ class ProductCenterTools
                     unset($sku[$field]);
                 }
             }
+            //如果SKU状态是空则置为在售
+            if(empty($bGoodsSku->GoodsSKUStatus)) {
+                $bGoodsSku->GoodsSKUStatus = '在售';
+            }
             $bGoodsSku->setAttributes($sku);
             $bGoodsSku->GoodsID = $bGoods['goodsId'];
             $bGoodsSku->MaxNum = 0;
