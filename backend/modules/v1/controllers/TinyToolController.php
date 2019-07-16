@@ -919,7 +919,7 @@ class TinyToolController extends AdminController
             $condition = $request['condition'];
             $condition['pageSize'] = 100000;
             $data = ApiTinyTool::getEbayBalance($condition)->models;
-            $title = ['ID','账号名称','销售','部门','余额', '货币','更新时间'];
+            $title = ['ID','账号名称','销售','部门','出账单时间','余额', '货币','更新时间'];
             ExportTools::toExcelOrCsv('ebay-balance', $data, 'Xls', $title);
         }
         catch (\Exception $why) {

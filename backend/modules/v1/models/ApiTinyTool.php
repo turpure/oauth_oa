@@ -912,7 +912,7 @@ class ApiTinyTool
         $query = EbayBalance::find()->alias('eb')
             ->asArray()
             ->select([
-                'eb.id','eb.accountName','username', 'department' => $department,
+                'eb.id','eb.accountName','username', 'department' => $department, 'ebt.balanceTime',
                 'eb.balance','currency','updatedDate'])
             ->leftJoin('auth_store as str','str.store=eb.accountName')
             ->leftJoin('auth_store_child as stc','str.id=stc.store_id')
@@ -920,6 +920,7 @@ class ApiTinyTool
             ->leftJoin('`auth_department_child` as adc','usr.id=adc.user_id')
             ->leftJoin('`auth_department` as ad ','ad.id=adc.department_id')
             ->leftJoin('`auth_department` as adp ','ad.parent=adp.id')
+            ->leftJoin('`ebay_balance_time` as ebt ','ebt.account=eb.accountName')
         ;
         if (!empty($departmentFilter)) {
             $query->andWhere(['or',
@@ -927,7 +928,7 @@ class ApiTinyTool
                 ['like', 'adp.department', $departmentFilter],
                 ]);
         }
-        $filterFields = ['like' => ['accountName', 'currency','username']];
+        $filterFields = ['like' => ['accountName', 'currency','username','balanceTime']];
         $filterTime = ['updatedDate'];
         $query = Helper::generateFilter($query, $filterFields, $condition);
         $query = Helper::timeFilter($query, $filterTime, $condition);
@@ -935,7 +936,7 @@ class ApiTinyTool
             'query' => $query,
             'sort'=> [
                 'defaultOrder' => ['updatedDate'=>SORT_ASC],
-                'attributes' => ['id','balance','accountName', 'currency','username','department','updatedDate'],
+                'attributes' => ['id','balance','accountName', 'currency','username','balanceTime','department','updatedDate'],
             ],
             'pagination' => [
                 'pageSize' => $pageSize
