@@ -908,11 +908,13 @@ class ApiTinyTool
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 100000;
         $departmentFilter = isset($condition['department']) ? $condition['department']: '';
+        $balanceTimeFilter = isset($condition['balanceTime']) ? $condition['balanceTime']: '';
         $department = new Expression('case when ad.parent=0 then ad.department else adp.department end');
+        $balanceTime = new Expression('ifNull(ebt.balanceTime, "未知")');
         $query = EbayBalance::find()->alias('eb')
             ->asArray()
             ->select([
-                'eb.id','eb.accountName','username', 'department' => $department, 'ebt.balanceTime',
+                'eb.id','eb.accountName','username', 'department' => $department, 'balanceTime' => $balanceTime,
                 'eb.balance','currency','updatedDate'])
             ->leftJoin('auth_store as str','str.store=eb.accountName')
             ->leftJoin('auth_store_child as stc','str.id=stc.store_id')
@@ -922,13 +924,23 @@ class ApiTinyTool
             ->leftJoin('`auth_department` as adp ','ad.parent=adp.id')
             ->leftJoin('`ebay_balance_time` as ebt ','ebt.account=eb.accountName')
         ;
+        //部门筛选
         if (!empty($departmentFilter)) {
             $query->andWhere(['or',
                 ['like', 'ad.department', $departmentFilter],
                 ['like', 'adp.department', $departmentFilter],
                 ]);
         }
-        $filterFields = ['like' => ['accountName', 'currency','username','balanceTime']];
+        //账单时间筛选
+        if (!empty($balanceTimeFilter)) {
+           if ($balanceTimeFilter === '未知') {
+               $query->andWhere(['is','balanceTime', new Expression('NULL')]);
+           }
+           else {
+               $query->andWhere(['like','balanceTime', $balanceTime]);
+           }
+        }
+        $filterFields = ['like' => ['accountName', 'currency','username']];
         $filterTime = ['updatedDate'];
         $query = Helper::generateFilter($query, $filterFields, $condition);
         $query = Helper::timeFilter($query, $filterTime, $condition);
