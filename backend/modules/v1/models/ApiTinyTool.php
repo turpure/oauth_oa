@@ -907,11 +907,13 @@ class ApiTinyTool
     public static function getEbayBalance($condition)
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 100000;
-        $departmentFilter = isset($condition['department']) ? $condition['department']: '';
+        $departmentFilter = isset($condition['department']) ? $condition['department']: [];
+        $usernameFilter = isset($condition['username']) ? $condition['username']: [];
+        $accountFilter = isset($condition['accountName']) ? $condition['accountName']: [];
         $balanceTimeFilter = isset($condition['balanceTime']) ? $condition['balanceTime']: '';
         $department = new Expression('case when ad.parent=0 then ad.department else adp.department end');
         $balanceTime = new Expression('ifNull(ebt.balanceTime, "未知")');
-        $query = EbayBalance::find()->alias('eb')
+        $query = EbayBalance::find()->alias('eb')->where(['isUsed' => 0])
             ->asArray()
             ->select([
                 'eb.id','eb.accountName','username', 'department' => $department, 'balanceTime' => $balanceTime,
@@ -927,9 +929,17 @@ class ApiTinyTool
         //部门筛选
         if (!empty($departmentFilter)) {
             $query->andWhere(['or',
-                ['like', 'ad.department', $departmentFilter],
-                ['like', 'adp.department', $departmentFilter],
+                ['in', 'ad.department', $departmentFilter],
+                ['in', 'adp.department', $departmentFilter],
                 ]);
+        }
+        // 账号筛选
+        if(!empty($accountFilter)) {
+            $query->andWhere(['in','accountName',$accountFilter]);
+        }
+        //销售筛选
+        if(!empty($usernameFilter)) {
+            $query->andWhere(['in', 'username', $usernameFilter]);
         }
         //账单时间筛选
         if (!empty($balanceTimeFilter)) {
@@ -940,7 +950,7 @@ class ApiTinyTool
                $query->andWhere(['like','balanceTime', $balanceTimeFilter]);
            }
         }
-        $filterFields = ['like' => ['accountName', 'currency','username']];
+        $filterFields = ['like' => ['currency']];
         $filterTime = ['updatedDate'];
         $query = Helper::generateFilter($query, $filterFields, $condition);
         $query = Helper::timeFilter($query, $filterTime, $condition);
