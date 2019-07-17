@@ -937,7 +937,7 @@ class ApiTinyTool
                $query->andWhere(['is','balanceTime', new Expression('NULL')]);
            }
            else {
-               $query->andWhere(['like','balanceTime', $balanceTime]);
+               $query->andWhere(['like','balanceTime', $balanceTimeFilter]);
            }
         }
         $filterFields = ['like' => ['accountName', 'currency','username']];
