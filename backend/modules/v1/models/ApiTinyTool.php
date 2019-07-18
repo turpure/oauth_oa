@@ -967,6 +967,31 @@ class ApiTinyTool
         return $provider;
     }
 
+    /**
+     * @brief ebay账单查询条件
+     * @return array
+     * @throws Exception
+     */
+    public static function getEbayBalanceCondition()
+    {
+        $department = new Expression('case when ad.parent=0 then ad.department else adp.department end');
+        $username = Yii::$app->user->identity->username;
+        $isAdmin = static::isAdmin();
+        $userList = ApiUser::getUserList($username);
+        $query = (new Query())
+            ->select(['username', 'department' => $department, 'store'])->from('auth_store as str')
+            ->leftJoin('auth_store_child as stc','str.id=stc.store_id')
+            ->leftJoin('`user` as usr','usr.id=stc.user_id')
+            ->leftJoin('`auth_department_child` as adc','usr.id=adc.user_id')
+            ->leftJoin('`auth_department` as ad ','ad.id=adc.department_id')
+            ->leftJoin('`auth_department` as adp ','ad.parent=adp.id')
+            ->where(['str.platform' => 'eBay'])
+        ;
+        if(!$isAdmin) {
+            $query->andWhere(['in','username', $userList]);
+        }
+        return $query->all();
+    }
 
     public static function handelKeyword($keyword){
         $keyword = explode(' ', $keyword);
@@ -988,6 +1013,20 @@ class ApiTinyTool
             $url1 = $url2 = '';
         }
         return [$url1, $url2];
+    }
+
+    /**
+     * 检验角色
+     * @return boolean
+     */
+    private static function isAdmin()
+    {
+        $userRole = Yii::$app->authManager->getRolesByUser(Yii::$app->user->getId());
+        if (array_key_exists('超级管理员',$userRole)) {
+            return True;
+        }
+        return False;
+
     }
 
 
