@@ -903,12 +903,23 @@ class ApiTinyTool
      * @brief 获取eBay账号余额
      * @param $condition
      * @return ActiveDataProvider
+     * @throws \Exception
      */
     public static function getEbayBalance($condition)
     {
+        // 权限控制
+        $isAdmin = static::isAdmin();
+        $username = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($username);
+        $defaultUsername = [];
+        if(!$isAdmin) {
+            $defaultUsername = $userList;
+        }
+
+        // 默认查询条件
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 100000;
         $departmentFilter = isset($condition['department']) ? $condition['department']: [];
-        $usernameFilter = isset($condition['username']) ? $condition['username']: [];
+        $usernameFilter = isset($condition['username']) && !empty($condition['username']) ? $condition['username']: $defaultUsername;
         $accountFilter = isset($condition['accountName']) ? $condition['accountName']: [];
         $balanceTimeFilter = isset($condition['balanceTime']) ? $condition['balanceTime']: '';
         $department = new Expression('case when ad.parent=0 then ad.department else adp.department end');
@@ -1028,7 +1039,5 @@ class ApiTinyTool
         return False;
 
     }
-
-
 
 }
