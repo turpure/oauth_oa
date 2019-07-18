@@ -232,13 +232,14 @@ class ProductCenterTools
                 static::_stockImport($stock);
 
                 //更新产品信息状态
-                $goodsInfo['basicInfo']['goodsInfo']->achieveStatus = '已导入';
+                if($goodsInfo['basicInfo']['goodsInfo']->achieveStatus !== '已完善') {
+                    $goodsInfo['basicInfo']['goodsInfo']->achieveStatus = '已导入';
+                }
                 $goodsInfo['basicInfo']['goodsInfo']->picStatus = '待处理';
                 $goodsInfo['basicInfo']['goodsInfo']->updateTime = date('Y-m-d H:i:s');
                 if(!$goodsInfo['basicInfo']['goodsInfo']->save()){
                     throw new \Exception('save goods info failed');
                 }
-
             }
             $trans->commit();
             return ['code' => 1, 'message' => '导入成功' ];
