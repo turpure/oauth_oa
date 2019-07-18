@@ -912,6 +912,10 @@ class TinyToolController extends AdminController
         }
     }
 
+    /**
+     * @brief 下载eBay账单
+     * @return array
+     */
     public function actionExportEbayBalance()
     {
         try {
@@ -921,6 +925,16 @@ class TinyToolController extends AdminController
             $data = ApiTinyTool::getEbayBalance($condition)->models;
             $title = ['ID','账号名称','销售','部门','出账单时间','余额', '货币','更新时间'];
             ExportTools::toExcelOrCsv('ebay-balance', $data, 'Xls', $title);
+        }
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+
+    public function actionEbayBalanceCondition()
+    {
+        try {
+            return ApiTinyTool::getEbayBalanceCondition();
         }
         catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
