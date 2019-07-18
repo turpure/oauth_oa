@@ -109,10 +109,11 @@ class ApiTinyTool
         }
     }
 
-    /**
-     * @brief get brand list
+    /** get brand list
      * @param $condition
-     * @return array
+     * Date: 2019-07-18 10:59
+     * Author: henry
+     * @return array|ArrayDataProvider
      */
     public static function getBrand($condition)
     {
@@ -120,38 +121,27 @@ class ApiTinyTool
         $brand = ArrayHelper::getValue($condition, 'brand', '');
         $country = ArrayHelper::getValue($condition, 'country', '');
         $category = ArrayHelper::getValue($condition, 'category', '');
-        $start = ArrayHelper::getValue($condition, 'start', 0);
-        $limit = ArrayHelper::getValue($condition, 'limit', 20);
         try {
-            $totalSql = "SELECT COUNT(1) FROM Y_Brand WHERE
-                brand LIKE '%$brand%' and (country like '%$country%') and (category like '%$category%')";
-            $totalCount = $con->createCommand($totalSql)->queryScalar();
-            if ($totalCount) {
-                $sql = "SELECT * FROM (
-                        SELECT
-                        row_number () OVER (ORDER BY imgname) rowId,
-                        brand,
-                        country,
-                        url,
-                        category,
-                        imgName,
-                        'http://121.196.233.153/images/brand/'+ Y_Brand.imgName +'.jpg' as imgUrl
-                    FROM
-                        Y_Brand
-                    WHERE
-                    brand LIKE '%$brand%' 
-                    and (country like '%$country%')
-                    and (category like '%$category%')
-                ) bra
-                where rowId BETWEEN $start and ($limit+$start)";
-                $res = $con->createCommand($sql)->queryAll();
-            } else {
-                $res = [];
-            }
-            return [
-                'items' => $res,
-                'totalCount' => $totalCount,
-            ];
+            $sql = "SELECT
+                    brand,
+                    country,
+                    url,
+                    category,
+                    imgName,
+                    'http://121.196.233.153/images/brand/'+ Y_Brand.imgName +'.jpg' as imgUrl
+                FROM
+                    Y_Brand
+                WHERE
+                brand LIKE '%$brand%' 
+                and (country like '%$country%')
+                and (category like '%$category%')";
+            $data = $con->createCommand($sql)->queryAll();
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'pagination' => [
+                    'pageSize' => isset($condition['pageSize']) && $condition['pageSize'] ? $condition['pageSize'] : 20,
+                ],
+            ]);
         } catch (\Exception $why) {
             return [
                 'code' => 400,
