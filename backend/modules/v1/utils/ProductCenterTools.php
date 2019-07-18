@@ -368,10 +368,12 @@ class ProductCenterTools
      */
     private static function _bGoodsSkuImport($data, $bGoods)
     {
+        // 绕开触发器
         $skuModel = BGoodsSku::findOne(['SKU' => $bGoods['GoodsCode']]);
         if($skuModel){
             $skuModel->delete();
         }
+
         //删除B_goodsSku中已存在且$data中不存在的错误SKU信息
         $skuArrNew = ArrayHelper::getColumn($data, 'SKU');
         $skuList = BGoodsSku::findAll(['GoodsID' => $bGoods['goodsId']]);
@@ -397,7 +399,9 @@ class ProductCenterTools
             else {
                 $excludeFields = ['SKUName','property1', 'property2', 'property3','GoodsSKUStatus','Weight','CostPrice','RetailPrice'];
                 foreach ($excludeFields as $field) {
-                    unset($sku[$field]);
+                    if(!empty($bGoodsSku[$field])) {
+                        unset($sku[$field]);
+                    }
                 }
             }
             //如果SKU状态是空则置为在售
