@@ -232,13 +232,14 @@ class ProductCenterTools
                 static::_stockImport($stock);
 
                 //更新产品信息状态
-                $goodsInfo['basicInfo']['goodsInfo']->achieveStatus = '已导入';
+                if($goodsInfo['basicInfo']['goodsInfo']->achieveStatus !== '已完善') {
+                    $goodsInfo['basicInfo']['goodsInfo']->achieveStatus = '已导入';
+                }
                 $goodsInfo['basicInfo']['goodsInfo']->picStatus = '待处理';
                 $goodsInfo['basicInfo']['goodsInfo']->updateTime = date('Y-m-d H:i:s');
                 if(!$goodsInfo['basicInfo']['goodsInfo']->save()){
                     throw new \Exception('save goods info failed');
                 }
-
             }
             $trans->commit();
             return ['code' => 1, 'message' => '导入成功' ];
@@ -368,10 +369,12 @@ class ProductCenterTools
      */
     private static function _bGoodsSkuImport($data, $bGoods)
     {
+        // 绕开触发器
         $skuModel = BGoodsSku::findOne(['SKU' => $bGoods['GoodsCode']]);
         if($skuModel){
             $skuModel->delete();
         }
+
         //删除B_goodsSku中已存在且$data中不存在的错误SKU信息
         $skuArrNew = ArrayHelper::getColumn($data, 'SKU');
         $skuList = BGoodsSku::findAll(['GoodsID' => $bGoods['goodsId']]);
@@ -397,7 +400,9 @@ class ProductCenterTools
             else {
                 $excludeFields = ['SKUName','property1', 'property2', 'property3','GoodsSKUStatus','Weight','CostPrice','RetailPrice'];
                 foreach ($excludeFields as $field) {
-                    unset($sku[$field]);
+                    if(!empty($bGoodsSku[$field])) {
+                        unset($sku[$field]);
+                    }
                 }
             }
             //如果SKU状态是空则置为在售
