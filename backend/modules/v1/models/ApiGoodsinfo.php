@@ -1105,7 +1105,7 @@ class ApiGoodsinfo
                 $row = $rowTemplate;
                 $row['Handle'] = str_replace(' ', '-', $title);
                 $row['Title'] = $title;
-                $row['Body (HTML)'] = str_replace("\n", '<br>',wishInfo['description']);
+                $row['Body (HTML)'] = str_replace("\n", '<br>',$wishInfo['description']);
                 $row['Vendor'] = $account['account'];
                 $row['Tags'] = static::getShopifyTag($account['tags'], $title);
                 $row['Option1 Value'] = $sku['color'];
