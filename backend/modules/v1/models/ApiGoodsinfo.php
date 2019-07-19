@@ -1116,7 +1116,7 @@ class ApiGoodsinfo
                 $row['Variant Price'] = $sku['price'] + 3;
                 $row['Variant Compare At Price'] = ($sku['price'] + 3) * 3;
                 $row['Variant Image'] = $sku['linkUrl'];
-                $row['Image Src'] = $position <= $imagesCount ? $imageSrc[$position] : '';
+                $row['Image Src'] = $position <= $imagesCount ? $imageSrc[$position -1] : '';
                 $row['Image Position'] = $position <= $imagesCount ? $position : '';
                 $out[] = $row;
                 $position++;

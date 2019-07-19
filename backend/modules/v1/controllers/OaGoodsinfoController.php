@@ -587,14 +587,20 @@ class OaGoodsinfoController extends AdminController
      */
     public function actionPlatExportShopify()
     {
-        $request = Yii::$app->request;
-        if (!$request->isPost) {
-            return [];
+        try {
+
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            $infoId = $condition['id'];
+            $ret = ApiGoodsinfo::preExportShopify($infoId);
+            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
         }
-        $condition = $request->post()['condition'];
-        $infoId = $condition['id'];
-        $ret = ApiGoodsinfo::preExportShopify($infoId);
-        ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
+        catch (\Exception  $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
     }
 
 
