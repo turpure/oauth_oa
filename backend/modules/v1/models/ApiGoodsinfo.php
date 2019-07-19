@@ -1051,16 +1051,16 @@ class ApiGoodsinfo
     /**
      * @brief shopfiy模板预处理
      * @param $id
+     * @param $accounts
      * @return array
      * @throws \Exception
      */
-    public static function preExportShopify($id)
+    public static function preExportShopify($id, $accounts)
     {
         $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
         $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
         $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
 //        $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
-        $shopifyAccount = OaShopify::find()->select('')->asArray()->all();
         $keyWords = static::preKeywords($wishInfo);
         $rowTemplate = [
             'Handle'  => '','Title'  => '','Body (HTML)'  => '','Vendor'  => '','Type'  => '','Tags'  => '',
@@ -1083,7 +1083,8 @@ class ApiGoodsinfo
         $ret = ['name' => 'shopify-'.$goodsInfo['goodsCode']];
         $out = [];
 
-        foreach ($shopifyAccount as $account) {
+        foreach ($accounts as $act) {
+            $account = OaShopify::find()->where(['account' => $act])->asArray()->one();
             $titlePool = [];
             $title = '';
             $len = self::WishTitleLength;
@@ -1129,6 +1130,12 @@ class ApiGoodsinfo
         return $ret;
     }
 
+    public static function getShopifyAccounts()
+    {
+        $ret = OaShopify::find()->select('account')->asArray()->all();
+        $ret = ArrayHelper::getColumn($ret, 'account');
+        return $ret;
+    }
     /**
      * @brief 获取wish账号主图链接
      * @param $goodsCode

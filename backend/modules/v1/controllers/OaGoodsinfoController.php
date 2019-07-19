@@ -22,6 +22,7 @@ use backend\models\OaJoomSuffix;
 use backend\models\OaSiteCountry;
 use backend\models\OaWishGoodsSku;
 use backend\modules\v1\models\ApiGoodsinfo;
+use backend\modules\v1\models\ApiTinyTool;
 use backend\modules\v1\utils\ProductCenterTools;
 use backend\modules\v1\utils\AttributeInfoTools;
 use backend\modules\v1\utils\ExportTools;
@@ -588,14 +589,14 @@ class OaGoodsinfoController extends AdminController
     public function actionPlatExportShopify()
     {
         try {
-
             $request = Yii::$app->request;
             if (!$request->isPost) {
                 return [];
             }
             $condition = $request->post()['condition'];
             $infoId = $condition['id'];
-            $ret = ApiGoodsinfo::preExportShopify($infoId);
+            $accounts = $condition['account'];
+            $ret = ApiGoodsinfo::preExportShopify($infoId, $accounts);
             ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
         }
         catch (\Exception  $why) {
@@ -603,6 +604,15 @@ class OaGoodsinfoController extends AdminController
         }
     }
 
+    public function actionShopifyAccounts()
+    {
+        try {
+            return ApiGoodsinfo::getShopifyAccounts();
+        }
+        catch (\Exception  $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
 
 
     /** 获取需要导出的Joom没账号
