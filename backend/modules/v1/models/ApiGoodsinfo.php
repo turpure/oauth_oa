@@ -1108,9 +1108,9 @@ class ApiGoodsinfo
             $position = 1;
             foreach ($wishSku as $sku) {
                 $row = $rowTemplate;
-                $row['Handle'] = $position > 1 ? '': str_replace(' ', '-', $title);
+                $row['Handle'] = str_replace(' ', '-', $title);
                 $row['Title'] = $position > 1 ? '': $title;
-                $row['Body (HTML)'] = str_replace("\n", '<br>',$wishInfo['description']);
+                $row['Body (HTML)'] = $position > 1 ? '' : str_replace("\n", '<br>',$wishInfo['description']);
                 $row['Vendor'] = $position > 1 ? '': $account['account'];
                 $row['Tags'] = $position > 1 ? '': static::getShopifyTag($account['tags'], $title);
                 $row['Published'] = $position > 1 ? '' : 'True';
