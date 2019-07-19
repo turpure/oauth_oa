@@ -29,6 +29,7 @@ use backend\models\OaWishGoodsSku;
 use backend\models\OaEbaySuffix;
 use backend\models\OaWishSuffix;
 use backend\models\OaJoomSuffix;
+use backend\models\OaShopify;
 use backend\models\OaJoomToWish;
 use backend\models\OaSiteCountry;
 use backend\models\OaShippingService;
@@ -1046,6 +1047,88 @@ class ApiGoodsinfo
         return $ret;
     }
 
+
+    /**
+     * @brief shopfiy模板预处理
+     * @param $id
+     * @return array
+     * @throws \Exception
+     */
+    public static function preExportShopify($id)
+    {
+        $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
+        $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
+        $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
+//        $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
+        $shopifyAccount = OaShopify::find()->select('')->asArray()->all();
+        $keyWords = static::preKeywords($wishInfo);
+        $rowTemplate = [
+            'Handle'  => '','Title'  => '','Body (HTML)'  => '','Vendor'  => '','Type'  => '','Tags'  => '',
+            'Published'  => 'TRUE','Option1 Name'  => 'Color','Option1 Value'  => '','Option2 Name'  => 'Size',
+            'Option2 Value'  => '','Option3 Name'  => '','Option3 Value'  => '','Variant SKU'  => '',
+            'Variant Grams'  => '','Variant Inventory Tracker'  => 'shopify','Variant Inventory Qty'  => '',
+            'Variant Inventory Policy'  => 'continue','Variant Fulfillment Service'  => 'manual','Variant Price'  => '',
+            'Variant Compare At Price'  => '','Variant Requires Shipping'  => 'FALSE','Variant Taxable'  => 'FALSE',
+            'Variant Barcode'  => '','Image Src'  => '','Image Position'  => '','Image Alt Text'  => '',
+            'Gift Card'  => 'FALSE','SEO Title'  => '','SEO Description'  => '',
+            'Google Shopping / Google Product Category'  => '','Google Shopping / Gender'  => '',
+            'Google Shopping / Age Group'  => '','Google Shopping / MPN'  => '',
+            'Google Shopping / AdWords Grouping'  => '','Google Shopping / AdWords Labels'  => '',
+            'Google Shopping / Condition'  => '','Google Shopping / Custom Product'  => '',
+            'Google Shopping / Custom Label 0'  => '','Google Shopping / Custom Label 1'  => '',
+            'Google Shopping / Custom Label 2'  => '','Google Shopping / Custom Label 3'  => '',
+            'Google Shopping / Custom Label 4'  => '','Variant Image'  => '',
+            'Variant Weight Unit'  => 'kg','Variant Tax Code'  => '','Cost per item'  => '',
+        ];
+        $ret = ['name' => 'shopify-'.$goodsInfo['goodsCode']];
+        $out = [];
+
+        foreach ($shopifyAccount as $account) {
+            $titlePool = [];
+            $title = '';
+            $len = self::WishTitleLength;
+            while (true) {
+                $title = static::getTitleName($keyWords, $len);
+                --$len;
+                if (empty($title) || !in_array($title, $titlePool, false)) {
+                    $titlePool[] = $title;
+                    break;
+                }
+            }
+            $imageSrc = explode("\n",$wishInfo['extraImages']);
+            $sizeImage = array_shift($imageSrc);
+            shuffle($imageSrc);
+            array_splice($imageSrc, 1, 0, $sizeImage);
+            $imagesCount = count($imageSrc);
+            $position = 1;
+            foreach ($wishSku as $sku) {
+                $row = $rowTemplate;
+                $row['Handle'] = str_replace(' ', '-', $title);
+                $row['Title'] = $title;
+                $row['Body (HTML)'] = str_replace("\n", '<br>',wishInfo['description']);
+                $row['Vendor'] = $account['account'];
+                $row['Tags'] = static::getShopifyTag($account['tags'], $title);
+                $row['Option1 Value'] = $sku['color'];
+                $row['Option2 Value'] = $sku['size'];
+                $row['Variant SKU'] = $sku['sku'];
+                $row['Variant Grams'] = $sku['weight'] / 1000;
+                $row['Variant Inventory Qty'] = $sku['inventory'];
+                $row['Variant Price'] = $sku['price'] + 3;
+                $row['Variant Compare At Price'] = ($sku['price'] + 3) * 3;
+                $row['Variant Image'] = $sku['linkUrl'];
+                $row['Image Src'] = $position <= $imagesCount ? $imageSrc[$position] : '';
+                $row['Image Position'] = $position <= $imagesCount ? $position : '';
+                $out[] = $row;
+                $position++;
+            }
+
+
+
+        }
+        $ret['data'] = $out;
+        return $ret;
+    }
+
     /**
      * @brief 获取wish账号主图链接
      * @param $goodsCode
@@ -1491,5 +1574,16 @@ class ApiGoodsinfo
         if( $price > 20) {
             return 5;
         }
+    }
+
+    private static function getShopifyTag($tags, $title)
+    {
+        $tags = explode(',', $tags);
+        foreach ($tags as $tg) {
+            if (stripos($title, $tg) !== false){
+                return $tg;
+        }
+        }
+        return 'unknown';
     }
 }

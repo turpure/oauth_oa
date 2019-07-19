@@ -581,6 +581,24 @@ class OaGoodsinfoController extends AdminController
         ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Xls');
     }
 
+    /**
+     * @brief 导出Shopify模板
+     * @throws \Exception
+     */
+    public function actionPlatExportShopify()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        $infoId = $condition['id'];
+        $ret = ApiGoodsinfo::preExportShopify($infoId);
+        ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
+    }
+
+
+
     /** 获取需要导出的Joom没账号
      * Date: 2019-04-01 9:22
      * Author: henry
