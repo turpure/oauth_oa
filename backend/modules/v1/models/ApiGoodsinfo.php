@@ -1078,7 +1078,7 @@ class ApiGoodsinfo
             'Google Shopping / Custom Label 0'  => '','Google Shopping / Custom Label 1'  => '',
             'Google Shopping / Custom Label 2'  => '','Google Shopping / Custom Label 3'  => '',
             'Google Shopping / Custom Label 4'  => '','Variant Image'  => '',
-            'Variant Weight Unit'  => 'kg','Variant Tax Code'  => '','Cost per item'  => '',
+            'Variant Weight Unit'  => 'g','Variant Tax Code'  => '','Cost per item'  => '',
         ];
         $ret = ['name' => 'shopify-'.$goodsInfo['goodsCode']];
         $out = [];
@@ -1119,7 +1119,7 @@ class ApiGoodsinfo
                 $row['Option1 Value'] = $sku['color'];
                 $row['Option2 Value'] = $sku['size'];
                 $row['Variant SKU'] = $sku['sku'];
-                $row['Variant Grams'] = $sku['weight'] / 1000;
+                $row['Variant Grams'] = $sku['weight'];
                 $row['Variant Inventory Qty'] = $sku['inventory'];
                 $row['Variant Price'] = $sku['price'] + 3;
                 $row['Variant Compare At Price'] = ceil(($sku['price'] + 3) * 3);
@@ -1592,12 +1592,13 @@ class ApiGoodsinfo
 
     private static function getShopifyTag($tags, $title)
     {
+        $out = [];
         $tags = explode(',', $tags);
         foreach ($tags as $tg) {
             if (stripos($title, $tg) !== false){
-                return $tg;
+                $out[] = $tg;
         }
         }
-        return 'unknown';
+        return implode(', ', $out);
     }
 }
