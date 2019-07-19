@@ -581,4 +581,22 @@ class SchedulerController extends Controller
     }
 
 
+    /**
+     * @brief 根据最近两周销售SKU重量更新普源SKU重量
+     */
+    public function actionUpdateWeight()
+    {
+        $endDate =  date('Y-m-d',strtotime('-1 day'));
+        $startDate = date('Y-m-d',strtotime('-9 day', strtotime('-1 day')));
+        //计算时间进度
+        try {
+            Yii::$app->py_db->createCommand("EXEC B_py_ModifyProductWeight '{$startDate}','{$endDate}'")->execute();
+            print date('Y-m-d H:i:s') . " INFO:success to update weight of b_goods!\n";
+        } catch (\Exception $why) {
+            print date('Y-m-d H:i:s') . " INFO:fail to update weight of b_goods cause of $why \n";
+        }
+    }
+
+
+
 }
