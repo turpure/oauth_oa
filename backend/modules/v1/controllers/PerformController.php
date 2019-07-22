@@ -18,6 +18,12 @@ class PerformController extends AdminController
 {
     public $modelClass = 'backend\modules\v1\models\ApiPerform';
 
+    public $serializer = [
+        'class' => 'yii\rest\Serializer',
+        'collectionEnvelope' => 'items',
+    ];
+
+
     public function behaviors()
     {
         $behaviors = ArrayHelper::merge([
@@ -75,15 +81,11 @@ class PerformController extends AdminController
             'suffix' => implode(',',$cond['suffix']),
             'plat' => $cond['plat'],
             'saler' => $cond['saler'],
-            'start' => $cond['start'],
-            'limit' => $cond['limit'],
+            'page' => Yii::$app->request->get('page',1),
+            'pageSize' => $cond['pageSize'],
         ];
         $ret = ApiPerform::getSalesChange($condition);
-        $num = $ret ? $ret[0]['totalNum']:0;
-        return [
-            'items' => $ret,
-            'totalCount' => $num,
-        ];
+        return $ret;
     }
 
     /**

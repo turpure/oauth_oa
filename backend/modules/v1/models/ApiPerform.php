@@ -9,6 +9,7 @@
 namespace backend\modules\v1\models;
 
 use Yii;
+use yii\data\ArrayDataProvider;
 use yii\helpers\ArrayHelper;
 
 class ApiPerform
@@ -81,8 +82,6 @@ class ApiPerform
     {
         $data['suffix'] = $condition['suffix'];
         $data['pingtai'] = $condition['plat'];
-        $data['start'] = $condition['start']??0;
-        $data['limit'] = $condition['limit']??20;
 
         //将开发人员名称转化为B_person表的nid
         if($condition['saler']){
@@ -98,15 +97,19 @@ class ApiPerform
         }
 
         //print_r($salerId);exit;
-        $stmt = "EXEC z_demo_zongchange @suffix='$data[suffix]',@SalerName='$data[SalerName]',@pingtai='$data[pingtai]',@PageIndex='$data[start]',@PageNum='$data[limit]' ";
+        $stmt = "EXEC z_demo_zongchange @suffix='$data[suffix]',@SalerName='$data[SalerName]',@pingtai='$data[pingtai]',@PageIndex='$condition[page]',@PageNum='$condition[pageSize]' ";
 
         $ret = Yii::$app->py_db->createCommand($stmt)->queryAll();
-        //print_r($ret);exit;
         if( $ret === false ) {
             return "Error in executing statement.";
         }
-        return $ret;
-        //return $data;
+        //print_r($ret);exit;
+        return new ArrayDataProvider([
+            'allModels' => $ret,
+            'pagination' => [
+                'pageSize' => isset($condition['pageSize']) && $condition['pageSize'] ? $condition['pageSize'] : 20,
+            ],
+        ]);
     }
 
 
