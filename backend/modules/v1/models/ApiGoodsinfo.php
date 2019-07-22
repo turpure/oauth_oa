@@ -1051,16 +1051,16 @@ class ApiGoodsinfo
     /**
      * @brief shopfiy模板预处理
      * @param $id
+     * @param $accounts
      * @return array
      * @throws \Exception
      */
-    public static function preExportShopify($id)
+    public static function preExportShopify($id, $accounts)
     {
         $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
         $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
         $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
 //        $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
-        $shopifyAccount = OaShopify::find()->select('')->asArray()->all();
         $keyWords = static::preKeywords($wishInfo);
         $rowTemplate = [
             'Handle'  => '','Title'  => '','Body (HTML)'  => '','Vendor'  => '','Type'  => '','Tags'  => '',
@@ -1078,12 +1078,13 @@ class ApiGoodsinfo
             'Google Shopping / Custom Label 0'  => '','Google Shopping / Custom Label 1'  => '',
             'Google Shopping / Custom Label 2'  => '','Google Shopping / Custom Label 3'  => '',
             'Google Shopping / Custom Label 4'  => '','Variant Image'  => '',
-            'Variant Weight Unit'  => 'kg','Variant Tax Code'  => '','Cost per item'  => '',
+            'Variant Weight Unit'  => 'g','Variant Tax Code'  => '','Cost per item'  => '',
         ];
         $ret = ['name' => 'shopify-'.$goodsInfo['goodsCode']];
         $out = [];
 
-        foreach ($shopifyAccount as $account) {
+        foreach ($accounts as $act) {
+            $account = OaShopify::find()->where(['account' => $act])->asArray()->one();
             $titlePool = [];
             $title = '';
             $len = self::WishTitleLength;
@@ -1097,24 +1098,31 @@ class ApiGoodsinfo
             }
             $imageSrc = explode("\n",$wishInfo['extraImages']);
             $sizeImage = array_shift($imageSrc);
-            shuffle($imageSrc);
-            array_splice($imageSrc, 1, 0, $sizeImage);
+            if (strpos($sizeImage, '00_.jpg') !== false) {
+                array_splice($imageSrc, 1, 0, $sizeImage);
+            }
+            if (strpos($sizeImage, '00_.jpg') === false) {
+                array_splice($imageSrc, 0, 0, $sizeImage);
+            }
             $imagesCount = count($imageSrc);
             $position = 1;
             foreach ($wishSku as $sku) {
                 $row = $rowTemplate;
                 $row['Handle'] = str_replace(' ', '-', $title);
-                $row['Title'] = $title;
-                $row['Body (HTML)'] = str_replace("\n", '<br>',$wishInfo['description']);
-                $row['Vendor'] = $account['account'];
-                $row['Tags'] = static::getShopifyTag($account['tags'], $title);
+                $row['Title'] = $position > 1 ? '': $title;
+                $row['Body (HTML)'] = $position > 1 ? '' : str_replace("\n", '<br>',$wishInfo['description']);
+                $row['Vendor'] = $position > 1 ? '': $account['account'];
+                $row['Tags'] = $position > 1 ? '': static::getShopifyTag($account['tags'], $title);
+                $row['Published'] = $position > 1 ? '' : 'True';
+                $row['Option1 Name'] = $position > 1 ? '' : 'Color';
+                $row['Option2 Name'] = $position > 1 ? '' : 'Size';
                 $row['Option1 Value'] = $sku['color'];
                 $row['Option2 Value'] = $sku['size'];
                 $row['Variant SKU'] = $sku['sku'];
-                $row['Variant Grams'] = $sku['weight'] / 1000;
+                $row['Variant Grams'] = $sku['weight'];
                 $row['Variant Inventory Qty'] = $sku['inventory'];
                 $row['Variant Price'] = $sku['price'] + 3;
-                $row['Variant Compare At Price'] = ($sku['price'] + 3) * 3;
+                $row['Variant Compare At Price'] = ceil(($sku['price'] + 3) * 3);
                 $row['Variant Image'] = $sku['linkUrl'];
                 $row['Image Src'] = $position <= $imagesCount ? $imageSrc[$position -1] : '';
                 $row['Image Position'] = $position <= $imagesCount ? $position : '';
@@ -1129,6 +1137,12 @@ class ApiGoodsinfo
         return $ret;
     }
 
+    public static function getShopifyAccounts()
+    {
+        $ret = OaShopify::find()->select('account')->asArray()->all();
+        $ret = ArrayHelper::getColumn($ret, 'account');
+        return $ret;
+    }
     /**
      * @brief 获取wish账号主图链接
      * @param $goodsCode
@@ -1578,12 +1592,13 @@ class ApiGoodsinfo
 
     private static function getShopifyTag($tags, $title)
     {
+        $out = [];
         $tags = explode(',', $tags);
         foreach ($tags as $tg) {
             if (stripos($title, $tg) !== false){
-                return $tg;
+                $out[] = $tg;
         }
         }
-        return 'unknown';
+        return implode(', ', $out);
     }
 }
