@@ -720,7 +720,7 @@ class ApiMine
             throw new Exception('订阅失败');
         }
         $redis = Yii::$app->redis;
-        $redis->lpush('joom_task','cate', $cateId . ',');
+        $redis->lpush('joom_task',implode(',',['cate', $cateId, '']));
         return [$cateId];
     }
 
