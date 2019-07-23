@@ -597,6 +597,48 @@ class SchedulerController extends Controller
         }
     }
 
+    /**
+     * 销量变化
+     * Date: 2018-12-29 11:55
+     * Author: henry
+     */
+    public function actionSalesChangeInTenDays()
+    {
+        try {
+            $stmt = "EXEC z_demo_zongchange @suffix='',@SalerName='',@pingtai='' ";
+            $list = Yii::$app->py_db->createCommand($stmt)->queryAll();
+            //print_r($data);exit;
+            Yii::$app->db->createCommand("TRUNCATE TABLE cache_salesChangeInTenDays")->execute();
+            Yii::$app->db->createCommand()->batchInsert('cache_salesChangeInTenDays',
+                ['pingtai', 'suffix', 'goodsCode', 'goodsName', 'goodsSkuStatus', 'categoryName', 'salerName', 'salerName2', 'createDate',
+                    'jinyitian', 'shangyitian', 'changeOneDay', 'jinwutian', 'shangwutian', 'changeFiveDay', 'jinshitian', 'shangshitian', 'changeTenDay', 'updateDate'],
+                $list)->execute();
 
+            print date('Y-m-d H:i:s') . " INFO:success to update data of sales change in ten days!\n";
+        } catch (\Exception $why) {
+            print date('Y-m-d H:i:s') . " INFO:fail to update data of sales change in ten days cause of $why \n";
+        }
+    }
+
+    /**
+     * 修改普源图片地址
+     * Date: 2018-12-29 11:55
+     * Author: henry
+     */
+    public function actionUpdateUrl()
+    {
+        try {
+            $sql1 = "UPDATE B_GoodsSKU SET BmpFileName='http://121.196.233.153/images/'+SKU+'.jpg'  
+                    WHERE BmpFileName LIKE '%Shop Elf%' OR BmpFileName LIKE '%普源%' OR BmpFileName='' OR BmpFileName NOT LIKE '%121.196.233.153%' ";
+            $sql2 = "UPDATE B_Goods SET BmpFileName='http://121.196.233.153/images/'+SKU+'.jpg' 
+                    WHERE BmpFileName LIKE '%Shop Elf%' OR BmpFileName LIKE '%普源%' OR BmpFileName='' OR BmpFileName NOT LIKE '%121.196.233.153%'";
+            Yii::$app->py_db->createCommand($sql1)->execute();
+            Yii::$app->py_db->createCommand($sql2)->execute();
+
+            print date('Y-m-d H:i:s') . " INFO:success to update picture url of shopElf!\n";
+        } catch (\Exception $why) {
+            print date('Y-m-d H:i:s') . " INFO:fail to update picture url of shopElf of $why \n";
+        }
+    }
 
 }
