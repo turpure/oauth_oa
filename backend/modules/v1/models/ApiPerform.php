@@ -95,12 +95,12 @@ class ApiPerform
                 Yii::$app->db->createCommand("TRUNCATE TABLE cache_salesChangeInTenDays")->execute();
                 //$stmt = "EXEC z_demo_zongchange @suffix='$data[suffix]',@SalerName='$data[SalerName]',@pingtai='$data[pingtai]',@PageIndex='$condition[page]',@PageNum='$condition[pageSize]' ";
                 $stmt = "EXEC z_demo_zongchange @suffix='',@SalerName='',@pingtai='' ";
-                $data = Yii::$app->py_db->createCommand($stmt)->queryAll();
+                $list = Yii::$app->py_db->createCommand($stmt)->queryAll();
                 //print_r($data);exit;
                 $res = Yii::$app->db->createCommand()->batchInsert('cache_salesChangeInTenDays',
                     ['pingtai', 'suffix', 'goodsCode', 'goodsName', 'goodsSkuStatus', 'categoryName', 'salerName', 'salerName2', 'createDate',
                         'jinyitian', 'shangyitian', 'changeOneDay', 'jinwutian', 'shangwutian', 'changeFiveDay', 'jinshitian', 'shangshitian', 'changeTenDay', 'updateDate'],
-                    $data)->execute();
+                    $list)->execute();
                 if ($res === false) {
                     throw new Exception("Error in executing statement.");
                 }
