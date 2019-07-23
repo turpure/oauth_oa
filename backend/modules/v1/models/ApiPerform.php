@@ -121,7 +121,7 @@ class ApiPerform
             }
             if ($data['salerName']) {
                 //$salerName = implode("','", $data['salerName']);;
-                $sql .= " AND salerName IN ('{$data['salerName']}' ";
+                $sql .= " AND salerName = '{$data['salerName']}' ";
             }
             if ($data['suffix']) {
                 $suffix = implode("','", $data['suffix']);
