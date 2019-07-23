@@ -120,8 +120,8 @@ class ApiPerform
                 $sql .= " AND pingtai='{$data['pingtai']}' ";
             }
             if ($data['salerName']) {
-                $salerName = implode("','", $data['salerName']);;
-                $sql .= " AND salerName IN ('{$salerName}' ";
+                //$salerName = implode("','", $data['salerName']);;
+                $sql .= " AND salerName IN ('{$data['salerName']}' ";
             }
             if ($data['suffix']) {
                 $suffix = implode("','", $data['suffix']);
