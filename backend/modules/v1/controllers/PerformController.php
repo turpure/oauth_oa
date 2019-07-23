@@ -78,9 +78,9 @@ class PerformController extends AdminController
         $cond = $request['condition'];
 
         $condition = [
-            'suffix' => implode(',',$cond['suffix']),
+            'suffix' => $cond['suffix'],
             'plat' => $cond['plat'],
-            'saler' => $cond['saler'],
+            'salerName' => $cond['saler'],
             'page' => Yii::$app->request->get('page',1),
             'pageSize' => $cond['pageSize'],
         ];

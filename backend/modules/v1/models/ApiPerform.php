@@ -10,6 +10,7 @@ namespace backend\modules\v1\models;
 
 use Yii;
 use yii\data\ArrayDataProvider;
+use yii\db\Exception;
 use yii\helpers\ArrayHelper;
 
 class ApiPerform
@@ -82,34 +83,65 @@ class ApiPerform
     {
         $data['suffix'] = $condition['suffix'];
         $data['pingtai'] = $condition['plat'];
+        $data['salerName'] = $condition['salerName'];
 
-        //将开发人员名称转化为B_person表的nid
-        if($condition['saler']){
-            $salerId =  Yii::$app->py_db->createCommand("SELECT NID FROM B_person WHERE PersonName='{$condition['saler']}'")->queryOne();
-            $data['SalerName'] = $salerId['NID'];
-        }else{
-            $data['SalerName'] = 0;
-            /*$salerList = ApiCondition::getUsers();
-            //筛选
-            print_r($salerList);exit;
-            $salerId =  Yii::$app->py_db->createCommand("SELECT NID FROM B_person WHERE PersonName='{$condition['saler']}'")->queryOne();
-            $data['SalerName'] = $salerId['NID'];*/
+        try {
+
+
+            $today = date('Y-m-d');
+            $date = Yii::$app->db->createCommand("SELECT updateDate FROM cache_salesChangeInTenDays WHERE updateDate >= '$today'")->queryOne();
+            if (!$date) {
+                //print_r($date);exit;
+                Yii::$app->db->createCommand("TRUNCATE TABLE cache_salesChangeInTenDays")->execute();
+                //$stmt = "EXEC z_demo_zongchange @suffix='$data[suffix]',@SalerName='$data[SalerName]',@pingtai='$data[pingtai]',@PageIndex='$condition[page]',@PageNum='$condition[pageSize]' ";
+                $stmt = "EXEC z_demo_zongchange @suffix='',@SalerName='',@pingtai='' ";
+                $data = Yii::$app->py_db->createCommand($stmt)->queryAll();
+                //print_r($data);exit;
+                $res = Yii::$app->db->createCommand()->batchInsert('cache_salesChangeInTenDays',
+                    ['pingtai', 'suffix', 'goodsCode', 'goodsName', 'goodsSkuStatus', 'categoryName', 'salerName', 'salerName2', 'createDate',
+                        'jinyitian', 'shangyitian', 'changeOneDay', 'jinwutian', 'shangwutian', 'changeFiveDay', 'jinshitian', 'shangshitian', 'changeTenDay', 'updateDate'],
+                    $data)->execute();
+                if ($res === false) {
+                    throw new Exception("Error in executing statement.");
+                }
+            }
+            $sql = "SELECT goodsCode,goodsName,goodsSKUStatus,categoryName,salerName,salerName2,createDate,
+                SUM(jinyitian) AS jinyitian,
+                SUM(shangyitian) AS shangyitian,
+                SUM(changeOneDay) AS changeOneDay,
+                SUM(jinwutian) AS jinwutian,
+                SUM(shangwutian) AS shangwutian,
+                SUM(changeFiveDay) AS changeFiveDay,
+                SUM(jinshitian) AS jinshitian,
+                SUM(shangshitian) AS shangshitian,
+                SUM(changeTenDay) AS changeTenDay
+                FROM cache_salesChangeInTenDays WHERE 1=1 ";
+            if ($data['pingtai']) {
+                $sql .= " AND pingtai='{$data['pingtai']}' ";
+            }
+            if ($data['salerName']) {
+                $salerName = implode("','", $data['salerName']);;
+                $sql .= " AND salerName IN ('{$salerName}' ";
+            }
+            if ($data['suffix']) {
+                $suffix = implode("','", $data['suffix']);
+                $sql .= " AND suffix IN ('{$suffix}') ";
+            }
+            $sql .= " GROUP BY goodsCode,goodsName,goodsSKUStatus,categoryName,salerName,salerName2,createDate";
+            //print_r($sql);exit;
+            $ret = Yii::$app->db->createCommand($sql)->queryAll();
+            return new ArrayDataProvider([
+                'allModels' => $ret,
+                'pagination' => [
+                    'pageSize' => isset($condition['pageSize']) && $condition['pageSize'] ? $condition['pageSize'] : 20,
+                ],
+            ]);
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
         }
-
-        //print_r($salerId);exit;
-        $stmt = "EXEC z_demo_zongchange @suffix='$data[suffix]',@SalerName='$data[SalerName]',@pingtai='$data[pingtai]',@PageIndex='$condition[page]',@PageNum='$condition[pageSize]' ";
-
-        $ret = Yii::$app->py_db->createCommand($stmt)->queryAll();
-        if( $ret === false ) {
-            return "Error in executing statement.";
-        }
-        //print_r($ret);exit;
-        return new ArrayDataProvider([
-            'allModels' => $ret,
-            'pagination' => [
-                'pageSize' => isset($condition['pageSize']) && $condition['pageSize'] ? $condition['pageSize'] : 20,
-            ],
-        ]);
     }
 
 
