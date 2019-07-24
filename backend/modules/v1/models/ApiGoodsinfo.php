@@ -125,8 +125,9 @@ class ApiGoodsinfo
                 ->join('LEFT JOIN', 'proCenter.oa_goods g', 'g.nid=gi.goodsId');
             $query->where(['picStatus' => self::PlatInfo]);
 
+
             //美工,开发看自己
-            if(strpos($userRole, '销售') === false) {
+            if(strpos($userRole, '销售') !== false) {
                 $query->andWhere(['or',['in','gi.developer', $userList],['in', 'possessMan1', $userList]]);
             }
 
