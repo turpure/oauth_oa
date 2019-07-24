@@ -1064,7 +1064,7 @@ class ApiGoodsinfo
         $keyWords = static::preKeywords($wishInfo);
         $rowTemplate = [
             'Handle'  => '','Title'  => '','Body (HTML)'  => '','Vendor'  => '','Type'  => '','Tags'  => '',
-            'Published'  => 'TRUE','Option1 Name'  => 'Color','Option1 Value'  => '','Option2 Name'  => 'Size',
+            'Published'  => 'TRUE','Option1 Name'  => '','Option1 Value'  => '','Option2 Name'  => '',
             'Option2 Value'  => '','Option3 Name'  => '','Option3 Value'  => '','Variant SKU'  => '',
             'Variant Grams'  => '','Variant Inventory Tracker'  => 'shopify','Variant Inventory Qty'  => '',
             'Variant Inventory Policy'  => 'continue','Variant Fulfillment Service'  => 'manual','Variant Price'  => '',
@@ -1114,8 +1114,8 @@ class ApiGoodsinfo
                 $row['Vendor'] = $position > 1 ? '': $account['account'];
                 $row['Tags'] = $position > 1 ? '': static::getShopifyTag($account['tags'], $title);
                 $row['Published'] = $position > 1 ? '' : 'True';
-                $row['Option1 Name'] = $position > 1 ? '' : 'Color';
-                $row['Option2 Name'] = $position > 1 ? '' : 'Size';
+                $row['Option1 Name'] = static::getShopifyOptionName($position, $sku, 'Color');
+                $row['Option2 Name'] = static::getShopifyOptionName($position, $sku, 'Size');
                 $row['Option1 Value'] = $sku['color'];
                 $row['Option2 Value'] = $sku['size'];
                 $row['Variant SKU'] = $sku['sku'];
@@ -1590,6 +1590,12 @@ class ApiGoodsinfo
         }
     }
 
+    /**
+     * @brief shopify Tags
+     * @param $tags
+     * @param $title
+     * @return string
+     */
     private static function getShopifyTag($tags, $title)
     {
         $out = [];
@@ -1600,5 +1606,26 @@ class ApiGoodsinfo
         }
         }
         return implode(', ', $out);
+    }
+
+    /**
+     * @brief 判断option name
+     * @param $position
+     * @param $sku
+     * @param $name
+     * @return string
+     */
+    private static function getShopifyOptionName($position, $sku, $name)
+    {
+        if ($position > 1) {
+            return '';
+        }
+        else {
+            if(empty($sku[strtolower($name)])) {
+                return '';
+            }
+            return $name;
+        }
+
     }
 }
