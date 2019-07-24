@@ -23,9 +23,12 @@ use backend\models\OaJoomToWish;
 use backend\models\OaShippingService;
 use backend\models\OaSysRules;
 use backend\models\OaWishSuffix;
+use backend\models\OaShopify;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\db\Query;
+use backend\modules\v1\utils\Helper;
+
 
 class ApiBasicInfo
 {
@@ -482,4 +485,64 @@ class ApiBasicInfo
         }
     }
 
+    /**
+     * @brief 查询shopify账号列表
+     * @param $condition
+     * @return ActiveDataProvider
+     */
+    public static function getShopifyList($condition)
+    {
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $query = OaShopify::find();
+        $filterFields = ['like' => ['account', 'tags', 'cate', 'subCate']];
+        $filterTime = ['createdDate', 'updatedDate'];
+        $query = Helper::generateFilter($query, $filterFields, $condition);
+        $query = Helper::timeFilter($query, $filterTime, $condition);
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => [
+                'pageSize' => $pageSize
+            ]
+        ]);
+        return $provider;
+    }
+
+    /**
+     * @brief 查询shopify详情
+     * @param $condition
+     * @return mixed
+     */
+    public static function getShopifyInfo($condition)
+    {
+        $id = $condition['id'];
+        return OaShopify::findOne($id);
+    }
+
+    /**
+     * @brief 保存shopify信息
+     * @param $condition
+     * @throws \Exception
+     */
+    public static function ShopifySave($condition)
+    {
+        $id = $condition['id'];
+        $shopify = OaShopify::findOne($id);
+        if($shopify === null ) {
+           $shopify = new OaShopify();
+        }
+        $shopify->setAttributes($condition);
+        if(!$shopify->save()) {
+            throw  new \Exception('保存失败！');
+        }
+    }
+
+    /**
+     * @brief 删除Shopify账号
+     * @param $condition
+     */
+    public static function ShopifyDelete($condition)
+    {
+        $id = $condition['id'];
+        OaShopify::deleteAll(['id' => $id]);
+    }
 }

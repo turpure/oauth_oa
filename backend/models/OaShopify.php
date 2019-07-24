@@ -3,6 +3,8 @@
 namespace backend\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
+use yii\db\Expression;
 
 /**
  * This is the model class for table "proCenter.oa_shopify".
@@ -25,6 +27,18 @@ class OaShopify extends \yii\db\ActiveRecord
         return 'proCenter.oa_shopify';
     }
 
+    public function behaviors()
+    {
+        return [[
+            /**
+             * TimestampBehavior：
+             */
+            'class' => TimestampBehavior::className(),
+            'createdAtAttribute' => 'createdDate',
+            'updatedAtAttribute' => 'updatedDate',
+            'value' => new Expression('NOW()'),
+        ],];
+    }
     /**
      * {@inheritdoc}
      */
