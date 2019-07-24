@@ -23,6 +23,7 @@ use backend\models\OaPaypal;
 use backend\models\OaShippingService;
 use backend\models\OaSysRules;
 use backend\models\OaWishSuffix;
+use backend\models\OaShopify;
 use backend\modules\v1\models\ApiBasicInfo;
 use Yii;
 use yii\data\ActiveDataProvider;
@@ -440,4 +441,61 @@ class BasicInfoController extends AdminController
         return OaPaypal::findOne(['id' => $id]);
     }
 
+    /**
+     * @brief shopif账号字典查询
+     * @return array|ActiveDataProvider
+     */
+    public function actionShopifyList()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiBasicInfo::getShopifyList($condition);
+        }
+        catch (\Exception  $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
     }
+
+    public function actionShopifyInfo()
+    {
+        try {
+           $condition = Yii::$app->request->post()['condition'];
+           return ApiBasicInfo::getShopifyInfo($condition);
+        }
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+
+    /**
+     * @brief shopify账号保存
+     * @return mixed
+     */
+    public function actionShopifySave()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            ApiBasicInfo::ShopifySave($condition);
+        }
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+
+    /**
+     * @brief 删除shopify 账号
+     * @return array
+     */
+    public function actionShopifyDelete()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            ApiBasicInfo::ShopifyDelete($condition);
+        }
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+
+
+}
