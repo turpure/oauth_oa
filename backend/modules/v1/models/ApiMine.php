@@ -441,7 +441,7 @@ class ApiMine
             $variations = $info['detailsInfo'];
             foreach ($variations as $var) {
                 $row = [
-                    'Parent Unique ID' => $var['parentId'],
+                    'Parent Unique ID' => $basicInfo['goodsCode'],
                     '*Product Name' =>  $basicInfo['proName'],
                     'Description' =>  $basicInfo['description'],
                     '*Tags' => $basicInfo['tags'],
@@ -505,6 +505,7 @@ class ApiMine
                 $var['proName'] = $basicInfo['proName'];
                 $var['description'] = $basicInfo['description'];
                 $var['tags'] = $basicInfo['tags'];
+                $var['parentId'] = $basicInfo['goodsCode'];
                 $detail->setAttributes($var);
                 $detail->setAttributes($images);
                 if(!$detail->save(false)) {
