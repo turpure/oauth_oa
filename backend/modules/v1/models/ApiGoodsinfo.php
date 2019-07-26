@@ -1107,6 +1107,8 @@ class ApiGoodsinfo
             $imagesCount = count($imageSrc);
             $position = 1;
             foreach ($wishSku as $sku) {
+                $option1Name = static::getShopifyOptionName($position, $sku, 'Color');
+                $option2Name = static::getShopifyOptionName($position, $sku, 'Size');
                 $row = $rowTemplate;
                 $row['Handle'] = str_replace(' ', '-', $title);
                 $row['Title'] = $position > 1 ? '': $title;
@@ -1114,10 +1116,10 @@ class ApiGoodsinfo
                 $row['Vendor'] = $position > 1 ? '': $account['account'];
                 $row['Tags'] = $position > 1 ? '': static::getShopifyTag($account['tags'], $title);
                 $row['Published'] = $position > 1 ? '' : 'True';
-                $row['Option1 Name'] = static::getShopifyOptionName($position, $sku, 'Color');
-                $row['Option2 Name'] = static::getShopifyOptionName($position, $sku, 'Size');
-                $row['Option1 Value'] = $sku['color'];
-                $row['Option2 Value'] = $sku['size'];
+                $row['Option1 Name'] = !empty($option1Name)? $option1Name : $option2Name;
+                $row['Option2 Name'] = $option2Name;
+                $row['Option1 Value'] = !empty($sku['color'])? $sku['color'] : $sku['size'];
+                $row['Option2 Value'] = empty($sku['color']) && !empty($sku['size']) ? '' : $sku['size'];
                 $row['Variant SKU'] = $sku['sku'];
                 $row['Variant Grams'] = $sku['weight'];
                 $row['Variant Inventory Qty'] = $sku['inventory'];
@@ -1130,7 +1132,18 @@ class ApiGoodsinfo
                 $position++;
             }
 
-
+            //追加图片
+            if($imagesCount > $position) {
+                $row = $rowTemplate;
+                foreach ($row as $key => $value) {
+                    $row[$key] = '';
+                }
+                while($position <= $imagesCount) {
+                    $row['Image Src'] = $imageSrc[$position - 1];
+                    $out[] = $row;
+                    $position++;
+                }
+            }
 
         }
         $ret['data'] = $out;
