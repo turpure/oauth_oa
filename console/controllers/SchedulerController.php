@@ -628,7 +628,7 @@ class SchedulerController extends Controller
     public function actionUpdateUrl()
     {
         try {
-            $sql1 = "UPDATE B_GoodsSKU SET BmpFileName='http://121.196.233.153/images/'+SKU+'.jpg'  
+            $sql1 = "UPDATE B_GoodsSKU SET BmpFileName='http://121.196.233.153/images/'+ case when CHARINDEX('_',sku, 0) = 0 then sku else SUBSTRING(sku,0, CHARINDEX('_',sku, 0)) end +'.jpg'  
                     WHERE BmpFileName LIKE '%Shop Elf%' OR BmpFileName LIKE '%普源%' OR BmpFileName='' OR BmpFileName NOT LIKE '%121.196.233.153%' ";
             $sql2 = "UPDATE B_Goods SET BmpFileName='http://121.196.233.153/images/'+SKU+'.jpg' 
                     WHERE BmpFileName LIKE '%Shop Elf%' OR BmpFileName LIKE '%普源%' OR BmpFileName='' OR BmpFileName NOT LIKE '%121.196.233.153%'";
