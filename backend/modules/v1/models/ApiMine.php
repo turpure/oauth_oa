@@ -740,9 +740,10 @@ class ApiMine
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $cateId = $condition['cateId'];
         $query = (new  yii\db\Query())
-            ->select('jp.*,jc.cateName')
+            ->select('jp.*,jc.cateName,jt.proCreatedDate, jt.reviewsCount')
             ->from('proCenter.joom_cateProduct as jp')
             ->leftJoin('proCenter.joom_category as jc', 'jc.cateId = jp.cateId' )
+            ->leftJoin('proCenter.joom_product as jt', 'jp.productId = jt.productId' )
             ->where(['jp.cateId' => $cateId]);
         $provider = new ActiveDataProvider([
             'query' => $query,
