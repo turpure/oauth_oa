@@ -1219,7 +1219,7 @@ class ApiGoodsinfo
                 $extraImages = explode("\n",$wishInfo['extraImages']);
                 $count = 1;
                 while($count <21) {
-                    $row['Extra Image URL '. $count] = $extraImages[$count - 1];
+                    $row['Extra Image URL '. $count] = isset($extraImages[$count - 1])? $extraImages[$count - 1] : '';
                     $count++;
                 }
                 $out[] = $row;
