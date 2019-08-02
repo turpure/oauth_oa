@@ -1218,7 +1218,7 @@ class ApiGoodsinfo
                 $row['Extra Image URL'] = $sku['linkUrl'];
                 $extraImages = explode("\n",$wishInfo['extraImages']);
                 $count = 1;
-                while($count <11) {
+                while($count <21) {
                     $row['Extra Image URL '. $count] = $extraImages[$count - 1];
                     $count++;
                 }
