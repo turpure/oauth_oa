@@ -18,7 +18,15 @@ use \mdm\admin\models\Position;
         <div class="col-sm-6">
             <?= $form->field($model, 'store')->textInput(['maxlength' => 128]) ?>
             <?= $form->field($model, 'platform')->textInput(['id' => 'platform']) ?>
-            <?= $form->field($model, 'username')->dropDownList(Position::getPositionUser('销售'),['prompt' => '请选择归属人']) ?>
+            <?= $form->field($model, 'username')->widget(\kartik\select2\Select2::classname(), [
+                'data' =>Position::getPositionUser('销售'),
+                'options' => ['placeholder' => '--请选择归属人--',
+                    'multiple' => false,
+                ],
+                'pluginOptions' => [
+                    'allowClear' => true
+                ],
+            ]) ?>
             <?php if(!$model->isNewRecord) echo $form->field($model, 'used', [])->checkbox() ?>
 
         </div>

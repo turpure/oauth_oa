@@ -127,7 +127,7 @@ class ApiGoodsinfo
 
 
             //美工,开发看自己
-            if(strpos($userRole, '销售') !== false) {
+            if(strpos($userRole, '销售') === false) {
                 $query->andWhere(['or',['in','gi.developer', $userList],['in', 'possessMan1', $userList]]);
             }
 
