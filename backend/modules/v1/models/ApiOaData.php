@@ -193,32 +193,17 @@ class ApiOaData
     public static function getCatPerformData()
     {
         $sql = 'P_oa_CategoryPerformance';
-        //$cache = Yii::$app->local_cache;
         $today = 'category-' . date('y-m-d');
-       // $ret = $cache->get($today);
-        //if (!empty($ret)) {
-          //  $result = $ret;
-        //} else {
-            $result = Yii::$app->py_db->createCommand($sql)->queryAll();
-          //  $cache->set($today, $result, 86400);
-        //}
-        foreach ($result as $key => $value) {
-            if ($value['Distinguished'] == 'catNum') {
-                $va['value'] = (int)$value['value'];
-                $va['name'] = $value['name'];
-                $Data['catNum'][] = $va;
-            } else {
-                $va['value'] = (int)$value['value'];
-                $va['name'] = $value['name'];
-                $Data['catAmt'][] = $va;
-            }
-        }
-        $Data['maxValue'] = max(ArrayHelper::getColumn($result,'value'));
-        $Data['name'] = array_column($Data['catNum'], 'name');
-        return $Data;
-
+        $result = Yii::$app->py_db->createCommand($sql)->queryAll();
+        return $result;
     }
 
+    /**
+     * @param $condition
+     * Date: 2019-07-31 16:18
+     * Author: henry
+     * @return ArrayDataProvider
+     */
     public static function getCatDetailData($condition)
     {
         $data['type'] = $condition['dateFlag'];
@@ -229,15 +214,7 @@ class ApiOaData
         $data['create_end'] = (!empty($condition['devDate'])) ? $condition['devDate'] : '';
         $sql = "EXEC P_oa_CategoryPerformance_demo " . $data['type'] . " ,'" . $data['order_start'] . "','" . $data['order_end'] . "','" . $data['create_start'] . "','" . $data['create_end'] . "','".$data['cat']."';";
         //P_oa_CategoryPerformance_demo 0 ,'2018-01-01','2018-01-23','',''
-        //缓存数据
-        //$cache = Yii::$app->local_cache;
-        //$ret = $cache->get($sql);
-        //if($ret !== false){
-         //   $result = $ret;
-        //} else {
-            $result = Yii::$app->py_db->createCommand($sql)->queryAll();
-          //  $cache->set($sql,$result,2592000);
-        //}
+        $result = Yii::$app->py_db->createCommand($sql)->queryAll();
         //选择了主目录，重组结果数组
         if($data['cat']){
             foreach ($result as $v){
@@ -260,5 +237,52 @@ class ApiOaData
         return $dataProvider;
 
     }
+
+
+    /** 产品表现
+     * @param $condition
+     * Date: 2019-07-31 16:27
+     * Author: henry
+     * @return ArrayDataProvider
+     */
+
+    public static function getProductPerformData($condition)
+    {
+        $sql = "EXEC P_oa_ProductPerformance '{$condition['dateFlag']}','{$condition['orderBeginDate']}','{$condition['orderEndDate']}','{$condition['devBeginDate']}','{$condition['devEndDate']}','{$condition['salerName']}'";
+        $result = Yii::$app->py_db->createCommand($sql)->queryAll();
+        //var_dump($result);exit;
+        $dataProvider = new ArrayDataProvider([
+            'allModels' => $result,
+            'pagination' => [
+                'pageSize' => isset($condition['pageSize']) && $condition['pageSize'] ? $condition['pageSize'] : 20,
+            ],
+        ]);
+        return $dataProvider;
+    }
+
+    public static function getDevPerformData($condition){
+        $sql = "EXEC P_oa_DeveloperPerformance " . $condition['dateFlag'] . " ,'" . $condition['orderBeginDate'] . "','" . $condition['orderEndDate'] . "','" . $condition['devBeginDate'] . "','" . $condition['devEndDate'] ."'";
+        $orderData = Yii::$app->py_db->createCommand($sql)->queryAll();
+
+        //获取开发员开发产品款数(不受订单影响)
+        $numSql = "SELECT CASE WHEN ISNULL(SalerName,'')='' THEN '其他' ELSE salerName END AS salerName,count(GoodsCode) AS num FROM B_Goods b 
+                    --LEFT JOIN [user] u ON u.username=b.SalerName WHERE u.username<>\'\'
+                     ";
+        if($condition['devBeginDate'] && $condition['devEndDate']){
+            $numSql .= " AND CreateDate BETWEEN '" . $condition['devBeginDate'] . "' AND '" . $condition['devEndDate'] . "'";
+        }
+        $numSql .= ' GROUP BY SalerName';
+        //print_r($numSql);exit;
+        $devData = Yii::$app->py_db->createCommand($numSql)->queryAll();
+
+        return [
+            'orderData' => $orderData,
+            'devData' => $devData,
+        ];
+    }
+
+
+
+
 
 }

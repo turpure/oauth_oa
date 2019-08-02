@@ -202,16 +202,22 @@ class ApiGoods
         $pageSize = isset($post['pageSize']) ? $post['pageSize'] : 10;
         // 返回当前用户管辖下的用户
         $userList = ApiUser::getUserList($user->username);
+        $role = ApiUser::getUserRole($user->username);
 
         $query = OaGoods::find();
         $query->select('nid,mineId,stockUp,img,cate,subCate,vendor1,origin1,introReason,checkStatus,introducer,developer,approvalNote,
                         devNum,createDate,updateDate,salePrice,hopeMonthProfit,hopeRate,hopeWeight,hopeCost,hopeSale');
-        $query->andFilterWhere(["IFNULL(developer,'')" => $userList]);//查看权限
+
         if($type == 'check'){
+            $query->andFilterWhere(["IFNULL(developer,'')" => $userList]);//查看权限
             $query->andFilterWhere(['checkStatus' => '待审批']);
         }elseif($type == 'pass'){
+            if(in_array('产品销售', $role) === false){
+                $query->andFilterWhere(["IFNULL(developer,'')" => $userList]);//查看权限
+            }
             $query->andFilterWhere(['checkStatus' => '已审批']);
         }else{
+            $query->andFilterWhere(["IFNULL(developer,'')" => $userList]);//查看权限
             $query->andFilterWhere(['checkStatus' => '未通过']);
         }
         $query->andFilterWhere(["IFNULL(stockUp,'否')" => $post['stockUp']]);

@@ -162,9 +162,71 @@ class OaDataController extends AdminController
         return ApiOaData::getCatPerformData();
     }
 
+    /** 类目表现详情
+     * Date: 2019-07-31 15:54
+     * Author: henry
+     * @return \yii\data\ArrayDataProvider
+     */
     public function actionCat(){
         $condition = Yii::$app->request->post()['condition'];
         return ApiOaData::getCatDetailData($condition);
     }
+
+    /** 产品表现
+     * Date: 2019-07-31 16:19
+     * Author: henry
+     * @return \yii\data\ArrayDataProvider
+     */
+    public function actionProductPerform()
+    {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+
+        $condition = [
+            'salerName' => $cond['saler'],
+            'dateFlag' => $cond['dateFlag'],
+            'orderBeginDate' => $cond['orderDate'][0],
+            'orderEndDate' => $cond['orderDate'][1],
+            'devBeginDate' => isset($cond['devDate'][0]) ? $cond['devDate'][0] : '',
+            'devEndDate' => isset($cond['devDate'][1]) ? $cond['devDate'][1] : '',
+            'page' => Yii::$app->request->get('page',1),
+            'pageSize' => $cond['pageSize'],
+        ];
+
+        return ApiOaData::getProductPerformData($condition);
+    }
+
+    public function actionDevPerform()
+    {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        $condition = [
+            'dateFlag' => $cond['dateFlag'],
+            'orderBeginDate' => $cond['orderDate'][0],
+            'orderEndDate' => $cond['orderDate'][1],
+            'devBeginDate' => isset($cond['devDate'][0]) ? $cond['devDate'][0] : '',
+            'devEndDate' => isset($cond['devDate'][1]) ? $cond['devDate'][1] : '',
+        ];
+
+        return ApiOaData::getDevPerformData($condition);
+
+    }
+
+
+    public function actionSalesPerform()
+    {
+
+    }
+
+
+    public function actionStockPerform()
+    {
+
+    }
+
+
+
+
+
 
 }

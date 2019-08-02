@@ -131,6 +131,9 @@ class TinyToolController extends AdminController
 
     }
 
+    //====================================================
+    //海外仓定价器
+
     /**
      * @brief UK 虚拟仓定价器
      */
@@ -476,6 +479,8 @@ class TinyToolController extends AdminController
         return $data;
     }
 
+
+
     /**
      * @brief display exception payPal
      * @return array
@@ -557,6 +562,9 @@ class TinyToolController extends AdminController
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
     }
+
+//========================================================
+    //海外仓补货
 
     /** UK虚拟仓补货
      * Date: 2019-05-28 16:31
@@ -670,6 +678,38 @@ class TinyToolController extends AdminController
         }
     }
 
+
+    /** eBayUK虚拟海外仓补货
+     * Date: 2019-08-01 16:40
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionUkVirtualReplenish()
+    {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        try {
+            $sql = "EXEC  [guest].[LY_eBayUK_Replenishment] '{$cond['salerName']}','{$cond['purchaser']}'";
+            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+            //$totalPurCost = array_sum(ArrayHelper::getColumn($data, 'purCost'));
+            //$totalShipWeight = array_sum(ArrayHelper::getColumn($data, 'shipWeight'));
+
+            $provider = new ArrayDataProvider([
+                'allModels' => $data,
+                'pagination' => [
+                    'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
+                ],
+            ]);
+            //return ['provider' => $provider, 'extra' => ['totalPurCost' => $totalPurCost, 'totalShipWeight' => $totalShipWeight]];
+            return $provider;
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+    }
+
+
+//=========================================================
+//海外仓补货表格下载
 
     /** 下载表格
      * Date: 2019-05-29 11:49
