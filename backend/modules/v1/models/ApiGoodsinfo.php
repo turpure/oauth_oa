@@ -33,6 +33,7 @@ use backend\models\OaShopify;
 use backend\models\OaJoomToWish;
 use backend\models\OaSiteCountry;
 use backend\models\OaShippingService;
+use mdm\admin\models\Store;
 use yii\data\ActiveDataProvider;
 use backend\modules\v1\utils\ProductCenterTools;
 use yii\db\Query;
@@ -1155,6 +1156,83 @@ class ApiGoodsinfo
     {
         $ret = OaShopify::find()->select('account')->asArray()->all();
         $ret = ArrayHelper::getColumn($ret, 'account');
+        return $ret;
+    }
+
+
+    /**
+     * @brief vova模板预处理
+     * @param $id
+     * @param $accounts
+     * @return array
+     * @throws \Exception
+     */
+    public static function preExportVova($id, $accounts)
+    {
+        $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
+        $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
+        $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
+        $keyWords = static::preKeywords($wishInfo);
+        $rowTemplate = [
+            'Vova Category ID' => '' , 'Parent SKU' => '' , 'SKU' => '' , 'Goods Name' => '' , 'Quantity' => '' ,
+            'Goods Description' => '' , 'Tags' => '' , 'Goods Brand' => '' , 'Market Price' => '' , 'Shop Price' => '' ,
+            'Shipping Fee' => '' , 'Shipping Weight' => '' , 'Shipping Time' => '' , 'From Platform' => '' ,
+            'Size' => '' , 'Color' => '' , 'Style Quantity' => '' , 'Main Image URL' => '' , 'Extra Image URL' => '' ,
+            'Extra Image URL 1' => '' , 'Extra Image URL 2' => '' , 'Extra Image URL 3' => '' , 'Extra Image URL 4' => '' ,
+            'Extra Image URL 5' => '' , 'Extra Image URL 6' => '' , 'Extra Image URL 7' => '' , 'Extra Image URL 8' => '' ,
+            'Extra Image URL 9' => '' , 'Extra Image URL 10' => ''
+        ];
+        $ret = ['name' => 'Vova-'.$goodsInfo['goodsCode']];
+        $out = [];
+
+        foreach ($accounts as $act) {
+            $postfix = '@#' . substr(explode('-', $act)[1],0,2);
+            $titlePool = [];
+            $title = '';
+            $len = self::WishTitleLength;
+            while (true) {
+                $title = static::getTitleName($keyWords, $len);
+                --$len;
+                if (empty($title) || !in_array($title, $titlePool, false)) {
+                    $titlePool[] = $title;
+                    break;
+                }
+            }
+
+            foreach ($wishSku as $sku) {
+                $row = $rowTemplate;
+                $row['Parent SKU'] = $wishInfo['sku'];
+                $row['SKU'] = $sku['sku'] . $postfix;
+                $row['Goods Name'] = $title;
+                $row['Quantity'] = 100000;
+                $row['Goods Description'] = $wishInfo['description'];
+                $row['Tags'] = $wishInfo['wishTags'];
+                $row['Market Price'] = ceil($sku['price'] * 5);
+                $row['Shop Price'] = $sku['price'];
+                $row['Shipping Fee'] = 0 ;
+                $row['Shipping Weight'] = $sku['weight'];
+                $row['Shipping Time'] = '15-45';
+                $row['Size'] = $sku['size'];
+                $row['Color'] = $sku['color'];
+                $row['Main Image URL'] = $wishInfo['mainImage'];
+                $row['Extra Image URL'] = $sku['linkUrl'];
+                $extraImages = explode("\n",$wishInfo['extraImages']);
+                $count = 1;
+                while($count <21) {
+                    $row['Extra Image URL '. $count] = isset($extraImages[$count - 1])? $extraImages[$count - 1] : '';
+                    $count++;
+                }
+                $out[] = $row;
+            }
+
+        }
+        $ret['data'] = $out;
+        return $ret;
+    }
+    public static function getVovaAccounts()
+    {
+        $ret = Store::find()->select('store')->where(['platForm' => 'VOVA'])->asArray()->all();
+        $ret = ArrayHelper::getColumn($ret, 'store');
         return $ret;
     }
     /**

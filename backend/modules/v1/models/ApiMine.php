@@ -740,12 +740,30 @@ class ApiMine
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $cateId = $condition['cateId'];
         $query = (new  yii\db\Query())
-            ->select('jp.*,jc.cateName')
+            ->select('jp.*,jc.cateName,jt.proCreatedDate, jt.reviewsCount')
             ->from('proCenter.joom_cateProduct as jp')
             ->leftJoin('proCenter.joom_category as jc', 'jc.cateId = jp.cateId' )
+            ->leftJoin('proCenter.joom_product as jt', 'jp.productId = jt.productId' )
             ->where(['jp.cateId' => $cateId]);
+        // productId 过滤单独处理
+        if(isset($condition['productId']) && !empty($condition['productId'])) {
+            $query->andFilterWhere(['jp.productId' => $condition['productId']]);
+        }
+        $fieldFilter = ['like' => ['productName','storeId']];
+        $numberFilter = ['between' => ['price', 'rating']];
+        $timeFilter = ['taskCreatedTime', 'taskUpdatedTime', 'proCreatedDate'];
+        $query = Helper::generateFilter($query, $fieldFilter, $condition);
+        $query = Helper::generateFilter($query, $numberFilter, $condition);
+        $query = Helper::timeFilter($query, $timeFilter, $condition);
         $provider = new ActiveDataProvider([
             'query' => $query,
+            'sort' => [
+                'attributes' => [
+                    'id','productId' , 'cateId', 'productName', 'price', 'rating', 'storeId',
+                    'taskCreatedTime' , 'taskUpdatedTime', 'cateName' , 'proCreatedDate',
+                    'reviewsCount'
+                ]
+            ],
             'pagination' => [
                 'pageSize' => $pageSize,
             ],

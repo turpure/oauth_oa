@@ -17,7 +17,6 @@ use Yii;
  * @property string $storeId
  * @property string $taskCreatedTime
  * @property string $taskUpdatedTime
- * @property string $productCreatedTime
  */
 class JoomCateProduct extends \yii\db\ActiveRecord
 {
@@ -36,7 +35,7 @@ class JoomCateProduct extends \yii\db\ActiveRecord
     {
         return [
             [['price', 'rating'], 'number'],
-            [['taskCreatedTime', 'taskUpdatedTime', 'productCreatedTime'], 'safe'],
+            [['taskCreatedTime', 'taskUpdatedTime' ], 'safe'],
             [['productId', 'cateId', 'storeId'], 'string', 'max' => 100],
             [['productName'], 'string', 'max' => 120],
             [['mainImage'], 'string', 'max' => 320],
@@ -60,7 +59,11 @@ class JoomCateProduct extends \yii\db\ActiveRecord
             'storeId' => 'Store ID',
             'taskCreatedTime' => 'Task Created Time',
             'taskUpdatedTime' => 'Task Updated Time',
-            'productCreatedTime' => 'Product Created Time',
         ];
+    }
+
+    public function getJoomProduct()
+    {
+        return $this->hasOne(JoomCateProduct::className(), ['productId' => 'productId']);
     }
 }

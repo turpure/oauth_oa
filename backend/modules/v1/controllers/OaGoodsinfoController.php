@@ -615,6 +615,39 @@ class OaGoodsinfoController extends AdminController
     }
 
 
+    /**
+     * @brief 导出vova模板
+     * @throws \Exception
+     */
+    public function actionPlatExportVova()
+    {
+        try {
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            $infoId = $condition['id'];
+            $accounts = $condition['account'];
+            $ret = ApiGoodsinfo::preExportVova($infoId, $accounts);
+            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
+        }
+        catch (\Exception  $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+
+    public function actionVovaAccounts()
+    {
+        try {
+            return ApiGoodsinfo::getVovaAccounts();
+        }
+        catch (\Exception  $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+
+
     /** 获取需要导出的Joom没账号
      * Date: 2019-04-01 9:22
      * Author: henry

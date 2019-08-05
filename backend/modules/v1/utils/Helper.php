@@ -104,6 +104,7 @@ class Helper
     {
         $like = isset($fields['like'])? $fields['like'] : [];
         $equal = isset($fields['equal'])? $fields['equal'] : [];
+        $between = isset($fields['between'])? $fields['between'] : [];
         foreach ($like as $attr) {
             if (isset($condition[$attr]) && !empty($condition[$attr])) {
                 $query->andFilterWhere(['like', $attr, $condition[$attr]]);
@@ -113,6 +114,14 @@ class Helper
             if (isset($condition[$attr])) {
                 $query->andFilterWhere(['=', $attr, $condition[$attr]]);
             }
+        }
+
+        foreach ($between as $attr) {
+            if (isset($condition[$attr])) {
+                list($begin, $end) = $condition[$attr];
+                $query->andFilterWhere(['between', $attr, $begin, $end]);
+            }
+
         }
         return $query;
     }
