@@ -184,7 +184,7 @@ class ApiOaData
     }
 
 
-    /**
+    /** 类目表现
      * @param $condition
      * Date: 2019-03-08 9:00
      * Author: henry
@@ -260,6 +260,12 @@ class ApiOaData
         return $dataProvider;
     }
 
+    /** 开发表现
+     * @param $condition
+     * Date: 2019-08-02 16:27
+     * Author: henry
+     * @return array
+     */
     public static function getDevPerformData($condition){
         $sql = "EXEC P_oa_DeveloperPerformance " . $condition['dateFlag'] . " ,'" . $condition['orderBeginDate'] . "','" . $condition['orderEndDate'] . "','" . $condition['devBeginDate'] . "','" . $condition['devEndDate'] ."'";
         $orderData = Yii::$app->py_db->createCommand($sql)->queryAll();
@@ -272,8 +278,8 @@ class ApiOaData
             $numSql .= " AND CreateDate BETWEEN '" . $condition['devBeginDate'] . "' AND '" . $condition['devEndDate'] . "'";
         }
         $numSql .= ' GROUP BY SalerName';
-        //print_r($numSql);exit;
         $devData = Yii::$app->py_db->createCommand($numSql)->queryAll();
+        //print_r($devData);exit;
 
         return [
             'orderData' => $orderData,
@@ -281,7 +287,32 @@ class ApiOaData
         ];
     }
 
+    /**全球市场分析
+     * @param $condition
+     * Date: 2019-08-05 10:53
+     * Author: henry
+     * @return mixed
+     */
+    public static function getGlobalMarketData($condition){
+        $sql = "P_oa_GlobalMarketAnalysis 0,'" . $condition['orderBeginDate'] . "','" . $condition['orderEndDate'] . "','".$condition['goodsCode'] . "','".$condition['plat'] . "','".$condition['suffix']. "'";
+        $result = Yii::$app->py_db->createCommand($sql)->queryAll();
+        return $result;
+    }
 
+    public static function getSalesPerformData($condition)
+    {
+        $sql = "P_oa_sales_Performance '" . $condition['code'] . "','" . $condition['create_start'] . "','" . $condition['create_end'] . "','".$condition['cat'] . "'";
+        //print_r($sql);exit;
+        $result = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $dataProvider = new ArrayDataProvider([
+            'allModels' => $result,
+            'pagination' => [
+                'pageSize' => isset($condition['pageSize']) && $condition['pageSize'] ? $condition['pageSize'] : 20,
+            ],
+        ]);
+
+        return $dataProvider;
+    }
 
 
 

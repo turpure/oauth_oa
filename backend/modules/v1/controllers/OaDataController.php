@@ -212,10 +212,38 @@ class OaDataController extends AdminController
 
     }
 
+    /**
+     * 全球市场分析
+     * @return string
+     * @throws \yii\db\Exception
+     */
+    public function actionGlobalMarket()
+    {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        $condition = [
+            'plat' => $cond['plat'],
+            'suffix' => $cond['suffix'],
+            'goodsCode' => $cond['goodsCode'],
+            'orderBeginDate' => $cond['orderDate'][0],
+            'orderEndDate' => $cond['orderDate'][1],
+        ];
+
+        return ApiOaData::getGlobalMarketData($condition);
+    }
+
 
     public function actionSalesPerform()
     {
-
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        $condition = [
+            'isStock' => $cond['isStock'],
+            'salerName' => $cond['salerName'],
+            'devBeginDate' => $cond['devDate'][0],
+            'devEndDate' => $cond['devDate'][1],
+        ];
+        return ApiOaData::getSalesPerformData($condition);
     }
 
 

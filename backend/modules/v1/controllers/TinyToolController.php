@@ -712,11 +712,12 @@ class TinyToolController extends AdminController
 //海外仓补货表格下载
 
     /** 下载表格
-     * Date: 2019-05-29 11:49
+     * Date: 2019-08-05 10:18
      * Author: henry
      * @return array
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     * @throws \yii\db\Exception
      */
     public function actionExportReplenish()
     {
@@ -729,52 +730,74 @@ class TinyToolController extends AdminController
         switch ($cond['type']) {
             case 'uk':
                 $name = 'ukVirtualReplenish';
-                $sql = "EXEC oauth_ukVirtualReplenish @sku=:sku,@salerName=:salerName,@purchaser=:purchaser,@trend=:trend,@isPurchaser=:isPurchaser;";
-                $params = [
-                    ':sku' => $cond['sku'],
-                    ':salerName' => $cond['salerName'],
-                    ':purchaser' => $cond['purchaser'],
-                    ':trend' => $cond['trend'],
-                    ':isPurchaser' => $cond['isPurchaser'],
-                ];
+                $sql = "SELECT SKU, SKUName, goodsCode, salerName, goodsStatus, purchaser, supplierName,
+                        saleNum3days, saleNum7days, saleNum15days, saleNum30days, trend, saleNumDailyAve, hopeUseNum,
+                        amount, totalHopeUN, hopeSaleDays, purchaseNum, price, purCost 
+                    FROM cache_overseasReplenish WHERE type='UK虚拟仓'";
+                if (isset($cond['sku']) && $cond['sku']) $sql .= " AND SKU LIKE '%{$cond['sku']}%'";
+                if (isset($cond['salerName']) && $cond['salerName']) $sql .= " AND salerName LIKE '%{$cond['salerName']}%'";
+                if (isset($cond['purchaser']) && $cond['purchaser']) $sql .= " AND purchaser LIKE '%{$cond['purchaser']}%'";
+                if (isset($cond['trend']) && $cond['trend']) $sql .= " AND trend LIKE '%{$cond['trend']}%'";
+                if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
+                if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
+                $data = Yii::$app->db->createCommand($sql)->queryAll();
                 break;
             case 'auReal':
                 $name = 'auRealReplenish';
-                $sql = "EXEC oauth_auRealReplenish @sku=:sku,@salerName=:salerName,@purchaser=:purchaser,@trend=:trend,@isPurchaser=:isPurchaser,@isShipping=:isShipping;";
-                $params = [
-                    ':sku' => $cond['sku'],
-                    ':salerName' => $cond['salerName'],
-                    ':purchaser' => $cond['purchaser'],
-                    ':trend' => $cond['trend'],
-                    ':isPurchaser' => $cond['isPurchaser'],
-                    ':isShipping' => $cond['isShipping'],
-                ];
+                $sql = "SELECT SKU, SKUName, goodsCode, salerName, goodsStatus, price, weight, purchaser, supplierName,
+                        saleNum3days, saleNum7days, saleNum15days, saleNum30days, trend, saleNumDailyAve, 399HopeUseNum,
+                        uHopeUseNum, totalHopeUseNum, uHopeSaleDays, hopeSaleDays, purchaseNum, shipNum, purCost, shipWeight 
+                    FROM cache_overseasReplenish WHERE type='AU真仓'";
+                if (isset($cond['sku']) && $cond['sku']) $sql .= " AND SKU LIKE '%{$cond['sku']}%'";
+                if (isset($cond['salerName']) && $cond['salerName']) $sql .= " AND salerName LIKE '%{$cond['salerName']}%'";
+                if (isset($cond['purchaser']) && $cond['purchaser']) $sql .= " AND purchaser LIKE '%{$cond['purchaser']}%'";
+                if (isset($cond['trend']) && $cond['trend']) $sql .= " AND trend LIKE '%{$cond['trend']}%'";
+                if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
+                if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
+                if (isset($cond['isShipping']) && $cond['isShipping'] == '是') $sql .= " AND shipNum>0 ";
+                if (isset($cond['isShipping']) && $cond['isShipping'] == '否') $sql .= " AND shipNum=0 ";
+                $data = Yii::$app->db->createCommand($sql)->queryAll();
                 break;
             case 'ukReal':
                 $name = 'ukRealReplenish';
-                $sql = "EXEC oauth_ukRealReplenish @sku=:sku,@salerName=:salerName,@purchaser=:purchaser,@trend=:trend,@isPurchaser=:isPurchaser,@isShipping=:isShipping;";
+                $sql = "SELECT SKU, SKUName, goodsCode, salerName, goodsStatus, price, weight, purchaser, supplierName,
+                        saleNum3days, saleNum7days, saleNum15days, saleNum30days, trend, saleNumDailyAve, 399HopeUseNum,
+                        uHopeUseNum, totalHopeUseNum, uHopeSaleDays, hopeSaleDays, purchaseNum, shipNum, purCost, shipWeight 
+                    FROM cache_overseasReplenish WHERE type='UK真仓'";
+                if (isset($cond['sku']) && $cond['sku']) $sql .= " AND SKU LIKE '%{$cond['sku']}%'";
+                if (isset($cond['salerName']) && $cond['salerName']) $sql .= " AND salerName LIKE '%{$cond['salerName']}%'";
+                if (isset($cond['purchaser']) && $cond['purchaser']) $sql .= " AND purchaser LIKE '%{$cond['purchaser']}%'";
+                if (isset($cond['trend']) && $cond['trend']) $sql .= " AND trend LIKE '%{$cond['trend']}%'";
+                if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
+                if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
+                if (isset($cond['isShipping']) && $cond['isShipping'] == '是') $sql .= " AND shipNum>0 ";
+                if (isset($cond['isShipping']) && $cond['isShipping'] == '否') $sql .= " AND shipNum=0 ";
+                $data = Yii::$app->db->createCommand($sql)->queryAll();
+                break;
+            case 'uk2':
+                $name = 'ukRealReplenish2';
+                $sql = "EXEC  [guest].[LY_eBayUK_Replenishment] @salerName=:salerName,@purchaser=:purchaser";
                 $params = [
-                    ':sku' => $cond['sku'],
                     ':salerName' => $cond['salerName'],
                     ':purchaser' => $cond['purchaser'],
-                    ':trend' => $cond['trend'],
-                    ':isPurchaser' => $cond['isPurchaser'],
-                    ':isShipping' => $cond['isShipping'],
                 ];
+                $data = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
                 break;
             default :
                 $name = 'ukVirtualReplenish';
-                $sql = "EXEC oauth_ukVirtualReplenish @sku=:sku,@salerName=:salerName,@purchaser=:purchaser,@trend=:trend,@isPurchaser=:isPurchaser;";
-                $params = [
-                    ':sku' => $cond['sku'],
-                    ':salerName' => $cond['salerName'],
-                    ':purchaser' => $cond['purchaser'],
-                    ':trend' => $cond['trend'],
-                    ':isPurchaser' => $cond['isPurchaser'],
-                ];
+                $sql = "SELECT SKU, SKUName, goodsCode, salerName, goodsStatus, purchaser, supplierName,
+                        saleNum3days, saleNum7days, saleNum15days, saleNum30days, trend, saleNumDailyAve, hopeUseNum,
+                        amount, totalHopeUN, hopeSaleDays, purchaseNum, price, purCost 
+                    FROM cache_overseasReplenish WHERE type='UK虚拟仓'";
+                if (isset($cond['sku']) && $cond['sku']) $sql .= " AND SKU LIKE '%{$cond['sku']}%'";
+                if (isset($cond['salerName']) && $cond['salerName']) $sql .= " AND salerName LIKE '%{$cond['salerName']}%'";
+                if (isset($cond['purchaser']) && $cond['purchaser']) $sql .= " AND purchaser LIKE '%{$cond['purchaser']}%'";
+                if (isset($cond['trend']) && $cond['trend']) $sql .= " AND trend LIKE '%{$cond['trend']}%'";
+                if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
+                if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
+                $data = Yii::$app->db->createCommand($sql)->queryAll();
                 break;
         }
-        $data = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
         ExportTools::toExcelOrCsv($name, $data, 'Xls');
     }
 

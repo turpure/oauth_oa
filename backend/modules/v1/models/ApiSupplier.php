@@ -161,7 +161,7 @@ class ApiSupplier
         //获取部门
         $departChild = DepartmentChild::findOne(['user_id' => $userModel['id']]);
         $depart = Department::findOne(['id' => $departChild['department_id']]);
-        if ($depart['type'] == '供应链' && $num < $userModel['maxSupplierNum']) {
+        if (strpos($depart['type'], '供应链') !== false && $num < $userModel['maxSupplierNum']) {
             $model = new OaSupplier();
             $supplierId = Yii::$app->py_db->createCommand("SELECT nid FROM B_supplier WHERE supplierName LIKE '%" . $condition['supplierName'] . "%'")->queryOne();
             $model->attributes = $condition;

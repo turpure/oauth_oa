@@ -31,18 +31,25 @@ class ApiCondition
         foreach ($userInfo as $key=>$value) {
             $row = [];
             if(!empty($value['parent_id']) && !empty($value['parent_department'])) {
-                $row['id'] = $value['parent_id'];
-                $row['department'] = $value['parent_department'];
-                $row['type'] = $value['department_type'];
+                $type = explode(',',$value['department_type']);
+                foreach ($type as $v){
+                    $row['id'] = $value['parent_id'];
+                    $row['department'] = $value['parent_department'];
+                    $row['type'] = $v;
+                    $department[] = $row;
+                }
             }
             else if(!empty($value['department_id']) && !empty($value['department'])) {
-                $row['id'] = $value['department_id'];
-                $row['department'] = $value['department'];
-                $row['type'] = $value['department_type'];
+                $type = explode(',',$value['department_type']);
+                foreach ($type as $v){
+                    $row['id'] = $value['department_id'];
+                    $row['department'] = $value['department'];
+                    $row['type'] = $v;
+                    $department[] = $row;
+                }
             }else{
                 continue;
             }
-            $department[] = $row;
         }
         $ret = Helper::arrayUnique($department);
         return Helper::arraySort($ret,'id',SORT_ASC);
