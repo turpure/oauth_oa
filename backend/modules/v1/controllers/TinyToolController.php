@@ -741,6 +741,8 @@ class TinyToolController extends AdminController
                 if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
                 if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
                 $data = Yii::$app->db->createCommand($sql)->queryAll();
+                $title = ['SKU','SKU名称','商品编码','开发员','状态','采购','供应商','3天销量','7天销量','15天销量','30天销量',
+                    '走势','日均销量','预计可用库存','义乌仓库存','义乌仓采购未审核','预计可卖天数','采购数量','单价','采购金额'];
                 break;
             case 'auReal':
                 $name = 'auRealReplenish';
@@ -757,6 +759,8 @@ class TinyToolController extends AdminController
                 if (isset($cond['isShipping']) && $cond['isShipping'] == '是') $sql .= " AND shipNum>0 ";
                 if (isset($cond['isShipping']) && $cond['isShipping'] == '否') $sql .= " AND shipNum=0 ";
                 $data = Yii::$app->db->createCommand($sql)->queryAll();
+                $title = ['SKU','SKU名称','商品编码','开发员','状态','价格(￥)','重量(g)','采购','供应商','3天销量','7天销量','15天销量','30天销量',
+                    '走势','日均销量','金皖399预计可用库存','万邑通AU预计可用库存','预计可用库存','万邑通AU预计可用天数','预计可卖天数','采购数量','发货数量','采购金额','发货重量(g)'];
                 break;
             case 'ukReal':
                 $name = 'ukRealReplenish';
@@ -773,6 +777,8 @@ class TinyToolController extends AdminController
                 if (isset($cond['isShipping']) && $cond['isShipping'] == '是') $sql .= " AND shipNum>0 ";
                 if (isset($cond['isShipping']) && $cond['isShipping'] == '否') $sql .= " AND shipNum=0 ";
                 $data = Yii::$app->db->createCommand($sql)->queryAll();
+                $title = ['SKU','SKU名称','商品编码','开发员','状态','价格(￥)','重量(g)','采购','供应商','3天销量','7天销量','15天销量','30天销量',
+                    '走势','日均销量','金皖399预计可用库存','万邑通UK预计可用库存','预计可用库存','万邑通UK预计可用天数','预计可卖天数','采购数量','发货数量','采购金额','发货重量(g)'];
                 break;
             case 'uk2':
                 $name = 'ukRealReplenish2';
@@ -782,6 +788,8 @@ class TinyToolController extends AdminController
                     ':purchaser' => $cond['purchaser'],
                 ];
                 $data = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+                $title = ['商品编码','SKU','商品名称','状态','预计可用库存','仓库','开发员','采购','供应商','成本价(￥)','平均单价(￥)','重量(g)','3天销量','7天销量','15天销量','30天销量',
+                    '3天平均销量','7天平均销量','15天平均销量','30天平均销量','走势','日均销量','总预计可用库存','采购到货天数','预警销售天数','预计可卖天数','是否特殊备货','是否采购','采购数量','采购单价','采购金额'];
                 break;
             default :
                 $name = 'ukVirtualReplenish';
@@ -796,9 +804,11 @@ class TinyToolController extends AdminController
                 if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
                 if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
                 $data = Yii::$app->db->createCommand($sql)->queryAll();
+                $title = ['SKU','SKU名称','商品编码','开发员','状态','采购','供应商','3天销量','7天销量','15天销量','30天销量',
+                    '走势','日均销量','预计可用库存','义乌仓库存','义乌仓采购未审核','预计可卖天数','采购数量','单价','采购金额'];
                 break;
         }
-        ExportTools::toExcelOrCsv($name, $data, 'Xls');
+        ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
     }
 
     /**

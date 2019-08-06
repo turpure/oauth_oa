@@ -397,6 +397,7 @@ class OaGoodsController extends AdminController
 
         $canStock = $user->canStockUp ?: 0;
         //备货的人才接受检查
+        if ($canStock == 2) return true;
         if ($canStock == 0) return false;
 
         $numberUsed = "select count(og.nid) as usedStock  from proCenter.oa_goods as og  
