@@ -30,6 +30,7 @@ use backend\models\OaEbaySuffix;
 use backend\models\OaWishSuffix;
 use backend\models\OaJoomSuffix;
 use backend\models\OaShopify;
+use backend\models\OaVovaSuffix;
 use backend\models\OaJoomToWish;
 use backend\models\OaSiteCountry;
 use backend\models\OaShippingService;
@@ -1186,6 +1187,7 @@ class ApiGoodsinfo
         $out = [];
 
         foreach ($accounts as $act) {
+            $account = OaVovaSuffix::findOne(['account' => $act]);
             $postfix = '@#' . substr(explode('-', $act)[1],0,2);
             $titlePool = [];
             $title = '';
@@ -1214,7 +1216,7 @@ class ApiGoodsinfo
                 $row['Shipping Time'] = '15-45';
                 $row['Size'] = $sku['size'];
                 $row['Color'] = $sku['color'];
-                $row['Main Image URL'] = $wishInfo['mainImage'];
+                $row['Main Image URL'] = static::getWishMainImage($goodsInfo['goodsCode'], $account['mainImg']);;
                 $row['Extra Image URL'] = $sku['linkUrl'];
                 $extraImages = explode("\n",$wishInfo['extraImages']);
                 $count = 1;
