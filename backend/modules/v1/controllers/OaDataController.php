@@ -232,24 +232,41 @@ class OaDataController extends AdminController
         return ApiOaData::getGlobalMarketData($condition);
     }
 
-
+    /** 销售产品表现
+     * Date: 2019-08-07 13:35
+     * Author: henry
+     * @return array
+     */
     public function actionSalesPerform()
     {
         $request = Yii::$app->request->post();
         $cond = $request['condition'];
         $condition = [
             'isStock' => $cond['isStock'],
-            'salerName' => $cond['salerName'],
-            'devBeginDate' => $cond['devDate'][0],
-            'devEndDate' => $cond['devDate'][1],
+            'saler' => implode(',',$cond['saler']),
+            'devBeginDate' => isset($cond['devDate'][0])?$cond['devDate'][0]:'',
+            'devEndDate' => isset($cond['devDate'][1])?$cond['devDate'][1]:'',
         ];
         return ApiOaData::getSalesPerformData($condition);
     }
 
 
+    /** 备货产品库存
+     * Date: 2019-08-06 14:47
+     * Author: henry
+     * @return \yii\data\ArrayDataProvider
+     */
     public function actionStockPerform()
     {
-
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        $condition = [
+            'salerName' => $cond['salerName'],
+            'goodsCode' => $cond['goodsCode'],
+            'devBeginDate' => isset($cond['devDate'][0])?$cond['devDate'][0]:'',
+            'devEndDate' => isset($cond['devDate'][1])?$cond['devDate'][1]:'',
+        ];
+        return ApiOaData::getStockPerformData($condition);
     }
 
 
