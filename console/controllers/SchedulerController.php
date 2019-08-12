@@ -641,4 +641,24 @@ class SchedulerController extends Controller
         }
     }
 
+
+    /** 获取最近一个月产品销量
+     * Date: 2019-08-08 15:21
+     * Author: henry
+     */
+    public function actionAmtLatestMonth()
+    {
+        try {
+            $sql = "EXEC guest.oauth_getSalesAmtOfLatestMonth";
+            $list = Yii::$app->py_db->createCommand($sql)->queryAll();
+            Yii::$app->db->createCommand()->truncateTable('data_salesAmtOfLatestMonth')->execute();
+            Yii::$app->db->createCommand()->batchInsert('data_salesAmtOfLatestMonth',['goodsCode','createDate','developer','possessMan1','amt','updateTime'],$list)->execute();
+
+            print date('Y-m-d H:i:s') . " INFO:success to get sales amt of latest month!\n";
+        } catch (\Exception $why) {
+            print date('Y-m-d H:i:s') . " INFO:fail to get sales amt of latest month because $why \n";
+        }
+    }
+
+
 }

@@ -292,7 +292,7 @@ class ApiOaData
      * @return mixed
      */
     public static function getGlobalMarketData($condition){
-        $sql = "P_oa_GlobalMarketAnalysis 0,'" . $condition['orderBeginDate'] . "','" . $condition['orderEndDate'] . "','".$condition['goodsCode'] . "','".$condition['plat'] . "','".$condition['suffix']. "'";
+        $sql = "oauth_globalMarketAnalysis 0,'" . $condition['orderBeginDate'] . "','" . $condition['orderEndDate'] . "','".$condition['goodsCode'] . "','".$condition['plat'] . "','".$condition['suffix']. "'";
         $result = Yii::$app->py_db->createCommand($sql)->queryAll();
         return $result;
     }

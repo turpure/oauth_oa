@@ -271,6 +271,22 @@ class OaDataController extends AdminController
 
 
 
+    public function actionDevData()
+    {
+        //获取开发和推荐人新品数及销售额
+        $sql_dev = "CALL data_getSalesAmtAndDevNum;";
+        $dataAmt = Yii::$app->db->createCommand($sql_dev)->queryAll();
+        //开发每天产品数/美工每天产品数
+        $sql = "CALL data_getNewGoodsNumDeveloperOrArtPerDay;";
+        $dataPerDay = Yii::$app->db->createCommand($sql)->queryAll();
+        return [
+            'dataAmt' => $dataAmt,
+            'dataPerDay' => $dataPerDay,
+        ];
+    }
+
+
+
 
 
 
