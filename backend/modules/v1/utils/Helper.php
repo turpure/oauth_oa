@@ -111,13 +111,13 @@ class Helper
             }
         }
         foreach ($equal as $attr) {
-            if (isset($condition[$attr])) {
+            if (isset($condition[$attr]) && !empty($condition[$attr])) {
                 $query->andFilterWhere(['=', $attr, $condition[$attr]]);
             }
         }
 
         foreach ($between as $attr) {
-            if (isset($condition[$attr])) {
+            if (isset($condition[$attr]) && !empty($condition[$attr])) {
                 list($begin, $end) = $condition[$attr];
                 $query->andFilterWhere(['between', $attr, $begin, $end]);
             }

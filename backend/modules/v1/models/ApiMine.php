@@ -750,7 +750,7 @@ class ApiMine
             $query->andFilterWhere(['jp.productId' => $condition['productId']]);
         }
         $fieldFilter = ['like' => ['productName','storeId']];
-        $numberFilter = ['between' => ['price', 'rating']];
+        $numberFilter = ['between' => ['price', 'rating','reviewsCount']];
         $timeFilter = ['taskCreatedTime', 'taskUpdatedTime', 'proCreatedDate'];
         $query = Helper::generateFilter($query, $fieldFilter, $condition);
         $query = Helper::generateFilter($query, $numberFilter, $condition);
