@@ -1228,7 +1228,7 @@ class ApiGoodsinfo
                     $row['Shipping Time'] = '15-45';
                     $row['Size'] = $sku['size'];
                     $row['Color'] = $sku['color'];
-                    $row['Main Image URL'] = static::getWishMainImage($goodsInfo['goodsCode'], $account['mainImage']);
+                    $row['Main Image URL'] = static::getWishMainImage($goodsInfo['goodsCode'], !empty($account) ? $account['mainImage']: '0');
                     $row['Extra Image URL'] = $sku['linkUrl'];
                     $extraImages = explode("\n",$wishInfo['extraImages']);
                     $count = 1;
