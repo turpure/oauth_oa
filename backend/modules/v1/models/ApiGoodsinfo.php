@@ -1181,12 +1181,21 @@ class ApiGoodsinfo
         ];
         $out = [];
         $fileName = count($ids) > 1 ? 'multiple-goods' : OaGoodsinfo::find()
-            ->select('goodsCode')->where(['id' => $ids[0]])->scalar();
+            ->select('goodsCode')->where(['id' => $ids[0]])->scalar() or
+            OaGoodsinfo::find()
+                ->select('goodsCode')->where(['goodsCode' => $ids[0]])->scalar()
+        ;
         $ret = ['name' => 'Vova-'.$fileName];
         foreach ($ids as $id) {
+            if(is_numeric($id)) {
+                $goodsInfo = OaGoodsinfo::findOne(['id' => $id]);
+            }
+            else {
+                $goodsInfo = OaGoodsinfo::findOne(['goodsCode' => $id]);
+                $id = $goodsInfo['id'];
+            }
             $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
             $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
-            $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
             $keyWords = static::preKeywords($wishInfo);
 
             foreach ($accounts as $act) {
