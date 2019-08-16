@@ -1215,7 +1215,7 @@ class ApiGoodsinfo
 
                 foreach ($wishSku as $sku) {
                     $row = $rowTemplate;
-                    $row['Parent SKU'] = $wishInfo['sku'];
+                    $row['Parent SKU'] = $wishInfo['sku'] . $postfix;
                     $row['SKU'] = $sku['sku'] . $postfix;
                     $row['Goods Name'] = $title;
                     $row['Quantity'] = 100000;
