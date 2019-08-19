@@ -253,18 +253,16 @@ class ApiTool
      */
     public static function paypal($Selleruserid, $StartPrice){
         if ($StartPrice < 8) {//小于8$,用小额字典
-            $sql = "SELECT p.paypalName FROM oa_ebay_paypal ep
-                    LEFT JOIN oa_ebay_suffix s ON s.nid=ep.ebayId 
-                    LEFT JOIN oa_paypal p ON p.nid=ep.paypalId
-                     WHERE ep.mapType='low' AND s.ebayName='{$Selleruserid}'";
+            $sql = "SELECT p.paypal FROM proCenter.oa_ebaySuffix s
+                    LEFT JOIN proCenter.oa_paypal p ON p.id=s.low
+                     WHERE s.ebayName='{$Selleruserid}'";
         } else {//不小于8$，用大额字典
-            $sql = "SELECT p.paypalName  FROM oa_ebay_paypal ep
-                    LEFT JOIN oa_ebay_suffix s ON s.nid=ep.ebayId 
-                    LEFT JOIN oa_paypal p ON p.nid=ep.paypalId
-                     WHERE ep.mapType='high' AND s.ebayName='{$Selleruserid}'";
+            $sql = "SELECT p.paypal FROM proCenter.oa_ebaySuffix s
+                    LEFT JOIN proCenter.oa_paypal p ON p.id=s.high
+                     WHERE s.ebayName='{$Selleruserid}'";
         }
-        $data = Yii::$app->py_db->createCommand($sql)->queryOne();
-        return $data['paypalName'];
+        $data = Yii::$app->db->createCommand($sql)->queryOne();
+        return $data['paypal'];
     }
 
     /**

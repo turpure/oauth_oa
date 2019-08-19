@@ -288,6 +288,12 @@ class OaGoodsController extends AdminController
     public function actionClaim()
     {
         $post = Yii::$app->request->post('condition');
+        if(!$post['devStatus']){
+            return [
+                'code' => 400,
+                'message' => 'Development status cannot be empty！'
+            ];
+        }
         $model = OaGoods::findOne($post['nid']);
         $model->devStatus = $post['devStatus'];
         $model->checkStatus = '已认领';

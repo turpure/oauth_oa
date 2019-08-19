@@ -353,7 +353,7 @@ class ApiOaData
                 FROM cache_stockPerformTmp s 
                 LEFT JOIN  proCenter.oa_goodsinfo g ON s.goodsCode=g.goodsCode
                 WHERE stockUp='是' ";
-        if($condition['salerName']) $sqlOa .= " AND developer LIKE '%{$condition['salerName']}%'";
+        if($condition['salerName']) $sqlOa .= " AND g.developer LIKE '%{$condition['salerName']}%'";
         if($condition['goodsCode']) $sqlOa .= " AND goodsCode LIKE '%{$condition['goodsCode']}%'";
         if($condition['devBeginDate'] && $condition['devEndDate']) $sqlOa .= " AND g.devDateTime BETWEEN '{$condition['devBeginDate']}' AND '{$condition['devEndDate']}'";
         $sqlOa .= " ORDER BY number DESC";
