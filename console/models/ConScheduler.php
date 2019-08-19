@@ -56,8 +56,33 @@ class ConScheduler{
             'exchangeRate' => $exchangeRate['salerRate']
         ];
         $profit =  ApiReport::getSalesReport($condition);
+
         //获取需要统计的郑州销售列表
         $saleList = Yii::$app->db->createCommand("SELECT * FROM site_target")->queryAll();
+        /*
+        //备份上月数据
+        $arr = [];
+        foreach ($saleList as $v){
+            $item1 = [];
+            $saleMoneyUs = $profitZn = 0;
+            foreach ($profit as $value){
+                if($v['username'] == $value['salesman']){
+                    $saleMoneyUs += $value['salemoney'];
+                    $profitZn += $value['grossprofit'];
+                }
+            }
+            $item1['username'] = $v['username'];
+            $item1['saleMoneyUs'] = $saleMoneyUs;
+            $item1['profitZn'] = $profitZn;
+            $item1['month'] = (int)date('n',strtotime($startDate));
+            $item1['updateTime'] = $endDate;
+            $arr[] = $item1;
+        }
+        //批量插入备份表
+        $res = Yii::$app->db->createCommand()->batchInsert('site_target_backup_data',['username','saleMoneyUs','profitZn','month','updateTime'],$arr)->execute();
+        print_r($res);exit;
+*/
+
         foreach ($saleList as $v){
             $item = $v;
             $amt = 0;
@@ -70,7 +95,6 @@ class ConScheduler{
             $item['rate'] = round($item['amt']/$item['target'],4);
             $item['dateRate'] = $dateRate;
             $item['updateTime'] = $endDate;
-
             $res = Yii::$app->db->createCommand()->update('site_target',$item,['id' => $item['id']])->execute();
             if(!$res){
                 throw new Exception('update data failed!');

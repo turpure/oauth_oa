@@ -517,11 +517,33 @@ class SiteController extends AdminController
     public function actionZzTarget()
     {
         $plat = \Yii::$app->request->get('plat','eBay');
+        //获取当月数据
         $sql = "SELECT * FROM site_target
                 WHERE  plat = '{$plat}'
                 ORDER BY rate DESC";
-        $query = \Yii::$app->db->createCommand($sql)->queryAll();
-        return $query;
+        $list = \Yii::$app->db->createCommand($sql)->queryAll();
+
+        //获取前几月数据
+        $sql = "SELECT username,sum(saleMoneyUs) AS saleMoneyUs,sum(profitZn) AS profitZn
+                FROM site_target_backup_data
+                GROUP BY username";
+        $arr = \Yii::$app->db->createCommand($sql)->queryAll();
+
+        $data = [];
+        foreach($list as $v){
+            $item = $v;
+            $amt = 0;
+            foreach ($arr as $val){
+                if($v['username'] == $val['username']){
+                    $item['amt'] = $v['amt'] + $val['profitZn'];
+                    break;
+                }
+            }
+            $item['rate'] = round($item['amt']/$item['target'],4);
+            $data[] = $item;
+        }
+
+        return $data;
     }
 
 
