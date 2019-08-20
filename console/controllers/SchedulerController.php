@@ -571,7 +571,8 @@ class SchedulerController extends Controller
         $dateRate = round((strtotime($endDate) - strtotime($startDate))/86400/92,4);
         //计算销售数据
         $startDate = date('Y-m-01');
-        //$startDate = date('2019-07-01');$endDate = date('2019-07-31');
+        //$startDate = date('2019-06-01');
+        //$endDate = date('2019-07-31');
         try {
             ConScheduler::getZzTargetData($startDate, $endDate, $dateRate);
             print date('Y-m-d H:i:s') . " INFO:success to update data of target completion!\n";

@@ -306,15 +306,17 @@ class ApiOaData
      */
     public static function getSalesPerformData($condition)
     {
-        $sql = "P_oa_sales_Performance '" . $condition['devBeginDate'] . "','" . $condition['devEndDate'] . "'";
-
-        $result = Yii::$app->py_db->createCommand($sql)->queryAll();
-        //普源数据插入临时表
-        Yii::$app->db->createCommand()->truncateTable('cache_salesPerformTmp')->execute();
-        Yii::$app->db->createCommand()->batchInsert('cache_salesPerformTmp',
-            ['goodsCode','qty','devDate','goodsStatus','updateTime'],
-            $result)->execute();
-        $sql = "CALL data_getSalesPerform('{$condition['isStock']}','{$condition['devBeginDate']}','{$condition['devBeginDate']}','{$condition['saler']}');";
+        $time = Yii::$app->db->createCommand("select  updateTime from cache_salesPerformTmp")->queryOne();
+        if(substr($time['updateTime'],0,10) != date('Y-m-d')){
+            $sql = "P_oa_sales_Performance '" . $condition['devBeginDate'] . "','" . $condition['devEndDate'] . "'";
+            $result = Yii::$app->py_db->createCommand($sql)->queryAll();
+            //普源数据插入临时表
+            Yii::$app->db->createCommand()->truncateTable('cache_salesPerformTmp')->execute();
+            Yii::$app->db->createCommand()->batchInsert('cache_salesPerformTmp',
+                ['goodsCode','qty','devDate','goodsStatus','updateTime'],
+                $result)->execute();
+        }
+        $sql = "CALL data_getSalesPerform('{$condition['isStock']}','{$condition['devBeginDate']}','{$condition['devEndDate']}','{$condition['saler']}');";
         $list = Yii::$app->db->createCommand($sql)->queryAll();
         return $list;
     }

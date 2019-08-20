@@ -233,9 +233,10 @@ class OaDataController extends AdminController
     }
 
     /** 销售产品表现
-     * Date: 2019-08-07 13:35
+     * Date: 2019-08-20 13:29
      * Author: henry
      * @return array
+     * @throws \yii\db\Exception
      */
     public function actionSalesPerform()
     {

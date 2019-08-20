@@ -78,6 +78,7 @@ class ConScheduler{
             $item1['updateTime'] = $endDate;
             $arr[] = $item1;
         }
+        //print_r($arr);exit;
         //批量插入备份表
         $res = Yii::$app->db->createCommand()->batchInsert('site_target_backup_data',['username','saleMoneyUs','profitZn','month','updateTime'],$arr)->execute();
         print_r($res);exit;
