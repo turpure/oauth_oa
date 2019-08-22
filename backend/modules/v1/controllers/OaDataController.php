@@ -19,6 +19,7 @@ namespace backend\modules\v1\controllers;
 use backend\models\OaGoodsinfo;
 use backend\models\OaGoodsinfoExtendsStatus;
 use backend\modules\v1\models\ApiOaData;
+use backend\modules\v1\utils\ExportTools;
 use Yii;
 class OaDataController extends AdminController
 {
@@ -196,6 +197,40 @@ class OaDataController extends AdminController
         return ApiOaData::getProductPerformData($condition);
     }
 
+    /** 产品表现导出
+     * Date: 2019-08-22 13:51
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionProductPerformExport()
+    {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+
+        $condition = [
+            'salerName' => $cond['saler'],
+            'dateFlag' => $cond['dateFlag'],
+            'orderBeginDate' => $cond['orderDate'][0],
+            'orderEndDate' => $cond['orderDate'][1],
+            'devBeginDate' => isset($cond['devDate'][0]) ? $cond['devDate'][0] : '',
+            'devEndDate' => isset($cond['devDate'][1]) ? $cond['devDate'][1] : '',
+            'page' => Yii::$app->request->get('page',1),
+            'pageSize' => $cond['pageSize'],
+        ];
+        $sql = "EXEC P_oa_ProductPerformance '{$condition['dateFlag']}','{$condition['orderBeginDate']}','{$condition['orderEndDate']}','{$condition['devBeginDate']}','{$condition['devEndDate']}','{$condition['salerName']}'";
+        $result = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $title = ['商品编码','商品名称','开发时间','开发员','商品状态','销量','销售额($)'];
+        ExportTools::toExcelOrCsv('ProductPerform', $result, 'Xls', $title);
+
+    }
+
+
+    /**  开发表现
+     * Date: 2019-08-22 13:46
+     * Author: henry
+     * @return array
+     */
     public function actionDevPerform()
     {
         $request = Yii::$app->request->post();
@@ -253,9 +288,10 @@ class OaDataController extends AdminController
 
 
     /** 备货产品库存
-     * Date: 2019-08-06 14:47
+     * Date: 2019-08-22 13:44
      * Author: henry
      * @return \yii\data\ArrayDataProvider
+     * @throws \yii\db\Exception
      */
     public function actionStockPerform()
     {
@@ -270,8 +306,32 @@ class OaDataController extends AdminController
         return ApiOaData::getStockPerformData($condition);
     }
 
+    /** 备货产品库存导出
+     * Date: 2019-08-22 13:51
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionStockPerformExport()
+    {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        $condition = [
+            'salerName' => $cond['salerName'],
+            'goodsCode' => $cond['goodsCode'],
+            'devBeginDate' => isset($cond['devDate'][0])?$cond['devDate'][0]:'',
+            'devEndDate' => isset($cond['devDate'][1])?$cond['devDate'][1]:'',
+        ];
+        ApiOaData::getStockPerformExportData($condition);
+    }
 
 
+    /**
+     * Date: 2019-08-22 13:44
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
+     */
     public function actionDevData()
     {
         //获取开发和推荐人新品数及销售额

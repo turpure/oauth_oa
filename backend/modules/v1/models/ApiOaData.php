@@ -17,6 +17,7 @@
 namespace backend\modules\v1\models;
 
 use backend\models\OaGoodsinfoExtendsStatus;
+use backend\modules\v1\utils\ExportTools;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\db\Query;
@@ -330,7 +331,6 @@ class ApiOaData
      */
     public static function getStockPerformData($condition)
     {
-
         //获取普源商品信息
         $sql = "SELECT 
                 b.goodsName,b.goodsCode,b.goodsStatus,b.salerName AS developer,CONVERT(VARCHAR(10),b.devDate,121) AS devDatetime,
@@ -367,6 +367,49 @@ class ApiOaData
             ],
         ]);
         return $dataProvider;
+    }
+
+    /** 备货产品库存导出数据
+     * @param $condition
+     * Date: 2019-08-22 14:10
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     * @throws \yii\db\Exception
+     */
+    public static function getStockPerformExportData($condition)
+    {
+        //获取普源商品信息
+        $sql = "SELECT 
+                b.goodsName,b.goodsCode,b.goodsStatus,b.salerName AS developer,CONVERT(VARCHAR(10),b.devDate,121) AS devDatetime,
+                SUM(kc.Number) AS number, SUM(Money) AS money,SUM(SellCount1) AS sellCount1,
+                SUM(SellCount2) AS sellCount2,SUM(sellCount3) AS sellCount3,GETDATE() AS updateTime
+                FROM KC_CurrentStock kc 
+                LEFT JOIN B_Goods b ON b.NID=kc.GoodsID 
+                WHERE ISNULL(b.salerName,'')<>'' ";
+        if($condition['salerName']) $sql .= " AND b.salerName LIKE '%{$condition['salerName']}%'";
+        if($condition['goodsCode']) $sql .= " AND b.goodsCode LIKE '%{$condition['goodsCode']}%'";
+        $sql .= " GROUP BY b.goodsName,b.goodsCode,b.goodsStatus,b.salerName,CONVERT(VARCHAR(10),b.devDate,121)";
+        $result = Yii::$app->py_db->createCommand($sql)->queryAll();
+        //普源数据插入临时表
+        Yii::$app->db->createCommand()->truncateTable('cache_stockPerformTmp')->execute();
+        Yii::$app->db->createCommand()->batchInsert('cache_stockPerformTmp',
+            ['goodsName','goodsCode','goodsStatus','developer','devDatetime',
+                'number', 'money','sellCount1','sellCount2','sellCount3','updateTime'],
+            $result)->execute();
+        //获取产品中心商品信息
+        $sqlOa = "SELECT g.goodsCode,g.goodsName,g.developer,IFNULL(s.goodsStatus,'在售') AS goodsStatus,
+                SUBSTRING(g.devDateTime,1,10) AS devDateTime,s.number,s.money,s.sellCount1,s.sellCount2,s.sellCount3
+                FROM cache_stockPerformTmp s 
+                LEFT JOIN  proCenter.oa_goodsinfo g ON s.goodsCode=g.goodsCode
+                WHERE stockUp='是' ";
+        if($condition['salerName']) $sqlOa .= " AND g.developer LIKE '%{$condition['salerName']}%'";
+        if($condition['goodsCode']) $sqlOa .= " AND goodsCode LIKE '%{$condition['goodsCode']}%'";
+        if($condition['devBeginDate'] && $condition['devEndDate']) $sqlOa .= " AND g.devDateTime BETWEEN '{$condition['devBeginDate']}' AND '{$condition['devEndDate']}'";
+        $sqlOa .= " ORDER BY number DESC";
+        $list = Yii::$app->db->createCommand($sqlOa)->queryAll();
+        $title = ['商品编码','商品名称','开发员','商品状态','开发时间','库存数量','库存金额(￥)','5天销量','10天销量','20天销量'];
+        ExportTools::toExcelOrCsv('StockPerform', $list, 'Xls', $title);
     }
 
 
