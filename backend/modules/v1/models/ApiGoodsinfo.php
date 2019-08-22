@@ -128,10 +128,17 @@ class ApiGoodsinfo
             $query->where(['picStatus' => self::PlatInfo]);
 
 
-            //美工,开发看自己
+            //美工,开发，采购看自己,
             if(strpos($userRole, '销售') === false) {
-                $query->andWhere(['or',['in','gi.developer', $userList],['in', 'possessMan1', $userList]]);
+                if(strpos($userRole, '采购') !== false) {
+                    $query->andWhere(['or',['in','g.introducer', $userList],['in', 'gi.purchaser', $userList]]);
+                }else{
+                    $query->andWhere(['or',['in','gi.developer', $userList],['in', 'possessMan1', $userList]]);
+                }
             }
+            //print_r($userRole);exit;
+
+
 
             if (isset($condition['stockUp'])) $query->andFilterWhere(['gi.stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'gi.developer', $condition['developer']]);
