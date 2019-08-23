@@ -76,4 +76,16 @@ class WarehouseToolsController extends AdminController
         $condition = Yii::$app->request->post()['condition'];
         return ApiWarehouseTools::getSortLog($condition);
     }
+
+    /**
+     * @brief 拣货统计
+     * @return \yii\data\ActiveDataProvider
+     */
+    public function actionPickStatistics()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiWarehouseTools::getPickStatisticsData($condition);
+    }
+
+
 }

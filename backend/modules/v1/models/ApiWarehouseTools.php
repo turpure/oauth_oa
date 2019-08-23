@@ -10,6 +10,7 @@ namespace backend\modules\v1\models;
 use backend\models\ShopElf\BPerson;
 use backend\models\TaskPick;
 use backend\models\TaskSort;
+use yii\db\Expression;
 use yii\helpers\ArrayHelper;
 use Yii;
 use yii\data\ActiveDataProvider;
@@ -135,6 +136,46 @@ class ApiWarehouseTools
             ],
         ]);
         return $provider;
+    }
+
+    /** 获取拣货统计数据
+     * @param $condition
+     * Date: 2019-08-23 16:16
+     * Author: henry
+     * @return mixed
+     */
+    public static function getPickStatisticsData($condition)
+    {
+        $query = TaskPick::find()->select(new Expression("batchNumber,picker,date_format(MAX(createdTime),'%Y-%m-%d') AS createdTime"));
+        $query = $query->andWhere(['<>', "IFNULL(batchNumber,'')", '']);
+        $query = $query->andWhere(['<>', "IFNULL(picker,'')", '']);
+        $query = $query->groupBy(['batchNumber','picker']);
+        $query = $query->having(['between', "date_format(MAX(createdTime),'%Y-%m-%d')", $condition['createdTime'][0], $condition['createdTime'][1]]);
+        $list = $query->asArray()->all();
+        //清空临时表数据
+        Yii::$app->py_db->createCommand()->truncateTable('guest.oauth_taskPickTmp')->execute();
+
+        $step = 200;
+        for ($i=1;$i<=ceil(count($list)/$step);$i++){
+            Yii::$app->py_db->createCommand()->batchInsert('guest.oauth_taskPickTmp',['batchNumber','picker','createdTime'],array_slice($list,($i-1)*$step,$step))->execute();
+        }
+        //获取数据
+        $sql = "SELECT picker,COUNT(DISTINCT sku) AS skuNum,SUM(l_qty) AS salesNum
+                FROM (
+                        SELECT DISTINCT pp.tradeNid, pp.pickupNo AS batchNumber,tpt.picker, ptd.sku,  pt.OrigPackingMen,ptd.l_qty
+                        FROM guest.oauth_taskPickTmp(nolock) AS tpt 
+                        INNER JOIN P_TradePickup(nolock)  AS pp ON tpt.batchNumber = pp.pickupNo
+                        INNER JOIN p_tradedt(nolock) AS ptd ON pp.tradeNid = ptd.tradeNid
+                        LEFT JOIN p_trade(nolock) AS pt ON pt.nid = pp.tradeNid
+                        UNION 
+                        select DISTINCT pp.tradeNid, pp.pickupNo AS batchNumber,tpt.picker, ptd.sku,  pt.OrigPackingMen,ptd.l_qty
+                        FROM guest.oauth_taskPickTmp(nolock) AS tpt 
+                        INNER JOIN P_TradePickup(nolock)  AS pp ON tpt.batchNumber = pp.pickupNo
+                        INNER JOIN P_TradeDt_His(nolock) AS ptd ON pp.tradeNid = ptd.tradeNid
+                        LEFT JOIN P_Trade_His(nolock) AS pt ON pt.nid = pp.tradeNid
+                ) aa   GROUP BY picker ORDER BY salesNum DESC";
+
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
 
 }
