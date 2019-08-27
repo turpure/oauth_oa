@@ -84,6 +84,7 @@ class WarehouseToolsController extends AdminController
     public function actionPickStatistics()
     {
         $condition = Yii::$app->request->post()['condition'];
+
         return ApiWarehouseTools::getPickStatisticsData($condition);
     }
 

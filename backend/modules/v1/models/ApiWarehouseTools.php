@@ -160,20 +160,7 @@ class ApiWarehouseTools
             Yii::$app->py_db->createCommand()->batchInsert('guest.oauth_taskPickTmp',['batchNumber','picker','createdTime'],array_slice($list,($i-1)*$step,$step))->execute();
         }
         //获取数据
-        $sql = "SELECT picker,COUNT(DISTINCT sku) AS skuNum,SUM(l_qty) AS salesNum
-                FROM (
-                        SELECT DISTINCT pp.tradeNid, pp.pickupNo AS batchNumber,tpt.picker, ptd.sku,  pt.OrigPackingMen,ptd.l_qty
-                        FROM guest.oauth_taskPickTmp(nolock) AS tpt 
-                        INNER JOIN P_TradePickup(nolock)  AS pp ON tpt.batchNumber = pp.pickupNo
-                        INNER JOIN p_tradedt(nolock) AS ptd ON pp.tradeNid = ptd.tradeNid
-                        LEFT JOIN p_trade(nolock) AS pt ON pt.nid = pp.tradeNid
-                        UNION 
-                        select DISTINCT pp.tradeNid, pp.pickupNo AS batchNumber,tpt.picker, ptd.sku,  pt.OrigPackingMen,ptd.l_qty
-                        FROM guest.oauth_taskPickTmp(nolock) AS tpt 
-                        INNER JOIN P_TradePickup(nolock)  AS pp ON tpt.batchNumber = pp.pickupNo
-                        INNER JOIN P_TradeDt_His(nolock) AS ptd ON pp.tradeNid = ptd.tradeNid
-                        LEFT JOIN P_Trade_His(nolock) AS pt ON pt.nid = pp.tradeNid
-                ) aa   GROUP BY picker ORDER BY salesNum DESC";
+        $sql = "EXEC guest.oauth_getPickStatisticsData '{$condition['createdTime'][0]}','{$condition['createdTime'][1]}'";
 
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
