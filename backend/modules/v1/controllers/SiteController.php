@@ -74,7 +74,9 @@ class SiteController extends AdminController
     public function actionIndex()
     {
         $username = Yii::$app->user->identity->username;
-        $sql = "SELECT * FROM site_targetAll WHERE role = '销售' AND display<>1 ORDER BY username='{$username}' DESC,rate DESC";
+        $sql = "SELECT u.avatar,st.* FROM site_targetAll 
+                LEFT JOIN `user` u ON st.username=u.username
+                WHERE role = '销售' AND display<>1 ORDER BY username='{$username}' DESC,rate DESC";
         $query = \Yii::$app->db->createCommand($sql)->queryAll();
         return $query;
     }
