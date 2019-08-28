@@ -8,6 +8,7 @@
 namespace console\controllers;
 
 use backend\models\OaGoodsinfo;
+use backend\modules\v1\models\ApiUkFic;
 use console\models\ConScheduler;
 use yii\console\Controller;
 
@@ -71,10 +72,10 @@ class SchedulerController extends Controller
      */
     public function actionSite()
     {
-        $con = \Yii::$app->py_db;
-        $sql = "EXEC oauth_target_procedure";
+        $exchangeRate = ApiUkFic::getRateUkOrUs('USD');//美元汇率
+        $sql = "CALL oauth_siteTargetAll($exchangeRate)";
         try {
-            $con->createCommand($sql)->execute();
+            Yii::$app->db->createCommand($sql)->execute();
             print date('Y-m-d H:i:s') . " INFO:success to get data of target completion!\n";
         } catch (\Exception $why) {
             print date('Y-m-d H:i:s') . " INFO:fail to get data of target completion cause of $why \n";

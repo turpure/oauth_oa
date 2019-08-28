@@ -65,25 +65,16 @@ class SiteController extends AdminController
     }
 
 
-    /**
-     * 获取非郑州销售目标
-     * @return mixed
+    /** 获取所有销售目标
+     * Date: 2019-08-28 9:46
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
      */
     public function actionIndex()
     {
-        $condition = Yii::$app->request->post()['condition'];
-        $depart = isset($condition['depart']) ? $condition['depart'] : '';
-        if(empty($depart)) {
-            $sql = "SELECT * FROM oauth_target 
-                WHERE depart NOT LIKE '%郑州分部%' AND role = '销售' AND isnull(display,0)=0
-                ORDER BY primaryRate DESC";
-        }
-        else {
-            $sql = "SELECT * FROM oauth_target 
-                WHERE depart = '{$depart}' AND role = '销售'
-                ORDER BY primaryRate DESC";
-        }
-        $query = \Yii::$app->py_db->createCommand($sql)->queryAll();
+        $sql = "SELECT * FROM site_targetAll WHERE role = '销售' AND display<>1";
+        $query = \Yii::$app->db->createCommand($sql)->queryAll();
         return $query;
     }
 
