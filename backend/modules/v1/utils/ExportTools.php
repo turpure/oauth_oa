@@ -63,7 +63,7 @@ class ExportTools
         header('Access-Control-Expose-Headers: Content-Disposition');
         $writer = IOFactory::createWriter($sheet, $type);
         $writer->save('php://output');
-    //exit;
+        exit;
     }
 
 }
