@@ -780,17 +780,19 @@ class ApiGoodsinfo
      */
     public static function preExportJoom($ids, $accounts)
     {
-        if(!is_array($ids)) {
-            $goodsInfo = OaGoodsinfo::findOne(['id' => $ids]);
-            $ret = ['name' => 'joom-' . $goodsInfo['goodsCode']];
-            $ids = [$ids];
-        }
-        else {
-            $ret = ['name' => 'joom-batch-'];
-        }
         if(!is_array($accounts)) {
             $accounts = [$accounts];
         }
+        $name = $accounts[0];
+        if(!is_array($ids)) {
+            $goodsInfo = OaGoodsinfo::findOne(['id' => $ids]);
+            $ret = ['name' => $name . '-' . $goodsInfo['goodsCode']];
+            $ids = [$ids];
+        }
+        else {
+            $ret = ['name' => $name . '-batch-'];
+        }
+
         $row = [
             'Parent Unique ID' => '', '*Product Name' => '', 'Description' => '', '*Tags' => '', '*Unique ID' => '', 'Color' => '',
             'Size' => '', '*Quantity' => '', '*Price' => '', '*MSRP' => '', '*Shipping' => '', 'Shipping weight' => '',
