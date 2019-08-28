@@ -788,6 +788,9 @@ class ApiGoodsinfo
         else {
             $ret = ['name' => 'joom-batch-'];
         }
+        if(!is_array($accounts)) {
+            $accounts = [$accounts];
+        }
         $row = [
             'Parent Unique ID' => '', '*Product Name' => '', 'Description' => '', '*Tags' => '', '*Unique ID' => '', 'Color' => '',
             'Size' => '', '*Quantity' => '', '*Price' => '', '*MSRP' => '', '*Shipping' => '', 'Shipping weight' => '',

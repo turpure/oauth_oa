@@ -555,8 +555,10 @@ class OaGoodsinfoController extends AdminController
             $condition = $request->post()['condition'];
             $infoId = $condition['id'];
             $account = $condition['account'];
-            $ret = ApiGoodsinfo::preExportJoom($infoId, $account);
-            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
+            foreach ($account as $value){
+                $ret = ApiGoodsinfo::preExportJoom($infoId, $value);
+                ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
+            }
         }
         catch (\Exception $why) {
             return ['message' => $why->getMessage(),'code' => $why->getCode()];
