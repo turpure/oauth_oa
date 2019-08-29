@@ -73,35 +73,55 @@ class SiteController extends AdminController
      */
     public function actionIndex()
     {
+        $condition = Yii::$app->request->post();
         $username = Yii::$app->user->identity->username;
-        $sql = "SELECT u.avatar,st.* FROM site_targetAll st
+        if(isset($condition['role']) && $condition['role']){
+            $sql = "SELECT u.avatar,st.* FROM site_targetAll st
                 LEFT JOIN `user` u ON st.username=u.username
-                WHERE role = '销售' AND display<>1 ORDER BY st.username='{$username}' DESC,rate DESC";
+                WHERE role='{$condition['role']}' AND display<>1 ORDER BY rate DESC";
+        }else{
+            $sql = "SELECT u.avatar,st.*,CASE WHEN amt-target>0 AND role='销售' THEN ceil((amt-target)/2000)*100 ELSE 0 END AS rxtraBonus FROM site_targetAll st
+                LEFT JOIN `user` u ON st.username=u.username
+                WHERE display<>1 ORDER BY st.username='{$username}' DESC,rate DESC";
+        }
+
         $query = \Yii::$app->db->createCommand($sql)->queryAll();
         return $query;
     }
 
 
-    /**
-     * 获取郑州销售目标
-     * @return mixed
+    /** 完成销售目标数据统计
+     * Date: 2019-08-29 11:42
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
      */
     public function actionSales()
     {
-        $condition = Yii::$app->request->post()['condition'];
-        $depart = isset($condition['depart']) ? $condition['depart'] : '';
-        if(empty($depart)) {
-            $sql = "SELECT * FROM oauth_target 
-                WHERE  depart LIKE '%郑州分部%' AND role = '销售' AND isnull(display,0)=0
-                ORDER BY highRate DESC";
-        }
-        else {
-            $sql = "SELECT * FROM oauth_target 
-                WHERE depart = '{$depart}' AND role = '销售'
-                ORDER BY primaryRate DESC";
-        }
-        $query = \Yii::$app->py_db->createCommand($sql)->queryAll();
-        return $query;
+
+        $username = Yii::$app->user->identity->username;
+        $sql = "SELECT u.avatar,st.bonus,st.vacationDays,CASE WHEN amt-target>0 AND role='销售' THEN ceil((amt-target)/2000)*100 ELSE 0 END AS rxtraBonus
+                FROM site_targetAll st
+                LEFT JOIN `user` u ON st.username=u.username
+                WHERE display<>1 AND rate>=100
+                ORDER BY st.username='{$username}' DESC,rate DESC";
+        $query = \Yii::$app->db->createCommand($sql)->queryAll();
+
+        $bonusUsedNum = Yii::$app->db->createCommand("SELECT sum(bonus) AS bonus FROM site_targetAll WHERE display<>1 AND rate>=100")->queryOne();
+        $bonusAllNum = Yii::$app->db->createCommand("SELECT sum(bonus) AS bonus FROM site_targetAll WHERE display<>1")->queryOne();
+
+        $vacationDaysUsedNum = Yii::$app->db->createCommand("SELECT sum(vacationDays) AS vacationDays FROM site_targetAll WHERE display<>1 AND rate>=100")->queryOne();
+        $vacationDaysAllNum = Yii::$app->db->createCommand("SELECT sum(vacationDays) AS vacationDays FROM site_targetAll WHERE display<>1")->queryOne();
+
+        return [
+            'list' => $query,
+            'bonusAllNum' => $bonusAllNum['bonus'],
+            'bonusUsedNum' => $bonusUsedNum['bonus'],
+            'bonusUnUsedNum' => $bonusAllNum['bonus'] - $bonusUsedNum['bonus'],
+            'vacationDaysAllNum' => $vacationDaysAllNum['vacationDays'],
+            'vacationDaysUsedNum' => $vacationDaysUsedNum['vacationDays'],
+            'vacationDaysUnUsedNum' => $vacationDaysAllNum['vacationDays'] - $vacationDaysUsedNum['vacationDays'],
+        ];
     }
 
     /**
