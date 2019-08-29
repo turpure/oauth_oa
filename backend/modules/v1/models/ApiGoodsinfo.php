@@ -785,13 +785,13 @@ class ApiGoodsinfo
         }
         $name = $accounts[0];
         if(!is_array($ids)) {
-            $goodsInfo = OaGoodsinfo::findOne(['goodsCode' => $ids]);
+            $goodsInfo = OaGoodsinfo::find()->where(['OR',['goodsCode' => $ids],['id' => $ids]])->one();
             $ret = ['name' => $name . '-' . $goodsInfo['goodsCode']];
             $ids = [$ids];
         }
         else {
             if(count($ids) == 1){
-                $goodsInfo = OaGoodsinfo::findOne(['goodsCode' => $ids[0]]);
+                $goodsInfo = OaGoodsinfo::find()->where(['OR',['goodsCode' => $ids],['id' => $ids]])->one();
                 $ret = ['name' => $name . '-' . $goodsInfo['goodsCode']];
             }else{
                 $ret = ['name' => $name . '-batch-'];
