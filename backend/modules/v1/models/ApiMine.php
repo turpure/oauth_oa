@@ -150,7 +150,7 @@ class ApiMine
         }
         catch (Exception $why){
             $trans->rollBack();
-            throw  new Exception("保存失败！",'400003');
+            throw  new Exception($why->getMessage(), $why->getCode());
         }
         return [];
     }
