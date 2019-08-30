@@ -76,13 +76,14 @@ class SiteController extends AdminController
         $condition = Yii::$app->request->post();
         $username = Yii::$app->user->identity->username;
         if(isset($condition['condition']['role']) && $condition['condition']['role']){
-            if($condition['condition']['role'] == '部门'){
+            if($condition['condition']['role'] == 'depart'){
                 $sql = "SELECT username,target,bonus,rate,dateRate,updateTime FROM site_targetAll 
-                WHERE role='{$condition['condition']['role']}' AND display<>1 ORDER BY rate DESC";
+                WHERE role='部门' AND display<>1 ORDER BY rate DESC";
             }else{
+                $role = $condition['condition']['role'] == 'dev'?'开发':'销售';
                 $sql = "SELECT u.avatar,st.* FROM site_targetAll st
                 LEFT JOIN `user` u ON st.username=u.username
-                WHERE role='{$condition['condition']['role']}' AND display<>1 ORDER BY rate DESC";
+                WHERE role='{$role}' AND display<>1 ORDER BY rate DESC";
             }
 
         }else{

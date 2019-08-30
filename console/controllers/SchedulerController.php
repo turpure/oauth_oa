@@ -98,7 +98,12 @@ class SchedulerController extends Controller
                 $target =  Yii::$app->db->createCommand("SELECT target FROM site_targetAll WHERE username='{$value['salernameZero']} '")->queryOne();
                 Yii::$app->db->createCommand()->update(
                     'site_targetAll',
-                    ['amt' => $value['netprofittotal'], 'rate' => round($value['netprofittotal']*100.0/$target['target']), 'dateRate' => $dateRate],
+                    [
+                        'amt' => $value['netprofittotal'],
+                        'rate' => round($value['netprofittotal']*100.0/$target['target']),
+                        'dateRate' => $dateRate,
+                        'updatetime' => $endDate
+                    ],
                     ['role' => '开发','username' => $value['salernameZero']])->execute();
             }
 
