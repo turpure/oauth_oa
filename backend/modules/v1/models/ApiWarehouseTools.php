@@ -10,6 +10,7 @@ namespace backend\modules\v1\models;
 use backend\models\ShopElf\BPerson;
 use backend\models\TaskPick;
 use backend\models\TaskSort;
+use yii\data\ArrayDataProvider;
 use yii\db\Expression;
 use yii\helpers\ArrayHelper;
 use Yii;
@@ -163,6 +164,75 @@ class ApiWarehouseTools
         $sql = "EXEC guest.oauth_getPickStatisticsData '{$condition['createdTime'][0]}','{$condition['createdTime'][1]}'";
 
         return Yii::$app->py_db->createCommand($sql)->queryAll();
+    }
+
+
+    /** 获取拣货统计数据
+     * @param $condition
+     * Date: 2019-08-23 16:16
+     * Author: henry
+     * @return mixed
+     */
+    public static function getWareStatisticsData($condition)
+    {
+        $beginTime = isset($condition['orderTime'][0]) ? $condition['orderTime'][0] : '';
+        $endTime = isset($condition['orderTime'][1]) ? $condition['orderTime'][1] : '';
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        //获取数据
+        $sql = "SELECT ptd.sku,bgsku.skuName,bg.salerName,bgsku.goodsSkuStatus,bg.purchaser,
+			          bs.storeName,sl.locationName,Dateadd(HOUR, 8, MIN(m.ORDERTIME)) AS minOrderTime,
+                      DATEDIFF(DAY,Dateadd(HOUR, 8, MIN(ORDERTIME)),GETDATE()) AS maxDelayDays,
+                      loseSkuCount = (
+	                      SUM(ptd.L_QTY) - (
+	                        SELECT d.Number-d.ReservationNum
+			                FROM KC_CurrentStock (nolock) d WHERE ptd.GoodsSKUID = d.GoodsSKUID
+			                AND d.StoreID = ptd.StoreID
+			              )
+                      ),
+                      unStockNum = (
+                        select SUM(isnull(d.Amount,0) - isnull(d.inAmount,0))
+	                    FROM CG_StockOrderD(nolock) d
+	                    LEFT JOIN CG_StockOrderM(nolock) m ON d.stockOrderNid=m.nid
+			            WHERE d.goodsSkuid = ptd.GoodsSKUID
+			              AND (m.CheckFlag = 1)   --审核通过的订单
+				          AND (m.Archive = 0)
+                      )
+                FROM P_TradeUn (nolock) m
+                LEFT JOIN	P_TradeDtUn (nolock) ptd ON m.nid=ptd.tradenid
+                LEFT JOIN B_GoodsSKULocation (nolock) bgs ON ptd.GoodsSKUID = bgs.GoodsSKUID AND ptd.StoreID = bgs.StoreID
+                LEFT JOIN B_goodssku (nolock) bgsku ON bgsku.nid = ptd.goodsskuid
+                LEFT JOIN b_goods (nolock) bg ON bg.nid = bgsku.goodsid
+                LEFT JOIN B_StoreLocation (nolock) sl ON sl.nid = bgs.LocationID
+                LEFT JOIN B_Store bs ON ISNULL(ptd.StoreID, 0) = ISNULL(bs.NID, 0)
+                WHERE FilterFlag = 1 ";
+        if($condition['sku']){
+            $sql .= " AND ptd.sku LIKE '%{$condition['sku']}%'";
+        }
+        if($condition['skuName']){
+            $sql .= " AND bgsku.skuName LIKE '%{$condition['skuName']}%'";
+        }
+        if($condition['goodsSKUStatus']){
+            $sql .= " AND bgsku.GoodsSKUStatus LIKE '%{$condition['goodsSKUStatus']}%'";
+        }
+        if($condition['purchaser']){
+            $sql .= " AND bg.Purchaser LIKE '%{$condition['purchaser']}%'";
+        }
+
+        if($beginTime && $endTime){
+            $sql .= " AND CONVERT(VARCHAR(10),DATEADD(HH,8,ordertime),121) BETWEEN '{$beginTime}' AND '{$endTime}' ";
+        }
+
+        $sql .= " GROUP BY ptd.sku,bgsku.skuName,ptd.GoodsSKUID,ptd.StoreID,bg.SalerName,
+			        bgsku.GoodsSKUStatus,bg.Purchaser,bs.StoreName,sl.LocationName";
+
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $provider = new ArrayDataProvider([
+            'allModels' => $data,
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
     }
 
 }

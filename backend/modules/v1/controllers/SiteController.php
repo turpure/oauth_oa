@@ -65,7 +65,7 @@ class SiteController extends AdminController
     }
 
 
-    /** 获取所有销售目标
+    /** 获取所有销售(部门)目标列表
      * Date: 2019-08-28 9:46
      * Author: henry
      * @return array
@@ -75,14 +75,20 @@ class SiteController extends AdminController
     {
         $condition = Yii::$app->request->post();
         $username = Yii::$app->user->identity->username;
-        if(isset($condition['role']) && $condition['role']){
-            $sql = "SELECT u.avatar,st.* FROM site_targetAll st
+        if(isset($condition['condition']['role']) && $condition['condition']['role']){
+            if($condition['condition']['role'] == '部门'){
+                $sql = "SELECT username,target,bonus,rate,dateRate,updateTime FROM site_targetAll 
+                WHERE role='{$condition['condition']['role']}' AND display<>1 ORDER BY rate DESC";
+            }else{
+                $sql = "SELECT u.avatar,st.* FROM site_targetAll st
                 LEFT JOIN `user` u ON st.username=u.username
-                WHERE role='{$condition['role']}' AND display<>1 ORDER BY rate DESC";
+                WHERE role='{$condition['condition']['role']}' AND display<>1 ORDER BY rate DESC";
+            }
+
         }else{
             $sql = "SELECT u.avatar,st.*,CASE WHEN amt-target>0 AND role='销售' THEN ceil((amt-target)/2000)*100 ELSE 0 END AS rxtraBonus FROM site_targetAll st
                 LEFT JOIN `user` u ON st.username=u.username
-                WHERE display<>1 ORDER BY st.username='{$username}' DESC,rate DESC";
+                WHERE role IN ('销售','开发') AND display<>1 ORDER BY st.username='{$username}' DESC,rate DESC";
         }
 
         $query = \Yii::$app->db->createCommand($sql)->queryAll();

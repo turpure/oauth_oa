@@ -8,7 +8,11 @@
 namespace console\controllers;
 
 use backend\models\OaGoodsinfo;
+use backend\modules\v1\controllers\ReportController;
+use backend\modules\v1\models\ApiReport;
+use backend\modules\v1\models\ApiSettings;
 use backend\modules\v1\models\ApiUkFic;
+use backend\modules\v1\utils\Handler;
 use console\models\ConScheduler;
 use yii\console\Controller;
 
@@ -72,10 +76,32 @@ class SchedulerController extends Controller
      */
     public function actionSite()
     {
-        $exchangeRate = ApiUkFic::getRateUkOrUs('USD');//美元汇率
-        $sql = "CALL oauth_siteTargetAll($exchangeRate)";
+        $beginDate = '2019-08-01';//date('Y-m-d', strtotime('-30 days'));
+        $endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
+        $dateRate = round(((strtotime($endDate) - strtotime($beginDate))/24/3600 + 1)*100/122, 2);
+        //print_r($dateRate);exit;
         try {
+            //更新销售和部门目标完成度
+            $exchangeRate = ApiUkFic::getRateUkOrUs('USD');//美元汇率
+            $sql = "CALL oauth_siteTargetAll($exchangeRate)";
             Yii::$app->db->createCommand($sql)->execute();
+
+            //更新开发目标完成度 TODO  备份数据的加入
+            $condition = [
+                'dateFlag' => 1,
+                'beginDate' => $beginDate,
+                'endDate' => $endDate,
+                'seller' => '胡小红,廖露露,常金彩,刘珊珊,王漫漫,陈微微,杨笑天,李永恒,崔明宽,张崇,史新慈',
+            ];
+            $devList = ApiReport::getDevelopReport($condition);
+            foreach ($devList as $value){
+                $target =  Yii::$app->db->createCommand("SELECT target FROM site_targetAll WHERE username='{$value['salernameZero']} '")->queryOne();
+                Yii::$app->db->createCommand()->update(
+                    'site_targetAll',
+                    ['amt' => $value['netprofittotal'], 'rate' => round($value['netprofittotal']*100.0/$target['target']), 'dateRate' => $dateRate],
+                    ['role' => '开发','username' => $value['salernameZero']])->execute();
+            }
+
             print date('Y-m-d H:i:s') . " INFO:success to get data of target completion!\n";
         } catch (\Exception $why) {
             print date('Y-m-d H:i:s') . " INFO:fail to get data of target completion cause of $why \n";
