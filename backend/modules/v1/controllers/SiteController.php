@@ -73,14 +73,14 @@ class SiteController extends AdminController
      */
     public function actionIndex()
     {
-        $condition = Yii::$app->request->post();
+        $condition = Yii::$app->request->get();
         $username = Yii::$app->user->identity->username;
-        if(isset($condition['condition']['role']) && $condition['condition']['role']){
-            if($condition['condition']['role'] == 'depart'){
+        if(isset($condition['role']) && $condition['role']){
+            if($condition['role'] == 'depart'){
                 $sql = "SELECT username,target,bonus,rate,dateRate,updateTime FROM site_targetAll 
                 WHERE role='部门' AND display<>1 ORDER BY rate DESC";
             }else{
-                $role = $condition['condition']['role'] == 'dev'?'开发':'销售';
+                $role = $condition['role'] == 'dev'?'开发':'销售';
                 $sql = "SELECT u.avatar,st.* FROM site_targetAll st
                 LEFT JOIN `user` u ON st.username=u.username
                 WHERE role='{$role}' AND display<>1 ORDER BY rate DESC";

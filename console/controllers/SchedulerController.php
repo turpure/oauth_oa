@@ -104,7 +104,8 @@ class SchedulerController extends Controller
                         'dateRate' => $dateRate,
                         'updatetime' => $endDate
                     ],
-                    ['role' => '开发','username' => $value['salernameZero']])->execute();
+                    ['role' => '开发','username' => $value['salernameZero']]
+                )->execute();
             }
 
             print date('Y-m-d H:i:s') . " INFO:success to get data of target completion!\n";
