@@ -83,7 +83,6 @@ class ConScheduler{
         $res = Yii::$app->db->createCommand()->batchInsert('site_target_backup_data',['username','saleMoneyUs','profitZn','month','updateTime'],$arr)->execute();
         print_r($res);exit;
 */
-
         foreach ($saleList as $v){
             $item = $v;
             $amt = 0;
@@ -97,7 +96,7 @@ class ConScheduler{
             $item['dateRate'] = $dateRate;
             $item['updateTime'] = $endDate;
             $res = Yii::$app->db->createCommand()->update('site_target',$item,['id' => $item['id']])->execute();
-            if(!$res){
+            if($res === false){
                 throw new Exception('update data failed!');
             }
         }

@@ -81,33 +81,33 @@ class SchedulerController extends Controller
         $dateRate = round(((strtotime($endDate) - strtotime($beginDate))/24/3600 + 1)*100/122, 2);
         //print_r($dateRate);exit;
         try {
+            //更新销售和部门目标完成度
+            $exchangeRate = ApiUkFic::getRateUkOrUs('USD');//美元汇率
+            $sql = "CALL oauth_siteTargetAll($exchangeRate)";
+            Yii::$app->db->createCommand($sql)->execute();
 
             //更新开发目标完成度 TODO  备份数据的加入
             $condition = [
                 'dateFlag' => 1,
                 'beginDate' => $beginDate,
                 'endDate' => $endDate,
-                'seller' => '胡小红,廖露露,常金彩,刘珊珊,王漫漫,陈微微,杨笑天,李永恒,崔明宽,张崇,史新慈',
+                'seller' => '胡小红,廖露露,常金彩,刘珊珊,王漫漫,陈微微,杨笑天,李永恒,崔明宽,张崇,史新慈,邹雅丽,杨晶媛',
             ];
             $devList = ApiReport::getDevelopReport($condition);
             foreach ($devList as $value){
-                $target =  Yii::$app->db->createCommand("SELECT target FROM site_targetAll WHERE username='{$value['salernameZero']} '")->queryOne();
+                $target =  Yii::$app->db->createCommand("SELECT IFNULL(target,0) AS target FROM site_targetAll WHERE username='{$value['salernameZero']} '")->queryOne();
                 Yii::$app->db->createCommand()->update(
                     'site_targetAll',
                     [
                         'amt' => $value['netprofittotal'],
-                        'rate' => $target['target'] ? 0 : round($value['netprofittotal']*100.0/$target['target']),
+                        'rate' => $target['target'] != 0 ? round($value['netprofittotal']*100.0/$target['target']) : 0,
                         'dateRate' => $dateRate,
                         'updatetime' => $endDate
                     ],
-                    ['role' => '开发','username' => $value['salernameZero']]
+                    ['role' => '开发', 'username' => $value['salernameZero']]
                 )->execute();
             }
 
-            //更新销售和部门目标完成度
-            $exchangeRate = ApiUkFic::getRateUkOrUs('USD');//美元汇率
-            $sql = "CALL oauth_siteTargetAll($exchangeRate)";
-            Yii::$app->db->createCommand($sql)->execute();
 
             print date('Y-m-d H:i:s') . " INFO:success to get data of target completion!\n";
         } catch (\Exception $why) {
@@ -606,13 +606,13 @@ class SchedulerController extends Controller
         $dateRate = round((strtotime($endDate) - strtotime($startDate))/86400/92,4);
         //计算销售数据
         $startDate = date('Y-m-01');
-        //$startDate = date('2019-06-01');
+        $startDate = date('2019-08-01');
         //$endDate = date('2019-07-31');
         try {
             ConScheduler::getZzTargetData($startDate, $endDate, $dateRate);
-            print date('Y-m-d H:i:s') . " INFO:success to update data of target completion!\n";
+            print date('Y-m-d H:i:s') . " INFO:success to update data of zz target completion!\n";
         } catch (\Exception $why) {
-            print date('Y-m-d H:i:s') . " INFO:fail to update data of target completion cause of $why \n";
+            print date('Y-m-d H:i:s') . " INFO:fail to update data of zz target completion cause of $why \n";
         }
     }
 
