@@ -76,15 +76,11 @@ class SchedulerController extends Controller
      */
     public function actionSite()
     {
-        $beginDate = '2019-08-01';//date('Y-m-d', strtotime('-30 days'));
+        $beginDate = '2019-09-01';//date('Y-m-d', strtotime('-30 days'));
         $endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
         $dateRate = round(((strtotime($endDate) - strtotime($beginDate))/24/3600 + 1)*100/122, 2);
         //print_r($dateRate);exit;
         try {
-            //更新销售和部门目标完成度
-            $exchangeRate = ApiUkFic::getRateUkOrUs('USD');//美元汇率
-            $sql = "CALL oauth_siteTargetAll($exchangeRate)";
-            Yii::$app->db->createCommand($sql)->execute();
 
             //更新开发目标完成度 TODO  备份数据的加入
             $condition = [
@@ -100,13 +96,18 @@ class SchedulerController extends Controller
                     'site_targetAll',
                     [
                         'amt' => $value['netprofittotal'],
-                        'rate' => round($value['netprofittotal']*100.0/$target['target']),
+                        'rate' => $target['target'] ? 0 : round($value['netprofittotal']*100.0/$target['target']),
                         'dateRate' => $dateRate,
                         'updatetime' => $endDate
                     ],
                     ['role' => '开发','username' => $value['salernameZero']]
                 )->execute();
             }
+
+            //更新销售和部门目标完成度
+            $exchangeRate = ApiUkFic::getRateUkOrUs('USD');//美元汇率
+            $sql = "CALL oauth_siteTargetAll($exchangeRate)";
+            Yii::$app->db->createCommand($sql)->execute();
 
             print date('Y-m-d H:i:s') . " INFO:success to get data of target completion!\n";
         } catch (\Exception $why) {
@@ -600,6 +601,7 @@ class SchedulerController extends Controller
     {
         $startDate = '2019-05-31';
         $endDate =  date('Y-m-d',strtotime('-1 day'));
+        $endDate =  '2019-08-31';
         //计算时间进度
         $dateRate = round((strtotime($endDate) - strtotime($startDate))/86400/92,4);
         //计算销售数据

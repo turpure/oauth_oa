@@ -108,18 +108,19 @@ class SiteController extends AdminController
     {
 
         $username = Yii::$app->user->identity->username;
-        $sql = "SELECT st.username,u.avatar,st.bonus,st.vacationDays,CASE WHEN amt-target>0 AND role='销售' THEN ceil((amt-target)/2000)*100 ELSE 0 END AS rxtraBonus
+        $sql = "SELECT st.username,u.avatar,st.bonus,st.vacationDays,
+                CASE WHEN amt-target>0 AND role<>'部门'  THEN ceil((amt-target)/2000)*100 ELSE 0 END AS rxtraBonus
                 FROM site_targetAll st
                 LEFT JOIN `user` u ON st.username=u.username
                 WHERE display<>1 AND rate>=100
                 ORDER BY st.username='{$username}' DESC,rate DESC";
         $query = \Yii::$app->db->createCommand($sql)->queryAll();
 
-        $bonusUsedNum = Yii::$app->db->createCommand("SELECT sum(bonus) AS bonus FROM site_targetAll WHERE display<>1 AND rate>=100")->queryOne();
-        $bonusAllNum = Yii::$app->db->createCommand("SELECT sum(bonus) AS bonus FROM site_targetAll WHERE display<>1")->queryOne();
+        $bonusUsedNum = Yii::$app->db->createCommand("SELECT sum(bonus) AS bonus FROM site_targetAll WHERE role<>'部门' AND display<>1 AND rate>=100")->queryOne();
+        $bonusAllNum = Yii::$app->db->createCommand("SELECT sum(bonus) AS bonus FROM site_targetAll WHERE role<>'部门' AND display<>1")->queryOne();
 
-        $vacationDaysUsedNum = Yii::$app->db->createCommand("SELECT sum(vacationDays) AS vacationDays FROM site_targetAll WHERE display<>1 AND rate>=100")->queryOne();
-        $vacationDaysAllNum = Yii::$app->db->createCommand("SELECT sum(vacationDays) AS vacationDays FROM site_targetAll WHERE display<>1")->queryOne();
+        $vacationDaysUsedNum = Yii::$app->db->createCommand("SELECT sum(vacationDays) AS vacationDays FROM site_targetAll WHERE role<>'部门' AND display<>1 AND rate>=100")->queryOne();
+        $vacationDaysAllNum = Yii::$app->db->createCommand("SELECT sum(vacationDays) AS vacationDays FROM site_targetAll WHERE role<>'部门' AND display<>1")->queryOne();
 
         return [
             'list' => $query,
