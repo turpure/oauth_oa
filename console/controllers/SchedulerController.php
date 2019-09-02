@@ -91,8 +91,7 @@ class SchedulerController extends Controller
                 'dateFlag' => 1,
                 'beginDate' => $beginDate,
                 'endDate' => $endDate,
-                //'seller' => '胡小红,廖露露,常金彩,刘珊珊,王漫漫,陈微微,杨笑天,李永恒,崔明宽,张崇,史新慈,邹雅丽,杨晶媛',
-                'seller' => '李永恒,崔明宽',
+                'seller' => '胡小红,廖露露,常金彩,刘珊珊,王漫漫,陈微微,杨笑天,李永恒,崔明宽,张崇,史新慈,邹雅丽,杨晶媛',
             ];
             $devList = ApiReport::getDevelopReport($condition);
             foreach ($devList as $value){
