@@ -235,4 +235,59 @@ class ApiWarehouseTools
         return $provider;
     }
 
+    /** 仓库仓位SKU对应表
+     * @param $condition
+     * Date: 2019-09-03 10:23
+     * Author: henry
+     * @return ArrayDataProvider
+     */
+    public static function getWareSkuData($condition){
+        $sku = $condition['sku'] ? str_replace(",","','", $condition['sku']) : '';
+        $beginTime = isset($condition['changeTime'][0]) ? $condition['changeTime'][0] : '';
+        $endTime = isset($condition['changeTime'][1]) ? $condition['changeTime'][1].' 23:59:59' : '';
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
+        $sql = "SELECT gs.sku,s.storeName,l.locationName,person,changeTime
+                FROM [dbo].[B_GoodsSKULocation] gsl
+                LEFT JOIN B_GoodsSKU gs ON gs.NID=gsl.GoodsSKUID
+                LEFT JOIN B_Store s ON s.NID=gsl.StoreID
+                LEFT JOIN B_StoreLocation l ON l.NID=gsl.LocationID
+                LEFT JOIN (
+                SELECT * FROM B_GoodsSKULocationLog bll
+                WHERE NOT EXISTS (
+                        SELECT 1 FROM B_GoodsSKULocationLog AS tmp
+                        WHERE bll.sku = tmp.sku
+                        AND bll.nowLocation = tmp.nowLocation
+                        AND bll.changeTime < tmp.changeTime
+                    )
+                ) ll ON ll.sku=gs.sku AND ll.nowLocation=LocationName 
+                WHERE 1=1 ";
+        if($sku){
+            $sql .= " AND gs.SKU IN ('{$sku}') ";
+        }
+        if($condition['store']){
+            $sql .= " AND StoreName LIKE '%{$condition['sku']}%' ";
+        }
+        if($condition['location']){
+            $sql .= " AND LocationName LIKE '%{$condition['location']}%' ";
+        }
+        if($beginTime && $endTime){
+            $sql .= " AND changeTime BETWEEN '{$beginTime}' AND '{$endTime}'; ";
+        }
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+
+
+        $provider = new ArrayDataProvider([
+            'allModels' => $data,
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
+
+    }
+
+
+
+
+
 }

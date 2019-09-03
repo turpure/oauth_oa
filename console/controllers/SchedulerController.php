@@ -100,7 +100,7 @@ class SchedulerController extends Controller
                     'site_targetAll',
                     [
                         'amt' => $value['netprofittotal'],
-                        'rate' => $target['target'] != 0 ? round($value['netprofittotal']*100.0/$target['target']) : 0,
+                        'rate' => $target['target'] != 0 ? round($value['netprofittotal']*100.0/$target['target'],2) : 0,
                         'dateRate' => $dateRate,
                         'updatetime' => $endDate
                     ],
