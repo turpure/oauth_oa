@@ -189,10 +189,8 @@ class ProductCenterTools
             $url = $sku->linkUrl;
             if (!empty($url)) {
                 $filename = explode('_', $sku->sku)[0] . '.jpg';
-//                $remote_file = '/' . $filename;
-                $remote_file = '/' . 'atest.jpg';
+                $remote_file = '/' . $filename;
                 $local_file = $tmpDir . $filename;
-//                copy($url, $local_file);
                 $ret = static::DownloadImage($url, $local_file);
                 if(!$ret) {
                     throw new \Exception('failure');
