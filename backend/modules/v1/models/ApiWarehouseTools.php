@@ -242,11 +242,11 @@ class ApiWarehouseTools
      * @return ArrayDataProvider
      */
     public static function getWareSkuData($condition){
-        $sku = $condition['sku'] ? implode("','", $condition['sku']) : '';
-        $beginTime = isset($condition['orderTime'][0]) ? $condition['orderTime'][0] : '';
-        $endTime = isset($condition['orderTime'][1]) ? $condition['orderTime'][1].' 23:59:59' : '';
+        $sku = $condition['sku'] ? str_replace(",","','", $condition['sku']) : '';
+        $beginTime = isset($condition['changeTime'][0]) ? $condition['changeTime'][0] : '';
+        $endTime = isset($condition['changeTime'][1]) ? $condition['changeTime'][1].' 23:59:59' : '';
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
-        $sql = "SELECT gs.SKU,s.StoreName,l.LocationName,person,changeTime
+        $sql = "SELECT gs.sku,s.storeName,l.locationName,person,changeTime
                 FROM [dbo].[B_GoodsSKULocation] gsl
                 LEFT JOIN B_GoodsSKU gs ON gs.NID=gsl.GoodsSKUID
                 LEFT JOIN B_Store s ON s.NID=gsl.StoreID
