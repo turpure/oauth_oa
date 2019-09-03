@@ -98,5 +98,15 @@ class WarehouseToolsController extends AdminController
         return ApiWarehouseTools::getWareStatisticsData($condition);
     }
 
+    /** 仓库仓位SKU对应表
+     * Date: 2019-09-03 10:14
+     * Author: henry
+     * @return \yii\data\ArrayDataProvider
+     */
+    public function actionWareSku()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiWarehouseTools::getWareSkuData($condition);
+    }
 
 }
