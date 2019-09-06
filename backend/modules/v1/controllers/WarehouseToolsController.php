@@ -9,6 +9,7 @@ namespace backend\modules\v1\controllers;
 
 
 use backend\modules\v1\models\ApiWarehouseTools;
+use backend\modules\v1\utils\ExportTools;
 use Yii;
 
 class WarehouseToolsController extends AdminController
@@ -107,6 +108,24 @@ class WarehouseToolsController extends AdminController
     {
         $condition = Yii::$app->request->post()['condition'];
         return ApiWarehouseTools::getWareSkuData($condition);
+    }
+
+    /**
+     * Date: 2019-09-06 10:52
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionWareSkuExport()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        $condition['pageSize'] = 100000;
+        $title = ['SKU','仓库','库位','操作人','类型','操作时间'];
+        $dataProvider = ApiWarehouseTools::getWareSkuData($condition);
+        $data = $dataProvider->getModels();
+        if($data){
+            ExportTools::toExcelOrCsv('WareSkuExport', $data, 'Xls', $title);
+        }
     }
 
 }
