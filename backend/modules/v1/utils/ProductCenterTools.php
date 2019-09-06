@@ -175,34 +175,32 @@ class ProductCenterTools
         return $res;
     }
 
+    /**
+     * @param $infoId
+     * @throws \Exception
+     */
     public static function uploadImagesToFtp($infoId)
     {
         $goodsSku = OaGoodsSku::findAll(['infoId' => $infoId]);
         $tmpDir = Yii::getAlias('@app'). '/runtime/image/';
         $mode = FTP_BINARY;
         $asynchronous = false;
-        try {
-            foreach ($goodsSku as $sku) {
-                $url = $sku->linkUrl;
-                if (!empty($url)) {
-                    $filename = explode('_', $sku->sku)[0] . '.jpg';
-                    $remote_file = '/' . $filename;
-                    $local_file = $tmpDir . $filename;
-                    copy($url, $local_file);
-                    Yii::$app->ftp->put($local_file, $remote_file, $mode, $asynchronous);
-                    if (!unlink($local_file)) {
-                        throw new \Exception('failure');
-                    }
+        foreach ($goodsSku as $sku) {
+            $url = $sku->linkUrl;
+            if (!empty($url)) {
+                $filename = explode('_', $sku->sku)[0] . '.jpg';
+                $remote_file = '/' . $filename;
+                $local_file = $tmpDir . $filename;
+                $ret = static::DownloadImage($url, $local_file);
+                if(!$ret) {
+                    throw new \Exception('failure');
+                }
+                Yii::$app->ftp->put($local_file, $remote_file, $mode, $asynchronous);
+                if (!unlink($local_file)) {
+                    throw new \Exception('failure');
                 }
             }
-            $msg = true;
-        } catch (\Exception $why) {
-            $msg = [
-                'code' => 400,
-                'message' => $why->getMessage()
-            ];
         }
-        return $msg;
     }
 
     /** 数据预处理和数据导入事务
@@ -1115,5 +1113,28 @@ class ProductCenterTools
            }
        }
    }
+
+    private static function DownloadImage($url, $filename=''){
+        $ch = curl_init ($url);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_BINARYTRANSFER,1);
+        curl_setopt($ch,CURLOPT_SSL_VERIFYHOST,false);
+        curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,false);
+//        curl_setopt ($ch, CURLOPT_PROXY, '127.0.0.1:1080');
+        $raw=curl_exec($ch);
+        if(!$raw) {
+            return false;
+        }
+        curl_close ($ch);
+        if(file_exists($filename)){
+            unlink($filename);
+        }
+        $fp = fopen($filename,'x');
+        fwrite($fp, $raw);
+        fclose($fp);
+        return true;
+    }
+
 }
 

@@ -359,12 +359,19 @@ class OaGoodsinfoController extends AdminController
 
     public function actionPictureToFtp()
     {
-        $request = Yii::$app->request;
-        if (!$request->isPost) {
+        try {
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $infoId = $request->post()['condition']['id'];
+            ProductCenterTools::uploadImagesToFtp($infoId);
             return [];
         }
-        $infoId = $request->post()['condition']['id'];
-        return ProductCenterTools::uploadImagesToFtp($infoId);
+
+        catch (\Exception  $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
     }
 
 
