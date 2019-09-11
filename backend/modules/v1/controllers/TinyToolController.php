@@ -202,7 +202,15 @@ class TinyToolController extends AdminController
             $cost3 = Yii::$app->params['wBasic2'] + Yii::$app->params['price3'] * $res['Weight'];
         }
 
-        $param1 = $param2 = $param3 = [
+        //英伦速邮挂号
+        $name4 = Yii::$app->params['transport5'];
+        if ($res['Weight'] < Yii::$app->params['weight5']) {
+            $cost4 = Yii::$app->params['swBasic5'] + Yii::$app->params['swPrice5'] * $res['Weight'];
+        } else {
+            $cost4 = Yii::$app->params['bwBasic5'] + Yii::$app->params['bwPrice5'] * $res['Weight'];
+        }
+
+        $param1 = $param2 = $param3 = $param4 = [
             'costprice' => $res['costprice'],
             'bigPriceBasic' => Yii::$app->params['bpBasic'],
             'smallPriceBasic' => Yii::$app->params['spBasic'],
@@ -213,9 +221,10 @@ class TinyToolController extends AdminController
         $param1['cost'] = $cost;
         $param2['cost'] = $cost2;
         $param3['cost'] = $cost3;
+        $param4['cost'] = $cost4;
         //根据售价获取利润率
         if ($post['price']) {
-            $param1['price'] = $param2['price'] = $param3['price'] = $post['price'];
+            $param1['price'] = $param2['price'] = $param3['price'] = $param4['price'] = $post['price'];
 
             $rate = ApiUkFic::getRate($param1);
             $rate['transport'] = $name;
@@ -225,10 +234,13 @@ class TinyToolController extends AdminController
 
             $rate3 = ApiUkFic::getRate($param3);
             $rate3['transport'] = $name3;
-            $data['rate'] = [$rate, $rate2, $rate3];
+
+            $rate4 = ApiUkFic::getRate($param4);
+            $rate4['transport'] = $name4;
+            $data['rate'] = [$rate, $rate2, $rate3, $rate4];
         }
         //根据利润率获取售价
-        $param1['rate'] = $param2['rate'] = $param3['rate'] = $post['rate'];
+        $param1['rate'] = $param2['rate'] = $param3['rate'] = $param4['rate'] = $post['rate'];
         $price = ApiUkFic::getPrice($param1);
         $price['transport'] = $name;
 
@@ -238,7 +250,10 @@ class TinyToolController extends AdminController
         $price3 = ApiUkFic::getPrice($param3);
         $price3['transport'] = $name3;
 
-        $data['price'] = [$price, $price2, $price3];
+        $price4 = ApiUkFic::getPrice($param4);
+        $price4['transport'] = $name4;
+
+        $data['price'] = [$price, $price2, $price3, $price4];
         //print_r($data['price']);exit;
         $data['transport'] = [
             [
@@ -252,6 +267,10 @@ class TinyToolController extends AdminController
             [
                 'name' => $name3,
                 'cost' => round($cost3, 2),
+            ],
+            [
+                'name' => $name4,
+                'cost' => round($cost4, 2),
             ]
         ];
         //print_r($data);exit;
