@@ -722,7 +722,12 @@ class ApiMine
             throw new Exception('订阅失败');
         }
         $redis = Yii::$app->redis;
-        $redis->lpush('joom_task',implode(',',['cate', $cateId, '']));
+
+        //同时传主类目和子类目ID到消息队列中
+        $cates = JoomCategory::find()->where(['parentCateId' => $cateId])->select('cateId')->asArray()->all();
+        foreach ($cates as $ct) {
+            $redis->lpush('joom_task',implode(',',['cate', $ct, $cateId, '']));
+        }
         return [$cateId];
     }
 
