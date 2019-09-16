@@ -699,7 +699,8 @@ class ApiMine
      */
     public static function getJoomCate()
     {
-      $ret = JoomCategory::find()->select(['cateName', 'cateId'])->all();
+        //只返回主目录
+      $ret = JoomCategory::find()->select(['cateName', 'cateId'])->where(['cateLevel' => 1])->all();
       return ArrayHelper::map($ret,'cateId', 'cateName');
     }
 

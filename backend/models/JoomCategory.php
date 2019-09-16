@@ -10,6 +10,8 @@ use Yii;
  * @property int $id
  * @property string $cateName
  * @property string $cateId
+ * @property int $cateLevel
+ * @property string $parentCateId
  */
 class JoomCategory extends \yii\db\ActiveRecord
 {
@@ -27,7 +29,10 @@ class JoomCategory extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
+            [['cateLevel'], 'integer'],
             [['cateName', 'cateId'], 'string', 'max' => 100],
+            [['parentCateId'], 'string', 'max' => 150],
+            [['cateId'], 'unique'],
         ];
     }
 
@@ -40,6 +45,8 @@ class JoomCategory extends \yii\db\ActiveRecord
             'id' => 'ID',
             'cateName' => 'Cate Name',
             'cateId' => 'Cate ID',
+            'cateLevel' => 'Cate Level',
+            'parentCateId' => 'Parent Cate ID',
         ];
     }
 }
