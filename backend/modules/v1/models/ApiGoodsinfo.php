@@ -1202,7 +1202,10 @@ class ApiGoodsinfo
             OaGoodsinfo::find()
                 ->select('goodsCode')->where(['goodsCode' => $ids[0]])->scalar()
         ;
-        $ret = ['name' => 'Vova-'.$fileName];
+        if(!is_array($accounts)) {
+            $accounts = [$accounts];
+        }
+        $ret = ['name' => $accounts[0].'-'.$fileName];
         foreach ($ids as $id) {
             if(is_numeric($id)) {
                 $goodsInfo = OaGoodsinfo::findOne(['id' => $id]);
