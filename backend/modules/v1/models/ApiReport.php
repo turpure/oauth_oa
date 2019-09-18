@@ -551,6 +551,61 @@ class ApiReport
 
     }
 
+    /** profit report
+     * @param $condition
+     * Date: 2019-05-24 11:51
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public static function getProfitReportExport($condition)
+    {
+        $salesman = $condition['salesman'] ? "'" . implode(',', $condition['salesman']) . "'" : '';
+        $sql = "EXEC Z_P_AccountProductProfit @chanel=:chanel,@DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate," .
+            "@SalerAliasName=:suffix,@SalerName=:salesman,@StoreName=:storeName,@sku=:sku,@PageIndex=:PageIndex,@PageNum=:PageNum";
+        $params = [
+            ':chanel' => $condition['chanel'],
+            ':dateFlag' => $condition['dateFlag'],
+            ':beginDate' => $condition['beginDate'],
+            ':endDate' => $condition['endDate'],
+            ':suffix' => $condition['suffix'],
+            ':salesman' => $salesman,
+            ':storeName' => $condition['storeName'],
+            ':sku' => $condition['sku'],
+            ':PageIndex' => $condition['start'],
+            ':PageNum' => $condition['limit'],
+        ];
+        try {
+            //return Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+            $list = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+            $data = [];
+            foreach ($list as $value){
+                $item = $value;
+                $saler = Yii::$app->db->createCommand("SELECT u.username,d.store AS suffix,d.platform
+                        FROM user u
+                        LEFT JOIN auth_store_child dc ON dc.user_id=u.id
+                        LEFT JOIN auth_store d ON d.id=dc.store_id
+                       WHERE u.`status`=10 AND d.store='{$value['suffix']}'")->queryOne();
+                //print_r($saler);exit;
+                if($saler && in_array($saler['username'], $condition['salesman'])){
+                    $item['salesman'] = $saler['username'];
+                    $item['pingtai'] = $saler['platform'];
+                    $data[] = $item;
+                }
+
+            }
+                //["suffix","pingtai", "GoodsCode","GoodsName", "SalerName", "SKUQty", "SaleMoneyRmb","ProfitRmb", "rate","salesman"];
+            $title = ['卖家简称',	'平台','商品编码','商品名称','开发员','销量','销售额￥','利润￥','利润率%','销售员'];
+            return [$title,$data];
+
+        } catch (\Exception $why) {
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
+        }
+
+    }
+
     /**
      * @brief introduce report
      * @params $condition array

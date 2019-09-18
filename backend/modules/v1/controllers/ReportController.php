@@ -301,6 +301,34 @@ class ReportController extends AdminController
 
     }
 
+    /** 账号产品毛利导出
+     * Date: 2019-09-18 11:47
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionAccountExport()
+    {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        $condition = [
+            'dateFlag' => $cond['dateType'],
+            'beginDate' => $cond['dateRange'][0],
+            'endDate' => $cond['dateRange'][1],
+            'sku' => $cond['sku'],
+            'salesman' => $cond['member'],
+            'chanel' => $cond['plat'],
+            'suffix' => $cond['account'] ? ("'" . implode(',', $cond['account']) . "'") : '',
+            'storeName' => $cond['store'] ? ("'" . implode(',', $cond['store']) . "'") : '',
+            'start' => $cond['start'],
+            'limit' => $cond['limit'],
+        ];
+        $name = 'AccountExport';
+        list($title,$data) = ApiReport::getProfitReportExport($condition);
+        ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
+
+    }
+
     /**
      * @brief introduce performance report
      */
