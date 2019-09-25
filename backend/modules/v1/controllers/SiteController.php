@@ -331,7 +331,9 @@ class SiteController extends AdminController
             $depart = isset($condition['depart']) ? $condition['depart'] : '';
             if(empty($depart)) {
                 $sql = "SELECT depart,SUM(lastProfit) AS lastProfit,SUM(profit) AS profit,
-                     CASE WHEN SUM(lastProfit)=0 THEN 0 ELSE SUM(profit)/SUM(lastProfit) END AS rate,
+                     CASE WHEN SUM(lastProfit)=0 THEN 0 
+                          WHEN SUM(lastProfit)<0 THEN 1
+                          ELSE SUM(profit)/SUM(lastProfit) END AS rate,
                      MAX(dateRate) AS dateRate,MAX(updateTime) as updateTime
                 FROM site_profit 
                 WHERE  role = '销售'
@@ -340,7 +342,9 @@ class SiteController extends AdminController
             }
             else {
                 $sql = "SELECT depart,SUM(lastProfit) AS lastProfit,SUM(profit) AS profit,
-                     CASE WHEN SUM(lastProfit)=0 THEN 0 ELSE SUM(profit)/SUM(lastProfit) END AS rate,
+                     CASE WHEN SUM(lastProfit)=0 THEN 0 
+                          WHEN SUM(lastProfit)<0 THEN 1
+                          ELSE SUM(profit)/SUM(lastProfit) END AS rate,
                      MAX(dateRate) AS dateRate,MAX(updateTime) as updateTime
                 FROM site_profit 
                 WHERE  role = '销售' and depart = '{$depart}'
