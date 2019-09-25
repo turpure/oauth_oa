@@ -591,6 +591,23 @@ class OaGoodsinfoController extends AdminController
     }
 
     /**
+     * @brief 导出iBay接口Json模板
+     * @return array
+     */
+    public function actionPlatEbayData()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        $infoId = $condition['id'];
+        $account = $condition['account'];
+        $ret = ApiGoodsinfo::preExportEbay($infoId, $account);
+        return $ret;
+    }
+
+    /**
      * @brief 导出Shopify模板
      * @throws \Exception
      */

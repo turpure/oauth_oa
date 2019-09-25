@@ -971,7 +971,7 @@ class ApiGoodsinfo
             $row['ShippingService1'] = static::getShippingService($ebayInfo['inShippingMethod1']);
             $row['ShippingServiceCost1'] = $ebayInfo['inFirstCost1'];
             $row['ShippingServiceAdditionalCost1'] = $ebayInfo['inSuccessorCost1'];
-            $row['ShippingService2'] = static::getShippingService($ebayInfo['inShippingMethod1']);
+            $row['ShippingService2'] = static::getShippingService($ebayInfo['inShippingMethod2']);
             $row['ShippingServiceCost2'] = $ebayInfo['inFirstCost2'];
             $row['ShippingServiceAdditionalCost2'] = $ebayInfo['inSuccessorCost2'];
             $row['ShippingService3'] = '';
