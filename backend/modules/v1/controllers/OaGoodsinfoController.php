@@ -22,7 +22,8 @@ use backend\models\OaJoomSuffix;
 use backend\models\OaSiteCountry;
 use backend\models\OaWishGoodsSku;
 use backend\modules\v1\models\ApiGoodsinfo;
-use backend\modules\v1\models\ApiTinyTool;
+use backend\modules\v1\utils\Helper;
+use backend\modules\v1\services\Logger;
 use backend\modules\v1\utils\ProductCenterTools;
 use backend\modules\v1\utils\AttributeInfoTools;
 use backend\modules\v1\utils\ExportTools;
@@ -605,6 +606,53 @@ class OaGoodsinfoController extends AdminController
         $account = $condition['account'];
         $ret = ApiGoodsinfo::preExportEbay($infoId, $account);
         return $ret;
+    }
+
+    public function actionPlatEbayToIbay()
+    {
+
+        try {
+            $logData = [
+                'infoId' => '',
+                'ibayTemplateId' => '',
+                'result' => 'failed',
+                'platForm' => 'ebay',
+            ];
+            $request = Yii::$app->request;
+            $condition = $request->post()['condition'];
+            $infoId = $condition['id'];
+            $data = json_encode($this->actionPlatEbayData()['data']);
+
+            //日志
+            $logData['infoId'] = $infoId;
+
+            //post到iBay接口
+            $api = 'http://139.196.109.214/index.php/api/ImportEbayMuban/auth/youran';
+            $ret = Helper::request($api, $data)[1];
+            if (isset($ret['ack']) && $ret['ack'] === 'success') {
+                $logData['result'] = 'success';
+                $templates = array_values($ret['importebaymubanResponse']);
+                foreach ($templates as $tm) {
+                    $logData['ibayTemplateId'] = str_replace('成功, 模板编号为: ','',
+                        $tm);
+                    //逐个写入日志
+                    Logger::ibayLog($logData);
+                }
+                $out = $ret;
+            }
+            else {
+                $out = ['code' => 400, 'message' => isset($ret['message']) ? $ret['message'] : '导入失败！'];
+                // 写入日志
+                Logger::ibayLog($logData);
+            }
+
+
+            return $out;
+        }
+
+        catch (\Exception $why) {
+           return ['code' => 400, 'message'=>$why->getMessage()];
+        }
     }
 
     /**
