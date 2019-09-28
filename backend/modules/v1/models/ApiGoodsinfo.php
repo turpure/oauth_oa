@@ -178,7 +178,7 @@ class ApiGoodsinfo
         if (isset($condition['updateTime']) && !empty($condition['updateTime'])) $query->andFilterWhere(['between', "date_format(updateTime,'%Y-%m-%d')", $condition['updateTime'][0], $condition['updateTime'][1]]);
         if (isset($condition['mid']) && $condition['mid'] === '是') $query->andFilterWhere(['>', "ifnull(mid,1)", 1]);
         if (isset($condition['mid']) && $condition['mid'] === '否') $query->andFilterWhere(["IFNULL(mid,0)" => 0]);
-        $query->orderBy('updateTime DESC,id DESC');
+        $query->orderBy('devDateTime DESC,id DESC');
         //print_r($query->createCommand()->getRawSql());exit;
         $provider = new ActiveDataProvider([
             'query' => $query,
@@ -1649,16 +1649,22 @@ class ApiGoodsinfo
                     return $query;
                 }
                 else {
-                    $status = implode(',', $status);
-                    $query->andWhere(['or',['is','completeStatus' , null],['=', 'completeStatus', $status]]);
+                    $map = ['or', ['is','completeStatus' , null]];
+                    foreach ($status as $v){
+                        $map[] = ['like', 'completeStatus', $v];
+                    }
+                    $query->andWhere($map);
                     return $query;
                 }
 
             }
             else {
                 asort($status);
-                $status = implode(',', $status);
-                $query->andWhere(['=', 'completeStatus', $status]);
+                $map = ['or'];
+                foreach ($status as $v){
+                    $map[] = ['like', 'completeStatus', $v];
+                }
+                $query->andWhere($map);
                 return $query;
             }
         }
