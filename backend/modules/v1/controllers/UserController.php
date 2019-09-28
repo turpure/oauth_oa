@@ -38,10 +38,13 @@ class UserController extends AdminController
             if ($user instanceof IdentityInterface) {
                 return ['access_token'=> $user->access_token];
             } else {
-                return $user->errors;
+//                return $user->errors;
+                return ['code' => 400, 'messsge' => $user->errors];
+
             }
         } else {
-            return $model->errors;
+           $message = $model->errors;
+            return ['code' => 400, 'message' => $message];
         }
     }
 

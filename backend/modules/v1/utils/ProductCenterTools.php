@@ -677,7 +677,7 @@ class ProductCenterTools
             'outFirstCost2' => '',
             'outSuccessorCost2' => '',
             'outShipToCountry2' => '',
-            'mainPage' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_0.jpg',
+            'mainPage' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_0_.jpg',
             'extraPage' => static::_generateImages($goodsInfo['goodsCode']),
             'sku' => $goodsInfo['isVar'] == '是' ? $goodsInfo['goodsCode'] : ($goodsInfo['goodsCode'].'01'),
             'infoId' => $goodsInfo['id'],

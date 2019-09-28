@@ -971,7 +971,7 @@ class ApiGoodsinfo
             $row['ShippingService1'] = static::getShippingService($ebayInfo['inShippingMethod1']);
             $row['ShippingServiceCost1'] = $ebayInfo['inFirstCost1'];
             $row['ShippingServiceAdditionalCost1'] = $ebayInfo['inSuccessorCost1'];
-            $row['ShippingService2'] = static::getShippingService($ebayInfo['inShippingMethod1']);
+            $row['ShippingService2'] = static::getShippingService($ebayInfo['inShippingMethod2']);
             $row['ShippingServiceCost2'] = $ebayInfo['inFirstCost2'];
             $row['ShippingServiceAdditionalCost2'] = $ebayInfo['inSuccessorCost2'];
             $row['ShippingService3'] = '';
@@ -1593,6 +1593,9 @@ class ApiGoodsinfo
         if ($isVar === '否') {
             return '';
         }
+        // 判断属性是否全为空
+        $propertyFlag = static::isEmpetyProperty($skuInfo);
+
         $pictures = [];
         $variation = [];
         $variationSpecificsSet = ['NameValueList' => []];
@@ -1608,8 +1611,13 @@ class ApiGoodsinfo
             }
             $item = [];
             foreach ($columns as $col) {
-                $map = ['Name' => array_keys($col)[0], 'Value' => array_values($col)[0]];
-                $item[] = $map;
+
+                //不全为空的属性才加入NameValueList
+                if ($propertyFlag[array_keys($col)[0]] > 0)
+                {
+                    $map = ['Name' => array_keys($col)[0], 'Value' => array_values($col)[0]];
+                    $item[] = $map;
+                }
             }
             $variationSpecificsSet['NameValueList'] = $item;
             $pic = ['VariationSpecificPictureSet' => ['PictureURL' => [$sku['imageUrl']]], 'Value' => $value['value']];
@@ -1622,13 +1630,56 @@ class ApiGoodsinfo
             ];
             $variation[] = $var;
         }
-       // print_r($variation);exit;
         $extraImages = explode("\n", $ebayInfo['extraPage']);
         $row = [
             'assoc_pic_key' => $picKey, 'assoc_pic_count' => count($extraImages), 'Variation' => $variation,
             'Pictures' => $pictures, 'VariationSpecificsSet' => $variationSpecificsSet
         ];
         return json_encode($row);
+    }
+
+    /**
+     *
+     */
+    private static function isEmpetyProperty($ebaySku)
+    {
+        // 取出所有的属性名称
+        $keys = json_decode($ebaySku[0]['property'],true)['columns'];
+        $propertyFlag = [];
+        foreach ($keys as $rows) {
+            $propertyFlag[array_keys($rows)[0]] = 0;
+        }
+
+        //逐个判断每个属性是否全为空
+        foreach ($propertyFlag as $pty => $flag) {
+            foreach ($ebaySku as $sku) {
+                $property = json_decode($sku['property'],true)['columns'];
+                $property = static::flatArray($property);
+                if (!empty($property[$pty])) {
+                    $propertyFlag[$pty] = 1;
+                    break;
+                }
+            }
+        }
+        return $propertyFlag;
+
+    }
+
+    /**
+     * @brief 压平数组
+     * @param $property
+     * @return array
+     */
+    private static function flatArray($property)
+    {
+        $ret = [];
+        foreach($property as $pty)
+        {
+            foreach ($pty as $key => $value) {
+                $ret[$key] = $value;
+            }
+        }
+        return $ret;
     }
 
     /**
