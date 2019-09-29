@@ -162,7 +162,8 @@ class ApiEbayTool
             $arr = array();
             $arr[$j]['SKU'] = $a['SKU'][$j];
             $arr[$j]['Quantity'] = $a['Quantity'][$j];
-            $arr[$j]['StartPrice'] = $a['StartPrice'][$j];
+            //$arr[$j]['StartPrice'] = $a['StartPrice'][$j];
+            $arr[$j]['StartPrice'] = $a['StartPrice'];
             $arr[$j]['Color'] = $a['Color'][$j];
             $arr[$j]['Size'] = $a['Size'][$j];
             $arr[$j]['UPC'] = $a['UPC'][$j];
