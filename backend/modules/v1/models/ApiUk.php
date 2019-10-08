@@ -105,6 +105,7 @@ class ApiUk{
             }
         }
         $data['costRmb'] = $data['cost']*Yii::$app->params['poundRate'];
+        $data['outRmb'] = $data['out']*Yii::$app->params['poundRate'];
         return $data;
     }
     

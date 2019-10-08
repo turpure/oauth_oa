@@ -95,6 +95,7 @@ class ApiAu{
             }
         }
         $data['costRmb'] = $data['cost']*Yii::$app->params['auRate'];
+        $data['outRmb'] = $data['out']*Yii::$app->params['auRate'];
         return $data;
     }
 
