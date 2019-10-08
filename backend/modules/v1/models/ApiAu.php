@@ -94,7 +94,7 @@ class ApiAu{
                 $data['cost'] = Yii::$app->params['w_au_tran_fee_1_3'];
             }
         }
-        $data['costRmb'] = $data['cost']*Yii::$app->params['poundRate'];
+        $data['costRmb'] = $data['cost']*Yii::$app->params['auRate'];
         return $data;
     }
 
