@@ -104,6 +104,7 @@ class ApiUk{
                 $data['cost'] = Yii::$app->params['w_uk_tran_fee_1_4'];
             }
         }
+        $data['costRmb'] = $data['cost']*Yii::$app->params['poundRate'];
         return $data;
     }
     

@@ -502,7 +502,7 @@ class ApiReport
     {
         $salesman = $condition['salesman'] ? "'" . implode(',', $condition['salesman']) . "'" : '';
         $sql = "EXEC Z_P_AccountProductProfit @chanel=:chanel,@DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate," .
-            "@SalerAliasName=:suffix,@SalerName=:salesman,@StoreName=:storeName,@sku=:sku,@PageIndex=:PageIndex,@PageNum=:PageNum";
+            "@SalerAliasName=:suffix,@SalerName=:salesman,@StoreName=:storeName,@sku=:sku,@goodsName=:goodsName,@PageIndex=:PageIndex,@PageNum=:PageNum";
         $params = [
             ':chanel' => $condition['chanel'],
             ':dateFlag' => $condition['dateFlag'],
@@ -512,6 +512,7 @@ class ApiReport
             ':salesman' => $salesman,
             ':storeName' => $condition['storeName'],
             ':sku' => $condition['sku'],
+            ':goodsName' => $condition['goodsName'],
             ':PageIndex' => $condition['start'],
             ':PageNum' => $condition['limit'],
         ];
@@ -561,7 +562,7 @@ class ApiReport
     {
         $salesman = $condition['salesman'] ? "'" . implode(',', $condition['salesman']) . "'" : '';
         $sql = "EXEC Z_P_AccountProductProfit @chanel=:chanel,@DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate," .
-            "@SalerAliasName=:suffix,@SalerName=:salesman,@StoreName=:storeName,@sku=:sku,@PageIndex=:PageIndex,@PageNum=:PageNum";
+            "@SalerAliasName=:suffix,@SalerName=:salesman,@StoreName=:storeName,@sku=:sku,@goodsName=:goodsName,@PageIndex=:PageIndex,@PageNum=:PageNum";
         $params = [
             ':chanel' => $condition['chanel'],
             ':dateFlag' => $condition['dateFlag'],
@@ -571,6 +572,7 @@ class ApiReport
             ':salesman' => $salesman,
             ':storeName' => $condition['storeName'],
             ':sku' => $condition['sku'],
+            ':goodsName' => $condition['goodsName'],
             ':PageIndex' => $condition['start'],
             ':PageNum' => $condition['limit'],
         ];
