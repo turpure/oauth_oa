@@ -86,7 +86,12 @@ class SchedulerController extends Controller
             $sql = "CALL oauth_siteTargetAll($exchangeRate)";
             Yii::$app->db->createCommand($sql)->execute();
 
-            //更新开发目标完成度 TODO  备份数据的加入
+            //获取开发备份数据
+            $month =  Yii::$app->db->createCommand("SELECT max(month) month FROM site_targetAllBackupData WHERE role='开发'")->queryScalar();
+            if($month){
+                $beginDate = '2019-'.($month+1).'-01';
+            }
+            //更新开发目标完成度
             $condition = [
                 'dateFlag' => 1,
                 'beginDate' => $beginDate,
@@ -95,18 +100,23 @@ class SchedulerController extends Controller
             ];
             $devList = ApiReport::getDevelopReport($condition);
             foreach ($devList as $value){
-                $target =  Yii::$app->db->createCommand("SELECT IFNULL(target,0) AS target FROM site_targetAll WHERE username='{$value['salernameZero']} '")->queryOne();
+                $target =  Yii::$app->db->createCommand("SELECT IFNULL(target,0) AS target FROM site_targetAll WHERE username='{$value['salernameZero']} '")->queryScalar();
+                $lastProfit =  Yii::$app->db->createCommand("SELECT sum(profitZn) AS profitZn FROM site_targetAllBackupData WHERE username='{$value['salernameZero']} ' GROUP BY username")->queryScalar();
                 Yii::$app->db->createCommand()->update(
                     'site_targetAll',
                     [
-                        'amt' => $value['netprofittotal'],
-                        'rate' => $target['target'] != 0 ? round($value['netprofittotal']*100.0/$target['target'],2) : 0,
+                        'amt' => $value['netprofittotal'] + $lastProfit,
+                        'rate' => $target != 0 ? round(($value['netprofittotal'] + $lastProfit)*100.0/$target,2) : 0,
                         'dateRate' => $dateRate,
                         'updatetime' => $endDate
                     ],
                     ['role' => '开发', 'username' => $value['salernameZero']]
                 )->execute();
             }
+
+
+
+
 
 
             print date('Y-m-d H:i:s') . " INFO:success to get data of target completion!\n";
@@ -695,6 +705,41 @@ class SchedulerController extends Controller
             print date('Y-m-d H:i:s') . " INFO:fail to get sales amt of latest month because $why \n";
         }
     }
+
+
+
+
+    /** 备份本月账号产品利润数据
+     * Date: 2019-10-10 15:21
+     * Author: henry
+     */
+    public function actionSuffixSkuProfit()
+    {
+        try {
+            $flagArr = [0,1];
+            $beginDate = '2019-09-01';
+            $endDate = '2019-09-30';
+            //$endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
+            foreach ($flagArr as $v){
+                $sql = "EXEC guest.oauth_reportSuffixSkuProfitBackup $v, '{$beginDate}', '{$endDate}'";
+                $list = Yii::$app->py_db->createCommand($sql)->queryAll();
+                Yii::$app->db->createCommand()->truncateTable('cache_suffixSkuProfitReport')->execute();
+                Yii::$app->db->createCommand()->batchInsert('cache_suffixSkuProfitReport',
+                    ['dateFlag', 'orderDate','suffix','pingtai','goodsCode','goodsName','salerName','skuQty','saleMoneyRmb','profitRmb']
+                    ,$list)->execute();
+            }
+            print date('Y-m-d H:i:s') . " INFO:success to get sales amt of latest month!\n";
+        } catch (\Exception $why) {
+            print date('Y-m-d H:i:s') . " INFO:fail to get sales amt of latest month because $why \n";
+        }
+    }
+
+
+
+
+
+
+
 
 
 }
