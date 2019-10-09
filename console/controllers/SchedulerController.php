@@ -707,8 +707,6 @@ class SchedulerController extends Controller
     }
 
 
-
-
     /** 备份本月账号产品利润数据
      * Date: 2019-10-10 15:21
      * Author: henry
@@ -736,10 +734,16 @@ class SchedulerController extends Controller
 
 
 
+    /**
+     * @brief 批量更新依赖毛利润报表的命令
+     */
 
-
-
-
-
+    public function actionMacroUpdate()
+    {
+        $this->actionProfit();
+        $this->actionSite();
+        $this->actionZzTarget();
+        $this->actionSalesRanking();
+    }
 
 }
