@@ -27,7 +27,8 @@ class ProductsEngineController extends AdminController
         try {
             $plat = \Yii::$app->request->get('plat');
             if ($plat === 'ebay') {
-                return EbayProducts::find()->all();
+                $station = \Yii::$app->request->get('station','US');
+                return EbayProducts::find()->where(['station' => $station])->all();
             }
             if ($plat === 'wish') {
                 return WishProducts::find()->all();
