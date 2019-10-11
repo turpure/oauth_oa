@@ -714,21 +714,31 @@ class SchedulerController extends Controller
     public function actionSuffixSkuProfit()
     {
         try {
-            $flagArr = [0,1];
-            $beginDate = '2019-09-01';
-            $endDate = '2019-09-30';
-            //$endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
+            $flagArr = [0,1];//时间类型  0- 交易时间 1- 发货时间
+            $step = 300;
+
+            $beginDate = date('Y-m', strtotime('-1 days')).'-01';//上月或本月1号时间
+            $endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
+
+            $beginDate = '2019-01-01';
+            $endDate = '2019-01-31';
+            //删除已有时间段内数据，重新获取保存
+            Yii::$app->db->createCommand("DELETE FROM cache_suffixSkuProfitReport WHERE orderDate BETWEEN '{$beginDate}' AND '{$endDate}' ")->execute();
+
             foreach ($flagArr as $v){
                 $sql = "EXEC guest.oauth_reportSuffixSkuProfitBackup $v, '{$beginDate}', '{$endDate}'";
                 $list = Yii::$app->py_db->createCommand($sql)->queryAll();
-                Yii::$app->db->createCommand()->truncateTable('cache_suffixSkuProfitReport')->execute();
-                Yii::$app->db->createCommand()->batchInsert('cache_suffixSkuProfitReport',
-                    ['dateFlag', 'orderDate','suffix','pingtai','goodsCode','goodsName','salerName','skuQty','saleMoneyRmb','profitRmb']
-                    ,$list)->execute();
+                $count = ceil(count($list)/$step);
+                for ($i=0;$i<$count;$i++){
+                    Yii::$app->db->createCommand()->batchInsert('cache_suffixSkuProfitReport',
+                        ['dateFlag', 'orderDate','suffix','pingtai','goodsCode','goodsName', 'storeName','salerName','skuQty','saleMoneyRmb','profitRmb']
+                        ,array_slice($list,$i*$step,$step))->execute();
+                }
+
             }
-            print date('Y-m-d H:i:s') . " INFO:success to get sales amt of latest month!\n";
+            print date('Y-m-d H:i:s') . " INFO:Successful backup suffix sku profit data from time '{$beginDate}' to '{$endDate}'!\n";
         } catch (\Exception $why) {
-            print date('Y-m-d H:i:s') . " INFO:fail to get sales amt of latest month because $why \n";
+            print date('Y-m-d H:i:s') . " INFO:failed backup suffix sku profit data from time '{$beginDate}' to '{$endDate}' because $why \n";
         }
     }
 
