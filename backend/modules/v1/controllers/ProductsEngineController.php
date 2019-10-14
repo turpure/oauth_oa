@@ -8,15 +8,36 @@
 namespace backend\modules\v1\controllers;
 
 use backend\models\EbayProducts;
+use backend\models\WishProducts;
+
+
 
 
 class ProductsEngineController extends AdminController
 {
+
     public $modelClass = 'backend\modules\v1\models\ApiProductsEngine';
 
+    /**
+     * @brief recommend  products
+     * @return mixed
+     */
     public function actionRecommend()
     {
-        return EbayProducts::find()->all();
+        try {
+            $plat = \Yii::$app->request->get('plat');
+            if ($plat === 'ebay') {
+                $station = \Yii::$app->request->get('station','US');
+                return EbayProducts::find()->where(['station' => $station])->all();
+            }
+            if ($plat === 'wish') {
+                return WishProducts::find()->all();
+            }
+        }
+        catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+
     }
 
 }
