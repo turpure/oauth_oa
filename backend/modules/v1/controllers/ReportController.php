@@ -277,9 +277,11 @@ class ReportController extends AdminController
         return $ret;
     }
 
-    /**
-     * @brief profit report
-     * @return array
+    /** 账号产品利润表
+     * Date: 2019-10-11 16:22
+     * Author: henry
+     * @return array|ArrayDataProvider
+     * @throws \yii\db\Exception
      */
     public function actionAccount()
     {

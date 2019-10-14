@@ -494,9 +494,10 @@ class ApiReport
 
     /** profit report
      * @param $condition
-     * Date: 2019-05-24 11:51
+     * Date: 2019-10-11 15:39
      * Author: henry
      * @return array|ArrayDataProvider
+     * @throws \yii\db\Exception
      */
     public static function getProfitReport($condition)
     {
@@ -512,9 +513,16 @@ class ApiReport
             ':sku' => $condition['sku'],
             ':goodsName' => $condition['goodsName'],
         ];
-        try {
-           // print_r(Yii::$app->db->createCommand($sql)->bindValues($params)->getRawSql());exit;
+        $key = Yii::$app->db->createCommand($sql)->bindValues($params)->getRawSql();
+        //获取缓存
+        $res = Yii::$app->cache->get($key);
+        if($res){
+            $list = $res;
+        }else{
             $list = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
+            Yii::$app->cache->set($key, $list, 3600*24);
+        }
+        try {
             return new ArrayDataProvider([
                 'allModels' => $list,
                 'pagination' => [
@@ -532,11 +540,12 @@ class ApiReport
 
     }
 
-    /** profit report
+    /** 账号产品毛利导出
      * @param $condition
-     * Date: 2019-05-24 11:51
+     * Date: 2019-10-14 9:41
      * Author: henry
-     * @return array|ArrayDataProvider
+     * @return array
+     * @throws \yii\db\Exception
      */
     public static function getProfitReportExport($condition)
     {
@@ -552,10 +561,15 @@ class ApiReport
             ':sku' => $condition['sku'],
             ':goodsName' => $condition['goodsName'],
         ];
-        try {
+        $key = Yii::$app->db->createCommand($sql)->bindValues($params)->getRawSql();
+
+        $list = Yii::$app->cache->get($key);
+        if(!$list){
             $list = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
+        }
+        try {
                 //["suffix","pingtai", "GoodsCode","GoodsName", "SalerName", "SKUQty", "SaleMoneyRmb","ProfitRmb", "rate","salesman"];
-            $title = ['销售员','卖家简称',	'平台','商品编码','商品名称','开发员','仓库','销量','销售额￥','利润￥','利润率%',];
+            $title = ['销售员','卖家简称',	'平台','商品编码','商品名称','开发员','仓库','销量','销售额￥','退款￥','利润￥','利润率%','退款利润占比'];
             return [$title, $list];
 
         } catch (\Exception $why) {
