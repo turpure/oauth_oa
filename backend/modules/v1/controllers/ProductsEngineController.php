@@ -9,6 +9,7 @@ namespace backend\modules\v1\controllers;
 
 use backend\models\EbayProducts;
 use backend\models\WishProducts;
+use backend\models\JoomProducts;
 
 
 
@@ -32,6 +33,10 @@ class ProductsEngineController extends AdminController
             }
             if ($plat === 'wish') {
                 return WishProducts::find()->all();
+            }
+
+            if ($plat === 'joom') {
+                return JoomProducts::find()->all();
             }
         }
         catch (\Exception $why) {
