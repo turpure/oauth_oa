@@ -725,6 +725,8 @@ class ApiMine
 
         //同时传主类目和子类目ID到消息队列中
         $cates = JoomCategory::find()->where(['parentCateId' => $cateId])->select('cateId')->asArray()->all();
+        //增减主类目本身
+        $cates[] = $cateId;
         foreach ($cates as $ct) {
             $redis->lpush('joom_task',implode(',',['cate', $ct['cateId'], $cateId, '']));
         }
