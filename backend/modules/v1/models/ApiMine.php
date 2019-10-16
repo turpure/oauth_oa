@@ -13,7 +13,7 @@ use backend\models\OaDataMine;
 use backend\models\OaDataMineDetail;
 use backend\models\OaGoods;
 use backend\models\JoomCategory;
-use backend\models\JoomCateProduct;
+use backend\models\JoomSubscribeStore;
 use backend\models\ShopElf\BGoodsSKULinkShop;
 use backend\modules\v1\utils\ExportTools;
 use backend\modules\v1\utils\Helper;
@@ -777,6 +777,32 @@ class ApiMine
             ],
         ]);
         return $provider;
+    }
+
+
+    /**
+     * 订阅店铺
+     * @param $condition
+     * @return array
+     * @throws Exception
+     */
+    public static function subscribeJoomStore($condition)
+    {
+        $storeName = $condition['storeName'];
+        $storeId = $condition['storeId'];
+        $task = new JoomSubscribeStore();
+        $attr = ['storeId' => $storeId, 'storeName' => $storeName];
+        $task->setAttributes($attr);
+        if (!$task->save()) {
+            throw new Exception('fail to add new task');
+        }
+
+        //添加到任务队列
+        $redis = Yii::$app->redis;
+        $redis->lpush('joom_task',implode(',',['store', $storeName, $storeId, '']));
+
+        return [$storeName];
+
     }
 
 }
