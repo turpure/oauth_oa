@@ -8,6 +8,7 @@
 namespace backend\modules\v1\controllers;
 use backend\modules\v1\models\ApiMine;
 use backend\modules\v1\utils\AttributeInfoTools;
+use Codeception\Template\Api;
 use Yii;
 
 class OaDataMineController extends AdminController
@@ -317,6 +318,52 @@ class OaDataMineController extends AdminController
     public function actionSubscribeJoomList()
     {
         return ApiMine::subscribeJoomList();
+    }
+
+
+    /**
+     * @brief 订阅店铺
+     * @return array
+     */
+    public function actionSubscribeJoomStore()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiMine::subscribeJoomStore($condition);
+        }
+        catch (\Exception $why) {
+            return ['code' => 400, 'message' => $why->getMessage()];
+        }
+    }
+
+
+    /**
+     * 查看已经订阅的店铺
+     * @return array|\yii\db\ActiveRecord[]
+     */
+    public function actionJoomStoreSubscribed()
+    {
+        try {
+            return ApiMine::getJoomStoreSubscribed();
+        }
+        catch (\Exception $why) {
+            return ['code' => 400, 'message' => $why->getMessage()];
+        }
+    }
+
+    /**
+     * 店铺产品列表
+     * @return array|\yii\data\ActiveDataProvider
+     */
+    public function actionJoomStoreProduct()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiMine::getJoomStoreProduct($condition);
+        }
+        catch (\Exception $why) {
+            return ['code' => 400, 'message' => $why->getMessage()];
+        }
     }
 
     /**

@@ -13,7 +13,7 @@ use backend\models\OaDataMine;
 use backend\models\OaDataMineDetail;
 use backend\models\OaGoods;
 use backend\models\JoomCategory;
-use backend\models\JoomCateProduct;
+use backend\models\JoomSubscribeStore;
 use backend\models\ShopElf\BGoodsSKULinkShop;
 use backend\modules\v1\utils\ExportTools;
 use backend\modules\v1\utils\Helper;
@@ -743,6 +743,11 @@ class ApiMine
         return JoomSubscribeCate::find()->all();
     }
 
+    /**
+     * joom类目产品列表
+     * @param $condition
+     * @return ActiveDataProvider
+     */
     public static function getJoomCateProduct($condition)
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
@@ -768,6 +773,87 @@ class ApiMine
             'sort' => [
                 'attributes' => [
                     'id','productId' , 'cateId', 'productName', 'price', 'rating', 'storeId',
+                    'taskCreatedTime' , 'taskUpdatedTime', 'cateName' , 'proCreatedDate',
+                    'reviewsCount'
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
+    }
+
+
+    /**
+     * 订阅店铺
+     * @param $condition
+     * @return array
+     * @throws Exception
+     */
+    public static function subscribeJoomStore($condition)
+    {
+        $storeName = $condition['storeName'];
+        $storeId = $condition['storeId'];
+        $task = new JoomSubscribeStore();
+        $attr = [
+            'storeId' => $storeId,
+            'storeName' => $storeName,
+            'creator' => Yii::$app->user->identity->username,
+            'createdDate' => date('Y-m-d H:i:s')
+        ];
+        $task->setAttributes($attr);
+        if (!$task->save()) {
+            throw new Exception('fail to add new task');
+        }
+
+        //添加到任务队列
+        $redis = Yii::$app->redis;
+        $redis->lpush('joom_task',implode(',',['store', $storeName, $storeId, '']));
+
+        return [$storeName];
+
+    }
+
+
+    /**
+     * 订阅的店铺
+     * @return array|\yii\db\ActiveRecord[]
+     */
+    public static function getJoomStoreSubscribed()
+    {
+        return JoomSubscribeStore::find()->all();
+    }
+
+    /**
+     * joom 店铺产品列表
+     * @param $condition
+     * @return ActiveDataProvider
+     */
+    public static function getJoomStoreProduct($condition)
+    {
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $storeName = $condition['storeName'];
+        $query = (new  yii\db\Query())
+            ->select('jp.*,jt.proCreatedDate, jt.reviewsCount')
+            ->from('proCenter.joom_storeProduct as jp')
+            ->leftJoin('proCenter.joom_product as jt', 'jp.productId = jt.productId' )
+            ->where(['jp.storeName' => $storeName]);
+        // productId 过滤单独处理
+        if(isset($condition['productId']) && !empty($condition['productId'])) {
+            $query->andFilterWhere(['jp.productId' => $condition['productId']]);
+        }
+        $fieldFilter = ['like' => ['productName','storeId']];
+        $numberFilter = ['between' => ['price', 'rating','reviewsCount']];
+        $timeFilter = ['taskCreatedTime', 'taskUpdatedTime', 'proCreatedDate'];
+        $query = Helper::generateFilter($query, $fieldFilter, $condition);
+        $query = Helper::generateFilter($query, $numberFilter, $condition);
+        $query = Helper::timeFilter($query, $timeFilter, $condition);
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            'sort' => [
+                'attributes' => [
+                    'id','productId' , 'storeName', 'productName', 'price', 'rating', 'storeId',
                     'taskCreatedTime' , 'taskUpdatedTime', 'cateName' , 'proCreatedDate',
                     'reviewsCount'
                 ]
