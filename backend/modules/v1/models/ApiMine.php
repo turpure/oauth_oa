@@ -791,7 +791,12 @@ class ApiMine
         $storeName = $condition['storeName'];
         $storeId = $condition['storeId'];
         $task = new JoomSubscribeStore();
-        $attr = ['storeId' => $storeId, 'storeName' => $storeName];
+        $attr = [
+            'storeId' => $storeId,
+            'storeName' => $storeName,
+            'creator' => Yii::$app->user->identity->username,
+            'createdDate' => date('Y-m-d H:i:s')
+        ];
         $task->setAttributes($attr);
         if (!$task->save()) {
             throw new Exception('fail to add new task');
@@ -803,6 +808,11 @@ class ApiMine
 
         return [$storeName];
 
+    }
+
+    public static function getJoomStoreSubscribed()
+    {
+        return JoomSubscribeStore::find()->all();
     }
 
 }

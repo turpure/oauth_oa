@@ -8,6 +8,7 @@
 namespace backend\modules\v1\controllers;
 use backend\modules\v1\models\ApiMine;
 use backend\modules\v1\utils\AttributeInfoTools;
+use Codeception\Template\Api;
 use Yii;
 
 class OaDataMineController extends AdminController
@@ -333,6 +334,19 @@ class OaDataMineController extends AdminController
         catch (\Exception $why) {
             return ['code' => 400, 'message' => $why->getMessage()];
         }
+    }
+
+
+    public function actionJoomStoreSubscribed()
+    {
+        try {
+            return ApiMine::getJoomStoreSubscribed();
+        }
+        catch (\Exception $why) {
+            return ['code' => 400, 'message' => $why->getMessage()];
+        }
+
+
     }
 
     /**
