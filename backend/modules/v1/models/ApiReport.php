@@ -525,6 +525,12 @@ class ApiReport
         try {
             return new ArrayDataProvider([
                 'allModels' => $list,
+                'sort' => [
+                   'attributes' => [
+                       'salesman', 'suffix', 'pingtai', 'GoodsCode', 'GoodsName','SalerName',
+                       'storeName','SKUQty','SaleMoneyRmb','refund','ProfitRmb','rate','refundRate'
+                   ],
+                ],
                 'pagination' => [
                     'page' => $condition['start'] - 1,
                     'pageSize' => isset($condition['limit']) && $condition['limit'] ? $condition['limit'] : 20,
