@@ -520,10 +520,10 @@ class ApiReport
             $list = $res;
         }else{
             $list = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
-            Yii::$app->cache->set($key, $list, 3600*24);
+            Yii::$app->cache->set($key, $list, 3600*12);
         }
         try {
-            return new ArrayDataProvider([
+            $provider = new ArrayDataProvider([
                 'allModels' => $list,
                 'sort' => [
                    'attributes' => [
@@ -536,6 +536,23 @@ class ApiReport
                     'pageSize' => isset($condition['limit']) && $condition['limit'] ? $condition['limit'] : 20,
                 ],
             ]);
+            $totalQty = array_sum(ArrayHelper::getColumn($list, 'SKUQty'));
+            $totalSaleMoney = array_sum(ArrayHelper::getColumn($list, 'SaleMoneyRmb'));
+            $totalRefund = array_sum(ArrayHelper::getColumn($list, 'refund'));
+            $totalProfitRmb = array_sum(ArrayHelper::getColumn($list, 'ProfitRmb'));
+            $totalRate = $totalSaleMoney==0?0:round($totalProfitRmb/$totalSaleMoney*100,2);
+            $totalRefundRate = $totalProfitRmb==0?0:round($totalRefund/$totalProfitRmb*100,2);
+            return [
+                'provider' => $provider,
+                'extra' => [
+                    'totalQty' => $totalQty,
+                    'totalSaleMoney' => $totalSaleMoney,
+                    'totalRefund' => $totalRefund,
+                    'totalProfitRmb' => $totalProfitRmb,
+                    'totalRate' => $totalRate,
+                    'totalRefundRate' => $totalRefundRate,
+                ]
+            ];
 
         } catch (\Exception $why) {
             return [
