@@ -537,9 +537,9 @@ class ApiReport
                 ],
             ]);
             $totalQty = array_sum(ArrayHelper::getColumn($list, 'SKUQty'));
-            $totalSaleMoney = array_sum(ArrayHelper::getColumn($list, 'SaleMoneyRmb'));
-            $totalRefund = array_sum(ArrayHelper::getColumn($list, 'refund'));
-            $totalProfitRmb = array_sum(ArrayHelper::getColumn($list, 'ProfitRmb'));
+            $totalSaleMoney = round(array_sum(ArrayHelper::getColumn($list, 'SaleMoneyRmb')),2);
+            $totalRefund = round(array_sum(ArrayHelper::getColumn($list, 'refund')),2);
+            $totalProfitRmb = round(array_sum(ArrayHelper::getColumn($list, 'ProfitRmb')),2);
             $totalRate = $totalSaleMoney==0?0:round($totalProfitRmb/$totalSaleMoney*100,2);
             $totalRefundRate = $totalProfitRmb==0?0:round($totalRefund/$totalProfitRmb*100,2);
             return [
