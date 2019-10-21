@@ -30,7 +30,6 @@ class ProductsEngineController extends AdminController
             $type = \Yii::$app->request->get('type','');
             if ($plat === 'ebay') {
                 if($type === 'new') {
-
                     $db = Yii::$app->mongodb;
                     $cur = $db->getCollection('ebay_new_product')->find();
                     foreach ($cur as $row) {
@@ -39,6 +38,12 @@ class ProductsEngineController extends AdminController
                     return $ret;
                 }
                 if ($type === 'hot') {
+                    $db = Yii::$app->mongodb;
+                    $cur = $db->getCollection('ebay_hot_product')->find();
+                    foreach ($cur as $row) {
+                        $ret[] = $row;
+                    }
+                    return $ret;
 
                 }
                 else {
