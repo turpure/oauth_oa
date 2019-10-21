@@ -382,6 +382,66 @@ class DataCenterController extends AdminController
         }
     }
 
+    /** 库存情况部门明细
+     * Date: 2019-06-14 15:11
+     * Author: henry
+     * @return array
+     */
+    public function actionStockDepartDetail(){
+        $request = Yii::$app->request;
+        if(!$request->isPost){
+            return [];
+        }
+        $cond = $request->post('condition');
+        $sql = "SELECT IFNULL(aa.depart,'无部门') AS depart,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
+                        IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
+                        CASE WHEN IFNULL(aveCostmoney,0)=0 AND totalCostmoney>0 THEN 10000 ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
+                FROM(
+                        SELECT 
+                        CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart,
+                        SUM(useNum) AS useNum,
+                        SUM(costmoney) costmoney,
+                        SUM(notInStore) notInStore,
+                        SUM(notInCostmoney) notInCostmoney,
+                        SUM(hopeUseNum) hopeUseNum,
+                        SUM(totalCostmoney) totalCostmoney
+                        FROM `cache_stockWaringTmpData` c
+                        LEFT JOIN `user` u ON u.username=c.salerName
+						LEFT JOIN auth_department_child dc ON dc.user_id=u.id
+					  	LEFT JOIN auth_department d ON d.id=dc.department_id
+						LEFT JOIN auth_department p ON p.id=d.parent
+                        WHERE 1=1 ";
+        if(isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
+        $sql .=                " GROUP BY 
+                                    CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END
+                    
+                ) aa LEFT JOIN 
+                (
+                        SELECT 
+                        CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart,
+                        SUM(costMoney) AS 30DayCostmoney,
+                        ROUND(SUM(costMoney)/30,4) AS aveCostmoney
+                        FROM `cache_30DayOrderTmpData` c
+                        LEFT JOIN `user` u ON u.username=c.salerName
+						LEFT JOIN auth_department_child dc ON dc.user_id=u.id
+					  	LEFT JOIN auth_department d ON d.id=dc.department_id
+						LEFT JOIN auth_department p ON p.id=d.parent
+                        WHERE 1=1 ";
+        if(isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
+        $sql .=                " GROUP BY 
+                                    CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END
+                ) bb ON aa.depart=bb.depart
+                ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
+        try{
+            return Yii::$app->db->createCommand($sql)->queryAll();
+        }catch (\Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
 
     /**
      * Date: 2019-06-17 11:12

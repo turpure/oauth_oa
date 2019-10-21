@@ -557,8 +557,11 @@ class SchedulerController extends Controller
             Yii::$app->db->createCommand("TRUNCATE TABLE cache_stockWaringTmpData;")->execute();
 
             //分页获取数据
-            for($k=1;$k<4;$k++){
+            for($k=1; ;$k++){
                 $stockList = Yii::$app->py_db->createCommand("EXEC oauth_stockStatus 1,'{$k}';")->queryAll();
+                if(!count($stockList)){
+                    break;
+                }
                 $max = ceil(count($stockList)/$step);
                 for ($i = 0; $i < $max; $i++){
                     Yii::$app->db->createCommand()->batchInsert('cache_stockWaringTmpData',
