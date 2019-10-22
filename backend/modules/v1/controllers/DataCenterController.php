@@ -243,7 +243,7 @@ class DataCenterController extends AdminController
     }
 
 
-    /** 库存情况
+    /** 仓库库存情况
      * Date: 2019-06-14 14:20
      * Author: henry
      * @return array
@@ -284,7 +284,7 @@ class DataCenterController extends AdminController
         }
     }
 
-    /** 库存情况状态明细
+    /** 仓库库存情况状态明细
      * Date: 2019-06-14 15:11
      * Author: henry
      * @return array
@@ -333,7 +333,7 @@ class DataCenterController extends AdminController
         }
     }
 
-    /** 库存情况开发明细
+    /** 仓库库存情况开发明细
      * Date: 2019-06-14 15:11
      * Author: henry
      * @return array
@@ -382,39 +382,185 @@ class DataCenterController extends AdminController
         }
     }
 
-
-    /**
-     * Date: 2019-06-17 11:12
+    /** 部门库存情况
+     * Date: 2019-06-14 15:11
      * Author: henry
      * @return array
      */
-    /*
-    public function actionDelayShip()
-    {
-        $request = Yii::$app->request->post();
-        $cond = $request['condition'];
-        $queryParams = [
-            'department' => $cond['department'],
-            'secDepartment' => $cond['secDepartment'],
-            'platform' => $cond['plat'],
-            'username' => $cond['member'],
-            'store' => $cond['account']
-        ];
-        $params = Handler::paramsFilter($queryParams);
-        //var_dump($params);exit;
-        $condition = [
-            'store' => $params['store'] ? implode(',', $params['store']) : '',
-            'queryType' => $params['queryType'],
-            'dateFlag' => $cond['dateType'],
-            'beginDate' => $cond['dateRange'] ? $cond['dateRange'][0] : '',
-            'endDate' => $cond['dateRange'] ? $cond['dateRange'][1] : '',
-        ];
-        //print_r($condition);exit;
-        return ApiDataCenter::getDelayShipData($condition);
+    public function actionStockDepartDetail(){
+        $request = Yii::$app->request;
+        if(!$request->isPost){
+            return [];
+        }
+        $sql = "SELECT IFNULL(aa.depart,'无部门') AS depart,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
+                        IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
+                        CASE WHEN IFNULL(aveCostmoney,0)=0 AND totalCostmoney>0 THEN 10000 ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
+                FROM(
+                        SELECT 
+                        CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart,
+                        SUM(useNum) AS useNum,
+                        SUM(costmoney) costmoney,
+                        SUM(notInStore) notInStore,
+                        SUM(notInCostmoney) notInCostmoney,
+                        SUM(hopeUseNum) hopeUseNum,
+                        SUM(totalCostmoney) totalCostmoney
+                        FROM `cache_stockWaringTmpData` c
+                        LEFT JOIN `user` u ON u.username=c.salerName
+						LEFT JOIN auth_department_child dc ON dc.user_id=u.id
+					  	LEFT JOIN auth_department d ON d.id=dc.department_id
+						LEFT JOIN auth_department p ON p.id=d.parent
+                        GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END
+                ) aa LEFT JOIN 
+                (
+                        SELECT 
+                        CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart,
+                        SUM(costMoney) AS 30DayCostmoney,
+                        ROUND(SUM(costMoney)/30,4) AS aveCostmoney
+                        FROM `cache_30DayOrderTmpData` c
+                        LEFT JOIN `user` u ON u.username=c.salerName
+						LEFT JOIN auth_department_child dc ON dc.user_id=u.id
+					  	LEFT JOIN auth_department d ON d.id=dc.department_id
+						LEFT JOIN auth_department p ON p.id=d.parent
+                        GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END
+                ) bb ON aa.depart=bb.depart
+                ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
+        try{
+            return Yii::$app->db->createCommand($sql)->queryAll();
+        }catch (\Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
     }
-    */
 
 
+    /** 部门库存情况状态明细
+     * Date: 2019-06-14 15:11
+     * Author: henry
+     * @return array
+     */
+    public function actionStockDepartStatusDetail(){
+        $request = Yii::$app->request;
+        if(!$request->isPost){
+            return [];
+        }
+        $cond = $request->post('condition');
+
+        $sql = "SELECT IFNULL(aa.depart,'无部门') AS depart,aa.goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
+                        IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
+                        CASE WHEN IFNULL(aveCostmoney,0)=0 AND totalCostmoney>0 THEN 10000 ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
+                FROM(
+                        SELECT 
+                        CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart,
+                        IFNULL(goodsStatus,'无状态') goodsStatus,
+                        SUM(useNum) AS useNum,
+                        SUM(costmoney) costmoney,
+                        SUM(notInStore) notInStore,
+                        SUM(notInCostmoney) notInCostmoney,
+                        SUM(hopeUseNum) hopeUseNum,
+                        SUM(totalCostmoney) totalCostmoney
+                        FROM `cache_stockWaringTmpData` c
+                        LEFT JOIN `user` u ON u.username=c.salerName
+						LEFT JOIN auth_department_child dc ON dc.user_id=u.id
+					  	LEFT JOIN auth_department d ON d.id=dc.department_id
+						LEFT JOIN auth_department p ON p.id=d.parent
+                        WHERE 1=1 ";
+        if(isset($cond['depart']) && $cond['depart'])
+            $sql .= " AND (d.department LIKE '%{$cond['depart']}%' OR p.department LIKE '%{$cond['depart']}%')";
+
+        $sql .=   " GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END,IFNULL(goodsStatus,'无状态')
+                ) aa LEFT JOIN 
+                (
+                        SELECT 
+                        CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart,
+                        IFNULL(goodsStatus,'无状态') goodsStatus,
+                        SUM(costMoney) AS 30DayCostmoney,
+                        ROUND(SUM(costMoney)/30,4) AS aveCostmoney
+                        FROM `cache_30DayOrderTmpData` c
+                        LEFT JOIN `user` u ON u.username=c.salerName
+						LEFT JOIN auth_department_child dc ON dc.user_id=u.id
+					  	LEFT JOIN auth_department d ON d.id=dc.department_id
+						LEFT JOIN auth_department p ON p.id=d.parent
+                        WHERE 1=1 ";
+        if(isset($cond['storeName']) && $cond['storeName'])
+            $sql .= " AND (d.department LIKE '%{$cond['depart']}%' OR p.department LIKE '%{$cond['depart']}%')";
+        $sql .=  " GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END,IFNULL(goodsStatus,'无状态')
+                ) bb ON aa.depart=bb.depart AND IFNULL(aa.goodsStatus,'无状态')=IFNULL(bb.goodsStatus,'无状态')
+                ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
+        try{
+            $data = Yii::$app->db->createCommand($sql)->queryAll();
+            return $data;
+        }catch (\Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /** 部门库存情况开发明细
+     * Date: 2019-06-14 15:11
+     * Author: henry
+     * @return array
+     */
+    public function actionStockDepartDeveloperDetail(){
+        $request = Yii::$app->request;
+        if(!$request->isPost){
+            return [];
+        }
+        $cond = $request->post('condition');
+        $sql = "SELECT IFNULL(aa.depart,'无部门') AS depart,aa.salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
+                        IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
+                        CASE WHEN IFNULL(aveCostmoney,0)=0 AND totalCostmoney>0 THEN 10000 ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
+                FROM(
+                        SELECT 
+                        CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart,
+                        CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END AS salerName,
+                        SUM(useNum) AS useNum,
+                        SUM(costmoney) costmoney,
+                        SUM(notInStore) notInStore,
+                        SUM(notInCostmoney) notInCostmoney,
+                        SUM(hopeUseNum) hopeUseNum,
+                        SUM(totalCostmoney) totalCostmoney
+                        FROM `cache_stockWaringTmpData` c
+                        LEFT JOIN `user` u ON u.username=c.salerName
+						LEFT JOIN auth_department_child dc ON dc.user_id=u.id
+					  	LEFT JOIN auth_department d ON d.id=dc.department_id
+						LEFT JOIN auth_department p ON p.id=d.parent
+                        WHERE 1=1 ";
+        if(isset($cond['depart']) && $cond['depart'])
+            $sql .= " AND (d.department LIKE '%{$cond['depart']}%' OR p.department LIKE '%{$cond['depart']}%')";
+        $sql .=  " GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END,
+                            CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END
+                ) aa LEFT JOIN 
+                (
+                        SELECT 
+                        CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart,
+                        CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END AS salerName,
+                        SUM(costMoney) AS 30DayCostmoney,
+                        ROUND(SUM(costMoney)/30,4) AS aveCostmoney
+                        FROM `cache_30DayOrderTmpData` c
+                        LEFT JOIN `user` u ON u.username=c.salerName
+						LEFT JOIN auth_department_child dc ON dc.user_id=u.id
+					  	LEFT JOIN auth_department d ON d.id=dc.department_id
+						LEFT JOIN auth_department p ON p.id=d.parent
+                        WHERE 1=1 ";
+        if(isset($cond['depart']) && $cond['depart'])
+            $sql .= " AND (d.department LIKE '%{$cond['depart']}%' OR p.department LIKE '%{$cond['depart']}%')";
+        $sql .=    " GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END,
+                              CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END
+                ) bb ON aa.depart=bb.depart AND IFNULL(aa.salerName,'无人')=IFNULL(bb.salerName,'无人')
+                ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
+        try{
+            return Yii::$app->db->createCommand($sql)->queryAll();
+        }catch (\Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
 
 
 }

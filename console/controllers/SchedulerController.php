@@ -556,16 +556,23 @@ class SchedulerController extends Controller
             //插入库存预警数据
             Yii::$app->db->createCommand("TRUNCATE TABLE cache_stockWaringTmpData;")->execute();
 
-            $stockList = Yii::$app->py_db->createCommand("EXEC oauth_stockStatus 1;")->queryAll();
-            $max = ceil(count($stockList)/$step);
-            for ($i = 0; $i < $max; $i++){
-                Yii::$app->db->createCommand()->batchInsert('cache_stockWaringTmpData',
-                    [
-                        'sku', 'storeName', 'goodsStatus', 'salerName', 'costPrice', 'useNum', 'costmoney',
-                        'notInStore', 'notInCostmoney', 'hopeUseNum', 'totalCostmoney', 'updateTime'
-                    ],
-                    array_slice($stockList,$i*$step, $step))->execute();
+            //分页获取数据
+            for($k=1; ;$k++){
+                $stockList = Yii::$app->py_db->createCommand("EXEC oauth_stockStatus 1,'{$k}';")->queryAll();
+                if(!count($stockList)){
+                    break;
+                }
+                $max = ceil(count($stockList)/$step);
+                for ($i = 0; $i < $max; $i++){
+                    Yii::$app->db->createCommand()->batchInsert('cache_stockWaringTmpData',
+                        [
+                            'sku', 'storeName', 'goodsStatus', 'salerName', 'costPrice', 'useNum', 'costmoney',
+                            'notInStore', 'notInCostmoney', 'hopeUseNum', 'totalCostmoney', 'updateTime'
+                        ],
+                        array_slice($stockList,$i*$step, $step))->execute();
+                }
             }
+
 
             //插入30天销售数据
             Yii::$app->db->createCommand("TRUNCATE TABLE cache_30DayOrderTmpData;")->execute();
@@ -597,7 +604,7 @@ class SchedulerController extends Controller
             }
             echo date('Y-m-d H:i:s')." Get stock status data successful! $message\n";
         }catch (\Exception $e){
-            echo date('Y-m-d H:i:s')." Get stock status data failed! \n";
+            echo date('Y-m-d H:i:s')." Get stock status data failed, cause of '{$e->getMessage()}'. \n";
             //echo $e->getMessage();
         }
 
