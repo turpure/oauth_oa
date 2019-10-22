@@ -391,7 +391,7 @@ class ApiTinyTool
             'tradeNid,orderTime,suffix,buyerId,
             shipToName,shipToStreet,shipToStreet2,shipToCity,
             shipToZip,shipToCountryCode,shipToPhoneNum,
-            completeStatus,processor')->from('riskyTrades')->orderBy(['orderTime' => SORT_DESC]);
+            completeStatus,processor,image,level')->from('riskyTrades')->orderBy(['orderTime' => SORT_DESC]);
         if (!empty($beginDate) || !empty($endDate)) {
             $query->andFilterWhere(['between', 'orderTime', $beginDate, $endDate]);
         }
