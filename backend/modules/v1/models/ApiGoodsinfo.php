@@ -1516,7 +1516,7 @@ class ApiGoodsinfo
     private static function getEbayPayPal($price, $ebayAccount)
     {
         $paypal = OaPaypal::findOne($ebayAccount['low']);
-        if ($price >= 8) {
+        if ($price >= 12) {
             $paypal = OaPaypal::findOne($ebayAccount['high']);
         }
         return $paypal ? $paypal['paypal'] : '';
