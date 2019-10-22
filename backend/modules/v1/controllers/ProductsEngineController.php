@@ -12,7 +12,7 @@ use backend\models\WishProducts;
 use backend\models\JoomProducts;
 use backend\models\RecommendEbayNewProductRule;
 use yii\helpers\ArrayHelper;
-
+use Yii;
 
 class ProductsEngineController extends AdminController
 {
@@ -27,9 +27,29 @@ class ProductsEngineController extends AdminController
     {
         try {
             $plat = \Yii::$app->request->get('plat');
+            $type = \Yii::$app->request->get('type','');
             if ($plat === 'ebay') {
-                $station = \Yii::$app->request->get('station','US');
-                return EbayProducts::find()->where(['station' => $station])->all();
+                if($type === 'new') {
+                    $db = Yii::$app->mongodb;
+                    $cur = $db->getCollection('ebay_new_product')->find();
+                    foreach ($cur as $row) {
+                        $ret[] = $row;
+                    }
+                    return $ret;
+                }
+                if ($type === 'hot') {
+                    $db = Yii::$app->mongodb;
+                    $cur = $db->getCollection('ebay_hot_product')->find();
+                    foreach ($cur as $row) {
+                        $ret[] = $row;
+                    }
+                    return $ret;
+
+                }
+                else {
+                    $station = \Yii::$app->request->get('status','US');
+                    return EbayProducts::find()->where(['station' => $station])->all();
+                }
             }
             if ($plat === 'wish') {
                 return WishProducts::find()->all();
