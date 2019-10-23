@@ -11,6 +11,7 @@ use backend\models\EbayProducts;
 use backend\models\WishProducts;
 use backend\models\JoomProducts;
 use backend\models\RecommendEbayNewProductRule;
+use backend\models\EbayHotRule;
 use yii\helpers\ArrayHelper;
 use Yii;
 
@@ -71,8 +72,14 @@ class ProductsEngineController extends AdminController
      */
     public function actionRule()
     {
+        $type = Yii::$app->request->get('type','new');
         try {
-            return RecommendEbayNewProductRule::find()->all();
+            if ($type === 'new') {
+                return RecommendEbayNewProductRule::find()->all();
+            }
+            if ($type === 'hot') {
+                return EbayHotRule::find()->all();
+            }
 
         }
         catch (\Exception $why) {
@@ -88,35 +95,51 @@ class ProductsEngineController extends AdminController
     {
         try {
 
+            $type = Yii::$app->request->get('type', 'new');
             $condition = \Yii::$app->request->post('condition');
             $id = ArrayHelper::getValue($condition, 'id', '');
-            $attrs = [
-                'soldStart' => ArrayHelper::getValue($condition, 'soldStart', ''),
-                'soldEnd' => ArrayHelper::getValue($condition, 'soldEnd', ''),
-                'visitStart' => ArrayHelper::getValue($condition, 'visitStart', ''),
-                'visitEnd' => ArrayHelper::getValue($condition, 'visitEnd', ''),
-                'priceEnd' => ArrayHelper::getValue($condition, 'priceEnd', ''),
-                'priceStart' => ArrayHelper::getValue($condition, 'priceStart', ''),
-                'country' => ArrayHelper::getValue($condition, 'country', ''),
-                'popularStatus' => ArrayHelper::getValue($condition, 'popularStatus', ''),
-                'sellerOrStore' => ArrayHelper::getValue($condition, 'sellerOrStore', ''),
-                'storeLocation' => ArrayHelper::getValue($condition, 'storeLocation', ''),
-                'salesThreeDayFlag' => ArrayHelper::getValue($condition, 'salesThreeDayFlag', ''),
-                'listedTime' => ArrayHelper::getValue($condition, 'listedTime', ''),
-                'itemLocation' => ArrayHelper::getValue($condition, 'itemLocation', ''),
-                'creator' => ArrayHelper::getValue($condition, 'creator', ''),
-                'createdDate' => date('Y-m-d H:i:s'),
-                'updatedDate' => date('Y-m-d H:i:s'),
-            ];
-            $rule = RecommendEbayNewProductRule::findOne($id);
-            if(empty($rule)) {
-                $rule = new RecommendEbayNewProductRule();
+            if ($type === 'new') {
+//                $attrs = [
+//                    'soldStart' => ArrayHelper::getValue($condition, 'soldStart', ''),
+//                    'soldEnd' => ArrayHelper::getValue($condition, 'soldEnd', ''),
+//                    'visitStart' => ArrayHelper::getValue($condition, 'visitStart', ''),
+//                    'visitEnd' => ArrayHelper::getValue($condition, 'visitEnd', ''),
+//                    'priceEnd' => ArrayHelper::getValue($condition, 'priceEnd', ''),
+//                    'priceStart' => ArrayHelper::getValue($condition, 'priceStart', ''),
+//                    'country' => ArrayHelper::getValue($condition, 'country', ''),
+//                    'popularStatus' => ArrayHelper::getValue($condition, 'popularStatus', ''),
+//                    'sellerOrStore' => ArrayHelper::getValue($condition, 'sellerOrStore', ''),
+//                    'storeLocation' => ArrayHelper::getValue($condition, 'storeLocation', ''),
+//                    'salesThreeDayFlag' => ArrayHelper::getValue($condition, 'salesThreeDayFlag', ''),
+//                    'listedTime' => ArrayHelper::getValue($condition, 'listedTime', ''),
+//                    'itemLocation' => ArrayHelper::getValue($condition, 'itemLocation', ''),
+//                    'creator' => ArrayHelper::getValue($condition, 'creator', ''),
+//                    'createdDate' => date('Y-m-d H:i:s'),
+//                    'updatedDate' => date('Y-m-d H:i:s'),
+//                ];
+                $rule = RecommendEbayNewProductRule::findOne($id);
+                if(empty($rule)) {
+                    $rule = new RecommendEbayNewProductRule();
+                }
+                $rule->setAttributes($condition);
+                if (!$rule->save()) {
+                    throw new \Exception('fail to add new rule');
+                }
+                return [];
             }
-            $rule->setAttributes($attrs);
-            if (!$rule->save()) {
-                throw new \Exception('fail to add new rule');
+
+            if ($type === 'hot') {
+                $rule = EbayHotRule::findOne($id);
+                if(empty($rule)) {
+                    $rule = new EbayHotRule();
+                }
+                $rule->setAttributes($condition);
+                if (!$rule->save()) {
+                    throw new \Exception('fail to add new rule');
+                }
+                return [];
             }
-            return [];
+
         } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }
@@ -129,10 +152,16 @@ class ProductsEngineController extends AdminController
      */
     public function actionDeleteRule()
     {
+        $type = Yii::$app->request->get('type','new');
         $condition = \Yii::$app->request->post('condition');
         $id = ArrayHelper::getValue($condition, 'id','');
         try {
-            RecommendEbayNewProductRule::findOne($id)->delete();
+            if($type === 'new') {
+                RecommendEbayNewProductRule::findOne($id)->delete();
+            }
+            if($type === 'hot') {
+                EbayHotRule::findOne($id)->delete();
+            }
         }
         catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];

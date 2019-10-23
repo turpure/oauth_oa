@@ -3,6 +3,8 @@
 namespace backend\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
+use yii\db\Expression;
 
 /**
  * This is the model class for table "proEngine.recommend_ebayNewProductRule".
@@ -27,6 +29,19 @@ use Yii;
  */
 class RecommendEbayNewProductRule extends \yii\db\ActiveRecord
 {
+
+    public function behaviors()
+    {
+        return [[
+            /**
+             * TimestampBehavior：
+             */
+            'class' => TimestampBehavior::className(),
+            'createdAtAttribute' => ['createdDate','updatedDate'],
+            'updatedAtAttribute' => 'updatedDate',
+            'value' => new Expression('NOW()'),
+        ],];
+    }
     /**
      * {@inheritdoc}
      */

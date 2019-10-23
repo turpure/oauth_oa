@@ -21,6 +21,14 @@ return [
         'v1' => [
             'class' => 'backend\modules\v1\Module',
         ],
+        'gii' => [
+            'class' => 'yii\gii\Module',
+            'generators' => [
+                'mongoDbModel' => [
+                    'class' => 'yii\mongodb\gii\model\Generator'
+                ]
+            ],
+        ],
     ],
     'language' => 'zh-CN',
     'components' => [
