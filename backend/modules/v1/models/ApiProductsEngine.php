@@ -64,4 +64,33 @@ class ApiProductsEngine
 
     }
 
+    public static function refuse($plat, $type,$id)
+    {
+        $username = Yii::$app->user->identity->username;
+        $refuseReason = Yii::$app->request->post('reason','拒绝');
+        $db = Yii::$app->mongodb;
+        if ($plat === 'ebay') {
+
+            // ebay 新品
+            if ($type === 'new') {
+                $col = $db->getCollection('ebay_new_product');
+            }
+
+            // ebay 爆品
+            if ($type === 'hot') {
+                $col = $db->getCollection('ebay_hot_product');
+            }
+            $doc = $col->findOne(['_id' => $id]);
+            if (empty($doc)) {
+                throw new \Exception('产品不存在');
+            }
+            $refuse = ArrayHelper::getValue($doc, 'accept', []);
+            $refuse[$username] = $refuseReason;
+            $col->update(['_id' => $id], ['refuse' => array_unique($refuse)]);
+
+            return $col->findOne(['_id' => $id]);
+
+        }
+    }
+
 }

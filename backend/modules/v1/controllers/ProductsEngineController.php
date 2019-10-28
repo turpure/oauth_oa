@@ -91,6 +91,25 @@ class ProductsEngineController extends AdminController
     }
 
     /**
+     * 拒绝
+     * @return array|mixed
+     */
+    public function actionRefuse()
+    {
+        try {
+            $plat = \Yii::$app->request->get('plat');
+            $type = \Yii::$app->request->get('type','');
+            $condition = Yii::$app->request->post('condition');
+            $id = $condition['id'];
+            return ApiProductsEngine::refuse($plat,$type, $id);
+
+        }
+        catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+    }
+
+    /**
      * 规则列表
      * @return array|\yii\db\ActiveRecord[]
      */
