@@ -54,7 +54,7 @@ class ApiProductsEngine
 
             // 转至逆向开发
             $product_info = ['img' => $doc['mainImage'], 'cate' => '女人世界','stockUp' => '否',
-                'subCate' => '女包', 'salePrice' =>$doc['price'], 'flag' =>'backward'
+                'subCate' => '女包', 'salePrice' =>$doc['price'], 'flag' =>'backward','type' => 'create'
             ];
             Yii::$app->request->setBodyParams(['condition' => $product_info]);
             $ret = Yii::$app->runAction('/v1/oa-goods/dev-create');
