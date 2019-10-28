@@ -12,6 +12,7 @@ use backend\models\WishProducts;
 use backend\models\JoomProducts;
 use backend\models\RecommendEbayNewProductRule;
 use backend\models\EbayHotRule;
+use backend\modules\v1\models\ApiProductsEngine;
 use yii\helpers\ArrayHelper;
 use Yii;
 
@@ -64,6 +65,26 @@ class ProductsEngineController extends AdminController
             return ['code' => 401, 'message' => $why->getMessage()];
         }
 
+    }
+
+
+    /**
+     * 认领
+     * @return array
+     */
+    public function actionAccept()
+    {
+        try {
+            $plat = \Yii::$app->request->get('plat');
+            $type = \Yii::$app->request->get('type','');
+            $condition = Yii::$app->request->post('condition');
+            $id = $condition['id'];
+            return ApiProductsEngine::accept($plat,$type, $id);
+
+        }
+        catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
     }
 
     /**
