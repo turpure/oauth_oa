@@ -70,6 +70,7 @@ class TestController extends Controller
         //print_r($query);exit;
 
         try {
+            \Yii::$app->py_db->createCommand()->truncateTable('guest.t1')->execute();
             $res = \Yii::$app->py_db->createCommand()->batchInsert('guest.t1', ["ebay", "big", "small"], $query)->execute();
             print_r($res);
             echo "\r\n";
