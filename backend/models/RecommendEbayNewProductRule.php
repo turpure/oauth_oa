@@ -3,8 +3,6 @@
 namespace backend\models;
 
 use Yii;
-use yii\behaviors\TimestampBehavior;
-use yii\db\Expression;
 
 /**
  * This is the model class for table "proEngine.recommend_ebayNewProductRule".
@@ -22,26 +20,15 @@ use yii\db\Expression;
  * @property string $storeLocation
  * @property int $salesThreeDayFlag
  * @property string $listedTime
+ * @property string $marketpalce
  * @property string $itemLocation
  * @property string $creator
+ * @property int $isUsed
  * @property string $createdDate
  * @property string $updatedDate
  */
 class RecommendEbayNewProductRule extends \yii\db\ActiveRecord
 {
-
-    public function behaviors()
-    {
-        return [[
-            /**
-             * TimestampBehavior：
-             */
-            'class' => TimestampBehavior::className(),
-            'createdAtAttribute' => ['createdDate','updatedDate'],
-            'updatedAtAttribute' => 'updatedDate',
-            'value' => new Expression('NOW()'),
-        ],];
-    }
     /**
      * {@inheritdoc}
      */
@@ -56,11 +43,12 @@ class RecommendEbayNewProductRule extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['soldStart', 'soldEnd', 'visitStart', 'visitEnd', 'popularStatus', 'sellerOrStore', 'salesThreeDayFlag'], 'integer'],
+            [['soldStart', 'soldEnd', 'visitStart', 'visitEnd', 'popularStatus', 'sellerOrStore', 'salesThreeDayFlag', 'isUsed'], 'integer'],
             [['priceEnd', 'priceStart'], 'number'],
             [['createdDate', 'updatedDate'], 'safe'],
             [['country', 'storeLocation', 'creator'], 'string', 'max' => 20],
             [['listedTime', 'itemLocation'], 'string', 'max' => 50],
+            [['marketpalce'], 'string', 'max' => 255],
         ];
     }
 
@@ -83,8 +71,10 @@ class RecommendEbayNewProductRule extends \yii\db\ActiveRecord
             'storeLocation' => 'Store Location',
             'salesThreeDayFlag' => 'Sales Three Day Flag',
             'listedTime' => 'Listed Time',
+            'marketpalce' => 'Marketpalce',
             'itemLocation' => 'Item Location',
             'creator' => 'Creator',
+            'isUsed' => 'Is Used',
             'createdDate' => 'Created Date',
             'updatedDate' => 'Updated Date',
         ];
