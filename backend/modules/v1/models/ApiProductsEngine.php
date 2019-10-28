@@ -57,9 +57,9 @@ class ApiProductsEngine
                 'subCate' => '女包', 'salePrice' =>$doc['price'], 'flag' =>'backward'
             ];
             Yii::$app->request->setBodyParams(['condition' => $product_info]);
-            Yii::$app->runAction('/v1/oa-goods/dev-create');
-
-            return $col->findOne(['_id' => $id]);
+            $ret = Yii::$app->runAction('/v1/oa-goods/dev-create');
+            return $ret;
+//            return $col->findOne(['_id' => $id]);
         }
 
     }
