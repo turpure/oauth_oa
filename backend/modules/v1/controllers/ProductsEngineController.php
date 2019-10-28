@@ -7,11 +7,14 @@
 
 namespace backend\modules\v1\controllers;
 
+use backend\models\EbayCategory;
+use backend\models\EbayDeveloperCategory;
 use backend\models\EbayProducts;
 use backend\models\WishProducts;
 use backend\models\JoomProducts;
 use backend\models\RecommendEbayNewProductRule;
 use backend\models\EbayHotRule;
+use yii\db\Query;
 use yii\helpers\ArrayHelper;
 use Yii;
 
@@ -168,6 +171,96 @@ class ProductsEngineController extends AdminController
         }
     }
 
+ //==========================================================================
+    /**
+     * eBay类目列表
+     * @return array|\yii\db\ActiveRecord[]
+     */
+    public function actionEbayCat()
+    {
+        $condition = Yii::$app->request->post('condition',null);
+        try {
+            return EbayCategory::find()
+                ->filterWhere(['parentId' => $condition['parentId']])
+                ->filterWhere(['like', 'category', $condition['category']])
+                ->all();
+        } catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+    }
 
+    /**
+     * 发开员eBay类目列表
+     * @return array|\yii\db\ActiveRecord[]
+     */
+    public function actionDevCat()
+    {
+        $condition = Yii::$app->request->post('condition',null);
+        try {
+            $query = (new Query())
+                ->select('ed.*,ea.category')
+                ->from('proEngine.ebay_developer_category ed')
+                ->leftJoin('proEngine.ebay_category ea','ea.id=categoryId')
+                ->andFilterWhere(['like', 'developer', $condition['developer']])
+                ->andFilterWhere(['like', 'category', $condition['category']])
+                ->all();
+            //$query = EbayDeveloperCategory::find()
+            //->joinWith('category')
+            //->asArray()->all();
+            return $query;
+        } catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+    }
+
+    /**
+     * 增加发开员eBay类目规则
+     * @return array
+     */
+    public function actionSaveDevCat()
+    {
+        try {
+
+            $condition = \Yii::$app->request->post('condition');
+            $id = ArrayHelper::getValue($condition, 'id', '');
+            $categoryId= ArrayHelper::getValue($condition, 'categoryId', '');
+            $developer= ArrayHelper::getValue($condition, 'developer', '');
+            /*if(!$categoryId){
+                throw new \Exception('Attribute categoryId can not be empty!');
+            }*/
+            $model = EbayDeveloperCategory::findOne($id);
+            if(empty($model)) {
+                $model = new EbayDeveloperCategory();
+            }
+            $model->setAttributes([
+                'id' => $id,
+                'developer' => $developer,
+                'categoryId' => $categoryId,
+            ]);
+            if (!$model->save()) {
+                throw new \Exception('fail to add new ebay developer category rule');
+            }
+            return [];
+        } catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+    }
+
+    /** 删除发开员eBay类目规则
+     * Date: 2019-10-28 15:07
+     * Author: henry
+     * @return array|false|int
+     * @throws \Throwable
+     */
+    public function actionDeleteDevCat()
+    {
+        $condition = \Yii::$app->request->post('condition');
+        $id = ArrayHelper::getValue($condition, 'id','');
+        try {
+            return EbayDeveloperCategory::findOne($id)->delete();
+        } catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+    }
 
 }
