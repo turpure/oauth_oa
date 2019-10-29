@@ -36,6 +36,7 @@ use Yii;
  * @property string $hopeCost
  * @property string $stockUp
  * @property int $mineId
+ * @property string $recommendId
  */
 class OaGoods extends \yii\db\ActiveRecord
 {
@@ -59,9 +60,10 @@ class OaGoods extends \yii\db\ActiveRecord
             [['hopeSale', 'catNid', 'bGoodsid', 'mineId'], 'integer'],
             [['cate', 'subCate'], 'string', 'max' => 50],
             [['devNum'], 'string', 'max' => 80],
-            [['devStatus', 'checkStatus', 'developer', 'introducer', 'stockUp'], 'string', 'max' => 20],
+            [['introducer', 'devStatus', 'checkStatus', 'developer', 'stockUp'], 'string', 'max' => 20],
             [['img'], 'string', 'max' => 300],
             [['introReason', 'approvalNote'], 'string', 'max' => 500],
+            [['recommendId'], 'string', 'max' => 220],
         ];
     }
 
@@ -100,6 +102,7 @@ class OaGoods extends \yii\db\ActiveRecord
             'hopeCost' => 'Hope Cost',
             'stockUp' => 'Stock Up',
             'mineId' => 'Mine ID',
+            'recommendId' => 'Recommend ID',
         ];
     }
 }
