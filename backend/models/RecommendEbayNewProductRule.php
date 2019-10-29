@@ -20,7 +20,7 @@ use Yii;
  * @property string $storeLocation
  * @property int $salesThreeDayFlag
  * @property string $listedTime
- * @property string $marketpalce
+ * @property string $marketplace
  * @property string $itemLocation
  * @property string $creator
  * @property int $isUsed
@@ -48,7 +48,7 @@ class RecommendEbayNewProductRule extends \yii\db\ActiveRecord
             [['createdDate', 'updatedDate'], 'safe'],
             [['country', 'storeLocation', 'creator'], 'string', 'max' => 20],
             [['listedTime', 'itemLocation'], 'string', 'max' => 50],
-            [['marketpalce'], 'string', 'max' => 255],
+            [['marketplace'], 'string', 'max' => 255],
         ];
     }
 
@@ -71,7 +71,7 @@ class RecommendEbayNewProductRule extends \yii\db\ActiveRecord
             'storeLocation' => 'Store Location',
             'salesThreeDayFlag' => 'Sales Three Day Flag',
             'listedTime' => 'Listed Time',
-            'marketpalce' => 'Marketpalce',
+            'marketplace' => 'Marketplace',
             'itemLocation' => 'Item Location',
             'creator' => 'Creator',
             'isUsed' => 'Is Used',
