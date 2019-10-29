@@ -22,8 +22,12 @@ use Yii;
 
 class ProductsEngineController extends AdminController
 {
-
     public $modelClass = 'backend\modules\v1\models\ApiProductsEngine';
+
+    public $serializer = [
+        'class' => 'backend\modules\v1\utils\PowerfulSerializer',
+        'collectionEnvelope' => 'items',
+    ];
 
     /**
      * @brief recommend  products
