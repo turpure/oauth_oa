@@ -15,6 +15,7 @@ use backend\models\JoomProducts;
 use backend\models\RecommendEbayNewProductRule;
 use backend\models\EbayHotRule;
 use yii\data\ArrayDataProvider;
+use backend\modules\v1\models\ApiProductsEngine;
 use yii\db\Query;
 use yii\helpers\ArrayHelper;
 use Yii;
@@ -109,6 +110,44 @@ class ProductsEngineController extends AdminController
 
 
     /**
+     * 认领
+     * @return array
+     */
+    public function actionAccept()
+    {
+        try {
+            $plat = \Yii::$app->request->get('plat');
+            $type = \Yii::$app->request->get('type','');
+            $condition = Yii::$app->request->post('condition');
+            $id = $condition['id'];
+            return ApiProductsEngine::accept($plat,$type, $id);
+
+        }
+        catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+    }
+
+    /**
+     * 拒绝
+     * @return array|mixed
+     */
+    public function actionRefuse()
+    {
+        try {
+            $plat = \Yii::$app->request->get('plat');
+            $type = \Yii::$app->request->get('type','');
+            $condition = Yii::$app->request->post('condition');
+            $id = $condition['id'];
+            return ApiProductsEngine::refuse($plat,$type, $id);
+
+        }
+        catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+    }
+
+    /**
      * 规则列表
      * @return array|\yii\db\ActiveRecord[]
      */
@@ -138,34 +177,18 @@ class ProductsEngineController extends AdminController
         try {
 
             $type = Yii::$app->request->get('type', 'new');
+            $userName = Yii::$app->user->identity->username;
             $condition = \Yii::$app->request->post('condition');
             $id = ArrayHelper::getValue($condition, 'id', '');
             if ($type === 'new') {
-//                $attrs = [
-//                    'soldStart' => ArrayHelper::getValue($condition, 'soldStart', ''),
-//                    'soldEnd' => ArrayHelper::getValue($condition, 'soldEnd', ''),
-//                    'visitStart' => ArrayHelper::getValue($condition, 'visitStart', ''),
-//                    'visitEnd' => ArrayHelper::getValue($condition, 'visitEnd', ''),
-//                    'priceEnd' => ArrayHelper::getValue($condition, 'priceEnd', ''),
-//                    'priceStart' => ArrayHelper::getValue($condition, 'priceStart', ''),
-//                    'country' => ArrayHelper::getValue($condition, 'country', ''),
-//                    'popularStatus' => ArrayHelper::getValue($condition, 'popularStatus', ''),
-//                    'sellerOrStore' => ArrayHelper::getValue($condition, 'sellerOrStore', ''),
-//                    'storeLocation' => ArrayHelper::getValue($condition, 'storeLocation', ''),
-//                    'salesThreeDayFlag' => ArrayHelper::getValue($condition, 'salesThreeDayFlag', ''),
-//                    'listedTime' => ArrayHelper::getValue($condition, 'listedTime', ''),
-//                    'itemLocation' => ArrayHelper::getValue($condition, 'itemLocation', ''),
-//                    'creator' => ArrayHelper::getValue($condition, 'creator', ''),
-//                    'createdDate' => date('Y-m-d H:i:s'),
-//                    'updatedDate' => date('Y-m-d H:i:s'),
-//                ];
                 $rule = RecommendEbayNewProductRule::findOne($id);
                 if(empty($rule)) {
                     $rule = new RecommendEbayNewProductRule();
+                    $condition['creator'] = $userName;
                 }
                 $rule->setAttributes($condition);
-                if (!$rule->save()) {
-                    throw new \Exception('fail to add new rule');
+                if (!$rule->save(false)) {
+                    throw new \Exception('fail to save new rule');
                 }
                 return [];
             }
@@ -177,7 +200,7 @@ class ProductsEngineController extends AdminController
                 }
                 $rule->setAttributes($condition);
                 if (!$rule->save()) {
-                    throw new \Exception('fail to add new rule');
+                    throw new \Exception('fail to save hot rule');
                 }
                 return [];
             }

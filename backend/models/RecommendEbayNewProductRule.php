@@ -22,8 +22,10 @@ use yii\db\Expression;
  * @property string $storeLocation
  * @property int $salesThreeDayFlag
  * @property string $listedTime
+ * @property string $marketplace
  * @property string $itemLocation
  * @property string $creator
+ * @property int $isUsed
  * @property string $createdDate
  * @property string $updatedDate
  */
@@ -37,7 +39,7 @@ class RecommendEbayNewProductRule extends \yii\db\ActiveRecord
              * TimestampBehavior：
              */
             'class' => TimestampBehavior::className(),
-            'createdAtAttribute' => ['createdDate','updatedDate'],
+            'createdAtAttribute' => 'createdDate',
             'updatedAtAttribute' => 'updatedDate',
             'value' => new Expression('NOW()'),
         ],];
@@ -56,11 +58,12 @@ class RecommendEbayNewProductRule extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['soldStart', 'soldEnd', 'visitStart', 'visitEnd', 'popularStatus', 'sellerOrStore', 'salesThreeDayFlag'], 'integer'],
+            [['soldStart', 'soldEnd', 'visitStart', 'visitEnd', 'popularStatus', 'sellerOrStore', 'salesThreeDayFlag', 'isUsed'], 'integer'],
             [['priceEnd', 'priceStart'], 'number'],
             [['createdDate', 'updatedDate'], 'safe'],
-            [['country', 'storeLocation', 'creator'], 'string', 'max' => 20],
+            [['country',  'creator'], 'string', 'max' => 20],
             [['listedTime', 'itemLocation'], 'string', 'max' => 50],
+            [['marketplace','storeLocation'], 'string', 'max' => 255],
         ];
     }
 
@@ -83,8 +86,10 @@ class RecommendEbayNewProductRule extends \yii\db\ActiveRecord
             'storeLocation' => 'Store Location',
             'salesThreeDayFlag' => 'Sales Three Day Flag',
             'listedTime' => 'Listed Time',
+            'marketplace' => 'Marketplace',
             'itemLocation' => 'Item Location',
             'creator' => 'Creator',
+            'isUsed' => 'Is Used',
             'createdDate' => 'Created Date',
             'updatedDate' => 'Updated Date',
         ];
