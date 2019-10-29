@@ -14,6 +14,7 @@ use backend\models\WishProducts;
 use backend\models\JoomProducts;
 use backend\models\RecommendEbayNewProductRule;
 use backend\models\EbayHotRule;
+use yii\data\ArrayDataProvider;
 use yii\db\Query;
 use yii\helpers\ArrayHelper;
 use Yii;
@@ -29,25 +30,62 @@ class ProductsEngineController extends AdminController
      */
     public function actionRecommend()
     {
+        //获取当前用户信息
+        $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
         try {
             $plat = \Yii::$app->request->get('plat');
             $type = \Yii::$app->request->get('type','');
+            $page = \Yii::$app->request->get('page',1);
+            $pageSize = \Yii::$app->request->get('pageSize',20);
+            $marketplace = \Yii::$app->request->get('marketplace');//站点
+            $ret = [];
             if ($plat === 'ebay') {
                 if($type === 'new') {
-                    $db = Yii::$app->mongodb;
-                    $cur = $db->getCollection('ebay_new_product')->find();
+                    $cur = (new \yii\mongodb\Query())->from('ebay_new_product')
+                        ->andFilterWhere(['marketplace' => $marketplace])->all();
                     foreach ($cur as $row) {
-                        $ret[] = $row;
+                        if(isset($row['accept']) && $row['accept'] && in_array($user->username, $row['accept']) ||
+                            isset($row['refuse'][$user->username])){
+                            continue;
+                        }else{
+                            $ret[] = $row;
+                        }
                     }
-                    return $ret;
+                    $data = new ArrayDataProvider([
+                        'allModels' => $ret,
+                        'sort' => [
+                            'attributes' => ['price', 'visit', 'sold', 'listedTime'],
+                        ],
+                        'pagination' => [
+                            'page' => $page,
+                            'pageSize' => $pageSize,
+                        ],
+                    ]);
+                    return $data;
                 }
                 if ($type === 'hot') {
-                    $db = Yii::$app->mongodb;
-                    $cur = $db->getCollection('ebay_hot_product')->find();
+                    $cur = (new \yii\mongodb\Query())->from('ebay_hot_product')
+                        ->andFilterWhere(['marketplace'=>$marketplace])
+                        ->all();
                     foreach ($cur as $row) {
-                        $ret[] = $row;
+                        if(isset($row['accept']) && $row['accept'] && in_array($user->username, $row['accept']) ||
+                            isset($row['refuse'][$user->username])){
+                            continue;
+                        }else{
+                            $ret[] = $row;
+                        }
                     }
-                    return $ret;
+                    $data = new ArrayDataProvider([
+                        'allModels' => $ret,
+                        'sort' => [
+                            'attributes' => ['price', 'visit', 'sold'],
+                        ],
+                        'pagination' => [
+                            'page' => $page,
+                            'pageSize' => $pageSize,
+                        ],
+                    ]);
+                    return $data;
 
                 }
                 else {
@@ -68,6 +106,7 @@ class ProductsEngineController extends AdminController
         }
 
     }
+
 
     /**
      * 规则列表
@@ -170,6 +209,7 @@ class ProductsEngineController extends AdminController
             return ['code' => 401, 'message' => $why->getMessage()];
         }
     }
+
 
  //==========================================================================
     /**
