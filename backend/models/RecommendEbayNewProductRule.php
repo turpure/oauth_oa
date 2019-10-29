@@ -46,9 +46,9 @@ class RecommendEbayNewProductRule extends \yii\db\ActiveRecord
             [['soldStart', 'soldEnd', 'visitStart', 'visitEnd', 'popularStatus', 'sellerOrStore', 'salesThreeDayFlag', 'isUsed'], 'integer'],
             [['priceEnd', 'priceStart'], 'number'],
             [['createdDate', 'updatedDate'], 'safe'],
-            [['country', 'storeLocation', 'creator'], 'string', 'max' => 20],
+            [['country',  'creator'], 'string', 'max' => 20],
             [['listedTime', 'itemLocation'], 'string', 'max' => 50],
-            [['marketplace'], 'string', 'max' => 255],
+            [['marketplace','storeLocation'], 'string', 'max' => 255],
         ];
     }
 

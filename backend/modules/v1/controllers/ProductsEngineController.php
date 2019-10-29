@@ -101,7 +101,7 @@ class ProductsEngineController extends AdminController
             $type = \Yii::$app->request->get('type','');
             $condition = Yii::$app->request->post('condition');
             $id = $condition['id'];
-            return ApiProductsEngine::refuset($plat,$type, $id);
+            return ApiProductsEngine::refuse($plat,$type, $id);
 
         }
         catch (\Exception $why) {
@@ -142,31 +142,14 @@ class ProductsEngineController extends AdminController
             $condition = \Yii::$app->request->post('condition');
             $id = ArrayHelper::getValue($condition, 'id', '');
             if ($type === 'new') {
-//                $attrs = [
-//                    'soldStart' => ArrayHelper::getValue($condition, 'soldStart', ''),
-//                    'soldEnd' => ArrayHelper::getValue($condition, 'soldEnd', ''),
-//                    'visitStart' => ArrayHelper::getValue($condition, 'visitStart', ''),
-//                    'visitEnd' => ArrayHelper::getValue($condition, 'visitEnd', ''),
-//                    'priceEnd' => ArrayHelper::getValue($condition, 'priceEnd', ''),
-//                    'priceStart' => ArrayHelper::getValue($condition, 'priceStart', ''),
-//                    'country' => ArrayHelper::getValue($condition, 'country', ''),
-//                    'popularStatus' => ArrayHelper::getValue($condition, 'popularStatus', ''),
-//                    'sellerOrStore' => ArrayHelper::getValue($condition, 'sellerOrStore', ''),
-//                    'storeLocation' => ArrayHelper::getValue($condition, 'storeLocation', ''),
-//                    'salesThreeDayFlag' => ArrayHelper::getValue($condition, 'salesThreeDayFlag', ''),
-//                    'listedTime' => ArrayHelper::getValue($condition, 'listedTime', ''),
-//                    'itemLocation' => ArrayHelper::getValue($condition, 'itemLocation', ''),
-//                    'creator' => ArrayHelper::getValue($condition, 'creator', ''),
-//                    'createdDate' => date('Y-m-d H:i:s'),
-//                    'updatedDate' => date('Y-m-d H:i:s'),
-//                ];
                 $rule = RecommendEbayNewProductRule::findOne($id);
                 if(empty($rule)) {
                     $rule = new RecommendEbayNewProductRule();
                 }
+                unset($condition['id']);
                 $rule->setAttributes($condition);
-                if (!$rule->save()) {
-                    throw new \Exception('fail to add new rule');
+                if (!$rule->save(false)) {
+                    throw new \Exception('fail to save new rule');
                 }
                 return [];
             }
@@ -178,7 +161,7 @@ class ProductsEngineController extends AdminController
                 }
                 $rule->setAttributes($condition);
                 if (!$rule->save()) {
-                    throw new \Exception('fail to add new rule');
+                    throw new \Exception('fail to save hot rule');
                 }
                 return [];
             }
