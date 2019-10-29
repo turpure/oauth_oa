@@ -139,14 +139,15 @@ class ProductsEngineController extends AdminController
         try {
 
             $type = Yii::$app->request->get('type', 'new');
+            $userName = Yii::$app->user->identity->username;
             $condition = \Yii::$app->request->post('condition');
             $id = ArrayHelper::getValue($condition, 'id', '');
             if ($type === 'new') {
                 $rule = RecommendEbayNewProductRule::findOne($id);
                 if(empty($rule)) {
                     $rule = new RecommendEbayNewProductRule();
+                    $condition['creator'] = $userName;
                 }
-                unset($condition['id']);
                 $rule->setAttributes($condition);
                 if (!$rule->save(false)) {
                     throw new \Exception('fail to save new rule');
