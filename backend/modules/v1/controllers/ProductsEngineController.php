@@ -62,7 +62,7 @@ class ProductsEngineController extends AdminController
                             'attributes' => ['price', 'visit', 'sold', 'listedTime'],
                         ],
                         'pagination' => [
-                            'page' => $page,
+                            'page' => $page - 1,
                             'pageSize' => $pageSize,
                         ],
                     ]);
@@ -86,7 +86,7 @@ class ProductsEngineController extends AdminController
                             'attributes' => ['price', 'visit', 'sold'],
                         ],
                         'pagination' => [
-                            'page' => $page,
+                            'page' => $page - 1,
                             'pageSize' => $pageSize,
                         ],
                     ]);
