@@ -156,6 +156,25 @@ class ProductsEngineController extends AdminController
     }
 
     /**
+     * 立即执行规则
+     * @return array
+     */
+    public function actionRunRule()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition');
+            $ruleType = Yii::$app->request->get('type','');
+            $ruleId = $condition['ruleId'];
+            return ApiProductsEngine::run($ruleType, $ruleId);
+
+
+        }
+        catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+    }
+
+    /**
      * 规则列表
      * @return array|\yii\db\ActiveRecord[]
      */

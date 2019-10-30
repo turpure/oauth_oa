@@ -7,10 +7,10 @@
 
 namespace backend\modules\v1\models;
 
-use backend\models\EbayHotProduct;
 use Yii;
 use yii\helpers\ArrayHelper;
-use backend\modules\v1\controllers\OaGoodsController;
+use backend\modules\v1\utils\Helper;
+
 class ApiProductsEngine
 {
 
@@ -68,6 +68,14 @@ class ApiProductsEngine
 
     }
 
+    /**
+     * 拒绝
+     * @param $plat
+     * @param $type
+     * @param $id
+     * @return mixed
+     * @throws \Exception
+     */
     public static function refuse($plat, $type,$id)
     {
         $username = Yii::$app->user->identity->username;
@@ -95,6 +103,22 @@ class ApiProductsEngine
             return $col->findOne(['_id' => $id]);
 
         }
+    }
+
+    /**
+     * 立即执行规则
+     * @param $ruleType
+     * @param $ruleId
+     * @return array
+     */
+    public static function run($ruleType, $ruleId)
+    {
+        $playLoad = ['ruleType' => $ruleType, 'ruleId' => $ruleId];
+        $url = Yii::$app->params['recommendServiceUrl'];
+        $ret = Helper::request($url, json_encode($playLoad));
+        return$ret;
+
+
     }
 
 }
