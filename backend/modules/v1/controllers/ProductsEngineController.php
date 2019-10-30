@@ -49,7 +49,7 @@ class ProductsEngineController extends AdminController
                     $cur = (new \yii\mongodb\Query())->from('ebay_new_product')
                         ->andFilterWhere(['marketplace' => $marketplace])->all();
                     foreach ($cur as $row) {
-                        if(isset($row['accept']) && $row['accept'] && in_array($user->username, $row['accept']) ||
+                        if(isset($row['accept']) && $row['accept'] ||
                             isset($row['refuse'][$user->username])){
                             continue;
                         }else{
@@ -73,7 +73,7 @@ class ProductsEngineController extends AdminController
                         ->andFilterWhere(['marketplace'=>$marketplace])
                         ->all();
                     foreach ($cur as $row) {
-                        if(isset($row['accept']) && $row['accept'] && in_array($user->username, $row['accept']) ||
+                        if(isset($row['accept']) && $row['accept'] ||
                             isset($row['refuse'][$user->username])){
                             continue;
                         }else{
