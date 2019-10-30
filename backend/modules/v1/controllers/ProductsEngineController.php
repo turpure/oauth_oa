@@ -159,7 +159,7 @@ class ProductsEngineController extends AdminController
     {
         try {
             $condition = Yii::$app->request->post('condition');
-            $ruleType = $condition['ruleType'];
+            $ruleType = Yii::$app->request->get('type','');
             $ruleId = $condition['ruleId'];
             return ApiProductsEngine::run($ruleType, $ruleId);
 
