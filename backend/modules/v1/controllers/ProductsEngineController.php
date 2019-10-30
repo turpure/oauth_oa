@@ -83,7 +83,11 @@ class ProductsEngineController extends AdminController
                     $data = new ArrayDataProvider([
                         'allModels' => $ret,
                         'sort' => [
-                            'attributes' => ['price', 'visit', 'sold'],
+                            'attributes' => [
+                                'price', 'visit', 'sold',
+                                'salesThreeDay1','salesThreeDayGrowth','paymentThreeDay1',
+                                'salesWeek1','paymentWeek1','salesWeekGrowth'
+                            ],
                         ],
                         'pagination' => [
                             'page' => $page - 1,
@@ -265,11 +269,14 @@ class ProductsEngineController extends AdminController
         $condition = Yii::$app->request->post('condition',null);
         try {
             $query = (new Query())
-                ->select('ed.*,ea.category')
+                ->select(["ed.*",
+                    "p.category as firstCategory",
+                    "ea.category"])
                 ->from('proEngine.ebay_developer_category ed')
                 ->leftJoin('proEngine.ebay_category ea','ea.id=categoryId')
+                ->leftJoin('proEngine.ebay_category p','p.id=ea.parentId')
                 ->andFilterWhere(['like', 'developer', $condition['developer']])
-                ->andFilterWhere(['like', 'category', $condition['category']])
+                ->andFilterWhere(['like', 'ea.category', $condition['category']])
                 ->all();
             //$query = EbayDeveloperCategory::find()
             //->joinWith('category')
