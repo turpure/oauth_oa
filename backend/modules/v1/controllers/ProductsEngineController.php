@@ -14,6 +14,7 @@ use backend\models\WishProducts;
 use backend\models\JoomProducts;
 use backend\models\RecommendEbayNewProductRule;
 use backend\models\EbayHotRule;
+use backend\modules\v1\models\ApiUser;
 use yii\data\ArrayDataProvider;
 use backend\modules\v1\models\ApiProductsEngine;
 use yii\db\Query;
@@ -29,14 +30,30 @@ class ProductsEngineController extends AdminController
         'collectionEnvelope' => 'items',
     ];
 
-    /**
-     * @brief recommend  products
-     * @return mixed
+    /** 产品推荐
+     * Date: 2019-10-30 17:36
+     * Author: henry
+     * @return array|\yii\db\ActiveRecord[]|\yii\data\ActiveDataProvider[]
+     * @throws \yii\db\Exception
      */
     public function actionRecommend()
     {
         //获取当前用户信息
-        $user = $this->authenticate(Yii::$app->user, Yii::$app->request, Yii::$app->response);
+        $username = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($username);
+        $userRole = implode('',ApiUser::getUserRole($username));
+        //获取当前用户权限下的产品类目
+        if(strpos($userRole, '超级管理员') !== false){
+            $category = EbayCategory::find()->asArray()->all();  //所有eBay目录
+        }else{
+            //部门开发对应eBay类目或      开发自己的eBay类目
+            $category = (new Query())
+                ->select("ea.category")
+                ->from('proEngine.ebay_developer_category ed')
+                ->leftJoin('proEngine.ebay_category ea','ea.id=categoryId')
+                ->andFilterWhere(['developer' => $userList])->all();
+        }
+        $categoryArr= array_unique(ArrayHelper::getColumn($category,'category'));
         try {
             $plat = \Yii::$app->request->get('plat');
             $type = \Yii::$app->request->get('type','');
@@ -47,13 +64,21 @@ class ProductsEngineController extends AdminController
             if ($plat === 'ebay') {
                 if($type === 'new') {
                     $cur = (new \yii\mongodb\Query())->from('ebay_new_product')
-                        ->andFilterWhere(['marketplace' => $marketplace])->all();
+                        ->andFilterWhere(['marketplace' => $marketplace])
+                        ->all();
                     foreach ($cur as $row) {
-                        if(isset($row['accept']) && $row['accept'] ||
-                            isset($row['refuse'][$user->username])){
+                        if(isset($row['accept']) && $row['accept'] ||    //过滤掉已经认领的产品
+                            isset($row['refuse'][$username])       //过滤掉当前用户已经过滤的产品
+                        ){
                             continue;
                         }else{
-                            $ret[] = $row;
+                            foreach($categoryArr as $v){
+                                if(strpos($row['cidName'], $v)){
+                                    $ret[] = $row;
+                                    break;
+                                }
+                            }
+                            continue;
                         }
                     }
                     $data = new ArrayDataProvider([
@@ -74,10 +99,16 @@ class ProductsEngineController extends AdminController
                         ->all();
                     foreach ($cur as $row) {
                         if(isset($row['accept']) && $row['accept'] ||
-                            isset($row['refuse'][$user->username])){
+                            isset($row['refuse'][$username])){
                             continue;
                         }else{
-                            $ret[] = $row;
+                            foreach($categoryArr as $v){
+                                if(strpos($row['cidName'], $v)){
+                                    $ret[] = $row;
+                                    break;
+                                }
+                            }
+                            continue;
                         }
                     }
                     $data = new ArrayDataProvider([
@@ -271,8 +302,8 @@ class ProductsEngineController extends AdminController
         $condition = Yii::$app->request->post('condition',null);
         try {
             return EbayCategory::find()
-                ->filterWhere(['parentId' => $condition['parentId']])
-                ->filterWhere(['like', 'category', $condition['category']])
+                ->andFilterWhere(['parentId' => $condition['parentId']])
+                ->andFilterWhere(['like', 'category', $condition['category']])
                 ->all();
         } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
