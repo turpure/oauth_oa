@@ -40,23 +40,10 @@ class ProductsEngineController extends AdminController
     {
         //获取当前用户信息
         $username = Yii::$app->user->identity->username;
+        $username = '陈微微';
         $userList = ApiUser::getUserList($username);
         //获取当前登录用户权限下的用户是否有指定eBay产品类目
 
-        $catQuery = (new Query())
-            ->select("developer")
-            ->from('proEngine.ebay_developer_category')
-            ->andFilterWhere(['developer' => $userList])
-            ->groupBy('developer')
-            ->count();
-        $isSetCat = $catQuery == count($userList) ? true : false; //判断用户是否设置有独立的产品类目
-        //部门开发对应eBay类目或  开发自己的eBay类目
-        $category = (new Query())
-            ->select("ea.category")
-            ->from('proEngine.ebay_developer_category ed')
-            ->leftJoin('proEngine.ebay_category ea','ea.id=categoryId')
-            ->andFilterWhere(['developer' => $userList])->all();
-        $categoryArr= array_unique(ArrayHelper::getColumn($category,'category'));
         try {
             $plat = \Yii::$app->request->get('plat');
             $type = \Yii::$app->request->get('type','');
@@ -70,6 +57,7 @@ class ProductsEngineController extends AdminController
                         ->andFilterWhere(['marketplace' => $marketplace])
                         ->all();
                     foreach ($cur as $row) {
+                        list($isSetCat, $categoryArr) = ApiProductsEngine::getUserCate($userList, $row['marketplace']);
                         if(isset($row['accept']) && $row['accept'] ||    //过滤掉已经认领的产品
                             isset($row['refuse'][$username])       //过滤掉当前用户已经过滤的产品
                         ){
@@ -104,6 +92,7 @@ class ProductsEngineController extends AdminController
                         ->andFilterWhere(['marketplace'=>$marketplace])
                         ->all();
                     foreach ($cur as $row) {
+                        list($isSetCat, $categoryArr) = ApiProductsEngine::getUserCate($userList, $row['marketplace']);
                         if(isset($row['accept']) && $row['accept'] ||
                             isset($row['refuse'][$username])){
                             continue;
@@ -319,9 +308,10 @@ class ProductsEngineController extends AdminController
         }
     }
 
-    /**
-     * 发开员eBay类目列表
-     * @return array|\yii\db\ActiveRecord[]
+    /** 发开员eBay类目列表
+     * Date: 2019-10-31 15:11
+     * Author: henry
+     * @return array|ArrayDataProvider
      */
     public function actionDevCat()
     {
@@ -330,17 +320,23 @@ class ProductsEngineController extends AdminController
             $query = (new Query())
                 ->select(["ed.*",
                     "p.category as firstCategory",
-                    "ea.category"])
+                    "ea.category",
+                    "ea.site",
+                ])
                 ->from('proEngine.ebay_developer_category ed')
                 ->leftJoin('proEngine.ebay_category ea','ea.id=categoryId')
                 ->leftJoin('proEngine.ebay_category p','p.id=ea.parentId')
                 ->andFilterWhere(['like', 'developer', $condition['developer']])
                 ->andFilterWhere(['like', 'ea.category', $condition['category']])
+                ->andFilterWhere(['like', 'ea.site', $condition['site']])
                 ->all();
-            //$query = EbayDeveloperCategory::find()
-            //->joinWith('category')
-            //->asArray()->all();
-            return $query;
+            return new ArrayDataProvider([
+                'allModels' => $query,
+                'pagination' => [
+                    'page' => isset($condition['page']) && $condition['page'] ? $condition['page'] - 1 : 0,
+                    'pageSize' => isset($condition['pageSize']) && $condition['pageSize'] ? $condition['pageSize'] : 20,
+                ],
+            ]);
         } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }
