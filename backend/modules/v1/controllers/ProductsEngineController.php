@@ -101,7 +101,7 @@ class ProductsEngineController extends AdminController
                                 $ret[] = $row;
                             }else{
                                 foreach($categoryArr as $v){
-                                    if(strpos($row['cidName'], $v) !== false){
+                                    if(strpos($row['categoryStructure'], $v) !== false){
                                         $ret[] = $row;
                                         break;
                                     }
