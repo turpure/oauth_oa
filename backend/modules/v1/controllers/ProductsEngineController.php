@@ -41,18 +41,21 @@ class ProductsEngineController extends AdminController
         //获取当前用户信息
         $username = Yii::$app->user->identity->username;
         $userList = ApiUser::getUserList($username);
-        $userRole = implode('',ApiUser::getUserRole($username));
-        //获取当前用户权限下的产品类目
-        if(strpos($userRole, '超级管理员') !== false){
-            $category = EbayCategory::find()->asArray()->all();  //所有eBay目录
-        }else{
-            //部门开发对应eBay类目或      开发自己的eBay类目
-            $category = (new Query())
-                ->select("ea.category")
-                ->from('proEngine.ebay_developer_category ed')
-                ->leftJoin('proEngine.ebay_category ea','ea.id=categoryId')
-                ->andFilterWhere(['developer' => $userList])->all();
-        }
+        //获取当前登录用户权限下的用户是否有指定eBay产品类目
+
+        $catQuery = (new Query())
+            ->select("developer")
+            ->from('proEngine.ebay_developer_category')
+            ->andFilterWhere(['developer' => $userList])
+            ->groupBy('developer')
+            ->count();
+        $isSetCat = $catQuery == count($userList) ? true : false; //判断用户是否设置有独立的产品类目
+        //部门开发对应eBay类目或  开发自己的eBay类目
+        $category = (new Query())
+            ->select("ea.category")
+            ->from('proEngine.ebay_developer_category ed')
+            ->leftJoin('proEngine.ebay_category ea','ea.id=categoryId')
+            ->andFilterWhere(['developer' => $userList])->all();
         $categoryArr= array_unique(ArrayHelper::getColumn($category,'category'));
         try {
             $plat = \Yii::$app->request->get('plat');
@@ -72,13 +75,16 @@ class ProductsEngineController extends AdminController
                         ){
                             continue;
                         }else{
-                            foreach($categoryArr as $v){
-                                if(strpos($row['cidName'], $v)){
-                                    $ret[] = $row;
-                                    break;
+                            if($isSetCat == false){
+                                $ret[] = $row;
+                            }else{
+                                foreach($categoryArr as $v){
+                                    if(strpos($row['cidName'], $v) !== false){
+                                        $ret[] = $row;
+                                        break;
+                                    }
                                 }
                             }
-                            continue;
                         }
                     }
                     $data = new ArrayDataProvider([
@@ -102,13 +108,16 @@ class ProductsEngineController extends AdminController
                             isset($row['refuse'][$username])){
                             continue;
                         }else{
-                            foreach($categoryArr as $v){
-                                if(strpos($row['cidName'], $v)){
-                                    $ret[] = $row;
-                                    break;
+                            if($isSetCat == false){
+                                $ret[] = $row;
+                            }else{
+                                foreach($categoryArr as $v){
+                                    if(strpos($row['cidName'], $v) !== false){
+                                        $ret[] = $row;
+                                        break;
+                                    }
                                 }
                             }
-                            continue;
                         }
                     }
                     $data = new ArrayDataProvider([
@@ -126,7 +135,6 @@ class ProductsEngineController extends AdminController
                         ],
                     ]);
                     return $data;
-
                 }
                 else {
                     $station = \Yii::$app->request->get('status','US');
@@ -304,6 +312,7 @@ class ProductsEngineController extends AdminController
             return EbayCategory::find()
                 ->andFilterWhere(['parentId' => $condition['parentId']])
                 ->andFilterWhere(['like', 'category', $condition['category']])
+                ->orderBy('parentId,category')
                 ->all();
         } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
