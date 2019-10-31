@@ -32,6 +32,7 @@ class EbayCategory extends \yii\db\ActiveRecord
         return [
             [['parentId'], 'integer'],
             [['category'], 'string', 'max' => 100],
+            [['marketplace'], 'string', 'max' => 20],
         ];
     }
 

@@ -89,7 +89,7 @@ class ProductsEngineController extends AdminController
                 }
                 if ($type === 'hot') {
                     $cur = (new \yii\mongodb\Query())->from('ebay_hot_product')
-                        ->andFilterWhere(['marketplace'=>$marketplace])
+                        ->andFilterWhere(['marketplace' => $marketplace])
                         ->all();
                     foreach ($cur as $row) {
                         list($isSetCat, $categoryArr) = ApiProductsEngine::getUserCate($userList, $row['marketplace']);
@@ -301,6 +301,7 @@ class ProductsEngineController extends AdminController
             return EbayCategory::find()
                 ->andFilterWhere(['parentId' => $condition['parentId']])
                 ->andFilterWhere(['like', 'category', $condition['category']])
+                ->andFilterWhere(['like', 'marketplace', $condition['marketplace']])
                 ->orderBy('parentId,category')
                 ->all();
         } catch (\Exception $why) {
@@ -321,14 +322,14 @@ class ProductsEngineController extends AdminController
                 ->select(["ed.*",
                     "p.category as firstCategory",
                     "ea.category",
-                    "ea.site",
+                    "ea.marketplace",
                 ])
                 ->from('proEngine.ebay_developer_category ed')
                 ->leftJoin('proEngine.ebay_category ea','ea.id=categoryId')
                 ->leftJoin('proEngine.ebay_category p','p.id=ea.parentId')
                 ->andFilterWhere(['like', 'developer', $condition['developer']])
                 ->andFilterWhere(['like', 'ea.category', $condition['category']])
-                ->andFilterWhere(['like', 'ea.site', $condition['site']])
+                ->andFilterWhere(['like', 'ea.marketplace', $condition['marketplace']])
                 ->all();
             return new ArrayDataProvider([
                 'allModels' => $query,
@@ -352,8 +353,8 @@ class ProductsEngineController extends AdminController
 
             $condition = \Yii::$app->request->post('condition');
             $id = ArrayHelper::getValue($condition, 'id', '');
-            $categoryId= ArrayHelper::getValue($condition, 'categoryId', '');
-            $developer= ArrayHelper::getValue($condition, 'developer', '');
+            $categoryId = ArrayHelper::getValue($condition, 'categoryId', '');
+            $developer = ArrayHelper::getValue($condition, 'developer', '');
             /*if(!$categoryId){
                 throw new \Exception('Attribute categoryId can not be empty!');
             }*/

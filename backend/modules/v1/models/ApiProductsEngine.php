@@ -36,7 +36,7 @@ class ApiProductsEngine
             ->from('proEngine.ebay_developer_category ed')
             ->leftJoin('proEngine.ebay_category ea','ea.id=categoryId')
             ->andFilterWhere(['developer' => $users])
-            ->andFilterWhere(['site' => $site])
+            ->andFilterWhere(['marketplace' => $site])
             ->groupBy('developer')
             ->count();
         $isSetCat = $catQuery == count($users) ? true : false; //判断用户是否设置有独立的产品类目
@@ -46,7 +46,7 @@ class ApiProductsEngine
             ->from('proEngine.ebay_developer_category ed')
             ->leftJoin('proEngine.ebay_category ea','ea.id=categoryId')
             ->andFilterWhere(['developer' => $users])
-            ->andFilterWhere(['site' => $site])
+            ->andFilterWhere(['marketplace' => $site])
             ->all();
         $categoryArr= array_unique(ArrayHelper::getColumn($category,'category'));
         return [$isSetCat, $categoryArr];
