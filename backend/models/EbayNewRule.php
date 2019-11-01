@@ -32,8 +32,8 @@ use yii\behaviors\TimestampBehavior;
  * @property mixed $listedTime
  * @property mixed $itemLocation
  * @property mixed $creator
- * @property mixed $createdTime
- * @property mixed $updatedTime
+ * @property mixed $createdDate
+ * @property mixed $updatedDate
  * @property mixed $ruleName
  * @property mixed $ruleMark
  */
@@ -47,8 +47,8 @@ class EbayNewRule extends \yii\mongodb\ActiveRecord
              * TimestampBehavior：
              */
             'class' => TimestampBehavior::className(),
-            'createdAtAttribute' => 'createdTime',
-            'updatedAtAttribute' => 'updatedTime',
+            'createdAtAttribute' => 'createdDate',
+            'updatedAtAttribute' => 'updatedDate',
             'value' => date('Y-m-d H:i:s'),
         ],];
     }
@@ -90,8 +90,8 @@ class EbayNewRule extends \yii\mongodb\ActiveRecord
             'listedTime',
             'itemLocation',
             'creator',
-            'createdTime',
-            'updatedTime',
+            'createdDate',
+            'updatedDate',
             'ruleName',
             'ruleMark',
         ];
@@ -103,7 +103,7 @@ class EbayNewRule extends \yii\mongodb\ActiveRecord
     public function rules()
     {
         return [
-            [['cids', 'index', 'title', 'itemId', 'soldEnd', 'country', 'visitEnd', 'priceEnd', 'soldStart', 'titleType', 'sort', 'pageSize', 'priceStart', 'visitStart', 'marketplace', 'popularStatus', 'sellerOrStore', 'storeLocation', 'salesThreeDayFlag', 'orderColumn', 'listedTime', 'itemLocation', 'creator', 'createdTime', 'updatedTime','ruleName','ruleMark'], 'safe']
+            [['cids', 'index', 'title', 'itemId', 'soldEnd', 'country', 'visitEnd', 'priceEnd', 'soldStart', 'titleType', 'sort', 'pageSize', 'priceStart', 'visitStart', 'marketplace', 'popularStatus', 'sellerOrStore', 'storeLocation', 'salesThreeDayFlag', 'orderColumn', 'listedTime', 'itemLocation', 'creator', 'createdDate', 'updatedDate','ruleName','ruleMark'], 'safe']
         ];
     }
 
@@ -137,8 +137,8 @@ class EbayNewRule extends \yii\mongodb\ActiveRecord
             'listedTime' => 'Listed Time',
             'itemLocation' => 'Item Location',
             'creator' => 'Creator',
-            'createdTime' => 'Created Time',
-            'updatedTime' => 'Updated Time',
+            'createdDate' => 'Created Time',
+            'updatedDate' => 'Updated Time',
             'ruleName' => 'Rule Name',
             'ruleMark' => 'Rule Mark',
         ];

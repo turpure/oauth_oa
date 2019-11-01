@@ -59,8 +59,8 @@ use yii\behaviors\TimestampBehavior;
  * @property mixed $storeLocationStatus
  * @property mixed $itemLocationStatus
  * @property mixed $creator
- * @property mixed $createdTime
- * @property mixed $updatedTime
+ * @property mixed $createdDate
+ * @property mixed $updatedDate
  */
 class EbayHotRule extends \yii\mongodb\ActiveRecord
 {
@@ -72,8 +72,8 @@ class EbayHotRule extends \yii\mongodb\ActiveRecord
              * TimestampBehavior：
              */
             'class' => TimestampBehavior::className(),
-            'createdAtAttribute' => 'createdTime',
-            'updatedAtAttribute' => 'updatedTime',
+            'createdAtAttribute' => 'createdDate',
+            'updatedAtAttribute' => 'updatedDate',
             'value' => date('Y-m-d H:i:s'),
         ],];
     }
@@ -143,8 +143,8 @@ class EbayHotRule extends \yii\mongodb\ActiveRecord
             'storeLocationStatus',
             'itemLocationStatus',
             'creator',
-            'createdTime',
-            'updatedTime',
+            'createdDate',
+            'updatedDate',
             'ruleName',
             'ruleMark',
 
@@ -157,7 +157,7 @@ class EbayHotRule extends \yii\mongodb\ActiveRecord
     public function rules()
     {
         return [
-            [['brand', 'cids', 'country', 'visitStart', 'visitEnd', 'popularStatus', 'salesThreeDayFlag', 'titleOrItemId', 'itemId', 'title', 'titleType', 'priceStart', 'priceEnd', 'soldStart', 'soldEnd', 'soldThePreviousDayStart', 'soldThePreviousDayEnd', 'paymentThePreviousDayStart', 'paymentThePreviousDayEnd', 'salesThreeDay1Start', 'salesThreeDay1End', 'salesThreeDayGrowthStart', 'salesThreeDayGrowthEnd', 'paymentThreeDay1Start', 'paymentThreeDay1End', 'salesWeek1Start', 'salesWeek1End', 'salesWeek2Start', 'salesWeek2End', 'salesWeekGrowthStart', 'salesWeekGrowthEnd', 'paymentWeek1Start', 'paymentWeek1End', 'marketplace', 'itemLocation', 'genTimeStart', 'genTimeEnd', 'sellerOrStore', 'storeLocation', 'soldThePreviousGrowthStart', 'soldThePreviousGrowthEnd', 'index', 'pageSize', 'orderColumn', 'sales_three_day1', 'sort', 'itemIdStatus', 'sellerOrStoreStatus', 'storeLocationStatus', 'itemLocationStatus','creator', 'createdTime', 'updatedTime','ruleName','ruleMark'], 'safe']
+            [['brand', 'cids', 'country', 'visitStart', 'visitEnd', 'popularStatus', 'salesThreeDayFlag', 'titleOrItemId', 'itemId', 'title', 'titleType', 'priceStart', 'priceEnd', 'soldStart', 'soldEnd', 'soldThePreviousDayStart', 'soldThePreviousDayEnd', 'paymentThePreviousDayStart', 'paymentThePreviousDayEnd', 'salesThreeDay1Start', 'salesThreeDay1End', 'salesThreeDayGrowthStart', 'salesThreeDayGrowthEnd', 'paymentThreeDay1Start', 'paymentThreeDay1End', 'salesWeek1Start', 'salesWeek1End', 'salesWeek2Start', 'salesWeek2End', 'salesWeekGrowthStart', 'salesWeekGrowthEnd', 'paymentWeek1Start', 'paymentWeek1End', 'marketplace', 'itemLocation', 'genTimeStart', 'genTimeEnd', 'sellerOrStore', 'storeLocation', 'soldThePreviousGrowthStart', 'soldThePreviousGrowthEnd', 'index', 'pageSize', 'orderColumn', 'sales_three_day1', 'sort', 'itemIdStatus', 'sellerOrStoreStatus', 'storeLocationStatus', 'itemLocationStatus','creator', 'createdDate', 'updatedDate','ruleName','ruleMark'], 'safe']
         ];
     }
 
@@ -219,8 +219,8 @@ class EbayHotRule extends \yii\mongodb\ActiveRecord
             'storeLocationStatus' => 'Store Location Status',
             'itemLocationStatus' => 'Item Location Status',
             'creator' => 'Creator',
-            'createdTime' => 'Created Time',
-            'updatedTime' => 'Updated Time',
+            'createdDate' => 'Created Time',
+            'updatedDate' => 'Updated Time',
             'ruleName' => 'Rule Name',
             'ruleMark' => 'Rule Mark',
         ];
