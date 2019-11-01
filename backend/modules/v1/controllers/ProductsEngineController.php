@@ -53,23 +53,30 @@ class ProductsEngineController extends AdminController
             $ret = [];
             if ($plat === 'ebay') {
                 if($type === 'new') {
-                    $cur = (new \yii\mongodb\Query())->from('ebay_new_product')
+                    $cateList = (new \yii\mongodb\Query())->from('ebay_new_product')
                         ->andFilterWhere(['marketplace' => $marketplace])
-                        ->all();
-                    foreach ($cur as $row) {
-                        list($isSetCat, $categoryArr) = ApiProductsEngine::getUserCate($userList, $row['marketplace']);
-                        if(isset($row['accept']) && $row['accept'] ||    //过滤掉已经认领的产品
-                            isset($row['refuse'][$username])       //过滤掉当前用户已经过滤的产品
-                        ){
-                            continue;
-                        }else{
-                            if($isSetCat == false){
-                                $ret[] = $row;
+                        ->distinct('marketplace');
+                        //->all();
+                    //print_r($cur);exit;
+                    foreach ($cateList as $value){
+                        $cur = (new \yii\mongodb\Query())->from('ebay_new_product')
+                            ->andFilterWhere(['marketplace' => $value])
+                            ->all();
+                        list($isSetCat, $categoryArr) = ApiProductsEngine::getUserCate($userList, $value);
+                        foreach ($cur as $row) {
+                            if(isset($row['accept']) && $row['accept'] ||    //过滤掉已经认领的产品
+                                isset($row['refuse'][$username])       //过滤掉当前用户已经过滤的产品
+                            ){
+                                continue;
                             }else{
-                                foreach($categoryArr as $v){
-                                    if(strpos($row['cidName'], $v) !== false){
-                                        $ret[] = $row;
-                                        break;
+                                if($isSetCat == false){
+                                    $ret[] = $row;
+                                }else{
+                                    foreach($categoryArr as $v){
+                                        if(strpos($row['cidName'], $v) !== false){
+                                            $ret[] = $row;
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -79,6 +86,9 @@ class ProductsEngineController extends AdminController
                         'allModels' => $ret,
                         'sort' => [
                             'attributes' => ['price', 'visit', 'sold', 'listedTime'],
+                            'defaultOrder' => [
+                                'sold' => SORT_DESC,
+                            ]
                         ],
                         'pagination' => [
                             'page' => $page - 1,
@@ -88,22 +98,28 @@ class ProductsEngineController extends AdminController
                     return $data;
                 }
                 if ($type === 'hot') {
-                    $cur = (new \yii\mongodb\Query())->from('ebay_hot_product')
+                    $cateList = (new \yii\mongodb\Query())->from('ebay_hot_product')
                         ->andFilterWhere(['marketplace' => $marketplace])
-                        ->all();
-                    foreach ($cur as $row) {
-                        list($isSetCat, $categoryArr) = ApiProductsEngine::getUserCate($userList, $row['marketplace']);
-                        if(isset($row['accept']) && $row['accept'] ||
-                            isset($row['refuse'][$username])){
-                            continue;
-                        }else{
-                            if($isSetCat == false){
-                                $ret[] = $row;
+                        ->distinct('marketplace');
+                        //->all();
+                    foreach($cateList as $value){
+                        $cur = (new \yii\mongodb\Query())->from('ebay_hot_product')
+                            ->andFilterWhere(['marketplace' => $value])
+                            ->all();
+                        list($isSetCat, $categoryArr) = ApiProductsEngine::getUserCate($userList, $value);
+                        foreach ($cur as $row) {
+                            if(isset($row['accept']) && $row['accept'] ||
+                                isset($row['refuse'][$username])){
+                                continue;
                             }else{
-                                foreach($categoryArr as $v){
-                                    if(strpos($row['categoryStructure'], $v) !== false){
-                                        $ret[] = $row;
-                                        break;
+                                if($isSetCat == false){
+                                    $ret[] = $row;
+                                }else{
+                                    foreach($categoryArr as $v){
+                                        if(strpos($row['categoryStructure'], $v) !== false){
+                                            $ret[] = $row;
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -117,6 +133,9 @@ class ProductsEngineController extends AdminController
                                 'salesThreeDay1','salesThreeDayGrowth','paymentThreeDay1',
                                 'salesWeek1','paymentWeek1','salesWeekGrowth'
                             ],
+                            'defaultOrder' => [
+                                'sold' => SORT_DESC,
+                            ]
                         ],
                         'pagination' => [
                             'page' => $page - 1,
@@ -141,7 +160,6 @@ class ProductsEngineController extends AdminController
         catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }
-
     }
 
 
