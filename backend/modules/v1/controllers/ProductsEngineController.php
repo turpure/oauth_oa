@@ -14,6 +14,7 @@ use backend\models\WishProducts;
 use backend\models\JoomProducts;
 use backend\models\RecommendEbayNewProductRule;
 use backend\models\EbayHotRule;
+use backend\models\EbayNewRule;
 use backend\modules\v1\models\ApiUser;
 use yii\data\ArrayDataProvider;
 use backend\modules\v1\models\ApiProductsEngine;
@@ -229,7 +230,7 @@ class ProductsEngineController extends AdminController
         $type = Yii::$app->request->get('type','new');
         try {
             if ($type === 'new') {
-                return RecommendEbayNewProductRule::find()->all();
+                return EbayNewRule::find()->all();
             }
             if ($type === 'hot') {
                 return EbayHotRule::find()->all();
@@ -254,9 +255,9 @@ class ProductsEngineController extends AdminController
             $condition = \Yii::$app->request->post('condition');
             $id = ArrayHelper::getValue($condition, 'id', '');
             if ($type === 'new') {
-                $rule = RecommendEbayNewProductRule::findOne($id);
+                $rule = EbayNewRule::findOne($id);
                 if(empty($rule)) {
-                    $rule = new RecommendEbayNewProductRule();
+                    $rule = new EbayNewRule();
                     $condition['creator'] = $userName;
                 }
                 $rule->setAttributes($condition);
@@ -295,7 +296,7 @@ class ProductsEngineController extends AdminController
         $id = ArrayHelper::getValue($condition, 'id','');
         try {
             if($type === 'new') {
-                RecommendEbayNewProductRule::findOne($id)->delete();
+                EbayNewRule::findOne($id)->delete();
             }
             if($type === 'hot') {
                 EbayHotRule::findOne($id)->delete();
