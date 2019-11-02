@@ -52,6 +52,20 @@ class EbayNewRule extends \yii\mongodb\ActiveRecord
             'value' => date('Y-m-d H:i:s'),
         ],];
     }
+
+    public function beforeSave($insert=true)
+    {
+        if(parent::beforeSave($insert)) {
+            $defaultAttributes = [
+                'cids' =>'', 'index' => 1, 'title' => '','itemId' => '','country' => 1,'titleType' => 1,
+                'sort' => 'DESC', 'pageSize' => 20, 'popularStatus' => '', 'sellerOrStore' => '',
+                'orderColumn' => 'last_modi_time','itemLocation' => [], 'isUsed' => 1,
+                ];
+            $this->setAttributes($defaultAttributes);
+            return true;
+        }
+    }
+
     /**
      * {@inheritdoc}
      */

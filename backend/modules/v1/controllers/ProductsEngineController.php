@@ -271,6 +271,7 @@ class ProductsEngineController extends AdminController
                 $rule = EbayHotRule::findOne($id);
                 if(empty($rule)) {
                     $rule = new EbayHotRule();
+                    $condition['creator'] = $userName;
                 }
                 $rule->setAttributes($condition);
                 if (!$rule->save()) {
