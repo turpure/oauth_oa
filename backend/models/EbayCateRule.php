@@ -8,17 +8,16 @@ use yii\behaviors\TimestampBehavior;
  * This is the model class for collection "ebay_hot_rule".
  *
  * @property \MongoDB\BSON\ObjectID|string $_id
- * @property mixed $username
- * @property mixed $depart
+ * @property mixed $pyCate
+ * @property mixed $plat
  * @property mixed $ruleId
- * @property mixed $cateRuleId
- * @property mixed $productNum
- * @property mixed $category
- * @property mixed $deliveryLocation
+ * @property mixed $marketplace
+ * @property mixed $firstCate
+ * @property mixed $secondCate
  * @property mixed $createdDate
  * @property mixed $updatedDate
  */
-class EbayAllotRule extends \yii\mongodb\ActiveRecord
+class EbayCateRule extends \yii\mongodb\ActiveRecord
 {
 
     public function behaviors()
@@ -38,7 +37,7 @@ class EbayAllotRule extends \yii\mongodb\ActiveRecord
      */
     public static function collectionName()
     {
-        return ['product_engine', 'ebay_allot_rule'];
+        return ['product_engine', 'ebay_cate_rule'];
     }
 
 
@@ -49,13 +48,11 @@ class EbayAllotRule extends \yii\mongodb\ActiveRecord
     {
         return [
             '_id',
-            'username',
-            'depart',
-            'ruleId',
-            'cateRuleId',
-            'productNum',
-            'category',
-            'deliveryLocation',
+            'pyCate',
+            'plat',
+            'marketplace',
+            'firstCate',
+            'secondCate',
             'createdDate',
             'updatedDate',
 
@@ -68,7 +65,7 @@ class EbayAllotRule extends \yii\mongodb\ActiveRecord
     public function rules()
     {
         return [
-            [['username', 'depart', 'ruleId', 'cateRuleId', 'productNum', 'category', 'deliveryLocation', 'createdDate', 'updatedDate'], 'safe']
+            [['pyCate', 'plat', 'marketplace', 'firstCate', 'secondCate', 'createdDate', 'updatedDate'], 'safe']
         ];
     }
 
@@ -79,13 +76,11 @@ class EbayAllotRule extends \yii\mongodb\ActiveRecord
     {
         return [
             '_id' => 'ID',
-            'username' => 'Username',
-            'depart' => 'Depart',
-            'ruleId' => 'Rule Id',
-            'cateRuleId' => 'Cate Rule Id',
-            'productNum' => 'Product Num',
-            'category' => 'Category',
-            'deliveryLocation' => 'Delivery Location',
+            'pyCate' => 'Py Cate',
+            'plat' => 'Plat',
+            'marketplace' => 'Marketplace',
+            'firstCate' => 'First Cate',
+            'secondCate' => 'Second Cate',
             'createdDate' => 'Created Time',
             'updatedDate' => 'Updated Time',
         ];

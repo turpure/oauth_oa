@@ -9,6 +9,7 @@ namespace backend\modules\v1\controllers;
 
 use backend\models\EbayAllotRule;
 use backend\models\EbayCategory;
+use backend\models\EbayCateRule;
 use backend\models\EbayDeveloperCategory;
 use backend\models\EbayProducts;
 use backend\models\WishProducts;
@@ -540,6 +541,59 @@ class ProductsEngineController extends AdminController
     }
 
     //======================================================================================
+    //类目规则
+    public function actionCateRule(){
+        try {
+            return EbayCateRule::find()->all();
+        }
+        catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+    }
+    /**
+     * 增加或编辑规则
+     * @return array
+     */
+    public function actionSaveCateRule()
+    {
+        try {
+
+            $condition = \Yii::$app->request->post('condition');
+            $id = ArrayHelper::getValue($condition, 'id', '');
+            $rule = EbayCateRule::findOne($id);
+            if(empty($rule)) {
+                $rule = new EbayCateRule();
+            }
+            $rule->setAttributes($condition);
+            if (!$rule->save(false)) {
+                throw new \Exception('fail to save new rule');
+            }
+            return [];
+
+        } catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+    }
+
+    /**
+     * 删除规则
+     * @return array
+     * @throws \Throwable
+     */
+    public function actionDeleteCateRule()
+    {
+        $condition = \Yii::$app->request->post('condition');
+        $id = ArrayHelper::getValue($condition, 'id','');
+        try {
+            EbayCateRule::findOne($id)->delete();
+        }
+        catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+    }
+
+
+//======================================================================================
     //分配规则
     public function actionAllotRule(){
         $type = Yii::$app->request->get('type','new');
@@ -592,8 +646,6 @@ class ProductsEngineController extends AdminController
             return ['code' => 401, 'message' => $why->getMessage()];
         }
     }
-
-
 
 
 
