@@ -7,6 +7,7 @@
 
 namespace backend\modules\v1\controllers;
 
+use backend\models\EbayAllotRule;
 use backend\models\EbayCategory;
 use backend\models\EbayDeveloperCategory;
 use backend\models\EbayProducts;
@@ -31,7 +32,7 @@ class ProductsEngineController extends AdminController
         'collectionEnvelope' => 'items',
     ];
 
-    /** 产品推荐
+    /** 产品引擎  每日推荐
      * Date: 2019-10-30 17:36
      * Author: henry
      * @return array|\yii\db\ActiveRecord[]|\yii\data\ActiveDataProvider[]
@@ -41,7 +42,6 @@ class ProductsEngineController extends AdminController
     {
         //获取当前用户信息
         $username = Yii::$app->user->identity->username;
-        $username = '陈微微';
         $userList = ApiUser::getUserList($username);
         //获取当前登录用户权限下的用户是否有指定eBay产品类目
 
@@ -157,6 +157,132 @@ class ProductsEngineController extends AdminController
             if ($plat === 'joom') {
                 return JoomProducts::find()->all();
             }
+        }
+        catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+    }
+
+    /** 产品中心  智能推荐
+     * Date: 2019-10-30 17:36
+     * Author: henry
+     * @return array|\yii\db\ActiveRecord[]|\yii\data\ActiveDataProvider[]
+     * @throws \yii\db\Exception
+     */
+    public function actionMindRecommend()
+    {
+        //获取当前用户信息
+        $username = Yii::$app->user->identity->username;
+        $username = '陈微微';
+        $userList = ApiUser::getUserList($username);
+        //获取当前登录用户权限下的用户是否有指定eBay产品类目
+
+        try {
+            $plat = \Yii::$app->request->get('plat');
+            $type = \Yii::$app->request->get('type','');
+            $page = \Yii::$app->request->get('page',1);
+            $pageSize = \Yii::$app->request->get('pageSize',20);
+            $marketplace = \Yii::$app->request->get('marketplace');//站点
+            $ret = [];
+            if ($plat === 'ebay') {
+                if($type === 'new') {
+                    $cateList = (new \yii\mongodb\Query())->from('ebay_new_product')
+                        ->andFilterWhere(['marketplace' => $marketplace])
+                        ->distinct('marketplace');
+                        //->all();
+                    //print_r($cur);exit;
+                    foreach ($cateList as $value){
+                        $cur = (new \yii\mongodb\Query())->from('ebay_new_product')
+                            ->andFilterWhere(['marketplace' => $value])
+                            ->all();
+                        list($isSetCat, $categoryArr) = ApiProductsEngine::getUserCate($userList, $value);
+                        foreach ($cur as $row) {
+                            if(isset($row['accept']) && $row['accept'] ||    //过滤掉已经认领的产品
+                                isset($row['refuse'][$username])       //过滤掉当前用户已经过滤的产品
+                            ){
+                                continue;
+                            }else{
+                                if($isSetCat == false){
+                                    $ret[] = $row;
+                                }else{
+                                    foreach($categoryArr as $v){
+                                        if(strpos($row['cidName'], $v) !== false){
+                                            $ret[] = $row;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    $data = new ArrayDataProvider([
+                        'allModels' => $ret,
+                        'sort' => [
+                            'attributes' => ['price', 'visit', 'sold', 'listedTime'],
+                            'defaultOrder' => [
+                                'sold' => SORT_DESC,
+                            ]
+                        ],
+                        'pagination' => [
+                            'page' => $page - 1,
+                            'pageSize' => $pageSize,
+                        ],
+                    ]);
+                    return $data;
+                }
+                if ($type === 'hot') {
+                    $cateList = (new \yii\mongodb\Query())->from('ebay_hot_product')
+                        ->andFilterWhere(['marketplace' => $marketplace])
+                        ->distinct('marketplace');
+                        //->all();
+                    foreach($cateList as $value){
+                        $cur = (new \yii\mongodb\Query())->from('ebay_hot_product')
+                            ->andFilterWhere(['marketplace' => $value])
+                            ->all();
+                        list($isSetCat, $categoryArr) = ApiProductsEngine::getUserCate($userList, $value);
+                        foreach ($cur as $row) {
+                            if(isset($row['accept']) && $row['accept'] ||
+                                isset($row['refuse'][$username])){
+                                continue;
+                            }else{
+                                if($isSetCat == false){
+                                    $ret[] = $row;
+                                }else{
+                                    foreach($categoryArr as $v){
+                                        if(strpos($row['categoryStructure'], $v) !== false){
+                                            $ret[] = $row;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    $data = new ArrayDataProvider([
+                        'allModels' => $ret,
+                        'sort' => [
+                            'attributes' => [
+                                'price', 'visit', 'sold',
+                                'salesThreeDay1','salesThreeDayGrowth','paymentThreeDay1',
+                                'salesWeek1','paymentWeek1','salesWeekGrowth'
+                            ],
+                            'defaultOrder' => [
+                                'sold' => SORT_DESC,
+                            ]
+                        ],
+                        'pagination' => [
+                            'page' => $page - 1,
+                            'pageSize' => $pageSize,
+                        ],
+                    ]);
+                    return $data;
+                }
+                else {
+                    $station = \Yii::$app->request->get('status','US');
+                    return EbayProducts::find()->where(['station' => $station])->all();
+                }
+            }
+
         }
         catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
@@ -412,5 +538,67 @@ class ProductsEngineController extends AdminController
             return ['code' => 401, 'message' => $why->getMessage()];
         }
     }
+
+    //======================================================================================
+    //分配规则
+    public function actionAllotRule(){
+        $type = Yii::$app->request->get('type','new');
+        try {
+            return EbayAllotRule::find()->all();
+        }
+        catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+    }
+    /**
+     * 增加或编辑规则
+     * @return array
+     */
+    public function actionSaveAllotRule()
+    {
+        try {
+
+            $userName = Yii::$app->user->identity->username;
+            $condition = \Yii::$app->request->post('condition');
+            $id = ArrayHelper::getValue($condition, 'id', '');
+            $rule = EbayAllotRule::findOne($id);
+            if(empty($rule)) {
+                $rule = new EbayAllotRule();
+            }
+            $rule->setAttributes($condition);
+            if (!$rule->save(false)) {
+                throw new \Exception('fail to save new rule');
+            }
+            return [];
+
+        } catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+    }
+
+    /**
+     * 删除规则
+     * @return array
+     * @throws \Throwable
+     */
+    public function actionDeleteAllotRule()
+    {
+        $condition = \Yii::$app->request->post('condition');
+        $id = ArrayHelper::getValue($condition, 'id','');
+        try {
+            EbayAllotRule::findOne($id)->delete();
+        }
+        catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+    }
+
+
+
+
+
+
+
+
 
 }
