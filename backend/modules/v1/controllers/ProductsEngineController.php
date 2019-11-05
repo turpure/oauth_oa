@@ -585,14 +585,22 @@ class ProductsEngineController extends AdminController
     }
 
     /** 类目规则列表
-     * Date: 2019-11-05 13:31
+     * Date: 2019-11-05 14:26
      * Author: henry
-     * @return array|\yii\mongodb\ActiveRecord
+     * @return array|ArrayDataProvider
      */
     public function actionCateRule(){
+        $page = Yii::$app->request->get('page',1);
+        $pageSize = Yii::$app->request->get('pageSize',20);
         try {
             $data = EbayCateRule::find()->all();
-            return $data;
+            return $data = new ArrayDataProvider([
+                'allModels' => $data,
+                'pagination' => [
+                    'page' => $page - 1,
+                    'pageSize' => $pageSize,
+                ],
+            ]);
         }
         catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
