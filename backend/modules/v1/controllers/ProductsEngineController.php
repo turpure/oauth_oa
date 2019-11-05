@@ -542,9 +542,24 @@ class ProductsEngineController extends AdminController
 
     //======================================================================================
     //类目规则
+    public function actionPlat(){
+        return [
+            'ebay',
+            //'wish',
+            //'joom',
+        ];
+    }
+    public function actionMarketplace(){
+        $plat = Yii::$app->request->get('plat',null);
+        try {
+            return EbayCategory::find()->andFilterWhere(['plat' => $plat])->distinct('marketplace');
+        } catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+    }
 
     /**
-     * eBay类目列表
+     * 类目列表
      * @return array|\yii\db\ActiveRecord[]
      */
     public function actionCategory()
@@ -553,8 +568,7 @@ class ProductsEngineController extends AdminController
         try {
             return EbayCategory::find()
                 ->andFilterWhere(['plat' => $condition['plat']])
-                ->andFilterWhere(['like', 'category', $condition['category']])
-                ->andFilterWhere(['like', 'marketplace', $condition['marketplace']])
+                ->andFilterWhere(['marketplace' => $condition['marketplace']])
                 ->andFilterWhere(['like', 'cate', $condition['cate']])
                 ->orderBy('cate')
                 ->all();
