@@ -666,9 +666,27 @@ class ProductsEngineController extends AdminController
 //======================================================================================
     //分配规则
     public function actionAllotRule(){
-        $type = Yii::$app->request->get('type','new');
         try {
-            return EbayAllotRule::find()->all();
+            $data = EbayAllotRule::find()->all();
+            //return $data;
+            $res = [];
+            foreach ($data as $v){
+                $item = $v->attributes;
+                //$item['_id'] = ;
+                //print_r($item);exit;
+                if($v['ruleType'] == 'new'){
+                    $ebayNewRule = EbayNewRule::find()->where(['id' => $v['ruleId']])->one();
+                    $item['ruleName'] = $ebayNewRule ? $ebayNewRule['ruleName'] : '';
+                }elseif($v['ruleType'] == 'hot'){
+                    $ebayHotRule = EbayHotRule::find()->where(['id' => $v['ruleId']])->one();
+                    $item['ruleName'] = $ebayHotRule ? $ebayHotRule['ruleName'] : '';
+                }else{
+                    $item['ruleName'] = '';
+                }
+                $res[] = $item;
+            }
+
+            return $res;
         }
         catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
