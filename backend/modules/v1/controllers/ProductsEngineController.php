@@ -667,18 +667,15 @@ class ProductsEngineController extends AdminController
     //分配规则
     public function actionAllotRule(){
         try {
-            $data = EbayAllotRule::find()->all();
-            //return $data;
+            $data = EbayAllotRule::find()->asArray()->all();
             $res = [];
             foreach ($data as $v){
-                $item = $v->attributes;
-                //$item['_id'] = ;
-                //print_r($item);exit;
+                $item = $v;
                 if($v['ruleType'] == 'new'){
-                    $ebayNewRule = EbayNewRule::find()->where(['id' => $v['ruleId']])->one();
+                    $ebayNewRule = EbayNewRule::findOne(['_id' => $v['ruleId']]);
                     $item['ruleName'] = $ebayNewRule ? $ebayNewRule['ruleName'] : '';
                 }elseif($v['ruleType'] == 'hot'){
-                    $ebayHotRule = EbayHotRule::find()->where(['id' => $v['ruleId']])->one();
+                    $ebayHotRule = EbayHotRule::findOne(['_id' => $v['ruleId']]);
                     $item['ruleName'] = $ebayHotRule ? $ebayHotRule['ruleName'] : '';
                 }else{
                     $item['ruleName'] = '';
