@@ -542,9 +542,57 @@ class ProductsEngineController extends AdminController
 
     //======================================================================================
     //类目规则
+
+    /**
+     * eBay类目列表
+     * @return array|\yii\db\ActiveRecord[]
+     */
+    public function actionCategory()
+    {
+        $condition = Yii::$app->request->post('condition',null);
+        try {
+            return EbayCategory::find()
+                ->andFilterWhere(['plat' => $condition['plat']])
+                ->andFilterWhere(['like', 'category', $condition['category']])
+                ->andFilterWhere(['like', 'marketplace', $condition['marketplace']])
+                ->andFilterWhere(['like', 'cate', $condition['cate']])
+                ->orderBy('cate')
+                ->all();
+        } catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+    }
+
+    public function actionSaveCategory()
+    {
+        try {
+
+            $condition = \Yii::$app->request->post('condition');
+            $id = ArrayHelper::getValue($condition, 'id', '');
+            $rule = EbayCategory::findOne($id);
+            if(empty($rule)) {
+                $rule = new EbayCategory();
+            }
+            $rule->setAttributes($condition);
+            if (!$rule->save(false)) {
+                throw new \Exception('fail to save new rule');
+            }
+            return [];
+
+        } catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+    }
+
+    /** 类目规则列表
+     * Date: 2019-11-05 13:31
+     * Author: henry
+     * @return array|\yii\mongodb\ActiveRecord
+     */
     public function actionCateRule(){
         try {
-            return EbayCateRule::find()->all();
+            $data = EbayCateRule::find()->all();
+            return $data;
         }
         catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];

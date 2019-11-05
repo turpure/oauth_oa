@@ -7,21 +7,56 @@ use yii\behaviors\TimestampBehavior;
 use yii\db\Expression;
 
 /**
- * This is the model class for table "proEngine.recommend_ebayNewProductRule".
+ * This is the model class for collection "ebay_category".
  *
- * @property int $id
- * @property int $parentId
- * @property int $category
+ * @property \MongoDB\BSON\ObjectID|string $_id
+ * @property int $plat
+ * @property int $marketplace
+ * @property int $cate
+ * @property int $subCate
+ * @property int $createdDate
+ * @property int $updatedDate
  */
-class EbayCategory extends \yii\db\ActiveRecord
+class EbayCategory extends \yii\mongodb\ActiveRecord
 {
+
+    public function behaviors()
+    {
+        return [[
+            /**
+             * TimestampBehavior：
+             */
+            'class' => TimestampBehavior::className(),
+            'createdAtAttribute' => 'createdDate',
+            'updatedAtAttribute' => 'updatedDate',
+            'value' => date('Y-m-d H:i:s'),
+        ],];
+    }
 
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function collectionName()
     {
-        return 'proEngine.ebay_category';
+        return ['product_engine', 'ebay_category'];
+    }
+
+
+    /**
+     * {@inheritdoc}
+     */
+    public function attributes()
+    {
+        return [
+            '_id',
+            'plat',
+            'marketplace',
+            'cate',
+            'subCate',
+            'createdDate',
+            'updatedDate',
+
+        ];
     }
 
     /**
@@ -30,9 +65,7 @@ class EbayCategory extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['parentId'], 'integer'],
-            [['category'], 'string', 'max' => 100],
-            [['marketplace'], 'string', 'max' => 20],
+            [['plat', 'marketplace', 'firstCate', 'secondCate', 'createdDate', 'updatedDate'], 'safe']
         ];
     }
 
@@ -42,9 +75,17 @@ class EbayCategory extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'id' => 'ID',
-            'parentId' => 'Parent Id',
-            'category' => 'Category',
+            '_id' => 'ID',
+            'plat' => 'Plat',
+            'marketplace' => 'Marketplace',
+            'firstCate' => 'First Cate',
+            'secondCate' => 'Second Cate',
+            'createdDate' => 'Created Time',
+            'updatedDate' => 'Updated Time',
         ];
     }
+
+
+
+
 }

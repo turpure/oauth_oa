@@ -5,15 +5,14 @@ namespace backend\models;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 /**
- * This is the model class for collection "ebay_hot_rule".
+ * This is the model class for collection "ebay_cate_rule".
  *
  * @property \MongoDB\BSON\ObjectID|string $_id
  * @property mixed $pyCate
- * @property mixed $plat
- * @property mixed $ruleId
- * @property mixed $marketplace
- * @property mixed $firstCate
- * @property mixed $secondCate
+ * @property int $plat
+ * @property int $marketplace
+ * @property int $cate
+ * @property int $subCate
  * @property mixed $createdDate
  * @property mixed $updatedDate
  */
@@ -51,11 +50,10 @@ class EbayCateRule extends \yii\mongodb\ActiveRecord
             'pyCate',
             'plat',
             'marketplace',
-            'firstCate',
-            'secondCate',
+            'cate',
+            'subCate',
             'createdDate',
             'updatedDate',
-
         ];
     }
 
@@ -65,7 +63,7 @@ class EbayCateRule extends \yii\mongodb\ActiveRecord
     public function rules()
     {
         return [
-            [['pyCate', 'plat', 'marketplace', 'firstCate', 'secondCate', 'createdDate', 'updatedDate'], 'safe']
+            [['pyCate', 'plat', 'marketplace', 'cate', 'subCate', 'createdDate', 'updatedDate'], 'safe']
         ];
     }
 
@@ -79,10 +77,12 @@ class EbayCateRule extends \yii\mongodb\ActiveRecord
             'pyCate' => 'Py Cate',
             'plat' => 'Plat',
             'marketplace' => 'Marketplace',
-            'firstCate' => 'First Cate',
-            'secondCate' => 'Second Cate',
+            'cate' => 'Cate',
+            'subCate' => 'Sub Cate',
             'createdDate' => 'Created Time',
             'updatedDate' => 'Updated Time',
         ];
     }
+
+
 }
