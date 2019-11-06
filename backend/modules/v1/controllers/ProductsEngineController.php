@@ -48,34 +48,34 @@ class ProductsEngineController extends AdminController
 
         try {
             $plat = \Yii::$app->request->get('plat');
-            $type = \Yii::$app->request->get('type','');
-            $page = \Yii::$app->request->get('page',1);
-            $pageSize = \Yii::$app->request->get('pageSize',20);
+            $type = \Yii::$app->request->get('type', '');
+            $page = \Yii::$app->request->get('page', 1);
+            $pageSize = \Yii::$app->request->get('pageSize', 20);
             $marketplace = \Yii::$app->request->get('marketplace');//站点
             $ret = [];
             if ($plat === 'ebay') {
-                if($type === 'new') {
+                if ($type === 'new') {
                     $cateList = (new \yii\mongodb\Query())->from('ebay_new_product')
                         ->andFilterWhere(['marketplace' => $marketplace])
                         ->distinct('marketplace');
-                        //->all();
+                    //->all();
                     //print_r($cur);exit;
-                    foreach ($cateList as $value){
+                    foreach ($cateList as $value) {
                         $cur = (new \yii\mongodb\Query())->from('ebay_new_product')
                             ->andFilterWhere(['marketplace' => $value])
                             ->all();
                         list($isSetCat, $categoryArr) = ApiProductsEngine::getUserCate($userList, $value);
                         foreach ($cur as $row) {
-                            if(isset($row['accept']) && $row['accept'] ||    //过滤掉已经认领的产品
+                            if (isset($row['accept']) && $row['accept'] ||    //过滤掉已经认领的产品
                                 isset($row['refuse'][$username])       //过滤掉当前用户已经过滤的产品
-                            ){
+                            ) {
                                 continue;
-                            }else{
-                                if($isSetCat == false){
+                            } else {
+                                if ($isSetCat == false) {
                                     $ret[] = $row;
-                                }else{
-                                    foreach($categoryArr as $v){
-                                        if(strpos($row['cidName'], $v) !== false){
+                                } else {
+                                    foreach ($categoryArr as $v) {
+                                        if (strpos($row['cidName'], $v) !== false) {
                                             $ret[] = $row;
                                             break;
                                         }
@@ -103,22 +103,22 @@ class ProductsEngineController extends AdminController
                     $cateList = (new \yii\mongodb\Query())->from('ebay_hot_product')
                         ->andFilterWhere(['marketplace' => $marketplace])
                         ->distinct('marketplace');
-                        //->all();
-                    foreach($cateList as $value){
+                    //->all();
+                    foreach ($cateList as $value) {
                         $cur = (new \yii\mongodb\Query())->from('ebay_hot_product')
                             ->andFilterWhere(['marketplace' => $value])
                             ->all();
                         list($isSetCat, $categoryArr) = ApiProductsEngine::getUserCate($userList, $value);
                         foreach ($cur as $row) {
-                            if(isset($row['accept']) && $row['accept'] ||
-                                isset($row['refuse'][$username])){
+                            if (isset($row['accept']) && $row['accept'] ||
+                                isset($row['refuse'][$username])) {
                                 continue;
-                            }else{
-                                if($isSetCat == false){
+                            } else {
+                                if ($isSetCat == false) {
                                     $ret[] = $row;
-                                }else{
-                                    foreach($categoryArr as $v){
-                                        if(strpos($row['categoryStructure'], $v) !== false){
+                                } else {
+                                    foreach ($categoryArr as $v) {
+                                        if (strpos($row['categoryStructure'], $v) !== false) {
                                             $ret[] = $row;
                                             break;
                                         }
@@ -132,8 +132,8 @@ class ProductsEngineController extends AdminController
                         'sort' => [
                             'attributes' => [
                                 'price', 'visit', 'sold',
-                                'salesThreeDay1','salesThreeDayGrowth','paymentThreeDay1',
-                                'salesWeek1','paymentWeek1','salesWeekGrowth'
+                                'salesThreeDay1', 'salesThreeDayGrowth', 'paymentThreeDay1',
+                                'salesWeek1', 'paymentWeek1', 'salesWeekGrowth'
                             ],
                             'defaultOrder' => [
                                 'sold' => SORT_DESC,
@@ -145,9 +145,8 @@ class ProductsEngineController extends AdminController
                         ],
                     ]);
                     return $data;
-                }
-                else {
-                    $station = \Yii::$app->request->get('status','US');
+                } else {
+                    $station = \Yii::$app->request->get('status', 'US');
                     return EbayProducts::find()->where(['station' => $station])->all();
                 }
             }
@@ -158,8 +157,7 @@ class ProductsEngineController extends AdminController
             if ($plat === 'joom') {
                 return JoomProducts::find()->all();
             }
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }
     }
@@ -174,118 +172,52 @@ class ProductsEngineController extends AdminController
     {
         //获取当前用户信息
         $username = Yii::$app->user->identity->username;
-        $username = '陈微微';
+        //$username = '刘爽';
         $userList = ApiUser::getUserList($username);
         //获取当前登录用户权限下的用户是否有指定eBay产品类目
 
         try {
             $plat = \Yii::$app->request->get('plat');
-            $type = \Yii::$app->request->get('type','');
-            $page = \Yii::$app->request->get('page',1);
-            $pageSize = \Yii::$app->request->get('pageSize',20);
+            $type = \Yii::$app->request->get('type', '');
+            $page = \Yii::$app->request->get('page', 1);
+            $pageSize = \Yii::$app->request->get('pageSize', 20);
             $marketplace = \Yii::$app->request->get('marketplace');//站点
             $ret = [];
             if ($plat === 'ebay') {
-                if($type === 'new') {
-                    $cateList = (new \yii\mongodb\Query())->from('ebay_new_product')
-                        ->andFilterWhere(['marketplace' => $marketplace])
-                        ->distinct('marketplace');
-                        //->all();
-                    //print_r($cur);exit;
-                    foreach ($cateList as $value){
-                        $cur = (new \yii\mongodb\Query())->from('ebay_new_product')
-                            ->andFilterWhere(['marketplace' => $value])
-                            ->all();
-                        list($isSetCat, $categoryArr) = ApiProductsEngine::getUserCate($userList, $value);
-                        foreach ($cur as $row) {
-                            if(isset($row['accept']) && $row['accept'] ||    //过滤掉已经认领的产品
-                                isset($row['refuse'][$username])       //过滤掉当前用户已经过滤的产品
-                            ){
-                                continue;
-                            }else{
-                                if($isSetCat == false){
-                                    $ret[] = $row;
-                                }else{
-                                    foreach($categoryArr as $v){
-                                        if(strpos($row['cidName'], $v) !== false){
-                                            $ret[] = $row;
-                                            break;
-                                        }
-                                    }
-                                }
+                $list = (new \yii\mongodb\Query())->from('ebay_recommended_product')
+                    ->andFilterWhere(['marketplace' => $marketplace])
+                    ->andFilterWhere(['productType' => $type])->all();
+                foreach ($list as $row) {
+                    if (isset($row['accept']) && $row['accept'] ||    //过滤掉已经认领的产品
+                        isset($row['refuse'][$username])       //过滤掉当前用户已经过滤的产品
+                    ) {
+                        continue;
+                    } else {
+                        foreach ($row['receiver'] as $v) {
+                            if (in_array($v, $userList)) {  //过滤当前用户的权限下的用户
+                                $ret[] = $row;
+                                break;
                             }
                         }
                     }
-                    $data = new ArrayDataProvider([
-                        'allModels' => $ret,
-                        'sort' => [
-                            'attributes' => ['price', 'visit', 'sold', 'listedTime'],
-                            'defaultOrder' => [
-                                'sold' => SORT_DESC,
-                            ]
-                        ],
-                        'pagination' => [
-                            'page' => $page - 1,
-                            'pageSize' => $pageSize,
-                        ],
-                    ]);
-                    return $data;
                 }
-                if ($type === 'hot') {
-                    $cateList = (new \yii\mongodb\Query())->from('ebay_hot_product')
-                        ->andFilterWhere(['marketplace' => $marketplace])
-                        ->distinct('marketplace');
-                        //->all();
-                    foreach($cateList as $value){
-                        $cur = (new \yii\mongodb\Query())->from('ebay_hot_product')
-                            ->andFilterWhere(['marketplace' => $value])
-                            ->all();
-                        list($isSetCat, $categoryArr) = ApiProductsEngine::getUserCate($userList, $value);
-                        foreach ($cur as $row) {
-                            if(isset($row['accept']) && $row['accept'] ||
-                                isset($row['refuse'][$username])){
-                                continue;
-                            }else{
-                                if($isSetCat == false){
-                                    $ret[] = $row;
-                                }else{
-                                    foreach($categoryArr as $v){
-                                        if(strpos($row['categoryStructure'], $v) !== false){
-                                            $ret[] = $row;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    $data = new ArrayDataProvider([
-                        'allModels' => $ret,
-                        'sort' => [
-                            'attributes' => [
-                                'price', 'visit', 'sold',
-                                'salesThreeDay1','salesThreeDayGrowth','paymentThreeDay1',
-                                'salesWeek1','paymentWeek1','salesWeekGrowth'
-                            ],
-                            'defaultOrder' => [
-                                'sold' => SORT_DESC,
-                            ]
-                        ],
-                        'pagination' => [
-                            'page' => $page - 1,
-                            'pageSize' => $pageSize,
-                        ],
-                    ]);
-                    return $data;
-                }
-                else {
-                    $station = \Yii::$app->request->get('status','US');
-                    return EbayProducts::find()->where(['station' => $station])->all();
-                }
+                $data = new ArrayDataProvider([
+                    'allModels' => $ret,
+                    'sort' => [
+                        'attributes' => ['price', 'visit', 'sold', 'listedTime'],
+                        'defaultOrder' => [
+                            'sold' => SORT_DESC,
+                        ]
+                    ],
+                    'pagination' => [
+                        'page' => $page - 1,
+                        'pageSize' => $pageSize,
+                    ],
+                ]);
+                return $data;
             }
 
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }
     }
@@ -299,13 +231,12 @@ class ProductsEngineController extends AdminController
     {
         try {
             $plat = \Yii::$app->request->get('plat');
-            $type = \Yii::$app->request->get('type','');
+            $type = \Yii::$app->request->get('type', '');
             $condition = Yii::$app->request->post('condition');
             $id = $condition['id'];
-            return ApiProductsEngine::accept($plat,$type, $id);
+            return ApiProductsEngine::accept($plat, $type, $id);
 
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }
     }
@@ -318,13 +249,12 @@ class ProductsEngineController extends AdminController
     {
         try {
             $plat = \Yii::$app->request->get('plat');
-            $type = \Yii::$app->request->get('type','');
+            $type = \Yii::$app->request->get('type', '');
             $condition = Yii::$app->request->post('condition');
             $id = $condition['id'];
-            return ApiProductsEngine::refuse($plat,$type, $id);
+            return ApiProductsEngine::refuse($plat, $type, $id);
 
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }
     }
@@ -337,13 +267,12 @@ class ProductsEngineController extends AdminController
     {
         try {
             $condition = Yii::$app->request->post('condition');
-            $ruleType = Yii::$app->request->get('type','');
+            $ruleType = Yii::$app->request->get('type', '');
             $ruleId = $condition['ruleId'];
             return ApiProductsEngine::run($ruleType, $ruleId);
 
 
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }
     }
@@ -354,7 +283,7 @@ class ProductsEngineController extends AdminController
      */
     public function actionRule()
     {
-        $type = Yii::$app->request->get('type','new');
+        $type = Yii::$app->request->get('type', 'new');
         try {
             if ($type === 'new') {
                 return EbayNewRule::find()->all();
@@ -363,8 +292,7 @@ class ProductsEngineController extends AdminController
                 return EbayHotRule::find()->all();
             }
 
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }
     }
@@ -383,7 +311,7 @@ class ProductsEngineController extends AdminController
             $id = ArrayHelper::getValue($condition, 'id', '');
             if ($type === 'new') {
                 $rule = EbayNewRule::findOne($id);
-                if(empty($rule)) {
+                if (empty($rule)) {
                     $rule = new EbayNewRule();
                     $condition['creator'] = $userName;
                 }
@@ -396,7 +324,7 @@ class ProductsEngineController extends AdminController
 
             if ($type === 'hot') {
                 $rule = EbayHotRule::findOne($id);
-                if(empty($rule)) {
+                if (empty($rule)) {
                     $rule = new EbayHotRule();
                     $condition['creator'] = $userName;
                 }
@@ -419,31 +347,31 @@ class ProductsEngineController extends AdminController
      */
     public function actionDeleteRule()
     {
-        $type = Yii::$app->request->get('type','new');
+        $type = Yii::$app->request->get('type', 'new');
         $condition = \Yii::$app->request->post('condition');
-        $id = ArrayHelper::getValue($condition, 'id','');
+        $id = ArrayHelper::getValue($condition, 'id', '');
         try {
-            if($type === 'new') {
+            if ($type === 'new') {
                 EbayNewRule::findOne($id)->delete();
             }
-            if($type === 'hot') {
+            if ($type === 'hot') {
                 EbayHotRule::findOne($id)->delete();
             }
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }
     }
 
 
- //==========================================================================
+    //==========================================================================
+
     /**
      * eBay类目列表
      * @return array|\yii\db\ActiveRecord[]
      */
     public function actionEbayCat()
     {
-        $condition = Yii::$app->request->post('condition',null);
+        $condition = Yii::$app->request->post('condition', null);
         try {
             return EbayCategory::find()
                 ->andFilterWhere(['parentId' => $condition['parentId']])
@@ -463,7 +391,7 @@ class ProductsEngineController extends AdminController
      */
     public function actionDevCat()
     {
-        $condition = Yii::$app->request->post('condition',null);
+        $condition = Yii::$app->request->post('condition', null);
         try {
             $query = (new Query())
                 ->select(["ed.*",
@@ -472,8 +400,8 @@ class ProductsEngineController extends AdminController
                     "ea.marketplace",
                 ])
                 ->from('proEngine.ebay_developer_category ed')
-                ->leftJoin('proEngine.ebay_category ea','ea.id=categoryId')
-                ->leftJoin('proEngine.ebay_category p','p.id=ea.parentId')
+                ->leftJoin('proEngine.ebay_category ea', 'ea.id=categoryId')
+                ->leftJoin('proEngine.ebay_category p', 'p.id=ea.parentId')
                 ->andFilterWhere(['like', 'developer', $condition['developer']])
                 ->andFilterWhere(['like', 'ea.category', $condition['category']])
                 ->andFilterWhere(['like', 'ea.marketplace', $condition['marketplace']])
@@ -506,7 +434,7 @@ class ProductsEngineController extends AdminController
                 throw new \Exception('Attribute categoryId can not be empty!');
             }*/
             $model = EbayDeveloperCategory::findOne($id);
-            if(empty($model)) {
+            if (empty($model)) {
                 $model = new EbayDeveloperCategory();
             }
             $model->setAttributes([
@@ -532,7 +460,7 @@ class ProductsEngineController extends AdminController
     public function actionDeleteDevCat()
     {
         $condition = \Yii::$app->request->post('condition');
-        $id = ArrayHelper::getValue($condition, 'id','');
+        $id = ArrayHelper::getValue($condition, 'id', '');
         try {
             return EbayDeveloperCategory::findOne($id)->delete();
         } catch (\Exception $why) {
@@ -542,15 +470,18 @@ class ProductsEngineController extends AdminController
 
     //======================================================================================
     //类目规则
-    public function actionPlat(){
+    public function actionPlat()
+    {
         return [
             'ebay',
             //'wish',
             //'joom',
         ];
     }
-    public function actionMarketplace(){
-        $plat = Yii::$app->request->get('plat',null);
+
+    public function actionMarketplace()
+    {
+        $plat = Yii::$app->request->get('plat', null);
         try {
             return EbayCategory::find()->andFilterWhere(['plat' => $plat])->distinct('marketplace');
         } catch (\Exception $why) {
@@ -564,7 +495,7 @@ class ProductsEngineController extends AdminController
      */
     public function actionCategory()
     {
-        $condition = Yii::$app->request->post('condition',null);
+        $condition = Yii::$app->request->post('condition', null);
         try {
             return EbayCategory::find()
                 ->andFilterWhere(['plat' => $condition['plat']])
@@ -584,7 +515,7 @@ class ProductsEngineController extends AdminController
             $condition = \Yii::$app->request->post('condition');
             $id = ArrayHelper::getValue($condition, 'id', '');
             $rule = EbayCategory::findOne($id);
-            if(empty($rule)) {
+            if (empty($rule)) {
                 $rule = new EbayCategory();
             }
             $rule->setAttributes($condition);
@@ -603,9 +534,10 @@ class ProductsEngineController extends AdminController
      * Author: henry
      * @return array|ArrayDataProvider
      */
-    public function actionCateRule(){
-        $page = Yii::$app->request->get('page',1);
-        $pageSize = Yii::$app->request->get('pageSize',20);
+    public function actionCateRule()
+    {
+        $page = Yii::$app->request->get('page', 1);
+        $pageSize = Yii::$app->request->get('pageSize', 20);
         try {
             $data = EbayCateRule::find()->all();
             return $data = new ArrayDataProvider([
@@ -615,11 +547,11 @@ class ProductsEngineController extends AdminController
                     'pageSize' => $pageSize,
                 ],
             ]);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }
     }
+
     /**
      * 增加或编辑规则
      * @return array
@@ -631,7 +563,7 @@ class ProductsEngineController extends AdminController
             $condition = \Yii::$app->request->post('condition');
             $id = ArrayHelper::getValue($condition, 'id', '');
             $rule = EbayCateRule::findOne($id);
-            if(empty($rule)) {
+            if (empty($rule)) {
                 $rule = new EbayCateRule();
             }
             $rule->setAttributes($condition);
@@ -653,11 +585,10 @@ class ProductsEngineController extends AdminController
     public function actionDeleteCateRule()
     {
         $condition = \Yii::$app->request->post('condition');
-        $id = ArrayHelper::getValue($condition, 'id','');
+        $id = ArrayHelper::getValue($condition, 'id', '');
         try {
             EbayCateRule::findOne($id)->delete();
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }
     }
@@ -665,30 +596,31 @@ class ProductsEngineController extends AdminController
 
 //======================================================================================
     //分配规则
-    public function actionAllotRule(){
+    public function actionAllotRule()
+    {
         try {
             $data = EbayAllotRule::find()->asArray()->all();
             $res = [];
-            foreach ($data as $v){
+            foreach ($data as $v) {
                 $item = $v;
-                if($v['ruleType'] == 'new'){
+                if ($v['ruleType'] == 'new') {
                     $ebayNewRule = EbayNewRule::findOne(['_id' => $v['ruleId']]);
                     $item['ruleName'] = $ebayNewRule ? $ebayNewRule['ruleName'] : '';
-                }elseif($v['ruleType'] == 'hot'){
+                } elseif ($v['ruleType'] == 'hot') {
                     $ebayHotRule = EbayHotRule::findOne(['_id' => $v['ruleId']]);
                     $item['ruleName'] = $ebayHotRule ? $ebayHotRule['ruleName'] : '';
-                }else{
+                } else {
                     $item['ruleName'] = '';
                 }
                 $res[] = $item;
             }
 
             return $res;
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }
     }
+
     /**
      * 增加或编辑规则
      * @return array
@@ -701,7 +633,7 @@ class ProductsEngineController extends AdminController
             $condition = \Yii::$app->request->post('condition');
             $id = ArrayHelper::getValue($condition, 'id', '');
             $rule = EbayAllotRule::findOne($id);
-            if(empty($rule)) {
+            if (empty($rule)) {
                 $rule = new EbayAllotRule();
             }
             $rule->setAttributes($condition);
@@ -723,19 +655,13 @@ class ProductsEngineController extends AdminController
     public function actionDeleteAllotRule()
     {
         $condition = \Yii::$app->request->post('condition');
-        $id = ArrayHelper::getValue($condition, 'id','');
+        $id = ArrayHelper::getValue($condition, 'id', '');
         try {
             EbayAllotRule::findOne($id)->delete();
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }
     }
-
-
-
-
-
 
 
 }

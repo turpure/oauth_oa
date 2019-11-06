@@ -414,20 +414,20 @@ class TinyToolController extends AdminController
             'transport' => [],
         ];
         //获取SKU信息
-        $res = ApiUk::getDetail($post['sku']);
+        $res = ApiUk::getDetail($post['sku'], $post['num']);
+        //print_r($res);exit;
         if (!$res) return $data;
 
         $post['num'] = $post['num'] ? $post['num'] : 1;
         $post['rate'] = $post['rate'] ? $post['rate'] : 0;
 
-        $res['num'] = $post['num'];
-
-        $res['price'] = $res['price'] * $post['num'];
-        $res['weight'] = $res['weight'] * $post['num'];
-        $res['height'] = $res['height'] * $post['num'];
-        //print_r($res);exit;
         $data['detail'] = $res;
-
+        $res['num'] = $post['num'];
+        $res['price'] = array_sum(ArrayHelper::getColumn($res,'price'));
+        $res['weight'] = array_sum(ArrayHelper::getColumn($res,'weight'));
+        $res['height'] = array_sum(ArrayHelper::getColumn($res,'height'));
+        $res['length'] = max(ArrayHelper::getColumn($res,'length'));
+        $res['width'] = max(ArrayHelper::getColumn($res,'width'));
         //获取运费和出库费
         $data['transport'] = ApiUk::getTransport($res['weight'], $res['length'], $res['width'], $res['height']);
 
@@ -471,18 +471,19 @@ class TinyToolController extends AdminController
         ];
         //获取SKU信息
         //获取SKU信息
-        $res = ApiAu::getDetail($post['sku']);
+        $res = ApiAu::getDetail($post['sku'], $post['num']);
         if (!$res) return $data;
 
         $post['num'] = $post['num'] ? $post['num'] : 1;
         $post['rate'] = $post['rate'] ? $post['rate'] : 0;
 
-        $res['num'] = $post['num'];
-
-        $res['price'] = $res['price'] * $post['num'];
-        $res['weight'] = $res['weight'] * $post['num'];
-        $res['height'] = $res['height'] * $post['num'];
         $data['detail'] = $res;
+        $res['num'] = $post['num'];
+        $res['price'] = array_sum(ArrayHelper::getColumn($res,'price'));
+        $res['weight'] = array_sum(ArrayHelper::getColumn($res,'weight'));
+        $res['height'] = array_sum(ArrayHelper::getColumn($res,'height'));
+        $res['length'] = max(ArrayHelper::getColumn($res,'length'));
+        $res['width'] = max(ArrayHelper::getColumn($res,'width'));
 
         //获取运费和出库费
         $data['transport'] = ApiAu::getTransport($res['weight'], $res['length'], $res['width'], $res['height']);

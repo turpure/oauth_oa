@@ -17,8 +17,22 @@ class ApiUk{
      * @param $sku
      * @return array
      */
-    public static function getDetail($sku){
-        $sql = "SELECT aa.SKU,aa.skuname,aa.goodscode,aa.CategoryName,aa.CreateDate,aa.price,k.weight*1000 AS weight,k.length,k.width,k.height
+    public static function getDetail($sku, $num){
+        $arr = explode(',',$sku);
+        $data = [];
+        foreach ($arr as $v){
+            //print_r($v);exit;
+            if(strpos($v,'*') !== false){
+                $newSku = substr($v,0, strpos($v,'*'));
+                $skuNum = substr($v, strpos($v,'*') + 1 ,count($v));
+            }else{
+                $newSku = $v;
+                $skuNum = 1;
+            }
+            //print_r($newSku);exit;
+            $sql = "SELECT aa.SKU,aa.skuname,aa.goodscode,aa.CategoryName,aa.CreateDate,aa.price * " . $skuNum*$num . " as price,
+                           k.weight*1000*" . $skuNum*$num . " AS weight,
+                          k.length,k.width,k.height*" . $skuNum*$num . " as height ," . $skuNum*$num . " AS num
                 FROM (    
                     SELECT w.SKU,w.skuname,w.goodscode,w.CategoryName,w.CreateDate,
                     price = (CASE WHEN w.costprice<=0 THEN w.goodsPrice ELSE w.costprice END)
@@ -30,9 +44,12 @@ class ApiUk{
                     AND SKU NOT IN (SELECT SKU FROM Y_R_tStockingWaring WHERE SKU LIKE 'UK-%' AND storeName='万邑通UK')
                     ) AS aa
                 LEFT JOIN UK_Storehouse_WeightAndSize k ON aa.sku=k.sku
-                WHERE  aa.sku='{$sku}'";
-        $res = Yii::$app->py_db->createCommand($sql)->queryOne();
-        return $res;
+                WHERE  aa.sku='{$newSku}'";
+            $res = Yii::$app->py_db->createCommand($sql)->queryOne();
+            $data[] = $res;
+        }
+
+        return $data;
     }
 
     /**
