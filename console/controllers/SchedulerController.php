@@ -755,17 +755,26 @@ class SchedulerController extends Controller
      */
     public function actionGetRepData(){
         try {
-            $sql = "EXEC LY_eBayUKRealWarehouse_Replenishment_20191105";
-            $list = Yii::$app->py_db->createCommand($sql)->queryAll();
-            //Yii::$app->db->createCommand()->truncateTable('data_salesAmtOfLatestMonth')->execute();
+            $ukList = Yii::$app->py_db->createCommand("EXEC LY_eBayUKRealWarehouse_Replenishment_20191105")->queryAll();
+            //Yii::$app->db->createCommand()->truncateTable('cache_overseasReplenish')->execute();
+
+            //获取UK真仓补货
             Yii::$app->db->createCommand("DELETE  FROM cache_overseasReplenish WHERE type ='UK真仓';")->execute();
-            //print_r(13);exit;
             Yii::$app->db->createCommand()->batchInsert('cache_overseasReplenish',
                 ['SKU','SKUName','goodsCode','salerName','goodsStatus','price','weight','purchaser','supplierName',
                     'saleNum3days','saleNum7days','saleNum15days','saleNum30days','trend','saleNumDailyAve','399HopeUseNum',
                     'uHopeUseNum','totalHopeUseNum','uHopeSaleDays','hopeSaleDays','purchaseNum','shipNum','purCost','shipWeight','type'
                 ],
-                $list)->execute();
+                $ukList)->execute();
+            // 获取AU真仓补货
+            Yii::$app->db->createCommand("DELETE  FROM cache_overseasReplenish WHERE type ='AU真仓';")->execute();
+            $auList = Yii::$app->py_db->createCommand("EXEC LY_eBayAURealWarehouse_Replenishment_20191105")->queryAll();
+            Yii::$app->db->createCommand()->batchInsert('cache_overseasReplenish',
+                ['SKU','SKUName','goodsCode','salerName','goodsStatus','price','weight','purchaser','supplierName',
+                    'saleNum3days','saleNum7days','saleNum15days','saleNum30days','trend','saleNumDailyAve','399HopeUseNum',
+                    'uHopeUseNum','totalHopeUseNum','uHopeSaleDays','hopeSaleDays','purchaseNum','shipNum','purCost','shipWeight','type'
+                ],
+                $auList)->execute();
 
             print date('Y-m-d H:i:s') . " INFO:success to get replenishment data!\n";
         } catch (\Exception $why) {
