@@ -10,29 +10,32 @@ namespace backend\modules\v1\models;
 
 
 use \Yii;
-class ApiUk{
+use yii\db\Exception;
+
+class ApiUk
+{
 
     /**
      * 获取SKU信息
      * @param $sku
      * @return array
      */
-    public static function getDetail($sku, $num){
-        $arr = explode(',',$sku);
+    public static function getDetail($sku, $num)
+    {
+        $arr = explode(',', $sku);
         $data = [];
-        foreach ($arr as $v){
-            //print_r($v);exit;
-            if(strpos($v,'*') !== false){
-                $newSku = substr($v,0, strpos($v,'*'));
-                $skuNum = substr($v, strpos($v,'*') + 1 ,count($v));
-            }else{
-                $newSku = $v;
-                $skuNum = 1;
-            }
-            //print_r($newSku);exit;
-            $sql = "SELECT aa.SKU,aa.skuname,aa.goodscode,aa.CategoryName,aa.CreateDate,aa.price * " . $skuNum*$num . " as price,
-                           k.weight*1000*" . $skuNum*$num . " AS weight,
-                          k.length,k.width,k.height*" . $skuNum*$num . " as height ," . $skuNum*$num . " AS num
+        try {
+            foreach ($arr as $v) {
+                if (strpos($v, '*') !== false) {
+                    $newSku = substr($v, 0, strpos($v, '*'));
+                    $skuNum = substr($v, strpos($v, '*') + 1, count($v));
+                } else {
+                    $newSku = $v;
+                    $skuNum = 1;
+                }
+                $sql = "SELECT aa.SKU,aa.skuname,aa.goodscode,aa.CategoryName,aa.CreateDate,aa.price * " . $skuNum * $num . " as price,
+                           k.weight*1000*" . $skuNum * $num . " AS weight,
+                          k.length,k.width,k.height*" . $skuNum * $num . " as height ," . $skuNum * $num . " AS num
                 FROM (    
                     SELECT w.SKU,w.skuname,w.goodscode,w.CategoryName,w.CreateDate,
                     price = (CASE WHEN w.costprice<=0 THEN w.goodsPrice ELSE w.costprice END)
@@ -45,11 +48,13 @@ class ApiUk{
                     ) AS aa
                 LEFT JOIN UK_Storehouse_WeightAndSize k ON aa.sku=k.sku
                 WHERE  aa.sku='{$newSku}'";
-            $res = Yii::$app->py_db->createCommand($sql)->queryOne();
-            $data[] = $res;
+                $res = Yii::$app->py_db->createCommand($sql)->queryOne();
+                $data[] = $res;
+            }
+            return $data;
+        } catch (Exception $e) {
+            return [];
         }
-
-        return $data;
     }
 
     /**
@@ -60,73 +65,73 @@ class ApiUk{
      * @param $height
      * @return array
      */
-    public static function getTransport($weight, $length, $width, $height){
+    public static function getTransport($weight, $length, $width, $height)
+    {
         //获取出库费用
-        if($weight <= Yii::$app->params['w_uk_out_1']){
+        if ($weight <= Yii::$app->params['w_uk_out_1']) {
             $data['out'] = Yii::$app->params['w_uk_out_fee_1'];
-        }else if($weight <= Yii::$app->params['w_uk_out_2']){
+        } else if ($weight <= Yii::$app->params['w_uk_out_2']) {
             $data['out'] = Yii::$app->params['w_uk_out_fee_2'];
-        }else if($weight <= Yii::$app->params['w_uk_out_3']){
+        } else if ($weight <= Yii::$app->params['w_uk_out_3']) {
             $data['out'] = Yii::$app->params['w_uk_out_fee_3'];
-        }else if($weight <= Yii::$app->params['w_uk_out_4']){
+        } else if ($weight <= Yii::$app->params['w_uk_out_4']) {
             $data['out'] = Yii::$app->params['w_uk_out_fee_4'];
-        }else{
+        } else {
             $data['out'] = ceil($weight - Yii::$app->params['w_uk_out_4']) * Yii::$app->params['w_uk_out_fee_5'];
         }
 
         //获取运费,超重、超长、超宽、超高取快递方式Yodel - Packet Home Mini 否则取快递方式 Royal Mail - Untracked 48 Large Letter
-        if($weight > Yii::$app->params['w_uk_tran_3_6'] || $length > Yii::$app->params['len_uk_tran_3'] ||
-            $width > Yii::$app->params['wid_uk_tran_3'] || $height > Yii::$app->params['hei_uk_tran_3']){
+        if ($weight > Yii::$app->params['w_uk_tran_3_6'] || $length > Yii::$app->params['len_uk_tran_3'] ||
+            $width > Yii::$app->params['wid_uk_tran_3'] || $height > Yii::$app->params['hei_uk_tran_3']) {
             $data['name'] = '无法获取对应物流！';
             $data['cost'] = 0;
-        }elseif($weight > Yii::$app->params['w_uk_tran_2_2'] || $length > Yii::$app->params['len_uk_tran_2'] ||
-            $width > Yii::$app->params['wid_uk_tran_2'] || $height > Yii::$app->params['hei_uk_tran_2']){
+        } elseif ($weight > Yii::$app->params['w_uk_tran_2_2'] || $length > Yii::$app->params['len_uk_tran_2'] ||
+            $width > Yii::$app->params['wid_uk_tran_2'] || $height > Yii::$app->params['hei_uk_tran_2']) {
             $data['name'] = Yii::$app->params['transport_uk3'];
             //获取方式3的运费
-            if($weight <= Yii::$app->params['w_uk_tran_3_1']){
+            if ($weight <= Yii::$app->params['w_uk_tran_3_1']) {
                 $data['cost'] = Yii::$app->params['w_uk_tran_fee_3_1'];
-            }else if($weight <= Yii::$app->params['w_uk_tran_3_2']){
+            } else if ($weight <= Yii::$app->params['w_uk_tran_3_2']) {
                 $data['cost'] = Yii::$app->params['w_uk_tran_fee_3_2'];
-            }else if($weight <= Yii::$app->params['w_uk_tran_3_3']){
+            } else if ($weight <= Yii::$app->params['w_uk_tran_3_3']) {
                 $data['cost'] = Yii::$app->params['w_uk_tran_fee_3_3'];
-            }else if($weight <= Yii::$app->params['w_uk_tran_3_4']){
+            } else if ($weight <= Yii::$app->params['w_uk_tran_3_4']) {
                 $data['cost'] = Yii::$app->params['w_uk_tran_fee_3_4'];
-            }else if($weight <= Yii::$app->params['w_uk_tran_3_5']){
+            } else if ($weight <= Yii::$app->params['w_uk_tran_3_5']) {
                 $data['cost'] = Yii::$app->params['w_uk_tran_fee_3_5'];
-            }else if($weight <= Yii::$app->params['w_uk_tran_3_6']){
+            } else if ($weight <= Yii::$app->params['w_uk_tran_3_6']) {
                 $data['cost'] = Yii::$app->params['w_uk_tran_fee_3_6'];
-            }else{
+            } else {
                 $data['cost'] = Yii::$app->params['w_uk_tran_fee_3_7'];
             }
-        }elseif($weight > Yii::$app->params['w_uk_tran_1_4'] || $length > Yii::$app->params['len_uk_tran'] ||
-            $width > Yii::$app->params['wid_uk_tran'] || $height > Yii::$app->params['hei_uk_tran']){
+        } elseif ($weight > Yii::$app->params['w_uk_tran_1_4'] || $length > Yii::$app->params['len_uk_tran'] ||
+            $width > Yii::$app->params['wid_uk_tran'] || $height > Yii::$app->params['hei_uk_tran']) {
             $data['name'] = Yii::$app->params['transport_uk2'];
             //获取方式2的运费
-            if($weight <= Yii::$app->params['w_uk_tran_2_1']){
+            if ($weight <= Yii::$app->params['w_uk_tran_2_1']) {
                 $data['cost'] = Yii::$app->params['w_uk_tran_fee_2_1'];
-            }else{
+            } else {
                 $data['cost'] = Yii::$app->params['w_uk_tran_fee_2_2'];
             }
 
-        }else{
+        } else {
             $data['name'] = Yii::$app->params['transport_uk1'];
             //获取方式1的运费
-            if($weight <= Yii::$app->params['w_uk_tran_1_1']){
+            if ($weight <= Yii::$app->params['w_uk_tran_1_1']) {
                 $data['cost'] = Yii::$app->params['w_uk_tran_fee_1_1'];
-            }else if($weight <= Yii::$app->params['w_uk_tran_1_2']){
+            } else if ($weight <= Yii::$app->params['w_uk_tran_1_2']) {
                 $data['cost'] = Yii::$app->params['w_uk_tran_fee_1_2'];
-            }else if($weight <= Yii::$app->params['w_uk_tran_1_3']){
+            } else if ($weight <= Yii::$app->params['w_uk_tran_1_3']) {
                 $data['cost'] = Yii::$app->params['w_uk_tran_fee_1_3'];
-            }else{
+            } else {
                 $data['cost'] = Yii::$app->params['w_uk_tran_fee_1_4'];
             }
         }
-        $data['costRmb'] = $data['cost']*Yii::$app->params['poundRate'];
-        $data['outRmb'] = $data['out']*Yii::$app->params['poundRate'];
+        $data['costRmb'] = $data['cost'] * Yii::$app->params['poundRate'];
+        $data['outRmb'] = $data['out'] * Yii::$app->params['poundRate'];
         return $data;
     }
-    
-    
+
 
     /**
      * 根据售价获取毛利率
@@ -135,7 +140,8 @@ class ApiUk{
      * @param $costprice
      * @return mixed
      */
-    public static function getRate($price,$cost,$out,$costprice){
+    public static function getRate($price, $cost, $out, $costprice)
+    {
         $data['price'] = $price;
         //eBay交易费
         $data['eFee'] = $price * Yii::$app->params['eRate_uk'];
@@ -144,21 +150,21 @@ class ApiUk{
         $usRate = ApiUkFic::getRateUkOrUs('USD');//美元汇率
         $newPrice = $price * $ukRate / $usRate;//英镑转化成美元
         //获取paypal交易费
-        if($newPrice > 8){
+        if ($newPrice > 8) {
             $data['pFee'] = $price * Yii::$app->params['bpRate_uk'] + Yii::$app->params['bpBasic_uk'];
-        }else{
+        } else {
             $data['pFee'] = $price * Yii::$app->params['spRate_uk'] + Yii::$app->params['spBasic_uk'];
         }
 
         //计算毛利
-        $profit = $price - $data['pFee'] - $data['eFee'] - $cost - $out - $costprice/$ukRate;
-        $data['profit'] = round($profit,2);
-        $data['eFee'] = round($data['eFee'],2);
-        $data['pFee'] = round($data['pFee'],2);
-        $data['profitRmb'] = round($profit * $ukRate,2);
+        $profit = $price - $data['pFee'] - $data['eFee'] - $cost - $out - $costprice / $ukRate;
+        $data['profit'] = round($profit, 2);
+        $data['eFee'] = round($data['eFee'], 2);
+        $data['pFee'] = round($data['pFee'], 2);
+        $data['profitRmb'] = round($profit * $ukRate, 2);
 
         //计算毛利率
-        $data['rate'] = round($profit / $price * 100,2);
+        $data['rate'] = round($profit / $price * 100, 2);
 
         return $data;
     }
@@ -171,32 +177,33 @@ class ApiUk{
      * @param $costprice
      * @return mixed
      */
-    public static function getPrice($rate,$cost,$out,$costprice){
+    public static function getPrice($rate, $cost, $out, $costprice)
+    {
         //获取汇率
         $ukRate = ApiUkFic::getRateUkOrUs('GBP');//英镑汇率
         $usRate = ApiUkFic::getRateUkOrUs('USD');//美元汇率
 
 
         //获取售价  使用小额paypal参数计算 和8美元比较，小于8则正确，否则使用大额参数再次计算获取售价
-        $price = ($cost + $out + $costprice/$ukRate + Yii::$app->params['spBasic_uk']) / (1 - $rate/100 - Yii::$app->params['eRate_uk'] - Yii::$app->params['spRate_uk']);
+        $price = ($cost + $out + $costprice / $ukRate + Yii::$app->params['spBasic_uk']) / (1 - $rate / 100 - Yii::$app->params['eRate_uk'] - Yii::$app->params['spRate_uk']);
 
         //获取paypal交易费
-        if($price < 8 * $usRate / $ukRate){
+        if ($price < 8 * $usRate / $ukRate) {
             $pFee = $price * Yii::$app->params['spRate_uk'] + Yii::$app->params['spBasic_uk'];
-        }else{
-            $price = ($cost + $out + $costprice/$ukRate + Yii::$app->params['bpBasic_uk'])/(1 - $rate/100 - Yii::$app->params['eRate_uk'] - Yii::$app->params['bpRate_uk']);
+        } else {
+            $price = ($cost + $out + $costprice / $ukRate + Yii::$app->params['bpBasic_uk']) / (1 - $rate / 100 - Yii::$app->params['eRate_uk'] - Yii::$app->params['bpRate_uk']);
             $pFee = $price * Yii::$app->params['bpRate_uk'] + Yii::$app->params['bpBasic_uk'];
         }
         //eBay交易费
         $eFee = $price * Yii::$app->params['eRate_uk'];
 
         //计算毛利
-        $profit = $price - $eFee - $pFee - $cost - $out - $costprice/$ukRate;
-        $data['price'] = round($price,2);
-        $data['eFee'] = round($eFee,2);
-        $data['pFee'] = round($pFee,2);
-        $data['profit'] = round($profit,2);
-        $data['profitRmb'] = round($profit * $ukRate,2);
+        $profit = $price - $eFee - $pFee - $cost - $out - $costprice / $ukRate;
+        $data['price'] = round($price, 2);
+        $data['eFee'] = round($eFee, 2);
+        $data['pFee'] = round($pFee, 2);
+        $data['profit'] = round($profit, 2);
+        $data['profitRmb'] = round($profit * $ukRate, 2);
         $data['rate'] = $rate;
         return $data;
 

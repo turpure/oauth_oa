@@ -10,6 +10,7 @@ namespace backend\modules\v1\models;
 
 
 use \Yii;
+use yii\db\Exception;
 
 class ApiAu
 {
@@ -23,22 +24,24 @@ class ApiAu
     {
         $arr = explode(',', $sku);
         $data = [];
-        foreach ($arr as $v) {
-            //print_r($v);exit;
-            if (strpos($v, '*') !== false) {
-                $newSku = substr($v, 0, strpos($v, '*'));
-                $skuNum = substr($v, strpos($v, '*') + 1, count($v));
-            } else {
-                $newSku = $v;
-                $skuNum = 1;
-            }
-            $sql = "SELECT aa.SKU,aa.skuname,aa.goodscode,aa.CategoryName,aa.CreateDate,
-                      (cast(round(aa.price,2) as numeric(6,2)))* " . $skuNum*$num . " as price,
-                      k.weight*1000*" . $skuNum*$num . " AS weight,
+        try {
+            foreach ($arr as $v) {
+                //print_r($v);exit;
+                if (strpos($v, '*') !== false) {
+                    $newSku = substr($v, 0, strpos($v, '*'));
+                    $skuNum = substr($v, strpos($v, '*') + 1, count($v));
+                } else {
+                    $newSku = $v;
+                    $skuNum = 1;
+                }
+
+                $sql = "SELECT aa.SKU,aa.skuname,aa.goodscode,aa.CategoryName,aa.CreateDate,
+                      (cast(round(aa.price,2) as numeric(6,2)))* " . $skuNum * $num . " as price,
+                      k.weight*1000*" . $skuNum * $num . " AS weight,
                       --cast(round(k.length,2) as numeric(6,2)) as length,
                       --cast(round(k.width,2) as numeric(6,2)) as width,
                       --cast((round(k.height,2) + 1.0 - 1.0) as numeric(5,2)) as 
-                      k.length,k.width,k.height*" . $skuNum*$num . " as height, " . $skuNum*$num . " as num
+                      k.length,k.width,k.height*" . $skuNum * $num . " as height, " . $skuNum * $num . " as num
                 FROM (    
                     SELECT w.SKU,w.skuname,w.goodscode,w.CategoryName,w.CreateDate,
                       price = (CASE w.costprice WHEN 0 THEN w.goodsPrice ELSE w.costprice END)
@@ -51,11 +54,13 @@ class ApiAu
                     ) AS aa
                 LEFT JOIN AU_Storehouse_WeightAndSize k ON aa.sku=k.sku
                 WHERE  aa.sku='{$newSku}'";
-            $res = Yii::$app->py_db->createCommand($sql)->queryOne();
-            $data[] = $res;
+                $res = Yii::$app->py_db->createCommand($sql)->queryOne();
+                $data[] = $res;
+            }
+            return $data;
+        } catch (Exception $e) {
+            return [];
         }
-
-        return $data;
     }
 
     /**

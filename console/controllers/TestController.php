@@ -83,4 +83,78 @@ class TestController extends Controller
 
 
     }
+
+    public function actionTest2(){   //默认ebay平台
+        $devList = [
+            '刘珊珊', '陈微微', '王漫漫', '杨笑天', '胡小红', '廖露露', '常金彩', '宋现中',
+        ];
+        try {
+            $ret = [];
+            $cateList = (new \yii\mongodb\Query())->from('ebay_new_product')
+                //->andFilterWhere(['marketplace' => 'ebay'])
+                ->distinct('marketplace');
+            //->all();
+            //print_r($cur);exit;
+            foreach ($cateList as $value) {
+                $cur = (new \yii\mongodb\Query())->from('ebay_new_product')
+                    ->andFilterWhere(['marketplace' => $value])
+                    ->all();
+                list($isSetCat, $categoryArr) = ApiProductsEngine::getUserCate($userList, $value);
+                foreach ($cur as $row) {
+                    if (isset($row['accept']) && $row['accept'] ||    //过滤掉已经认领的产品
+                        isset($row['refuse'][$username])       //过滤掉当前用户已经过滤的产品
+                    ) {
+                        continue;
+                    } else {
+                        if ($isSetCat == false) {
+                            $ret[] = $row;
+                        } else {
+                            foreach ($categoryArr as $v) {
+                                if (strpos($row['cidName'], $v) !== false) {
+                                    $ret[] = $row;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            $data = new ArrayDataProvider([
+                'allModels' => $ret,
+                'sort' => [
+                    'attributes' => ['price', 'visit', 'sold', 'listedTime'],
+                    'defaultOrder' => [
+                        'sold' => SORT_DESC,
+                    ]
+                ],
+                'pagination' => [
+                    'page' => $page - 1,
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+            return $data;
+
+
+        } catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

@@ -749,6 +749,35 @@ class SchedulerController extends Controller
         }
     }
 
+    /** 获取海外仓补货数据
+     * Date: 2019-11-06 17:41
+     * Author: henry
+     */
+    public function actionGetRepData(){
+        try {
+            $sql = "EXEC LY_eBayUKRealWarehouse_Replenishment_20191105";
+            $list = Yii::$app->py_db->createCommand($sql)->queryAll();
+            //Yii::$app->db->createCommand()->truncateTable('data_salesAmtOfLatestMonth')->execute();
+            Yii::$app->db->createCommand("DELETE  FROM cache_overseasReplenish WHERE type ='UK真仓';")->execute();
+            //print_r(13);exit;
+            Yii::$app->db->createCommand()->batchInsert('cache_overseasReplenish',
+                ['SKU','SKUName','goodsCode','salerName','goodsStatus','price','weight','purchaser','supplierName',
+                    'saleNum3days','saleNum7days','saleNum15days','saleNum30days','trend','saleNumDailyAve','399HopeUseNum',
+                    'uHopeUseNum','totalHopeUseNum','uHopeSaleDays','hopeSaleDays','purchaseNum','shipNum','purCost','shipWeight','type'
+                ],
+                $list)->execute();
+
+            print date('Y-m-d H:i:s') . " INFO:success to get replenishment data!\n";
+        } catch (\Exception $why) {
+            print date('Y-m-d H:i:s') . " INFO:fail to get replenishment data because $why \n";
+        }
+    }
+
+
+
+
+
+
 
 
     /**
