@@ -186,7 +186,9 @@ class ProductsEngineController extends AdminController
             if ($plat === 'ebay') {
                 $list = (new \yii\mongodb\Query())->from('ebay_recommended_product')
                     ->andFilterWhere(['marketplace' => $marketplace])
-                    ->andFilterWhere(['productType' => $type])->all();
+                    ->andFilterWhere(['productType' => $type])
+                    ->andFilterWhere(['dispatchDate' => ['$regex' => date('Y-m-d')]])
+                    ->all();
                 foreach ($list as $row) {
                     if (isset($row['accept']) && $row['accept'] ||    //过滤掉已经认领的产品
                         isset($row['refuse'][$username])       //过滤掉当前用户已经过滤的产品
