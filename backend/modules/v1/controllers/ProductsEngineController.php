@@ -252,7 +252,9 @@ class ProductsEngineController extends AdminController
             $type = \Yii::$app->request->get('type', '');
             $condition = Yii::$app->request->post('condition');
             $id = $condition['id'];
-            return ApiProductsEngine::refuse($plat, $type, $id);
+            $reason = isset($condition['reason']) && $condition['reason'] ? $condition['reason'] : '拒绝';
+            $res = ApiProductsEngine::refuse($plat, $type, $id, $reason);
+            return $res;
 
         } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];

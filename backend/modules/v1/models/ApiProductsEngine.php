@@ -64,20 +64,20 @@ class ApiProductsEngine
      * @return mixed
      * @throws \Exception
      */
-    public static function refuse($plat, $type,$id)
+    public static function refuse($plat, $type,$id,$reason)
     {
         $username = Yii::$app->user->identity->username;
-        $refuseReason = Yii::$app->request->post('reason','拒绝');
         $db = Yii::$app->mongodb;
         if ($plat === 'ebay') {
 
             $col = $db->getCollection('ebay_recommended_product');
             $doc = $col->findOne(['_id' => $id]);
+
             if (empty($doc)) {
                 throw new \Exception('产品不存在');
             }
             $refuse = ArrayHelper::getValue($doc, 'refuse', []);
-            $refuse[$username] = $refuseReason;
+            $refuse[$username] = $reason;
             $col->update(['_id' => $id], ['refuse' => array_unique($refuse)]);
 
             return $col->findOne(['_id' => $id]);
