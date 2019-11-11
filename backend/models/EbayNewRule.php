@@ -36,6 +36,9 @@ use yii\behaviors\TimestampBehavior;
  * @property mixed $updatedDate
  * @property mixed $ruleName
  * @property mixed $ruleMark
+ * @property mixed $publishedSite
+ * @property mixed $site
+ *
  */
 class EbayNewRule extends \yii\mongodb\ActiveRecord
 {
@@ -55,15 +58,30 @@ class EbayNewRule extends \yii\mongodb\ActiveRecord
 
     public function beforeSave($insert=true)
     {
+        $site = [
+            '美国' => ['country' => 1, 'marketplace' => 'EBAY_US'],
+            '英国' => ['country' => 5, 'marketplace' => 'EBAY_GB'],
+            '德国' => ['country' => 3, 'marketplace' => 'EBAY_DE'],
+            '澳大利亚' => ['country' => 4, 'marketplace' => 'EBAY_AU'],
+        ];
+        $inputSite = $this->getAttribute('publishedSite');
+        $ret= [];
+        foreach ($inputSite as $inSite) {
+            $ret[] = [$site[$inSite]['marketplace'] => $site[$inSite]['country']];
+        }
+        $this->setAttributes(['site' => $ret]);
+
         if(parent::beforeSave($insert)) {
+
             $defaultAttributes = [
-                'cids' =>'', 'index' => 1, 'title' => '','itemId' => '','country' => 1,'titleType' => 1,
+                'cids' =>'', 'index' => 1, 'title' => '','itemId' => '','country' => 1,'marketplace' => '','titleType' => 1,
                 'sort' => 'DESC', 'pageSize' => 20, 'salesThreeDayFlag' => '', 'sellerOrStore' => '',
                 'orderColumn' => 'last_modi_time','itemLocation' => [], 'isUsed' => 1,
                 ];
             $this->setAttributes($defaultAttributes);
-            return true;
         }
+        return true;
+
     }
 
     /**
@@ -108,6 +126,8 @@ class EbayNewRule extends \yii\mongodb\ActiveRecord
             'updatedDate',
             'ruleName',
             'ruleMark',
+            'publishedSite',
+            'site',
         ];
     }
 
@@ -117,7 +137,7 @@ class EbayNewRule extends \yii\mongodb\ActiveRecord
     public function rules()
     {
         return [
-            [['cids', 'index', 'title', 'itemId', 'soldEnd', 'country', 'visitEnd', 'priceEnd', 'soldStart', 'titleType', 'sort', 'pageSize', 'priceStart', 'visitStart', 'marketplace', 'popularStatus', 'sellerOrStore', 'storeLocation', 'salesThreeDayFlag', 'orderColumn', 'listedTime', 'itemLocation', 'creator', 'createdDate', 'updatedDate','ruleName','ruleMark'], 'safe']
+            [['cids', 'index', 'title', 'itemId', 'soldEnd', 'country', 'visitEnd', 'priceEnd', 'soldStart', 'titleType', 'sort', 'pageSize', 'priceStart', 'visitStart', 'marketplace', 'popularStatus', 'sellerOrStore', 'storeLocation', 'salesThreeDayFlag', 'orderColumn', 'listedTime', 'itemLocation', 'creator', 'createdDate', 'updatedDate','ruleName','ruleMark','publishedSite','site'], 'safe']
         ];
     }
 
@@ -155,6 +175,8 @@ class EbayNewRule extends \yii\mongodb\ActiveRecord
             'updatedDate' => 'Updated Time',
             'ruleName' => 'Rule Name',
             'ruleMark' => 'Rule Mark',
+            'publishedSite' => 'publishedSite',
+            'site' => 'site'
         ];
     }
 }
