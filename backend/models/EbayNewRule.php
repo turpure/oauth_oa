@@ -58,7 +58,7 @@ class EbayNewRule extends \yii\mongodb\ActiveRecord
         if(parent::beforeSave($insert)) {
             $defaultAttributes = [
                 'cids' =>'', 'index' => 1, 'title' => '','itemId' => '','country' => 1,'titleType' => 1,
-                'sort' => 'DESC', 'pageSize' => 20, 'popularStatus' => '', 'sellerOrStore' => '',
+                'sort' => 'DESC', 'pageSize' => 20, 'salesThreeDayFlag' => '', 'sellerOrStore' => '',
                 'orderColumn' => 'last_modi_time','itemLocation' => [], 'isUsed' => 1,
                 ];
             $this->setAttributes($defaultAttributes);
