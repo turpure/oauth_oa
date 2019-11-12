@@ -533,6 +533,11 @@ class ProductsEngineController extends AdminController
         }
     }
 
+    //获取类目规则详情
+    public function  actionCateRuleInfo($id){
+        return ApiProductsEngine::getCateInfo($id);
+    }
+
     /** 类目规则列表
      * Date: 2019-11-05 14:26
      * Author: henry
@@ -555,6 +560,7 @@ class ProductsEngineController extends AdminController
             return ['code' => 401, 'message' => $why->getMessage()];
         }
     }
+
 
     /**
      * 增加或编辑规则

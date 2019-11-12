@@ -9,10 +9,7 @@ use yii\behaviors\TimestampBehavior;
  *
  * @property \MongoDB\BSON\ObjectID|string $_id
  * @property mixed $pyCate
- * @property int $plat
- * @property int $marketplace
- * @property int $cate
- * @property int $subCate
+ * @property int $detail
  * @property mixed $createdDate
  * @property mixed $updatedDate
  */
@@ -48,10 +45,7 @@ class EbayCateRule extends \yii\mongodb\ActiveRecord
         return [
             '_id',
             'pyCate',
-            'plat',
-            'marketplace',
-            'cate',
-            'subCate',
+            'detail',
             'createdDate',
             'updatedDate',
         ];
@@ -63,7 +57,7 @@ class EbayCateRule extends \yii\mongodb\ActiveRecord
     public function rules()
     {
         return [
-            [['pyCate', 'plat', 'marketplace', 'cate', 'subCate', 'createdDate', 'updatedDate'], 'safe']
+            [['pyCate', 'detail', 'createdDate', 'updatedDate'], 'safe']
         ];
     }
 
@@ -75,10 +69,7 @@ class EbayCateRule extends \yii\mongodb\ActiveRecord
         return [
             '_id' => 'ID',
             'pyCate' => 'Py Cate',
-            'plat' => 'Plat',
-            'marketplace' => 'Marketplace',
-            'cate' => 'Cate',
-            'subCate' => 'Sub Cate',
+            'detail' => 'Detail',
             'createdDate' => 'Created Time',
             'updatedDate' => 'Updated Time',
         ];

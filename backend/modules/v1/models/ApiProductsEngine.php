@@ -8,6 +8,8 @@
 namespace backend\modules\v1\models;
 
 use backend\models\EbayAllotRule;
+use backend\models\EbayCategory;
+use backend\models\EbayCateRule;
 use backend\models\EbayHotRule;
 use backend\models\EbayNewRule;
 use Yii;
@@ -193,6 +195,54 @@ class ApiProductsEngine
             }
         }
         $rule['detail'] = [$newDetail, $hotDetail];
+        return $rule;
+    }
+
+    /** 获取类目规则详情
+     * @param $id
+     * Date: 2019-11-12 13:04
+     * Author: henry
+     * @return array|null|\yii\mongodb\ActiveRecord
+     */
+    public static function getCateInfo($id)
+    {
+        $rule = EbayCateRule::find()->where(['_id' => $id])->asArray()->one();
+        $allCateArr = EbayCategory::find()->asArray()->all();
+        //获取所有平台信息
+        $platArr = ArrayHelper::getColumn($allCateArr,'plat');
+        $marketplaceArr = ArrayHelper::getColumn($allCateArr,'marketplace');
+
+
+        $detail['ruleType'] = 'new';
+        $detail['flag'] = false;
+
+
+
+        $newRule = EbayNewRule::find()->asArray()->all();
+        foreach ($newRule as $k => $val) {
+            if (isset($rule['detail']) && $rule['detail']) {
+                foreach ($rule['detail'] as $v) {
+                    if (isset($v['ruleType']) && $v['ruleType'] == 'new' && $val['_id'] == $v['ruleId']) {
+                        $newDetail['flag'] = true;
+                        $newDetail['ruleValue'][$k] =
+                            [
+                                'ruleId' => $val['_id'],
+                                'ruleName' => $val['ruleName'],
+                                'flag' => true
+                            ];
+                    }
+                }
+            } else {
+                $newDetail['ruleValue'][$k] =
+                    [
+                        'ruleId' => $val['_id'],
+                        'ruleName' => $val['ruleName'],
+                        'flag' => false
+                    ];
+            }
+        }
+
+        $rule['detail'] = [];
         return $rule;
     }
 

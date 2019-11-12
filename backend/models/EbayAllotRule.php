@@ -10,12 +10,10 @@ use yii\behaviors\TimestampBehavior;
  * @property \MongoDB\BSON\ObjectID|string $_id
  * @property mixed $username
  * @property mixed $depart
- * @property mixed $ruleType
- * @property mixed $ruleId
- * @property mixed $cateRuleId
  * @property mixed $productNum
  * @property mixed $category
  * @property mixed $deliveryLocation
+ * @property mixed $detail
  * @property mixed $createdDate
  * @property mixed $updatedDate
  */
@@ -52,12 +50,10 @@ class EbayAllotRule extends \yii\mongodb\ActiveRecord
             '_id',
             'username',
             'depart',
-            'ruleType',
-            'ruleId',
-            'cateRuleId',
             'productNum',
             'category',
             'deliveryLocation',
+            'detail',
             'createdDate',
             'updatedDate',
 
@@ -70,7 +66,7 @@ class EbayAllotRule extends \yii\mongodb\ActiveRecord
     public function rules()
     {
         return [
-            [['username', 'depart', 'ruleType', 'ruleId', 'cateRuleId', 'productNum', 'category', 'deliveryLocation', 'createdDate', 'updatedDate'], 'safe']
+            [['username', 'depart', 'productNum', 'category', 'deliveryLocation', 'detail', 'createdDate', 'updatedDate'], 'safe']
         ];
     }
 
@@ -83,12 +79,10 @@ class EbayAllotRule extends \yii\mongodb\ActiveRecord
             '_id' => 'ID',
             'username' => 'Username',
             'depart' => 'Depart',
-            'ruleType' => 'Rule Type',
-            'ruleId' => 'Rule Id',
-            'cateRuleId' => 'Cate Rule Id',
             'productNum' => 'Product Num',
             'category' => 'Category',
             'deliveryLocation' => 'Delivery Location',
+            'detail' => 'Detail',
             'createdDate' => 'Created Time',
             'updatedDate' => 'Updated Time',
         ];
