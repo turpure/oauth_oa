@@ -82,7 +82,7 @@ class ApiProductsEngine
                 throw new \Exception('产品已被认领');
             }
             $accept[] = $username;
-//            $col->update(['_id' => $id], ['accept' => array_unique($accept)]);
+            $col->update(['_id' => $id], ['accept' => array_unique($accept)]);
 
             // 转至逆向开发
             $product_info = [
