@@ -225,7 +225,11 @@ class ApiProductsEngine
         $data = new ArrayDataProvider([
             'allModels' => $ret,
             'sort' => [
-                'attributes' => ['price', 'visit', 'sold', 'listedTime'],
+                'attributes' => [
+                    'price', 'visit', 'sold',
+                    'salesThreeDay1', 'salesThreeDayGrowth', 'paymentThreeDay1',
+                    'salesWeek1', 'paymentWeek1', 'salesWeekGrowth'
+                ],
                 'defaultOrder' => [
                     'sold' => SORT_DESC,
                 ]
