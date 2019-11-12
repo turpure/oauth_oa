@@ -89,6 +89,13 @@ class TestController extends Controller
     public function actionTest2()
     {   //默认ebay平台
         try {
+            $sql = "SELECT u.username,a.item_name 
+                    FROM `user` u
+                    left Join auth_assignment a ON a.user_id=u.id
+                    WHERE u.`status`=10 AND item_name='产品开发';";
+            $query = Yii::$app->db->createCommand($sql)->queryAll();
+            $allDeveloperList = ArrayHelper::getColumn($query,'username');
+            //print_r($allDeveloperList);exit();
             $plat = 'ebay';
             if($plat == 'ebay'){
                 $type = 'new';
