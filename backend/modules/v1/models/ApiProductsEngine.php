@@ -315,11 +315,18 @@ class ApiProductsEngine
     public static function getCateInfo($id)
     {
         $rule = EbayCateRule::find()->where(['_id' => $id])->asArray()->one();
-        $allCateArr = EbayCategory::find()->asArray()->all();
         //获取所有平台信息
+        //$allCateArr = EbayCategory::find()->asArray()->all();
+        $allCateArr = Yii::$app->runAction('/v1/products-engine/plat')['data'];
+        foreach ($allCateArr as $value){
+            //获取平台所属站点
+            $marketplaceArr = Yii::$app->runAction('/v1/products-engine/marketplace',['plat' => $value])['data'];
+            print_r($marketplaceArr);exit;
+        }
+
         $platArr = ArrayHelper::getColumn($allCateArr,'plat');
         $marketplaceArr = ArrayHelper::getColumn($allCateArr,'marketplace');
-
+        print_r($a);exit;
 
         $detail['ruleType'] = 'new';
         $detail['flag'] = false;

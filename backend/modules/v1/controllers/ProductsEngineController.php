@@ -492,7 +492,7 @@ class ProductsEngineController extends AdminController
     {
         try {
             $data = EbayAllotRule::find()->asArray()->all();
-            $res = [];
+            /*$res = [];
             foreach ($data as $v) {
                 $item = $v;
                 if ($v['ruleType'] == 'new') {
@@ -505,9 +505,9 @@ class ProductsEngineController extends AdminController
                     $item['ruleName'] = '';
                 }
                 $res[] = $item;
-            }
+            }*/
 
-            return $res;
+            return $data;
         } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }
