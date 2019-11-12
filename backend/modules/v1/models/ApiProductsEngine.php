@@ -176,6 +176,8 @@ class ApiProductsEngine
 
 
         $ret = [];
+        //当天推荐数据
+        $today = date('Y-m-d');
 
         // 新品
         if ($type === 'new') {
@@ -183,8 +185,7 @@ class ApiProductsEngine
             //当前在用规则下数据
             $newRules = EbayNewRule::find()->select(['id'])->all();
 
-            //当天推荐数据
-            $today = date('Y-m-d');
+
 
             $cur = (new \yii\mongodb\Query())->from('ebay_new_product')
                 ->andFilterWhere(['marketplace' => $marketplace])
@@ -192,7 +193,7 @@ class ApiProductsEngine
             foreach ($newRules as $rule) {
                 foreach ($cur as $row) {
                     $productRules = $row['rules'];
-                    $recommendDate = substr($row['recommendDate'],10);
+                    $recommendDate = substr($row['recommendDate'],0,10);
                     if($recommendDate === $today  && in_array($rule->_id, $productRules,false)) {
                         $ret[] = $row;
                     }
@@ -212,7 +213,8 @@ class ApiProductsEngine
             foreach ($hotRules as $rule) {
                 foreach ($cur as $row) {
                     $productRules = $row['rules'];
-                    if(in_array($rule->_id, $productRules,false)) {
+                    $recommendDate = substr($row['recommendDate'],0,10);
+                    if($recommendDate === $today  && in_array($rule->_id, $productRules,false)) {
                         $ret[] = $row;
                     }
                 }
