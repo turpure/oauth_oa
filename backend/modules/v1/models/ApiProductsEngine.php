@@ -218,6 +218,8 @@ class ApiProductsEngine
 
 
 
+
+
         $newRule = EbayNewRule::find()->asArray()->all();
         foreach ($newRule as $k => $val) {
             if (isset($rule['detail']) && $rule['detail']) {
