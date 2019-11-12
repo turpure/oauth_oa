@@ -625,6 +625,11 @@ class ProductsEngineController extends AdminController
         }
     }
 
+    //获取分配规则详情
+    public function  actionAllotRuleInfo($id){
+        return ApiProductsEngine::getAllotInfo($id);
+    }
+
     /**
      * 增加或编辑规则
      * @return array

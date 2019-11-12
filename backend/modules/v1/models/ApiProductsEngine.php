@@ -7,6 +7,9 @@
 
 namespace backend\modules\v1\models;
 
+use backend\models\EbayAllotRule;
+use backend\models\EbayHotRule;
+use backend\models\EbayNewRule;
 use Yii;
 use yii\helpers\ArrayHelper;
 use yii\db\Query;
@@ -128,6 +131,57 @@ class ApiProductsEngine
             ->all();
         $categoryArr= array_unique(ArrayHelper::getColumn($category,'category'));
         return [$isSetCat, $categoryArr];
+    }
+
+
+    public static function getAllotInfo($id)
+    {
+        $rule = EbayAllotRule::find()->where(['_id' => $id])->asArray()->one();
+
+        /*if(isset($rule['detail']) && $rule['detail']){
+            foreach ($rule['detail'] as $value){
+
+            }
+        }else{
+            $rule['detail'] = [
+                'new' => [
+                    'ruleType' => 'new',
+                    'ruleValue' => []
+                ],
+                'hot' => [
+                    'ruleType' => 'hot',
+                    'ruleValue' => []
+                ],
+            ];
+        }*/
+        $detail = [];
+        $newRule = EbayNewRule::find()->asArray()->all();
+        foreach ($newRule as $k =>$val){
+            if(isset($rule['detail']['new']) && $rule['detail']['new']){
+                foreach ($rule['detail'] as $v){
+                    if($val['_id'] == $v['ruleId']){
+                        $detail['new'][$k] = ['ruleId' => $val['_id'],'ruleName' => $val['ruleName'], 'flag' => true];
+                    }
+                }
+            }else{
+                $detail['new'][$k] = ['ruleId' => $val['_id'],'ruleName' => $val['ruleName'], 'flag' => false];
+            }
+        }
+        $hotRule = EbayHotRule::find()->asArray()->all();
+        foreach ($hotRule as $k =>$val){
+            if(isset($rule['detail']['hot']) && $rule['detail']['hot']){
+                foreach ($rule['detail'] as $v){
+                    if($val['_id'] == $v['ruleId']){
+                        $detail['hot'][$k] = ['ruleId' => $val['_id'],'ruleName' => $val['ruleName'], 'flag' => true];
+                    }
+                }
+            }else{
+                $detail['hot'][$k] = ['ruleId' => $val['_id'],'ruleName' => $val['ruleName'], 'flag' => false];
+            }
+        }
+        $rule['detail'] = $detail;
+        //print_r($rule);exit;
+        return $rule;
     }
 
 }
