@@ -213,10 +213,17 @@ class ConScheduler
         $allCateList = array_unique($allCateList);
         $marketplaceArr = array_unique(ArrayHelper::getColumn($allCateList, 'marketplace'));
         //获取站点产品
-        $proList = (new \yii\mongodb\Query())->from('ebay_new_product')
-            ->andFilterWhere(['marketplace' => $marketplaceArr])
-            ->orderBy('sold DESC')->all();
+        if($type === 'new') {
+            $proList = (new \yii\mongodb\Query())->from('ebay_new_product')
+                ->andFilterWhere(['marketplace' => $marketplaceArr])
+                ->orderBy('sold DESC')->all();
+        }
+        else {
+            $proList = (new \yii\mongodb\Query())->from('ebay_hot_product')
+                ->andFilterWhere(['marketplace' => $marketplaceArr])
+                ->orderBy('sold DESC')->all();
 
+        }
         //匹配符合当前开发类目的产品
         $cateProList = [];
         if($allCateList){

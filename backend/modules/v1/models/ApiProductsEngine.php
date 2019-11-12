@@ -70,7 +70,7 @@ class ApiProductsEngine
             $col = $db->getCollection('ebay_recommended_product');
             $doc = $col->findOne(['_id' => $id]);
 
-            $itemdId = $doc['itemdId'];
+            $itemId = $doc['itemId'];
 
             $recommendId = $doc['productType'] == 'new' ? 'new.' . $id : 'hot.' . $id;
 
@@ -82,7 +82,7 @@ class ApiProductsEngine
                 throw new \Exception('产品已被认领');
             }
             $accept[] = $username;
-            $col->update(['_id' => $id], ['accept' => array_unique($accept)]);
+//            $col->update(['_id' => $id], ['accept' => array_unique($accept)]);
 
             // 转至逆向开发
             $product_info = [
@@ -93,7 +93,7 @@ class ApiProductsEngine
 
             // 更改推荐状态
             $table = $doc['productType'] === 'new' ? 'ebay_new_product' : 'ebay_hot_product';
-            static::setRecommendToPersons($table, $itemdId);
+            static::setRecommendToPersons($table, $itemId);
 
             Yii::$app->request->setBodyParams(['condition' => $product_info]);
             $ret = Yii::$app->runAction('/v1/oa-goods/dev-create');
@@ -370,9 +370,11 @@ class ApiProductsEngine
         $collection = Yii::$app->mongodb->getCollection($table);
         $username = Yii::$app->user->identity->username;
         $value = ['name' => $username, 'status' => 'accept', 'reason' => ''];
-        $product = $collection->find()->where(['itemId' => $itemId])->one();
-        $product['recommendToPersons'] = array_merge($product['recommendToPersons'], $value);
-        $product->save();
+        $product = $collection->findOne(['itemId' => $itemId]);
+        $persons = $product['recommendToPersons'];
+        $persons[] = $value;
+        $product['recommendToPersons'] = $persons;
+        $collection->update(['itemId' => $itemId], ['recommendToPersons' => $persons]);
     }
 
 }

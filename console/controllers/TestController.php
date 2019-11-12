@@ -101,9 +101,13 @@ class TestController extends Controller
                 $type = 'new';
                 //有产品类目限制的开发优先获取产品
                 $devList = [
-                    '刘珊珊', '陈微微', '王漫漫',
+                    '陈微微','刘珊珊','胡小红','杨笑天','李星','史新慈','詹莹莹','常金彩','廖露露','王丽6','毕郑强','王雪姣','张崇','崔明宽','邹雅丽','张小辉','刘霄敏','徐胜东','杨晶媛','刘爽','潘梦晗','胡宁','辜星燕','徐含','张杜娟','王咏','宋现中','王漫漫','李永恒',
                 ];
+                //新品
                 ConScheduler::getDevelopRecommendProduct($devList, $type, $plat);
+
+                //老品
+                ConScheduler::getDevelopRecommendProduct($devList, 'hot', $plat);
 
                 //没有有产品类目限制的开发再获取产品
                 //$devList = ['杨笑天', '宋现中', '胡小红',];
