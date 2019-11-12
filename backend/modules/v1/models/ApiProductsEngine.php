@@ -70,9 +70,10 @@ class ApiProductsEngine
             $col = $db->getCollection('ebay_recommended_product');
             $doc = $col->findOne(['_id' => $id]);
 
-            $recommnedId = $doc['productType'] == 'new' ? 'new.' . $id : 'hot.' . $id;
+            $itemdId = $doc['itemdId'];
 
-            //print_r($doc);exit;
+            $recommendId = $doc['productType'] == 'new' ? 'new.' . $id : 'hot.' . $id;
+
             if (empty($doc)) {
                 throw new \Exception('产品不存在');
             }
@@ -85,10 +86,15 @@ class ApiProductsEngine
 
             // 转至逆向开发
             $product_info = [
-                'recommendId' => $recommnedId, 'img' => $doc['mainImage'], 'cate' => '女人世界',
+                'recommendId' => $recommendId, 'img' => $doc['mainImage'], 'cate' => '女人世界',
                 'stockUp' => '否', 'subCate' => '女包', 'salePrice' => $doc['price'], 'flag' => 'backward',
                 'type' => 'create', 'introducer' => 'proEngine'
             ];
+
+            // 更改推荐状态
+            $table = $doc['productType'] === 'new' ? 'ebay_new_product' : 'ebay_hot_product';
+            static::setRecommendToPersons($table, $itemdId);
+
             Yii::$app->request->setBodyParams(['condition' => $product_info]);
             $ret = Yii::$app->runAction('/v1/oa-goods/dev-create');
             return $ret;
@@ -371,6 +377,21 @@ class ApiProductsEngine
 
         $rule['detail'] = [];
         return $rule;
+    }
+
+
+    /**
+     * @param $table
+     */
+    private static function setRecommendToPersons($table, $itemId)
+    {
+        # [{"name":"陈微微","status":"refuse", "reason":"不行"},{"name":"刘珊珊","status":"accept", "reason":""}]
+        $collection = Yii::$app->mongodb->getCollection($table);
+        $username = Yii::$app->user->identity->username;
+        $value = ['name' => $username, 'status' => 'accept', 'reason' => ''];
+        $product = $collection->find()->where(['itemId' => $itemId])->one();
+        $product['recommendToPersons'] = array_merge($product['recommendToPersons'], $value);
+        $product->save();
     }
 
 }
