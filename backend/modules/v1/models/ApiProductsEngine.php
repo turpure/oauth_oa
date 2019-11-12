@@ -26,7 +26,7 @@ class ApiProductsEngine
      * @return mixed
      * @throws \Exception
      */
-    public static function accept($plat, $type,$id)
+    public static function accept($plat, $type, $id)
     {
         $username = Yii::$app->user->identity->username;
         $db = Yii::$app->mongodb;
@@ -67,7 +67,7 @@ class ApiProductsEngine
      * @return mixed
      * @throws \Exception
      */
-    public static function refuse($plat, $type,$id,$reason)
+    public static function refuse($plat, $type, $id, $reason)
     {
         $username = Yii::$app->user->identity->username;
         $db = Yii::$app->mongodb;
@@ -99,7 +99,7 @@ class ApiProductsEngine
         $playLoad = ['ruleType' => $ruleType, 'ruleId' => $ruleId];
         $url = Yii::$app->params['recommendServiceUrl'];
         $ret = Helper::request($url, json_encode($playLoad));
-        return$ret;
+        return $ret;
     }
 
 
@@ -115,7 +115,7 @@ class ApiProductsEngine
         $catQuery = (new Query())
             ->select("developer")
             ->from('proEngine.ebay_developer_category ed')
-            ->leftJoin('proEngine.ebay_category ea','ea.id=categoryId')
+            ->leftJoin('proEngine.ebay_category ea', 'ea.id=categoryId')
             ->andFilterWhere(['developer' => $users])
             ->andFilterWhere(['marketplace' => $site])
             ->groupBy('developer')
@@ -125,62 +125,74 @@ class ApiProductsEngine
         $category = (new Query())
             ->select("ea.category")
             ->from('proEngine.ebay_developer_category ed')
-            ->leftJoin('proEngine.ebay_category ea','ea.id=categoryId')
+            ->leftJoin('proEngine.ebay_category ea', 'ea.id=categoryId')
             ->andFilterWhere(['developer' => $users])
             ->andFilterWhere(['marketplace' => $site])
             ->all();
-        $categoryArr= array_unique(ArrayHelper::getColumn($category,'category'));
+        $categoryArr = array_unique(ArrayHelper::getColumn($category, 'category'));
         return [$isSetCat, $categoryArr];
     }
 
-
+    /** 获取 分配规则详情
+     * @param $id
+     * Date: 2019-11-12 13:04
+     * Author: henry
+     * @return array|null|\yii\mongodb\ActiveRecord
+     */
     public static function getAllotInfo($id)
     {
         $rule = EbayAllotRule::find()->where(['_id' => $id])->asArray()->one();
-
-        /*if(isset($rule['detail']) && $rule['detail']){
-            foreach ($rule['detail'] as $value){
-
-            }
-        }else{
-            $rule['detail'] = [
-                'new' => [
-                    'ruleType' => 'new',
-                    'ruleValue' => []
-                ],
-                'hot' => [
-                    'ruleType' => 'hot',
-                    'ruleValue' => []
-                ],
-            ];
-        }*/
-        $detail = [];
+        $newDetail['ruleType'] = 'new';
+        $hotDetail['ruleType'] = 'hot';
+        $newDetail['flag'] = $hotDetail['flag'] = false;
+        $newDetail['ruleValue'] = $hotDetail['ruleValue'] = [];
         $newRule = EbayNewRule::find()->asArray()->all();
-        foreach ($newRule as $k =>$val){
-            if(isset($rule['detail']['new']) && $rule['detail']['new']){
-                foreach ($rule['detail'] as $v){
-                    if($val['_id'] == $v['ruleId']){
-                        $detail['new'][$k] = ['ruleId' => $val['_id'],'ruleName' => $val['ruleName'], 'flag' => true];
+        foreach ($newRule as $k => $val) {
+            if (isset($rule['detail']) && $rule['detail']) {
+                foreach ($rule['detail'] as $v) {
+                    if (isset($v['ruleType']) && $v['ruleType'] == 'new' && $val['_id'] == $v['ruleId']) {
+                        $newDetail['flag'] = true;
+                        $newDetail['ruleValue'][$k] =
+                            [
+                                'ruleId' => $val['_id'],
+                                'ruleName' => $val['ruleName'],
+                                'flag' => true
+                            ];
                     }
                 }
-            }else{
-                $detail['new'][$k] = ['ruleId' => $val['_id'],'ruleName' => $val['ruleName'], 'flag' => false];
+            } else {
+                $newDetail['ruleValue'][$k] =
+                    [
+                        'ruleId' => $val['_id'],
+                        'ruleName' => $val['ruleName'],
+                        'flag' => false
+                    ];
             }
         }
         $hotRule = EbayHotRule::find()->asArray()->all();
-        foreach ($hotRule as $k =>$val){
-            if(isset($rule['detail']['hot']) && $rule['detail']['hot']){
-                foreach ($rule['detail'] as $v){
-                    if($val['_id'] == $v['ruleId']){
-                        $detail['hot'][$k] = ['ruleId' => $val['_id'],'ruleName' => $val['ruleName'], 'flag' => true];
+        foreach ($hotRule as $k => $val) {
+            if (isset($rule['detail']) && $rule['detail']) {
+                foreach ($rule['detail'] as $v) {
+                    if (isset($v['ruleType']) && $v['ruleType'] == 'hot' && $val['_id'] == $v['ruleId']) {
+                        $hotDetail['flag'] = true;
+                        $hotDetail['ruleValue'][$k] =
+                            [
+                                'ruleId' => $val['_id'],
+                                'ruleName' => $val['ruleName'],
+                                'flag' => false
+                            ];
                     }
                 }
-            }else{
-                $detail['hot'][$k] = ['ruleId' => $val['_id'],'ruleName' => $val['ruleName'], 'flag' => false];
+            } else {
+                $hotDetail['ruleValue'][$k] =
+                    [
+                        'ruleId' => $val['_id'],
+                        'ruleName' => $val['ruleName'],
+                        'flag' => false
+                    ];
             }
         }
-        $rule['detail'] = $detail;
-        //print_r($rule);exit;
+        $rule['detail'] = [$newDetail, $hotDetail];
         return $rule;
     }
 
