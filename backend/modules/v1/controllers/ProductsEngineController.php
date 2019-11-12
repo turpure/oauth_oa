@@ -11,10 +11,6 @@ use backend\models\EbayAllotRule;
 use backend\models\EbayCategory;
 use backend\models\EbayCateRule;
 use backend\models\EbayDeveloperCategory;
-use backend\models\EbayProducts;
-use backend\models\WishProducts;
-use backend\models\JoomProducts;
-use backend\models\RecommendEbayNewProductRule;
 use backend\models\EbayHotRule;
 use backend\models\EbayNewRule;
 use backend\modules\v1\models\ApiUser;
@@ -37,126 +33,12 @@ class ProductsEngineController extends AdminController
      * Date: 2019-10-30 17:36
      * Author: henry
      * @return array|\yii\db\ActiveRecord[]|\yii\data\ActiveDataProvider[]
-     * @throws \yii\db\Exception
      */
     public function actionRecommend()
     {
-        //获取当前用户信息
-        $username = Yii::$app->user->identity->username;
-        $userList = ApiUser::getUserList($username);
-        //获取当前登录用户权限下的用户是否有指定eBay产品类目
-
         try {
-            $plat = \Yii::$app->request->get('plat');
-            $type = \Yii::$app->request->get('type', '');
-            $page = \Yii::$app->request->get('page', 1);
-            $pageSize = \Yii::$app->request->get('pageSize', 20);
-            $marketplace = \Yii::$app->request->get('marketplace');//站点
-            $ret = [];
-            if ($plat === 'ebay') {
-                if ($type === 'new') {
-                    $cateList = (new \yii\mongodb\Query())->from('ebay_new_product')
-                        ->andFilterWhere(['marketplace' => $marketplace])
-                        ->distinct('marketplace');
-                    //->all();
-                    //print_r($cur);exit;
-                    foreach ($cateList as $value) {
-                        $cur = (new \yii\mongodb\Query())->from('ebay_new_product')
-                            ->andFilterWhere(['marketplace' => $value])
-                            ->all();
-                        list($isSetCat, $categoryArr) = ApiProductsEngine::getUserCate($userList, $value);
-                        foreach ($cur as $row) {
-                            if (isset($row['accept']) && $row['accept'] ||    //过滤掉已经认领的产品
-                                isset($row['refuse'][$username])       //过滤掉当前用户已经过滤的产品
-                            ) {
-                                continue;
-                            } else {
-                                if ($isSetCat == false) {
-                                    $ret[] = $row;
-                                } else {
-                                    foreach ($categoryArr as $v) {
-                                        if (strpos($row['cidName'], $v) !== false) {
-                                            $ret[] = $row;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    $data = new ArrayDataProvider([
-                        'allModels' => $ret,
-                        'sort' => [
-                            'attributes' => ['price', 'visit', 'sold', 'listedTime'],
-                            'defaultOrder' => [
-                                'sold' => SORT_DESC,
-                            ]
-                        ],
-                        'pagination' => [
-                            'page' => $page - 1,
-                            'pageSize' => $pageSize,
-                        ],
-                    ]);
-                    return $data;
-                }
-                if ($type === 'hot') {
-                    $cateList = (new \yii\mongodb\Query())->from('ebay_hot_product')
-                        ->andFilterWhere(['marketplace' => $marketplace])
-                        ->distinct('marketplace');
-                    //->all();
-                    foreach ($cateList as $value) {
-                        $cur = (new \yii\mongodb\Query())->from('ebay_hot_product')
-                            ->andFilterWhere(['marketplace' => $value])
-                            ->all();
-                        list($isSetCat, $categoryArr) = ApiProductsEngine::getUserCate($userList, $value);
-                        foreach ($cur as $row) {
-                            if (isset($row['accept']) && $row['accept'] ||
-                                isset($row['refuse'][$username])) {
-                                continue;
-                            } else {
-                                if ($isSetCat == false) {
-                                    $ret[] = $row;
-                                } else {
-                                    foreach ($categoryArr as $v) {
-                                        if (strpos($row['categoryStructure'], $v) !== false) {
-                                            $ret[] = $row;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    $data = new ArrayDataProvider([
-                        'allModels' => $ret,
-                        'sort' => [
-                            'attributes' => [
-                                'price', 'visit', 'sold',
-                                'salesThreeDay1', 'salesThreeDayGrowth', 'paymentThreeDay1',
-                                'salesWeek1', 'paymentWeek1', 'salesWeekGrowth'
-                            ],
-                            'defaultOrder' => [
-                                'sold' => SORT_DESC,
-                            ]
-                        ],
-                        'pagination' => [
-                            'page' => $page - 1,
-                            'pageSize' => $pageSize,
-                        ],
-                    ]);
-                    return $data;
-                } else {
-                    $station = \Yii::$app->request->get('status', 'US');
-                    return EbayProducts::find()->where(['station' => $station])->all();
-                }
-            }
-            if ($plat === 'wish') {
-                return WishProducts::find()->all();
-            }
+            return ApiProductsEngine::recommend();
 
-            if ($plat === 'joom') {
-                return JoomProducts::find()->all();
-            }
         } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }

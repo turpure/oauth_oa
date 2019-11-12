@@ -15,10 +15,44 @@ use backend\models\EbayNewRule;
 use Yii;
 use yii\helpers\ArrayHelper;
 use yii\db\Query;
+use backend\models\WishProducts;
+use backend\models\JoomProducts;
 use backend\modules\v1\utils\Helper;
+use yii\data\ArrayDataProvider;
 
 class ApiProductsEngine
 {
+
+    /**
+     * @return array|ArrayDataProvider|\yii\db\ActiveRecord[]
+     * @throws \yii\db\Exception
+     */
+    public static function recommend()
+    {
+        //获取当前用户信息
+        $username = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($username);
+
+        // 请求参数
+        $plat = \Yii::$app->request->get('plat');
+        $type = \Yii::$app->request->get('type', '');
+        $page = \Yii::$app->request->get('page', 1);
+        $pageSize = \Yii::$app->request->get('pageSize', 20);
+        $marketplace = \Yii::$app->request->get('marketplace');//站点
+
+        //平台数据
+        if ($plat === 'ebay') {
+            return static::getEbayRecommend($type,$marketplace, $page, $pageSize);
+        }
+
+        if ($plat === 'wish') {
+            return WishProducts::find()->all();
+        }
+
+        if ($plat === 'joom') {
+            return JoomProducts::find()->all();
+        }
+    }
 
     /**
      * 认领
@@ -134,6 +168,80 @@ class ApiProductsEngine
         $categoryArr = array_unique(ArrayHelper::getColumn($category, 'category'));
         return [$isSetCat, $categoryArr];
     }
+
+
+
+    private  static function getEbayRecommend($type, $marketplace,$page, $pageSize)
+    {
+
+
+        $ret = [];
+        //当天推荐数据
+        $today = date('Y-m-d');
+
+        // 新品
+        if ($type === 'new') {
+
+            //当前在用规则下数据
+            $newRules = EbayNewRule::find()->select(['id'])->all();
+
+
+
+            $cur = (new \yii\mongodb\Query())->from('ebay_new_product')
+                ->andFilterWhere(['marketplace' => $marketplace])
+                ->all();
+            foreach ($newRules as $rule) {
+                foreach ($cur as $row) {
+                    $productRules = $row['rules'];
+                    $recommendDate = substr($row['recommendDate'],0,10);
+                    if($recommendDate === $today  && in_array($rule->_id, $productRules,false)) {
+                        $ret[] = $row;
+                    }
+                }
+            }
+        }
+
+        // 热销
+        if ($type === 'hot') {
+
+            //当前在用规则
+            $hotRules = EbayHotRule::find()->select(['id'])->all();
+
+            $cur = (new \yii\mongodb\Query())->from('ebay_hot_product')
+                ->andFilterWhere(['marketplace' => $marketplace])
+                ->all();
+            foreach ($hotRules as $rule) {
+                foreach ($cur as $row) {
+                    $productRules = $row['rules'];
+                    $recommendDate = substr($row['recommendDate'],0,10);
+                    if($recommendDate === $today  && in_array($rule->_id, $productRules,false)) {
+                        $ret[] = $row;
+                    }
+                }
+            }
+        }
+
+        // 分页，排序
+        $data = new ArrayDataProvider([
+            'allModels' => $ret,
+            'sort' => [
+                'attributes' => [
+                    'price', 'visit', 'sold',
+                    'salesThreeDay1', 'salesThreeDayGrowth', 'paymentThreeDay1',
+                    'salesWeek1', 'paymentWeek1', 'salesWeekGrowth'
+                ],
+                'defaultOrder' => [
+                    'sold' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'page' => $page - 1,
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $data;
+    }
+
 
     /** 获取 分配规则详情
      * @param $id
