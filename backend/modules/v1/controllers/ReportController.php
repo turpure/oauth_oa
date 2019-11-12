@@ -717,12 +717,12 @@ class ReportController extends AdminController
 
         //设置表头字段名称
         foreach ($title as $key => $value) {
-            $worksheet->setCellValueByColumnAndRow($key + 1, 1,  "\t".$value."\t");
+            $worksheet->setCellValueByColumnAndRow($key + 1, 1,  $value);
         }
         //填充表内容
         foreach ($data as $k => $rows) {
             foreach ($headers as $i => $val) {
-                $worksheet->setCellValueByColumnAndRow($i + 1, $k + 2, $rows[$val]);
+                $worksheet->setCellValueByColumnAndRow($i + 1, $k + 2, "\t".$rows[$val]."\t");
             }
         }
         header('pragma:public');
