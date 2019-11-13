@@ -71,7 +71,7 @@ class ApiProductsEngine
             $col = $db->getCollection('ebay_recommended_product');
             $doc = $col->findOne(['_id' => $id]);
 
-            $itemdId = $doc['itemdId'];
+            $itemId = $doc['itemId'];
 
             $recommendId = $doc['productType'] == 'new' ? 'new.' . $id : 'hot.' . $id;
 
@@ -94,8 +94,7 @@ class ApiProductsEngine
 
             // 更改推荐状态
             $table = $doc['productType'] === 'new' ? 'ebay_new_product' : 'ebay_hot_product';
-            static::setRecommendToPersons($table, $itemdId);
-
+            static::setRecommendToPersons($table, $itemId, 'new');
             Yii::$app->request->setBodyParams(['condition' => $product_info]);
             $ret = Yii::$app->runAction('/v1/oa-goods/dev-create');
             return $ret;
@@ -118,6 +117,7 @@ class ApiProductsEngine
 
             $col = $db->getCollection('ebay_recommended_product');
             $doc = $col->findOne(['_id' => $id]);
+            $itemId = $doc['itemId'];
 
             if (empty($doc)) {
                 throw new \Exception('产品不存在');
@@ -125,6 +125,11 @@ class ApiProductsEngine
             $refuse = ArrayHelper::getValue($doc, 'refuse', []);
             $refuse[$username] = $reason;
             $col->update(['_id' => $id], ['refuse' => array_unique($refuse)]);
+
+            // 更改推荐状态
+            $table = $doc['productType'] === 'new' ? 'ebay_new_product' : 'ebay_hot_product';
+            static::setRecommendToPersons($table, $itemId, 'hot', $reason);
+
 
             return $col->findOne(['_id' => $id]);
 
@@ -396,16 +401,26 @@ class ApiProductsEngine
 
     /**
      * @param $table
+     * @param $itemId
+     * @param $type
+     * @param string $reason
      */
-    private static function setRecommendToPersons($table, $itemId)
+    private static function setRecommendToPersons($table, $itemId, $type, $reason='')
     {
         # [{"name":"陈微微","status":"refuse", "reason":"不行"},{"name":"刘珊珊","status":"accept", "reason":""}]
-        $collection = Yii::$app->mongodb->getCollection($table);
         $username = Yii::$app->user->identity->username;
-        $value = ['name' => $username, 'status' => 'accept', 'reason' => ''];
-        $product = $collection->find()->where(['itemId' => $itemId])->one();
-        $product['recommendToPersons'] = array_merge($product['recommendToPersons'], $value);
-        $product->save();
+        if($type === 'new') {
+            $value = ['name' => $username, 'status' => 'accept', 'reason' => $reason];
+        }
+        else {
+            $value = ['name' => $username, 'status' => 'refuse', 'reason' => $reason];
+        }
+        $collection = Yii::$app->mongodb->getCollection($table);
+        $product = $collection->findOne(['itemId' => $itemId]);
+        $persons = $product['recommendToPersons'];
+        $persons[] = $value;
+        $product['recommendToPersons'] = $persons;
+        $collection->update(['itemId' => $itemId], ['recommendToPersons' => $persons]);
     }
 
 }
