@@ -243,5 +243,76 @@ class ConScheduler
         return $cateProList;
     }
 
+    /**
+     * 获取推荐人列表
+     * @return mixed
+     */
+    private static function getRecommendToPersons()
+    {
+        $mongodb = Yii::$app->mongodb;
+        $table = 'ebay_recommended_product';
+        $col = $mongodb->getCollection($table);
+        $today = date('Y-m-d');
+        $products = $col->find(['dispatchDate' => ['$regex' => $today]]);
+        return $products;
+    }
+
+    /**
+     * 为每日推荐列表设置推荐人
+     * @param $developer
+     * @param $productType
+     * @param $itemId
+     */
+    private static function setRecommendToPersons($developer, $productType, $itemId)
+    {
+        $mongodb = Yii::$app->mongodb;
+        $table = $productType === 'new' ? 'ebay_new_product' : 'ebay_hot_product';
+        $col = $mongodb->getCollection($table);
+        $persons = ['name' =>$developer, 'status' => '', 'reason' => ''];
+        $product = $col->findOne(['itemId' => $itemId]);
+        $oldPersons = $product['recommendToPersons'];
+        $currentPersons = static::insertOrUpdateRecommentToPersons($persons,$oldPersons);
+        $col->update(['itemId' => $itemId], ['recommendToPersons' => $currentPersons]);
+
+    }
+
+    private static function insertOrUpdateRecommentToPersons($persons,$oldPersons)
+    {
+        if(empty($oldPersons)) {
+            $oldPersons[] = $persons;
+        }
+        else{
+            $appendFlag = 1;
+            foreach ($oldPersons as &$op) {
+                if($op['name'] === $persons['name']) {
+                    $op = $persons;
+                    $appendFlag = 0;
+                    break;
+                }
+            }
+            if($appendFlag) {
+                $oldPersons[] = $persons;
+            }
+        }
+        return $oldPersons;
+
+    }
+
+    /**
+     * 获取并更新每日推荐的推荐人
+     */
+    public static function getAndSetRecommendToPersons()
+    {
+       $products = static::getRecommendToPersons();
+       foreach ($products as $recommendProduct) {
+           $productType = $recommendProduct['productType'];
+           $developers = $recommendProduct['receiver'];
+           $itemId = $recommendProduct['itemId'];
+           foreach ($developers as $dep) {
+               static::setRecommendToPersons($dep, $productType, $itemId);
+           }
+       }
+    }
+
 
 }

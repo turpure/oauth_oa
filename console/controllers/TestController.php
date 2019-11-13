@@ -89,6 +89,7 @@ class TestController extends Controller
     public function actionTest2()
     {   //默认ebay平台
         try {
+            /*
             $sql = "SELECT u.username,a.item_name 
                     FROM `user` u
                     left Join auth_assignment a ON a.user_id=u.id
@@ -113,6 +114,9 @@ class TestController extends Controller
                 //$devList = ['杨笑天', '宋现中', '胡小红',];
                 //ConScheduler::getDevelopRecommendProduct($devList, $type, $plat);
             }
+            */
+            //更新每日推荐的推荐人
+            ConScheduler::getAndSetRecommendToPersons();
         } catch (\Exception $why) {
             print $why->getMessage();
             exit;
