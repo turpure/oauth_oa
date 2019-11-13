@@ -427,17 +427,45 @@ class ApiProductsEngine
         # [{"name":"陈微微","status":"refuse", "reason":"不行"},{"name":"刘珊珊","status":"accept", "reason":""}]
         $username = Yii::$app->user->identity->username;
         if($type === 'new') {
-            $value = ['name' => $username, 'status' => 'accept', 'reason' => $reason];
+            $person = ['name' => $username, 'status' => 'accept', 'reason' => $reason];
         }
         else {
-            $value = ['name' => $username, 'status' => 'refuse', 'reason' => $reason];
+            $person = ['name' => $username, 'status' => 'refuse', 'reason' => $reason];
         }
         $collection = Yii::$app->mongodb->getCollection($table);
         $product = $collection->findOne(['itemId' => $itemId]);
-        $persons = $product['recommendToPersons'];
-        $persons[] = $value;
-        $product['recommendToPersons'] = $persons;
-        $collection->update(['itemId' => $itemId], ['recommendToPersons' => $persons]);
+        $oldPersons = $product['recommendToPersons'];
+        $currentPersons = static::insertOrUpdateRecommendToPersons($person, $oldPersons);
+        $collection->update(['itemId' => $itemId], ['recommendToPersons' => $currentPersons]);
+    }
+
+
+    /**
+     * 更新或新增推荐人
+     * @param $persons
+     * @param $oldPersons
+     * @return array
+     */
+    private static function insertOrUpdateRecommendToPersons($persons,$oldPersons)
+    {
+        if(empty($oldPersons)) {
+            $oldPersons[] = $persons;
+        }
+        else{
+            $appendFlag = 1;
+            foreach ($oldPersons as &$op) {
+                if($op['name'] === $persons['name']) {
+                    $op = $persons;
+                    $appendFlag = 0;
+                    break;
+                }
+            }
+            if($appendFlag) {
+                $oldPersons[] = $persons;
+            }
+        }
+        return $oldPersons;
+
     }
 
 }
