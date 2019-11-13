@@ -12,6 +12,7 @@ use backend\models\EbayCategory;
 use backend\models\EbayCateRule;
 use backend\models\EbayHotRule;
 use backend\models\EbayNewRule;
+use backend\modules\v1\utils\Handler;
 use Yii;
 use yii\helpers\ArrayHelper;
 use yii\db\Query;
@@ -333,51 +334,64 @@ class ApiProductsEngine
         $rule = EbayCateRule::find()->where(['_id' => $id])->asArray()->one();
         //获取所有平台信息
         //$allCateArr = EbayCategory::find()->asArray()->all();
-        $allCateArr = Yii::$app->runAction('/v1/products-engine/plat')['data'];
+        $allPlatArr = Yii::$app->runAction('/v1/products-engine/plat')['data'];
         $detail = [];
-        foreach ($allCateArr as $k => $value) {
-            $item['plat'] = $value;
-            if (isset($rule['detail']) && $rule['detail']) {
-                foreach ($rule['detail'] as $v) {
 
-                }
-            }
-            //获取平台所属站点
-            $marketplaceArr = Yii::$app->runAction('/v1/products-engine/marketplace', ['plat' => $value])['data'];
-            print_r($marketplaceArr);
-            exit;
-        }
+        $detailArr = isset($rule['detail'])?$rule['detail']:[];
+        foreach ($allPlatArr as $dk => $value){
+            if($detailArr){
+                foreach($detailArr as $val){
+                    if(isset($val['plat']) && $val['plat'] == $value){
+                        $item['plat'] = $value;
+                        $item['flag'] = true;
+                        $item['platValue'] = [];
+                        //获取平台所有站点
+                        $allMarketplaceArr = Yii::$app->runAction('/v1/products-engine/marketplace', ['plat' => $value])['data'];
+                        foreach ($allMarketplaceArr as $Marketplace){
 
-        $detail['ruleType'] = 'new';
-        $detail['flag'] = false;
-
-        $newRule = EbayNewRule::find()->asArray()->all();
-        foreach ($newRule as $k => $val) {
-            if (isset($rule['detail']) && $rule['detail']) {
-                foreach ($rule['detail'] as $v) {
-                    if (isset($v['ruleType']) && $v['ruleType'] == 'new' && $val['_id'] == $v['ruleId']) {
-                        $newDetail['flag'] = true;
-                        $newDetail['ruleValue'][$k] =
-                            [
-                                'ruleId' => $val['_id'],
-                                'ruleName' => $val['ruleName'],
-                                'flag' => true
-                            ];
+                        }
                     }
                 }
-            } else {
-                $newDetail['ruleValue'][$k] =
-                    [
-                        'ruleId' => $val['_id'],
-                        'ruleName' => $val['ruleName'],
-                        'flag' => false
-                    ];
+            }else{
+                $item['plat'] = $value;
+                $item['flag'] = false;
+                $item['platValue'] = [];
+                //获取平台所有站点
+                $allMarketplaceArr = Yii::$app->runAction('/v1/products-engine/marketplace', ['plat' => $value])['data'];
+                foreach ($allMarketplaceArr as $mk => $marketplace){
+                    $item['platValue'][$mk]['marketplace'] = $marketplace;
+                    $item['platValue'][$mk]['flag'] = false;
+                    $item['platValue'][$mk]['marketplaceValue'] = [];
+                    //获取一级分类
+                    $allCateArr = EbayCategory::find()
+                        ->andFilterWhere(['plat' => $value])
+                        ->andFilterWhere(['marketplace' => $marketplace])
+                        ->orderBy('cate')->asArray()->all();
+                    foreach($allCateArr as $ck => $cate){
+                        $item['platValue'][$mk]['marketplaceValue'][$ck]['cate'] = $cate['cate'];
+                        $item['platValue'][$mk]['marketplaceValue'][$ck]['flag'] = false;
+                        foreach ($cate['subCate'] as $sk => $subCate){
+                            $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue'][$sk]['subCate'] = $subCate;
+                            $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue'][$sk]['flag'] = false;
+                        }
+                    }
+                }
+            }
+            $detail[$dk] = $item;
+        }
+        //获取普源类目
+        $pyCate = Yii::$app->runAction('/v1/oa-goodsinfo/attribute-info-cat')['data'];
+        foreach ($pyCate as $k => $v){
+            if($rule && $rule['pyCate'] == $v){
+                $rule['pyCate'][$k] = ['name' => $v,'flag' => true];
+            }else{
+                $rule['pyCate'][$k] = ['name' => $v,'flag' => false];
             }
         }
-
-        $rule['detail'] = [];
+        $rule['detail'] = $detail;
         return $rule;
     }
+
 
 
     /**
