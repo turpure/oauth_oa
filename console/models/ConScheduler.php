@@ -271,12 +271,18 @@ class ConScheduler
         $persons = ['name' =>$developer, 'status' => '', 'reason' => ''];
         $product = $col->findOne(['itemId' => $itemId]);
         $oldPersons = $product['recommendToPersons'];
-        $currentPersons = static::insertOrUpdateRecommentToPersons($persons,$oldPersons);
+        $currentPersons = static::insertOrUpdateRecommendToPersons($persons,$oldPersons);
         $col->update(['itemId' => $itemId], ['recommendToPersons' => $currentPersons]);
 
     }
 
-    private static function insertOrUpdateRecommentToPersons($persons,$oldPersons)
+    /**
+     * 更新或新增推荐人
+     * @param $persons
+     * @param $oldPersons
+     * @return array
+     */
+    private static function insertOrUpdateRecommendToPersons($persons,$oldPersons)
     {
         if(empty($oldPersons)) {
             $oldPersons[] = $persons;
