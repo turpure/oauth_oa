@@ -343,58 +343,75 @@ class ApiProductsEngine
         $detail = [];
 
         $detailArr = isset($rule['detail'])?$rule['detail']:[];
-        foreach ($allPlatArr as $dk => $value){
-            if($detailArr){
-                foreach($detailArr as $val){
-                    if(isset($val['plat']) && $val['plat'] == $value){
-                        $item['plat'] = $value;
-                        $item['flag'] = true;
-                        $item['platValue'] = [];
-                        //获取平台所有站点
-                        $allMarketplaceArr = Yii::$app->runAction('/v1/products-engine/marketplace', ['plat' => $value])['data'];
-                        foreach ($allMarketplaceArr as $Marketplace){
-
-                        }
-                    }
-                }
-            }else{
-                $item['plat'] = $value;
-                $item['flag'] = false;
-                $item['platValue'] = [];
-                //获取平台所有站点
-                $allMarketplaceArr = Yii::$app->runAction('/v1/products-engine/marketplace', ['plat' => $value])['data'];
-                foreach ($allMarketplaceArr as $mk => $marketplace){
-                    $item['platValue'][$mk]['marketplace'] = $marketplace;
-                    $item['platValue'][$mk]['flag'] = false;
-                    $item['platValue'][$mk]['marketplaceValue'] = [];
-                    //获取一级分类
-                    $allCateArr = EbayCategory::find()
-                        ->andFilterWhere(['plat' => $value])
-                        ->andFilterWhere(['marketplace' => $marketplace])
-                        ->orderBy('cate')->asArray()->all();
-                    foreach($allCateArr as $ck => $cate){
-                        $item['platValue'][$mk]['marketplaceValue'][$ck]['cate'] = $cate['cate'];
-                        $item['platValue'][$mk]['marketplaceValue'][$ck]['flag'] = false;
-                        foreach ($cate['subCate'] as $sk => $subCate){
-                            $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue'][$sk]['subCate'] = $subCate;
-                            $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue'][$sk]['flag'] = false;
+        //print_r($detailArr);exit;
+        foreach ($allPlatArr as $dk => $value){//遍历所有平台
+            $item['plat'] = $value;
+            $item['flag'] = false;
+            $item['platValue'] = [];
+            $allMarketplaceArr = Yii::$app->runAction('/v1/products-engine/marketplace', ['plat' => $value])['data'];
+            foreach($allMarketplaceArr as $mk => $marketplace ){
+                $item['platValue'][$mk]['marketplace'] = $marketplace;
+                $item['platValue'][$mk]['flag'] = false;
+                $item['platValue'][$mk]['marketplaceValue'] = [];
+                //获取平台站点下所有一级类目
+                $allCateArr = $allCateArr = EbayCategory::find()
+                    ->andFilterWhere(['plat' => $value])
+                    ->andFilterWhere(['marketplace' => $marketplace])
+                    ->orderBy('cate')->asArray()->all();
+                foreach($allCateArr as $ck => $cate) {//遍历平台下所有一级类目
+                    $item['platValue'][$mk]['marketplaceValue'][$ck]['cate'] = $cate['cate'];
+                    $item['platValue'][$mk]['marketplaceValue'][$ck]['flag'] = false;
+                    foreach ($cate['subCate'] as $sk => $subCate){  //遍历已有二级类目
+                        $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue'][$sk]['subCate'] = $subCate;
+                        $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue'][$sk]['flag'] = false;
+                        if($detailArr){
+                            foreach($detailArr as $detailValue){
+                                if(isset($detailValue['plat']) && $detailValue['plat'] == $value){ //判断是否有该平台
+                                    $item['flag'] = true;
+                                    if(isset($detailValue['platValue']) && $detailValue['platValue']){
+                                        foreach($detailValue['platValue'] as $platValue){
+                                            if(isset($platValue['marketplace']) && $platValue['marketplace'] == $marketplace){//判断是否有该站点
+                                                $item['platValue'][$mk]['flag'] = true;
+                                                if(isset($platValue['marketplaceValue']) && $platValue['marketplaceValue']){
+                                                    foreach ($platValue['marketplaceValue'] as $marketplaceValue){
+                                                        //print_r($cate);exit;
+                                                        //print_r($marketplaceValue['cate']);exit;
+                                                        if(isset($marketplaceValue['cate']) && $marketplaceValue['cate'] == $cate['cate']) {//判断是否有该一级类目
+                                                            //print_r($marketplaceValue['cate']);exit;
+                                                            $item['platValue'][$mk]['marketplaceValue'][$ck]['flag'] = true;
+                                                            if(isset($marketplaceValue['cateValue']) && $marketplaceValue['cateValue']){
+                                                                foreach ($marketplaceValue['cateValue'] as $cateValue){
+                                                                    if(isset($cateValue['subCate']) && $cateValue['subCate'] == $subCate) {
+                                                                        $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue'][$sk]['flag'] = true;//判断是否有该二级类目
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
             $detail[$dk] = $item;
         }
+        if($rule) $res['_id'] = $rule['_id'];
         //获取普源类目
         $pyCate = Yii::$app->runAction('/v1/oa-goodsinfo/attribute-info-cat')['data'];
         foreach ($pyCate as $k => $v){
             if($rule && $rule['pyCate'] == $v){
-                $rule['pyCate'][$k] = ['name' => $v,'flag' => true];
+                $res['pyCate'][$k] = ['name' => $v,'flag' => true];
             }else{
-                $rule['pyCate'][$k] = ['name' => $v,'flag' => false];
+                $res['pyCate'][$k] = ['name' => $v,'flag' => false];
             }
         }
-        $rule['detail'] = $detail;
-        return $rule;
+        $res['detail'] = $detail;
+        return $res;
     }
 
 
