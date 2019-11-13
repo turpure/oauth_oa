@@ -554,7 +554,7 @@ class SchedulerController extends Controller
         $step = 100;
         try{
             //插入库存预警数据
-            Yii::$app->db->createCommand("TRUNCATE TABLE cache_stockWaringTmpData;")->execute();
+            /*Yii::$app->db->createCommand("TRUNCATE TABLE cache_stockWaringTmpData;")->execute();
 
             //分页获取数据
             for($k=1; ;$k++){
@@ -571,7 +571,7 @@ class SchedulerController extends Controller
                         ],
                         array_slice($stockList,$i*$step, $step))->execute();
                 }
-            }
+            }*/
 
 
             //插入30天销售数据

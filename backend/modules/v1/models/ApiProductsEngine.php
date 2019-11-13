@@ -362,8 +362,8 @@ class ApiProductsEngine
                     $item['platValue'][$mk]['marketplaceValue'][$ck]['cate'] = $cate['cate'];
                     $item['platValue'][$mk]['marketplaceValue'][$ck]['flag'] = false;
                     foreach ($cate['subCate'] as $sk => $subCate){  //遍历已有二级类目
-                        $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue'][$sk]['subCate'] = $subCate;
-                        $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue'][$sk]['flag'] = false;
+                        $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCate'][$sk] = $subCate;
+                        $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = [];
                         if($detailArr){
                             foreach($detailArr as $detailValue){
                                 if(isset($detailValue['plat']) && $detailValue['plat'] == $value){ //判断是否有该平台
@@ -374,17 +374,20 @@ class ApiProductsEngine
                                                 $item['platValue'][$mk]['flag'] = true;
                                                 if(isset($platValue['marketplaceValue']) && $platValue['marketplaceValue']){
                                                     foreach ($platValue['marketplaceValue'] as $marketplaceValue){
-                                                        //print_r($cate);exit;
-                                                        //print_r($marketplaceValue['cate']);exit;
                                                         if(isset($marketplaceValue['cate']) && $marketplaceValue['cate'] == $cate['cate']) {//判断是否有该一级类目
-                                                            //print_r($marketplaceValue['cate']);exit;
                                                             $item['platValue'][$mk]['marketplaceValue'][$ck]['flag'] = true;
-                                                            if(isset($marketplaceValue['cateValue']) && $marketplaceValue['cateValue']){
-                                                                foreach ($marketplaceValue['cateValue'] as $cateValue){
-                                                                    if(isset($cateValue['subCate']) && $cateValue['subCate'] == $subCate) {
-                                                                        $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue'][$sk]['flag'] = true;//判断是否有该二级类目
+                                                            $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCate'] = $cate['subCate'];
+                                                            $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = [];
+                                                            if(isset($marketplaceValue['cateValue']) && $marketplaceValue['cateValue'] &&
+                                                                isset($marketplaceValue['cateValue']['subCateChecked']) && $marketplaceValue['cateValue']['subCateChecked']
+                                                            ){
+                                                                $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = $marketplaceValue['cateValue']['subCateChecked'];
+                                                                /*foreach ($marketplaceValue['cateValue'] as $cateValue){
+                                                                    if(isset($cateValue['subCateChecked']) && $cateValue['subCateChecked'] == $subCate) {
+                                                                        $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'][] = $subCate;
+                                                                        //$item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue'][$sk]['flag'] = true;//判断是否有该二级类目
                                                                     }
-                                                                }
+                                                                }*/
                                                             }
                                                         }
                                                     }

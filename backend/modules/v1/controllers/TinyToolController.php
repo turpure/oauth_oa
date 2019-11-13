@@ -596,7 +596,7 @@ class TinyToolController extends AdminController
         $request = Yii::$app->request->post();
         $cond = $request['condition'];
         try {
-            $sql = "SELECT SKU, SKUName, goodsCode, salerName, goodsStatus, purchaser, supplierName,
+            /*$sql = "SELECT SKU, SKUName, goodsCode, salerName, goodsStatus, purchaser, supplierName,
                         saleNum3days, saleNum7days, saleNum15days, saleNum30days, trend, saleNumDailyAve, hopeUseNum,
                         amount, totalHopeUN, hopeSaleDays, purchaseNum, price, purCost 
                     FROM cache_overseasReplenish WHERE type='UK虚拟仓'";
@@ -606,7 +606,9 @@ class TinyToolController extends AdminController
             if (isset($cond['trend']) && $cond['trend']) $sql .= " AND trend LIKE '%{$cond['trend']}%'";
             if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
             if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
-            $data = Yii::$app->db->createCommand($sql)->queryAll();
+            $data = Yii::$app->db->createCommand($sql)->queryAll();*/
+            $sql = "EXEC  [dbo].[LY_eBayUKVirtualWarehouse_Replenishment_20191113] '{$cond['salerName']}','{$cond['purchaser']}'";
+            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             $totalPurCost = array_sum(ArrayHelper::getColumn($data, 'purCost'));
 
             $provider = new ArrayDataProvider([
@@ -752,9 +754,9 @@ class TinyToolController extends AdminController
         switch ($cond['type']) {
             case 'uk':
                 $name = 'ukVirtualReplenish';
-                $sql = "SELECT SKU, SKUName, goodsCode, salerName, goodsStatus, purchaser, supplierName,
+                /*$sql = "SELECT SKU, SKUName, goodsCode, salerName, goodsStatus, purchaser, supplierName,
                         saleNum3days, saleNum7days, saleNum15days, saleNum30days, trend, saleNumDailyAve, hopeUseNum,
-                        amount, totalHopeUN, hopeSaleDays, purchaseNum, price, purCost 
+                        amount, totalHopeUN, hopeSaleDays, purchaseNum, price, purCost
                     FROM cache_overseasReplenish WHERE type='UK虚拟仓'";
                 if (isset($cond['sku']) && $cond['sku']) $sql .= " AND SKU LIKE '%{$cond['sku']}%'";
                 if (isset($cond['salerName']) && $cond['salerName']) $sql .= " AND salerName LIKE '%{$cond['salerName']}%'";
@@ -762,7 +764,9 @@ class TinyToolController extends AdminController
                 if (isset($cond['trend']) && $cond['trend']) $sql .= " AND trend LIKE '%{$cond['trend']}%'";
                 if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
                 if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
-                $data = Yii::$app->db->createCommand($sql)->queryAll();
+                $data = Yii::$app->db->createCommand($sql)->queryAll();*/
+                $sql = "EXEC  [dbo].[LY_eBayUKVirtualWarehouse_Replenishment_20191113] '{$cond['salerName']}','{$cond['purchaser']}'";
+                $data = Yii::$app->py_db->createCommand($sql)->queryAll();
                 $title = ['SKU','SKU名称','商品编码','开发员','状态','采购','供应商','3天销量','7天销量','15天销量','30天销量',
                     '走势','日均销量','预计可用库存','义乌仓库存','义乌仓采购未审核','预计可卖天数','采购数量','单价','采购金额'];
                 break;
@@ -782,7 +786,7 @@ class TinyToolController extends AdminController
                 if (isset($cond['isShipping']) && $cond['isShipping'] == '否') $sql .= " AND shipNum=0 ";
                 $data = Yii::$app->db->createCommand($sql)->queryAll();*/
                 $data = Yii::$app->py_db->createCommand("EXEC LY_eBayAURealWarehouse_Replenishment_20191105 '{$cond['salerName']}','{$cond['purchaser']}';")->queryAll();
-                $title = ['SKU','SKU名称','商品编码','开发员','状态','价格(￥)','重量(g)','采购','供应商','3天销量','7天销量','15天销量','30天销量',
+                $title = ['SKU','SKU名称','商品编码','季节','类别','开发员','状态','价格(￥)','重量(g)','采购','供应商','3天销量','7天销量','15天销量','30天销量',
                     '走势','日均销量','金皖399预计可用库存','万邑通AU预计可用库存','预计可用库存','万邑通AU预计可用天数','预计可卖天数','采购数量','发货数量','采购金额','发货重量(g)'];
                 break;
             case 'ukReal':
@@ -801,7 +805,7 @@ class TinyToolController extends AdminController
                 if (isset($cond['isShipping']) && $cond['isShipping'] == '否') $sql .= " AND shipNum=0 ";
                 $data = Yii::$app->db->createCommand($sql)->queryAll();*/
                 $data = Yii::$app->py_db->createCommand("EXEC LY_eBayUKRealWarehouse_Replenishment_20191105 '{$cond['salerName']}','{$cond['purchaser']}';")->queryAll();
-                $title = ['SKU','SKU名称','商品编码','开发员','状态','价格(￥)','重量(g)','采购','供应商','3天销量','7天销量','15天销量','30天销量',
+                $title = ['SKU','SKU名称','商品编码','季节','类别','开发员','状态','价格(￥)','重量(g)','采购','供应商','3天销量','7天销量','15天销量','30天销量',
                     '走势','日均销量','金皖399预计可用库存','万邑通UK预计可用库存','预计可用库存','万邑通UK预计可用天数','预计可卖天数','采购数量','发货数量','采购金额','发货重量(g)'];
                 break;
             case 'uk2':
