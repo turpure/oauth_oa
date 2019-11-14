@@ -12,6 +12,7 @@ use backend\models\EbayCategory;
 use backend\models\EbayCateRule;
 use backend\models\EbayHotRule;
 use backend\models\EbayNewRule;
+use backend\modules\v1\utils\Handler;
 use Yii;
 use yii\helpers\ArrayHelper;
 use yii\db\Query;
@@ -42,7 +43,7 @@ class ApiProductsEngine
 
         //平台数据
         if ($plat === 'ebay') {
-            return static::getEbayRecommend($type,$marketplace, $page, $pageSize);
+            return static::getEbayRecommend($type, $marketplace, $page, $pageSize);
         }
 
         if ($plat === 'wish') {
@@ -181,8 +182,7 @@ class ApiProductsEngine
     }
 
 
-
-    private  static function getEbayRecommend($type, $marketplace,$page, $pageSize)
+    private static function getEbayRecommend($type, $marketplace, $page, $pageSize)
     {
 
 
@@ -197,15 +197,14 @@ class ApiProductsEngine
             $newRules = EbayNewRule::find()->select(['id'])->all();
 
 
-
             $cur = (new \yii\mongodb\Query())->from('ebay_new_product')
                 ->andFilterWhere(['marketplace' => $marketplace])
                 ->all();
             foreach ($newRules as $rule) {
                 foreach ($cur as $row) {
                     $productRules = $row['rules'];
-                    $recommendDate = substr($row['recommendDate'],0,10);
-                    if($recommendDate === $today  && in_array($rule->_id, $productRules,false)) {
+                    $recommendDate = substr($row['recommendDate'], 0, 10);
+                    if ($recommendDate === $today && in_array($rule->_id, $productRules, false)) {
                         $ret[] = $row;
                     }
                 }
@@ -224,8 +223,8 @@ class ApiProductsEngine
             foreach ($hotRules as $rule) {
                 foreach ($cur as $row) {
                     $productRules = $row['rules'];
-                    $recommendDate = substr($row['recommendDate'],0,10);
-                    if($recommendDate === $today  && in_array($rule->_id, $productRules,false)) {
+                    $recommendDate = substr($row['recommendDate'], 0, 10);
+                    if ($recommendDate === $today && in_array($rule->_id, $productRules, false)) {
                         $ret[] = $row;
                     }
                 }
@@ -263,52 +262,64 @@ class ApiProductsEngine
     public static function getAllotInfo($id)
     {
         $rule = EbayAllotRule::find()->where(['_id' => $id])->asArray()->one();
+        $rule = EbayAllotRule::findOne(['_id' => $id]);
         $newDetail['ruleType'] = 'new';
         $hotDetail['ruleType'] = 'hot';
         $newDetail['flag'] = $hotDetail['flag'] = false;
         $newDetail['ruleValue'] = $hotDetail['ruleValue'] = [];
-        $newRule = EbayNewRule::find()->asArray()->all();
-        foreach ($newRule as $k => $val) {
+        $newRule = EbayNewRule::find()->all();
+        foreach ($newRule as $k => $value) {
             if (isset($rule['detail']) && $rule['detail']) {
-                foreach ($rule['detail'] as $v) {
-                    if (isset($v['ruleType']) && $v['ruleType'] == 'new' && $val['_id'] == $v['ruleId']) {
-                        $newDetail['flag'] = true;
-                        $newDetail['ruleValue'][$k] =
-                            [
-                                'ruleId' => $val['_id'],
-                                'ruleName' => $val['ruleName'],
-                                'flag' => true
-                            ];
+                foreach ($rule['detail'] as $val) {
+                    //print_r($val['ruleValue']);exit();
+                    if (isset($val['ruleType']) && $val['ruleType'] == 'new' &&
+                        isset($val['ruleValue']) && $val['ruleValue']) {
+                        foreach ($val['ruleValue'] as $v) {
+                            if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']['oid']) {
+                                $newDetail['flag'] = true;
+                                $newDetail['ruleValue'][$k] =
+                                    [
+                                        'ruleId' => $value['_id'],
+                                        'ruleName' => $value['ruleName'],
+                                        'flag' => true
+                                    ];
+                            }
+                        }
                     }
                 }
             } else {
                 $newDetail['ruleValue'][$k] =
                     [
-                        'ruleId' => $val['_id'],
-                        'ruleName' => $val['ruleName'],
+                        'ruleId' => $value['_id'],
+                        'ruleName' => $value['ruleName'],
                         'flag' => false
                     ];
             }
         }
         $hotRule = EbayHotRule::find()->asArray()->all();
-        foreach ($hotRule as $k => $val) {
+        foreach ($hotRule as $k => $value) {
             if (isset($rule['detail']) && $rule['detail']) {
-                foreach ($rule['detail'] as $v) {
-                    if (isset($v['ruleType']) && $v['ruleType'] == 'hot' && $val['_id'] == $v['ruleId']) {
-                        $hotDetail['flag'] = true;
-                        $hotDetail['ruleValue'][$k] =
-                            [
-                                'ruleId' => $val['_id'],
-                                'ruleName' => $val['ruleName'],
-                                'flag' => false
-                            ];
+                foreach ($rule['detail'] as $val) {
+                    if (isset($val['ruleType']) && $val['ruleType'] == 'hot' &&
+                        isset($val['ruleValue']) && $val['ruleValue']) {
+                        foreach ($val['ruleValue'] as $v) {
+                            if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']['oid']) {
+                                $hotDetail['flag'] = true;
+                                $hotDetail['ruleValue'][$k] =
+                                    [
+                                        'ruleId' => $value['_id'],
+                                        'ruleName' => $value['ruleName'],
+                                        'flag' => true
+                                    ];
+                            }
+                        }
                     }
                 }
             } else {
                 $hotDetail['ruleValue'][$k] =
                     [
-                        'ruleId' => $val['_id'],
-                        'ruleName' => $val['ruleName'],
+                        'ruleId' => $value['_id'],
+                        'ruleName' => $value['ruleName'],
                         'flag' => false
                     ];
             }
@@ -321,49 +332,91 @@ class ApiProductsEngine
      * @param $id
      * Date: 2019-11-12 13:04
      * Author: henry
-     * @return array|null|\yii\mongodb\ActiveRecord
+     * @return array|null|\yii\mongodb\ActiveRecord   TODO
      */
     public static function getCateInfo($id)
     {
         $rule = EbayCateRule::find()->where(['_id' => $id])->asArray()->one();
-        $allCateArr = EbayCategory::find()->asArray()->all();
         //获取所有平台信息
-        $platArr = ArrayHelper::getColumn($allCateArr,'plat');
-        $marketplaceArr = ArrayHelper::getColumn($allCateArr,'marketplace');
+        //$allCateArr = EbayCategory::find()->asArray()->all();
+        $allPlatArr = Yii::$app->runAction('/v1/products-engine/plat')['data'];
+        $detail = [];
 
-
-        $detail['ruleType'] = 'new';
-        $detail['flag'] = false;
-
-
-
-        $newRule = EbayNewRule::find()->asArray()->all();
-        foreach ($newRule as $k => $val) {
-            if (isset($rule['detail']) && $rule['detail']) {
-                foreach ($rule['detail'] as $v) {
-                    if (isset($v['ruleType']) && $v['ruleType'] == 'new' && $val['_id'] == $v['ruleId']) {
-                        $newDetail['flag'] = true;
-                        $newDetail['ruleValue'][$k] =
-                            [
-                                'ruleId' => $val['_id'],
-                                'ruleName' => $val['ruleName'],
-                                'flag' => true
-                            ];
+        $detailArr = isset($rule['detail'])?$rule['detail']:[];
+        //print_r($detailArr);exit;
+        foreach ($allPlatArr as $dk => $value){//遍历所有平台
+            $item['plat'] = $value;
+            $item['flag'] = false;
+            $item['platValue'] = [];
+            $allMarketplaceArr = Yii::$app->runAction('/v1/products-engine/marketplace', ['plat' => $value])['data'];
+            foreach($allMarketplaceArr as $mk => $marketplace ){
+                $item['platValue'][$mk]['marketplace'] = $marketplace;
+                $item['platValue'][$mk]['flag'] = false;
+                $item['platValue'][$mk]['marketplaceValue'] = [];
+                //获取平台站点下所有一级类目
+                $allCateArr = $allCateArr = EbayCategory::find()
+                    ->andFilterWhere(['plat' => $value])
+                    ->andFilterWhere(['marketplace' => $marketplace])
+                    ->orderBy('cate')->asArray()->all();
+                foreach($allCateArr as $ck => $cate) {//遍历平台下所有一级类目
+                    $item['platValue'][$mk]['marketplaceValue'][$ck]['cate'] = $cate['cate'];
+                    $item['platValue'][$mk]['marketplaceValue'][$ck]['flag'] = false;
+                    foreach ($cate['subCate'] as $sk => $subCate){  //遍历已有二级类目
+                        $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCate'][$sk] = $subCate;
+                        $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = [];
+                        if($detailArr){
+                            foreach($detailArr as $detailValue){
+                                if(isset($detailValue['plat']) && $detailValue['plat'] == $value){ //判断是否有该平台
+                                    $item['flag'] = true;
+                                    if(isset($detailValue['platValue']) && $detailValue['platValue']){
+                                        foreach($detailValue['platValue'] as $platValue){
+                                            if(isset($platValue['marketplace']) && $platValue['marketplace'] == $marketplace){//判断是否有该站点
+                                                $item['platValue'][$mk]['flag'] = true;
+                                                if(isset($platValue['marketplaceValue']) && $platValue['marketplaceValue']){
+                                                    foreach ($platValue['marketplaceValue'] as $marketplaceValue){
+                                                        if(isset($marketplaceValue['cate']) && $marketplaceValue['cate'] == $cate['cate']) {//判断是否有该一级类目
+                                                            $item['platValue'][$mk]['marketplaceValue'][$ck]['flag'] = true;
+                                                            $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCate'] = $cate['subCate'];
+                                                            $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = [];
+                                                            if(isset($marketplaceValue['cateValue']) && $marketplaceValue['cateValue'] &&
+                                                                isset($marketplaceValue['cateValue']['subCateChecked']) && $marketplaceValue['cateValue']['subCateChecked']
+                                                            ){
+                                                                $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = $marketplaceValue['cateValue']['subCateChecked'];
+                                                                /*foreach ($marketplaceValue['cateValue'] as $cateValue){
+                                                                    if(isset($cateValue['subCateChecked']) && $cateValue['subCateChecked'] == $subCate) {
+                                                                        $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'][] = $subCate;
+                                                                        //$item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue'][$sk]['flag'] = true;//判断是否有该二级类目
+                                                                    }
+                                                                }*/
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
-            } else {
-                $newDetail['ruleValue'][$k] =
-                    [
-                        'ruleId' => $val['_id'],
-                        'ruleName' => $val['ruleName'],
-                        'flag' => false
-                    ];
+            }
+            $detail[$dk] = $item;
+        }
+        if($rule) $res['_id'] = $rule['_id'];
+        //获取普源类目
+        $pyCate = Yii::$app->runAction('/v1/oa-goodsinfo/attribute-info-cat')['data'];
+        foreach ($pyCate as $k => $v){
+            if($rule && $rule['pyCate'] == $v){
+                $res['pyCate'][$k] = ['name' => $v,'flag' => true];
+            }else{
+                $res['pyCate'][$k] = ['name' => $v,'flag' => false];
             }
         }
-
-        $rule['detail'] = [];
-        return $rule;
+        $res['detail'] = $detail;
+        return $res;
     }
+
 
 
     /**

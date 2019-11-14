@@ -10,6 +10,7 @@ namespace backend\modules\v1\controllers;
 use backend\modules\v1\models\ApiReport;
 use backend\modules\v1\models\ApiSettings;
 use Codeception\Template\Api;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use yii\data\ArrayDataProvider;
@@ -722,7 +723,7 @@ class ReportController extends AdminController
         //填充表内容
         foreach ($data as $k => $rows) {
             foreach ($headers as $i => $val) {
-                $worksheet->setCellValueByColumnAndRow($i + 1, $k + 2, "\t".$rows[$val]."\t");
+                $worksheet->setCellValueExplicitByColumnAndRow($i + 1, $k + 2, $rows[$val],DataType::TYPE_STRING);
             }
         }
         header('pragma:public');
