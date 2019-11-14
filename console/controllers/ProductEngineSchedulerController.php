@@ -8,6 +8,7 @@
 namespace console\controllers;
 
 use console\models\ConScheduler;
+use console\models\ProductEngine;
 use yii\console\Controller;
 
 use Yii;
@@ -21,23 +22,14 @@ class ProductEngineSchedulerController extends Controller
      */
     public function actionProductTag()
     {
-        $mongo = Yii::$app->mongodb;
-        $col = $mongo->getCollection('ebay_new_product');
-        $today = date('Y-m-d');
-        $products = $col->find(['recommendDate' => ['$regex' => $today]]);
-        foreach ($products as $pts) {
-            $catName = $pts['cidName'];
-            var_dump($catName);
-        }
+       // 新品打标签
+        ProductEngine::setProductTag('new');
 
+        //热销产品打标签
+        ProductEngine::setProductTag('hot');
     }
 
-    private function getTagCat()
-    {
-        $mongo = Yii::$app->mongodb;
-        $col = $mongo->getCollection('');
 
-    }
 
 
     /**
@@ -45,7 +37,16 @@ class ProductEngineSchedulerController extends Controller
      */
     public function actionPersonTag()
     {
-
+        $mongo = Yii::$app->mongodb;
+        $col = $mongo->getCollection('ebay_allot_rule');
+        $personTags = $col->find();
+        $ret = [];
+        foreach ($personTags as $pt) {
+            $row['person'] = $pt['username'];
+            $row['tag'] = empty($pt['category']) ? []: $pt['category'];
+            $ret[] = $row;
+        }
+         return $ret;
     }
 
     /**
