@@ -88,6 +88,7 @@ class ApiProductsEngine
             // 转至逆向开发
             $product_info = [
                 'recommendId' => $recommendId, 'img' => $doc['mainImage'], 'cate' => '女人世界',
+                'origin1' => 'https://www.ebay.com/itm/' . $doc['itemId'],
                 'stockUp' => '否', 'subCate' => '女包', 'salePrice' => $doc['price'], 'flag' => 'backward',
                 'type' => 'create', 'introducer' => 'proEngine'
             ];

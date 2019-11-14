@@ -44,6 +44,7 @@ class ProductEngineSchedulerController extends Controller
         foreach ($personTags as $pt) {
             $row['person'] = $pt['username'];
             $row['tag'] = empty($pt['category']) ? []: $pt['category'];
+            $row['deliveryLocation'] = $pt['deliveryLocation'];
             $ret[] = $row;
         }
          return $ret;
