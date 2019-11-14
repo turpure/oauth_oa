@@ -77,11 +77,16 @@ class ProductsEngineController extends AdminController
                     ) {
                         continue;
                     } else {
+                        $receiver = [];
                         foreach ($row['receiver'] as $v) {
-                            if (in_array($v, $userList)) {  //过滤当前用户的权限下的用户
-                                $ret[] = $row;
-                                break;
+                            if (in_array($v, $userList)) {  //过滤被推荐人(不在自己权限下的被推荐人筛选掉)
+                                $receiver[] = $v;
                             }
+                        }
+                        //过滤当前用户的权限下的用户
+                        $row['receiver'] = $receiver;
+                        if($receiver){
+                            $ret[] = $row;
                         }
                     }
                 }
