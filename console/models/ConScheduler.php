@@ -9,6 +9,7 @@
 namespace console\models;
 
 
+use backend\models\EbayAllotRule;
 use backend\modules\v1\models\ApiReport;
 use backend\modules\v1\models\ApiSettings;
 use backend\modules\v1\utils\Handler;
@@ -118,7 +119,7 @@ class ConScheduler
         $db = Yii::$app->mongodb;
         //获取分配规则最大产品数
         $maxProNum = (new \yii\mongodb\Query())->from('ebay_allot_rule')->max('productNum');
-        if ($maxProNum) $maxProNum = 5; //没有数据设置默认值
+        if (!$maxProNum) $maxProNum = 5; //没有数据设置默认值
         for ($i = 1; $i <= $maxProNum; $i++) {  //循环5遍  ，每遍选一个产品
             //遍历开发员
             foreach ($developers as $value) {
@@ -319,6 +320,144 @@ class ConScheduler
            }
        }
     }
+
+
+    //=====================================================================================================
+    //新分配规则
+
+    public static function getProducts($type, $plat)
+    {
+        $mongodb = Yii::$app->mongodb;
+        //获取开发的普源类目，发货地点，以及推荐产品数目
+        $devRuleList = $devNunRuleList = [];
+        $devList = $mongodb->getCollection('ebay_allot_rule')->find();
+        foreach ($devList as $dev){
+            if($dev['category']){
+                $devRuleList[] = [
+                    'username' => $dev['username'],
+                    'productNum' => $dev['productNum'],
+                    'pyCate' => $dev['category'],
+                    'deliveryLocation' => $dev['deliveryLocation'],
+                ];
+            }else{
+                $devNunRuleList[] = [
+                    'username' => $dev['username'],
+                    'productNum' => $dev['productNum'],
+                    'pyCate' => [],
+                    'deliveryLocation' => $dev['deliveryLocation'],
+                ];
+            }
+        }
+        //var_dump($devNunRuleList);exit;
+        //先分配有普源分类开发
+        self::allotProducts($devRuleList, $type, $plat);
+        //后分配没有普源分类开发
+        self::allotProducts($devNunRuleList, $type, $plat);
+    }
+
+
+    public static function allotProducts($developers, $type, $plat)
+    {
+        $db = Yii::$app->mongodb;
+        $table = $type == 'new' ? 'ebay_new_product' : 'ebay_hot_product';
+        //获取产品数
+        $maxProNum = (new \yii\mongodb\Query())->from($table)
+            ->andFilterWhere(['recommendDate' => ['$regex' => date('Y-m-d')]])  //筛选当天获取得新数据
+            ->count();
+        $cycle = ceil($maxProNum/count($developers));
+        //var_dump($cycle);exit;
+        for ($i = 1; $i <= $cycle; $i++) {  //每遍选一个产品
+            shuffle($developers);//开发员随机排序
+            foreach ($developers as $dev) {
+                //获取类目产品，没有类目获取全部产品
+                $proList = [];
+
+                if($dev['pyCate']){
+                    foreach ($dev['pyCate'] as $cate){
+                        $list = (new \yii\mongodb\Query())->from($table)
+                            ->andFilterWhere(['tag' => $cate])
+                            ->andFilterWhere(['isReceiver' => null])
+                            ->andFilterWhere(['recommendDate' => ['$regex' => date('Y-m-d')]])  //筛选当天获取得新数据
+                            ->orderBy('sold DESC')->all();
+                        $proList = array_merge($proList,$list);
+                    }
+                }else{
+                    $proList = (new \yii\mongodb\Query())->from($table)
+                        ->andFilterWhere(['isReceiver' => null])
+                        ->andFilterWhere(['recommendDate' => ['$regex' => date('Y-m-d')]])  //筛选当天获取得新数据
+                        ->orderBy('sold DESC')->all();
+                }
+                //print_r(count($proList));exit;
+                //开始分产品
+                foreach ($proList as $v) {
+                    //判断产品发货地点是否匹配
+                    if($dev['deliveryLocation']){
+                        $flag = 0;
+                        foreach ($dev['deliveryLocation'] as $deliveryLocation){
+                            if(isset(self::$locationCountryName[$deliveryLocation]) &&
+                                strpos($v['itemLocation'], self::$locationCountryName[$deliveryLocation]) !== false
+                            ){
+                                break;
+                            }else{
+                                $flag++;
+                            }
+                        }
+                        // 产品发货地址 都不在开发员限定的发货地址列表时，跳出当前循环，判断下一个产品
+                        if($flag == count($dev['deliveryLocation'])){
+                            continue;
+                        }
+                    }
+                    //数据库结果集中查找 当前产品,判断是否选过或超过选择人数
+                    $resItem = $db->getCollection('ebay_all_recommended_product')
+                        ->findOne(['itemId' => $v['itemId']]);
+                    if (!$resItem) { //所选产品没有其他人选过(不在结果集) 添加到结果集
+                        $item = $v;
+                        $item['productType'] = $type;   //类型
+                        $item['dispatchDate'] = date('Y-m-d H:i:s');   //时间
+                        $item['receiver'][] = $dev['username'];
+                        unset($item['_id']);
+                        $db->getCollection('ebay_all_recommended_product')->insert($item);
+                        break;
+                    } elseif (
+                        strpos($resItem['dispatchDate'], date('Y-m-d')) !== false && //选择时间是当天
+                        $resItem['productType'] == $type &&                  //且是新品
+                        count($resItem['receiver']) == 1 &&                   //只有一个人选
+                        !in_array($dev['username'], $resItem['receiver'])               //不是当前开发选择
+                    ) {  //只有其他一个人选过且不是当前开发所选时  更新结果集
+                        $receiver = $resItem['receiver'];
+                        $receiver[] = $dev['username'];// 先添加开发，再去重
+                        //更新推荐列表推荐人信息
+                        $db->getCollection('ebay_all_recommended_product')->update(['_id' => $resItem['_id']], ['receiver' => $receiver]);
+                        //更新产品列表是否推荐字段信息
+                        $db->getCollection($table)->update(['itemId' => $resItem['itemId']], ['isReceiver' => 1]);
+                        break;
+                    } else {              //否则继续判断下一个产品
+                        //更新产品列表是否推荐字段信息
+                        $db->getCollection($table)->update(['itemId' => $resItem['itemId']], ['isReceiver' => 1]);
+                    }
+                }
+            }
+        }
+    }
+
+
+
+
+    public static $locationCountryName = [
+        '中国' => 'CN',
+        '香港' => 'HK',
+        '美国' => 'US',
+        '英国' => 'GB',
+        '法国' => 'FR',
+        '德国' => 'DE',
+        '荷兰' => 'NL',
+        '爱尔兰' => 'IE',
+        '加拿大' => 'CA',
+        '意大利' => 'IT',
+        '澳大利亚' => 'AU',
+    ];
+
+
 
 
 }

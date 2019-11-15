@@ -554,7 +554,7 @@ class SchedulerController extends Controller
         $step = 100;
         try{
             //插入库存预警数据
-            /*Yii::$app->db->createCommand("TRUNCATE TABLE cache_stockWaringTmpData;")->execute();
+            Yii::$app->db->createCommand("TRUNCATE TABLE cache_stockWaringTmpData;")->execute();
 
             //分页获取数据
             for($k=1; ;$k++){
@@ -571,7 +571,7 @@ class SchedulerController extends Controller
                         ],
                         array_slice($stockList,$i*$step, $step))->execute();
                 }
-            }*/
+            }
 
 
             //插入30天销售数据
@@ -784,34 +784,29 @@ class SchedulerController extends Controller
 
     public function actionDailyRecommend()
     {   //默认ebay平台
+        //默认ebay平台
+        $start = time();
         try {
-
-            $sql = "SELECT u.username,a.item_name 
-                    FROM `user` u
-                    left Join auth_assignment a ON a.user_id=u.id
-                    WHERE u.`status`=10 AND item_name='产品开发';";
-            $query = Yii::$app->db->createCommand($sql)->queryAll();
-            $allDeveloperList = ArrayHelper::getColumn($query,'username');
-            //print_r($allDeveloperList);exit();
             $plat = 'ebay';
             if($plat == 'ebay'){
-                $type = 'new';
-                //有产品类目限制的开发优先获取产品
-                $devList = [
-                    '陈微微','刘珊珊','胡小红','杨笑天','李星','史新慈','詹莹莹','常金彩','廖露露','王丽6','毕郑强','王雪姣','张崇','崔明宽','邹雅丽','张小辉','刘霄敏','徐胜东','杨晶媛','刘爽','潘梦晗','胡宁','辜星燕','徐含','张杜娟','王咏','宋现中','王漫漫','李永恒',
-                ];
-                //新品
-                ConScheduler::getDevelopRecommendProduct($devList, $type, $plat);
-
-                //老品
-                ConScheduler::getDevelopRecommendProduct($devList, 'hot', $plat);
-
-                //没有有产品类目限制的开发再获取产品
-                //$devList = ['杨笑天', '宋现中', '胡小红',];
-                //ConScheduler::getDevelopRecommendProduct($devList, $type, $plat);
+                $typeArr = ['new','hot'];
+                foreach ($typeArr as $type){
+                    ConScheduler::getProducts($type, $plat);
+                }
             }
-            //更新每日推荐的推荐人
-            ConScheduler::getAndSetRecommendToPersons();
+            $time = time() - $start;
+            if($time >= 3600){
+                $day = $time/3600;
+                $mi = ($time - $day*3600)/60;
+                $sec = $time - $day*3600 - $mi*60;
+                print "success, it costs '{$day} days, '{$mi}' minutes, '{$sec}' seconds!";
+            }elseif ($time >= 60){
+                $mi = $time/60;
+                $sec = $time - $mi*60;
+                print "success, it costs '{$mi}' minutes, '{$sec}' seconds!";
+            }else{
+                print "success, it costs '{$time}' seconds!";
+            }
         } catch (\Exception $why) {
             print $why->getMessage();
             exit;
@@ -819,7 +814,41 @@ class SchedulerController extends Controller
 
     }
 
+//给开发分配指定数量产品  2019-11-14
+    public function actionAllotProduct()
+    {   //默认ebay平台
+        try {
+            $mongodb = Yii::$app->mongodb;
+            $typeArr = ['new', 'hot'];
+            $devList = $mongodb->getCollection('ebay_allot_rule')->find();
+            foreach($devList as $dev){
+                $proNum = $dev['productNum'] ? $dev['productNum'] : 5;
+                //var_dump($proNum);exit;
+                foreach ($typeArr as $value){
+                    $proList = (new \yii\mongodb\Query())->from('ebay_all_recommended_product')
+                        ->select(['_id' => 0])
+                        ->andFilterWhere(['productType' => $value])  //类型  新品  热销
+                        ->andFilterWhere(['receiver' => $dev['username']])
+                        ->andFilterWhere(['recommendDate' => ['$regex' => date('Y-m-d')]])  //筛选当天获取得新数据
+                        ->limit($proNum)->all();
+                    foreach ($proList as $v){
+                        $query = (new \yii\mongodb\Query())->from('ebay_recommended_product')
+                            ->andFilterWhere(['itemId' => $v['itemId']])->one();
+                        if(!$query){
+                            $mongodb->getCollection('ebay_recommended_product')->insert($v);
+                        }
+                    }
+                }
+            }
+            //更新每日推荐的推荐人
+            ConScheduler::getAndSetRecommendToPersons();
+            print 'success';
+        } catch (\Exception $why) {
+            print $why->getMessage();
+            exit;
+        }
 
+    }
 
 
 
