@@ -796,10 +796,10 @@ class SchedulerController extends Controller
             }
             $time = time() - $start;
             if($time >= 3600){
-                $day = $time/3600;
-                $mi = ($time - $day*3600)/60;
-                $sec = $time - $day*3600 - $mi*60;
-                print "success, it costs '{$day} days, '{$mi}' minutes, '{$sec}' seconds!";
+                $hour = $time/3600;
+                $mi = ($time - $hour*3600)/60;
+                $sec = $time - $hour*3600 - $mi*60;
+                print "success, it costs '{$hour}' hours, '{$mi}' minutes, '{$sec}' seconds!";
             }elseif ($time >= 60){
                 $mi = $time/60;
                 $sec = $time - $mi*60;
