@@ -85,6 +85,82 @@ class ProductEngine
     }
 
 
+    /**
+     * 产品分配算法
+     * @param $products
+     * @param $developer
+     * @return array
+     */
+    public function dispatch($products, $developer)
+    {
+        $ret = [];
+
+        //一直分配 直到人用完，或者产品用完
+        $turn = ceil(count($products) / count($products));
+        while ($turn > 0) {
+            $current_developer = static::turnSort($developer);
+            $res = static::pickUp($products, $current_developer);
+            $ret = array_merge($ret, $res);
+            --$turn;
+        }
+        return $ret;
+    }
+
+
+    /**
+     * 挑一次产品
+     * @param $products
+     * @param $developer
+     * @return array
+     */
+    private static function pickUp($products, $developer)
+    {
+        $ret = [];
+        $row = ['product' => '', 'developer' => ''];
+        foreach ($developer as $dp) {
+            foreach ($products as $pt) {
+                $condition1 = empty($dp['tag']) or in_array($pt['tag'],$dp['tag'], false);
+                $condition2 = $pt['limit'] <= 2;
+                if($condition1 && $condition2) {
+                    $row['product'] = $pt['itemId'];
+                    $row['developer'] = $dp['name'];
+                    $pt['limit'] += 1;
+                    $ret[] = $row;
+                }
+            }
+        }
+        return $ret;
+    }
+
+    /**
+     * 人员排序
+     * @param $list
+     * @param $index
+     * @return mixed
+     */
+    private static function turnSort($list, $index)
+    {
+        $first =  [];
+        $left = [];
+        $right = [];
+        $length = count($list);
+        $cur = 0;
+        for ($cur; $cur<=$length; ++$cur) {
+           if($cur < $index) {
+               $left[] = $list[$cur];
+           }
+            elseif($cur > $index) {
+                $right[] = $list[$cur];
+            }
+            else{
+               $first[] = $list[$cur];
+            }
+        }
+        return array_merge($first, $right, $left);
+
+    }
+
+
 
 
 }

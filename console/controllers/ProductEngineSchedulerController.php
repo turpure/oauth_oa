@@ -51,18 +51,24 @@ class ProductEngineSchedulerController extends Controller
     }
 
     /**
-     *按照分配算法分配
+     * 按照分配算法分配产品
+     * @param $products
+     * @param $persons
      */
-    public function actionDispatch()
+    public function actionDispatch($products, $persons)
     {
+        return ProductEngine::dispatch($products, $persons);
 
     }
 
+
+
     /**
-     * 分配算法
+     * 分配算法开始
      */
     private function dispatch()
     {
+
 
     }
 
