@@ -799,13 +799,13 @@ class SchedulerController extends Controller
                 $hour = $time/3600;
                 $mi = ($time - $hour*3600)/60;
                 $sec = $time - $hour*3600 - $mi*60;
-                print "success, it costs '{$hour}' hours, '{$mi}' minutes, '{$sec}' seconds!";
+                print "success, it costs {$hour} hours, {$mi} minutes, {$sec} seconds!";
             }elseif ($time >= 60){
                 $mi = $time/60;
                 $sec = $time - $mi*60;
-                print "success, it costs '{$mi}' minutes, '{$sec}' seconds!";
+                print "success, it costs {$mi} minutes, {$sec} seconds!";
             }else{
-                print "success, it costs '{$time}' seconds!";
+                print "success, it costs {$time} seconds!";
             }
         } catch (\Exception $why) {
             print $why->getMessage();
