@@ -40,10 +40,11 @@ class ApiProductsEngine
         $page = \Yii::$app->request->get('page', 1);
         $pageSize = \Yii::$app->request->get('pageSize', 20);
         $marketplace = \Yii::$app->request->get('marketplace');//站点
+        $recommendStatus = \Yii::$app->request->get('recommendStatus',[]);//站点
 
         //平台数据
         if ($plat === 'ebay') {
-            return static::getEbayRecommend($type, $marketplace, $page, $pageSize);
+            return static::getEbayRecommend($type, $marketplace, $page, $pageSize,[$recommendStatus]);
         }
 
         if ($plat === 'wish') {
@@ -183,8 +184,11 @@ class ApiProductsEngine
     }
 
 
-    private static function getEbayRecommend($type, $marketplace, $page, $pageSize)
+    private static function getEbayRecommend($type, $marketplace, $page, $pageSize, $recommendStatus='')
     {
+
+
+
 
 
         $ret = [];
@@ -206,7 +210,13 @@ class ApiProductsEngine
                     $productRules = $row['rules'];
                     $recommendDate = substr($row['recommendDate'], 0, 10);
                     if ($recommendDate === $today && in_array($rule->_id, $productRules, false)) {
-                        $ret[] = $row;
+
+                        //推荐状态筛选
+                        $row = static::recommendStatusFilter($recommendStatus, $row);
+                        if(!empty($row)){
+                            $ret[] = $row;
+                        }
+
                     }
                 }
             }
@@ -226,8 +236,13 @@ class ApiProductsEngine
                     $productRules = $row['rules'];
                     $recommendDate = substr($row['recommendDate'], 0, 10);
                     if ($recommendDate === $today && in_array($rule->_id, $productRules, false)) {
-                        $ret[] = $row;
+                        //推荐状态筛选
+                        $row = static::recommendStatusFilter($recommendStatus, $row);
+                        if(!empty($row)){
+                            $ret[] = $row;
+                        }
                     }
+
                 }
             }
         }
@@ -253,6 +268,57 @@ class ApiProductsEngine
         return $data;
     }
 
+
+
+    private static function recommendStatusFilter($recommendStatus, $row)
+    {
+        $ret = [];
+        //$recommendStatus = ['未推送','未处理', '已过滤', '已认领'];
+        foreach ($recommendStatus as $rs){
+            $recommendPersons = $row['recommendToPersons'];
+            if($rs === '未推送') {
+                if(empty($recommendPersons)) {
+                    $ret = $row;
+                }
+            }
+            elseif($rs === '已过滤') {
+                foreach ($recommendPersons as $rp) {
+                    if($rp['status'] === 'refuse') {
+                        $ret = $row;
+                        break;
+                    }
+                }
+
+            }
+            elseif($rs === '已认领') {
+                foreach ($recommendPersons as $rp) {
+                    if($rp['status'] === 'accept') {
+                        $ret = $row;
+                        break;
+                    }
+                }
+            }
+            elseif($rs === '未处理') {
+                $flag = 1;
+                if(empty($recommendPersons)) {
+                    $flag = 0;
+                }
+                foreach ($recommendPersons as $rp) {
+                    if(!empty($rp['status'])) {
+                        $flag = 0;
+                    }
+                }
+                if($flag) {
+                    $ret = $row;
+                }
+            }
+            else{
+                $ret = $row;
+            }
+
+        }
+        return $ret;
+    }
 
     /** 获取 分配规则详情
      * @param $id
