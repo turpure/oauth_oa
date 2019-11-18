@@ -368,6 +368,7 @@ class ConScheduler
         //var_dump($cycle);exit;
         for ($i = 1; $i <= $cycle; $i++) {  //每遍选一个产品
             shuffle($developers);//开发员随机排序
+            $count = 0;//统计每轮选产品人员数量
             foreach ($developers as $dev) {
                 //获取类目产品，没有类目获取全部产品
                 $proList = [];
@@ -417,6 +418,7 @@ class ConScheduler
                         $item['receiver'][] = $dev['username'];
                         unset($item['_id']);
                         $db->getCollection('ebay_all_recommended_product')->insert($item);
+                        $count++;
                         break;
                     } elseif (
                         strpos($resItem['dispatchDate'], date('Y-m-d')) !== false && //选择时间是当天
@@ -430,12 +432,17 @@ class ConScheduler
                         $db->getCollection('ebay_all_recommended_product')->update(['_id' => $resItem['_id']], ['receiver' => $receiver]);
                         //更新产品列表是否推荐字段信息
                         $db->getCollection($table)->update(['itemId' => $resItem['itemId']], ['isReceiver' => 1]);
+                        $count++;
                         break;
                     } else {              //否则继续判断下一个产品
                         //更新产品列表是否推荐字段信息
                         $db->getCollection($table)->update(['itemId' => $resItem['itemId']], ['isReceiver' => 1]);
                     }
                 }
+            }
+            //没人挑选产品，退出循环
+            if($count == 0){
+                break;
             }
         }
     }
