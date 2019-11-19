@@ -13,6 +13,7 @@ use backend\models\EbayCateRule;
 use backend\models\EbayDeveloperCategory;
 use backend\models\EbayHotRule;
 use backend\models\EbayNewRule;
+use backend\models\OaGoodsinfo;
 use backend\modules\v1\models\ApiUser;
 use yii\data\ArrayDataProvider;
 use backend\modules\v1\models\ApiProductsEngine;
@@ -85,7 +86,7 @@ class ProductsEngineController extends AdminController
                         }
                         //过滤当前用户的权限下的用户
                         $row['receiver'] = $receiver;
-                        if($receiver){
+                        if ($receiver) {
                             $ret[] = $row;
                         }
                     }
@@ -421,7 +422,8 @@ class ProductsEngineController extends AdminController
     }
 
     //获取类目规则详情
-    public function  actionCateRuleInfo($id){
+    public function actionCateRuleInfo($id)
+    {
         return ApiProductsEngine::getCateInfo($id);
     }
 
@@ -519,7 +521,8 @@ class ProductsEngineController extends AdminController
     }
 
     //获取分配规则详情
-    public function  actionAllotRuleInfo($id){
+    public function actionAllotRuleInfo($id)
+    {
         return ApiProductsEngine::getAllotInfo($id);
     }
 
@@ -564,6 +567,97 @@ class ProductsEngineController extends AdminController
             return ['code' => 401, 'message' => $why->getMessage()];
         }
     }
+
+//===========================================================================================
+    //统计报表
+
+    /**
+     * 认领产品报表
+     * Date: 2019-11-19 8:54
+     * Author: henry
+     * @return array
+     */
+    public function actionProductReport()
+    {
+        $condition = Yii::$app->request->post('condition');
+        $developer = isset($condition['developer']) && $condition['developer'] ? $condition['developer'] : '';
+        $beginDate = isset($condition['dateRange']) && $condition['dateRange'] ? $condition['dateRange'][0] : '';
+        $endDate = isset($condition['dateRange']) && $condition['dateRange'] ? $condition['dateRange'][1] : '';
+
+        //计算开发认领产品总数
+        $allQuery = (new Query())
+            ->from('proCenter.oa_goodsinfo gs')
+            ->select('g.developer, count(goodsCode) as totalNum')
+            ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
+            ->andWhere(['g.introducer' => 'proEngine'])
+            ->andFilterWhere(['g.developer' => $developer])
+            ->andFilterWhere(['between', 'left(g.createDate,10)', $beginDate, $endDate])
+            ->groupBy('g.developer');
+
+        //计算爆款数
+        $hotQuery = (new Query())
+            ->from('proCenter.oa_goodsinfo')
+            ->select('g.developer, count(goodsCode) as hotNum')
+            ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
+            ->andWhere(['g.introducer' => 'proEngine'])
+            ->andFilterWhere(['between', 'left(g.createDate,10)', $beginDate, $endDate])
+            ->andFilterWhere(['g.developer' => $developer])
+            ->andFilterWhere(['goodsStatus' => '爆款'])
+            ->groupBy('g.developer');
+
+        //计算旺款数量
+        $popQuery = (new Query())
+            ->from('proCenter.oa_goodsinfo')
+            ->select('g.developer, count(goodsCode) as popNum')
+            ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
+            ->andWhere(['g.introducer' => 'proEngine'])
+            ->andFilterWhere(['between', 'left(g.createDate,10)', $beginDate, $endDate])
+            ->andFilterWhere(['g.developer' => $developer])
+            ->andFilterWhere(['goodsStatus' => '旺款'])
+            ->groupBy('g.developer');
+
+        $data = (new Query())
+            ->select(["a.developer", "a.totalNum",
+                "IFNULL(h.hotNum,0) AS hotNum",
+                "IFNULL(p.popNum,0) AS popNum",
+                "ROUND(CASE WHEN totalNum=0 THEN 0 ELSE IFNULL(hotNum,0)/totalNum END,4) AS hotRate",
+                "ROUND(CASE WHEN totalNum=0 THEN 0 ELSE IFNULL(popNum,0)/totalNum END,4) AS popRate"])
+            ->from(['a' => $allQuery])
+            ->leftJoin(['h' => $hotQuery], ['a.developer' => 'h.developer'])
+            ->leftJoin(['p' => $popQuery], ['a.developer' => 'p.developer'])
+            ->orderBy('totalNum DESC')
+            ->all();
+
+
+        //获取开发列表
+        $devData = EbayAllotRule::find()->andFilterWhere(['username' => $developer])->all();
+        $devList = ArrayHelper::getColumn($devData,'username');
+        $devHave = ArrayHelper::getColumn($data,'developer');
+        $devLeft = array_diff($devList,$devHave);
+        $dataAdd = [];
+        foreach ($devLeft as $k => $v){
+            $dataAdd[$k]['developer'] = $v;
+            $dataAdd[$k]['totalNum'] = '0';
+            $dataAdd[$k]['hotNum'] = '0';
+            $dataAdd[$k]['popNum'] = '0';
+            $dataAdd[$k]['hotRate'] = '0.0000';
+            $dataAdd[$k]['popRate'] = '0.0000';
+        }
+        //var_dump($dataAdd);exit;
+        return array_merge($data, $dataAdd);
+    }
+
+    public function actionRuleReport(){
+        $condition =  Yii::$app->request->post('condition');
+        $ruleName = isset($condition['ruleName']) && $condition['ruleName'] ? $condition['ruleName'] : '';
+        $beginDate = isset($condition['dateRange']) && $condition['dateRange'] ? $condition['dateRange'][0] : '';
+        $endDate = isset($condition['dateRange']) && $condition['dateRange'] ? $condition['dateRange'][1] : '';
+        //获取新品推送规则列表
+        $newRuleList = EbayNewRule::find()->andFilterWhere(['like', 'ruleName', $ruleName])->all();
+        $hotRuleList = EbayHotRule::find()->andFilterWhere(['like', 'ruleName', $ruleName])->all();
+        var_dump($newRuleList);exit;
+    }
+
 
 
 }
