@@ -648,15 +648,87 @@ class ProductsEngineController extends AdminController
     }
 
     public function actionRuleReport(){
+        $db = Yii::$app->mongodb;
         $condition =  Yii::$app->request->post('condition');
         $ruleName = isset($condition['ruleName']) && $condition['ruleName'] ? $condition['ruleName'] : '';
         $beginDate = isset($condition['dateRange']) && $condition['dateRange'] ? $condition['dateRange'][0] : '';
         $endDate = isset($condition['dateRange']) && $condition['dateRange'] ? $condition['dateRange'][1] : '';
-        //获取新品推送规则列表
-        $newRuleList = EbayNewRule::find()->andFilterWhere(['like', 'ruleName', $ruleName])->all();
-        $hotRuleList = EbayHotRule::find()->andFilterWhere(['like', 'ruleName', $ruleName])->all();
-        var_dump($newRuleList);exit;
+        //获取新品推送规则列表并统计产品数
+        $newRuleList = EbayNewRule::find()->andFilterWhere(['ruleName' => ['$regex' => $ruleName]])->all();
+        $newData = [];
+        foreach ($newRuleList as $v){
+            $item['ruleType'] = $type = 'new';
+            $item['ruleName'] = $v['ruleName'];
+
+            $totalNum = $db->getCollection('ebay_new_product')->count(['rules' => $v['_id']]);
+            $claimNum = $db->getCollection('ebay_recommended_product')
+                ->count(['productType' => $type, 'rules' => $v['_id'], 'accept' => ['$size' => 1]]);
+            $item['totalNum'] = $totalNum;
+            $item['claimNum'] = $claimNum;
+
+            //获取智能推荐新品 爆旺款全部产品
+            $dataList = $hotQuery = (new Query())
+                ->from('proCenter.oa_goodsinfo')
+                ->select('g.recommendId,goodsStatus')
+                ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
+                ->andWhere(['g.introducer' => 'proEngine'])
+                ->andFilterWhere(['between', 'left(g.createDate,10)', $beginDate, $endDate])
+                ->andFilterWhere(['like', 'g.recommendId', $type])
+                ->andFilterWhere(['goodsStatus' => ['爆款', '旺款']])
+                ->all();
+            $hotNum = $popNum = 0;
+            foreach ($dataList as $value){
+                $recommend = $db->getCollection('ebay_recommended_product')->count(['_id' => substr($value['recommendId'],4)]);
+                if($value['goodsStatus'] == '爆款' && $recommend){
+                    $hotNum += 1;
+                }elseif($value['goodsStatus'] == '旺款' && $recommend){
+                    $popNum += 1;
+                }
+            }
+            $item['hotNum'] = $hotNum;
+            $item['popNum'] = $popNum;
+            //var_dump($claimNum);exit;
+            $newData[] = $item;
+        }
+        //获取热销产品推送规则列表并统计产品数
+        $hotRuleList = EbayHotRule::find()->andFilterWhere(['ruleName' => ['$regex' => $ruleName]])->all();
+        $hotData = [];
+        foreach ($hotRuleList as $v){
+            $item['ruleType'] = $type = 'hot';
+            $item['ruleName'] = $v['ruleName'];
+            $totalNum = $db->getCollection('ebay_new_product')->count(['rules' => $v['_id']]);
+            $claimNum = $db->getCollection('ebay_recommended_product')
+                ->count(['productType' => $type, 'rules' => $v['_id'], 'accept' => ['$size' => 1]]);
+            $item['totalNum'] = $totalNum;
+            $item['claimNum'] = $claimNum;
+
+            //获取智能推荐新品 爆旺款全部产品
+            $dataList = $hotQuery = (new Query())
+                ->from('proCenter.oa_goodsinfo')
+                ->select('g.recommendId,goodsStatus')
+                ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
+                ->andWhere(['g.introducer' => 'proEngine'])
+                ->andFilterWhere(['between', 'left(g.createDate,10)', $beginDate, $endDate])
+                ->andFilterWhere(['like', 'g.recommendId', $type])
+                ->andFilterWhere(['goodsStatus' => ['爆款', '旺款']])
+                ->all();
+            $hotNum = $popNum = 0;
+            foreach ($dataList as $value){
+                $recommend = $db->getCollection('ebay_recommended_product')->count(['_id' => substr($value['recommendId'],4)]);
+                if($value['goodsStatus'] == '爆款' && $recommend){
+                    $hotNum += 1;
+                }elseif($value['goodsStatus'] == '旺款' && $recommend){
+                    $popNum += 1;
+                }
+            }
+            $item['hotNum'] = $hotNum;
+            $item['popNum'] = $popNum;
+            //var_dump($claimNum);exit;
+            $hotData[] = $item;
+        }
+        return array_merge($newData, $hotData);
     }
+
 
 
 
