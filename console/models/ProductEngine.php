@@ -168,6 +168,74 @@ class ProductEngine
         return static::group($ret);
     }
 
+    /**
+     * 按照数量分配给每个开发
+     * @param string $type
+     * @return array
+     */
+    public static function dispatchToPersons($type='new')
+    {
+
+        $persons = static::personNumberLimit();
+        $products = static::getAllProducts($type);
+        $ret = [];
+        foreach ($persons as $pn) {
+            $productNumber = 0;
+            foreach ($products as  $pt) {
+                if($productNumber <= (integer)$pn['limit'] && in_array($pn['name'],$pt['receiver'], false)) {
+                    $row['product'] = $pt['itemId'];
+                    $row['developer'] = $pn['name'];
+                    $row['type'] = $type;
+                    $productNumber++;
+                    $ret[] = $row;
+                }
+                if($productNumber > (integer)$pn['limit']) {
+                    break;
+                }
+            }
+        }
+        return static::group($ret);
+    }
+
+
+    /**
+     * 所有产品
+     * @param $type
+     * @return array
+     */
+    private static function getAllProducts($type='new')
+    {
+        $mongo = Yii::$app->mongodb;
+        $col = $mongo->getCollection('ebay_all_recommended_product');
+        $today = date('Y-m-d');
+        $cur = $col->find(['productType' => $type,'recommendDate' => ['$regex' => $today]]);
+        return iterator_to_array($cur);
+
+    }
+
+    /**
+     * 每个开发的产品数量限制
+     */
+    private static function personNumberLimit()
+    {
+        $mongo = Yii::$app->mongodb;
+        $col = $mongo->getCollection('ebay_allot_rule');
+        $cur = $col->find();
+        $ret = [];
+        foreach ($cur as $row) {
+            $ele['name'] = $row['username'];
+            $ele['limit'] = $row['productNum'];
+            $ret[] = $ele;
+        }
+        return $ret;
+    }
+
+
+    /**
+     * 按itemId汇总推荐人
+     * @param $ret
+     * @return array
+     */
     private static function group($ret)
     {
         $res = [];
@@ -180,8 +248,6 @@ class ProductEngine
 
     /**
      * 挑一次产品
-     * @param $products
-     * @param $developer
      * @return array
      */
     private  function pickUp()
@@ -274,8 +340,26 @@ class ProductEngine
     }
 
 
+    /**
+     * 根据匹配结果，按照ItemID查找数据
+     * @param $itemId
+     * @param $pickupResult
+     * @return array
+     */
+    public static function pullData($itemId,$pickupResult)
+    {
+        $mongo = Yii::$app->mongodb;
+        $type = $pickupResult['type'];
+        $table = $type === 'new' ? 'ebay_new_product' : 'ebay_hot_product';
+        $col = $mongo->getCollection($table);
+        $ret = $col->findOne(['itemId' => $itemId]);
+        $ret['receiver'] = $pickupResult['receiver'];
+        $ret['dispatchDate'] = date('Y-m-d');
+        $ret['productType'] = $type;
+        unset($ret['_id']);
+        return $ret;
 
-
+    }
 
 
     /**
@@ -283,7 +367,7 @@ class ProductEngine
      * @param $row
      * @param string $type
      */
-    public static function pushDB($row, $type='all')
+    public static function pushData($row, $type='all')
     {
         if($type === 'all') {
             $table = 'ebay_all_recommended_product';
@@ -294,6 +378,7 @@ class ProductEngine
         $mongo = Yii::$app->mongodb;
         $col = $mongo->getCollection($table);
         $col->insert($row);
+//        print_r('pushing ' . $row['itemId'] . ' into ' . $table . "\n");
     }
 
 }
