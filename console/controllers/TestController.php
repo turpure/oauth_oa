@@ -16,6 +16,7 @@
 
 
 namespace console\controllers;
+use console\models\ProductEngine;
 
 
 use backend\models\OaDataMineDetail;
@@ -154,6 +155,27 @@ class TestController extends Controller
             print date('Y-m-d H:i:s') . $why->getMessage();
             exit;
         }
+
+    }
+
+    /**
+     * 推荐产品
+     */
+    public function actionRecommendProducts()
+    {
+        // 新品打标签
+        ProductEngine::setProductTag('new');
+
+        //热销产品打标签
+        ProductEngine::setProductTag('hot');
+
+        //分配所有产品
+        $this->actionTest2();
+
+        //分配指定数量的产品
+        $this->actionAllotProduct();
+
+
 
     }
 

@@ -9,8 +9,24 @@ namespace console\models;
 
 use Yii;
 
+use yii\mongodb\Query;
+
 class ProductEngine
 {
+    private $products;
+    private $developer;
+
+
+    /**
+     * ProductEngine constructor.
+     * @param $products
+     * @param $developer
+     */
+    public function __construct($products=[], $developer=[])
+    {
+        $this->products = $products;
+        $this->developer = $developer;
+    }
 
 
     /**
@@ -45,6 +61,52 @@ class ProductEngine
         }
     }
 
+    /**
+     * 所有开发
+     */
+    public static function getDevelopers()
+    {
+        $mongo = Yii::$app->mongodb;
+        $table = 'ebay_allot_rule';
+        $col = $mongo->getCollection($table);
+        $cur = $col->find();
+        $dev = [];
+        foreach ($cur as $row) {
+            $ele['tag'] = $row['category'];
+            $ele['name'] = $row['username'];
+            $ele['deliveryLocation'] = $row['deliveryLocation'];
+            $dev[] =$ele;
+        }
+        return $dev;
+    }
+
+    /**
+     * @param $type
+     * @return mixed
+     */
+    public static function getProducts($type)
+    {
+        if($type === 'new') {
+            $table = 'ebay_new_product';
+        }
+        else{
+            $table = 'ebay_hot_product';
+        }
+        $mongo = Yii::$app->mongodb;
+        $col = $mongo->getCollection($table);
+        $today = date('Y-m-d');
+        $cur = $col->find(['recommendDate' => ['$regex' => $today]]);
+        $dep = [];
+        foreach ($cur as $row) {
+            $ele['name'] = $row['itemId'];
+            $ele['tag'] = isset($row['tag'])? $row['tag'] : '';
+            $ele['itemLocation'] = $row['itemLocation'];
+            $ele['type'] = $type;
+            $dep[] = $ele;
+        }
+        return $dep;
+
+    }
 
     /**
      * 获取平台类目对应的业务类目
@@ -78,7 +140,6 @@ class ProductEngine
                         }
                     }
                 }
-
             }
         }
         return $ret;
@@ -87,25 +148,35 @@ class ProductEngine
 
     /**
      * 产品分配算法
-     * @param $products
-     * @param $developer
      * @return array
      */
-    public function dispatch($products, $developer)
+    public function dispatch()
     {
         $ret = [];
 
         //一直分配 直到人用完，或者产品用完
-        $turn = ceil(count($products) / count($products));
-        while ($turn > 0) {
-            $current_developer = static::turnSort($developer);
-            $res = static::pickUp($products, $current_developer);
+        $turn = ceil(count($this->products) / count($this->developer));
+        $developerNumber = count($this->developer);
+        for ($i=0; $i<=$turn; $i++) {
+            $this->developer = static::turnSort($this->developer,$i % $developerNumber);
+            print_r("第".$i."轮选择开始");
+            $res = static::pickUp();
+            print_r("第".$i."轮选择结束");
+            print_r("\n");
             $ret = array_merge($ret, $res);
-            --$turn;
         }
-        return $ret;
+        return static::group($ret);
     }
 
+    private static function group($ret)
+    {
+        $res = [];
+        foreach ($ret as $row) {
+            $res[$row['product']]['receiver'][] = $row['developer'];
+            $res[$row['product']]['type'] = $row['type'];
+        }
+        return $res;
+    }
 
     /**
      * 挑一次产品
@@ -113,19 +184,31 @@ class ProductEngine
      * @param $developer
      * @return array
      */
-    private static function pickUp($products, $developer)
+    private  function pickUp()
     {
         $ret = [];
         $row = ['product' => '', 'developer' => ''];
-        foreach ($developer as $dp) {
-            foreach ($products as $pt) {
-                $condition1 = empty($dp['tag']) or in_array($pt['tag'],$dp['tag'], false);
-                $condition2 = $pt['limit'] <= 2;
-                if($condition1 && $condition2) {
-                    $row['product'] = $pt['itemId'];
+        foreach ($this->developer as &$dp) {
+            foreach ($this->products as &$pt) {
+                $condition1 =  empty($dp['tag']) || in_array($pt['tag'],$dp['tag'], false);
+                $condition2 = static::matchLocation($dp['deliveryLocation'], $pt['itemLocation']);
+                $limit = isset($pt['limit']) ? $pt['limit']  : 0;
+                if($limit === 0) {
+                    $pt['limit'] = 0;
+                }
+                $condition3 = $limit < 2;
+                $dProducts = isset($pt['products']) ? $pt['products'] : [];
+                $condition4 = !in_array($pt['name'], $dProducts, false);
+                if($condition1 && $condition2 && $condition3 && $condition4) {
+                    $row['product'] = $pt['name'];
                     $row['developer'] = $dp['name'];
+                    $row['type'] = $pt['type'];
                     $pt['limit'] += 1;
+                    $dp['products'][] = $pt['name'];
                     $ret[] = $row;
+                    print_r("\n");
+                    print_r($dp['name']." 选中:".$pt['name']);
+                    break;
                 }
             }
         }
@@ -133,19 +216,50 @@ class ProductEngine
     }
 
     /**
-     * 人员排序
+     * 发货地址匹配
+     * @param $developerLocation
+     * @param $productLocation
+     * @return bool
+     */
+    private static function matchLocation($developerLocation, $productLocation)
+    {
+        $locationMap =  [
+            '中国' => 'CN',
+            '香港' => 'HK',
+            '美国' => 'US',
+            '英国' => 'GB',
+            '法国' => 'FR',
+            '德国' => 'DE',
+            '荷兰' => 'NL',
+            '爱尔兰' => 'IE',
+            '加拿大' => 'CA',
+            '意大利' => 'IT',
+            '澳大利亚' => 'AU'
+        ];
+        if(empty($developerLocation)) {
+            return true;
+        }
+        foreach ($developerLocation as $dl) {
+            if(strpos($productLocation,$locationMap[$dl]) !== false) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 轮流排序
      * @param $list
      * @param $index
      * @return mixed
      */
-    private static function turnSort($list, $index)
+    public static function turnSort($list, $index)
     {
         $first =  [];
         $left = [];
         $right = [];
         $length = count($list);
-        $cur = 0;
-        for ($cur; $cur<=$length; ++$cur) {
+        for($cur=0; $cur<$length; ++$cur) {
            if($cur < $index) {
                $left[] = $list[$cur];
            }
@@ -157,10 +271,29 @@ class ProductEngine
             }
         }
         return array_merge($first, $right, $left);
-
     }
 
 
 
+
+
+
+    /**
+     * 入库处理
+     * @param $row
+     * @param string $type
+     */
+    public static function pushDB($row, $type='all')
+    {
+        if($type === 'all') {
+            $table = 'ebay_all_recommended_product';
+        }
+        else {
+            $table = 'ebay_recommended_product';
+        }
+        $mongo = Yii::$app->mongodb;
+        $col = $mongo->getCollection($table);
+        $col->insert($row);
+    }
 
 }
