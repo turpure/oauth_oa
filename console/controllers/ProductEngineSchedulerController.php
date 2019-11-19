@@ -91,8 +91,17 @@ class ProductEngineSchedulerController extends Controller
     {   //默认ebay平台
         try {
 
+            // 新品打标签
+            ProductEngine::setProductTag('new');
+
+            //热销产品打标签
+            ProductEngine::setProductTag('hot');
+
+            // 分配所有产品
             $this->actionDispatchAll('new');
             $this->actionDispatchAll('hot');
+
+            // 分配产品给开发
             $this->actionDispatchToPerson('new');
             $this->actionDispatchToPerson('hot');
 

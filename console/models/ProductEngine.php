@@ -205,11 +205,14 @@ class ProductEngine
      */
     private static function getAllProducts($type='new')
     {
-        $mongo = Yii::$app->mongodb;
-        $col = $mongo->getCollection('ebay_all_recommended_product');
         $today = date('Y-m-d');
-        $cur = $col->find(['productType' => $type,'recommendDate' => ['$regex' => $today]]);
-        return iterator_to_array($cur);
+        $query = new Query();
+        $cur = $query->select([])
+            ->from('ebay_all_recommended_product')
+            ->where(['productType' => $type,'recommendDate' => ['$regex' => $today]])
+            ->orderBy(['sold' => SORT_DESC]);
+        $ret = $cur->all();
+        return $ret;
 
     }
 
@@ -377,8 +380,13 @@ class ProductEngine
         }
         $mongo = Yii::$app->mongodb;
         $col = $mongo->getCollection($table);
-        $col->insert($row);
-//        print_r('pushing ' . $row['itemId'] . ' into ' . $table . "\n");
+        try {
+            $col->insert($row);
+        }
+        catch (\Exception  $why) {
+            print 'fail to save '. $row['itemId'] . ' cause of ' . $why->getMessage();
+    }
+//        print_r('pushing ' . $ro w['itemId'] . ' into ' . $table . "\n");
     }
 
 }
