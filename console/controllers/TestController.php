@@ -103,19 +103,19 @@ class TestController extends Controller
             }
             $time = time() - $start;
             if($time >= 3600){
-                $day = $time/3600;
-                $mi = ($time - $day*3600)/60;
-                $sec = $time - $day*3600 - $mi*60;
-                print "success, it costs '{$day} days, '{$mi}' minutes, '{$sec}' seconds!";
+                $hours = $time/3600;
+                $mi = ($time - $hours*3600)/60;
+                $sec = $time - $hours*3600 - $mi*60;
+                print date('Y-m-d H:i:s') ." success, it costs {$hours} hours, {$mi} minutes, {$sec} seconds!";exit;
             }elseif ($time >= 60){
                 $mi = $time/60;
                 $sec = $time - $mi*60;
-                print "success, it costs '{$mi}' minutes, '{$sec}' seconds!";
+                print date('Y-m-d H:i:s') ." success, it costs {$mi} minutes, {$sec} seconds!";exit;
             }else{
-                print "success, it costs '{$time}' seconds!";
+                print date('Y-m-d H:i:s') ." success, it costs {$time} seconds!";
             }
         } catch (\Exception $why) {
-            print $why->getMessage();
+            print date('Y-m-d H:i:s') . $why->getMessage();
             exit;
         }
 
@@ -140,7 +140,7 @@ class TestController extends Controller
                         ->andFilterWhere(['recommendDate' => ['$regex' => date('Y-m-d')]])  //筛选当天获取得新数据
                         ->limit($proNum)->all();
                     foreach ($proList as $v){
-                        $query = (new \yii\mongodb\Query())->from('ebay_recommended_product')
+                        $query = (new \yii\mongodb\Query())->from('ebay_recommended_prod·   uct')
                             ->andFilterWhere(['itemId' => $v['itemId']])->one();
                         if(!$query){
                             $mongodb->getCollection('ebay_recommended_product')->insert($v);
@@ -150,9 +150,9 @@ class TestController extends Controller
             }
             //更新每日推荐的推荐人
             ConScheduler::getAndSetRecommendToPersons();
-            print 'success';
+            print date('Y-m-d H:i:s') .' success';exit;
         } catch (\Exception $why) {
-            print $why->getMessage();
+            print date('Y-m-d H:i:s') . $why->getMessage();
             exit;
         }
 

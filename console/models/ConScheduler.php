@@ -428,7 +428,7 @@ class ConScheduler
                     ) {  //只有其他一个人选过且不是当前开发所选时  更新结果集
                         $receiver = $resItem['receiver'];
                         $receiver[] = $dev['username'];// 先添加开发，再去重
-                        //更新推荐列表推荐人信息
+                        //更新推荐1列表推荐人信息
                         $db->getCollection('ebay_all_recommended_product')->update(['_id' => $resItem['_id']], ['receiver' => $receiver]);
                         //更新产品列表是否推荐字段信息
                         $db->getCollection($table)->update(['itemId' => $resItem['itemId']], ['isReceiver' => 1]);
