@@ -288,19 +288,22 @@ class ConScheduler
         $ret = [];
         foreach ($persons as $pn) {
             if(in_array($pn, $accept, false)) {
-                $person['name'] = $pn;
-                $person['status'] = 'accept';
-                $ret[] = $person;
+                $row = $person;
+                $row['name'] = $pn;
+                $row['status'] = 'accept';
+                $ret[] = $row;
             }
             elseif(array_key_exists($pn, $refuse)) {
-                $person['name'] = $pn;
-                $person['status'] = 'refuse';
-                $person['reason'] = $refuse[$pn];
-                $ret[] = $person;
+                $row = $person;
+                $row['name'] = $pn;
+                $row['status'] = 'refuse';
+                $row['reason'] = $refuse[$pn];
+                $ret[] = $row;
             }
             else {
-                $person['name'] = $pn;
-                $ret[] = $person;
+                $row = $person;
+                $row['name'] = $pn;
+                $ret[] = $row;
             }
         }
 
