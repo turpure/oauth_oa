@@ -264,53 +264,46 @@ class ConScheduler
      * @param $productType
      * @param $itemId
      */
-    private static function setRecommendToPersons($developers, $productType, $itemId)
+    private static function setRecommendToPersons($products,$developers, $productType, $itemId)
     {
         $mongodb = Yii::$app->mongodb;
         $table = $productType === 'new' ? 'ebay_new_product' : 'ebay_hot_product';
         $col = $mongodb->getCollection($table);
-        $product = $col->findOne(['itemId' => $itemId]);
-        $oldPersons = $product['recommendToPersons'];
-        $currentPersons = static::insertOrUpdateOrDeleteRecommendToPersons($developers,$oldPersons);
+        $currentPersons = static::insertOrUpdateOrDeleteRecommendToPersons($products,$developers);
         $col->update(['itemId' => $itemId], ['recommendToPersons' => $currentPersons]);
 
     }
 
     /**
      * 更新或新增推荐人
+     * @param $product
      * @param $persons
-     * @param $oldPersons
      * @return array
      */
-    private static function insertOrUpdateOrDeleteRecommendToPersons($persons,$oldPersons)
+    private static function insertOrUpdateOrDeleteRecommendToPersons($product, $persons)
     {
+        $refuse = isset($product['refuse']) ? $product['refuse'] : [];
+        $accept = isset($product['accept']) ? $product['accept'] : [];
         $person = ['name' =>'', 'status' => '', 'reason' => ''];
         $ret = [];
-        if(empty($oldPersons)) {
-            foreach ($persons as $pn) {
+        foreach ($persons as $pn) {
+            if(in_array($pn, $accept, false)) {
+                $person['name'] = $pn;
+                $person['status'] = 'accept';
+                $ret[] = $person;
+            }
+            elseif(array_key_exists($pn, $refuse)) {
+                $person['name'] = $pn;
+                $person['status'] = 'refuse';
+                $person['reason'] = $refuse[$pn];
+                $ret[] = $person;
+            }
+            else {
                 $person['name'] = $pn;
                 $ret[] = $person;
             }
         }
-        else {
 
-            $oldNames = static::getNames($oldPersons);
-
-            foreach ($oldPersons as $op) {
-                $currentNames = static::getNames($ret);
-                if (count($ret) < 2 && !in_array($op['name'], $currentNames, false) && in_array($op['name'], $persons, false)) {
-                    $ret[] = $op;
-                }
-            }
-            foreach ($persons as $pn) {
-                $currentNames = static::getNames($ret);
-                if (count($ret) < 2 && !in_array($pn, $currentNames, false) && in_array($pn, $oldNames, false)) {
-                    $person['name'] = $pn;
-                    $ret[] = $person;
-                }
-            }
-
-        }
         return $ret;
 
     }
@@ -340,7 +333,7 @@ class ConScheduler
            $productType = $recommendProduct['productType'];
            $developers = $recommendProduct['receiver'];
            $itemId = $recommendProduct['itemId'];
-           static::setRecommendToPersons($developers, $productType, $itemId);
+           static::setRecommendToPersons($recommendProduct,$developers, $productType, $itemId);
        }
     }
 

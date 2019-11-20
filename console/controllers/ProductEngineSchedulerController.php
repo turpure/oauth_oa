@@ -85,17 +85,17 @@ class ProductEngineSchedulerController extends Controller
         try {
 
             // 新品打标签
-            ProductEngine::setProductTag('new');
-
-            //热销产品打标签
-            ProductEngine::setProductTag('hot');
-
-            // 分配所有产品
-            $this->actionDispatchAll('new');
-            $this->actionDispatchAll('hot');
-
-            // 分配产品给开发
-            $this->actionDispatchToPerson();
+//            ProductEngine::setProductTag('new');
+//
+//            //热销产品打标签
+//            ProductEngine::setProductTag('hot');
+//
+//            // 分配所有产品
+//            $this->actionDispatchAll('new');
+//            $this->actionDispatchAll('hot');
+//
+//            // 分配产品给开发
+//            $this->actionDispatchToPerson();
 
             //更新每日推荐的推荐人
             ConScheduler::getAndSetRecommendToPersons();
