@@ -25,7 +25,7 @@ class ProductEngine
      * @param $products
      * @param $developer
      */
-    public function __construct($products=[], $developer=[])
+    public function __construct($products = [], $developer = [])
     {
         $this->products = $products;
         $this->developer = $developer;
@@ -42,22 +42,21 @@ class ProductEngine
         $mongo = Yii::$app->mongodb;
         $col = $mongo->getCollection($table);
         $today = date('Y-m-d');
-        $catMap =static::getTagCat();
+        $catMap = static::getTagCat();
         $products = $col->find(['recommendDate' => ['$regex' => $today]]);
         foreach ($products as $pt) {
             try {
                 $catName = $pt['cidName'];
-            }
-            catch (\Exception  $why) {
+            } catch (\Exception  $why) {
                 $catName = $pt['categoryStructure'];
             }
             $id = $pt['_id'];
             // 匹配类目
             foreach ($catMap as $cp) {
-                similar_text($catName, $cp['platCate'].'-' .$cp['platSubCate'],$percent);
-                if($percent >= 50) {
+                similar_text($catName, $cp['platCate'] . '-' . $cp['platSubCate'], $percent);
+                if ($percent >= 50) {
                     $tag = $cp['cateName'];
-                    $col->update(['_id' => $id],['tag' => $tag]);
+                    $col->update(['_id' => $id], ['tag' => $tag]);
                     break;
                 }
             }
@@ -78,7 +77,7 @@ class ProductEngine
             $ele['tag'] = $row['category'];
             $ele['name'] = $row['username'];
             $ele['deliveryLocation'] = $row['deliveryLocation'];
-            $dev[] =$ele;
+            $dev[] = $ele;
         }
         return $dev;
     }
@@ -89,10 +88,9 @@ class ProductEngine
      */
     public static function getProducts($type)
     {
-        if($type === 'new') {
+        if ($type === 'new') {
             $table = 'ebay_new_product';
-        }
-        else{
+        } else {
             $table = 'ebay_hot_product';
         }
         $mongo = Yii::$app->mongodb;
@@ -102,7 +100,7 @@ class ProductEngine
         $dep = [];
         foreach ($cur as $row) {
             $ele['name'] = $row['itemId'];
-            $ele['tag'] = isset($row['tag'])? $row['tag'] : '';
+            $ele['tag'] = isset($row['tag']) ? $row['tag'] : '';
             $ele['itemLocation'] = $row['itemLocation'];
             $ele['type'] = $type;
             $dep[] = $ele;
@@ -137,7 +135,7 @@ class ProductEngine
                     foreach ($marketplace as $mk) {
                         $row['platCate'] = $mk['cate'];
                         $subCate = $mk['cateValue']['subCateChecked'];
-                        foreach($subCate as $sc) {
+                        foreach ($subCate as $sc) {
                             $row['platSubCate'] = $sc;
                             $ret[] = $row;
                         }
@@ -160,11 +158,11 @@ class ProductEngine
         //一直分配 直到人用完，或者产品用完
         $turn = ceil(count($this->products) / count($this->developer));
         $developerNumber = count($this->developer);
-        for ($i=0; $i<=$turn; $i++) {
-            $this->developer = static::turnSort($this->developer,$i % $developerNumber);
-            print_r("第".$i."轮选择开始");
+        for ($i = 0; $i <= $turn; $i++) {
+            $this->developer = static::turnSort($this->developer, $i % $developerNumber);
+            print_r("第" . $i . "轮选择开始");
             $res = static::pickUp();
-            print_r("第".$i."轮选择结束");
+            print_r("第" . $i . "轮选择结束");
             print_r("\n");
             $ret = array_merge($ret, $res);
         }
@@ -173,34 +171,38 @@ class ProductEngine
 
     /**
      * 按照数量分配给每个开发
-     * @param string $type
-     * @return array
      */
-    public static function dispatchToPersons($type='new')
+    public static function dispatchToPersons()
     {
-
-        $persons = static::personNumberLimit();
-        $products = static::getAllProducts($type);
-        $ret = [];
-        foreach ($persons as $pn) {
-            $productNumber = 0;
-            foreach ($products as  $pt) {
-                if($productNumber <= (integer)$pn['limit'] && in_array($pn['name'],$pt['receiver'], false)) {
-                    $row['product'] = $pt['itemId'];
-                    $row['developer'] = $pn['name'];
-                    $row['type'] = $type;
-                    $productNumber++;
-                    $ret[] = $row;
-                }
-                if($productNumber > (integer)$pn['limit']) {
-                    break;
+        try {
+            $mongodb = Yii::$app->mongodb;
+            $typeArr = ['new', 'hot'];
+            $devList = $mongodb->getCollection('ebay_allot_rule')->find();
+            foreach($devList as $dev){
+                $proNum = $dev['productNum'] ? $dev['productNum'] : 5;
+                foreach ($typeArr as $value){
+                    $proList = (new \yii\mongodb\Query())->from('ebay_all_recommended_product')
+                        ->select(['_id' => 0])
+                        ->andFilterWhere(['productType' => $value])  //类型  新品  热销
+                        ->andFilterWhere(['receiver' => $dev['username']])
+                        ->andFilterWhere(['recommendDate' => ['$regex' => date('Y-m-d')]])  //筛选当天获取得新数据
+                        ->limit($proNum)->all();
+                    foreach ($proList as $v){
+                        $query = (new \yii\mongodb\Query())->from('ebay_recommended_product')
+                            ->andFilterWhere(['itemId' => $v['itemId']])->one();
+                        if(!$query){
+                            $mongodb->getCollection('ebay_recommended_product')->insert($v);
+                        }
+                    }
                 }
             }
+            print date('Y-m-d H:i:s') .' success to dispatch products to person';
+        } catch (\Exception $why) {
+            print date('Y-m-d H:i:s') . $why->getMessage();
+            exit;
         }
-        return static::group($ret);
+
     }
-
-
     /**
      * 所有产品
      * @param $type
@@ -476,7 +478,7 @@ class ProductEngine
         catch (\Exception  $why) {
             print 'fail to save '. $row['itemId'] . ' cause of ' . $why->getMessage();
     }
-//        print_r('pushing ' . $ro w['itemId'] . ' into ' . $table . "\n");
+        print_r('pushing ' . $row['itemId'] . ' into ' . $table . "\n");
     }
 
 }

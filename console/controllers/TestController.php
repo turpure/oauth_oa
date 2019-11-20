@@ -140,7 +140,7 @@ class TestController extends Controller
                         ->andFilterWhere(['recommendDate' => ['$regex' => date('Y-m-d')]])  //筛选当天获取得新数据
                         ->limit($proNum)->all();
                     foreach ($proList as $v){
-                        $query = (new \yii\mongodb\Query())->from('ebay_recommended_prod·   uct')
+                        $query = (new \yii\mongodb\Query())->from('ebay_recommended_product')
                             ->andFilterWhere(['itemId' => $v['itemId']])->one();
                         if(!$query){
                             $mongodb->getCollection('ebay_recommended_product')->insert($v);

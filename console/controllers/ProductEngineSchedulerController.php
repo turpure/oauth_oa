@@ -70,17 +70,10 @@ class ProductEngineSchedulerController extends Controller
 
     /**
      * 按数量分配给每个开发员
-     * @param string $type
      */
-    public function actionDispatchToPerson($type='hot')
+    public function actionDispatchToPerson()
     {
-        $ret = ProductEngine::dispatchToPersons($type);
-        foreach ($ret as $itemId => $productResult) {
-            $row = ProductEngine::pullData($itemId, $productResult);
-            ProductEngine::pushData($row, 'person');
-        }
-
-
+        ProductEngine::dispatchToPersons();
     }
 
 
@@ -102,8 +95,7 @@ class ProductEngineSchedulerController extends Controller
             $this->actionDispatchAll('hot');
 
             // 分配产品给开发
-            $this->actionDispatchToPerson('new');
-            $this->actionDispatchToPerson('hot');
+            $this->actionDispatchToPerson();
 
             //更新每日推荐的推荐人
             ConScheduler::getAndSetRecommendToPersons();
