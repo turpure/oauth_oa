@@ -7,6 +7,9 @@
 
 namespace console\models;
 
+use backend\models\EbayAllotRule;
+use backend\models\EbayHotRule;
+use backend\models\EbayNewRule;
 use Yii;
 
 use yii\mongodb\Query;
@@ -342,7 +345,61 @@ class ProductEngine
         return array_merge($first, $right, $left);
     }
 
+    public static function getDailyReportData()
+    {
+        $db = Yii::$app->mongodb;
+        //获取新品推送规则列表并统计产品数
+        $newRuleList = EbayNewRule::find()->all();
+        $newData = [];
+        foreach ($newRuleList as $v){
+            $item['ruleType'] = $type = 'new';
+            $item['ruleName'] = $v['ruleName'];
 
+            $totalNum = $db->getCollection('ebay_new_product')
+                ->count(['rules' => $v['_id'], 'recommendDate' => ['$regex' => date('Y-m-d')]]);
+            $dispatchNum = $db->getCollection('ebay_all_recommended_product')
+                ->count(['productType' => $type, 'rules' => $v['_id'], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+            $item['totalNum'] = $totalNum; //今天抓取数量
+            $item['dispatchNum'] = $dispatchNum; //今天分配数量
+
+            $newData[] = $item;
+        }
+        //获取热销产品推送规则列表并统计产品数
+        $hotRuleList = EbayHotRule::find()->all();
+        $hotData = [];
+        foreach ($hotRuleList as $v){
+            $item['ruleType'] = $type = 'hot';
+            $item['ruleName'] = $v['ruleName'];
+            $totalNum = $db->getCollection('ebay_hot_product')
+                ->count(['rules' => $v['_id'], 'recommendDate' => ['$regex' => date('Y-m-d')]]);
+            $dispatchNum = $db->getCollection('ebay_all_recommended_product')
+                ->count(['productType' => $type, 'rules' => $v['_id'], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+            $item['totalNum'] = $totalNum;
+            $item['dispatchNum'] = $dispatchNum;
+            $hotData[] = $item;
+        }
+        $ruleData = array_merge($newData, $hotData);
+        //获取开发数据统计
+        $devList = EbayAllotRule::find()->all();
+        $devData = [];
+        foreach ($devList as $v){
+            //var_dump($v['username']);exit;
+            $dispatchNum = $db->getCollection('ebay_recommended_product')
+                ->count(['receiver' => $v['username'], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+            $claimNum = $db->getCollection('ebay_recommended_product')
+                ->count(['accept' => $v['username'], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+            $filterNum = $db->getCollection('ebay_recommended_product')
+                ->count(["refuse.".$v['username'] => ['$ne' => null], "receiver" => $v['username'] , 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+            $devItem['username'] = $v['username'];
+            $devItem['depart'] = $v['depart'];
+            $devItem['dispatchNum'] = $dispatchNum;//当天分配数量
+            $devItem['claimNum'] = $claimNum;  //认领数量
+            $devItem['filterNum'] = $filterNum;  //过滤数量
+            $devData[] = $devItem;
+        }
+
+        return ['ruleData' => $ruleData, 'devData' => $devData];
+    }
     /**
      * 根据匹配结果，按照ItemID查找数据
      * @param $itemId
