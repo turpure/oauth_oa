@@ -260,19 +260,18 @@ class ConScheduler
 
     /**
      * 为每日推荐列表设置推荐人
-     * @param $developer
+     * @param $developers
      * @param $productType
      * @param $itemId
      */
-    private static function setRecommendToPersons($developer, $productType, $itemId)
+    private static function setRecommendToPersons($developers, $productType, $itemId)
     {
         $mongodb = Yii::$app->mongodb;
         $table = $productType === 'new' ? 'ebay_new_product' : 'ebay_hot_product';
         $col = $mongodb->getCollection($table);
-        $persons = ['name' =>$developer, 'status' => '', 'reason' => ''];
         $product = $col->findOne(['itemId' => $itemId]);
         $oldPersons = $product['recommendToPersons'];
-        $currentPersons = static::insertOrUpdateRecommendToPersons($persons,$oldPersons);
+        $currentPersons = static::insertOrUpdateOrDeleteRecommendToPersons($developers,$oldPersons);
         $col->update(['itemId' => $itemId], ['recommendToPersons' => $currentPersons]);
 
     }
@@ -283,26 +282,52 @@ class ConScheduler
      * @param $oldPersons
      * @return array
      */
-    private static function insertOrUpdateRecommendToPersons($persons,$oldPersons)
+    private static function insertOrUpdateOrDeleteRecommendToPersons($persons,$oldPersons)
     {
+        $person = ['name' =>'', 'status' => '', 'reason' => ''];
+        $ret = [];
         if(empty($oldPersons)) {
-            $oldPersons[] = $persons;
+            foreach ($persons as $pn) {
+                $person['name'] = $pn;
+                $ret[] = $person;
+            }
         }
-        else{
-            $appendFlag = 1;
-            foreach ($oldPersons as &$op) {
-                if($op['name'] === $persons['name']) {
-                    $op = $persons;
-                    $appendFlag = 0;
-                    break;
+        else {
+
+            $oldNames = static::getNames($oldPersons);
+
+            foreach ($oldPersons as $op) {
+                $currentNames = static::getNames($ret);
+                if (count($ret) < 2 && !in_array($op['name'], $currentNames, false) && in_array($op['name'], $persons, false)) {
+                    $ret[] = $op;
                 }
             }
-            if($appendFlag) {
-                $oldPersons[] = $persons;
+            foreach ($persons as $pn) {
+                $currentNames = static::getNames($ret);
+                if (count($ret) < 2 && !in_array($pn, $currentNames, false) && in_array($pn, $oldNames, false)) {
+                    $person['name'] = $pn;
+                    $ret[] = $person;
+                }
             }
-        }
-        return $oldPersons;
 
+        }
+        return $ret;
+
+    }
+
+    /**
+     * @param $array
+     * @return array
+     */
+    private static function getNames($array)
+    {
+        $names = [];
+        foreach ($array as $op) {
+           if (isset($op['name']))  {
+               $names[] = $op['name'];
+           }
+        }
+        return $names;
     }
 
     /**
@@ -315,9 +340,7 @@ class ConScheduler
            $productType = $recommendProduct['productType'];
            $developers = $recommendProduct['receiver'];
            $itemId = $recommendProduct['itemId'];
-           foreach ($developers as $dep) {
-               static::setRecommendToPersons($dep, $productType, $itemId);
-           }
+           static::setRecommendToPersons($developers, $productType, $itemId);
        }
     }
 
