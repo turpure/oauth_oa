@@ -53,22 +53,35 @@ class ProductEngineSchedulerController extends Controller
      * 按照分配算法分配产品
      * @param $type
      */
-    public function actionDispatch($type='new')
+    public function actionDispatchAll($type='hot')
     {
+
         $developers = ProductEngine::getDevelopers();
         shuffle($developers);
         $products = ProductEngine::getProducts($type);
         $engine = new ProductEngine($products, $developers);
         $ret = $engine->dispatch();
-        foreach ($ret as $pro => $dev) {
-            print_r($pro);
-            print_r(':');
-            print_r($dev);
-            print_r("\n");
+        foreach ($ret as $itemId => $productResult) {
+            $row = ProductEngine::pullData($itemId, $productResult);
+            ProductEngine::pushData($row, 'all');
         }
-
     }
 
+
+    /**
+     * 按数量分配给每个开发员
+     * @param string $type
+     */
+    public function actionDispatchToPerson($type='hot')
+    {
+        $ret = ProductEngine::dispatchToPersons($type);
+        foreach ($ret as $itemId => $productResult) {
+            $row = ProductEngine::pullData($itemId, $productResult);
+            ProductEngine::pushData($row, 'person');
+        }
+
+
+    }
 
 
     /**
@@ -77,8 +90,21 @@ class ProductEngineSchedulerController extends Controller
     public function actionDailyRecommend()
     {   //默认ebay平台
         try {
-            $this->actionDispatch('new');
-            $this->actionDispatch('hot');
+
+            // 新品打标签
+            ProductEngine::setProductTag('new');
+
+            //热销产品打标签
+            ProductEngine::setProductTag('hot');
+
+            // 分配所有产品
+            $this->actionDispatchAll('new');
+            $this->actionDispatchAll('hot');
+
+            // 分配产品给开发
+            $this->actionDispatchToPerson('new');
+            $this->actionDispatchToPerson('hot');
+
             //更新每日推荐的推荐人
             ConScheduler::getAndSetRecommendToPersons();
         } catch (\Exception $why) {
