@@ -116,7 +116,7 @@ class ProductEngine
         $today = date('Y-m-d');
         $cur = $col->find([
             'recommendDate' => ['$regex' => $today],
-            'seller' => ['$in' => $filter_stores ]
+            'seller' => ['$nin' => $filter_stores ]
         ]);
         $dep = [];
         foreach ($cur as $row) {
