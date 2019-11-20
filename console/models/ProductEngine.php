@@ -386,7 +386,7 @@ class ProductEngine
         catch (\Exception  $why) {
             print 'fail to save '. $row['itemId'] . ' cause of ' . $why->getMessage();
     }
-//        print_r('pushing ' . $ro w['itemId'] . ' into ' . $table . "\n");
+        print_r('pushing ' . $row['itemId'] . ' into ' . $table . "\n");
     }
 
 }
