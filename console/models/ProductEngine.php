@@ -463,7 +463,8 @@ class ProductEngine
         $type = $pickupResult['type'];
         $table = $type === 'new' ? 'ebay_new_product' : 'ebay_hot_product';
         $col = $mongo->getCollection($table);
-        $ret = $col->findOne(['itemId' => $itemId]);
+        $ret = $col->findOne(['itemId' => (string)$itemId]);
+
         $ret['receiver'] = $pickupResult['receiver'];
         $ret['dispatchDate'] = date('Y-m-d');
         $ret['productType'] = $type;
