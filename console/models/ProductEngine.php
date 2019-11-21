@@ -444,8 +444,11 @@ class ProductEngine
             $devItem['depart'] = $v['depart'];
             $devItem['dispatchNum'] = $dispatchNum;//当天分配数量
             $devItem['claimNum'] = $claimNum;      //认领数量
+            $devItem['claimRate'] = $dispatchNum ? round($claimNum * 1.0/$dispatchNum * 100, 2) : 0;
             $devItem['filterNum'] = $filterNum;    //过滤数量
+            $devItem['filterRate'] = $dispatchNum ? round($filterNum * 1.0 / $dispatchNum * 100, 2) : 0;
             $devItem['unhandledNum'] = $unhandledNum;    //过滤数量
+            $devItem['unhandledRate'] = $dispatchNum ? round($unhandledNum * 1.0 / $dispatchNum * 100, 2) : 0;
             $devData[] = $devItem;
         }
         $claimData = [];
