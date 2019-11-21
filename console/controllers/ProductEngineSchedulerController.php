@@ -70,10 +70,17 @@ class ProductEngineSchedulerController extends Controller
 
     /**
      * 按数量分配给每个开发员
+     * @param string $type
      */
-    public function actionDispatchToPerson()
+    public function actionDispatchToPerson($type='hot')
     {
-        ProductEngine::dispatchToPersons();
+        $ret = ProductEngine::dispatchToPersons($type);
+        foreach ($ret as $itemId => $productResult) {
+            $row = ProductEngine::pullData($itemId, $productResult);
+            ProductEngine::pushData($row, 'person');
+        }
+
+
     }
 
 
@@ -84,7 +91,7 @@ class ProductEngineSchedulerController extends Controller
     {   //默认ebay平台
         try {
 
-            // 新品打标签
+             //新品打标签
             ProductEngine::setProductTag('new');
 
             //热销产品打标签
@@ -95,13 +102,13 @@ class ProductEngineSchedulerController extends Controller
             $this->actionDispatchAll('hot');
 
             // 分配产品给开发
-            $this->actionDispatchToPerson();
+            $this->actionDispatchToPerson('new');
+            $this->actionDispatchToPerson('hot');
 
             //更新每日推荐的推荐人
             ConScheduler::getAndSetRecommendToPersons();
         } catch (\Exception $why) {
-            print $why->getMessage();
-            exit;
+            print 'fail to recommend cause of ' . $why->getMessage();
         }
     }
 

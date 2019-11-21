@@ -192,38 +192,33 @@ class ProductEngine
 
     /**
      * 按照数量分配给每个开发
+     * @param $type
+     * @return array
      */
-    public static function dispatchToPersons()
+    public static function dispatchToPersons($type='new')
     {
-        try {
-            $mongodb = Yii::$app->mongodb;
-            $typeArr = ['new', 'hot'];
-            $devList = $mongodb->getCollection('ebay_allot_rule')->find();
-            foreach($devList as $dev){
-                $proNum = $dev['productNum'] ? $dev['productNum'] : 5;
-                foreach ($typeArr as $value){
-                    $proList = (new \yii\mongodb\Query())->from('ebay_all_recommended_product')
-                        ->select(['_id' => 0])
-                        ->andFilterWhere(['productType' => $value])  //类型  新品  热销
-                        ->andFilterWhere(['receiver' => $dev['username']])
-                        ->andFilterWhere(['recommendDate' => ['$regex' => date('Y-m-d')]])  //筛选当天获取得新数据
-                        ->limit($proNum)->all();
-                    foreach ($proList as $v){
-                        $query = (new \yii\mongodb\Query())->from('ebay_recommended_product')
-                            ->andFilterWhere(['itemId' => $v['itemId']])->one();
-                        if(!$query){
-                            $mongodb->getCollection('ebay_recommended_product')->insert($v);
-                        }
-                    }
+
+        $persons = static::personNumberLimit();
+        $products = static::getAllProducts($type);
+        $ret = [];
+        foreach ($persons as $pn) {
+            $productNumber = 0;
+            foreach ($products as  $pt) {
+                if($productNumber <= (integer)$pn['limit'] && in_array($pn['name'],$pt['receiver'], false)) {
+                    $row['product'] = $pt['itemId'];
+                    $row['developer'] = $pn['name'];
+                    $row['type'] = $type;
+                    $productNumber++;
+                    $ret[] = $row;
+                }
+                if($productNumber > (integer)$pn['limit']) {
+                    break;
                 }
             }
-            print date('Y-m-d H:i:s') .' success to dispatch products to person';
-        } catch (\Exception $why) {
-            print date('Y-m-d H:i:s') . $why->getMessage();
-            exit;
         }
-
+        return static::group($ret);
     }
+
     /**
      * 所有产品
      * @param $type
@@ -490,7 +485,8 @@ class ProductEngine
         $type = $pickupResult['type'];
         $table = $type === 'new' ? 'ebay_new_product' : 'ebay_hot_product';
         $col = $mongo->getCollection($table);
-        $ret = $col->findOne(['itemId' => $itemId]);
+        $ret = $col->findOne(['itemId' => (string)$itemId]);
+
         $ret['receiver'] = $pickupResult['receiver'];
         $ret['dispatchDate'] = date('Y-m-d');
         $ret['productType'] = $type;
