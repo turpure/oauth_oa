@@ -415,16 +415,15 @@ class ProductEngine
                 ->count(['accept' => $v['username'], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
             $filterNum = $db->getCollection('ebay_recommended_product')
                 ->count([
-                    /*'$or' => [
+                    '$or' => [
                         [
                             "refuse.".$v['username'] => null,
-                            'accept' => ['$ne' => $v['username']]
+                            'accept' => ['$nin' => [null, $v['username']]],
                         ],
                         [
                             "refuse.".$v['username'] => ['$ne' => null]
                         ]
-                    ],*/
-                    "refuse.".$v['username'] => ['$ne' => null],
+                    ],
                     "receiver" => $v['username'] ,
                     'dispatchDate' => ['$regex' => date('Y-m-d')]
                 ]);
@@ -439,8 +438,12 @@ class ProductEngine
             $devItem['depart'] = $v['depart'];
             $devItem['dispatchNum'] = $dispatchNum;//当天分配数量
             $devItem['claimNum'] = $claimNum;      //认领数量
+            $devItem['claimRate'] = $dispatchNum ? round($claimNum * 1.0/$dispatchNum * 100, 2) : 0;
             $devItem['filterNum'] = $filterNum;    //过滤数量
+            $devItem['filterRate'] = $dispatchNum ? round($filterNum * 1.0 / $dispatchNum * 100, 2) : 0;
             $devItem['unhandledNum'] = $unhandledNum;    //过滤数量
+            $devItem['unhandledRate'] = $dispatchNum ? round($unhandledNum * 1.0 / $dispatchNum * 100, 2) : 0;
+            
             $devData[] = $devItem;
         }
         $claimData = [];
