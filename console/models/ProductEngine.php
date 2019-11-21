@@ -485,7 +485,7 @@ class ProductEngine
         $ret = $col->findOne(['itemId' => (string)$itemId]);
 
         $ret['receiver'] = $pickupResult['receiver'];
-        $ret['dispatchDate'] = date('Y-m-d');
+        $ret['dispatchDate'] = date('Y-m-d H:i:s');
         $ret['productType'] = $type;
         unset($ret['_id']);
         return $ret;
