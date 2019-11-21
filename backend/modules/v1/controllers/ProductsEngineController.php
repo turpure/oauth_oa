@@ -591,10 +591,13 @@ class ProductsEngineController extends AdminController
      */
     public function actionProductReport()
     {
+        $db = Yii::$app->mongodb;
         $condition = Yii::$app->request->post('condition');
         $developer = isset($condition['developer']) && $condition['developer'] ? $condition['developer'] : [];
         $beginDate = isset($condition['dateRange']) && $condition['dateRange'] ? $condition['dateRange'][0] : '';
-        $endDate = isset($condition['dateRange']) && $condition['dateRange'] ? $condition['dateRange'][1] : '';
+        $endDate = isset($condition['dateRange']) && $condition['dateRange'] ? ($condition['dateRange'][1]." 23:59:59") : '';
+        //计算开发分配产品总数
+
 
         //计算开发认领产品总数
         $allQuery = (new Query())
@@ -629,7 +632,7 @@ class ProductsEngineController extends AdminController
             ->groupBy('g.developer');
 
         $data = (new Query())
-            ->select(["a.developer", "a.totalNum",
+            ->select(["a.developer", "a.totalNum as claimNum",
                 "IFNULL(h.hotNum,0) AS hotNum",
                 "IFNULL(p.popNum,0) AS popNum",
                 "ROUND(CASE WHEN totalNum=0 THEN 0 ELSE IFNULL(hotNum,0)/totalNum END,4) AS hotRate",
@@ -643,20 +646,29 @@ class ProductsEngineController extends AdminController
 
         //获取开发列表
         $devData = EbayAllotRule::find()->andFilterWhere(['username' => $developer])->all();
+
         $devList = ArrayHelper::getColumn($devData,'username');
         $devHave = ArrayHelper::getColumn($data,'developer');
         $devLeft = array_diff($devList,$devHave);
-        $dataAdd = [];
+        $dataHave = $dataAdd = [];
+        foreach ($data as $k => $v){
+            $dataHave[$k] = $v;
+            $dataHave[$k]['dispatchNum'] = $db->getCollection('ebay_recommended_product')
+                ->count(['receiver' => $v['developer'], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+            $dataHave[$k]['claimRate'] = $dataHave[$k]['dispatchNum'] ? round($v['claimNum']*1.0/$dataHave[$k]['dispatchNum'],4) : '0';
+        }
         foreach ($devLeft as $k => $v){
             $dataAdd[$k]['developer'] = $v;
-            $dataAdd[$k]['totalNum'] = '0';
+            $dataAdd[$k]['claimNum'] = '0';
             $dataAdd[$k]['hotNum'] = '0';
             $dataAdd[$k]['popNum'] = '0';
             $dataAdd[$k]['hotRate'] = '0.0000';
             $dataAdd[$k]['popRate'] = '0.0000';
+            $dataAdd[$k]['dispatchNum'] = $db->getCollection('ebay_recommended_product')
+                ->count(['receiver' => $v, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+            $dataAdd[$k]['claimRate'] = '0';
         }
-        //var_dump($dataAdd);exit;
-        return array_merge($data, $dataAdd);
+        return array_merge($dataHave, $dataAdd);
     }
 
     /**
@@ -671,7 +683,7 @@ class ProductsEngineController extends AdminController
         $ruleType = isset($condition['ruleType']) && $condition['ruleType'] ? $condition['ruleType'] : '';
         $ruleName = isset($condition['ruleName']) && $condition['ruleName'] ? $condition['ruleName'] : '';
         $beginDate = isset($condition['dateRange']) && $condition['dateRange'] ? $condition['dateRange'][0] : '';
-        $endDate = isset($condition['dateRange']) && $condition['dateRange'] ? $condition['dateRange'][1] : '';
+        $endDate = isset($condition['dateRange']) && $condition['dateRange'] ? ($condition['dateRange'][1].' 23:59:59') : '';
         $newData = $hotData = [];
         //获取新品推送规则列表并统计产品数
         if(!$ruleType || $ruleType == 'new'){
@@ -680,10 +692,15 @@ class ProductsEngineController extends AdminController
                 $item['ruleType'] = $type = 'new';
                 $item['ruleName'] = $v['ruleName'];
 
-                $totalNum = $db->getCollection('ebay_new_product')->count(['rules' => $v['_id']]);
+                $totalNum = $db->getCollection('ebay_new_product')
+                    ->count(['rules' => $v['_id'], 'recommendDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+                $dispatchNum = $db->getCollection('ebay_recommended_product')
+                    ->count(['productType' => $type, 'rules' => $v['_id'],  'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
                 $claimNum = $db->getCollection('ebay_recommended_product')
-                    ->count(['productType' => $type, 'rules' => $v['_id'], 'accept' => ['$size' => 1]]);
+                    ->count(['productType' => $type, 'rules' => $v['_id'], 'accept' => ['$size' => 1], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+
                 $item['totalNum'] = $totalNum;
+                $item['dispatchNum'] = $dispatchNum;
                 $item['claimNum'] = $claimNum;
 
                 //获取智能推荐新品 爆旺款全部产品
@@ -718,10 +735,14 @@ class ProductsEngineController extends AdminController
             foreach ($hotRuleList as $v){
                 $item['ruleType'] = $type = 'hot';
                 $item['ruleName'] = $v['ruleName'];
-                $totalNum = $db->getCollection('ebay_hot_product')->count(['rules' => $v['_id']]);
+                $totalNum = $db->getCollection('ebay_hot_product')
+                    ->count(['rules' => $v['_id'], 'recommendDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+                $dispatchNum = $db->getCollection('ebay_recommended_product')
+                    ->count(['productType' => $type, 'rules' => $v['_id'], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
                 $claimNum = $db->getCollection('ebay_recommended_product')
-                    ->count(['productType' => $type, 'rules' => $v['_id'], 'accept' => ['$size' => 1]]);
+                    ->count(['productType' => $type, 'rules' => $v['_id'], 'accept' => ['$size' => 1], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
                 $item['totalNum'] = $totalNum;
+                $item['dispatchNum'] = $dispatchNum;
                 $item['claimNum'] = $claimNum;
 
                 //获取智能推荐新品 爆旺款全部产品
