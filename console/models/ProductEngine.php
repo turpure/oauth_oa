@@ -83,6 +83,23 @@ class ProductEngine
     }
 
     /**
+     *获取要过滤掉的店铺
+     * @return array
+     */
+    private static function getFilterStores()
+    {
+        $mongo = Yii::$app->mongodb;
+        $col = $mongo->getCollection('ebay_stores');
+        $stores = $col->find();
+        $ret = [];
+        foreach ($stores as $st) {
+            $ret[] = $st['eBayUserID'];
+        }
+        return $ret;
+    }
+
+    /**
+     * 获取产品
      * @param $type
      * @return mixed
      */
@@ -95,8 +112,12 @@ class ProductEngine
         }
         $mongo = Yii::$app->mongodb;
         $col = $mongo->getCollection($table);
+        $filter_stores = static::getFilterStores();
         $today = date('Y-m-d');
-        $cur = $col->find(['recommendDate' => ['$regex' => $today]]);
+        $cur = $col->find([
+            'recommendDate' => ['$regex' => $today],
+            'seller' => ['$nin' => $filter_stores ]
+        ]);
         $dep = [];
         foreach ($cur as $row) {
             $ele['name'] = $row['itemId'];
