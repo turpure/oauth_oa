@@ -260,6 +260,7 @@ class ConScheduler
 
     /**
      * 为每日推荐列表设置推荐人
+     * @param $products
      * @param $developers
      * @param $productType
      * @param $itemId
@@ -331,7 +332,9 @@ class ConScheduler
      */
     public static function getAndSetRecommendToPersons()
     {
-       $products = static::getRecommendToPersons();
+        // 清空今日推荐人
+        static::clearTodayPersons();
+        $products = static::getRecommendToPersons();
        foreach ($products as $recommendProduct) {
            $productType = $recommendProduct['productType'];
            $developers = $recommendProduct['receiver'];
@@ -340,6 +343,22 @@ class ConScheduler
        }
     }
 
+    /**
+     * 清空今日推荐人
+     */
+    private static function clearTodayPersons()
+    {
+        $tables = ['ebay_new_product', 'ebay_hot_product'];
+        $mongo = Yii::$app->mongodb;
+        $today = date('Y-m-d');
+        foreach ($tables as $ts) {
+            $col = $mongo->getCollection($ts);
+            $products = $col->find(['recommendDate' => ['$regex' => $today]]);
+            foreach ($products as $row) {
+                $col->update(['_id' => $row['_id']],['recommendToPersons' => []]);
+            }
+        }
+    }
 
     //=====================================================================================================
     //新分配规则
