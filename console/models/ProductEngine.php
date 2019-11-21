@@ -363,36 +363,48 @@ class ProductEngine
         return array_merge($first, $right, $left);
     }
 
+    /**
+     * 获取每日推荐统计数据
+     * Date: 2019-11-21 8:43
+     * Author: henry
+     * @return array
+     */
     public static function getDailyReportData()
     {
         $db = Yii::$app->mongodb;
-        //获取新品推送规则列表并统计产品数
-        $totalNum = 0;
-        $newRuleList = EbayNewRule::find()->all();
-        foreach ($newRuleList as $v){
-            $totalNewNum = $db->getCollection('ebay_new_product')
-                ->count(['rules' => $v['_id'], 'recommendDate' => ['$regex' => date('Y-m-d')]]);
-            $totalNum += $totalNewNum; //今天抓取数量
-        }
+        //获取新品统计数
+        $totalNewNum = $db->getCollection('ebay_new_product')
+            ->count(['recommendDate' => ['$regex' => date('Y-m-d')]]);
+        //分配新品总数
+        $dispatchNewNum = $db->getCollection('ebay_recommended_product')
+            ->count(['productType' => 'new', 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        //认领新品总数量
+        $claimNewNum = $db->getCollection('ebay_recommended_product')
+            ->count(['productType' => 'new', 'accept' => ['$size' => 1], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        //过滤新品总数量
+        $filterNewNum = $db->getCollection('ebay_recommended_product')
+            ->count(['productType' => 'new', "refuse" => ['$ne' => null], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        //未处理新品总数量
+        $unhandledNewNum = $db->getCollection('ebay_recommended_product')
+            ->count(['productType' => 'new', "refuse" => null, 'accept' => null, 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+
+        //=========================================================================================
         //获取热销产品推送规则列表并统计产品数
-        $hotRuleList = EbayHotRule::find()->all();
-        foreach ($hotRuleList as $v){
-            $totalHotNum = $db->getCollection('ebay_hot_product')
-                ->count(['rules' => $v['_id'], 'recommendDate' => ['$regex' => date('Y-m-d')]]);
-            $totalNum += $totalHotNum;
-        }
-        //分配产品总数
-        $dispatchTotalNum = $db->getCollection('ebay_recommended_product')
-            ->count(['dispatchDate' => ['$regex' => date('Y-m-d')]]);
-        //认领总数量
-        $claimTotalNum = $db->getCollection('ebay_recommended_product')
-            ->count(['accept' => ['$size' => 1], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
-        //过滤总数量
-        $filterTotalNum = $db->getCollection('ebay_recommended_product')
-            ->count(["refuse" => ['$ne' => null], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
-        //未处理总数量
-        $unhandledTotalNum = $db->getCollection('ebay_recommended_product')
-            ->count(["refuse" => null, 'accept' => null, 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        $totalHotNum = $db->getCollection('ebay_hot_product')
+            ->count(['recommendDate' => ['$regex' => date('Y-m-d')]]);
+        //分配热销品总数
+        $dispatchHotNum = $db->getCollection('ebay_recommended_product')
+            ->count(['productType' => 'hot', 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        //认领热销品总数量
+        $claimHotNum = $db->getCollection('ebay_recommended_product')
+            ->count(['productType' => 'hot', 'accept' => ['$size' => 1], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        //过滤热销品总数量
+        $filterHotNum = $db->getCollection('ebay_recommended_product')
+            ->count(['productType' => 'hot', "refuse" => ['$ne' => null], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        //未处理热销品总数量
+        $unhandledHotNum = $db->getCollection('ebay_recommended_product')
+            ->count(['productType' => 'hot', "refuse" => null, 'accept' => null, 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+
         //获取开发数据统计
         $devList = EbayAllotRule::find()->all();
         $devData = [];
@@ -442,11 +454,18 @@ class ProductEngine
         }
 
         return [
-            'totalNum' => $totalNum,                  //获取产品总数
-            'dispatchTotalNum' => $dispatchTotalNum,  //分配产品总数
-            'claimTotalNum' => $claimTotalNum,        //认领产品总数
-            'filterTotalNum' => $filterTotalNum,      //过滤产品总数
-            'unhandledTotalNum' => $unhandledTotalNum,//未处理产品总数
+            'totalNewNum' => $totalNewNum,        //获取新品总数
+            'dispatchNewNum' => $dispatchNewNum,  //分配新品总数
+            'claimNewNum' => $claimNewNum,        //认领新品总数
+            'filterNewNum' => $filterNewNum,      //过滤新品总数
+            'unhandledNewNum' => $unhandledNewNum,//未处理新品总数
+
+            'totalHotNum' => $totalHotNum,        //获取热销品总数
+            'dispatchHotNum' => $dispatchHotNum,  //分配热销品总数
+            'claimHotNum' => $claimHotNum,        //认领热销品总数
+            'filterHotNum' => $filterHotNum,      //过滤热销品总数
+            'unhandledHotNum' => $unhandledHotNum,//未处理热销品总数
+
             'devData' => $devData,                    //开发数据
             'claimData' => $claimData,                //开发数据
         ];
