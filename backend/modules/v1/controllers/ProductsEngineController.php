@@ -382,6 +382,18 @@ class ProductsEngineController extends AdminController
         }
     }
 
+    public function actionPyCate()
+    {
+        $cateList = Yii::$app->runAction('/v1/oa-goodsinfo/attribute-info-cat')['data'];
+        try {
+            $cate = EbayCateRule::find()->distinct('pyCate');
+            $excludeCate = EbayCateRule::find()->distinct('excludePyCate');
+            return array_values(array_unique(array_merge($cateList, $cate, $excludeCate)));
+        } catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+    }
+
     /**
      * 类目列表
      * @return array|\yii\db\ActiveRecord[]
