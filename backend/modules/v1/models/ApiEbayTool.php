@@ -115,8 +115,8 @@ class ApiEbayTool
         $Site = $Site_dict["$Site"];//站点匹配规则
         //print_r($Site);exit;
         // sku匹配规则；商品编码@#账号，账号字典'taenha2017'=>'@#C01',
-        $subSql = "SELECT nameCode FROM oa_ebay_suffix WHERE ebayName='$Selleruserid'";
-        $subQuery = Yii::$app->py_db->createCommand($subSql)->queryOne();
+        $subSql = "SELECT nameCode FROM proCenter.oa_ebaySuffix WHERE ebayName='$Selleruserid'";
+        $subQuery = Yii::$app->db->createCommand($subSql)->queryOne();
 
         //$sub = $zhanghao["$Selleruserid"];
         $sub = $subQuery["nameCode"];
@@ -189,8 +189,9 @@ class ApiEbayTool
         //$sku_sig = session('sku_sig');
         //2018-01-06 刊登风格 根据账号取
 
-        $sql_prNum = "SELECT ebayName,ibayTemplate from oa_ebay_suffix where ebayName='" . $Selleruserid . "'";
-        $ibayTemplate = Yii::$app->py_db->createCommand($sql_prNum)->queryAll();
+        $sql_prNum = "SELECT ebayName,ibayTemplate from proCenter.oa_ebaySuffix where ebayName='" . $Selleruserid . "'";
+        $ibayTemplate = Yii::$app->db->createCommand($sql_prNum)->queryAll();
+
 
         $Ibay_Template = $ibayTemplate[0]['ibayTemplate'];
         //print_r($xlsData);exit;
