@@ -12,6 +12,7 @@ use yii\behaviors\TimestampBehavior;
  * @property mixed $depart
  * @property mixed $productNum
  * @property mixed $category
+ * @property mixed $excludePyCate
  * @property mixed $deliveryLocation
  * @property mixed $detail
  * @property mixed $createdDate
@@ -52,6 +53,7 @@ class EbayAllotRule extends \yii\mongodb\ActiveRecord
             'depart',
             'productNum',
             'category',
+            'excludePyCate',
             'deliveryLocation',
             'detail',
             'createdDate',
@@ -66,7 +68,7 @@ class EbayAllotRule extends \yii\mongodb\ActiveRecord
     public function rules()
     {
         return [
-            [['username', 'depart', 'productNum', 'category', 'deliveryLocation', 'detail', 'createdDate', 'updatedDate'], 'safe']
+            [['username', 'depart', 'productNum', 'category', 'excludePyCate', 'deliveryLocation', 'detail', 'createdDate', 'updatedDate'], 'safe']
         ];
     }
 
@@ -81,6 +83,7 @@ class EbayAllotRule extends \yii\mongodb\ActiveRecord
             'depart' => 'Depart',
             'productNum' => 'Product Num',
             'category' => 'Category',
+            'excludePyCate' => 'Exclude Py Cate',
             'deliveryLocation' => 'Delivery Location',
             'detail' => 'Detail',
             'createdDate' => 'Created Time',
