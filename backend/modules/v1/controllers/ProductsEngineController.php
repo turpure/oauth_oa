@@ -793,8 +793,8 @@ class ProductsEngineController extends AdminController
 
                 $item['claimRate'] = $dispatchNum ? round($claimNum*1.0/$dispatchNum,4) : 0;
                 $item['filterRate'] = $dispatchNum ? round($filterNum*1.0/$dispatchNum,4) : 0;
-                $item['hotRate'] = $dispatchNum ? round($hotNum*1.0/$dispatchNum,4) : 0;
-                $item['popRate'] = $dispatchNum ? round($popNum*1.0/$dispatchNum,4) : 0;
+                $item['hotRate'] = $claimNum ? round($hotNum*1.0/$claimNum,4) : 0;
+                $item['popRate'] = $claimNum ? round($popNum*1.0/$claimNum,4) : 0;
 
                 $newData[] = $item;
             }
@@ -848,8 +848,8 @@ class ProductsEngineController extends AdminController
 
                 $item['claimRate'] = $dispatchNum ? round($claimNum*1.0/$dispatchNum,4) : 0;
                 $item['filterRate'] = $dispatchNum ? round($filterNum*1.0/$dispatchNum,4) : 0;
-                $item['hotRate'] = $dispatchNum ? round($hotNum*1.0/$dispatchNum,4) : 0;
-                $item['popRate'] = $dispatchNum ? round($popNum*1.0/$dispatchNum,4) : 0;
+                $item['hotRate'] = $claimNum ? round($hotNum*1.0/$claimNum,4) : 0;
+                $item['popRate'] = $claimNum ? round($popNum*1.0/$claimNum,4) : 0;
 
                 //var_dump($claimNum);exit;
                 $hotData[] = $item;
