@@ -667,7 +667,30 @@ class ProductsEngineController extends AdminController
             $dataHave[$k] = $v;
             $dataHave[$k]['dispatchNum'] = $db->getCollection('ebay_recommended_product')
                 ->count(['receiver' => $v['developer'], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+            $dataHave[$k]['filterNum'] = $db->getCollection('ebay_recommended_product')
+                ->count([
+                    '$or' => [
+                        [
+                            "refuse.".$v['developer'] => null,
+                            'accept' => ['$nin' => [null, $v['developer']]],
+                        ],
+                        [
+                            "refuse.".$v['developer'] => ['$ne' => null]
+                        ]
+                    ],
+                    "receiver" => $v['developer'] ,
+                    'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]
+                ]);
+            $dataHave[$k]['unhandledNum'] = $db->getCollection('ebay_recommended_product')
+                ->count([
+                    "refuse.".$v['developer'] => null,
+                    'accept' => null,
+                    "receiver" => $v['developer'] ,
+                    'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]
+                ]);
+
             $dataHave[$k]['claimRate'] = $dataHave[$k]['dispatchNum'] ? round($v['claimNum'] * 1.0 / $dataHave[$k]['dispatchNum'], 4) : '0';
+            $dataHave[$k]['filterRate'] = $dataHave[$k]['dispatchNum'] ? round($dataHave[$k]['filterNum'] * 1.0 / $dataHave[$k]['dispatchNum'], 4) : '0';
         }
         foreach ($devLeft as $k => $v) {
             $dataAdd[$k]['developer'] = $v;
@@ -678,7 +701,30 @@ class ProductsEngineController extends AdminController
             $dataAdd[$k]['popRate'] = '0.0000';
             $dataAdd[$k]['dispatchNum'] = $db->getCollection('ebay_recommended_product')
                 ->count(['receiver' => $v, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+            $dataAdd[$k]['filterNum'] = $db->getCollection('ebay_recommended_product')
+                ->count([
+                    '$or' => [
+                        [
+                            "refuse.".$v => null,
+                            'accept' => ['$nin' => [null, $v]],
+                        ],
+                        [
+                            "refuse.".$v => ['$ne' => null]
+                        ]
+                    ],
+                    "receiver" => $v ,
+                    'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]
+                ]);
+            $dataAdd[$k]['unhandledNum'] = $db->getCollection('ebay_recommended_product')
+                ->count([
+                    "refuse.".$v => null,
+                    'accept' => null,
+                    "receiver" => $v ,
+                    'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]
+                ]);
+
             $dataAdd[$k]['claimRate'] = '0';
+            $dataAdd[$k]['filterRate'] = $dataAdd[$k]['dispatchNum'] ? round($dataAdd[$k]['filterNum'] * 1.0 / $dataAdd[$k]['dispatchNum'], 4) : '0';
         }
         return array_merge($dataHave, $dataAdd);
     }
@@ -711,10 +757,17 @@ class ProductsEngineController extends AdminController
                     ->count(['productType' => $type, 'rules' => $v['_id'], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
                 $claimNum = $db->getCollection('ebay_recommended_product')
                     ->count(['productType' => $type, 'rules' => $v['_id'], 'accept' => ['$size' => 1], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+                $filterNum = $db->getCollection('ebay_recommended_product')
+                    ->count(['productType' => $type, 'rules' => $v['_id'], "refuse" => ['$ne' => null], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+                $unhandledNewNum = $db->getCollection('ebay_recommended_product')
+                    ->count(['productType' => $type,'rules' => $v['_id'],  "refuse" => null, 'accept' => null, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+
 
                 $item['totalNum'] = $totalNum;
                 $item['dispatchNum'] = $dispatchNum;
                 $item['claimNum'] = $claimNum;
+                $item['filterNum'] = $filterNum;
+                $item['unhandledNewNum'] = $unhandledNewNum;
 
                 //获取智能推荐新品 爆旺款全部产品
                 $dataList = $hotQuery = (new Query())
@@ -737,14 +790,19 @@ class ProductsEngineController extends AdminController
                 }
                 $item['hotNum'] = $hotNum;
                 $item['popNum'] = $popNum;
-                //var_dump($claimNum);exit;
+
+                $item['claimRate'] = $dispatchNum ? round($claimNum*1.0/$dispatchNum,4) : 0;
+                $item['filterRate'] = $dispatchNum ? round($filterNum*1.0/$dispatchNum,4) : 0;
+                $item['hotRate'] = $claimNum ? round($hotNum*1.0/$claimNum,4) : 0;
+                $item['popRate'] = $claimNum ? round($popNum*1.0/$claimNum,4) : 0;
+
                 $newData[] = $item;
             }
         }
 
         //获取热销产品推送规则列表并统计产品数
         if (!$ruleType || $ruleType == 'hot') {
-            $hotRuleList = EbayHotRule::find()->andFilterWhere(['ruleName' => ['$regex' => $ruleName]])->all();
+            $hotRuleList = EbayHotRule::find()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ->andFilterWhere(['ruleName' => ['$regex' => $ruleName]])->all();
             foreach ($hotRuleList as $v) {
                 $item['ruleType'] = $type = 'hot';
                 $item['ruleName'] = $v['ruleName'];
@@ -754,9 +812,17 @@ class ProductsEngineController extends AdminController
                     ->count(['productType' => $type, 'rules' => $v['_id'], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
                 $claimNum = $db->getCollection('ebay_recommended_product')
                     ->count(['productType' => $type, 'rules' => $v['_id'], 'accept' => ['$size' => 1], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+                $filterNum = $db->getCollection('ebay_recommended_product')
+                    ->count(['productType' => $type, 'rules' => $v['_id'], "refuse" => ['$ne' => null], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+                $unhandledNewNum = $db->getCollection('ebay_recommended_product')
+                    ->count(['productType' => $type,'rules' => $v['_id'],  "refuse" => null, 'accept' => null, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+
+
                 $item['totalNum'] = $totalNum;
                 $item['dispatchNum'] = $dispatchNum;
                 $item['claimNum'] = $claimNum;
+                $item['filterNum'] = $filterNum;
+                $item['unhandledNewNum'] = $unhandledNewNum;
 
                 //获取智能推荐新品 爆旺款全部产品
                 $dataList = $hotQuery = (new Query())
@@ -779,6 +845,12 @@ class ProductsEngineController extends AdminController
                 }
                 $item['hotNum'] = $hotNum;
                 $item['popNum'] = $popNum;
+
+                $item['claimRate'] = $dispatchNum ? round($claimNum*1.0/$dispatchNum,4) : 0;
+                $item['filterRate'] = $dispatchNum ? round($filterNum*1.0/$dispatchNum,4) : 0;
+                $item['hotRate'] = $claimNum ? round($hotNum*1.0/$claimNum,4) : 0;
+                $item['popRate'] = $claimNum ? round($popNum*1.0/$claimNum,4) : 0;
+
                 //var_dump($claimNum);exit;
                 $hotData[] = $item;
             }
@@ -813,6 +885,7 @@ class ProductsEngineController extends AdminController
             '7：产品评价低' => 0,
             '8：其他' => 0,
         ];
+        $refuseData = [];
         foreach($refuseArr as $val) {
             foreach ($val as $v){
                 if(strpos($v,'1：') !== false){
@@ -831,17 +904,27 @@ class ProductsEngineController extends AdminController
                     $arr['7：产品评价低'] += 1;
                 }else{
                     $arr['8：其他'] += 1;
+                    @$refuseData[$v]++;
                 }
             }
         }
         arsort($arr);
-        $res = [];
+        arsort($refuseData);
+        $res = $detail = [];
         foreach ($arr as $k => $v){
             $item['refuse'] = $k;
             $item['num'] = $v;
             $res[] = $item;
         }
-        return $res;
+        foreach ($refuseData as $k => $v){
+            $i['name'] = $k;
+            $i['num'] = $v;
+            $detail[] = $i;
+        }
+        return [
+            'refuse' => $res,
+            'detail' => $detail,
+        ];
     }
 
 
