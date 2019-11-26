@@ -885,6 +885,7 @@ class ProductsEngineController extends AdminController
             '7：产品评价低' => 0,
             '8：其他' => 0,
         ];
+        $refuseData = [];
         foreach($refuseArr as $val) {
             foreach ($val as $v){
                 if(strpos($v,'1：') !== false){
@@ -903,18 +904,25 @@ class ProductsEngineController extends AdminController
                     $arr['7：产品评价低'] += 1;
                 }else{
                     $arr['8：其他'] += 1;
+                    @$refuseData[$v]++;
                 }
             }
         }
         arsort($arr);
+        arsort($refuseData);
         $res = [];
         foreach ($arr as $k => $v){
             $item['refuse'] = $k;
             $item['num'] = $v;
             $res[] = $item;
         }
-        return $res;
+        return [
+            'refuse' => $res,
+            'detail' => $refuseData,
+        ];
     }
+
+
 
 
 }
