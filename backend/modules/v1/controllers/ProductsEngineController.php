@@ -910,15 +910,20 @@ class ProductsEngineController extends AdminController
         }
         arsort($arr);
         arsort($refuseData);
-        $res = [];
+        $res = $detail = [];
         foreach ($arr as $k => $v){
             $item['refuse'] = $k;
             $item['num'] = $v;
             $res[] = $item;
         }
+        foreach ($refuseData as $k => $v){
+            $i['name'] = $k;
+            $i['num'] = $v;
+            $detail[] = $i;
+        }
         return [
             'refuse' => $res,
-            'detail' => $refuseData,
+            'detail' => $detail,
         ];
     }
 
