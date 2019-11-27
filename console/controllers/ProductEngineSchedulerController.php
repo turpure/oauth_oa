@@ -55,7 +55,7 @@ class ProductEngineSchedulerController extends Controller
      */
     public function actionDispatchAll($type='hot')
     {
-
+        //var_dump(in_array('123', [], false));exit;
         $developers = ProductEngine::getDevelopers();
         shuffle($developers);
         $products = ProductEngine::getProducts($type);
@@ -106,7 +106,7 @@ class ProductEngineSchedulerController extends Controller
             $this->actionDispatchToPerson('hot');
 
             //更新每日推荐的推荐人
-            ConScheduler::getAndSetRecommendToPersons();
+            //ConScheduler::getAndSetRecommendToPersons();
         } catch (\Exception $why) {
             print 'fail to recommend cause of ' . $why->getMessage();
         }

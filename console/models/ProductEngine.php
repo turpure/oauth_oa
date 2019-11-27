@@ -52,12 +52,19 @@ class ProductEngine
             }
             $id = $pt['_id'];
             // 匹配类目
-            foreach ($catMap as $cp) {
-                similar_text($catName, $cp['platCate'] . '-' . $cp['platSubCate'], $percent);
-                if ($percent >= 50) {
-                    $tag = $cp['cateName'];
-                    $col->update(['_id' => $id], ['tag' => $tag]);
-                    break;
+            $catNameArr = explode(' - ', $catName);
+            $tag = [];
+            if(count($catNameArr) > 1){
+                foreach ($catMap as $cp) {
+                    similar_text($catNameArr[0], $cp['platCate'], $percent1);
+                    similar_text($catNameArr[1], $cp['platSubCate'], $percent2);
+                    if ($percent1 >= 80 && $percent2 >= 80) {
+                        $tag[] = $cp['cateName'];
+                    }
+                }
+                $newTag = array_values(array_unique($tag));
+                if($newTag){
+                    $col->update(['_id' => $id], ['tag' => $newTag]);
                 }
             }
         }
@@ -75,6 +82,7 @@ class ProductEngine
         $dev = [];
         foreach ($cur as $row) {
             $ele['tag'] = $row['category'];
+            $ele['excludeTag'] = $row['excludePyCate'];
             $ele['name'] = $row['username'];
             $ele['deliveryLocation'] = $row['deliveryLocation'];
             $dev[] = $ele;
@@ -279,8 +287,22 @@ class ProductEngine
         $ret = [];
         $row = ['product' => '', 'developer' => ''];
         foreach ($this->developer as &$dp) {
+            //var_dump($dp);exit;
             foreach ($this->products as &$pt) {
-                $condition1 =  empty($dp['tag']) || in_array($pt['tag'],$dp['tag'], false);
+                $tag = $excludeTag = [];
+                if ($pt['tag']) {
+                    foreach ($pt['tag'] as $v) {
+                        if (in_array($v, $dp['excludeTag'], false)) {
+                            $excludeTag[] = $v;
+                        }
+                        if (in_array($v, $dp['tag'], false)) {
+                            $tag[] = $v;
+                        }
+                    }
+                }
+                if ($excludeTag) continue;    //属于过滤类别的产品，直接跳过
+                //$condition1 =  empty($dp['tag']) || in_array($pt['tag'],$dp['tag'], false);
+                $condition1 =  empty($dp['tag']) || $tag;
                 $condition2 = static::matchLocation($dp['deliveryLocation'], $pt['itemLocation']);
                 $limit = isset($pt['limit']) ? $pt['limit']  : 0;
                 if($limit === 0) {
@@ -504,10 +526,12 @@ class ProductEngine
     public static function pushData($row, $type='all')
     {
         if($type === 'all') {
-            $table = 'ebay_all_recommended_product';
+            //$table = 'ebay_all_recommended_product';
+            $table = 'ebay_all_recommended_product_test';
         }
         else {
-            $table = 'ebay_recommended_product';
+            //$table = 'ebay_recommended_product';
+            $table = 'ebay_recommended_product_test';
         }
         $mongo = Yii::$app->mongodb;
         $col = $mongo->getCollection($table);
