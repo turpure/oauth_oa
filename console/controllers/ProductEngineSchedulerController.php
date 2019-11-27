@@ -106,7 +106,7 @@ class ProductEngineSchedulerController extends Controller
             $this->actionDispatchToPerson('hot');
 
             //更新每日推荐的推荐人
-            //ConScheduler::getAndSetRecommendToPersons();
+            ConScheduler::getAndSetRecommendToPersons();
         } catch (\Exception $why) {
             print 'fail to recommend cause of ' . $why->getMessage();
         }

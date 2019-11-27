@@ -526,12 +526,10 @@ class ProductEngine
     public static function pushData($row, $type='all')
     {
         if($type === 'all') {
-            //$table = 'ebay_all_recommended_product';
-            $table = 'ebay_all_recommended_product_test';
+            $table = 'ebay_all_recommended_product';
         }
         else {
-            //$table = 'ebay_recommended_product';
-            $table = 'ebay_recommended_product_test';
+            $table = 'ebay_recommended_product';
         }
         $mongo = Yii::$app->mongodb;
         $col = $mongo->getCollection($table);
