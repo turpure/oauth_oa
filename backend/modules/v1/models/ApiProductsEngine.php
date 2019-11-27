@@ -538,4 +538,18 @@ class ApiProductsEngine
 
     }
 
+
+    /**
+     * 图片搜索
+     * @param $imageUrl
+     * @return mixed
+     */
+    public static function imageSearch($imageUrl)
+    {
+        $playLoad = ['imageUrl' => $imageUrl];
+        $url = Yii::$app->params['imageSearchUrl'];
+        $ret = Helper::request($url, json_encode($playLoad));
+        return $ret[1]['data'];
+    }
+
 }

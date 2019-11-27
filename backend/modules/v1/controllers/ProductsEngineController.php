@@ -928,6 +928,12 @@ class ProductsEngineController extends AdminController
     }
 
 
+    public static function actionImageSearch()
+    {
+        $condition = Yii::$app->request->post('condition');
+        $imageUrl = $condition['imageUrl'];
+        return ApiProductsEngine::imageSearch($imageUrl);
+    }
 
 
 }
