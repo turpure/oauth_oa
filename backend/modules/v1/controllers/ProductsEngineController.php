@@ -883,27 +883,27 @@ class ProductsEngineController extends AdminController
             '5: 找不到货源' => 0,
             '6: 价格没优势' => 0,
             '7: 评分低' => 0,
-            '8：其他' => 0,
+            '8: 其他' => 0,
         ];
         $refuseData = [];
         foreach($refuseArr as $val) {
             foreach ($val as $v){
-                if(strpos($v,'1：') !== false){
+                if(strpos($v,'1:') !== false){
                     $arr['1: 重复'] += 1;
-                }elseif (strpos($v,'2：') !== false){
+                }elseif (strpos($v,'2:') !== false){
                     $arr['2: 侵权'] += 1;
-                }elseif (strpos($v,'3：') !== false){
+                }elseif (strpos($v,'3:') !== false){
                     $arr['3: 不好运输'] += 1;
-                }elseif (strpos($v,'4：') !== false){
+                }elseif (strpos($v,'4:') !== false){
                     $arr['4: 销量不好'] += 1;
-                }elseif (strpos($v,'5：') !== false){
+                }elseif (strpos($v,'5:') !== false){
                     $arr['5: 找不到货源'] += 1;
-                }elseif (strpos($v,'6：') !== false){
+                }elseif (strpos($v,'6:') !== false){
                     $arr['6: 价格没优势'] += 1;
-                }elseif (strpos($v,'7：') !== false){
+                }elseif (strpos($v,'7:') !== false){
                     $arr['7: 评分低'] += 1;
-                }else{
-                    $arr['8：其他'] += 1;
+                }else if(strpos($v,'8:') !== false){
+                    $arr['8: 其他'] += 1;
                     @$refuseData[$v]++;
                 }
             }
