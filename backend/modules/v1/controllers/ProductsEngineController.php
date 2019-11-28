@@ -876,32 +876,32 @@ class ProductsEngineController extends AdminController
             ->find(["refuse" => ['$ne' => null], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
         $refuseArr = ArrayHelper::getColumn($product,'refuse');
         $arr = [
-            '1：产品重复' => 0,
-            '2：产品侵权' => 0,
-            '3：产品不好运输' => 0,
-            '4：销量不好' => 0,
-            '5：找不到货源' => 0,
-            '6：价格没有优势' => 0,
-            '7：产品评价低' => 0,
+            '1: 重复' => 0,
+            '2: 侵权' => 0,
+            '3: 不好运输' => 0,
+            '4: 销量不好' => 0,
+            '5: 找不到货源' => 0,
+            '6: 价格没优势' => 0,
+            '7: 评分低' => 0,
             '8：其他' => 0,
         ];
         $refuseData = [];
         foreach($refuseArr as $val) {
             foreach ($val as $v){
                 if(strpos($v,'1：') !== false){
-                    $arr['1：产品重复'] += 1;
+                    $arr['1: 重复'] += 1;
                 }elseif (strpos($v,'2：') !== false){
-                    $arr['2：产品侵权'] += 1;
+                    $arr['2: 侵权'] += 1;
                 }elseif (strpos($v,'3：') !== false){
-                    $arr['3：产品不好运输'] += 1;
+                    $arr['3: 不好运输'] += 1;
                 }elseif (strpos($v,'4：') !== false){
-                    $arr['4：销量不好'] += 1;
+                    $arr['4: 销量不好'] += 1;
                 }elseif (strpos($v,'5：') !== false){
-                    $arr['5：找不到货源'] += 1;
+                    $arr['5: 找不到货源'] += 1;
                 }elseif (strpos($v,'6：') !== false){
-                    $arr['6：价格没有优势'] += 1;
+                    $arr['6: 价格没优势'] += 1;
                 }elseif (strpos($v,'7：') !== false){
-                    $arr['7：产品评价低'] += 1;
+                    $arr['7: 评分低'] += 1;
                 }else{
                     $arr['8：其他'] += 1;
                     @$refuseData[$v]++;
