@@ -30,7 +30,7 @@
         "hguenot/yii2-gftp": "*",
         "yiisoft/yii2-redis": "^2.0",
         "yiisoft/yii2-mongodb": "^2.1",
-        "yiiplus/yii2-websocket": "^1.0.0"
+        "jianyan74/yii2-websocket": "^1.1"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.0.0",

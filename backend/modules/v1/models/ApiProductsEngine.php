@@ -472,7 +472,7 @@ class ApiProductsEngine
         }
         if($rule) $res['_id'] = $rule['_id'];
         //获取普源类目
-        $pyCate = Yii::$app->runAction('/v1/oa-goodsinfo/attribute-info-cat')['data'];
+        $pyCate = Yii::$app->runAction('/v1/products-engine/py-cate')['data'];
         foreach ($pyCate as $k => $v){
             if($rule && $rule['pyCate'] == $v){
                 $res['pyCate'][$k] = ['name' => $v,'flag' => true];
