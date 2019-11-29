@@ -29,7 +29,8 @@
         "phpoffice/phpspreadsheet": "^1.3",
         "hguenot/yii2-gftp": "*",
         "yiisoft/yii2-redis": "^2.0",
-        "yiisoft/yii2-mongodb": "^2.1"
+        "yiisoft/yii2-mongodb": "^2.1",
+        "workerman/workerman": "^3.5"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.0.0",

@@ -21,6 +21,14 @@ return [
             'class' => 'yii\console\controllers\FixtureController',
             'namespace' => 'common\fixtures',
           ],
+        'workerman' => [
+            'class' => 'console\controllers\WorkermanController',
+            'config' => [
+                'ip' => '192.168.0.7',
+                'port' => '2346',
+                'daemonize' => true,
+            ],
+        ],
     ],
     'components' => [
         'log' => [

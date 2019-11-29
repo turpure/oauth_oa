@@ -226,12 +226,12 @@ class Helper
         $to_uid = "";
         // 推送的url地址，使用自己的服务器地址
         //$push_api_url = "http://192.168.0.7:2121/";
-        $push_api_url = "http://58.246.226.254:2121/";
+        $push_api_url = "websoket://58.246.226.254:2121/";
 
         $data = ProductEngine::getDailyReportData();
         $post_data = array(
             "type" => "publish",
-            "content" => $data,
+            "content" => json_encode($data),
             "to" => $to_uid,
         );
         $ch = curl_init ();
