@@ -6,6 +6,7 @@
  */
 
 namespace backend\modules\v1\utils;
+use console\models\ProductEngine;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Yii;
@@ -218,5 +219,34 @@ class Helper
 
         return [$httpCode, json_decode($response, true)];
     }
+
+
+
+    public static function pushData(){
+        $to_uid = "";
+        // 推送的url地址，使用自己的服务器地址
+        //$push_api_url = "http://192.168.0.7:2121/";
+        $push_api_url = "http://58.246.226.254:2121/";
+
+        $data = ProductEngine::getDailyReportData();
+        $post_data = array(
+            "type" => "publish",
+            "content" => $data,
+            "to" => $to_uid,
+        );
+        $ch = curl_init ();
+        curl_setopt ( $ch, CURLOPT_URL, $push_api_url );
+        curl_setopt ( $ch, CURLOPT_POST, 1 );
+        curl_setopt ( $ch, CURLOPT_HEADER, 0 );
+        curl_setopt ( $ch, CURLOPT_RETURNTRANSFER, 1 );
+        curl_setopt ( $ch, CURLOPT_POSTFIELDS, $post_data );
+        curl_setopt ($ch, CURLOPT_HTTPHEADER, array("Expect:"));
+        $return = curl_exec ( $ch );
+        curl_close ( $ch );
+        var_export($return);
+    }
+
+
+
 
 }

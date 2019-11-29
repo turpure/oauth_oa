@@ -16,6 +16,7 @@
 
 
 namespace console\controllers;
+use backend\modules\v1\utils\Helper;
 use console\models\ProductEngine;
 
 
@@ -180,6 +181,8 @@ class TestController extends Controller
     }
 
 
-
+    public function actionTest123(){
+        Helper::pushData();
+    }
 
 }

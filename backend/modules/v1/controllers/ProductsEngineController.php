@@ -13,7 +13,6 @@ use backend\models\EbayCateRule;
 use backend\models\EbayDeveloperCategory;
 use backend\models\EbayHotRule;
 use backend\models\EbayNewRule;
-use backend\models\OaGoodsinfo;
 use backend\modules\v1\models\ApiUser;
 use console\models\ProductEngine;
 use yii\data\ArrayDataProvider;
