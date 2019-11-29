@@ -75,7 +75,9 @@ class WorkermanController extends Controller
         $wsWorker = new Worker("websocket://{$ip}:{$port}");
 
         // 4 processes
-        $wsWorker->count = 4;
+        if(PHP_OS !== 'WINNT') {
+            $wsWorker->count = 4;
+        }
 
         // Emitted when new connection come
         $wsWorker->onConnect = function ($connection) {
