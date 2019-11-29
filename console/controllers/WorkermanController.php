@@ -6,6 +6,7 @@
  * Time: 16:32
  * Author: henry
  */
+
 /**
  * @name WorkermanController.php
  * @desc PhpStorm.
@@ -28,7 +29,7 @@ class WorkermanController extends Controller
 
     // 这里不需要设置，会读取配置文件中的配置
     public $config = [];
-    private $ip = '192.168.0.7';
+    private $ip = '127.0.0.1';
     private $port = '2346';
 
     public function options($actionID)
@@ -68,6 +69,7 @@ class WorkermanController extends Controller
 
     public function initWorker()
     {
+        //var_dump($this->config['ip']);exit;
         $ip = isset($this->config['ip']) ? $this->config['ip'] : $this->ip;
         $port = isset($this->config['port']) ? $this->config['port'] : $this->port;
         $wsWorker = new Worker("websocket://{$ip}:{$port}");
@@ -105,7 +107,7 @@ class WorkermanController extends Controller
         if ($this->daemon) {
             $argv[2] = '-d';
         }
-
+        //var_dump($argv);exit;
         // Run worker
         Worker::runAll();
     }
