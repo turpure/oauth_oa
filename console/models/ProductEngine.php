@@ -45,6 +45,7 @@ class ProductEngine
         $catMap = static::getTagCat();
         $products = $col->find(['recommendDate' => ['$regex' => $today]]);
         foreach ($products as $pt) {
+            print_r($pt['_id']."\n");
             try {
                 $catName = $pt['cidName'];
             } catch (\Exception  $why) {
@@ -63,9 +64,7 @@ class ProductEngine
                     }
                 }
                 $newTag = array_values(array_unique($tag));
-                if($newTag){
-                    $col->update(['_id' => $id], ['tag' => $newTag]);
-                }
+                $col->update(['_id' => $id], ['tag' => $newTag]);
             }
         }
     }
@@ -291,7 +290,8 @@ class ProductEngine
             foreach ($this->products as &$pt) {
                 $tag = $excludeTag = [];
                 if ($pt['tag']) {
-                    foreach ($pt['tag'] as $v) {
+                    $tags = is_array($pt['tag']) ? $pt['tag'] : [$pt['tag']];
+                    foreach ($tags as $v) {
                         if (in_array($v, $dp['excludeTag'], false)) {
                             $excludeTag[] = $v;
                         }
