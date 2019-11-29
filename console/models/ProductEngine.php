@@ -291,7 +291,8 @@ class ProductEngine
             foreach ($this->products as &$pt) {
                 $tag = $excludeTag = [];
                 if ($pt['tag']) {
-                    foreach ($pt['tag'] as $v) {
+                    $tags = is_array($pt['tag']) ? $pt['tag'] : [$pt['tag']];
+                    foreach ($tags as $v) {
                         if (in_array($v, $dp['excludeTag'], false)) {
                             $excludeTag[] = $v;
                         }
