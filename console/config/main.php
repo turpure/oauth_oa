@@ -24,8 +24,8 @@ return [
         'workerman' => [
             'class' => 'console\controllers\WorkermanController',
             'config' => [
-                'ip' => '127.0.0.1',
-                'port' => '8888',
+                'ip' => '0.0.0.0',
+                'port' => '2346',
                 'daemonize' => true,
             ],
         ],

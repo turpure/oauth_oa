@@ -29,7 +29,7 @@ class WorkermanController extends Controller
 
     // 这里不需要设置，会读取配置文件中的配置
     public $config = [];
-    private $ip = '127.0.0.1';
+    private $ip = '0.0.0.0';
     private $port = '2346';
 
     public function options($actionID)
@@ -48,22 +48,36 @@ class WorkermanController extends Controller
 
     public function actionIndex()
     {
-        if ('start' == $this->send) {
-            try {
-                $this->start($this->daemon);
-            } catch (\Exception $e) {
-                $this->stderr($e->getMessage() . "\n", Console::FG_RED);
+        $this->worker();
+
+    }
+
+
+    public function worker()
+    {
+        if (PHP_OS === 'WINNT') {
+          $this->initWorker();
+          Worker::runAll();
+        }
+        else {
+
+            if ('start' == $this->send) {
+                try {
+                    $this->start($this->daemon);
+                } catch (\Exception $e) {
+                    $this->stderr($e->getMessage() . "\n", Console::FG_RED);
+                }
+            } else if ('stop' == $this->send) {
+                $this->stop();
+            } else if ('restart' == $this->send) {
+                $this->restart();
+            } else if ('reload' == $this->send) {
+                $this->reload();
+            } else if ('status' == $this->send) {
+                $this->status();
+            } else if ('connections' == $this->send) {
+                $this->connections();
             }
-        } else if ('stop' == $this->send) {
-            $this->stop();
-        } else if ('restart' == $this->send) {
-            $this->restart();
-        } else if ('reload' == $this->send) {
-            $this->reload();
-        } else if ('status' == $this->send) {
-            $this->status();
-        } else if ('connections' == $this->send) {
-            $this->connections();
         }
     }
 
