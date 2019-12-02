@@ -227,7 +227,7 @@ class Helper
         $push_api_url = "tcp://127.0.0.1:5678/";
         $info = ProductEngine::getDailyReportData();
         $client = stream_socket_client($push_api_url, $errno, $errmsg, 1);
-        $data = json_encode($info, JSON_FORCE_OBJECT);
+        $data = json_encode($info);
         fwrite($client, (string)$data."\n");
         return fread($client, 8192);
     }
