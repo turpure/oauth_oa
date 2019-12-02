@@ -16,7 +16,7 @@
 
 
 namespace console\controllers;
-
+use Yii;
 use console\models\ProductEngine;
 use Workerman\Worker;
 use yii\helpers\Console;
@@ -103,19 +103,19 @@ class WorkermanController extends Controller
         $port = isset($this->config['port']) ? $this->config['port'] : $this->port;
         $this->websoket = new Worker("websocket://{$ip}:{$port}");
 
-        $this->websoket->onWorkerStart = function($worker) {
-            // 开启一个内部端口，方便内部系统推送数据，Text协议格式 文本+换行符
-            $inner_text_worker = new Worker('text://0.0.0.0:5678');
-            $inner_text_worker->onMessage = function ($connection, $buffer) {
-                // $data数组格式，里面有uid，表示向那个uid的页面推送数据
-                //$data = json_decode($buffer, true);
-                // 通过workerman，向uid的页面推送数据
-                $ret = $this->sendMessage($buffer);
-                // 返回推送结果
-                $connection->send($ret ? true : false);
-            };
-            $inner_text_worker->listen();
-        };
+//        $this->websoket->onWorkerStart = function($worker) {
+//            // 开启一个内部端口，方便内部系统推送数据，Text协议格式 文本+换行符
+//            $inner_text_worker = new Worker('text://0.0.0.0:5678');
+//            $inner_text_worker->onMessage = function ($connection, $buffer) {
+//                // $data数组格式，里面有uid，表示向那个uid的页面推送数据
+//                //$data = json_decode($buffer, true);
+//                // 通过workerman，向uid的页面推送数据
+//                $ret = $this->sendMessage($buffer);
+//                // 返回推送结果
+//                $connection->send($ret ? true : false);
+//            };
+//            $inner_text_worker->listen();
+//        };
 
 
         // 4 processes
@@ -126,7 +126,10 @@ class WorkermanController extends Controller
         // Emitted when new connection come
         $this->websoket->onConnect = function ($connection) {
             //array_push($this->session, $connection);
-            echo "Congratulations, connect server successful! \n";
+//            Yii::$app->session->set('websocket' , $this->websoket->connections);
+            $_SESSION['websocket'] = $this->websoket->connections;
+//            Yii::$app->session->set('websocket' , 'test');
+            echo "aha Congratulations, connect server successful! \n";
         };
 
         // Emitted when data received
