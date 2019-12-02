@@ -229,7 +229,7 @@ class Helper
 //        $client = stream_socket_client($push_api_url, $errno, $errmsg, 1);
         $data = json_encode($info);
         $ws = $_SESSION['websocket'];
-        foreach ($_SESSION['websocket'] as  $con) {
+        foreach ($ws as  $con) {
             $con->send($data);
         }
 //        fwrite($client, (string)$data."\n");
