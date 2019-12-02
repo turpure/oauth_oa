@@ -28,7 +28,7 @@ class WorkermanController extends Controller
     public $daemon;
     public $gracefully;
 
-    public static $websoket;
+    public  $websoket;
 
     // 这里不需要设置，会读取配置文件中的配置
     public $config = [];
@@ -123,7 +123,7 @@ class WorkermanController extends Controller
         // Emitted when new connection come
         $this->websoket->onConnect = function ($connection) {
             //array_push($this->session, $connection);
-            Yii::app()->session->set('websocket', $this->websocket->connects);
+            Yii::$app->session->set('websocket', $this->websoket->connects);
             echo "Congratulations, connect server successful! \n";
         };
 
