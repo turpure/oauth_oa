@@ -28,7 +28,7 @@ class WorkermanController extends Controller
     public $daemon;
     public $gracefully;
 
-    public $websoket;
+    public static $websoket;
 
     // 这里不需要设置，会读取配置文件中的配置
     public $config = [];
@@ -39,6 +39,7 @@ class WorkermanController extends Controller
     {
         return ['send', 'daemon', 'gracefully'];
     }
+
 
     public function optionAliases()
     {
@@ -54,11 +55,7 @@ class WorkermanController extends Controller
         $this->worker();
 
     }
-    public function actionTest(){
-        $data = 'aasdasdasdasda';
-        var_dump($this->websoket);exit;
 
-    }
 
     public function sendMessage($message){
         foreach($this->websoket->connections as $connection)
@@ -103,19 +100,19 @@ class WorkermanController extends Controller
         $port = isset($this->config['port']) ? $this->config['port'] : $this->port;
         $this->websoket = new Worker("websocket://{$ip}:{$port}");
 
-        $this->websoket->onWorkerStart = function($worker) {
-            // 开启一个内部端口，方便内部系统推送数据，Text协议格式 文本+换行符
-            $inner_text_worker = new Worker('text://0.0.0.0:5678');
-            $inner_text_worker->onMessage = function ($connection, $buffer) {
-                // $data数组格式，里面有uid，表示向那个uid的页面推送数据
-                //$data = json_decode($buffer, true);
-                // 通过workerman，向uid的页面推送数据
-                $ret = $this->sendMessage($buffer);
-                // 返回推送结果
-                $connection->send($ret ? true : false);
-            };
-            $inner_text_worker->listen();
-        };
+//        $this->websoket->onWorkerStart = function($worker) {
+//            // 开启一个内部端口，方便内部系统推送数据，Text协议格式 文本+换行符
+//            $inner_text_worker = new Worker('text://0.0.0.0:5678');
+//            $inner_text_worker->onMessage = function ($connection, $buffer) {
+//                // $data数组格式，里面有uid，表示向那个uid的页面推送数据
+//                //$data = json_decode($buffer, true);
+//                // 通过workerman，向uid的页面推送数据
+//                $ret = $this->sendMessage($buffer);
+//                // 返回推送结果
+//                $connection->send($ret ? true : false);
+//            };
+//            $inner_text_worker->listen();
+//        };
 
 
         // 4 processes
@@ -126,6 +123,7 @@ class WorkermanController extends Controller
         // Emitted when new connection come
         $this->websoket->onConnect = function ($connection) {
             //array_push($this->session, $connection);
+            Yii::app()->session->set('websocket', $this->websocket->connects);
             echo "Congratulations, connect server successful! \n";
         };
 
