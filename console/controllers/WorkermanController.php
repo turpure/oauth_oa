@@ -17,6 +17,7 @@
 
 namespace console\controllers;
 
+use console\models\ProductEngine;
 use Workerman\Worker;
 use yii\helpers\Console;
 use yii\console\Controller;
@@ -130,8 +131,12 @@ class WorkermanController extends Controller
 
         // Emitted when data received
         $this->websoket->onMessage = function ($connection, $data) {
-            // Send hello $data
-            $connection->send('nishishui?' . $data);
+            // Send hello
+            if($data === 'new'){  //指定请求，会发送指定数据
+                $info = ProductEngine::getDailyReportData();
+                $data = json_encode($info);
+            }
+            $connection->send($data);
         };
 
         // Emitted when connection closed
