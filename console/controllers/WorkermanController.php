@@ -73,7 +73,7 @@ class WorkermanController extends Controller
         $ip = isset($this->config['ip']) ? $this->config['ip'] : $this->ip;
         $port = isset($this->config['port']) ? $this->config['port'] : $this->port;
         $wsWorker = new Worker("websocket://{$ip}:{$port}");
-
+        //var_dump(PHP_OS);exit;
         // 4 processes
         if(PHP_OS !== 'WINNT') {
             $wsWorker->count = 4;
