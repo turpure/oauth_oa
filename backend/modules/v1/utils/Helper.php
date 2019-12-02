@@ -229,7 +229,7 @@ class Helper
         $client = stream_socket_client($push_api_url, $errno, $errmsg, 1);
         $data = json_encode($info, JSON_FORCE_OBJECT);
         fwrite($client, (string)$data."\n");
-        echo fread($client, 8192);
+        return fread($client, 8192);
     }
 
 

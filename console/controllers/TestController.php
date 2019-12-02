@@ -182,7 +182,8 @@ class TestController extends Controller
 
 
     public function actionTest123(){
-        Helper::pushData();
+        $res = Helper::pushData();
+        echo $res ? 'ok' : 'failed';
     }
 
 }

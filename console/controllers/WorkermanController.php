@@ -112,7 +112,7 @@ class WorkermanController extends Controller
                 // 通过workerman，向uid的页面推送数据
                 $ret = $this->sendMessage($buffer);
                 // 返回推送结果
-                $connection->send($ret ? 'ok' : 'fail');
+                $connection->send($ret ? true : false);
             };
             $inner_text_worker->listen();
         };
