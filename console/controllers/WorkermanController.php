@@ -28,7 +28,7 @@ class WorkermanController extends Controller
     public $daemon;
     public $gracefully;
 
-    public $websoket;
+    public  $websoket;
 
     // 这里不需要设置，会读取配置文件中的配置
     public $config = [];
@@ -39,6 +39,7 @@ class WorkermanController extends Controller
     {
         return ['send', 'daemon', 'gracefully'];
     }
+
 
     public function optionAliases()
     {
@@ -54,11 +55,7 @@ class WorkermanController extends Controller
         $this->worker();
 
     }
-    public function actionTest(){
-        $data = 'aasdasdasdasda';
-        var_dump($this->websoket);exit;
 
-    }
 
     public function sendMessage($message){
         foreach($this->websoket->connections as $connection)
