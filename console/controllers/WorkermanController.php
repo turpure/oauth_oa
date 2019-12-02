@@ -27,9 +27,11 @@ class WorkermanController extends Controller
     public $daemon;
     public $gracefully;
 
+    public $websoket;
+
     // 这里不需要设置，会读取配置文件中的配置
     public $config = [];
-    private $ip = '127.0.0.1';
+    private $ip = '0.0.0.0';
     private $port = '2346';
 
     public function options($actionID)
@@ -48,22 +50,48 @@ class WorkermanController extends Controller
 
     public function actionIndex()
     {
-        if ('start' == $this->send) {
-            try {
-                $this->start($this->daemon);
-            } catch (\Exception $e) {
-                $this->stderr($e->getMessage() . "\n", Console::FG_RED);
+        $this->worker();
+
+    }
+    public function actionTest(){
+        $data = 'aasdasdasdasda';
+        var_dump($this->websoket);exit;
+
+    }
+
+    public function sendMessage($message){
+        foreach($this->websoket->connections as $connection)
+        {
+            $connection->send($message);
+        }
+        return true;
+    }
+
+    public function worker()
+    {
+        if (PHP_OS === 'WINNT') {
+          $this->initWorker();
+          Worker::runAll();
+        }
+        else {
+
+            if ('start' == $this->send) {
+                try {
+                    $this->start($this->daemon);
+                } catch (\Exception $e) {
+                    $this->stderr($e->getMessage() . "\n", Console::FG_RED);
+                }
+            } else if ('stop' == $this->send) {
+                $this->stop();
+            } else if ('restart' == $this->send) {
+                $this->restart();
+            } else if ('reload' == $this->send) {
+                $this->reload();
+            } else if ('status' == $this->send) {
+                $this->status();
+            } else if ('connections' == $this->send) {
+                $this->connections();
             }
-        } else if ('stop' == $this->send) {
-            $this->stop();
-        } else if ('restart' == $this->send) {
-            $this->restart();
-        } else if ('reload' == $this->send) {
-            $this->reload();
-        } else if ('status' == $this->send) {
-            $this->status();
-        } else if ('connections' == $this->send) {
-            $this->connections();
         }
     }
 
@@ -72,27 +100,44 @@ class WorkermanController extends Controller
         //var_dump($this->config['ip']);exit;
         $ip = isset($this->config['ip']) ? $this->config['ip'] : $this->ip;
         $port = isset($this->config['port']) ? $this->config['port'] : $this->port;
-        $wsWorker = new Worker("websocket://{$ip}:{$port}");
-        //var_dump(PHP_OS);exit;
+        $this->websoket = new Worker("websocket://{$ip}:{$port}");
+
+        $this->websoket->onWorkerStart = function($worker) {
+            // 开启一个内部端口，方便内部系统推送数据，Text协议格式 文本+换行符
+            $inner_text_worker = new Worker('text://0.0.0.0:5678');
+            $inner_text_worker->onMessage = function ($connection, $buffer) {
+                // $data数组格式，里面有uid，表示向那个uid的页面推送数据
+                //$data = json_decode($buffer, true);
+                // 通过workerman，向uid的页面推送数据
+                $ret = $this->sendMessage($buffer);
+                // 返回推送结果
+                $connection->send($ret ? 'ok' : 'fail');
+            };
+            $inner_text_worker->listen();
+        };
+
+
         // 4 processes
         if(PHP_OS !== 'WINNT') {
-            $wsWorker->count = 4;
+            $this->websoket->count = 4;
         }
 
         // Emitted when new connection come
-        $wsWorker->onConnect = function ($connection) {
-            echo "New connection\n";
+        $this->websoket->onConnect = function ($connection) {
+            //array_push($this->session, $connection);
+            echo "Congratulations, connect server successful! \n";
         };
 
         // Emitted when data received
-        $wsWorker->onMessage = function ($connection, $data) {
+        $this->websoket->onMessage = function ($connection, $data) {
             // Send hello $data
-            $connection->send('dddd hello ' . $data);
+            $connection->send('nishishui?' . $data);
         };
 
         // Emitted when connection closed
-        $wsWorker->onClose = function ($connection) {
-            echo "Connection closed\n";
+        $this->websoket->onClose = function ($connection) {
+            //array_diff($this->session, $connection);
+            echo "Connection closed. \n";
         };
     }
 

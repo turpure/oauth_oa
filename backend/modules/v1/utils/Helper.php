@@ -223,27 +223,13 @@ class Helper
 
 
     public static function pushData(){
-        $to_uid = "";
         // 推送的url地址，使用自己的服务器地址
-        //$push_api_url = "http://192.168.0.7:2121/";
-        $push_api_url = "websoket://58.246.226.254:2121/";
-
-        $data = ProductEngine::getDailyReportData();
-        $post_data = array(
-            "type" => "publish",
-            "content" => json_encode($data),
-            "to" => $to_uid,
-        );
-        $ch = curl_init ();
-        curl_setopt ( $ch, CURLOPT_URL, $push_api_url );
-        curl_setopt ( $ch, CURLOPT_POST, 1 );
-        curl_setopt ( $ch, CURLOPT_HEADER, 0 );
-        curl_setopt ( $ch, CURLOPT_RETURNTRANSFER, 1 );
-        curl_setopt ( $ch, CURLOPT_POSTFIELDS, $post_data );
-        curl_setopt ($ch, CURLOPT_HTTPHEADER, array("Expect:"));
-        $return = curl_exec ( $ch );
-        curl_close ( $ch );
-        var_export($return);
+        $push_api_url = "tcp://127.0.0.1:5678/";
+        $info = ProductEngine::getDailyReportData();
+        $client = stream_socket_client($push_api_url, $errno, $errmsg, 1);
+        $data = json_encode($info, JSON_FORCE_OBJECT);
+        fwrite($client, (string)$data."\n");
+        echo fread($client, 8192);
     }
 
 
