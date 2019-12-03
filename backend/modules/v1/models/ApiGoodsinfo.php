@@ -1334,7 +1334,7 @@ class ApiGoodsinfo
                 $var['main_image'] = $sku['linkUrl'];
 
                 //美国账号
-                if(strpos($account['suffix'], 'WISEB') !== false) {
+                if(strpos($account['shortName'], 'WISEB') !== false) {
                     $var['localized_currency_code'] = 'USD';
                     $var['localized_price'] = (string)floor($sku['price']);
                 }
@@ -1353,7 +1353,7 @@ class ApiGoodsinfo
                 $ret['msrp'] = $maxMsrp;
 
                 //美国账号
-                if(strpos($account['suffix'], 'WISEB') !== false) {
+                if(strpos($account['shortName'], 'WISEB') !== false) {
                     $ret['local_price'] = floor($ret['price']);
                     $ret['local_shippingfee'] = floor($shipping);
                     $ret['local_currency'] = 'USD';
@@ -1370,7 +1370,7 @@ class ApiGoodsinfo
                 $ret['msrp'] = $maxMsrp;
 
                 //美国账号
-                if(strpos($account['suffix'], 'WISEB') !== false) {
+                if(strpos($account['shortName'], 'WISEB') !== false) {
                     $ret['local_price'] = floor($ret['price']);
                     $ret['local_shippingfee'] = floor($shipping);
                     $ret['local_currency'] = 'USD';
