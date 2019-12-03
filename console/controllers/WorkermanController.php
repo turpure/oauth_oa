@@ -28,7 +28,7 @@ class WorkermanController extends Controller
     public $daemon;
     public $gracefully;
 
-    public  $websoket;
+    public  $websocket;
 
     // 这里不需要设置，会读取配置文件中的配置
     public $config = [];
@@ -58,7 +58,7 @@ class WorkermanController extends Controller
 
 
     public function sendMessage($message){
-        foreach($this->websoket->connections as $connection)
+        foreach($this->websocket->connections as $connection)
         {
             $connection->send($message);
         }
@@ -98,9 +98,9 @@ class WorkermanController extends Controller
         //var_dump($this->config['ip']);exit;
         $ip = isset($this->config['ip']) ? $this->config['ip'] : $this->ip;
         $port = isset($this->config['port']) ? $this->config['port'] : $this->port;
-        $this->websoket = new Worker("websocket://{$ip}:{$port}");
+        $this->websocket = new Worker("websocket://{$ip}:{$port}");
 
-//        $this->websoket->onWorkerStart = function($worker) {
+//        $this->websocket->onWorkerStart = function($worker) {
 //            // 开启一个内部端口，方便内部系统推送数据，Text协议格式 文本+换行符
 //            $inner_text_worker = new Worker('text://0.0.0.0:5678');
 //            $inner_text_worker->onMessage = function ($connection, $buffer) {
@@ -117,20 +117,18 @@ class WorkermanController extends Controller
 
         // 4 processes
         if(PHP_OS !== 'WINNT') {
-            $this->websoket->count = 4;
+            $this->websocket->count = 4;
         }
 
         // Emitted when new connection come
-        $this->websoket->onConnect = function ($connection) {
-            //array_push($this->session, $connection);
-//            Yii::$app->session->set('websocket' , $this->websoket->connections);
-            $_SESSION['websocket'] = $this->websoket->connections;
-//            Yii::$app->session->set('websocket' , 'test');
+        $this->websocket->onConnect = function ($connection) {
+            Yii::$app->redis->hmset('websocket', $this->websocket->connections);
+            var_dump(Yii::$app->redis->hgetall('websocket'));
             echo "aha Congratulations, connect server successful! \n";
         };
 
         // Emitted when data received
-        $this->websoket->onMessage = function ($connection, $data) {
+        $this->websocket->onMessage = function ($connection, $data) {
             // Send hello
             if($data === 'new'){  //指定请求，会发送指定数据
                 $info = ProductEngine::getDailyReportData();
@@ -140,8 +138,7 @@ class WorkermanController extends Controller
         };
 
         // Emitted when connection closed
-        $this->websoket->onClose = function ($connection) {
-            //array_diff($this->session, $connection);
+        $this->websocket->onClose = function ($connection) {
             echo "Connection closed. \n";
         };
     }

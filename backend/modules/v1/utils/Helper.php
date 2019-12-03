@@ -228,7 +228,9 @@ class Helper
         $info = ProductEngine::getDailyReportData();
 //        $client = stream_socket_client($push_api_url, $errno, $errmsg, 1);
         $data = json_encode($info);
-        $ws = $_SESSION['websocket'];
+        $res = Yii::$app->redis->get('websocket');
+        var_dump($res);exit;
+        $ws = json_decode($res);
         foreach ($ws as  $con) {
             $con->send($data);
         }
