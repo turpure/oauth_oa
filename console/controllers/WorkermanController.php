@@ -56,7 +56,6 @@ class WorkermanController extends Controller
 
     }
 
-
     public function sendMessage($message){
         foreach($this->websocket->connections as $connection)
         {
@@ -95,35 +94,30 @@ class WorkermanController extends Controller
 
     public function initWorker()
     {
-        //var_dump($this->config['ip']);exit;
         $ip = isset($this->config['ip']) ? $this->config['ip'] : $this->ip;
         $port = isset($this->config['port']) ? $this->config['port'] : $this->port;
         $this->websocket = new Worker("websocket://{$ip}:{$port}");
 
-//        $this->websocket->onWorkerStart = function($worker) {
-//            // 开启一个内部端口，方便内部系统推送数据，Text协议格式 文本+换行符
-//            $inner_text_worker = new Worker('text://0.0.0.0:5678');
-//            $inner_text_worker->onMessage = function ($connection, $buffer) {
-//                // $data数组格式，里面有uid，表示向那个uid的页面推送数据
-//                //$data = json_decode($buffer, true);
-//                // 通过workerman，向uid的页面推送数据
-//                $ret = $this->sendMessage($buffer);
-//                // 返回推送结果
-//                $connection->send($ret ? true : false);
-//            };
-//            $inner_text_worker->listen();
-//        };
+        $this->websocket->onWorkerStart = function($worker) {
+            // 开启一个内部端口，方便内部系统推送数据，Text协议格式 文本+换行符
+            $inner_text_worker = new Worker('text://0.0.0.0:5678');
+            $inner_text_worker->onMessage = function ($connection, $buffer) {
+                $ret = $this->sendMessage($buffer);
+                // 返回推送结果
+                $connection->send($ret ? true : false);
+            };
+            $inner_text_worker->listen();
+        };
 
 
         // 4 processes
-        if(PHP_OS !== 'WINNT') {
+
+        /*if(PHP_OS !== 'WINNT') {
             $this->websocket->count = 4;
-        }
+        }*/
 
         // Emitted when new connection come
         $this->websocket->onConnect = function ($connection) {
-            Yii::$app->redis->hmset('websocket', $this->websocket->connections);
-            var_dump(Yii::$app->redis->hgetall('websocket'));
             echo "aha Congratulations, connect server successful! \n";
         };
 
@@ -139,6 +133,7 @@ class WorkermanController extends Controller
 
         // Emitted when connection closed
         $this->websocket->onClose = function ($connection) {
+            //array_diff($this->session, $connection);
             echo "Connection closed. \n";
         };
     }

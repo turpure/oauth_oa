@@ -224,18 +224,12 @@ class Helper
 
     public static function pushData(){
         // 推送的url地址，使用自己的服务器地址
-//        $push_api_url = "tcp://127.0.0.1:5678/";
+        $push_api_url = "tcp://127.0.0.1:5678/";
         $info = ProductEngine::getDailyReportData();
-//        $client = stream_socket_client($push_api_url, $errno, $errmsg, 1);
+        $client = stream_socket_client($push_api_url, $errno, $errmsg, 1);
         $data = json_encode($info);
-        $res = Yii::$app->redis->get('websocket');
-        var_dump($res);exit;
-        $ws = json_decode($res);
-        foreach ($ws as  $con) {
-            $con->send($data);
-        }
-//        fwrite($client, (string)$data."\n");
-//        return fread($client, 8192);
+        fwrite($client, (string)$data."\n");
+        return fread($client, 8192);
     }
 
 
