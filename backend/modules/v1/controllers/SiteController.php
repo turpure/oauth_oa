@@ -111,7 +111,7 @@ class SiteController extends AdminController
 
         $username = Yii::$app->user->identity->username;
         $sql = "SELECT st.username,u.avatar,st.bonus,st.vacationDays,
-                CASE WHEN amt-target>0 AND role<>'部门'  THEN floor((amt-target)/2000)*100 ELSE 0 END AS rxtraBonus
+                CASE WHEN role='销售' AND amt-target>0 THEN floor((amt-target)/2000)*100 ELSE 0 END AS rxtraBonus
                 FROM site_targetAll st
                 LEFT JOIN `user` u ON st.username=u.username
                 WHERE display<>1 AND rate>=100
