@@ -666,6 +666,8 @@ class ProductsEngineController extends AdminController
             $dataHave[$k] = $v;
             $dataHave[$k]['dispatchNum'] = $db->getCollection('ebay_recommended_product')
                 ->count(['receiver' => $v['developer'], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+            $dataHave[$k]['claimNum'] = $db->getCollection('ebay_recommended_product')
+                ->count(['accept' => $v['developer'], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
             $dataHave[$k]['filterNum'] = $db->getCollection('ebay_recommended_product')
                 ->count([
                     '$or' => [
@@ -688,18 +690,19 @@ class ProductsEngineController extends AdminController
                     'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]
                 ]);
 
-            $dataHave[$k]['claimRate'] = $dataHave[$k]['dispatchNum'] ? round($v['claimNum'] * 1.0 / $dataHave[$k]['dispatchNum'], 4) : '0';
+            $dataHave[$k]['claimRate'] = $dataHave[$k]['dispatchNum'] ? round($dataHave[$k]['claimNum'] * 1.0 / $dataHave[$k]['dispatchNum'], 4) : '0';
             $dataHave[$k]['filterRate'] = $dataHave[$k]['dispatchNum'] ? round($dataHave[$k]['filterNum'] * 1.0 / $dataHave[$k]['dispatchNum'], 4) : '0';
         }
         foreach ($devLeft as $k => $v) {
             $dataAdd[$k]['developer'] = $v;
-            $dataAdd[$k]['claimNum'] = '0';
             $dataAdd[$k]['hotNum'] = '0';
             $dataAdd[$k]['popNum'] = '0';
             $dataAdd[$k]['hotRate'] = '0.0000';
             $dataAdd[$k]['popRate'] = '0.0000';
             $dataAdd[$k]['dispatchNum'] = $db->getCollection('ebay_recommended_product')
                 ->count(['receiver' => $v, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+            $dataAdd[$k]['claimNum'] = $db->getCollection('ebay_recommended_product')
+                ->count(['accept' => $v, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
             $dataAdd[$k]['filterNum'] = $db->getCollection('ebay_recommended_product')
                 ->count([
                     '$or' => [
@@ -722,7 +725,7 @@ class ProductsEngineController extends AdminController
                     'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]
                 ]);
 
-            $dataAdd[$k]['claimRate'] = '0';
+            $dataAdd[$k]['claimRate'] = $dataAdd[$k]['dispatchNum'] ? round($dataAdd[$k]['claimNum'] * 1.0 / $dataAdd[$k]['dispatchNum'], 4) : '0';
             $dataAdd[$k]['filterRate'] = $dataAdd[$k]['dispatchNum'] ? round($dataAdd[$k]['filterNum'] * 1.0 / $dataAdd[$k]['dispatchNum'], 4) : '0';
         }
         return array_merge($dataHave, $dataAdd);

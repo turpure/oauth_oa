@@ -218,7 +218,7 @@ class ProductEngine
                     $productNumber++;
                     $ret[] = $row;
                 }
-                if($productNumber > (integer)$pn['limit']) {
+                if($productNumber >= (integer)$pn['limit']) {
                     break;
                 }
             }
