@@ -1332,8 +1332,16 @@ class ApiGoodsinfo
                 $var['msrp'] = ceil($sku['msrp']);
                 $var['shipping_time'] = $sku['shippingTime'];
                 $var['main_image'] = $sku['linkUrl'];
-                $var['localized_currency_code'] = 'CNY';
-                $var['localized_price'] = (string)floor($sku['price'] * self::UsdExchange);
+
+                //美国账号
+                if(strpos($account['shortName'], 'WISEB') !== false) {
+                    $var['localized_currency_code'] = 'USD';
+                    $var['localized_price'] = (string)floor($sku['price']);
+                }
+                else {
+                    $var['localized_currency_code'] = 'CNY';
+                    $var['localized_price'] = (string)floor($sku['price'] * self::UsdExchange);
+                }
                 $variation[] = $var;
             }
             $variant = json_encode($variation);
@@ -1343,17 +1351,36 @@ class ApiGoodsinfo
                 $ret['shipping'] = $shipping;
                 $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1;
                 $ret['msrp'] = $maxMsrp;
-                $ret['local_price'] = floor($ret['price'] * self::UsdExchange);
-                $ret['local_shippingfee'] = floor($shipping * self::UsdExchange);
-                $ret['local_currency'] = 'CNY';
+
+                //美国账号
+                if(strpos($account['shortName'], 'WISEB') !== false) {
+                    $ret['local_price'] = floor($ret['price']);
+                    $ret['local_shippingfee'] = floor($shipping);
+                    $ret['local_currency'] = 'USD';
+                }
+                else {
+                    $ret['local_price'] = floor($ret['price'] * self::UsdExchange);
+                    $ret['local_shippingfee'] = floor($shipping * self::UsdExchange);
+                    $ret['local_currency'] = 'CNY';
+                }
             } else {
                 $ret['variant'] = '';
                 $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1;
                 $ret['shipping'] = $shipping;
                 $ret['msrp'] = $maxMsrp;
-                $ret['local_price'] = floor($ret['price'] * self::UsdExchange);
-                $ret['local_shippingfee'] = floor($shipping * self::UsdExchange);
-                $ret['local_currency'] = 'CNY';
+
+                //美国账号
+                if(strpos($account['shortName'], 'WISEB') !== false) {
+                    $ret['local_price'] = floor($ret['price']);
+                    $ret['local_shippingfee'] = floor($shipping);
+                    $ret['local_currency'] = 'USD';
+                }
+                else {
+                    $ret['local_price'] = floor($ret['price'] * self::UsdExchange);
+                    $ret['local_shippingfee'] = floor($shipping * self::UsdExchange);
+                    $ret['local_currency'] = 'CNY';
+                }
+
             }
             return $ret;
         } catch (\Exception $why) {
