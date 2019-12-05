@@ -32,6 +32,11 @@ use yii\helpers\ArrayHelper;
 class TestController extends Controller
 {
 
+    /**
+     * 备份上个月目标完成度数据
+     * Date: 2019-12-05 11:52
+     * Author: henry
+     */
     public function actionSite()
     {
         try {
@@ -64,8 +69,12 @@ class TestController extends Controller
         }
     }
 
-
-    public function actionTest()
+    /**
+     * 拉取eBay账号及大小ppp
+     * Date: 2019-12-05 11:53
+     * Author: henry
+     */
+    public function actionGetEbayPp()
     {
         $query = (new Query())->select('ebayName ebay,h.paypal big,l.paypal small')
             ->from('proCenter.oa_ebaySuffix es')
@@ -90,100 +99,51 @@ class TestController extends Controller
 
 
 
-    //给开发分配所有产品  2019-11-14
-    public function actionTest2()
-    {   //默认ebay平台
-        $start = time();
-        try {
-            $plat = 'ebay';
-            if($plat == 'ebay'){
-                $typeArr = ['new','hot'];
-                foreach ($typeArr as $type){
-                    ConScheduler::getProducts($type, $plat);
-                }
-            }
-            $time = time() - $start;
-            if($time >= 3600){
-                $hours = $time/3600;
-                $mi = ($time - $hours*3600)/60;
-                $sec = $time - $hours*3600 - $mi*60;
-                print date('Y-m-d H:i:s') ." success, it costs {$hours} hours, {$mi} minutes, {$sec} seconds!";exit;
-            }elseif ($time >= 60){
-                $mi = $time/60;
-                $sec = $time - $mi*60;
-                print date('Y-m-d H:i:s') ." success, it costs {$mi} minutes, {$sec} seconds!";exit;
-            }else{
-                print date('Y-m-d H:i:s') ." success, it costs {$time} seconds!";
-            }
-        } catch (\Exception $why) {
-            print date('Y-m-d H:i:s') . $why->getMessage();
-            exit;
-        }
-
-    }
-
-
-    //给开发分配指定数量产品  2019-11-14
-    public function actionAllotProduct()
-    {   //默认ebay平台
-        try {
-            $mongodb = Yii::$app->mongodb;
-            $typeArr = ['new', 'hot'];
-            $devList = $mongodb->getCollection('ebay_allot_rule')->find();
-            foreach($devList as $dev){
-                $proNum = $dev['productNum'] ? $dev['productNum'] : 5;
-                //var_dump($proNum);exit;
-                foreach ($typeArr as $value){
-                    $proList = (new \yii\mongodb\Query())->from('ebay_all_recommended_product')
-                        ->select(['_id' => 0])
-                        ->andFilterWhere(['productType' => $value])  //类型  新品  热销
-                        ->andFilterWhere(['receiver' => $dev['username']])
-                        ->andFilterWhere(['recommendDate' => ['$regex' => date('Y-m-d')]])  //筛选当天获取得新数据
-                        ->limit($proNum)->all();
-                    foreach ($proList as $v){
-                        $query = (new \yii\mongodb\Query())->from('ebay_recommended_product')
-                            ->andFilterWhere(['itemId' => $v['itemId']])->one();
-                        if(!$query){
-                            $mongodb->getCollection('ebay_recommended_product')->insert($v);
-                        }
-                    }
-                }
-            }
-            //更新每日推荐的推荐人
-            ConScheduler::getAndSetRecommendToPersons();
-            print date('Y-m-d H:i:s') .' success';exit;
-        } catch (\Exception $why) {
-            print date('Y-m-d H:i:s') . $why->getMessage();
-            exit;
-        }
-
-    }
-
     /**
-     * 推荐产品
+     * 根据产品中心推荐数据处理Mongo认领状态
      */
-    public function actionRecommendProducts()
+    public function actionUpdateAccept()
     {
-        // 新品打标签
-        ProductEngine::setProductTag('new');
+        $db = Yii::$app->mongodb;
+        $beginDate = '2019-11-14';
+        $endDate = '2019-11-30 23:59:59';
 
-        //热销产品打标签
-        ProductEngine::setProductTag('hot');
+        //清空认领状态
+        $db->getCollection('ebay_recommended_product')
+            ->update(['recommendDate' => ['$gte' => $beginDate, '$lte' => $endDate]],['accept' => null]);
+        //获取产品中心认领产品
+        $sql = "SELECT * FROM proCenter.oa_goods WHERE introducer='proEngine'";
+        if($beginDate && $endDate){
+            $sql .= " AND createDate BETWEEN '$beginDate' AND '$endDate' ";
+        }
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
 
-        //分配所有产品
-        $this->actionTest2();
+        foreach ($data as $v){
+            $recommendId = explode('.', $v['recommendId']);
+            $product = $db->getCollection('ebay_recommended_product')
+                ->find(["_id" => $recommendId[1]]);
+            foreach ($product as $ele){
+                //var_dump($v['developer']);
+                //var_dump(array_values($ele['receiver']));
+                if(!$ele) break;
+                if(in_array($v['developer'], $ele['receiver'])){
+                    $db->getCollection('ebay_recommended_product')->update(['_id' => $ele['_id']], ['accept' => [$v['developer']]]);
+                }
+            }
+        }
+        $step = (strtotime($endDate) + 1 - strtotime($beginDate)) / 3600 / 24;
+        for ($i = 0; $i < $step; $i++) {
+            if ($i == 0) {
+                ConScheduler::getAndSetRecommendToPersons($beginDate);
+            } else {
+                $day = date('Y-m-d', strtotime("+1 days", strtotime($beginDate)));
+                ConScheduler::getAndSetRecommendToPersons($day);
+            }
 
-        //分配指定数量的产品
-        $this->actionAllotProduct();
-
-
-
+        }
     }
 
 
-    public function actionTest123(){
-        $res = Helper::pushData();
-        echo $res ? 'ok' : 'failed';
-    }
+
 
 }
