@@ -257,7 +257,7 @@ class ApiProductsEngine
                 'attributes' => [
                     'price', 'visit', 'sold',
                     'salesThreeDay1', 'salesThreeDayGrowth', 'paymentThreeDay1',
-                    'salesWeek1', 'paymentWeek1', 'salesWeekGrowth','genTime'
+                    'salesWeek1', 'paymentWeek1', 'salesWeekGrowth','listedTime'
                 ],
                 'defaultOrder' => [
                     'sold' => SORT_DESC,
