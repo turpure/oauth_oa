@@ -207,7 +207,7 @@ class ProductEngine
     public static function dispatchToPersons($type='new')
     {
 
-        $persons = static::personNumberLimit();
+        $persons = static::personNumberLimit($type);
         $products = static::getAllProducts($type);
         $ret = [];
         foreach ($persons as $pn) {
@@ -247,9 +247,11 @@ class ProductEngine
     }
 
     /**
-     * 每个开发的产品数量限制
+     * 给每个开发设置的产品数量限制
+     * @param $type
+     * @return mixed
      */
-    private static function personNumberLimit()
+    private static function personNumberLimit($type)
     {
         $mongo = Yii::$app->mongodb;
         $col = $mongo->getCollection('ebay_allot_rule');
@@ -257,10 +259,35 @@ class ProductEngine
         $ret = [];
         foreach ($cur as $row) {
             $ele['name'] = $row['username'];
-            $ele['limit'] = $row['productNum'];
+            $ele['limit'] = $row['productNum'] - static::currentPersonNumberLimit($row['username'], $type);
+            $ele['limit'] = $ele['limit'] > 0 ? $ele['limit'] : 0;
             $ret[] = $ele;
         }
         return $ret;
+    }
+
+    /**
+     * 开发占用的产品数量
+     * @param $username
+     * @param $type
+     * @return mixed
+     */
+    private static function currentPersonNumberLimit($username,$type)
+    {
+        $mongo = Yii::$app->mongodb;
+        $col = $mongo->getCollection('ebay_recommended_product');
+        $today = date('Y-m-d');
+        $cur = $col->find([
+            'recommendDate' => ['$regex' => $today],
+            'receiver' => $username,
+            'productType' => $type
+        ]);
+        $limit = 0;
+        foreach ($cur as $row) {
+            ++$limit;
+        }
+
+        return $limit;
     }
 
 
