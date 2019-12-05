@@ -7,6 +7,7 @@ use backend\models\OaGoodsinfo;
 use backend\models\OaGoodsSku;
 use backend\modules\v1\models\ApiGoods;
 use backend\modules\v1\models\ApiTool;
+use backend\modules\v1\utils\Helper;
 use Yii;
 use backend\models\OaGoods;
 use yii\helpers\ArrayHelper;
@@ -266,7 +267,19 @@ class OaGoodsController extends AdminController
                         throw new \Exception('Perfected products cannot be deleted!');
                     }
                 } else {
-                    OaGoods::deleteAll(['nid' => $id]);
+                    $goods = OaGoods::findOne(['nid' => $id]);
+                    $introducer = $goods['introducer'];
+                    $recommendId = $goods['recommendId'];
+                    $goods->delete();
+                    //恢复智能推荐认领状态
+                    if($introducer == 'proEngine'){
+                        $recommend = explode('.', $recommendId);
+                        Yii::$app->mongodb->getCollection('ebay_recommended_product')
+                            ->update(['_id' => $recommend[1]], ['accept' => null]);
+                        //推送新数据到固定端口
+                        Helper::pushData();
+                    }
+
                 }
             }
             $transaction->commit();
