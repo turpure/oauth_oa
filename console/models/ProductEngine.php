@@ -123,7 +123,7 @@ class ProductEngine
         $today = date('Y-m-d');
         $cur = $col->find([
             'recommendDate' => ['$regex' => $today],
-            'seller' => ['$nin' => $filter_stores ]
+            'seller' => ['$nin' => $filter_stores ],
         ]);
         $dep = [];
         foreach ($cur as $row) {
@@ -131,7 +131,9 @@ class ProductEngine
             $ele['tag'] = isset($row['tag']) ? $row['tag'] : '';
             $ele['itemLocation'] = $row['itemLocation'];
             $ele['type'] = $type;
-            $dep[] = $ele;
+            if(empty($row['recommendToPersons'])) {
+                $dep[] = $ele;
+            }
         }
         return $dep;
 
