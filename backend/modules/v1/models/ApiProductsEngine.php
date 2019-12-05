@@ -552,7 +552,28 @@ class ApiProductsEngine
         $playLoad = ['imageUrl' => $imageUrl];
         $url = Yii::$app->params['imageSearchUrl'];
         $ret = Helper::request($url, json_encode($playLoad));
-        return $ret[1]['data'];
+        $ret = $ret[1]['data']['Auctions'];
+        $out = [];
+        foreach ($ret as $ele) {
+            $ele['GoodsCode'] = static::getImageGoodsCode($ele['PicName']);
+            $out[] = $ele;
+        }
+        return ['Auctions' => $out];
+    }
+
+
+    private static function getImageGoodsCode($sku)
+    {
+        $mongo = Yii::$app->mongodb;
+        $col = $mongo->getCollection('images_tasks');
+        $tasks = $col->find([
+            'sku' =>$sku
+        ]);
+        $ret = [];
+        foreach ($tasks as $row) {
+            $ret[] = $row;
+        }
+        return $ret[0]['goodsCode'];
     }
 
 }
