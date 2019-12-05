@@ -554,14 +554,24 @@ class ApiProductsEngine
         $ret = Helper::request($url, json_encode($playLoad));
         $ret = $ret[1]['data']['Auctions'];
         $out = [];
+        $goods = [];
         foreach ($ret as $ele) {
-            $ele['GoodsCode'] = static::getImageGoodsCode($ele['PicName']);
-            $out[] = $ele;
+            $goodsCode = static::getImageGoodsCode($ele['PicName']);
+            if(!in_array($goodsCode, $goods, false)) {
+                $ele['GoodsCode'] = $goodsCode;
+                $goods[] = $goodsCode;
+                $out[] = $ele;
+            }
         }
         return ['Auctions' => $out];
     }
 
 
+    /**
+     * 根据SKU获取商品编码
+     * @param $sku
+     * @return mixed
+     */
     private static function getImageGoodsCode($sku)
     {
         $mongo = Yii::$app->mongodb;
