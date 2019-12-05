@@ -194,9 +194,6 @@ class ApiProductsEngine
     {
 
 
-
-
-
         $ret = [];
         //当天推荐数据
         $today = date('Y-m-d');
@@ -260,7 +257,7 @@ class ApiProductsEngine
                 'attributes' => [
                     'price', 'visit', 'sold',
                     'salesThreeDay1', 'salesThreeDayGrowth', 'paymentThreeDay1',
-                    'salesWeek1', 'paymentWeek1', 'salesWeekGrowth'
+                    'salesWeek1', 'paymentWeek1', 'salesWeekGrowth','genTime'
                 ],
                 'defaultOrder' => [
                     'sold' => SORT_DESC,
