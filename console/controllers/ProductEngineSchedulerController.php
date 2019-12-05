@@ -83,6 +83,16 @@ class ProductEngineSchedulerController extends Controller
 
     }
 
+    /**
+     * 更新每日推荐的推荐人
+     * @param string $type
+     */
+    public function actionSetRecommendToPersons()
+    {
+        $day = '2019-12-04';
+        ConScheduler::getAndSetRecommendToPersons($day);
+    }
+
 
     /**
      * 每日推荐

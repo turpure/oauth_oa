@@ -248,12 +248,11 @@ class ConScheduler
      * 获取推荐人列表
      * @return mixed
      */
-    private static function getRecommendToPersons()
+    private static function getRecommendToPersons($today)
     {
         $mongodb = Yii::$app->mongodb;
         $table = 'ebay_recommended_product';
         $col = $mongodb->getCollection($table);
-        $today = date('Y-m-d');
         $products = $col->find(['dispatchDate' => ['$regex' => $today]]);
         return $products;
     }
@@ -330,11 +329,12 @@ class ConScheduler
     /**
      * 获取并更新每日推荐的推荐人
      */
-    public static function getAndSetRecommendToPersons()
+    public static function getAndSetRecommendToPersons($today = '')
     {
+        if(!$today) $today = date('Y-m-d'); //设置默认今天
         // 清空今日推荐人
-        static::clearTodayPersons();
-        $products = static::getRecommendToPersons();
+        static::clearTodayPersons($today);
+        $products = static::getRecommendToPersons($today);
        foreach ($products as $recommendProduct) {
            $productType = $recommendProduct['productType'];
            $developers = $recommendProduct['receiver'];
@@ -346,11 +346,10 @@ class ConScheduler
     /**
      * 清空今日推荐人
      */
-    private static function clearTodayPersons()
+    private static function clearTodayPersons($today)
     {
         $tables = ['ebay_new_product', 'ebay_hot_product'];
         $mongo = Yii::$app->mongodb;
-        $today = date('Y-m-d');
         foreach ($tables as $ts) {
             $col = $mongo->getCollection($ts);
             $products = $col->find(['recommendDate' => ['$regex' => $today]]);
