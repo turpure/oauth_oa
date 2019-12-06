@@ -589,16 +589,20 @@ class ProductEngine
         $result = ['itemId' => $image['itemId']];
         $images = $image['images'];
         $imgs = [];
-        $goodsCode = [];
         foreach ($images as $img) {
             $searchResult = ApiProductsEngine::imageSearch($img);
             $similarImages = $searchResult['Auctions'];
+            $goodsCode = [];
+            $thisResult = ['image' => $img];
+            $ele = [];
             foreach ($similarImages as $simg) {
                 if(!in_array($simg['GoodsCode'],$goodsCode, false)) {
                     $goodsCode[] = $simg['GoodsCode'];
-                    $imgs[] = $simg;
+                    $ele[] = $simg;
                 }
             }
+            $thisResult['similar'] = $ele;
+            $imgs[] = $thisResult;
         }
         $result['similarImages'] = $imgs;
         return $result;
@@ -618,6 +622,7 @@ class ProductEngine
         foreach ($cur as $row){
             $ele['itemId'] = $row['itemId'];
             $ele['images'] = $row['images'];
+            $ele['images'][] = $row['mainImage'];
             $ret[] = $ele;
         }
         return $ret;
