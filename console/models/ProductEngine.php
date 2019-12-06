@@ -621,8 +621,7 @@ class ProductEngine
         $ret = [];
         foreach ($cur as $row){
             $ele['itemId'] = $row['itemId'];
-            $ele['images'] = $row['images'];
-            $ele['images'][] = $row['mainImage'];
+            $ele['images'] = array_merge($row['mainImage'],$row['images']);
             $ret[] = $ele;
         }
         return $ret;
