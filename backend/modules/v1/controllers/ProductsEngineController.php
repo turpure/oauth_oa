@@ -943,6 +943,25 @@ class ProductsEngineController extends AdminController
 
     }
 
+    /**
+     * 根据商品编码获取SKU信息
+     * Date: 2019-12-06 9:03
+     * Author: henry
+     * @return array
+     */
+    public static function actionSkuInfo(){
+        try {
+            $condition = Yii::$app->request->post('condition');
+            $goodsCode = $condition['goodsCode'];
+            $sql = "EXEC P_KC_StockWarning '',0,0,'','0','{$goodsCode}','','',50000,1,'','1','','','','',268,-999999";
+            return Yii::$app->py_db->createCommand($sql)->queryAll();
+        }
+        catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+    }
+
+
 
 
 }
