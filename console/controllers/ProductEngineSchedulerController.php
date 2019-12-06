@@ -10,7 +10,6 @@ namespace console\controllers;
 use console\models\ConScheduler;
 use console\models\ProductEngine;
 use yii\console\Controller;
-
 use Yii;
 
 class ProductEngineSchedulerController extends Controller
@@ -85,12 +84,27 @@ class ProductEngineSchedulerController extends Controller
 
     /**
      * 更新每日推荐的推荐人
-     * @param string $type
      */
     public function actionSetRecommendToPersons()
     {
         $day = '2019-12-04';
         ConScheduler::getAndSetRecommendToPersons($day);
+    }
+
+
+    /**
+     * 图像识别
+     */
+    public function actionDetectImages()
+    {
+        try {
+            ProductEngine::detectImages();
+        }
+        catch (\Exception $why) {
+            print_r('fail to detect image');
+
+        }
+
     }
 
 

@@ -555,15 +555,20 @@ class ApiProductsEngine
         $ret = $ret[1]['data']['Auctions'];
         $out = [];
         $goods = [];
-        foreach ($ret as $ele) {
-            $goodsCode = static::getImageGoodsCode($ele['PicName']);
-            if(!in_array($goodsCode, $goods, false)) {
-                $ele['GoodsCode'] = $goodsCode;
-                $goods[] = $goodsCode;
-                $out[] = $ele;
+        try {
+            foreach ($ret as $ele) {
+                $goodsCode = static::getImageGoodsCode($ele['PicName']);
+                if(!in_array($goodsCode, $goods, false)) {
+                    $ele['GoodsCode'] = $goodsCode;
+                    $goods[] = $goodsCode;
+                    $out[] = $ele;
+                }
             }
+            return ['Auctions' => $out];
         }
-        return ['Auctions' => $out];
+        catch (\Exception $why) {
+            return ['Auctions' => []];
+        }
     }
 
 

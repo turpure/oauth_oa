@@ -8,8 +8,7 @@
 namespace console\models;
 
 use backend\models\EbayAllotRule;
-use backend\models\EbayHotRule;
-use backend\models\EbayNewRule;
+use backend\modules\v1\models\ApiProductsEngine;
 use Yii;
 
 use yii\mongodb\Query;
@@ -569,6 +568,71 @@ class ProductEngine
             print 'fail to save '. $row['itemId'] . ' cause of ' . $why->getMessage();
     }
         print_r('pushing ' . $row['itemId'] . ' into ' . $table . "\n");
+    }
+
+    public static function detectImages()
+    {
+        $images = static::getImages();
+        foreach ($images as $img) {
+            $result = static::detectOneImage($img);
+            self::saveImageDetectedResult($result);
+        }
+
+    }
+    /**
+     * 图像检测
+     * @param $image
+     * @return array
+     **/
+    private static function detectOneImage($image)
+    {
+        $result = ['itemId' => $image['itemId']];
+        $images = $image['images'];
+        $imgs = [];
+        $goodsCode = [];
+        foreach ($images as $img) {
+            $searchResult = ApiProductsEngine::imageSearch($img);
+            $similarImages = $searchResult['Auctions'];
+            foreach ($similarImages as $simg) {
+                if(!in_array($simg['GoodsCode'],$goodsCode, false)) {
+                    $goodsCode[] = $simg['GoodsCode'];
+                    $imgs[] = $simg;
+                }
+            }
+        }
+        $result['similarImages'] = $imgs;
+        return $result;
+    }
+
+
+    /**
+     */
+    private static function getImages()
+    {
+        $mongo = Yii::$app->mongodb;
+        $col = $mongo->getCollection('ebay_recommended_product');
+        $cur = $col->find([
+            'recommendDate' => ['$regex' => date('Y-m-d')]
+        ]);
+        $ret = [];
+        foreach ($cur as $row){
+            $ele['itemId'] = $row['itemId'];
+            $ele['images'] = $row['images'];
+            $ret[] = $ele;
+        }
+        return $ret;
+    }
+
+    private static function saveImageDetectedResult($row)
+    {
+        $mongo = Yii::$app->mongodb;
+        $col = $mongo->getCollection('ebay_recommended_product');
+        $col->update(['itemId' => $row['itemId']],['similarImages' => $row['similarImages']] );
+        print_r('success detect images of '. $row['itemId']);
+        print_r("\n");
+
+
+
     }
 
 }
