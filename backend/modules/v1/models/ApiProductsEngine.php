@@ -579,11 +579,17 @@ class ApiProductsEngine
         $tasks = $col->find([
             'sku' =>$sku
         ]);
-        $ret = [];
-        foreach ($tasks as $row) {
-            $ret[] = $row;
+        try {
+            $ret = [];
+            foreach ($tasks as $row) {
+                $ret[] = $row;
+            }
+            return $ret[0]['goodsCode'];
         }
-        return $ret[0]['goodsCode'];
-    }
+        catch (\Exception $why) {
+            return $sku;
+        }
+
+        }
 
 }
