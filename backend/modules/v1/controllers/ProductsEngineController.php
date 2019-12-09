@@ -37,12 +37,12 @@ class ProductsEngineController extends AdminController
      */
     public function actionRecommend()
     {
-        try {
+        //try {
             return ApiProductsEngine::recommend();
 
-        } catch (\Exception $why) {
-            return ['code' => 401, 'message' => $why->getMessage()];
-        }
+        //} catch (\Exception $why) {
+        //    return ['code' => 401, 'message' => $why->getMessage()];
+        //}
     }
 
     /** 产品中心  智能推荐

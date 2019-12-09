@@ -208,9 +208,9 @@ class ApiProductsEngine
                     $recommendDate = substr($row['recommendDate'], 0, 10);
                     if ($recommendDate === $today && in_array($rule->_id, $productRules, false)) {
                         //推荐状态筛选
-                        $row = static::recommendStatusFilter($recommendStatus, $row);
-                        if (!empty($row)) {
-                            $ret[] = $row;
+                        $item = static::recommendStatusFilter($recommendStatus, $row);
+                        if (!empty($item)) {
+                            $ret[] = $item;
                             break;
                         }
                     }
@@ -224,15 +224,16 @@ class ApiProductsEngine
             $cur = (new \yii\mongodb\Query())->from('ebay_hot_product')
                 ->andFilterWhere(['marketplace' => $marketplace])
                 ->all();
+            //var_dump(count($cur));exit;
             foreach ($cur as $row) {
                 foreach ($hotRules as $rule) {
                     $productRules = $row['rules'];
                     $recommendDate = substr($row['recommendDate'], 0, 10);
                     if ($recommendDate === $today && in_array($rule->_id, $productRules, false)) {
                         //推荐状态筛选
-                        $row = static::recommendStatusFilter($recommendStatus, $row);
-                        if (!empty($row)) {
-                            $ret[] = $row;
+                        $item = static::recommendStatusFilter($recommendStatus, $row);
+                        if (!empty($item)) {
+                            $ret[] = $item;
                             break;
                         }
                     }
@@ -265,6 +266,7 @@ class ApiProductsEngine
     {
         $ret = [];
         //$recommendStatus = ['未推送','未处理', '已过滤', '已认领'];
+        //var_dump($row['recommendToPersons']);exit;
         foreach ($recommendStatus as $rs) {
             $recommendPersons = $row['recommendToPersons'];
             if ($rs === '未推送') {
