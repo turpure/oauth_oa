@@ -206,8 +206,7 @@ class ApiProductsEngine
             foreach ($cur as $row) {
                 foreach ($newRules as $rule) {
                     $productRules = $row['rules'];
-                    $recommendDate = substr($row['recommendDate'], 0, 10);
-                    if ($recommendDate === $today && in_array($rule->_id, $productRules, false)) {
+                    if ( in_array($rule->_id, $productRules, false)) {
                         //推荐状态筛选
                         $item = static::recommendStatusFilter($recommendStatus, $row);
                         if (!empty($item)) {
@@ -226,12 +225,10 @@ class ApiProductsEngine
                 ->andFilterWhere(['marketplace' => $marketplace])
                 ->andWhere(['recommendDate' => ['$regex' => $today]])
                 ->all();
-            //var_dump(count($cur));exit;
             foreach ($cur as $row) {
                 foreach ($hotRules as $rule) {
                     $productRules = $row['rules'];
-                    $recommendDate = substr($row['recommendDate'], 0, 10);
-                    if ($recommendDate === $today && in_array($rule->_id, $productRules, false)) {
+                    if (in_array($rule->_id, $productRules, false)) {
                         //推荐状态筛选
                         $item = static::recommendStatusFilter($recommendStatus, $row);
                         if (!empty($item)) {
