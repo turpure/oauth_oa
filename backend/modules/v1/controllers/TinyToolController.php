@@ -15,6 +15,7 @@ use backend\modules\v1\models\ApiSettings;
 use backend\modules\v1\models\ApiTinyTool;
 use backend\modules\v1\models\ApiUk;
 use backend\modules\v1\models\ApiUkFic;
+use backend\modules\v1\models\ApiUser;
 use backend\modules\v1\utils\ExportTools;
 use Codeception\Template\Api;
 use common\models\User;
@@ -23,6 +24,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Yii;
 use yii\data\ArrayDataProvider;
+use yii\data\SqlDataProvider;
 use yii\helpers\ArrayHelper;
 
 class TinyToolController extends AdminController
@@ -423,11 +425,11 @@ class TinyToolController extends AdminController
 
         $data['detail'] = $res;
         $res['num'] = $post['num'];
-        $res['price'] = array_sum(ArrayHelper::getColumn($res,'price'));
-        $res['weight'] = array_sum(ArrayHelper::getColumn($res,'weight'));
-        $res['height'] = array_sum(ArrayHelper::getColumn($res,'height'));
-        $res['length'] = max(ArrayHelper::getColumn($res,'length'));
-        $res['width'] = max(ArrayHelper::getColumn($res,'width'));
+        $res['price'] = array_sum(ArrayHelper::getColumn($res, 'price'));
+        $res['weight'] = array_sum(ArrayHelper::getColumn($res, 'weight'));
+        $res['height'] = array_sum(ArrayHelper::getColumn($res, 'height'));
+        $res['length'] = max(ArrayHelper::getColumn($res, 'length'));
+        $res['width'] = max(ArrayHelper::getColumn($res, 'width'));
         //获取运费和出库费
         $data['transport'] = ApiUk::getTransport($res['weight'], $res['length'], $res['width'], $res['height']);
 
@@ -479,11 +481,11 @@ class TinyToolController extends AdminController
 
         $data['detail'] = $res;
         $res['num'] = $post['num'];
-        $res['price'] = array_sum(ArrayHelper::getColumn($res,'price'));
-        $res['weight'] = array_sum(ArrayHelper::getColumn($res,'weight'));
-        $res['height'] = array_sum(ArrayHelper::getColumn($res,'height'));
-        $res['length'] = max(ArrayHelper::getColumn($res,'length'));
-        $res['width'] = max(ArrayHelper::getColumn($res,'width'));
+        $res['price'] = array_sum(ArrayHelper::getColumn($res, 'price'));
+        $res['weight'] = array_sum(ArrayHelper::getColumn($res, 'weight'));
+        $res['height'] = array_sum(ArrayHelper::getColumn($res, 'height'));
+        $res['length'] = max(ArrayHelper::getColumn($res, 'length'));
+        $res['width'] = max(ArrayHelper::getColumn($res, 'width'));
 
         //获取运费和出库费
         $data['transport'] = ApiAu::getTransport($res['weight'], $res['length'], $res['width'], $res['height']);
@@ -498,7 +500,6 @@ class TinyToolController extends AdminController
         //print_r($data);exit;
         return $data;
     }
-
 
 
     /**
@@ -767,8 +768,8 @@ class TinyToolController extends AdminController
                 $data = Yii::$app->db->createCommand($sql)->queryAll();*/
                 $sql = "EXEC  [dbo].[LY_eBayUKVirtualWarehouse_Replenishment_20191113] '{$cond['salerName']}','{$cond['purchaser']}'";
                 $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-                $title = ['SKU','SKU名称','商品编码','开发员','状态','采购','供应商','3天销量','7天销量','15天销量','30天销量',
-                    '走势','日均销量','预计可用库存','义乌仓库存','义乌仓采购未审核','预计可卖天数','采购数量','单价','采购金额'];
+                $title = ['SKU', 'SKU名称', '商品编码', '开发员', '状态', '采购', '供应商', '3天销量', '7天销量', '15天销量', '30天销量',
+                    '走势', '日均销量', '预计可用库存', '义乌仓库存', '义乌仓采购未审核', '预计可卖天数', '采购数量', '单价', '采购金额'];
                 break;
             case 'auReal':
                 $name = 'auRealReplenish';
@@ -786,8 +787,8 @@ class TinyToolController extends AdminController
                 if (isset($cond['isShipping']) && $cond['isShipping'] == '否') $sql .= " AND shipNum=0 ";
                 $data = Yii::$app->db->createCommand($sql)->queryAll();*/
                 $data = Yii::$app->py_db->createCommand("EXEC LY_eBayAURealWarehouse_Replenishment_20191105 '{$cond['salerName']}','{$cond['purchaser']}';")->queryAll();
-                $title = ['SKU','SKU名称','商品编码','季节','类别','开发员','状态','价格(￥)','重量(g)','采购','供应商','3天销量','7天销量','15天销量','30天销量',
-                    '走势','日均销量','金皖399预计可用库存','万邑通AU预计可用库存','预计可用库存','万邑通AU预计可用天数','预计可卖天数','采购数量','发货数量','采购金额','发货重量(g)'];
+                $title = ['SKU', 'SKU名称', '商品编码', '季节', '类别', '开发员', '状态', '价格(￥)', '重量(g)', '采购', '供应商', '3天销量', '7天销量', '15天销量', '30天销量',
+                    '走势', '日均销量', '金皖399预计可用库存', '万邑通AU预计可用库存', '预计可用库存', '万邑通AU预计可用天数', '预计可卖天数', '采购数量', '发货数量', '采购金额', '发货重量(g)'];
                 break;
             case 'ukReal':
                 $name = 'ukRealReplenish';
@@ -805,8 +806,8 @@ class TinyToolController extends AdminController
                 if (isset($cond['isShipping']) && $cond['isShipping'] == '否') $sql .= " AND shipNum=0 ";
                 $data = Yii::$app->db->createCommand($sql)->queryAll();*/
                 $data = Yii::$app->py_db->createCommand("EXEC LY_eBayUKRealWarehouse_Replenishment_20191105 '{$cond['salerName']}','{$cond['purchaser']}';")->queryAll();
-                $title = ['SKU','SKU名称','商品编码','季节','类别','开发员','状态','价格(￥)','重量(g)','采购','供应商','3天销量','7天销量','15天销量','30天销量',
-                    '走势','日均销量','金皖399预计可用库存','万邑通UK预计可用库存','预计可用库存','万邑通UK预计可用天数','预计可卖天数','采购数量','发货数量','采购金额','发货重量(g)'];
+                $title = ['SKU', 'SKU名称', '商品编码', '季节', '类别', '开发员', '状态', '价格(￥)', '重量(g)', '采购', '供应商', '3天销量', '7天销量', '15天销量', '30天销量',
+                    '走势', '日均销量', '金皖399预计可用库存', '万邑通UK预计可用库存', '预计可用库存', '万邑通UK预计可用天数', '预计可卖天数', '采购数量', '发货数量', '采购金额', '发货重量(g)'];
                 break;
             case 'uk2':
                 $name = 'ukRealReplenish2';
@@ -816,8 +817,8 @@ class TinyToolController extends AdminController
                     ':purchaser' => $cond['purchaser'],
                 ];
                 $data = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
-                $title = ['商品编码','SKU','商品名称','状态','预计可用库存','仓库','开发员','采购','供应商','成本价(￥)','平均单价(￥)','重量(g)','3天销量','7天销量','15天销量','30天销量',
-                    '3天平均销量','7天平均销量','15天平均销量','30天平均销量','走势','日均销量','总预计可用库存','采购到货天数','预警销售天数','预计可卖天数','是否特殊备货','是否采购','采购数量','采购单价','采购金额'];
+                $title = ['商品编码', 'SKU', '商品名称', '状态', '预计可用库存', '仓库', '开发员', '采购', '供应商', '成本价(￥)', '平均单价(￥)', '重量(g)', '3天销量', '7天销量', '15天销量', '30天销量',
+                    '3天平均销量', '7天平均销量', '15天平均销量', '30天平均销量', '走势', '日均销量', '总预计可用库存', '采购到货天数', '预警销售天数', '预计可卖天数', '是否特殊备货', '是否采购', '采购数量', '采购单价', '采购金额'];
                 break;
             default :
                 $name = 'ukVirtualReplenish';
@@ -832,8 +833,8 @@ class TinyToolController extends AdminController
                 if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
                 if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
                 $data = Yii::$app->db->createCommand($sql)->queryAll();
-                $title = ['SKU','SKU名称','商品编码','开发员','状态','采购','供应商','3天销量','7天销量','15天销量','30天销量',
-                    '走势','日均销量','预计可用库存','义乌仓库存','义乌仓采购未审核','预计可卖天数','采购数量','单价','采购金额'];
+                $title = ['SKU', 'SKU名称', '商品编码', '开发员', '状态', '采购', '供应商', '3天销量', '7天销量', '15天销量', '30天销量',
+                    '走势', '日均销量', '预计可用库存', '义乌仓库存', '义乌仓采购未审核', '预计可卖天数', '采购数量', '单价', '采购金额'];
                 break;
         }
         ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
@@ -920,10 +921,10 @@ class TinyToolController extends AdminController
                 $model = OaEbayKeyword::findOne($cond['id']);
             }
             $model->setAttributes($cond);
-            list($url1,$url2) = ApiTinyTool::handelKeyword($cond['keyword']);
+            list($url1, $url2) = ApiTinyTool::handelKeyword($cond['keyword']);
             $model->ukUrl = $url1;
             $model->auUrl = $url2;
-            list($url3,$url4) = ApiTinyTool::handelKeyword($cond['keyword2']);
+            list($url3, $url4) = ApiTinyTool::handelKeyword($cond['keyword2']);
             $model->ukUrl2 = $url3;
             $model->auUrl2 = $url4;
 
@@ -962,7 +963,8 @@ class TinyToolController extends AdminController
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
 
-    public static function actionKeywordImport(){
+    public static function actionKeywordImport()
+    {
         ApiTinyTool::importKeyword();
     }
 
@@ -1002,7 +1004,7 @@ class TinyToolController extends AdminController
      * @brief 获取eBay账号余额
      * @return array|\yii\data\ActiveDataProvider
      */
-    public  function actionEbayBalance()
+    public function actionEbayBalance()
     {
         try {
             $condition = Yii::$app->request->post()['condition'];
@@ -1024,10 +1026,9 @@ class TinyToolController extends AdminController
             $condition = $request['condition'];
             $condition['pageSize'] = 100000;
             $data = ApiTinyTool::getEbayBalance($condition)->models;
-            $title = ['ID','账号名称','销售','部门','出账单时间','余额', '货币','更新时间'];
+            $title = ['ID', '账号名称', '销售', '部门', '出账单时间', '余额', '货币', '更新时间'];
             ExportTools::toExcelOrCsv('ebay-balance', $data, 'Xls', $title);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
@@ -1036,11 +1037,43 @@ class TinyToolController extends AdminController
     {
         try {
             return ApiTinyTool::getEbayBalanceCondition();
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
+
+    /**
+     * 销售员产品库存
+     * Date: 2019-12-06 11:55
+     * Author: henry
+     * @return SqlDataProvider
+     * @throws \yii\db\Exception
+     */
+    public function actionSku()
+    {
+        $username = Yii::$app->user->identity->username;
+        $userArr = ApiUser::getUserList($username);
+        $userList = implode("','", $userArr);
+        $countSql = "SELECT COUNT(*) FROM cache_stockWaringTmpData WHERE salerName IN ('{$userList}')";
+        $count = Yii::$app->db->createCommand($countSql)->queryScalar();
+        $sql = "SELECT c.*,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart 
+                FROM `cache_stockWaringTmpData` c
+                LEFT JOIN `user` u ON u.username=c.salerName
+				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
+				LEFT JOIN auth_department d ON d.id=dc.department_id
+				LEFT JOIN auth_department p ON p.id=d.parent
+				WHERE salerName IN ('{$userList}')";
+        $res = new SqlDataProvider([
+            'sql' => $sql,
+            'totalCount' => $count,
+            'pagination' => [
+                'pageSize' => 20
+            ]
+        ]);
+        return $res;
+    }
+
+
 
 
 }

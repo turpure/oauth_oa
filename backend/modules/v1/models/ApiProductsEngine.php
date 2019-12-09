@@ -40,11 +40,11 @@ class ApiProductsEngine
         $page = \Yii::$app->request->get('page', 1);
         $pageSize = \Yii::$app->request->get('pageSize', 20);
         $marketplace = \Yii::$app->request->get('marketplace');//站点
-        $recommendStatus = \Yii::$app->request->get('recommendStatus',[]);//站点
+        $recommendStatus = \Yii::$app->request->get('recommendStatus', '');//站点
 
         //平台数据
         if ($plat === 'ebay') {
-            return static::getEbayRecommend($type, $marketplace, $page, $pageSize,[$recommendStatus]);
+            return static::getEbayRecommend($type, $marketplace, $page, $pageSize, [$recommendStatus]);
         }
 
         if ($plat === 'wish') {
@@ -190,66 +190,55 @@ class ApiProductsEngine
     }
 
 
-    private static function getEbayRecommend($type, $marketplace, $page, $pageSize, $recommendStatus='')
+    private static function getEbayRecommend($type, $marketplace, $page, $pageSize, $recommendStatus = [])
     {
-
-
         $ret = [];
         //当天推荐数据
         $today = date('Y-m-d');
-
         // 新品
         if ($type === 'new') {
-
             //当前在用规则下数据
             $newRules = EbayNewRule::find()->select(['id'])->all();
-
-
             $cur = (new \yii\mongodb\Query())->from('ebay_new_product')
                 ->andFilterWhere(['marketplace' => $marketplace])
                 ->all();
-            foreach ($newRules as $rule) {
-                foreach ($cur as $row) {
+            foreach ($cur as $row) {
+                foreach ($newRules as $rule) {
                     $productRules = $row['rules'];
                     $recommendDate = substr($row['recommendDate'], 0, 10);
                     if ($recommendDate === $today && in_array($rule->_id, $productRules, false)) {
-
                         //推荐状态筛选
                         $row = static::recommendStatusFilter($recommendStatus, $row);
-                        if(!empty($row)){
+                        if (!empty($row)) {
                             $ret[] = $row;
+                            break;
                         }
-
                     }
                 }
             }
         }
-
         // 热销
         if ($type === 'hot') {
-
             //当前在用规则
             $hotRules = EbayHotRule::find()->select(['id'])->all();
-
             $cur = (new \yii\mongodb\Query())->from('ebay_hot_product')
                 ->andFilterWhere(['marketplace' => $marketplace])
                 ->all();
-            foreach ($hotRules as $rule) {
-                foreach ($cur as $row) {
+            foreach ($cur as $row) {
+                foreach ($hotRules as $rule) {
                     $productRules = $row['rules'];
                     $recommendDate = substr($row['recommendDate'], 0, 10);
                     if ($recommendDate === $today && in_array($rule->_id, $productRules, false)) {
                         //推荐状态筛选
                         $row = static::recommendStatusFilter($recommendStatus, $row);
-                        if(!empty($row)){
+                        if (!empty($row)) {
                             $ret[] = $row;
+                            break;
                         }
                     }
-
                 }
             }
         }
-
         // 分页，排序
         $data = new ArrayDataProvider([
             'allModels' => $ret,
@@ -257,7 +246,7 @@ class ApiProductsEngine
                 'attributes' => [
                     'price', 'visit', 'sold',
                     'salesThreeDay1', 'salesThreeDayGrowth', 'paymentThreeDay1',
-                    'salesWeek1', 'paymentWeek1', 'salesWeekGrowth','listedTime'
+                    'salesWeek1', 'paymentWeek1', 'salesWeekGrowth', 'listedTime'
                 ],
                 'defaultOrder' => [
                     'sold' => SORT_DESC,
@@ -272,50 +261,45 @@ class ApiProductsEngine
     }
 
 
-
     private static function recommendStatusFilter($recommendStatus, $row)
     {
         $ret = [];
         //$recommendStatus = ['未推送','未处理', '已过滤', '已认领'];
-        foreach ($recommendStatus as $rs){
+        foreach ($recommendStatus as $rs) {
             $recommendPersons = $row['recommendToPersons'];
-            if($rs === '未推送') {
-                if(empty($recommendPersons)) {
+            if ($rs === '未推送') {
+                if (empty($recommendPersons)) {
                     $ret = $row;
                 }
-            }
-            elseif($rs === '已过滤') {
+            } elseif ($rs === '已过滤') {
                 foreach ($recommendPersons as $rp) {
-                    if($rp['status'] === 'refuse') {
+                    if ($rp['status'] === 'refuse') {
                         $ret = $row;
                         break;
                     }
                 }
 
-            }
-            elseif($rs === '已认领') {
+            } elseif ($rs === '已认领') {
                 foreach ($recommendPersons as $rp) {
-                    if($rp['status'] === 'accept') {
+                    if ($rp['status'] === 'accept') {
                         $ret = $row;
                         break;
                     }
                 }
-            }
-            elseif($rs === '未处理') {
+            } elseif ($rs === '未处理') {
                 $flag = 1;
-                if(empty($recommendPersons)) {
+                if (empty($recommendPersons)) {
                     $flag = 0;
                 }
                 foreach ($recommendPersons as $rp) {
-                    if(!empty($rp['status'])) {
+                    if (!empty($rp['status'])) {
                         $flag = 0;
                     }
                 }
-                if($flag) {
+                if ($flag) {
                     $ret = $row;
                 }
-            }
-            else{
+            } else {
                 $ret = $row;
             }
 
@@ -412,14 +396,14 @@ class ApiProductsEngine
         $allPlatArr = Yii::$app->runAction('/v1/products-engine/plat')['data'];
         $detail = [];
 
-        $detailArr = isset($rule['detail'])?$rule['detail']:[];
+        $detailArr = isset($rule['detail']) ? $rule['detail'] : [];
         //print_r($detailArr);exit;
-        foreach ($allPlatArr as $dk => $value){//遍历所有平台
+        foreach ($allPlatArr as $dk => $value) {//遍历所有平台
             $item['plat'] = $value;
             $item['flag'] = false;
             $item['platValue'] = [];
             $allMarketplaceArr = Yii::$app->runAction('/v1/products-engine/marketplace', ['plat' => $value])['data'];
-            foreach($allMarketplaceArr as $mk => $marketplace ){
+            foreach ($allMarketplaceArr as $mk => $marketplace) {
                 $item['platValue'][$mk]['marketplace'] = $marketplace;
                 $item['platValue'][$mk]['flag'] = false;
                 $item['platValue'][$mk]['marketplaceValue'] = [];
@@ -428,29 +412,29 @@ class ApiProductsEngine
                     ->andFilterWhere(['plat' => $value])
                     ->andFilterWhere(['marketplace' => $marketplace])
                     ->orderBy('cate')->asArray()->all();
-                foreach($allCateArr as $ck => $cate) {//遍历平台下所有一级类目
+                foreach ($allCateArr as $ck => $cate) {//遍历平台下所有一级类目
                     $item['platValue'][$mk]['marketplaceValue'][$ck]['cate'] = $cate['cate'];
                     $item['platValue'][$mk]['marketplaceValue'][$ck]['flag'] = false;
-                    foreach ($cate['subCate'] as $sk => $subCate){  //遍历已有二级类目
+                    foreach ($cate['subCate'] as $sk => $subCate) {  //遍历已有二级类目
                         $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCate'][$sk] = $subCate;
                         $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = [];
-                        if($detailArr){
-                            foreach($detailArr as $detailValue){
-                                if(isset($detailValue['plat']) && $detailValue['plat'] == $value){ //判断是否有该平台
+                        if ($detailArr) {
+                            foreach ($detailArr as $detailValue) {
+                                if (isset($detailValue['plat']) && $detailValue['plat'] == $value) { //判断是否有该平台
                                     $item['flag'] = true;
-                                    if(isset($detailValue['platValue']) && $detailValue['platValue']){
-                                        foreach($detailValue['platValue'] as $platValue){
-                                            if(isset($platValue['marketplace']) && $platValue['marketplace'] == $marketplace){//判断是否有该站点
+                                    if (isset($detailValue['platValue']) && $detailValue['platValue']) {
+                                        foreach ($detailValue['platValue'] as $platValue) {
+                                            if (isset($platValue['marketplace']) && $platValue['marketplace'] == $marketplace) {//判断是否有该站点
                                                 $item['platValue'][$mk]['flag'] = true;
-                                                if(isset($platValue['marketplaceValue']) && $platValue['marketplaceValue']){
-                                                    foreach ($platValue['marketplaceValue'] as $marketplaceValue){
-                                                        if(isset($marketplaceValue['cate']) && $marketplaceValue['cate'] == $cate['cate']) {//判断是否有该一级类目
+                                                if (isset($platValue['marketplaceValue']) && $platValue['marketplaceValue']) {
+                                                    foreach ($platValue['marketplaceValue'] as $marketplaceValue) {
+                                                        if (isset($marketplaceValue['cate']) && $marketplaceValue['cate'] == $cate['cate']) {//判断是否有该一级类目
                                                             $item['platValue'][$mk]['marketplaceValue'][$ck]['flag'] = true;
                                                             $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCate'] = $cate['subCate'];
                                                             $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = [];
-                                                            if(isset($marketplaceValue['cateValue']) && $marketplaceValue['cateValue'] &&
+                                                            if (isset($marketplaceValue['cateValue']) && $marketplaceValue['cateValue'] &&
                                                                 isset($marketplaceValue['cateValue']['subCateChecked']) && $marketplaceValue['cateValue']['subCateChecked']
-                                                            ){
+                                                            ) {
                                                                 $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = $marketplaceValue['cateValue']['subCateChecked'];
                                                                 /*foreach ($marketplaceValue['cateValue'] as $cateValue){
                                                                     if(isset($cateValue['subCateChecked']) && $cateValue['subCateChecked'] == $subCate) {
@@ -473,20 +457,19 @@ class ApiProductsEngine
             }
             $detail[$dk] = $item;
         }
-        if($rule) $res['_id'] = $rule['_id'];
+        if ($rule) $res['_id'] = $rule['_id'];
         //获取普源类目
         $pyCate = Yii::$app->runAction('/v1/products-engine/py-cate')['data'];
-        foreach ($pyCate as $k => $v){
-            if($rule && $rule['pyCate'] == $v){
-                $res['pyCate'][$k] = ['name' => $v,'flag' => true];
-            }else{
-                $res['pyCate'][$k] = ['name' => $v,'flag' => false];
+        foreach ($pyCate as $k => $v) {
+            if ($rule && $rule['pyCate'] == $v) {
+                $res['pyCate'][$k] = ['name' => $v, 'flag' => true];
+            } else {
+                $res['pyCate'][$k] = ['name' => $v, 'flag' => false];
             }
         }
         $res['detail'] = $detail;
         return $res;
     }
-
 
 
     /**
@@ -495,14 +478,13 @@ class ApiProductsEngine
      * @param $type
      * @param string $reason
      */
-    private static function setRecommendToPersons($table, $itemId, $type, $reason='')
+    private static function setRecommendToPersons($table, $itemId, $type, $reason = '')
     {
         # [{"name":"陈微微","status":"refuse", "reason":"不行"},{"name":"刘珊珊","status":"accept", "reason":""}]
         $username = Yii::$app->user->identity->username;
-        if($type === 'new') {
+        if ($type === 'new') {
             $person = ['name' => $username, 'status' => 'accept', 'reason' => $reason];
-        }
-        else {
+        } else {
             $person = ['name' => $username, 'status' => 'refuse', 'reason' => $reason];
         }
         $collection = Yii::$app->mongodb->getCollection($table);
@@ -519,21 +501,20 @@ class ApiProductsEngine
      * @param $oldPersons
      * @return array
      */
-    private static function insertOrUpdateRecommendToPersons($persons,$oldPersons)
+    private static function insertOrUpdateRecommendToPersons($persons, $oldPersons)
     {
-        if(empty($oldPersons)) {
+        if (empty($oldPersons)) {
             $oldPersons[] = $persons;
-        }
-        else{
+        } else {
             $appendFlag = 1;
             foreach ($oldPersons as &$op) {
-                if($op['name'] === $persons['name']) {
+                if ($op['name'] === $persons['name']) {
                     $op = $persons;
                     $appendFlag = 0;
                     break;
                 }
             }
-            if($appendFlag) {
+            if ($appendFlag) {
                 $oldPersons[] = $persons;
             }
         }
@@ -558,15 +539,14 @@ class ApiProductsEngine
         try {
             foreach ($ret as $ele) {
                 $goodsCode = static::getImageGoodsCode($ele['PicName']);
-                if(!in_array($goodsCode, $goods, false)) {
+                if (!in_array($goodsCode, $goods, false)) {
                     $ele['GoodsCode'] = $goodsCode;
                     $goods[] = $goodsCode;
                     $out[] = $ele;
                 }
             }
             return ['Auctions' => $out];
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['Auctions' => []];
         }
     }
@@ -582,7 +562,7 @@ class ApiProductsEngine
         $mongo = Yii::$app->mongodb;
         $col = $mongo->getCollection('images_tasks');
         $tasks = $col->find([
-            'sku' =>$sku
+            'sku' => $sku
         ]);
         try {
             $ret = [];
@@ -590,11 +570,10 @@ class ApiProductsEngine
                 $ret[] = $row;
             }
             return $ret[0]['goodsCode'];
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return $sku;
         }
 
-        }
+    }
 
 }
