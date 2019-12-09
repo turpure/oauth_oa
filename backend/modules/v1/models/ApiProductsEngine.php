@@ -12,7 +12,6 @@ use backend\models\EbayCategory;
 use backend\models\EbayCateRule;
 use backend\models\EbayHotRule;
 use backend\models\EbayNewRule;
-use backend\modules\v1\utils\Handler;
 use Yii;
 use yii\helpers\ArrayHelper;
 use yii\db\Query;
