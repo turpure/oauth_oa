@@ -30,19 +30,20 @@ class ProductsEngineController extends AdminController
         'collectionEnvelope' => 'items',
     ];
 
-    /** 产品引擎  每日推荐
+    /**
+     * 产品引擎  每日推荐
      * Date: 2019-10-30 17:36
      * Author: henry
      * @return array|\yii\db\ActiveRecord[]|\yii\data\ActiveDataProvider[]
      */
     public function actionRecommend()
     {
-        //try {
+        try {
             return ApiProductsEngine::recommend();
 
-        //} catch (\Exception $why) {
-        //    return ['code' => 401, 'message' => $why->getMessage()];
-        //}
+        } catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
     }
 
     /** 产品中心  智能推荐

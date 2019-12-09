@@ -32,7 +32,7 @@ class ApiProductsEngine
     {
         //获取当前用户信息
         $username = Yii::$app->user->identity->username;
-        $userList = ApiUser::getUserList($username);
+//        $userList = ApiUser::getUserList($username);
 
         // 请求参数
         $plat = \Yii::$app->request->get('plat');
@@ -201,6 +201,7 @@ class ApiProductsEngine
             $newRules = EbayNewRule::find()->select(['id'])->all();
             $cur = (new \yii\mongodb\Query())->from('ebay_new_product')
                 ->andFilterWhere(['marketplace' => $marketplace])
+                ->andWhere(['recommendDate' => ['$regex' => $today]])
                 ->all();
             foreach ($cur as $row) {
                 foreach ($newRules as $rule) {
@@ -223,6 +224,7 @@ class ApiProductsEngine
             $hotRules = EbayHotRule::find()->select(['id'])->all();
             $cur = (new \yii\mongodb\Query())->from('ebay_hot_product')
                 ->andFilterWhere(['marketplace' => $marketplace])
+                ->andWhere(['recommendDate' => ['$regex' => $today]])
                 ->all();
             //var_dump(count($cur));exit;
             foreach ($cur as $row) {
