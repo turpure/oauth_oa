@@ -8,6 +8,7 @@
 namespace console\models;
 
 use backend\models\EbayAllotRule;
+use backend\models\ShopElf\BGoods;
 use backend\modules\v1\models\ApiProductsEngine;
 use Yii;
 
@@ -575,9 +576,46 @@ class ProductEngine
         $images = static::getImages();
         foreach ($images as $img) {
             $result = static::detectOneImage($img);
+            $result = static::filterImage($result);
             self::saveImageDetectedResult($result);
         }
 
+    }
+
+    /**过滤掉重复出现的商品编码
+     * @param $result
+     * @return array
+     */
+    public static function filterImage($result)
+    {
+        $similarImages = $result['similarImages'];
+        $goods = [];
+        $sg = [];
+        foreach ($similarImages as $ele) {
+            $sm = $ele['similar'];
+            $out = [];
+            foreach ($sm as $row) {
+                if(!in_array($row['GoodsCode'], $goods, false)) {
+                    $goods[] = $row['GoodsCode'];
+                    $row['goodsStatus'] = static::getImageGoodsStatus($row['GoodsCode']);
+                    $out[] = $row;
+                }
+            }
+            $sg[] = ['similar' =>$out, 'image' => $ele['image']];
+        }
+        $result['similarImages'] = $sg;
+        return $result;
+    }
+
+    /**
+     * 根据商品编码获取产品状态
+     * @param $goodsCode
+     * @return mixed
+     */
+    public static function getImageGoodsStatus($goodsCode)
+    {
+       $ret = BGoods::find()->select(['goodsStatus'])->where(['goodsCode' => $goodsCode])->scalar();
+       return $ret;
     }
     /**
      * 图像检测
@@ -616,7 +654,8 @@ class ProductEngine
         $mongo = Yii::$app->mongodb;
         $col = $mongo->getCollection('ebay_recommended_product');
         $cur = $col->find([
-            'recommendDate' => ['$regex' => date('Y-m-d')]
+            'recommendDate' => ['$regex' => date('Y-m-d')],
+//            'itemId' => '153750701056'
         ]);
         $ret = [];
         foreach ($cur as $row){

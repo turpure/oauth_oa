@@ -30,7 +30,7 @@ class ApiProductsEngine
     public static function recommend()
     {
         //获取当前用户信息
-        $username = Yii::$app->user->identity->username;
+//        $username = Yii::$app->user->identity->username;
 //        $userList = ApiUser::getUserList($username);
 
         // 请求参数
