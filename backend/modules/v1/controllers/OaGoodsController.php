@@ -11,6 +11,7 @@ use backend\modules\v1\utils\Helper;
 use Yii;
 use backend\models\OaGoods;
 use yii\helpers\ArrayHelper;
+use backend\modules\v1\models\ApiProductsEngine;
 
 /**
  * OaGoodsController implements the CRUD actions for OaGoods model.
@@ -488,6 +489,23 @@ class OaGoodsController extends AdminController
             return false;
         }
         return true;
+    }
+
+
+    /**
+     * 图片检测
+     * @return array
+     */
+    public static function actionImageSearch()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition');
+            $imageUrl = $condition['imageUrl'];
+            return ApiProductsEngine::imageSearch($imageUrl);
+        }
+        catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
     }
 
 
