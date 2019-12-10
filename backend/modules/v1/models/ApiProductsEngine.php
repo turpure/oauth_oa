@@ -128,7 +128,7 @@ class ApiProductsEngine
             }
             $refuse = ArrayHelper::getValue($doc, 'refuse', []);
             $refuse[$username] = $reason;
-            $col->update(['_id' => $id], ['refuse' => array_unique($refuse)]);
+            $col->update(['_id' => $id], ['refuse' => $refuse]);
 
             //推送新数据到固定端口
             Helper::pushData();
