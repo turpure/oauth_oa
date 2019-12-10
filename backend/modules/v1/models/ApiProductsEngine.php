@@ -13,6 +13,7 @@ use backend\models\EbayCateRule;
 use backend\models\EbayHotRule;
 use backend\models\EbayNewRule;
 use Yii;
+use backend\models\ShopElf\BGoods;
 use yii\helpers\ArrayHelper;
 use yii\db\Query;
 use backend\models\WishProducts;
@@ -541,6 +542,9 @@ class ApiProductsEngine
                 $goodsCode = static::getImageGoodsCode($ele['PicName']);
                 if (!in_array($goodsCode, $goods, false)) {
                     $ele['GoodsCode'] = $goodsCode;
+                    $goodsInfo = static::getImageGoodsInfo($goodsCode);
+                    $ele['goodsStatus'] = $goodsInfo['goodsStatus'];
+                    $ele['linkUrl'] = $goodsInfo['linkUrl'];
                     $goods[] = $goodsCode;
                     $out[] = $ele;
                 }
@@ -549,6 +553,22 @@ class ApiProductsEngine
         } catch (\Exception $why) {
             return ['Auctions' => []];
         }
+    }
+
+    /**
+     * 根据商品编码获取产品信息
+     * @param $goodsCode
+     * @return mixed
+     */
+    public static function getImageGoodsInfo($goodsCode)
+    {
+        $ret = BGoods::find()->select(['GoodsStatus','LinkUrl'])->where(['GoodsCode' => $goodsCode])->asArray()->one();
+        $out = ['goodsStatus' => '', 'linkUrl' => ''];
+        if(!empty($ret)) {
+            $out['goodsStatus'] = $ret['GoodsStatus'];
+            $out['linkUrl'] =  $ret['LinkUrl'];
+        }
+        return $out;
     }
 
 
