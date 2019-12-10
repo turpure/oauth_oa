@@ -597,7 +597,9 @@ class ProductEngine
             foreach ($sm as $row) {
                 if(!in_array($row['GoodsCode'], $goods, false)) {
                     $goods[] = $row['GoodsCode'];
-                    $row['goodsStatus'] = static::getImageGoodsStatus($row['GoodsCode']);
+                    $goodsInfo = static::getImageGoodsInfo($row['GoodsCode']);
+                    $row['goodsStatus'] = $goodsInfo['goodsStatus'];
+                    $row['linkUrl'] = $goodsInfo['linkUrl'];
                     $out[] = $row;
                 }
             }
@@ -608,14 +610,19 @@ class ProductEngine
     }
 
     /**
-     * 根据商品编码获取产品状态
+     * 根据商品编码获取产品信息
      * @param $goodsCode
      * @return mixed
      */
-    public static function getImageGoodsStatus($goodsCode)
+    public static function getImageGoodsInfo($goodsCode)
     {
-       $ret = BGoods::find()->select(['goodsStatus'])->where(['goodsCode' => $goodsCode])->scalar();
-       return $ret;
+       $ret = BGoods::find()->select(['GoodsStatus','LinkUrl'])->where(['GoodsCode' => $goodsCode])->asArray()->one();
+       $out = ['goodsStatus' => '', 'linkUrl' => ''];
+       if(!empty($ret)) {
+           $out['goodsStatus'] = $ret['GoodsStatus'];
+           $out['linkUrl'] =  $ret['LinkUrl'];
+       }
+       return $out;
     }
     /**
      * 图像检测
@@ -660,7 +667,8 @@ class ProductEngine
         $ret = [];
         foreach ($cur as $row){
             $ele['itemId'] = $row['itemId'];
-            $ele['images'] = array_merge([$row['mainImage']],$row['images']);
+            $images = isset($row['images']) ? $row['images'] : [];
+            $ele['images'] = array_merge([$row['mainImage']],$images);
             $ret[] = $ele;
         }
         return $ret;

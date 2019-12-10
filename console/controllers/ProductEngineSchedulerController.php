@@ -54,7 +54,6 @@ class ProductEngineSchedulerController extends Controller
      */
     public function actionDispatchAll($type='hot')
     {
-        //var_dump(in_array('123', [], false));exit;
         $developers = ProductEngine::getDevelopers();
         shuffle($developers);
         $products = ProductEngine::getProducts($type);
@@ -101,7 +100,7 @@ class ProductEngineSchedulerController extends Controller
             ProductEngine::detectImages();
         }
         catch (\Exception $why) {
-            print_r('fail to detect image');
+            print_r('fail to detect image cause of '. $why->getMessage());
 
         }
 
