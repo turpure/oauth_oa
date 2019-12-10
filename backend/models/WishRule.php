@@ -6,38 +6,42 @@ use Yii;
 use yii\behaviors\TimestampBehavior;
 
 /**
- * This is the model class for collection "ebay_new_rule".
+ * This is the model class for collection "wish_rule".
  *
  * @property \MongoDB\BSON\ObjectID|string $_id
  * @property mixed $cids
+ * @property mixed $genTimeEnd
+ * @property mixed $genTimeStart
+ * @property mixed $hwc
  * @property mixed $index
- * @property mixed $title
- * @property mixed $itemId
- * @property mixed $soldEnd
- * @property mixed $country
- * @property mixed $visitEnd
- * @property mixed $priceEnd
- * @property mixed $soldStart
- * @property mixed $titleType
- * @property mixed $sort
- * @property mixed $pageSize
- * @property mixed $priceStart
- * @property mixed $visitStart
- * @property mixed $marketplace
- * @property mixed $popularStatus
- * @property mixed $sellerOrStore
- * @property mixed $storeLocation
- * @property mixed $salesThreeDayFlag
+ * @property mixed $intervalRatingEnd
+ * @property mixed $intervalRatingStart
+ * @property mixed $maxNumBoughtEnd
+ * @property mixed $maxNumBoughtStart
+ * @property mixed $merchant
+ * @property mixed $merchantStatus
  * @property mixed $orderColumn
- * @property mixed $listedTime
- * @property mixed $itemLocation
+ * @property mixed $pageSize
+ * @property mixed $pb
+ * @property mixed $pid
+ * @property mixed $pidStatus
+ * @property mixed $pname
+ * @property mixed $pnameStatus
+ * @property mixed $ratingEnd
+ * @property mixed $ratingStart
+ * @property mixed $sort
+ * @property mixed $totalpriceEnd
+ * @property mixed $totalpriceStart
+ * @property mixed $verified
+ * @property mixed $viewRate1End
+ * @property mixed $viewRate1Start
  * @property mixed $creator
  * @property mixed $createdDate
  * @property mixed $updatedDate
  * @property mixed $ruleName
  * @property mixed $ruleMark
- * @property mixed $publishedSite
- * @property mixed $site
+ * @property mixed $ruleType
+ * @property mixed $listedTime
  *
  */
 class WishRule extends \yii\mongodb\ActiveRecord
@@ -61,7 +65,7 @@ class WishRule extends \yii\mongodb\ActiveRecord
         if(parent::beforeSave($insert)) {
 
             $defaultAttributes = [
-                'cids' =>'', 'index' => 1, 'merchantStatus' => 1,'orderColumn' => 'view_rate1', 'sort' => 'DESC', 'pageSize' => 20
+                'cids' =>'', 'index' => 1, 'merchantStatus' => 1,'orderColumn' => 'view_rate1', 'sort' => 'DESC', 'pageSize' => 20,'ruleType' => 'new'
                 ];
             $this->setAttributes($defaultAttributes);
         }
@@ -115,6 +119,8 @@ class WishRule extends \yii\mongodb\ActiveRecord
             'updatedDate',
             'ruleName',
             'ruleMark',
+            'ruleType',
+            'listedTime'
         ];
     }
 
@@ -127,7 +133,7 @@ class WishRule extends \yii\mongodb\ActiveRecord
             [['cids','genTimeEnd','genTimeStart','hwc','index','intervalRatingEnd','intervalRatingStart','maxNumBoughtEnd','maxNumBoughtStart',
                 'merchant','merchantStatus','orderColumn','pageSize','pb','pid','pidStatus','pname','pnameStatus',
                 'ratingEnd','ratingStart','sort','totalpriceEnd','totalpriceStart','verified','viewRate1End','viewRate1Start',
-                'creator','createdDate','updatedDate','ruleName','ruleMark'], 'safe']
+                'creator','createdDate','updatedDate','ruleName','ruleMark','ruleType','listedTime'], 'safe']
         ];
     }
 
@@ -168,6 +174,8 @@ class WishRule extends \yii\mongodb\ActiveRecord
             'updatedDate' => 'Updated Time',
             'ruleName' => 'Rule Name',
             'ruleMark' => 'Rule Mark',
+            'ruleType' => 'Rule Type',
+            'listedTime' => 'Listed Time',
         ];
     }
 }
