@@ -186,7 +186,7 @@ class ProductEngine
         $ret = [];
 
         //一直分配 直到人用完，或者产品用完
-        $turn = ceil(count($this->products) / count($this->developer));
+        $turn = max(count($this->products) , count($this->developer));
         $developerNumber = count($this->developer);
         for ($i = 0; $i <= $turn; $i++) {
             $this->developer = static::turnSort($this->developer, $i % $developerNumber);
