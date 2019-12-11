@@ -206,7 +206,7 @@ class ApiProductsEngine
             foreach ($cur as $row) {
                 foreach ($newRules as $rule) {
                     $productRules = $row['rules'];
-                    if ( in_array($rule->_id, $productRules, false)) {
+                    if (in_array($rule->_id, $productRules, false)) {
                         //推荐状态筛选
                         $item = static::recommendStatusFilter($recommendStatus, $row);
                         if (!empty($item)) {
@@ -399,64 +399,12 @@ class ApiProductsEngine
 
         $detailArr = isset($rule['detail']) ? $rule['detail'] : [];
         //print_r($detailArr);exit;
-        foreach ($allPlatArr as $dk => $value) {//遍历所有平台
-            $item['plat'] = $value;
-            $item['flag'] = false;
-            $item['platValue'] = [];
-            $allMarketplaceArr = Yii::$app->runAction('/v1/products-engine/marketplace', ['plat' => $value])['data'];
-            foreach ($allMarketplaceArr as $mk => $marketplace) {
-                $item['platValue'][$mk]['marketplace'] = $marketplace;
-                $item['platValue'][$mk]['flag'] = false;
-                $item['platValue'][$mk]['marketplaceValue'] = [];
-                //获取平台站点下所有一级类目
-                $allCateArr = $allCateArr = EbayCategory::find()
-                    ->andFilterWhere(['plat' => $value])
-                    ->andFilterWhere(['marketplace' => $marketplace])
-                    ->orderBy('cate')->asArray()->all();
-                foreach ($allCateArr as $ck => $cate) {//遍历平台下所有一级类目
-                    $item['platValue'][$mk]['marketplaceValue'][$ck]['cate'] = $cate['cate'];
-                    $item['platValue'][$mk]['marketplaceValue'][$ck]['flag'] = false;
-                    foreach ($cate['subCate'] as $sk => $subCate) {  //遍历已有二级类目
-                        $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCate'][$sk] = $subCate;
-                        $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = [];
-                        if ($detailArr) {
-                            foreach ($detailArr as $detailValue) {
-                                if (isset($detailValue['plat']) && $detailValue['plat'] == $value) { //判断是否有该平台
-                                    $item['flag'] = true;
-                                    if (isset($detailValue['platValue']) && $detailValue['platValue']) {
-                                        foreach ($detailValue['platValue'] as $platValue) {
-                                            if (isset($platValue['marketplace']) && $platValue['marketplace'] == $marketplace) {//判断是否有该站点
-                                                $item['platValue'][$mk]['flag'] = true;
-                                                if (isset($platValue['marketplaceValue']) && $platValue['marketplaceValue']) {
-                                                    foreach ($platValue['marketplaceValue'] as $marketplaceValue) {
-                                                        if (isset($marketplaceValue['cate']) && $marketplaceValue['cate'] == $cate['cate']) {//判断是否有该一级类目
-                                                            $item['platValue'][$mk]['marketplaceValue'][$ck]['flag'] = true;
-                                                            $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCate'] = $cate['subCate'];
-                                                            $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = [];
-                                                            if (isset($marketplaceValue['cateValue']) && $marketplaceValue['cateValue'] &&
-                                                                isset($marketplaceValue['cateValue']['subCateChecked']) && $marketplaceValue['cateValue']['subCateChecked']
-                                                            ) {
-                                                                $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = $marketplaceValue['cateValue']['subCateChecked'];
-                                                                /*foreach ($marketplaceValue['cateValue'] as $cateValue){
-                                                                    if(isset($cateValue['subCateChecked']) && $cateValue['subCateChecked'] == $subCate) {
-                                                                        $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'][] = $subCate;
-                                                                        //$item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue'][$sk]['flag'] = true;//判断是否有该二级类目
-                                                                    }
-                                                                }*/
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+        foreach ($allPlatArr as $value) {//遍历所有平台
+            if ($value == 'ebay') {
+                $detail[] = self::getEbayCateInfo($value, $detailArr);
+            } elseif ($value == 'wish') {
+                $detail[] = self::getWishCateInfo($value, $detailArr);;
             }
-            $detail[$dk] = $item;
         }
         if ($rule) $res['_id'] = $rule['_id'];
         //获取普源类目
@@ -470,6 +418,102 @@ class ApiProductsEngine
         }
         $res['detail'] = $detail;
         return $res;
+    }
+
+
+
+    private static function getEbayCateInfo($plat, $detailArr)
+    {
+        $item['plat'] = $plat;
+        $item['flag'] = false;
+        $item['platValue'] = [];
+        $allMarketplaceArr = Yii::$app->runAction('/v1/products-engine/marketplace', ['plat' => $plat])['data'];
+        foreach ($allMarketplaceArr as $mk => $marketplace) {
+            $item['platValue'][$mk]['marketplace'] = $marketplace;
+            $item['platValue'][$mk]['flag'] = false;
+            $item['platValue'][$mk]['marketplaceValue'] = [];
+            //获取平台站点下所有一级类目
+            $allCateArr = EbayCategory::find()
+                ->andFilterWhere(['plat' => $plat])
+                ->andFilterWhere(['marketplace' => $marketplace])
+                ->orderBy('cate')->asArray()->all();
+            foreach ($allCateArr as $ck => $cate) {//遍历平台下所有一级类目
+                $item['platValue'][$mk]['marketplaceValue'][$ck]['cate'] = $cate['cate'];
+                $item['platValue'][$mk]['marketplaceValue'][$ck]['flag'] = false;
+                foreach ($cate['subCate'] as $sk => $subCate) {  //遍历已有二级类目
+                    $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCate'][$sk] = $subCate;
+                    $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = [];
+                    if ($detailArr) {
+                        foreach ($detailArr as $detailValue) {
+                            if (isset($detailValue['plat']) && $detailValue['plat'] == $plat) { //判断是否有该平台
+                                $item['flag'] = true;
+                                if (isset($detailValue['platValue']) && $detailValue['platValue']) {
+                                    foreach ($detailValue['platValue'] as $platValue) {
+                                        if (isset($platValue['marketplace']) && $platValue['marketplace'] == $marketplace) {//判断是否有该站点
+                                            $item['platValue'][$mk]['flag'] = true;
+                                            if (isset($platValue['marketplaceValue']) && $platValue['marketplaceValue']) {
+                                                foreach ($platValue['marketplaceValue'] as $marketplaceValue) {
+                                                    if (isset($marketplaceValue['cate']) && $marketplaceValue['cate'] == $cate['cate']) {//判断是否有该一级类目
+                                                        $item['platValue'][$mk]['marketplaceValue'][$ck]['flag'] = true;
+                                                        $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCate'] = $cate['subCate'];
+                                                        $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = [];
+                                                        if (isset($marketplaceValue['cateValue']) && $marketplaceValue['cateValue'] &&
+                                                            isset($marketplaceValue['cateValue']['subCateChecked']) && $marketplaceValue['cateValue']['subCateChecked']
+                                                        ) {
+                                                            $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = $marketplaceValue['cateValue']['subCateChecked'];
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $item;
+    }
+
+
+    private static function getWishCateInfo($plat, $detailArr)
+    {
+        $item['plat'] = $plat;
+        $item['flag'] = false;
+        $item['platValue'] = [];
+        $allCateArr = Yii::$app->mongodb->getCollection('wish_category')->find();
+        foreach ($allCateArr as $ck => $cate) {//遍历平台下所有一级类目
+            $item['platValue'][$ck]['cate'] = $cate['cate'];
+            $item['platValue'][$ck]['flag'] = false;
+            foreach ($cate['subCate'] as $sk => $subCate) {  //遍历已有二级类目
+                $item['platValue'][$ck]['cateValue']['subCate'][$sk] = $subCate;
+                $item['platValue'][$ck]['cateValue']['subCateChecked'] = [];
+                if ($detailArr) {
+                    foreach ($detailArr as $detailValue) {
+                        if (isset($detailValue['plat']) && $detailValue['plat'] == $plat) { //判断是否有该平台
+                            $item['flag'] = true;
+                            if (isset($detailValue['platValue']) && $detailValue['platValue']) {
+                                foreach ($detailValue['platValue'] as $platValue) {
+                                    if (isset($platValue['cate']) && $platValue['cate'] == $cate['cate']) {//判断是否有该一级类目
+                                        $item['platValue'][$ck]['flag'] = true;
+                                        $item['platValue'][$ck]['cateValue']['subCate'] = $cate['subCate'];
+                                        $item['platValue'][$ck]['cateValue']['subCateChecked'] = [];
+                                        if (isset($platValue['cateValue']) && $platValue['cateValue'] &&
+                                            isset($platValue['cateValue']['subCateChecked']) && $platValue['cateValue']['subCateChecked']
+                                        ) {
+                                            $item['platValue'][$ck]['cateValue']['subCateChecked'] = $platValue['cateValue']['subCateChecked'];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $item;
     }
 
 
@@ -562,11 +606,11 @@ class ApiProductsEngine
      */
     public static function getImageGoodsInfo($goodsCode)
     {
-        $ret = BGoods::find()->select(['GoodsStatus','LinkUrl'])->where(['GoodsCode' => $goodsCode])->asArray()->one();
+        $ret = BGoods::find()->select(['GoodsStatus', 'LinkUrl'])->where(['GoodsCode' => $goodsCode])->asArray()->one();
         $out = ['goodsStatus' => '', 'linkUrl' => ''];
-        if(!empty($ret)) {
+        if (!empty($ret)) {
             $out['goodsStatus'] = $ret['GoodsStatus'];
-            $out['linkUrl'] =  $ret['LinkUrl'];
+            $out['linkUrl'] = $ret['LinkUrl'];
         }
         return $out;
     }
