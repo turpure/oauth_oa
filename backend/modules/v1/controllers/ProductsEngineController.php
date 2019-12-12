@@ -512,21 +512,6 @@ class ProductsEngineController extends AdminController
     {
         try {
             $data = EbayAllotRule::find()->asArray()->all();
-            /*$res = [];
-            foreach ($data as $v) {
-                $item = $v;
-                if ($v['ruleType'] == 'new') {
-                    $ebayNewRule = EbayNewRule::findOne(['_id' => $v['ruleId']]);
-                    $item['ruleName'] = $ebayNewRule ? $ebayNewRule['ruleName'] : '';
-                } elseif ($v['ruleType'] == 'hot') {
-                    $ebayHotRule = EbayHotRule::findOne(['_id' => $v['ruleId']]);
-                    $item['ruleName'] = $ebayHotRule ? $ebayHotRule['ruleName'] : '';
-                } else {
-                    $item['ruleName'] = '';
-                }
-                $res[] = $item;
-            }*/
-
             return $data;
         } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
