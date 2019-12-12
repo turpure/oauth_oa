@@ -366,8 +366,8 @@ class ProductsEngineController extends AdminController
     public function actionPlat()
     {
         return [
-            'ebay',
-            //'wish',
+            //'ebay',
+            'wish',
             //'joom',
         ];
     }
