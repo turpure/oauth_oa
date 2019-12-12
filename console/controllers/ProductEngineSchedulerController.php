@@ -124,7 +124,7 @@ class ProductEngineSchedulerController extends Controller
             $this->actionDispatchAll('new');
             $this->actionDispatchAll('hot');
 
-            // 分配产品给开发
+             //分配产品给开发
             $this->actionDispatchToPerson('new');
             $this->actionDispatchToPerson('hot');
 
