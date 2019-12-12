@@ -549,10 +549,11 @@ class ApiProductsEngine
 
     private static function getWishCateInfo($plat, $detailArr)
     {
+        $marketplace = '全选';// wish 平台没有站点，为保持结构和eBay一致，添加一个默认站点
         $item['plat'] = $plat;
         $item['flag'] = false;
         $item['platValue'] = [];
-        $item['platValue'][0]['marketplace'] = '';
+        $item['platValue'][0]['marketplace'] = $marketplace;
         $item['platValue'][0]['flag'] = false;
         $item['platValue'][0]['marketplaceValue'] = [];
         $allCateArr = Yii::$app->mongodb->getCollection('wish_category')->find();
@@ -568,7 +569,7 @@ class ApiProductsEngine
                             $item['flag'] = true;
                             if (isset($detailValue['platValue']) && $detailValue['platValue']) {
                                 foreach ($detailValue['platValue'] as $platValue) {
-                                    if (isset($platValue['marketplace']) && $platValue['marketplace'] === '') {//判断是否有该站点
+                                    if (isset($platValue['marketplace']) && $platValue['marketplace'] === $marketplace) {//判断是否有该站点
                                         $item['platValue'][0]['flag'] = true;
                                         if (isset($platValue['marketplaceValue']) && $platValue['marketplaceValue']) {
                                             foreach ($platValue['marketplaceValue'] as $marketplaceValue) {
