@@ -367,7 +367,7 @@ class ProductsEngineController extends AdminController
     {
         return [
             'ebay',
-            'wish',
+            //'wish',
             //'joom',
         ];
     }
