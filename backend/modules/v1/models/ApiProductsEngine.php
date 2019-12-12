@@ -552,27 +552,37 @@ class ApiProductsEngine
         $item['plat'] = $plat;
         $item['flag'] = false;
         $item['platValue'] = [];
+        $item['platValue'][0]['marketplace'] = '';
+        $item['platValue'][0]['flag'] = false;
+        $item['platValue'][0]['marketplaceValue'] = [];
         $allCateArr = Yii::$app->mongodb->getCollection('wish_category')->find();
         foreach ($allCateArr as $ck => $cate) {//遍历平台下所有一级类目
-            $item['platValue'][$ck]['cate'] = $cate['cate'];
-            $item['platValue'][$ck]['flag'] = false;
+            $item['platValue'][0]['marketplaceValue'][$ck]['cate'] = $cate['cate'];
+            $item['platValue'][0]['marketplaceValue'][$ck]['flag'] = false;
             foreach ($cate['subCate'] as $sk => $subCate) {  //遍历已有二级类目
-                $item['platValue'][$ck]['cateValue']['subCate'][$sk] = $subCate;
-                $item['platValue'][$ck]['cateValue']['subCateChecked'] = [];
+                $item['platValue'][0]['marketplaceValue'][$ck]['cateValue']['subCate'][$sk] = $subCate;
+                $item['platValue'][0]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = [];
                 if ($detailArr) {
                     foreach ($detailArr as $detailValue) {
                         if (isset($detailValue['plat']) && $detailValue['plat'] == $plat) { //判断是否有该平台
                             $item['flag'] = true;
                             if (isset($detailValue['platValue']) && $detailValue['platValue']) {
                                 foreach ($detailValue['platValue'] as $platValue) {
-                                    if (isset($platValue['cate']) && $platValue['cate'] == $cate['cate']) {//判断是否有该一级类目
-                                        $item['platValue'][$ck]['flag'] = true;
-                                        $item['platValue'][$ck]['cateValue']['subCate'] = $cate['subCate'];
-                                        $item['platValue'][$ck]['cateValue']['subCateChecked'] = [];
-                                        if (isset($platValue['cateValue']) && $platValue['cateValue'] &&
-                                            isset($platValue['cateValue']['subCateChecked']) && $platValue['cateValue']['subCateChecked']
-                                        ) {
-                                            $item['platValue'][$ck]['cateValue']['subCateChecked'] = $platValue['cateValue']['subCateChecked'];
+                                    if (isset($platValue['marketplace']) && $platValue['marketplace'] === '') {//判断是否有该站点
+                                        $item['platValue'][0]['flag'] = true;
+                                        if (isset($platValue['marketplaceValue']) && $platValue['marketplaceValue']) {
+                                            foreach ($platValue['marketplaceValue'] as $marketplaceValue) {
+                                                if (isset($marketplaceValue['cate']) && $marketplaceValue['cate'] == $cate['cate']) {//判断是否有该一级类目
+                                                    $item['platValue'][0]['marketplaceValue'][$ck]['flag'] = true;
+                                                    $item['platValue'][0]['marketplaceValue'][$ck]['cateValue']['subCate'] = $cate['subCate'];
+                                                    $item['platValue'][0]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = [];
+                                                    if (isset($marketplaceValue['cateValue']) && $marketplaceValue['cateValue'] &&
+                                                        isset($marketplaceValue['cateValue']['subCateChecked']) && $marketplaceValue['cateValue']['subCateChecked']
+                                                    ) {
+                                                        $item['platValue'][0]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = $marketplaceValue['cateValue']['subCateChecked'];
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
