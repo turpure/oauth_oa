@@ -559,9 +559,9 @@ class ApiProductsEngine
         foreach ($allCateArr as $ck => $cate) {//遍历平台下所有一级类目
             $item['platValue'][0]['marketplaceValue'][$ck]['cate'] = $cate['cate'];
             $item['platValue'][0]['marketplaceValue'][$ck]['flag'] = false;
+            $item['platValue'][0]['marketplaceValue'][$ck]['cateValue']['subCate'] = $cate['subCate'];
+            $item['platValue'][0]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = [];
             foreach ($cate['subCate'] as $sk => $subCate) {  //遍历已有二级类目
-                $item['platValue'][0]['marketplaceValue'][$ck]['cateValue']['subCate'][$sk] = $subCate;
-                $item['platValue'][0]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = [];
                 if ($detailArr) {
                     foreach ($detailArr as $detailValue) {
                         if (isset($detailValue['plat']) && $detailValue['plat'] == $plat) { //判断是否有该平台
