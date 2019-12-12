@@ -86,7 +86,7 @@ class ProductEngineSchedulerController extends Controller
      */
     public function actionSetRecommendToPersons()
     {
-        $day = '2019-12-04';
+        $day = '2019-12-12';
         ConScheduler::getAndSetRecommendToPersons($day);
     }
 
