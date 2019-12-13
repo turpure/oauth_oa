@@ -144,5 +144,10 @@ class TestController extends Controller
     }
 
 
+    public function actionTest(){
+        date('Y-m-d');
+    }
+
+
 
 }

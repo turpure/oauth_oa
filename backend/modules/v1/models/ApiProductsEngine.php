@@ -324,9 +324,9 @@ class ApiProductsEngine
         $detailArr = isset($rule['detail']) && $rule['detail'] ? $rule['detail'] : [];
         foreach ($allPlatArr as $value) {//遍历所有平台
             if ($value == 'ebay') {
-                $detail[] = self::getEbayAllotInfo($value, $detailArr);
+                $detail[$value] = self::getEbayAllotInfo($value, $detailArr);
             } elseif ($value == 'wish') {
-                $detail[] = self::getWishAllotInfo($value, $detailArr);;
+                $detail[$value] = self::getWishAllotInfo($value, $detailArr);;
             }
         }
 
@@ -373,8 +373,6 @@ class ApiProductsEngine
 
     private static function getEbayAllotInfo($plat, $detailArr)
     {
-        $item['plat'] = $plat;
-        $item['flag'] = false;
         $newDetail['ruleType'] = 'new';
         $hotDetail['ruleType'] = 'hot';
         $newDetail['flag'] = $hotDetail['flag'] = false;
@@ -382,23 +380,20 @@ class ApiProductsEngine
         $newRule = EbayNewRule::find()->all();
         foreach ($newRule as $k => $value) {
             if ($detailArr) {
-                foreach ($detailArr as $det) {
-                    if (isset($det['plat']) && $det['plat'] == $plat) {
-                        $item['flag'] = true;
-                        if (isset($det['platValue']) && $det['platValue']) {
-                            foreach ($det['platValue'] as $val) {
-                                if (isset($val['ruleType']) && $val['ruleType'] == 'new' &&
-                                    isset($val['ruleValue']) && $val['ruleValue']) {
-                                    foreach ($val['ruleValue'] as $v) {
-                                        if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']['oid']) {
-                                            $newDetail['flag'] = true;
-                                            $newDetail['ruleValue'][$k] =
-                                                [
-                                                    'ruleId' => $value['_id'],
-                                                    'ruleName' => $value['ruleName'],
-                                                    'flag' => true
-                                                ];
-                                        }
+                foreach ($detailArr as $pk => $det) {
+                    if ($pk == $plat) {
+                        foreach ($det as $val) {
+                            if (isset($val['ruleType']) && $val['ruleType'] == 'new' &&
+                                isset($val['ruleValue']) && $val['ruleValue']) {
+                                foreach ($val['ruleValue'] as $v) {
+                                    if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']['oid']) {
+                                        $newDetail['flag'] = true;
+                                        $newDetail['ruleValue'][$k] =
+                                            [
+                                                'ruleId' => $value['_id'],
+                                                'ruleName' => $value['ruleName'],
+                                                'flag' => true
+                                            ];
                                     }
                                 }
                             }
@@ -417,23 +412,20 @@ class ApiProductsEngine
         $hotRule = EbayHotRule::find()->asArray()->all();
         foreach ($hotRule as $k => $value) {
             if ($detailArr) {
-                foreach ($detailArr as $val) {
-                    if (isset($det['plat']) && $det['plat'] == $plat) {
-                        $item['flag'] = true;
-                        if (isset($det['platValue']) && $det['platValue']) {
-                            foreach ($det['platValue'] as $val) {
-                                if (isset($val['ruleType']) && $val['ruleType'] == 'hot' &&
-                                    isset($val['ruleValue']) && $val['ruleValue']) {
-                                    foreach ($val['ruleValue'] as $v) {
-                                        if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']['oid']) {
-                                            $hotDetail['flag'] = true;
-                                            $hotDetail['ruleValue'][$k] =
-                                                [
-                                                    'ruleId' => $value['_id'],
-                                                    'ruleName' => $value['ruleName'],
-                                                    'flag' => true
-                                                ];
-                                        }
+                foreach ($detailArr as $pk => $det) {
+                    if ($pk == $plat) {
+                        foreach ($det as $val) {
+                            if (isset($val['ruleType']) && $val['ruleType'] == 'hot' &&
+                                isset($val['ruleValue']) && $val['ruleValue']) {
+                                foreach ($val['ruleValue'] as $v) {
+                                    if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']['oid']) {
+                                        $hotDetail['flag'] = true;
+                                        $hotDetail['ruleValue'][$k] =
+                                            [
+                                                'ruleId' => $value['_id'],
+                                                'ruleName' => $value['ruleName'],
+                                                'flag' => true
+                                            ];
                                     }
                                 }
                             }
@@ -449,38 +441,32 @@ class ApiProductsEngine
                     ];
             }
         }
-        $item['platValue'] = [$newDetail, $hotDetail];
+        $item = [$newDetail, $hotDetail];
         return $item;
     }
 
     private static function getWishAllotInfo($plat, $detailArr)
     {
-        $item['plat'] = $plat;
-        $item['flag'] = false;
-        $item['platValue'] = [];
         $newRule = WishRule::find()->all();
         foreach ($newRule as $k => $value) {
             if ($detailArr) {
-                foreach ($detailArr as $det) {
-                    if (isset($det['plat']) && $det['plat'] == $plat) {
-                        $item['flag'] = true;
-                        if (isset($det['platValue']) && $det['platValue']) {
-                            foreach ($det['platValue'] as $v) {
-                                if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']['oid']) {
-                                    $item['platValue'][$k]['flag'] = true;
-                                    $item['platValue'][$k] =
-                                        [
-                                            'ruleId' => $value['_id'],
-                                            'ruleName' => $value['ruleName'],
-                                            'flag' => true
-                                        ];
-                                }
+                foreach ($detailArr as $pk => $det) {
+                    if ($pk == $plat) {
+                        foreach ($det as $v) {
+                            if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']['oid']) {
+                                $item['platValue'][$k]['flag'] = true;
+                                $item['platValue'][$k] =
+                                    [
+                                        'ruleId' => $value['_id'],
+                                        'ruleName' => $value['ruleName'],
+                                        'flag' => true
+                                    ];
                             }
                         }
                     }
                 }
             } else {
-                $item['platValue'][$k] =
+                $item[$k] =
                     [
                         'ruleId' => $value['_id'],
                         'ruleName' => $value['ruleName'],

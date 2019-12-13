@@ -939,7 +939,7 @@ class ProductsEngineController extends AdminController
         try {
             $condition = Yii::$app->request->post('condition');
             $goodsCode = $condition['goodsCode'];
-            $sql = "EXEC P_KC_StockWarning '',0,0,'','0','{$goodsCode}','','',50000,1,'','1','','','','',268,-999999";
+            $sql = "EXEC Y_R_KC_StockingWaringAll '',0,0,'','0','{$goodsCode}','','',50000,1,'','1','','',''";
             return Yii::$app->py_db->createCommand($sql)->queryAll();
         }
         catch (\Exception $why) {
