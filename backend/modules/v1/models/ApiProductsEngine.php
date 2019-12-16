@@ -403,7 +403,7 @@ class ApiProductsEngine
             } else {
                 $newDetail['ruleValue'][$k] =
                     [
-                        'ruleId' => $value['_id'],
+                        'ruleId' => (string)$value['_id'],
                         'ruleName' => $value['ruleName'],
                         'flag' => false
                     ];
@@ -435,7 +435,7 @@ class ApiProductsEngine
             } else {
                 $hotDetail['ruleValue'][$k] =
                     [
-                        'ruleId' => $value['_id'],
+                        'ruleId' => (string)$value['_id'],
                         'ruleName' => $value['ruleName'],
                         'flag' => false
                     ];
@@ -468,7 +468,7 @@ class ApiProductsEngine
             } else {
                 $item[$k] =
                     [
-                        'ruleId' => $value['_id'],
+                        'ruleId' =>  (string)$value['_id'],
                         'ruleName' => $value['ruleName'],
                         'flag' => false
                     ];
