@@ -57,6 +57,41 @@ class ApiProductsEngine
         }
     }
 
+
+    /**
+     * 启用规则
+     * @param $condition
+     */
+    public static function startRule($condition)
+    {
+       $ruleId = $condition['ruleId'];
+       $type = $condition['type'];
+       $table = 'ebay_new_rule';
+       if($type === 'hot') {
+           $table = 'ebay_hot_rule';
+       }
+       $db = Yii::$app->mongodb;
+       $col = $db->getCollection($table);
+       $col->update(['_id' => $ruleId],['isUsed' => 1]);
+
+    }
+    /**
+     * 启用规则
+     * @param $condition
+     */
+    public static function stopRule($condition)
+    {
+       $ruleId = $condition['ruleId'];
+       $type = $condition['type'];
+       $table = 'ebay_new_rule';
+       if($type === 'hot') {
+           $table = 'ebay_hot_rule';
+       }
+       $db = Yii::$app->mongodb;
+       $col = $db->getCollection($table);
+       $col->update(['_id' => $ruleId],['isUsed' => 0]);
+
+    }
     /**
      * @param $condition
      * @throws \Exception
