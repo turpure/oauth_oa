@@ -531,13 +531,13 @@ class ProductsEngineController extends AdminController
     public function actionSaveAllotRule()
     {
         try {
-
-            $userName = Yii::$app->user->identity->username;
             $condition = \Yii::$app->request->post('condition');
             $id = ArrayHelper::getValue($condition, 'id', '');
-            $rule = EbayAllotRule::findOne($id);
-            if (empty($rule)) {
+
+            if (empty($id)) {
                 $rule = new EbayAllotRule();
+            }else{
+                $rule = EbayAllotRule::findOne($id);
             }
             $rule->setAttributes($condition);
             if (!$rule->save(false)) {
