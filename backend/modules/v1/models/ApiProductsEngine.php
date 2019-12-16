@@ -452,18 +452,33 @@ class ApiProductsEngine
                             if (isset($val['ruleType']) && $val['ruleType'] == 'new' &&
                                 isset($val['ruleValue']) && $val['ruleValue']) {
                                 foreach ($val['ruleValue'] as $v) {
-                                    if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']) {
+                                    if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']
+                                    ) {
                                         $newDetail['flag'] = true;
                                         $newDetail['ruleValue'][$k] =
                                             [
-                                                'ruleId' => $value['_id'],
+                                                'ruleId' => (string)$value['_id'],
                                                 'ruleName' => $value['ruleName'],
                                                 'flag' => true
+                                            ];
+                                    }else{
+                                        $newDetail['ruleValue'][$k] =
+                                            [
+                                                'ruleId' => (string)$value['_id'],
+                                                'ruleName' => $value['ruleName'],
+                                                'flag' => false
                                             ];
                                     }
                                 }
                             }
                         }
+                    }else{
+                        $newDetail['ruleValue'][$k] =
+                            [
+                                'ruleId' => (string)$value['_id'],
+                                'ruleName' => $value['ruleName'],
+                                'flag' => false
+                            ];
                     }
                 }
             } else {
@@ -488,14 +503,28 @@ class ApiProductsEngine
                                         $hotDetail['flag'] = true;
                                         $hotDetail['ruleValue'][$k] =
                                             [
-                                                'ruleId' => $value['_id'],
+                                                'ruleId' => (string)$value['_id'],
                                                 'ruleName' => $value['ruleName'],
                                                 'flag' => true
+                                            ];
+                                    }else{
+                                        $hotDetail['ruleValue'][$k] =
+                                            [
+                                                'ruleId' => (string)$value['_id'],
+                                                'ruleName' => $value['ruleName'],
+                                                'flag' => false
                                             ];
                                     }
                                 }
                             }
                         }
+                    }else{
+                        $hotDetail['ruleValue'][$k] =
+                            [
+                                'ruleId' => (string)$value['_id'],
+                                'ruleName' => $value['ruleName'],
+                                'flag' => false
+                            ];
                     }
                 }
             } else {
@@ -520,15 +549,28 @@ class ApiProductsEngine
                     if ($pk == $plat) {
                         foreach ($det as $v) {
                             if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']) {
-                                $item['platValue'][$k]['flag'] = true;
-                                $item['platValue'][$k] =
+                                $item[$k] =
                                     [
                                         'ruleId' => $value['_id'],
                                         'ruleName' => $value['ruleName'],
                                         'flag' => true
                                     ];
+                            }else{
+                                $item[$k] =
+                                    [
+                                        'ruleId' => $value['_id'],
+                                        'ruleName' => $value['ruleName'],
+                                        'flag' => false
+                                    ];
                             }
                         }
+                    }else{
+                        $item[$k] =
+                            [
+                                'ruleId' =>  (string)$value['_id'],
+                                'ruleName' => $value['ruleName'],
+                                'flag' => false
+                            ];
                     }
                 }
             } else {
