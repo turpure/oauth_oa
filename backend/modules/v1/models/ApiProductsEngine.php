@@ -58,6 +58,72 @@ class ApiProductsEngine
     }
 
     /**
+     * @param $condition
+     * @throws \Exception
+     */
+    public static function manualRecommend($condition)
+    {
+        $itemId = $condition['itemId'];
+        $developer = $condition['developer'];
+        $type = $condition['type'];
+        $table = 'ebay_new_product';
+        if($type === 'hot') {
+            $table = 'ebay_hot_product';
+        }
+        $db = Yii::$app->mongodb;
+        $col = $db->getCollection($table);
+
+        // 追加recommendToPersons
+        $cur = $col->find(['itemId' => $itemId]);
+        $doc = [];
+        foreach ($cur as $row) {
+            $doc = $row;
+        }
+        $oldRecommendToPersons = $doc['recommendToPersons'];
+        if(count($oldRecommendToPersons) >= 2) {
+           throw new \Exception('已超过推荐人数上限！');
+        }
+        if (empty($oldRecommendToPersons)) {
+            $oldRecommendToPersons = [];
+            foreach ($developer as $dp) {
+                $oldRecommendToPersons[] = ['name' => $dp, 'status' => '', 'reason' => ''];
+
+            }
+        }
+        else {
+            foreach ($oldRecommendToPersons as $op) {
+                foreach ($developer as $dp) {
+                    if (is_array($op) && !in_array($dp, array_keys($op))) {
+                        $oldRecommendToPersons[] = ['name' => $dp, 'status' => '', 'reason' => ''];
+                    }
+                }
+            }
+        }
+        //查找并更新ItemId
+        $col->update(['itemId' => $itemId], ['recommendToPersons' => $oldRecommendToPersons ]);
+
+
+
+        //推送到推荐表
+        $doc['receiver'] = $developer;
+        $doc['productType'] = $type;
+        $doc['dispatchDate'] = date('Y-m-d');
+        $recommend = $db->getCollection('ebay_recommended_product');
+        try {
+            $recommend->insert($doc);
+        }
+        catch (\Exception  $why)
+        {
+            $developer = [];
+            foreach ($oldRecommendToPersons as $row) {
+                $developer[] = $row['name'];
+            }
+            $recommend->update(['itemId' => $itemId], ['receiver' => $developer, 'productType' => $type, 'dispatchDate' => date('Y-m-d')]);
+        }
+
+    }
+
+    /**
      * 认领
      * @param $plat
      * @param $type

@@ -56,7 +56,6 @@ class ProductsEngineController extends AdminController
     {
         //获取当前用户信息
         $username = Yii::$app->user->identity->username;
-        //$username = '刘爽';
         $userList = ApiUser::getUserList($username);
         //获取当前登录用户权限下的用户是否有指定eBay产品类目
 
@@ -111,6 +110,21 @@ class ProductsEngineController extends AdminController
         } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }
+    }
+
+    /**
+     * 人工推送产品给开发
+     */
+    public function actionManualRecommend()
+    {
+        $condition = Yii::$app->request->post('condition', null);
+        try {
+            ApiProductsEngine::manualRecommend($condition);
+        }
+        catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+
     }
 
 
