@@ -427,6 +427,39 @@ class ProductsEngineController extends AdminController
         }
     }
 
+
+    /**
+     * 启用规则
+     * @return array
+     */
+    public static function actionStartRule()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition', null);
+            ApiProductsEngine::startRule($condition);
+        }
+        catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+    }
+
+    /**
+     * 停用规则
+     * @return array
+     */
+    public static function actionStopRule()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition', null);
+            ApiProductsEngine::startRule($condition);
+        }
+        catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+    }
+
+
+
     public function actionSaveCategory()
     {
         try {
