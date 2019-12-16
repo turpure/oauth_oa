@@ -67,7 +67,7 @@ class ApiProductsEngine
         $developer = $condition['developer'];
         $type = $condition['type'];
         $table = 'ebay_new_product';
-        if($type === 'hot') {
+        if ($type === 'hot') {
             $table = 'ebay_hot_product';
         }
         $db = Yii::$app->mongodb;
@@ -80,8 +80,8 @@ class ApiProductsEngine
             $doc = $row;
         }
         $oldRecommendToPersons = $doc['recommendToPersons'];
-        if(count($oldRecommendToPersons) >= 2) {
-           throw new \Exception('已超过推荐人数上限！');
+        if (count($oldRecommendToPersons) >= 2) {
+            throw new \Exception('已超过推荐人数上限！');
         }
         if (empty($oldRecommendToPersons)) {
             $oldRecommendToPersons = [];
@@ -89,8 +89,7 @@ class ApiProductsEngine
                 $oldRecommendToPersons[] = ['name' => $dp, 'status' => '', 'reason' => ''];
 
             }
-        }
-        else {
+        } else {
             foreach ($oldRecommendToPersons as $op) {
                 foreach ($developer as $dp) {
                     if (is_array($op) && !in_array($dp, array_keys($op))) {
@@ -100,8 +99,7 @@ class ApiProductsEngine
             }
         }
         //查找并更新ItemId
-        $col->update(['itemId' => $itemId], ['recommendToPersons' => $oldRecommendToPersons ]);
-
+        $col->update(['itemId' => $itemId], ['recommendToPersons' => $oldRecommendToPersons]);
 
 
         //推送到推荐表
@@ -111,9 +109,7 @@ class ApiProductsEngine
         $recommend = $db->getCollection('ebay_recommended_product');
         try {
             $recommend->insert($doc);
-        }
-        catch (\Exception  $why)
-        {
+        } catch (\Exception  $why) {
             $developer = [];
             foreach ($oldRecommendToPersons as $row) {
                 $developer[] = $row['name'];
@@ -445,40 +441,29 @@ class ApiProductsEngine
         $newDetail['ruleValue'] = $hotDetail['ruleValue'] = [];
         $newRule = EbayNewRule::find()->all();
         foreach ($newRule as $k => $value) {
-            if ($detailArr) {
-                foreach ($detailArr as $pk => $det) {
-                    if ($pk == $plat) {
-                        foreach ($det as $val) {
-                            if (isset($val['ruleType']) && $val['ruleType'] == 'new' &&
-                                isset($val['ruleValue']) && $val['ruleValue']) {
-                                foreach ($val['ruleValue'] as $v) {
-                                    if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']
-                                    ) {
-                                        $newDetail['flag'] = true;
-                                        $newDetail['ruleValue'][$k] =
-                                            [
-                                                'ruleId' => (string)$value['_id'],
-                                                'ruleName' => $value['ruleName'],
-                                                'flag' => true
-                                            ];
-                                    }else{
-                                        $newDetail['ruleValue'][$k] =
-                                            [
-                                                'ruleId' => (string)$value['_id'],
-                                                'ruleName' => $value['ruleName'],
-                                                'flag' => false
-                                            ];
-                                    }
-                                }
+            if (isset($detailArr[$plat]) && $detailArr[$plat]) {
+                foreach ($detailArr[$plat] as $val) {
+                    if (isset($val['ruleType']) && $val['ruleType'] == 'new' &&
+                        isset($val['ruleValue']) && $val['ruleValue']) {
+                        foreach ($val['ruleValue'] as $v) {
+                            if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']
+                            ) {
+                                $newDetail['flag'] = true;
+                                $newDetail['ruleValue'][$k] =
+                                    [
+                                        'ruleId' => (string)$value['_id'],
+                                        'ruleName' => $value['ruleName'],
+                                        'flag' => true
+                                    ];
+                            } else {
+                                $newDetail['ruleValue'][$k] =
+                                    [
+                                        'ruleId' => (string)$value['_id'],
+                                        'ruleName' => $value['ruleName'],
+                                        'flag' => false
+                                    ];
                             }
                         }
-                    }else{
-                        $newDetail['ruleValue'][$k] =
-                            [
-                                'ruleId' => (string)$value['_id'],
-                                'ruleName' => $value['ruleName'],
-                                'flag' => false
-                            ];
                     }
                 }
             } else {
@@ -492,39 +477,28 @@ class ApiProductsEngine
         }
         $hotRule = EbayHotRule::find()->asArray()->all();
         foreach ($hotRule as $k => $value) {
-            if ($detailArr) {
-                foreach ($detailArr as $pk => $det) {
-                    if ($pk == $plat) {
-                        foreach ($det as $val) {
-                            if (isset($val['ruleType']) && $val['ruleType'] == 'hot' &&
-                                isset($val['ruleValue']) && $val['ruleValue']) {
-                                foreach ($val['ruleValue'] as $v) {
-                                    if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']) {
-                                        $hotDetail['flag'] = true;
-                                        $hotDetail['ruleValue'][$k] =
-                                            [
-                                                'ruleId' => (string)$value['_id'],
-                                                'ruleName' => $value['ruleName'],
-                                                'flag' => true
-                                            ];
-                                    }else{
-                                        $hotDetail['ruleValue'][$k] =
-                                            [
-                                                'ruleId' => (string)$value['_id'],
-                                                'ruleName' => $value['ruleName'],
-                                                'flag' => false
-                                            ];
-                                    }
-                                }
+            if (isset($detailArr[$plat]) && $detailArr[$plat]) {
+                foreach ($detailArr[$plat] as $val) {
+                    if (isset($val['ruleType']) && $val['ruleType'] == 'hot' &&
+                        isset($val['ruleValue']) && $val['ruleValue']) {
+                        foreach ($val['ruleValue'] as $v) {
+                            if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']) {
+                                $hotDetail['flag'] = true;
+                                $hotDetail['ruleValue'][$k] =
+                                    [
+                                        'ruleId' => (string)$value['_id'],
+                                        'ruleName' => $value['ruleName'],
+                                        'flag' => true
+                                    ];
+                            } else {
+                                $hotDetail['ruleValue'][$k] =
+                                    [
+                                        'ruleId' => (string)$value['_id'],
+                                        'ruleName' => $value['ruleName'],
+                                        'flag' => false
+                                    ];
                             }
                         }
-                    }else{
-                        $hotDetail['ruleValue'][$k] =
-                            [
-                                'ruleId' => (string)$value['_id'],
-                                'ruleName' => $value['ruleName'],
-                                'flag' => false
-                            ];
                     }
                 }
             } else {
@@ -544,30 +518,19 @@ class ApiProductsEngine
     {
         $newRule = WishRule::find()->all();
         foreach ($newRule as $k => $value) {
-            if ($detailArr) {
-                foreach ($detailArr as $pk => $det) {
-                    if ($pk == $plat) {
-                        foreach ($det as $v) {
-                            if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']) {
-                                $item[$k] =
-                                    [
-                                        'ruleId' => $value['_id'],
-                                        'ruleName' => $value['ruleName'],
-                                        'flag' => true
-                                    ];
-                            }else{
-                                $item[$k] =
-                                    [
-                                        'ruleId' => $value['_id'],
-                                        'ruleName' => $value['ruleName'],
-                                        'flag' => false
-                                    ];
-                            }
-                        }
-                    }else{
+            if (isset($detailArr[$plat]) && $detailArr[$plat]) {
+                foreach ($detailArr[$plat] as $v) {
+                    if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']) {
                         $item[$k] =
                             [
-                                'ruleId' =>  (string)$value['_id'],
+                                'ruleId' => $value['_id'],
+                                'ruleName' => $value['ruleName'],
+                                'flag' => true
+                            ];
+                    } else {
+                        $item[$k] =
+                            [
+                                'ruleId' => $value['_id'],
                                 'ruleName' => $value['ruleName'],
                                 'flag' => false
                             ];
@@ -576,7 +539,7 @@ class ApiProductsEngine
             } else {
                 $item[$k] =
                     [
-                        'ruleId' =>  (string)$value['_id'],
+                        'ruleId' => (string)$value['_id'],
                         'ruleName' => $value['ruleName'],
                         'flag' => false
                     ];
