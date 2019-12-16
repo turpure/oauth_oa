@@ -452,7 +452,7 @@ class ApiProductsEngine
                             if (isset($val['ruleType']) && $val['ruleType'] == 'new' &&
                                 isset($val['ruleValue']) && $val['ruleValue']) {
                                 foreach ($val['ruleValue'] as $v) {
-                                    if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']['oid']) {
+                                    if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']) {
                                         $newDetail['flag'] = true;
                                         $newDetail['ruleValue'][$k] =
                                             [
@@ -484,7 +484,7 @@ class ApiProductsEngine
                             if (isset($val['ruleType']) && $val['ruleType'] == 'hot' &&
                                 isset($val['ruleValue']) && $val['ruleValue']) {
                                 foreach ($val['ruleValue'] as $v) {
-                                    if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']['oid']) {
+                                    if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']) {
                                         $hotDetail['flag'] = true;
                                         $hotDetail['ruleValue'][$k] =
                                             [
@@ -519,7 +519,7 @@ class ApiProductsEngine
                 foreach ($detailArr as $pk => $det) {
                     if ($pk == $plat) {
                         foreach ($det as $v) {
-                            if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']['oid']) {
+                            if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']) {
                                 $item['platValue'][$k]['flag'] = true;
                                 $item['platValue'][$k] =
                                     [
