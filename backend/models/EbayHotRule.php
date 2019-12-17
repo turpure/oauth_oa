@@ -188,6 +188,7 @@ class EbayHotRule extends \yii\mongodb\ActiveRecord
             'ruleMark',
             'publishedSite',
             'site',
+            'isUsed',
 
 
         ];
@@ -199,7 +200,7 @@ class EbayHotRule extends \yii\mongodb\ActiveRecord
     public function rules()
     {
         return [
-            [['brand', 'cids', 'country', 'visitStart', 'visitEnd', 'popularStatus', 'salesThreeDayFlag', 'titleOrItemId', 'itemId', 'title', 'titleType', 'priceStart', 'priceEnd', 'soldStart', 'soldEnd', 'soldThePreviousDayStart', 'soldThePreviousDayEnd', 'paymentThePreviousDayStart', 'paymentThePreviousDayEnd', 'salesThreeDay1Start', 'salesThreeDay1End', 'salesThreeDayGrowthStart', 'salesThreeDayGrowthEnd', 'paymentThreeDay1Start', 'paymentThreeDay1End', 'salesWeek1Start', 'salesWeek1End', 'salesWeek2Start', 'salesWeek2End', 'salesWeekGrowthStart', 'salesWeekGrowthEnd', 'paymentWeek1Start', 'paymentWeek1End', 'marketplace', 'itemLocation', 'genTimeStart', 'genTimeEnd', 'sellerOrStore', 'storeLocation', 'soldThePreviousGrowthStart', 'soldThePreviousGrowthEnd', 'index', 'pageSize', 'orderColumn', 'sales_three_day1', 'sort', 'itemIdStatus', 'sellerOrStoreStatus', 'storeLocationStatus', 'itemLocationStatus','creator', 'createdDate', 'updatedDate','ruleName','ruleMark','publishedSite','site'], 'safe']
+            [['isUsed','brand', 'cids', 'country', 'visitStart', 'visitEnd', 'popularStatus', 'salesThreeDayFlag', 'titleOrItemId', 'itemId', 'title', 'titleType', 'priceStart', 'priceEnd', 'soldStart', 'soldEnd', 'soldThePreviousDayStart', 'soldThePreviousDayEnd', 'paymentThePreviousDayStart', 'paymentThePreviousDayEnd', 'salesThreeDay1Start', 'salesThreeDay1End', 'salesThreeDayGrowthStart', 'salesThreeDayGrowthEnd', 'paymentThreeDay1Start', 'paymentThreeDay1End', 'salesWeek1Start', 'salesWeek1End', 'salesWeek2Start', 'salesWeek2End', 'salesWeekGrowthStart', 'salesWeekGrowthEnd', 'paymentWeek1Start', 'paymentWeek1End', 'marketplace', 'itemLocation', 'genTimeStart', 'genTimeEnd', 'sellerOrStore', 'storeLocation', 'soldThePreviousGrowthStart', 'soldThePreviousGrowthEnd', 'index', 'pageSize', 'orderColumn', 'sales_three_day1', 'sort', 'itemIdStatus', 'sellerOrStoreStatus', 'storeLocationStatus', 'itemLocationStatus','creator', 'createdDate', 'updatedDate','ruleName','ruleMark','publishedSite','site'], 'safe']
         ];
     }
 
