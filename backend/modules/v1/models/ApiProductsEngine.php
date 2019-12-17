@@ -476,6 +476,12 @@ class ApiProductsEngine
         $newDetail['ruleValue'] = $hotDetail['ruleValue'] = [];
         $newRule = EbayNewRule::find()->all();
         foreach ($newRule as $k => $value) {
+            $newDetail['ruleValue'][$k] =
+                [
+                    'ruleId' => (string)$value['_id'],
+                    'ruleName' => $value['ruleName'],
+                    'flag' => false
+                ];
             if (isset($detailArr[$plat]) && $detailArr[$plat]) {
                 foreach ($detailArr[$plat] as $val) {
                     if (isset($val['ruleType']) && $val['ruleType'] == 'new' &&
@@ -484,34 +490,21 @@ class ApiProductsEngine
                             if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']
                             ) {
                                 $newDetail['flag'] = true;
-                                $newDetail['ruleValue'][$k] =
-                                    [
-                                        'ruleId' => (string)$value['_id'],
-                                        'ruleName' => $value['ruleName'],
-                                        'flag' => true
-                                    ];
-                            } else {
-                                $newDetail['ruleValue'][$k] =
-                                    [
-                                        'ruleId' => (string)$value['_id'],
-                                        'ruleName' => $value['ruleName'],
-                                        'flag' => false
-                                    ];
+                                $newDetail['ruleValue'][$k]['flag'] = true;
                             }
                         }
                     }
                 }
-            } else {
-                $newDetail['ruleValue'][$k] =
-                    [
-                        'ruleId' => (string)$value['_id'],
-                        'ruleName' => $value['ruleName'],
-                        'flag' => false
-                    ];
             }
         }
         $hotRule = EbayHotRule::find()->asArray()->all();
         foreach ($hotRule as $k => $value) {
+            $hotDetail['ruleValue'][$k] =
+                [
+                    'ruleId' => (string)$value['_id'],
+                    'ruleName' => $value['ruleName'],
+                    'flag' => false
+                ];
             if (isset($detailArr[$plat]) && $detailArr[$plat]) {
                 foreach ($detailArr[$plat] as $val) {
                     if (isset($val['ruleType']) && $val['ruleType'] == 'hot' &&
@@ -519,30 +512,11 @@ class ApiProductsEngine
                         foreach ($val['ruleValue'] as $v) {
                             if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']) {
                                 $hotDetail['flag'] = true;
-                                $hotDetail['ruleValue'][$k] =
-                                    [
-                                        'ruleId' => (string)$value['_id'],
-                                        'ruleName' => $value['ruleName'],
-                                        'flag' => true
-                                    ];
-                            } else {
-                                $hotDetail['ruleValue'][$k] =
-                                    [
-                                        'ruleId' => (string)$value['_id'],
-                                        'ruleName' => $value['ruleName'],
-                                        'flag' => false
-                                    ];
+                                $hotDetail['ruleValue'][$k]['flag'] = true;
                             }
                         }
                     }
                 }
-            } else {
-                $hotDetail['ruleValue'][$k] =
-                    [
-                        'ruleId' => (string)$value['_id'],
-                        'ruleName' => $value['ruleName'],
-                        'flag' => false
-                    ];
             }
         }
         $item = [$newDetail, $hotDetail];
@@ -553,22 +527,16 @@ class ApiProductsEngine
     {
         $newRule = WishRule::find()->all();
         foreach ($newRule as $k => $value) {
+            $item[$k] =
+                [
+                    'ruleId' => $value['_id'],
+                    'ruleName' => $value['ruleName'],
+                    'flag' => false
+                ];
             if (isset($detailArr[$plat]) && $detailArr[$plat]) {
                 foreach ($detailArr[$plat] as $v) {
                     if (isset($v['ruleId']) && (string)$value['_id'] == $v['ruleId']) {
-                        $item[$k] =
-                            [
-                                'ruleId' => $value['_id'],
-                                'ruleName' => $value['ruleName'],
-                                'flag' => true
-                            ];
-                    } else {
-                        $item[$k] =
-                            [
-                                'ruleId' => $value['_id'],
-                                'ruleName' => $value['ruleName'],
-                                'flag' => false
-                            ];
+                        $item[$k]['flag'] = true;
                     }
                 }
             } else {
