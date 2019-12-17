@@ -451,7 +451,7 @@ class ProductsEngineController extends AdminController
     {
         try {
             $condition = Yii::$app->request->post('condition', null);
-            ApiProductsEngine::startRule($condition);
+            ApiProductsEngine::stopRule($condition);
         }
         catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
