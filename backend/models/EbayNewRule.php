@@ -128,6 +128,8 @@ class EbayNewRule extends \yii\mongodb\ActiveRecord
             'ruleMark',
             'publishedSite',
             'site',
+            'isUsed',
+            'type',
         ];
     }
 
@@ -137,7 +139,7 @@ class EbayNewRule extends \yii\mongodb\ActiveRecord
     public function rules()
     {
         return [
-            [['cids', 'index', 'title', 'itemId', 'soldEnd', 'country', 'visitEnd', 'priceEnd', 'soldStart', 'titleType', 'sort', 'pageSize', 'priceStart', 'visitStart', 'marketplace', 'popularStatus', 'sellerOrStore', 'storeLocation', 'salesThreeDayFlag', 'orderColumn', 'listedTime', 'itemLocation', 'creator', 'createdDate', 'updatedDate','ruleName','ruleMark','publishedSite','site'], 'safe']
+            [['type','isUsed','cids', 'index', 'title', 'itemId', 'soldEnd', 'country', 'visitEnd', 'priceEnd', 'soldStart', 'titleType', 'sort', 'pageSize', 'priceStart', 'visitStart', 'marketplace', 'popularStatus', 'sellerOrStore', 'storeLocation', 'salesThreeDayFlag', 'orderColumn', 'listedTime', 'itemLocation', 'creator', 'createdDate', 'updatedDate','ruleName','ruleMark','publishedSite','site'], 'safe']
         ];
     }
 

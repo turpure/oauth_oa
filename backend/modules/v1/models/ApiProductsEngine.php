@@ -101,12 +101,12 @@ class ApiProductsEngine
         $itemId = $condition['itemId'];
         $developer = $condition['developer'];
         $type = $condition['type'];
-        $table = 'ebay_new_product';
-        if ($type === 'hot') {
-            $table = 'ebay_hot_product';
-        }
+        $table = 'ebay_'.$type.'_product';
+        $ruleTable = 'ebay_'.$type.'_rule';
         $db = Yii::$app->mongodb;
         $col = $db->getCollection($table);
+
+
 
         // 追加recommendToPersons
         $cur = $col->find(['itemId' => $itemId]);
@@ -133,23 +133,53 @@ class ApiProductsEngine
                 }
             }
         }
-        //查找并更新ItemId
-        $col->update(['itemId' => $itemId], ['recommendToPersons' => $oldRecommendToPersons]);
+
+        //追加ruleID
+        $ruleCol = $db->getCollection($ruleTable);
+        $ruleDoc = $ruleCol->find(['type' => 'manual']);
+        $rule = [];
+        foreach ($ruleDoc as $rd) {
+            $rule = $rd;
+        }
+        $ruleId = $rule['_id'];
+        $oldRule = !empty($doc['rules']) ? $doc['rules']: [];
+        $currentRule = array_unique(array_merge($oldRule,[$ruleId]));
+
+
+
 
 
         //推送到推荐表
         $doc['receiver'] = $developer;
         $doc['productType'] = $type;
         $doc['dispatchDate'] = date('Y-m-d');
+        $doc['recommendDate'] = date('Y-m-d');
         $recommend = $db->getCollection('ebay_recommended_product');
+        $allRecommend = $db->getCollection('ebay_all_recommended_product');
         try {
+            //查找并更新ItemId
+            $col->update(['itemId' => $itemId], ['recommendToPersons' => $oldRecommendToPersons,'rules' => $currentRule]);
             $recommend->insert($doc);
+            $allRecommend->insert($doc);
         } catch (\Exception  $why) {
             $developer = [];
             foreach ($oldRecommendToPersons as $row) {
                 $developer[] = $row['name'];
             }
-            $recommend->update(['itemId' => $itemId], ['receiver' => $developer, 'productType' => $type, 'dispatchDate' => date('Y-m-d')]);
+            $recommend->update(['itemId' => $itemId], [
+                'receiver' => $developer,
+                'productType' => $type,
+                'dispatchDate' => date('Y-m-d'),
+                'recommendDate' => date('Y-m-d'),
+                'rules' => $currentRule,
+            ]);
+            $allRecommend->update(['itemId' => $itemId], [
+                'receiver' => $developer,
+                'productType' => $type,
+                'dispatchDate' => date('Y-m-d'),
+                'recommendDate' => date('Y-m-d'),
+                'rules' => $currentRule,
+            ]);
         }
 
     }
