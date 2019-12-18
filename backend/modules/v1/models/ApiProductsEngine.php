@@ -145,23 +145,41 @@ class ApiProductsEngine
         $oldRule = !empty($doc['rules']) ? $doc['rules']: [];
         $currentRule = array_unique(array_merge($oldRule,[$ruleId]));
 
-        //查找并更新ItemId
-        $col->update(['itemId' => $itemId], ['recommendToPersons' => $oldRecommendToPersons,'rules' => $currentRule]);
+
+
 
 
         //推送到推荐表
         $doc['receiver'] = $developer;
         $doc['productType'] = $type;
         $doc['dispatchDate'] = date('Y-m-d');
+        $doc['recommendDate'] = date('Y-m-d');
         $recommend = $db->getCollection('ebay_recommended_product');
+        $allRecommend = $db->getCollection('ebay_all_recommended_product');
         try {
+            //查找并更新ItemId
+            $col->update(['itemId' => $itemId], ['recommendToPersons' => $oldRecommendToPersons,'rules' => $currentRule]);
             $recommend->insert($doc);
+            $allRecommend->insert($doc);
         } catch (\Exception  $why) {
             $developer = [];
             foreach ($oldRecommendToPersons as $row) {
                 $developer[] = $row['name'];
             }
-            $recommend->update(['itemId' => $itemId], ['receiver' => $developer, 'productType' => $type, 'dispatchDate' => date('Y-m-d')]);
+            $recommend->update(['itemId' => $itemId], [
+                'receiver' => $developer,
+                'productType' => $type,
+                'dispatchDate' => date('Y-m-d'),
+                'recommendDate' => date('Y-m-d'),
+                'rules' => $currentRule,
+            ]);
+            $allRecommend->update(['itemId' => $itemId], [
+                'receiver' => $developer,
+                'productType' => $type,
+                'dispatchDate' => date('Y-m-d'),
+                'recommendDate' => date('Y-m-d'),
+                'rules' => $currentRule,
+            ]);
         }
 
     }
