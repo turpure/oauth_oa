@@ -539,16 +539,22 @@ class OaGoodsinfoController extends AdminController
     public function actionPlatExportWish()
     {
 
-        $request = Yii::$app->request;
-        if (!$request->isPost) {
-            return [];
+        try{
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            $infoId = $condition['id'];
+            $ret = ApiGoodsinfo::preExportWish($infoId);
+            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Xls');
         }
-        $condition = $request->post()['condition'];
-        $infoId = $condition['id'];
-        $ret = ApiGoodsinfo::preExportWish($infoId);
-        ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Xls');
-    }
 
+        catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+
+        }
 
     /**
      * @brief joom批量导出
