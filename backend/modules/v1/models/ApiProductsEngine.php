@@ -101,12 +101,12 @@ class ApiProductsEngine
         $itemId = $condition['itemId'];
         $developer = $condition['developer'];
         $type = $condition['type'];
-        $table = 'ebay_new_product';
-        if ($type === 'hot') {
-            $table = 'ebay_hot_product';
-        }
+        $table = 'ebay_'.$type.'_product';
+        $ruleTable = 'ebay_'.$type.'_rule';
         $db = Yii::$app->mongodb;
         $col = $db->getCollection($table);
+
+
 
         // 追加recommendToPersons
         $cur = $col->find(['itemId' => $itemId]);
@@ -133,8 +133,20 @@ class ApiProductsEngine
                 }
             }
         }
+
+        //追加ruleID
+        $ruleCol = $db->getCollection($ruleTable);
+        $ruleDoc = $ruleCol->find(['type' => 'manual']);
+        $rule = [];
+        foreach ($ruleDoc as $rd) {
+            $rule = $rd;
+        }
+        $ruleId = $rule['_id'];
+        $oldRule = !empty($doc['rules']) ? $doc['rules']: [];
+        $currentRule = array_unique(array_merge($oldRule,[$ruleId]));
+
         //查找并更新ItemId
-        $col->update(['itemId' => $itemId], ['recommendToPersons' => $oldRecommendToPersons]);
+        $col->update(['itemId' => $itemId], ['recommendToPersons' => $oldRecommendToPersons,'rules' => $currentRule]);
 
 
         //推送到推荐表
