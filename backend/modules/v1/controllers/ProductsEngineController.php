@@ -113,6 +113,18 @@ class ProductsEngineController extends AdminController
     }
 
     /**
+     * 能接受推荐产品的开发
+     */
+    public function actionRecommendDeveloper ()
+    {
+        try {
+            return ApiProductsEngine::recommendDeveloper();
+        }
+        catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+    }
+    /**
      * 人工推送产品给开发
      */
     public function actionManualRecommend()

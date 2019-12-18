@@ -59,6 +59,21 @@ class ApiProductsEngine
 
 
     /**
+     * 获取所有能被推荐产品的开发
+     */
+    public static function recommendDeveloper()
+    {
+        $db = Yii::$app->mongodb;
+        $col = $db->getCollection('ebay_allot_rule');
+        $doc = $col->find();
+        $ret = [];
+        foreach ($doc as $ele) {
+            $ret[] = $ele['username'];
+        }
+        return $ret;
+    }
+
+    /**
      * 启用规则
      * @param $condition
      */
