@@ -69,7 +69,7 @@ class EbayNewRule extends \yii\mongodb\ActiveRecord
         foreach ($inputSite as $inSite) {
             $ret[] = [$site[$inSite]['marketplace'] => $site[$inSite]['country']];
         }
-        $this->setAttributes(['site' => $ret, 'type' => 'auto']);
+        $this->setAttributes(['site' => $ret]);
 
         if(parent::beforeSave($insert)) {
 
