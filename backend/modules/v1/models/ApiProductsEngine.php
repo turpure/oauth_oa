@@ -177,6 +177,7 @@ class ApiProductsEngine
             $recommend->insert($doc);
             $allRecommend->insert($doc);
         } catch (\Exception  $why) {
+            /*
             $developer = [];
             foreach ($oldRecommendToPersons as $row) {
                 $developer[] = $row['name'];
@@ -184,17 +185,19 @@ class ApiProductsEngine
             $recommend->update(['itemId' => $itemId], [
                 'receiver' => $developer,
                 'productType' => $type,
-                'dispatchDate' => date('Y-m-d'),
-                'recommendDate' => date('Y-m-d'),
+//                'dispatchDate' => date('Y-m-d'),
+//                'recommendDate' => date('Y-m-d'),
                 'rules' => $currentRule,
             ]);
             $allRecommend->update(['itemId' => $itemId], [
                 'receiver' => $developer,
                 'productType' => $type,
-                'dispatchDate' => date('Y-m-d'),
-                'recommendDate' => date('Y-m-d'),
+//                'dispatchDate' => date('Y-m-d'),
+//                'recommendDate' => date('Y-m-d'),
                 'rules' => $currentRule,
             ]);
+            */
+            throw new \Exception('不能重复推送！');
         }
 
     }
