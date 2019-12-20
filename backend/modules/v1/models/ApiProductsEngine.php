@@ -47,9 +47,8 @@ class ApiProductsEngine
         if ($plat === 'ebay') {
             return static::getEbayRecommend($type, $marketplace, $page, $pageSize, [$recommendStatus]);
         }
-
         if ($plat === 'wish') {
-            return WishProducts::find()->all();
+            return static::getWishRecommend($type, $page, $pageSize, [$recommendStatus]);
         }
 
         if ($plat === 'joom') {
@@ -64,34 +63,36 @@ class ApiProductsEngine
      */
     public static function startRule($condition)
     {
-       $ruleId = $condition['ruleId'];
-       $type = $condition['type'];
-       $table = 'ebay_new_rule';
-       if($type === 'hot') {
-           $table = 'ebay_hot_rule';
-       }
-       $db = Yii::$app->mongodb;
-       $col = $db->getCollection($table);
-       $col->update(['_id' => $ruleId],['isUsed' => 1]);
+        $ruleId = $condition['ruleId'];
+        $type = $condition['type'];
+        $table = 'ebay_new_rule';
+        if ($type === 'hot') {
+            $table = 'ebay_hot_rule';
+        }
+        $db = Yii::$app->mongodb;
+        $col = $db->getCollection($table);
+        $col->update(['_id' => $ruleId], ['isUsed' => 1]);
 
     }
+
     /**
      * 启用规则
      * @param $condition
      */
     public static function stopRule($condition)
     {
-       $ruleId = $condition['ruleId'];
-       $type = $condition['type'];
-       $table = 'ebay_new_rule';
-       if($type === 'hot') {
-           $table = 'ebay_hot_rule';
-       }
-       $db = Yii::$app->mongodb;
-       $col = $db->getCollection($table);
-       $col->update(['_id' => $ruleId],['isUsed' => 0]);
+        $ruleId = $condition['ruleId'];
+        $type = $condition['type'];
+        $table = 'ebay_new_rule';
+        if ($type === 'hot') {
+            $table = 'ebay_hot_rule';
+        }
+        $db = Yii::$app->mongodb;
+        $col = $db->getCollection($table);
+        $col->update(['_id' => $ruleId], ['isUsed' => 0]);
 
     }
+
     /**
      * @param $condition
      * @throws \Exception
@@ -101,11 +102,10 @@ class ApiProductsEngine
         $itemId = $condition['itemId'];
         $developer = $condition['developer'];
         $type = $condition['type'];
-        $table = 'ebay_'.$type.'_product';
-        $ruleTable = 'ebay_'.$type.'_rule';
+        $table = 'ebay_' . $type . '_product';
+        $ruleTable = 'ebay_' . $type . '_rule';
         $db = Yii::$app->mongodb;
         $col = $db->getCollection($table);
-
 
 
         // 追加recommendToPersons
@@ -142,11 +142,8 @@ class ApiProductsEngine
             $rule = $rd;
         }
         $ruleId = $rule['_id'];
-        $oldRule = !empty($doc['rules']) ? $doc['rules']: [];
-        $currentRule = array_unique(array_merge($oldRule,[$ruleId]));
-
-
-
+        $oldRule = !empty($doc['rules']) ? $doc['rules'] : [];
+        $currentRule = array_unique(array_merge($oldRule, [$ruleId]));
 
 
         //推送到推荐表
@@ -158,7 +155,7 @@ class ApiProductsEngine
         $allRecommend = $db->getCollection('ebay_all_recommended_product');
         try {
             //查找并更新ItemId
-            $col->update(['itemId' => $itemId], ['recommendToPersons' => $oldRecommendToPersons,'rules' => $currentRule]);
+            $col->update(['itemId' => $itemId], ['recommendToPersons' => $oldRecommendToPersons, 'rules' => $currentRule]);
             $recommend->insert($doc);
             $allRecommend->insert($doc);
         } catch (\Exception  $why) {
@@ -317,6 +314,52 @@ class ApiProductsEngine
         return [$isSetCat, $categoryArr];
     }
 
+
+    private static function getWishRecommend($type, $page, $pageSize, $recommendStatus = [])
+    {
+        $ret = [];
+        //当天推荐数据
+        $today = date('Y-m-d');
+
+        //当前在用规则下数据
+        $newRules = WishRule::find()->select(['id'])->where(['ruleType' => $type])->all();
+        $cur = (new \yii\mongodb\Query())->from('wish_new_product')
+            ->andFilterWhere(['ruleType' => $type])
+            ->andWhere(['recommendDate' => ['$regex' => $today]])
+            ->all();
+        foreach ($cur as $row) {
+            foreach ($newRules as $rule) {
+                $productRules = $row['rules'];
+                if (in_array($rule->_id, $productRules, false)) {
+                    //推荐状态筛选
+                    $item = static::recommendStatusFilter($recommendStatus, $row);
+                    if (!empty($item)) {
+                        $ret[] = $item;
+                        break;
+                    }
+                }
+            }
+        }
+        // 分页，排序
+        $data = new ArrayDataProvider([
+            'allModels' => $ret,
+            'sort' => [
+                'attributes' => [
+                    'genTime', 'rating', 'numRating',
+                    'totalprice', 'numEntered', 'maxNumBought',
+                    'viewRate1', 'viewRateGrowth'
+                ],
+                'defaultOrder' => [
+                    'viewRateGrowth' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'page' => $page - 1,
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $data;
+    }
 
     private static function getEbayRecommend($type, $marketplace, $page, $pageSize, $recommendStatus = [])
     {

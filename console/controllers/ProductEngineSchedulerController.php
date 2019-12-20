@@ -9,6 +9,7 @@ namespace console\controllers;
 
 use console\models\ConScheduler;
 use console\models\ProductEngine;
+use console\models\WishProductEngine;
 use yii\console\Controller;
 use Yii;
 
@@ -134,6 +135,22 @@ class ProductEngineSchedulerController extends Controller
             print 'fail to recommend cause of ' . $why->getMessage();
         }
     }
+
+
+    //====================================================================================================
+    //Wish推荐
+    /**
+     * 给产品打标签
+     */
+    public function actionWishProductTag()
+    {
+        // 新品打标签
+        WishProductEngine::setProductTag('new');
+
+        //热销产品打标签
+        //WishProductEngine::setProductTag('hot');
+    }
+
 
 
 }
