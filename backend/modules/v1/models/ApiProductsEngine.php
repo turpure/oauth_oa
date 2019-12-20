@@ -58,6 +58,21 @@ class ApiProductsEngine
 
 
     /**
+     * 获取所有能被推荐产品的开发
+     */
+    public static function recommendDeveloper()
+    {
+        $db = Yii::$app->mongodb;
+        $col = $db->getCollection('ebay_allot_rule');
+        $doc = $col->find();
+        $ret = [];
+        foreach ($doc as $ele) {
+            $ret[] = $ele['username'];
+        }
+        return $ret;
+    }
+
+    /**
      * 启用规则
      * @param $condition
      */
@@ -159,6 +174,7 @@ class ApiProductsEngine
             $recommend->insert($doc);
             $allRecommend->insert($doc);
         } catch (\Exception  $why) {
+            /*
             $developer = [];
             foreach ($oldRecommendToPersons as $row) {
                 $developer[] = $row['name'];
@@ -166,17 +182,19 @@ class ApiProductsEngine
             $recommend->update(['itemId' => $itemId], [
                 'receiver' => $developer,
                 'productType' => $type,
-                'dispatchDate' => date('Y-m-d'),
-                'recommendDate' => date('Y-m-d'),
+//                'dispatchDate' => date('Y-m-d'),
+//                'recommendDate' => date('Y-m-d'),
                 'rules' => $currentRule,
             ]);
             $allRecommend->update(['itemId' => $itemId], [
                 'receiver' => $developer,
                 'productType' => $type,
-                'dispatchDate' => date('Y-m-d'),
-                'recommendDate' => date('Y-m-d'),
+//                'dispatchDate' => date('Y-m-d'),
+//                'recommendDate' => date('Y-m-d'),
                 'rules' => $currentRule,
             ]);
+            */
+            throw new \Exception('不能重复推送！');
         }
 
     }
