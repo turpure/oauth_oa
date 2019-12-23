@@ -395,7 +395,7 @@ class ApiProductsEngine
         $today = date('Y-m-d');
 
         //当前在用规则下数据
-        $newRules = WishRule::find()->select(['id'])->where(['ruleType' => $type])->all();
+        $newRules = WishRule::find()->select(['id'])->andFilterWhere(['ruleType' => $type])->all();
         $cur = (new \yii\mongodb\Query())->from('wish_new_product')
             ->andFilterWhere(['ruleType' => $type])
             ->andWhere(['recommendDate' => ['$regex' => $today]])
