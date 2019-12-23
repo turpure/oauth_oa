@@ -46,10 +46,11 @@ class ProductsEngineController extends AdminController
         }
     }
 
-    /** 产品中心  智能推荐
-     * Date: 2019-10-30 17:36
+    /**
+     * 产品中心  智能推荐
+     * Date: 2019-12-23 10:12
      * Author: henry
-     * @return array|\yii\db\ActiveRecord[]|\yii\data\ActiveDataProvider[]
+     * @return array|ArrayDataProvider
      * @throws \yii\db\Exception
      */
     public function actionMindRecommend()
@@ -97,6 +98,45 @@ class ProductsEngineController extends AdminController
                         'attributes' => ['price', 'visit', 'sold', 'listedTime'],
                         'defaultOrder' => [
                             'sold' => SORT_DESC,
+                        ]
+                    ],
+                    'pagination' => [
+                        'page' => $page - 1,
+                        'pageSize' => $pageSize,
+                    ],
+                ]);
+                return $data;
+            }elseif ($plat == 'wish'){
+                $list = (new \yii\mongodb\Query())
+                    ->from('wish_recommended_product')
+                    ->andFilterWhere(['productType' => $type])
+                    ->andFilterWhere(['dispatchDate' => ['$regex' => date('Y-m-d')]])
+                    ->all();
+                foreach ($list as $row) {
+                    if (isset($row['accept']) && $row['accept'] ||    //过滤掉已经认领的产品
+                        isset($row['refuse'][$username])       //过滤掉当前用户已经过滤的产品
+                    ) {
+                        continue;
+                    } else {
+                        $receiver = [];
+                        foreach ($row['receiver'] as $v) {
+                            if (in_array($v, $userList)) {  //过滤被推荐人(不在自己权限下的被推荐人筛选掉)
+                                $receiver[] = $v;
+                            }
+                        }
+                        //过滤当前用户的权限下的用户
+                        $row['receiver'] = $receiver;
+                        if ($receiver) {
+                            $ret[] = $row;
+                        }
+                    }
+                }
+                $data = new ArrayDataProvider([
+                    'allModels' => $ret,
+                    'sort' => [
+                        'attributes' => ['rating', 'totalprice', 'maxNumBought', 'genTime'],
+                        'defaultOrder' => [
+                            'maxNumBought' => SORT_DESC,
                         ]
                     ],
                     'pagination' => [

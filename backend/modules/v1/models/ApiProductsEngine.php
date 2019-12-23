@@ -242,7 +242,42 @@ class ApiProductsEngine
 
             // 更改推荐状态
             $table = $doc['productType'] === 'new' ? 'ebay_new_product' : 'ebay_hot_product';
-            static::setRecommendToPersons($table, $itemId, 'new');
+            static::setRecommendToPersons($table, $plat, $itemId, 'new');
+            Yii::$app->request->setBodyParams(['condition' => $product_info]);
+            $ret = Yii::$app->runAction('/v1/oa-goods/dev-create');
+            return $ret;
+        }elseif ($plat == 'wish'){
+            $col = $db->getCollection('wish_recommended_product');
+            $doc = $col->findOne(['_id' => $id]);
+
+            $itemId = $doc['pid'];
+
+            $recommendId = 'wish.' . $id;
+
+            if (empty($doc)) {
+                throw new \Exception('产品不存在');
+            }
+            $accept = ArrayHelper::getValue($doc, 'accept', []);
+            if (!empty($accept)) {
+                throw new \Exception('产品已被认领');
+            }
+            $accept[] = $username;
+            $col->update(['_id' => $id], ['accept' => array_unique($accept)]);
+
+            //推送新数据到固定端口
+            Helper::pushData();
+
+            // 转至逆向开发
+            $product_info = [
+                'recommendId' => $recommendId, 'img' => "https://contestimg.wish.com/api/webimage/".$doc['pid']."-small.jpg", 'cate' => '女人世界',
+                'origin1' => 'https://www.wish.com/product/' . $doc['pid'],
+                'stockUp' => '否', 'subCate' => '女包', 'salePrice' => $doc['price'], 'flag' => 'backward',
+                'type' => 'create', 'introducer' => 'proEngine'
+            ];
+
+            // 更改推荐状态
+            $table = 'wish_new_product';
+            static::setRecommendToPersons($table, $plat, $itemId, 'new');
             Yii::$app->request->setBodyParams(['condition' => $product_info]);
             $ret = Yii::$app->runAction('/v1/oa-goods/dev-create');
             return $ret;
@@ -262,7 +297,6 @@ class ApiProductsEngine
         $username = Yii::$app->user->identity->username;
         $db = Yii::$app->mongodb;
         if ($plat === 'ebay') {
-
             $col = $db->getCollection('ebay_recommended_product');
             $doc = $col->findOne(['_id' => $id]);
             $itemId = $doc['itemId'];
@@ -279,11 +313,32 @@ class ApiProductsEngine
 
             // 更改推荐状态
             $table = $doc['productType'] === 'new' ? 'ebay_new_product' : 'ebay_hot_product';
-            static::setRecommendToPersons($table, $itemId, 'hot', $reason);
+            static::setRecommendToPersons($table, $plat, $itemId, 'hot', $reason);
 
 
             return $col->findOne(['_id' => $id]);
 
+        }elseif($plat == 'wish'){
+            $col = $db->getCollection('wish_recommended_product');
+            $doc = $col->findOne(['_id' => $id]);
+            $itemId = $doc['pid'];
+
+            if (empty($doc)) {
+                throw new \Exception('产品不存在');
+            }
+            $refuse = ArrayHelper::getValue($doc, 'refuse', []);
+            $refuse[$username] = $reason;
+            $col->update(['_id' => $id], ['refuse' => $refuse]);
+
+            //推送新数据到固定端口
+            Helper::pushData();
+
+            // 更改推荐状态
+            $table = 'wish_new_product';
+            static::setRecommendToPersons($table, $plat, $itemId, 'hot', $reason);
+
+
+            return $col->findOne(['_id' => $id]);
         }
     }
 
@@ -754,7 +809,7 @@ class ApiProductsEngine
      * @param $type
      * @param string $reason
      */
-    private static function setRecommendToPersons($table, $itemId, $type, $reason = '')
+    private static function setRecommendToPersons($table, $plat, $itemId, $type, $reason = '')
     {
         # [{"name":"陈微微","status":"refuse", "reason":"不行"},{"name":"刘珊珊","status":"accept", "reason":""}]
         $username = Yii::$app->user->identity->username;
@@ -767,7 +822,11 @@ class ApiProductsEngine
         $product = $collection->findOne(['itemId' => $itemId]);
         $oldPersons = $product['recommendToPersons'];
         $currentPersons = static::insertOrUpdateRecommendToPersons($person, $oldPersons);
-        $collection->update(['itemId' => $itemId], ['recommendToPersons' => $currentPersons]);
+        if($plat === 'ebay'){
+            $collection->update(['itemId' => $itemId], ['recommendToPersons' => $currentPersons]);
+        }else{
+            $collection->update(['pid' => $itemId], ['recommendToPersons' => $currentPersons]);
+        }
     }
 
 

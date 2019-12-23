@@ -148,7 +148,77 @@ class ProductEngineSchedulerController extends Controller
         WishProductEngine::setProductTag('new');
 
         //热销产品打标签
-        //WishProductEngine::setProductTag('hot');
+        WishProductEngine::setProductTag('hot');
+    }
+
+    /**
+     * 按照分配算法分配产品
+     * @param $type
+     */
+    public function actionWishDispatchAll($type='new')
+    {
+        $developers = ProductEngine::getDevelopers();
+        shuffle($developers);
+        $products = WishProductEngine::getProducts($type);
+        $engine = new WishProductEngine($products, $developers);
+        $ret = $engine->dispatch();
+        foreach ($ret as $itemId => $productResult) {
+            $row = WishProductEngine::pullData($itemId, $productResult);
+            WishProductEngine::pushData($row, 'all');
+        }
+    }
+
+    /**
+     * 按数量分配给每个开发员
+     * @param string $type
+     */
+    public function actionWishDispatchToPerson($type='new')
+    {
+        $ret = WishProductEngine::dispatchToPersons($type);
+        foreach ($ret as $itemId => $productResult) {
+            $row = WishProductEngine::pullData($itemId, $productResult);
+            WishProductEngine::pushData($row, 'person');
+        }
+
+    }
+
+    /**
+     * 更新每日推荐的推荐人
+     */
+    public function actionWishSetRecommendToPersons()
+    {
+        //$day = '2019-12-12';
+        $day = date('Y-m-d');
+        WishProductEngine::getAndSetRecommendToPersons($day);
+    }
+
+
+    /**
+     * 每日推荐
+     */
+    public function actionWishDailyRecommend()
+    {   //默认ebay平台
+        try {
+
+            //新品打标签
+            WishProductEngine::setProductTag('new');
+
+            //热销产品打标签
+            WishProductEngine::setProductTag('hot');
+
+            // 分配所有产品
+            $this->actionWishDispatchAll('new');
+            $this->actionWishDispatchAll('hot');
+
+            //分配产品给开发
+            $this->actionWishDispatchToPerson('new');
+            $this->actionWishDispatchToPerson('hot');
+
+            //更新每日推荐的推荐人
+            $this->actionWishSetRecommendToPersons();
+        } catch (\Exception $why) {
+            print 'fail to recommend cause of ' . $why->getMessage();
+        }
     }
 
 
