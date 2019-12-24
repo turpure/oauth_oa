@@ -43,19 +43,21 @@ class WishProductEngine
         $today = date('Y-m-d');
         $catMap = static::getTagCat('wish');
         $products = $col->find(['ruleType' => $productType, 'cidName' => ['$nin' => []], 'recommendDate' => ['$regex' => $today]]);
+        //var_dump($products);exit;
         foreach ($products as $pt) {
             print_r($pt['_id'] . "\n");
             $catNameArr = self::getProductCidName($pt['cidName']);
             $id = $pt['_id'];
             // 匹配类目
             $tag = [];
-            foreach ($catMap as $cp) {
-                foreach ($catNameArr as $catName)
-                //var_dump($cp['platCate']);exit;
-                similar_text($catName, $cp['platCate'], $percent1);
-                similar_text($catName, $cp['platSubCate'], $percent2);
-                if ($percent1 >= 80 && $percent2 >= 80) {
-                    $tag[] = $cp['cateName'];
+            if($catNameArr){
+                foreach ($catMap as $cp) {
+                    foreach ($catNameArr as $catName)
+                        similar_text($catName, $cp['platCate'], $percent1);
+                    similar_text($catName, $cp['platSubCate'], $percent2);
+                    if ($percent1 >= 80 && $percent2 >= 80) {
+                        $tag[] = $cp['cateName'];
+                    }
                 }
             }
             $newTag = array_values(array_unique($tag));

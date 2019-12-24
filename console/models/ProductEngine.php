@@ -461,6 +461,23 @@ class ProductEngine
         $unhandledHotNum = $db->getCollection('ebay_recommended_product')
             ->count(['productType' => 'hot', "refuse" => null, 'accept' => null, 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
 
+        //=========================================================================================
+        //获取热销产品推送规则列表并统计产品数
+        $totalHotNum = $db->getCollection('ebay_hot_product')
+            ->count(['recommendDate' => ['$regex' => date('Y-m-d')]]);
+        //分配热销品总数
+        $dispatchHotNum = $db->getCollection('ebay_recommended_product')
+            ->count(['productType' => 'hot', 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        //认领热销品总数量
+        $claimHotNum = $db->getCollection('ebay_recommended_product')
+            ->count(['productType' => 'hot', 'accept' => ['$size' => 1], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        //过滤热销品总数量
+        $filterHotNum = $db->getCollection('ebay_recommended_product')
+            ->count(['productType' => 'hot', "refuse" => ['$ne' => null], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        //未处理热销品总数量
+        $unhandledHotNum = $db->getCollection('ebay_recommended_product')
+            ->count(['productType' => 'hot', "refuse" => null, 'accept' => null, 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+
         //获取开发数据统计
         $devList = EbayAllotRule::find()->all();
         $devData = [];
