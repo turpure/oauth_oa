@@ -1450,8 +1450,8 @@ class ApiGoodsinfo
         $ret['tail'] = $info['tailKeywords'];
         $requireKeywords = !empty($info['requiredKeywords']) ? json_decode($info['requiredKeywords']): [];
         $randomKeywords = !empty($info['randomKeywords']) ? json_decode($info['randomKeywords']): [];
-        $ret['need'] = array_unique($requireKeywords);
-        $ret['random'] = array_unique($randomKeywords);
+        $ret['need'] = array_unique(array_map(function ($ele) {return strtolower(trim($ele));}, $requireKeywords));
+        $ret['random'] = array_unique(array_map(function ($ele) {return strtolower(trim($ele));}, $randomKeywords));
         return $ret;
     }
 
