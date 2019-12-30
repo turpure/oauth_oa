@@ -1448,10 +1448,10 @@ class ApiGoodsinfo
     {
         $ret['head'] = $info['headKeywords'];
         $ret['tail'] = $info['tailKeywords'];
-        $requireKeywords = !empty($info['requiredKeywords']) ? json_decode($info['requiredKeywords']): [];
-        $randomKeywords = !empty($info['randomKeywords']) ? json_decode($info['randomKeywords']): [];
-        $ret['need'] = array_unique($requireKeywords);
-        $ret['random'] = array_unique($randomKeywords);
+        $requireKeywords = !empty($info['requiredKeywords']) ? array_slice(json_decode($info['requiredKeywords']),0,6): [];
+        $randomKeywords = !empty($info['randomKeywords']) ? array_slice(json_decode($info['randomKeywords']),0,10): [];
+        $ret['need'] = $requireKeywords;
+        $ret['random'] =$randomKeywords;
         return $ret;
     }
 
