@@ -45,7 +45,7 @@ class WishProductEngine
         $products = $col->find(['ruleType' => $productType, 'cidName' => ['$nin' => []], 'recommendDate' => ['$regex' => $today]]);
         //var_dump($products);exit;
         foreach ($products as $pt) {
-            print_r($pt['_id'] . "\n");
+            print_r(date('Y-m-d H:i:s').' '.$pt['_id'] . "\n");
             $catNameArr = self::getProductCidName($pt['cidName']);
             $id = $pt['_id'];
             // 匹配类目
@@ -116,9 +116,9 @@ class WishProductEngine
         $developerNumber = count($this->developer);
         for ($i = 0; $i <= $turn; $i++) {
             $this->developer = static::turnSort($this->developer, $i % $developerNumber);
-            print_r("第" . $i . "轮选择开始");
+            print_r(date('Y-m-d H:i:s')." 第" . $i . "轮选择开始");
             $res = static::pickUp();
-            print_r("第" . $i . "轮选择结束");
+            print_r(date('Y-m-d H:i:s')." 第" . $i . "轮选择结束");
             print_r("\n");
             $ret = array_merge($ret, $res);
         }
@@ -343,7 +343,7 @@ class WishProductEngine
                     $dp['products'][] = $pt['name'];
                     $ret[] = $row;
                     print_r("\n");
-                    print_r($dp['name'] . " 选中:" . $pt['name']);
+                    print_r(date('Y-m-d H:i:s').' '.$dp['name'] . " 选中:" . $pt['name']);
                     break;
                 }
             }
@@ -448,9 +448,9 @@ class WishProductEngine
             $col->insert($row);
         }
         catch (\Exception  $why) {
-            print 'fail to save '. $row['pid'] . ' cause of ' . $why->getMessage();
+            print date('Y-m-d H:i:s').' fail to save '. $row['pid'] . ' cause of ' . $why->getMessage();
         }
-        print_r('pushing ' . $row['pid'] . ' into ' . $table . "\n");
+        print_r(date('Y-m-d H:i:s').' pushing ' . $row['pid'] . ' into ' . $table . "\n");
     }
 
 

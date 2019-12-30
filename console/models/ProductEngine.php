@@ -8,10 +8,14 @@
 namespace console\models;
 
 use backend\models\EbayAllotRule;
+use backend\models\EbayHotRule;
+use backend\models\EbayNewRule;
 use backend\models\ShopElf\BGoods;
+use backend\models\WishRule;
 use backend\modules\v1\models\ApiProductsEngine;
 use Yii;
 
+use yii\helpers\ArrayHelper;
 use yii\mongodb\Query;
 
 class ProductEngine
@@ -428,55 +432,15 @@ class ProductEngine
     public static function getDailyReportData()
     {
         $db = Yii::$app->mongodb;
-        //获取新品统计数
-        $totalNewNum = $db->getCollection('ebay_new_product')
-            ->count(['recommendDate' => ['$regex' => date('Y-m-d')]]);
-        //分配新品总数
-        $dispatchNewNum = $db->getCollection('ebay_recommended_product')
-            ->count(['productType' => 'new', 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
-        //认领新品总数量
-        $claimNewNum = $db->getCollection('ebay_recommended_product')
-            ->count(['productType' => 'new', 'accept' => ['$size' => 1], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
-        //过滤新品总数量
-        $filterNewNum = $db->getCollection('ebay_recommended_product')
-            ->count(['productType' => 'new', "refuse" => ['$ne' => null], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
-        //未处理新品总数量
-        $unhandledNewNum = $db->getCollection('ebay_recommended_product')
-            ->count(['productType' => 'new', "refuse" => null, 'accept' => null, 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        //获取eBay新品统计数据
+        $ebayNewData = self::getEbayDailyData('new');
+
+        //获取eBay热销品统计数据
+        $ebayHotData = self::getEbayDailyData('hot');
 
         //=========================================================================================
-        //获取热销产品推送规则列表并统计产品数
-        $totalHotNum = $db->getCollection('ebay_hot_product')
-            ->count(['recommendDate' => ['$regex' => date('Y-m-d')]]);
-        //分配热销品总数
-        $dispatchHotNum = $db->getCollection('ebay_recommended_product')
-            ->count(['productType' => 'hot', 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
-        //认领热销品总数量
-        $claimHotNum = $db->getCollection('ebay_recommended_product')
-            ->count(['productType' => 'hot', 'accept' => ['$size' => 1], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
-        //过滤热销品总数量
-        $filterHotNum = $db->getCollection('ebay_recommended_product')
-            ->count(['productType' => 'hot', "refuse" => ['$ne' => null], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
-        //未处理热销品总数量
-        $unhandledHotNum = $db->getCollection('ebay_recommended_product')
-            ->count(['productType' => 'hot', "refuse" => null, 'accept' => null, 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
-
-        //=========================================================================================
-        //获取热销产品推送规则列表并统计产品数
-        $totalHotNum = $db->getCollection('ebay_hot_product')
-            ->count(['recommendDate' => ['$regex' => date('Y-m-d')]]);
-        //分配热销品总数
-        $dispatchHotNum = $db->getCollection('ebay_recommended_product')
-            ->count(['productType' => 'hot', 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
-        //认领热销品总数量
-        $claimHotNum = $db->getCollection('ebay_recommended_product')
-            ->count(['productType' => 'hot', 'accept' => ['$size' => 1], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
-        //过滤热销品总数量
-        $filterHotNum = $db->getCollection('ebay_recommended_product')
-            ->count(['productType' => 'hot', "refuse" => ['$ne' => null], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
-        //未处理热销品总数量
-        $unhandledHotNum = $db->getCollection('ebay_recommended_product')
-            ->count(['productType' => 'hot', "refuse" => null, 'accept' => null, 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        //获取wish统计数据
+        $wishData = self::getWishDailyData();
 
         //获取开发数据统计
         $devList = EbayAllotRule::find()->all();
@@ -528,24 +492,285 @@ class ProductEngine
                     ->count(['accept' => ['$size' => 1], 'dispatchDate' => ['$regex' => $date]])
             ];
         }
-
-        return [
-            'totalNewNum' => $totalNewNum,        //获取新品总数
-            'dispatchNewNum' => $dispatchNewNum,  //分配新品总数
-            'claimNewNum' => $claimNewNum,        //认领新品总数
-            'filterNewNum' => $filterNewNum,      //过滤新品总数
-            'unhandledNewNum' => $unhandledNewNum,//未处理新品总数
-
-            'totalHotNum' => $totalHotNum,        //获取热销品总数
-            'dispatchHotNum' => $dispatchHotNum,  //分配热销品总数
-            'claimHotNum' => $claimHotNum,        //认领热销品总数
-            'filterHotNum' => $filterHotNum,      //过滤热销品总数
-            'unhandledHotNum' => $unhandledHotNum,//未处理热销品总数
-
-            'devData' => $devData,                    //开发数据
-            'claimData' => $claimData,                //开发数据
-        ];
+        //print_r()
+        return array_merge($ebayNewData, $ebayHotData, $wishData, ['devData' => $devData, 'claimData' => $claimData]);
     }
+
+    /**
+     * 获取eBay每日统计数据
+     * @param $type
+     * Date: 2019-12-27 10:16
+     * Author: henry
+     * @return array
+     */
+    public static function getEbayDailyData($type){
+        $db = Yii::$app->mongodb;
+        $table = $type == 'new' ? 'ebay_new_product' : 'ebay_hot_product';
+        //获取产品统计数
+        $totalNum = $db->getCollection($table)
+            ->count(['recommendDate' => ['$regex' => date('Y-m-d')]]);
+        //分配总数
+        $dispatchNum = $db->getCollection('ebay_recommended_product')
+            ->count(['productType' => $type, 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        //认领总数量
+        $claimNum = $db->getCollection('ebay_recommended_product')
+            ->count(['productType' => $type, 'accept' => ['$size' => 1], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        //过滤总数量
+        $filterNum = $db->getCollection('ebay_recommended_product')
+            ->count(['productType' => $type, "refuse" => ['$ne' => null], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        //未处理总数量
+        $unhandledNum = $db->getCollection('ebay_recommended_product')
+            ->count(['productType' => $type, "refuse" => null, 'accept' => null, 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        if($type == 'new'){
+            return [
+                'totalNewNum' => $totalNum,        //获取新品总数
+                'dispatchNewNum' => $dispatchNum,  //分配新品总数
+                'claimNewNum' => $claimNum,        //认领新品总数
+                'filterNewNum' => $filterNum,      //过滤新品总数
+                'unhandledNewNum' => $unhandledNum,//未处理新品总数
+            ];
+        }else{
+            return [
+                'totalHotNum' => $totalNum,        //获取热销品总数
+                'dispatchHotNum' => $dispatchNum,  //分配热销品总数
+                'claimHotNum' => $claimNum,        //认领热销品总数
+                'filterHotNum' => $filterNum,      //过滤热销品总数
+                'unhandledHotNum' => $unhandledNum,//未处理热销品总数
+            ];
+        }
+    }
+
+    /**
+     * 获取Wish每日统计数据
+     * @param $type
+     * Date: 2019-12-27 10:16
+     * Author: henry
+     * @return array
+     */
+    public static function getWishDailyData(){
+        $db = Yii::$app->mongodb;
+        //获取产品统计数
+        $totalNum = $db->getCollection('wish_new_product')
+            ->count(['recommendDate' => ['$regex' => date('Y-m-d')]]);
+        //分配总数
+        $dispatchNum = $db->getCollection('wish_recommended_product')
+            ->count(['dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        //认领总数量
+        $claimNum = $db->getCollection('wish_recommended_product')
+            ->count(['accept' => ['$size' => 1], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        //过滤总数量
+        $filterNum = $db->getCollection('wish_recommended_product')
+            ->count(["refuse" => ['$ne' => null], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        //未处理总数量
+        $unhandledNum = $db->getCollection('wish_recommended_product')
+            ->count(["refuse" => null, 'accept' => null, 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        return [
+            'totalWishNum' => $totalNum,        //获取新品总数
+            'dispatchWishNum' => $dispatchNum,  //分配新品总数
+            'claimWishNum' => $claimNum,        //认领新品总数
+            'filterWishNum' => $filterNum,      //过滤新品总数
+            'unhandledWishNum' => $unhandledNum,//未处理新品总数
+        ];
+
+    }
+
+    /**
+     * 获取eBay规则数据统计
+     * @param $type
+     * @param $ruleName
+     * @param $beginDate
+     * @param $endDate
+     * Date: 2019-12-27 10:45
+     * Author: henry
+     * @return array
+     */
+    public static function getEbayRuleData($plat, $type, $ruleName, $beginDate, $endDate){
+        $data = [];
+        $db = Yii::$app->mongodb;
+        if($type == 'new'){
+            $table = 'ebay_new_product';
+            $newRuleList = EbayNewRule::find()->andFilterWhere(['ruleName' => ['$regex' => $ruleName]])->all();
+        }else{
+            $table = 'ebay_hot_product';
+            $newRuleList = EbayHotRule::find()->andFilterWhere(['ruleName' => ['$regex' => $ruleName]])->all();
+        }
+        foreach ($newRuleList as $v) {
+            $item['plat'] = $plat;
+            $item['ruleType'] = $type;
+            $item['ruleName'] = $v['ruleName'];
+
+            $totalNum = $db->getCollection($table)
+                ->count(['rules' => $v['_id'], 'recommendDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+            $dispatchNum = $db->getCollection('ebay_recommended_product')
+                ->count(['productType' => $type, 'rules' => $v['_id'], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+            $claimNum = $db->getCollection('ebay_recommended_product')
+                ->count(['productType' => $type, 'rules' => $v['_id'], 'accept' => ['$size' => 1], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+            $filterNum = $db->getCollection('ebay_recommended_product')
+                ->count(['productType' => $type, 'rules' => $v['_id'], "refuse" => ['$ne' => null], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+            $unhandledNewNum = $db->getCollection('ebay_recommended_product')
+                ->count(['productType' => $type,'rules' => $v['_id'],  "refuse" => null, 'accept' => null, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+
+
+            $item['totalNum'] = $totalNum;
+            $item['dispatchNum'] = $dispatchNum;
+            $item['claimNum'] = $claimNum;
+            $item['filterNum'] = $filterNum;
+            $item['unhandledNewNum'] = $unhandledNewNum;
+
+            //获取智能推荐新品 爆旺款全部产品
+            $dataList = $hotQuery = (new \yii\db\Query())
+                ->from('proCenter.oa_goodsinfo')
+                ->select(['g.recommendId','goodsStatus'])
+                ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
+                ->andWhere(['g.introducer' => 'proEngine'])
+                ->andFilterWhere(['between', 'left(g.createDate,10)', $beginDate, $endDate])
+                ->andFilterWhere(['like', 'g.recommendId', $type])
+                ->andFilterWhere(['goodsStatus' => ['爆款', '旺款']])
+                ->all();
+            $hotNum = $popNum = 0;
+            foreach ($dataList as $value) {
+                $recommend = $db->getCollection('ebay_recommended_product')->count(['_id' => explode('.', $value['recommendId'])[1]]);
+                if ($value['goodsStatus'] == '爆款' && $recommend) {
+                    $hotNum += 1;
+                } elseif ($value['goodsStatus'] == '旺款' && $recommend) {
+                    $popNum += 1;
+                }
+            }
+            $item['hotNum'] = $hotNum;
+            $item['popNum'] = $popNum;
+
+            $item['claimRate'] = $dispatchNum ? round($claimNum*1.0/$dispatchNum,4) : 0;
+            $item['filterRate'] = $dispatchNum ? round($filterNum*1.0/$dispatchNum,4) : 0;
+            $item['hotRate'] = $claimNum ? round($hotNum*1.0/$claimNum,4) : 0;
+            $item['popRate'] = $claimNum ? round($popNum*1.0/$claimNum,4) : 0;
+
+            $data[] = $item;
+        }
+        return $data;
+    }
+
+    /**
+     * 获取wish规则数据统计
+     * @param $type
+     * @param $ruleName
+     * @param $beginDate
+     * @param $endDate
+     * Date: 2019-12-27 10:45
+     * Author: henry
+     * @return array
+     */
+    public static function getWishRuleData($plat, $type, $ruleName, $beginDate, $endDate){
+        $data = [];
+        $db = Yii::$app->mongodb;
+        $newRuleList = WishRule::find()->andFilterWhere(['ruleName' => ['$regex' => $ruleName]])->all();
+        foreach ($newRuleList as $v) {
+            $item['plat'] = $plat;
+            $item['ruleType'] = $v['ruleType'];
+            $item['ruleName'] = $v['ruleName'];
+
+            $totalNum = $db->getCollection('wish_new_product')
+                ->count(['rules' => [$v['_id']], 'recommendDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+            $dispatchNum = $db->getCollection('wish_recommended_product')
+                ->count(['rules' => $v['_id'], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+            $claimNum = $db->getCollection('wish_recommended_product')
+                ->count(['rules' => $v['_id'], 'accept' => ['$size' => 1], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+            $filterNum = $db->getCollection('wish_recommended_product')
+                ->count(['rules' => $v['_id'], "refuse" => ['$ne' => null], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+            $unhandledNewNum = $db->getCollection('wish_recommended_product')
+                ->count(['rules' => $v['_id'],  "refuse" => null, 'accept' => null, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+
+
+            $item['totalNum'] = $totalNum;
+            $item['dispatchNum'] = $dispatchNum;
+            $item['claimNum'] = $claimNum;
+            $item['filterNum'] = $filterNum;
+            $item['unhandledNewNum'] = $unhandledNewNum;
+
+            //获取智能推荐新品 爆旺款全部产品
+            $dataList = $hotQuery = (new \yii\db\Query())
+                ->from('proCenter.oa_goodsinfo')
+                ->select('g.recommendId,goodsStatus')
+                ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
+                ->andWhere(['g.introducer' => 'proEngine'])
+                ->andFilterWhere(['between', 'left(g.createDate,10)', $beginDate, $endDate])
+                ->andFilterWhere(['like', 'g.recommendId', $plat])
+                ->andFilterWhere(['goodsStatus' => ['爆款', '旺款']])
+                ->all();
+            $hotNum = $popNum = 0;
+            foreach ($dataList as $value) {
+                $recommend = $db->getCollection('wish_recommended_product')->count(['_id' => explode('.', $value['recommendId'])[1]]);
+                if ($value['goodsStatus'] == '爆款' && $recommend) {
+                    $hotNum += 1;
+                } elseif ($value['goodsStatus'] == '旺款' && $recommend) {
+                    $popNum += 1;
+                }
+            }
+            $item['hotNum'] = $hotNum;
+            $item['popNum'] = $popNum;
+
+            $item['claimRate'] = $dispatchNum ? round($claimNum*1.0/$dispatchNum,4) : 0;
+            $item['filterRate'] = $dispatchNum ? round($filterNum*1.0/$dispatchNum,4) : 0;
+            $item['hotRate'] = $claimNum ? round($hotNum*1.0/$claimNum,4) : 0;
+            $item['popRate'] = $claimNum ? round($popNum*1.0/$claimNum,4) : 0;
+
+            $data[] = $item;
+        }
+        return $data;
+    }
+
+    /**
+     * 获取过滤理由统计
+     * @param $plat
+     * @param $beginDate
+     * @param $endDate
+     * Date: 2019-12-27 12:03
+     * Author: henry
+     * @return array
+     */
+    public static function getRefuseData($plat, $beginDate, $endDate){
+        $db = Yii::$app->mongodb;
+        $table = $plat == 'ebay' ? 'ebay_recommended_product' : 'wish_recommended_product';
+        $product = $db->getCollection($table)
+            ->find(["refuse" => ['$ne' => null], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+        $refuseArr = ArrayHelper::getColumn($product,'refuse');
+        $arr = [
+            '1: 重复' => 0,
+            '2: 侵权' => 0,
+            '3: 不好运输' => 0,
+            '4: 销量不好' => 0,
+            '5: 找不到货源' => 0,
+            '6: 价格没优势' => 0,
+            '7: 评分低' => 0,
+            '8: 其他' => 0,
+        ];
+        $refuseData = [];
+        foreach($refuseArr as $val) {
+            foreach ($val as $v){
+                if(strpos($v,'1:') !== false){
+                    $arr['1: 重复'] += 1;
+                }elseif (strpos($v,'2:') !== false){
+                    $arr['2: 侵权'] += 1;
+                }elseif (strpos($v,'3:') !== false){
+                    $arr['3: 不好运输'] += 1;
+                }elseif (strpos($v,'4:') !== false){
+                    $arr['4: 销量不好'] += 1;
+                }elseif (strpos($v,'5:') !== false){
+                    $arr['5: 找不到货源'] += 1;
+                }elseif (strpos($v,'6:') !== false){
+                    $arr['6: 价格没优势'] += 1;
+                }elseif (strpos($v,'7:') !== false){
+                    $arr['7: 评分低'] += 1;
+                }else if(strpos($v,'8:') !== false){
+                    $arr['8: 其他'] += 1;
+                    @$refuseData[$v]++;
+                }
+            }
+        }
+        return [$arr, $refuseData];
+    }
+
+
+
     /**
      * 根据匹配结果，按照ItemID查找数据
      * @param $itemId
