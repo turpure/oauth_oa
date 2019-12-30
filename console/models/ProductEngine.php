@@ -490,6 +490,8 @@ class ProductEngine
                 'name' => $date,
                 'value' => $db->getCollection('ebay_recommended_product')
                     ->count(['accept' => ['$size' => 1], 'dispatchDate' => ['$regex' => $date]])
+                + $db->getCollection('wish_recommended_product')
+                        ->count(['accept' => ['$size' => 1], 'dispatchDate' => ['$regex' => $date]])
             ];
         }
         //print_r()
