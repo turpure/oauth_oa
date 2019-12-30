@@ -157,7 +157,7 @@ class ProductEngineSchedulerController extends Controller
      */
     public function actionWishDispatchAll($type='new')
     {
-        $developers = ProductEngine::getDevelopers();
+        $developers = ProductEngine::getDevelopers('运营一部');
         shuffle($developers);
         $products = WishProductEngine::getProducts($type);
         $engine = new WishProductEngine($products, $developers);
@@ -201,10 +201,10 @@ class ProductEngineSchedulerController extends Controller
         try {
 
             //新品打标签
-            WishProductEngine::setProductTag('new');
+            //WishProductEngine::setProductTag('new');
 
             //热销产品打标签
-            WishProductEngine::setProductTag('hot');
+            //WishProductEngine::setProductTag('hot');
 
             // 分配所有产品
             $this->actionWishDispatchAll('new');

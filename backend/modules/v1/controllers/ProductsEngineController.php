@@ -916,7 +916,7 @@ class ProductsEngineController extends AdminController
 
         list($ebayRefuseData, $ebayOtherRefuseData) = ProductEngine::getRefuseData('ebay', $beginDate, $endDate);
         list($wishRefuseData, $wishOtherRefuseData) = ProductEngine::getRefuseData('wish', $beginDate, $endDate);
-        //var_dump($ebayRefuseData);exit;
+
         $refuseData = $otherDetailData = [];
         foreach ($ebayRefuseData as $k => $val){
             foreach ($wishRefuseData as $j => $v){
@@ -927,9 +927,23 @@ class ProductsEngineController extends AdminController
                 }
             }
         }
-
-
-        //$otherDetailData  TODO
+        $allKeys = array_unique(array_merge(array_keys($ebayOtherRefuseData),array_keys($wishOtherRefuseData)));
+        if($allKeys){
+            foreach ($allKeys as $i => $val){
+                $otherDetailData[$i]['name'] = $val;
+                $otherDetailData[$i]['num'] = 0;
+                foreach ($ebayOtherRefuseData as $k => $v){
+                    if($val == $k){
+                        $otherDetailData[$i]['num'] += $v;
+                    }
+                }
+                foreach ($wishOtherRefuseData as $k => $v){
+                    if($val == $k){
+                        $otherDetailData[$i]['num'] += $v;
+                    }
+                }
+            }
+        }
         return [
             'refuse' => $refuseData,
             'detail' => $otherDetailData,

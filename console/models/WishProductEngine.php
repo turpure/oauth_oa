@@ -311,31 +311,14 @@ class WishProductEngine
         foreach ($this->developer as &$dp) {
             //var_dump($dp);exit;
             foreach ($this->products as &$pt) {
-                $tag = $excludeTag = [];
-                if ($pt['tag']) {
-                    $tags = is_array($pt['tag']) ? $pt['tag'] : [$pt['tag']];
-                    foreach ($tags as $v) {
-                        if (in_array($v, $dp['excludeTag'], false)) {
-                            $excludeTag[] = $v;
-                        }
-                        if (in_array($v, $dp['tag'], false)) {
-                            $tag[] = $v;
-                        }
-                    }
-                }
-                if ($excludeTag) continue;    //属于过滤类别的产品，直接跳过
-                //$condition1 =  empty($dp['tag']) || in_array($pt['tag'],$dp['tag'], false);
-                $condition1 = empty($dp['tag']) || $tag;
-                //$condition2 = static::matchLocation($dp['deliveryLocation'], $pt['itemLocation']);
                 $limit = isset($pt['limit']) ? $pt['limit'] : 0;
                 if ($limit === 0) {
                     $pt['limit'] = 0;
                 }
-                $condition3 = $limit < 2;
+                $condition1 = $limit < 2;
                 $dProducts = isset($pt['products']) ? $pt['products'] : [];
-                $condition4 = !in_array($pt['name'], $dProducts, false);
-                //if ($condition1 && $condition2 && $condition3 && $condition4) {
-                if ($condition1 && $condition3 && $condition4) {
+                $condition2 = !in_array($pt['name'], $dProducts, false);
+                if ($condition1 && $condition2) {
                     $row['product'] = $pt['name'];
                     $row['developer'] = $dp['name'];
                     $row['type'] = $pt['type'];
@@ -351,37 +334,6 @@ class WishProductEngine
         return $ret;
     }
 
-    /**
-     * 发货地址匹配
-     * @param $developerLocation
-     * @param $productLocation
-     * @return bool
-     */
-    private static function matchLocation($developerLocation, $productLocation)
-    {
-        $locationMap = [
-            '中国' => 'CN',
-            '香港' => 'HK',
-            '美国' => 'US',
-            '英国' => 'GB',
-            '法国' => 'FR',
-            '德国' => 'DE',
-            '荷兰' => 'NL',
-            '爱尔兰' => 'IE',
-            '加拿大' => 'CA',
-            '意大利' => 'IT',
-            '澳大利亚' => 'AU'
-        ];
-        if (empty($developerLocation)) {
-            return true;
-        }
-        foreach ($developerLocation as $dl) {
-            if (strpos($productLocation, $locationMap[$dl]) !== false) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     /**
      * 轮流排序
@@ -464,10 +416,9 @@ class WishProductEngine
         static::clearTodayPersons($today);
         $products = static::getRecommendToPersons($today);
         foreach ($products as $recommendProduct) {
-            $productType = $recommendProduct['productType'];
             $developers = $recommendProduct['receiver'];
             $itemId = $recommendProduct['pid'];
-            static::setRecommendToPersons($recommendProduct,$developers, $productType, $itemId);
+            static::setRecommendToPersons($recommendProduct,$developers,$itemId);
         }
     }
 
@@ -515,7 +466,6 @@ class WishProductEngine
         $col = $mongodb->getCollection($table);
         $currentPersons = static::insertOrUpdateOrDeleteRecommendToPersons($products,$developers);
         $col->update(['pid' => $itemId], ['recommendToPersons' => $currentPersons]);
-
     }
 
     /**

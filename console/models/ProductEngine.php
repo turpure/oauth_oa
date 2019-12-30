@@ -76,7 +76,7 @@ class ProductEngine
     /**
      * 所有开发
      */
-    public static function getDevelopers()
+    public static function getDevelopers($depart = '')
     {
         $mongo = Yii::$app->mongodb;
         $table = 'ebay_allot_rule';
@@ -84,6 +84,7 @@ class ProductEngine
         $cur = $col->find();
         $dev = [];
         foreach ($cur as $row) {
+            if($depart && $depart == $row['depart']) continue;
             $ele['tag'] = $row['category'];
             $ele['excludeTag'] = $row['excludePyCate'];
             $ele['name'] = $row['username'];
