@@ -432,26 +432,33 @@ class ProductEngine
      */
     public static function getDailyReportData()
     {
+        $condition = Yii::$app->request->post('condition');
+        $plat = isset($condition['plat']) && $condition['plat'] ? $condition['plat'] : 'ebay';
         $db = Yii::$app->mongodb;
-        //获取eBay新品统计数据
-        $ebayNewData = self::getEbayDailyData('new');
-
-        //获取eBay热销品统计数据
-        $ebayHotData = self::getEbayDailyData('hot');
-
-        //=========================================================================================
-        //获取wish统计数据
-        $wishData = self::getWishDailyData();
 
         //获取开发数据统计
         $devList = EbayAllotRule::find()->all();
         $devData = [];
+        if($plat == 'ebay'){
+            //获取eBay新品统计数据
+            $ebayNewData = self::getEbayDailyData('new');
+            //获取eBay热销品统计数据
+            $ebayHotData = self::getEbayDailyData('hot');
+            $dailyData = array_merge($ebayNewData, $ebayHotData);
+            $table = 'ebay_recommended_product';
+        }elseif ($plat == 'wish'){
+            //获取wish统计数据
+            $dailyData = self::getWishDailyData();
+            $table = 'wish_recommended_product';
+        }
+
+
         foreach ($devList as $v){
-            $dispatchNum = $db->getCollection('ebay_recommended_product')
+            $dispatchNum = $db->getCollection($table)
                 ->count(['receiver' => $v['username'], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
-            $claimNum = $db->getCollection('ebay_recommended_product')
+            $claimNum = $db->getCollection($table)
                 ->count(['accept' => $v['username'], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
-            $filterNum = $db->getCollection('ebay_recommended_product')
+            $filterNum = $db->getCollection($table)
                 ->count([
                     '$or' => [
                         [
@@ -465,7 +472,7 @@ class ProductEngine
                     "receiver" => $v['username'] ,
                     'dispatchDate' => ['$regex' => date('Y-m-d')]
                 ]);
-            $unhandledNum = $db->getCollection('ebay_recommended_product')
+            $unhandledNum = $db->getCollection($table)
                 ->count([
                     "refuse.".$v['username'] => null,
                     'accept' => null,
@@ -489,14 +496,12 @@ class ProductEngine
             $date = date('Y-m-d', strtotime("-$i day"));
             $claimData[] = [
                 'name' => $date,
-                'value' => $db->getCollection('ebay_recommended_product')
+                'value' => $db->getCollection($table)
                     ->count(['accept' => ['$size' => 1], 'dispatchDate' => ['$regex' => $date]])
-                + $db->getCollection('wish_recommended_product')
-                        ->count(['accept' => ['$size' => 1], 'dispatchDate' => ['$regex' => $date]])
             ];
         }
         //print_r()
-        return array_merge($ebayNewData, $ebayHotData, $wishData, ['devData' => $devData, 'claimData' => $claimData]);
+        return array_merge($dailyData, ['devData' => $devData, 'claimData' => $claimData]);
     }
 
     /**

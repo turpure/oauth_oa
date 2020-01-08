@@ -43,8 +43,8 @@ class TestController extends Controller
             //备份上月开发目标完成度 TODO  备份数据的加入
             $condition = [
                 'dateFlag' => 1,
-                'beginDate' => '2019-11-01',
-                'endDate' => '2019-11-30',
+                'beginDate' => '2019-12-01',
+                'endDate' => '2019-12-31',
                 'seller' => '胡小红,廖露露,常金彩,刘珊珊,王漫漫,陈微微,杨笑天,李永恒,崔明宽,张崇,史新慈,邹雅丽,杨晶媛',
             ];
             $devList = ApiReport::getDevelopReport($condition);
@@ -57,8 +57,8 @@ class TestController extends Controller
                         'username' => $value['salernameZero'],
                         'role' => '开发',
                         'profitZn' => $value['netprofittotal'],
-                        'month' => 11,
-                        'updateTime' => '2019-12-06'
+                        'month' => 12,
+                        'updateTime' => '2019-01-07'
                     ]
                 )->execute();
             }

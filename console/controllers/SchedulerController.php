@@ -728,14 +728,15 @@ class SchedulerController extends Controller
             $beginDate = date('Y-m', strtotime('-1 days')).'-01';//上月或本月1号时间
             $endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
 
-            //$beginDate = '2019-09-01';
-            //$endDate = '2019-09-30';
+            $beginDate = '2019-10-01';
+            $endDate = '2020-10-31';
             //删除已有时间段内数据，重新获取保存
                 Yii::$app->db->createCommand("DELETE FROM cache_suffixSkuProfitReport WHERE orderDate BETWEEN '{$beginDate}' AND '{$endDate}' ")->execute();
 
             foreach ($flagArr as $v){
                 $sql = "EXEC guest.oauth_reportSuffixSkuProfitBackup $v, '{$beginDate}', '{$endDate}'";
                 $list = Yii::$app->py_db->createCommand($sql)->queryAll();
+                //var_dump(count($list));exit;
                 $count = ceil(count($list)/$step);
                 for ($i=0;$i<$count;$i++){
                     Yii::$app->db->createCommand()->batchInsert('cache_suffixSkuProfitReport',

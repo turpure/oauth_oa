@@ -134,6 +134,8 @@ class WorkermanController extends Controller
         // Emitted when connection closed
         $this->websocket->onClose = function ($connection) {
             //array_diff($this->session, $connection);
+            $connection->send("Connection closed. \n");
+            $connection->close();
             echo "Connection closed. \n";
         };
     }
