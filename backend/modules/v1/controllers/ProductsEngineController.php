@@ -696,7 +696,10 @@ class ProductsEngineController extends AdminController
         //计算开发分配产品总数
 
 
-        //计算开发认领产品总数
+        //计算开发出单产品总数
+
+
+        //开发产品总数
         $allQuery = (new Query())
             ->from('proCenter.oa_goodsinfo gs')
             ->select('g.developer, count(goodsCode) as totalNum')
