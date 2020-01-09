@@ -175,13 +175,15 @@ class ApiProductsEngine
         if($plat == 'ebay'){
             $recommend = $db->getCollection('ebay_recommended_product');
             $allRecommend = $db->getCollection('ebay_all_recommended_product');
+            $key = 'itemId';
         }elseif ($plat == 'wish'){
             $recommend = $db->getCollection('wish_recommended_product');
             $allRecommend = $db->getCollection('wish_all_recommended_product');
+            $key = 'pid';
         }
         try {
             //查找并更新ItemId
-            $db->getCollection($table)->update(['itemId' => $itemId], ['recommendToPersons' => $oldRecommendToPersons, 'rules' => $currentRule]);
+            $db->getCollection($table)->update([$key => $itemId], ['recommendToPersons' => $oldRecommendToPersons, 'rules' => $currentRule]);
             $recommend->insert($doc);
             $allRecommend->insert($doc);
         } catch (\Exception  $why) {
