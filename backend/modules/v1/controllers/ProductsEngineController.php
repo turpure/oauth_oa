@@ -18,6 +18,7 @@ use backend\modules\v1\models\ApiUser;
 use console\models\ProductEngine;
 use yii\data\ArrayDataProvider;
 use backend\modules\v1\models\ApiProductsEngine;
+use yii\db\Exception;
 use yii\db\Query;
 use yii\helpers\ArrayHelper;
 use Yii;
@@ -684,190 +685,25 @@ class ProductsEngineController extends AdminController
      * 认领产品报表
      * Date: 2019-11-19 8:54
      * Author: henry
+     * Date: 2020-01-09 11:29
+     * Author: henry
      * @return array
      */
     public function actionProductReport()
     {
-        $db = Yii::$app->mongodb;
         $condition = Yii::$app->request->post('condition');
         $developer = isset($condition['developer']) && $condition['developer'] ? $condition['developer'] : [];
         $beginDate = isset($condition['dateRange']) && $condition['dateRange'] ? $condition['dateRange'][0] : '';
         $endDate = isset($condition['dateRange']) && $condition['dateRange'] ? ($condition['dateRange'][1] . " 23:59:59") : '';
         //计算开发分配产品总数
-
-
-        //计算开发出单产品总数
-
-
-        //开发产品总数
-        $allQuery = (new Query())
-            ->from('proCenter.oa_goodsinfo gs')
-            ->select('g.developer, count(goodsCode) as totalNum')
-            ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
-            ->andWhere(['g.introducer' => 'proEngine'])
-            ->andFilterWhere(['g.developer' => $developer])
-            ->andFilterWhere(['between', 'left(g.createDate,10)', $beginDate, $endDate])
-            ->groupBy('g.developer');
-
-        //计算爆款数
-        $hotQuery = (new Query())
-            ->from('proCenter.oa_goodsinfo')
-            ->select('g.developer, count(goodsCode) as hotNum')
-            ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
-            ->andWhere(['g.introducer' => 'proEngine'])
-            ->andFilterWhere(['between', 'left(g.createDate,10)', $beginDate, $endDate])
-            ->andFilterWhere(['g.developer' => $developer])
-            ->andFilterWhere(['goodsStatus' => '爆款'])
-            ->groupBy('g.developer');
-
-        //计算旺款数量
-        $popQuery = (new Query())
-            ->from('proCenter.oa_goodsinfo')
-            ->select('g.developer, count(goodsCode) as popNum')
-            ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
-            ->andWhere(['g.introducer' => 'proEngine'])
-            ->andFilterWhere(['between', 'left(g.createDate,10)', $beginDate, $endDate])
-            ->andFilterWhere(['g.developer' => $developer])
-            ->andFilterWhere(['goodsStatus' => '旺款'])
-            ->groupBy('g.developer');
-
-        $data = (new Query())
-            ->select(["a.developer", "a.totalNum as claimNum",
-                "IFNULL(h.hotNum,0) AS hotNum",
-                "IFNULL(p.popNum,0) AS popNum",
-                "ROUND(CASE WHEN totalNum=0 THEN 0 ELSE IFNULL(hotNum,0)/totalNum END,4) AS hotRate",
-                "ROUND(CASE WHEN totalNum=0 THEN 0 ELSE IFNULL(popNum,0)/totalNum END,4) AS popRate"])
-            ->from(['a' => $allQuery])
-            ->leftJoin(['h' => $hotQuery], ['a.developer' => 'h.developer'])
-            ->leftJoin(['p' => $popQuery], ['a.developer' => 'p.developer'])
-            ->orderBy('totalNum DESC')
-            ->all();
-
-
-        //获取开发列表
-        $devData = EbayAllotRule::find()->andFilterWhere(['username' => $developer])->all();
-
-        $devList = ArrayHelper::getColumn($devData, 'username');
-        $devHave = ArrayHelper::getColumn($data, 'developer');
-        $devLeft = array_diff($devList, $devHave);
-        $dataHave = $dataAdd = [];
-        foreach ($data as $k => $v) {
-            $dataHave[$k] = $v;
-            $dataHave[$k]['dispatchNum'] = $db->getCollection('ebay_recommended_product')
-                ->count(['receiver' => $v['developer'], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]])
-            + $db->getCollection('wish_recommended_product')
-                    ->count(['receiver' => $v['developer'], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
-            $dataHave[$k]['claimNum'] = $db->getCollection('ebay_recommended_product')
-                ->count(['accept' => $v['developer'], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]])
-            + $db->getCollection('wish_recommended_product')
-                    ->count(['accept' => $v['developer'], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
-            $dataHave[$k]['filterNum'] = $db->getCollection('ebay_recommended_product')
-                ->count([
-                    '$or' => [
-                        [
-                            "refuse.".$v['developer'] => null,
-                            'accept' => ['$nin' => [null, $v['developer']]],
-                        ],
-                        [
-                            "refuse.".$v['developer'] => ['$ne' => null]
-                        ]
-                    ],
-                    "receiver" => $v['developer'] ,
-                    'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]
-                ])
-            + $db->getCollection('wish_recommended_product')
-                    ->count([
-                        '$or' => [
-                            [
-                                "refuse.".$v['developer'] => null,
-                                'accept' => ['$nin' => [null, $v['developer']]],
-                            ],
-                            [
-                                "refuse.".$v['developer'] => ['$ne' => null]
-                            ]
-                        ],
-                        "receiver" => $v['developer'] ,
-                        'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]
-                    ]);
-            $dataHave[$k]['unhandledNum'] = $db->getCollection('ebay_recommended_product')
-                ->count([
-                    "refuse.".$v['developer'] => null,
-                    'accept' => null,
-                    "receiver" => $v['developer'] ,
-                    'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]
-                ])
-            + $db->getCollection('wish_recommended_product')
-                    ->count([
-                        "refuse.".$v['developer'] => null,
-                        'accept' => null,
-                        "receiver" => $v['developer'] ,
-                        'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]
-                    ]);
-
-            $dataHave[$k]['claimRate'] = $dataHave[$k]['dispatchNum'] ? round($dataHave[$k]['claimNum'] * 1.0 / $dataHave[$k]['dispatchNum'], 4) : '0';
-            $dataHave[$k]['filterRate'] = $dataHave[$k]['dispatchNum'] ? round($dataHave[$k]['filterNum'] * 1.0 / $dataHave[$k]['dispatchNum'], 4) : '0';
+        try{
+            return ProductEngine::getProductReportData($developer, $beginDate, $endDate);
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => 'failed get product report data cause of '.$e->getMessage(),
+            ];
         }
-        foreach ($devLeft as $k => $v) {
-            $dataAdd[$k]['developer'] = $v;
-            $dataAdd[$k]['hotNum'] = '0';
-            $dataAdd[$k]['popNum'] = '0';
-            $dataAdd[$k]['hotRate'] = '0.0000';
-            $dataAdd[$k]['popRate'] = '0.0000';
-            $dataAdd[$k]['dispatchNum'] = $db->getCollection('ebay_recommended_product')
-                ->count(['receiver' => $v, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]])
-                + $db->getCollection('wish_recommended_product')
-                    ->count(['receiver' => $v, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
-            $dataAdd[$k]['claimNum'] = $db->getCollection('ebay_recommended_product')
-                ->count(['accept' => $v, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]])
-                + $db->getCollection('wish_recommended_product')
-                    ->count(['accept' => $v, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
-            $dataAdd[$k]['filterNum'] = $db->getCollection('ebay_recommended_product')
-                ->count([
-                    '$or' => [
-                        [
-                            "refuse.".$v => null,
-                            'accept' => ['$nin' => [null, $v]],
-                        ],
-                        [
-                            "refuse.".$v => ['$ne' => null]
-                        ]
-                    ],
-                    "receiver" => $v ,
-                    'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]
-                ])
-                + $db->getCollection('wish_recommended_product')
-                    ->count([
-                        '$or' => [
-                            [
-                                "refuse.".$v => null,
-                                'accept' => ['$nin' => [null, $v]],
-                            ],
-                            [
-                                "refuse.".$v => ['$ne' => null]
-                            ]
-                        ],
-                        "receiver" => $v ,
-                        'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]
-                    ]);
-            $dataAdd[$k]['unhandledNum'] = $db->getCollection('ebay_recommended_product')
-                ->count([
-                    "refuse.".$v => null,
-                    'accept' => null,
-                    "receiver" => $v ,
-                    'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]
-                ])
-                + $db->getCollection('wish_recommended_product')
-                    ->count([
-                        "refuse.".$v => null,
-                        'accept' => null,
-                        "receiver" => $v ,
-                        'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]
-                    ]);
-
-            $dataAdd[$k]['claimRate'] = $dataAdd[$k]['dispatchNum'] ? round($dataAdd[$k]['claimNum'] * 1.0 / $dataAdd[$k]['dispatchNum'], 4) : '0';
-            $dataAdd[$k]['filterRate'] = $dataAdd[$k]['dispatchNum'] ? round($dataAdd[$k]['filterNum'] * 1.0 / $dataAdd[$k]['dispatchNum'], 4) : '0';
-        }
-        return array_merge($dataHave, $dataAdd);
     }
 
     /**

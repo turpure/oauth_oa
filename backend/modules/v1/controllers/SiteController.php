@@ -452,7 +452,7 @@ class SiteController extends AdminController
             $depart = isset($condition['depart']) ? $condition['depart'] : '';
             if(empty($depart)) {
                 $sql = "SELECT * FROM site_sales_amt 
-                WHERE  role = '开发' AND ifnull(display,0)=0
+                WHERE  role = '开发' AND ifnull(display,0)=0  AND (lastAmt<>0 OR amt <> 0)
                 ORDER BY Rate DESC";
             }
             else {

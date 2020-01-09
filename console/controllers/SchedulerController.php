@@ -239,10 +239,44 @@ class SchedulerController extends Controller
             $devSql = "EXEC oauth_siteDeveloperAmt";
             $devList = Yii::$app->py_db->createCommand($devSql)->queryAll();
 
+            //获取现有开发人员及部门
+            $sql = "SELECT u.username,
+		                  CASE WHEN INSTR(d.department,'郑州分部')>0 THEN '郑州分部'
+								WHEN INSTR(d.department,'郑州分部')=0 AND LENGTH(d.department)>12 THEN p.department 
+								ELSE d.department 
+						  END AS depart
+                    FROM `user` u 
+                    LEFT JOIN auth_assignment ass ON ass.user_id=u.id
+                    LEFT JOIN auth_department_child dc ON dc.user_id=u.id
+                    LEFT JOIN auth_department d ON d.id=dc.department_id
+                    LEFT JOIN auth_department p ON p.id=d.parent
+                    WHERE u.`status`=10 AND ass.item_name='产品开发';";
+            $developers = Yii::$app->db->createCommand($sql)->queryAll();
+            $data = [];
+            foreach ($developers as $k => $val){
+                $data[$k]['username'] = $val['username'];
+                $data[$k]['depart'] = $val['depart'];
+                $data[$k]['role'] = '开发';
+                $data[$k]['lastAmt'] = 0;
+                $data[$k]['amt'] = 0;
+                $data[$k]['rate'] = 0;
+                $data[$k]['dateRate'] = 0;
+                $data[$k]['updateTime'] = date('Y-m-d');
+                foreach ($devList as $v){
+                    if($val['username'] == $v['username']){
+                        $data[$k]['lastAmt'] = $v['lastAmt'];
+                        $data[$k]['amt'] = $v['amt'];
+                        $data[$k]['rate'] = $v['rate'];
+                        $data[$k]['dateRate'] = $v['dateRate'];
+                        continue;
+                    }
+                }
+            }
+            //var_dump($data);exit;
             //插入开发销售数据
             Yii::$app->db->createCommand()->batchInsert('site_sales_amt',
                 ['username', 'depart', 'role', 'lastAmt', 'amt', 'rate', 'dateRate', 'updateTime'],
-                $devList)->execute();
+                $data)->execute();
 
             print date('Y-m-d H:i:s') . " INFO:success to update data of amt changes!\n";
         } catch (\Exception $why) {
@@ -326,7 +360,8 @@ class SchedulerController extends Controller
         }
     }
 
-    /** 备货产品计算
+    /**
+     * 备货产品计算
      * 每天更新开发员在本月的可用备货数量，每月第一天（1号）更新备份数据
      * 访问方法: php yii scheduler/stock
      * Date: 2019-05-06 15:58
@@ -463,7 +498,8 @@ class SchedulerController extends Controller
     }
 
 
-    /** 查询wish平台商品状态、采购到货天数并更新oa_goodsinfo表数据
+    /**
+     * 查询wish平台商品状态、采购到货天数并更新oa_goodsinfo表数据
      * Date: 2019-05-14 16:54
      * Author: henry
      * @throws \yii\db\Exception
@@ -487,7 +523,8 @@ class SchedulerController extends Controller
         }
     }
 
-    /** 海外仓备货
+    /**
+     * 海外仓备货
      * Date: 2019-06-14 16:54
      * Author: henry
      * @throws \yii\db\Exception
@@ -545,7 +582,8 @@ class SchedulerController extends Controller
 
     }
 
-    /** 库存情况
+    /**
+     * 库存情况
      * Date: 2019-06-14 16:54
      * Author: henry
      * @throws \yii\db\Exception
@@ -696,7 +734,8 @@ class SchedulerController extends Controller
     }
 
 
-    /** 获取最近一个月产品销量
+    /**
+     * 获取最近一个月产品销量
      * Date: 2019-08-08 15:21
      * Author: henry
      */
@@ -715,7 +754,9 @@ class SchedulerController extends Controller
     }
 
 
-    /** 备份本月账号产品利润数据
+    /**
+     * 备份本月账号产品利润数据
+     * 2020-01-09 改到python获取数据
      * Date: 2019-10-10 15:21
      * Author: henry
      */
@@ -728,8 +769,8 @@ class SchedulerController extends Controller
             $beginDate = date('Y-m', strtotime('-1 days')).'-01';//上月或本月1号时间
             $endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
 
-            //$beginDate = '2019-12-01';
-            //$endDate = '2020-12-31';
+            $beginDate = '2019-12-01';
+            $endDate = '2020-12-31';
             //删除已有时间段内数据，重新获取保存
                 Yii::$app->db->createCommand("DELETE FROM cache_suffixSkuProfitReport WHERE orderDate BETWEEN '{$beginDate}' AND '{$endDate}' ")->execute();
 
@@ -751,7 +792,8 @@ class SchedulerController extends Controller
         }
     }
 
-    /** 获取海外仓补货数据
+    /**
+     * 获取海外仓补货数据
      * Date: 2019-11-06 17:41
      * Author: henry
      */

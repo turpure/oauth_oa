@@ -114,17 +114,23 @@ class ApiProductsEngine
      */
     public static function manualRecommend($condition)
     {
+        $db = Yii::$app->mongodb;
         $itemId = $condition['itemId'];
         $developer = $condition['developer'];
         $type = $condition['type'];
-        $table = 'ebay_' . $type . '_product';
-        $ruleTable = 'ebay_' . $type . '_rule';
-        $db = Yii::$app->mongodb;
-        $col = $db->getCollection($table);
-
+        $plat = isset($condition['plat']) && $condition['plat'] ? $condition['plat'] : 'ebay';
+        if($plat == 'ebay'){
+            $table = 'ebay_' . $type . '_product';
+            $ruleTable = 'ebay_' . $type . '_rule';
+            $cur = $db->getCollection($table)->find(['itemId' => $itemId]);
+        }elseif ($plat == 'wish'){
+            $table = 'wish_new_product';
+            $ruleTable = 'wish_rule';
+            $cur = $db->getCollection($table)->find(['pid' => $itemId]);
+        }
 
         // 追加recommendToPersons
-        $cur = $col->find(['itemId' => $itemId]);
+
         $doc = [];
         foreach ($cur as $row) {
             $doc = $row;
@@ -166,11 +172,16 @@ class ApiProductsEngine
         $doc['productType'] = $type;
         $doc['dispatchDate'] = date('Y-m-d');
         $doc['recommendDate'] = date('Y-m-d');
-        $recommend = $db->getCollection('ebay_recommended_product');
-        $allRecommend = $db->getCollection('ebay_all_recommended_product');
+        if($plat == 'ebay'){
+            $recommend = $db->getCollection('ebay_recommended_product');
+            $allRecommend = $db->getCollection('ebay_all_recommended_product');
+        }elseif ($plat == 'wish'){
+            $recommend = $db->getCollection('wish_recommended_product');
+            $allRecommend = $db->getCollection('wish_all_recommended_product');
+        }
         try {
             //查找并更新ItemId
-            $col->update(['itemId' => $itemId], ['recommendToPersons' => $oldRecommendToPersons, 'rules' => $currentRule]);
+            $db->getCollection($table)->update(['itemId' => $itemId], ['recommendToPersons' => $oldRecommendToPersons, 'rules' => $currentRule]);
             $recommend->insert($doc);
             $allRecommend->insert($doc);
         } catch (\Exception  $why) {

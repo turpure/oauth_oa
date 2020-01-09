@@ -583,6 +583,115 @@ class ProductEngine
     }
 
     /**
+     * 获取产品认领统计数据
+     * @param $developer
+     * @param $beginDate
+     * @param $endDate
+     * Date: 2020-01-09 10:09
+     * Author: henry
+     * @return array
+     */
+    public static function getProductReportData($developer, $beginDate, $endDate){
+        $db = Yii::$app->mongodb;
+        //开发产品数据
+        $allQuery = (new \yii\db\Query())
+            ->from('proCenter.oa_goodsinfo gs')
+            ->select('g.developer, gs.goodsCode')
+            ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
+            ->andFilterWhere(['g.introducer' => 'proEngine', 'g.developer' => $developer])
+            ->andFilterWhere(['between', 'left(g.createDate,10)', $beginDate, $endDate]);
+
+        $goodsCodeList = ArrayHelper::getColumn($allQuery->all(), 'goodsCode');
+        //计算出单数
+        $orderData = self::getDevSkuOrderNum($goodsCodeList);
+        //计算爆款数
+        $hotQuery = (new \yii\db\Query())->from('proCenter.oa_goodsinfo')
+            ->select('g.developer, count(goodsCode) as hotNum')
+            ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
+            ->andFilterWhere(['g.introducer' => 'proEngine', 'goodsCode' => $goodsCodeList, 'goodsStatus' => '爆款'])
+            ->groupBy('g.developer')->all();
+        $hotData = ArrayHelper::map($hotQuery,'developer','hotNum');
+        //计算旺款数量
+        $popQuery = (new \yii\db\Query())->from('proCenter.oa_goodsinfo')
+            ->select('g.developer, count(goodsCode) as popNum')
+            ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
+            ->andFilterWhere(['g.introducer' => 'proEngine', 'goodsCode' => $goodsCodeList, 'goodsStatus' => '旺款'])
+            ->groupBy('g.developer')->all();
+        $popData = ArrayHelper::map($popQuery,'developer','popNum');
+
+        //获取开发列表
+        $devData = EbayAllotRule::find()->andFilterWhere(['username' => $developer])->all();
+
+        $devList = ArrayHelper::getColumn($devData, 'username');
+        $data = [];
+        foreach ($devList as $k => $v) {
+            $data[$k]['developer'] = $v;
+            $data[$k]['dispatchNum'] = $db->getCollection('ebay_recommended_product')
+                    ->count(['receiver' => $v, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]])
+                + $db->getCollection('wish_recommended_product')
+                    ->count(['receiver' => $v, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+            $data[$k]['claimNum'] = $db->getCollection('ebay_recommended_product')
+                    ->count(['accept' => $v, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]])
+                + $db->getCollection('wish_recommended_product')
+                    ->count(['accept' => $v, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+            $data[$k]['filterNum'] = $db->getCollection('ebay_recommended_product')
+                    ->count([
+                        '$or' => [
+                            [
+                                "refuse.".$v => null,
+                                'accept' => ['$nin' => [null, $v]],
+                            ],
+                            [
+                                "refuse.".$v => ['$ne' => null]
+                            ]
+                        ],
+                        "receiver" => $v ,
+                        'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]
+                    ])
+                + $db->getCollection('wish_recommended_product')
+                    ->count([
+                        '$or' => [
+                            [
+                                "refuse.".$v => null,
+                                'accept' => ['$nin' => [null, $v]],
+                            ],
+                            [
+                                "refuse.".$v => ['$ne' => null]
+                            ]
+                        ],
+                        "receiver" => $v ,
+                        'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]
+                    ]);
+            $data[$k]['unhandledNum'] = $db->getCollection('ebay_recommended_product')
+                    ->count([
+                        "refuse.".$v => null,
+                        'accept' => null,
+                        "receiver" => $v ,
+                        'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]
+                    ])
+                + $db->getCollection('wish_recommended_product')
+                    ->count([
+                        "refuse.".$v => null,
+                        'accept' => null,
+                        "receiver" => $v ,
+                        'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]
+                    ]);
+
+            $data[$k]['claimRate'] = $data[$k]['dispatchNum'] ? round($data[$k]['claimNum'] * 1.0 / $data[$k]['dispatchNum'], 4) : '0';
+            $data[$k]['filterRate'] = $data[$k]['dispatchNum'] ? round($data[$k]['filterNum'] * 1.0 / $data[$k]['dispatchNum'], 4) : '0';
+            $data[$k]['orderNum'] = isset($orderData[$v]) ? $orderData[$v] : 0;
+            $data[$k]['orderRate'] = $data[$k]['claimNum'] ? round($data[$k]['orderNum'] * 1.0 / $data[$k]['claimNum'], 4) : '0';
+            $data[$k]['hotNum'] = isset($hotData[$v]) ? $hotData[$v] : 0;
+            $data[$k]['hotRate'] = $data[$k]['claimNum'] ? round($data[$k]['hotNum'] * 1.0 / $data[$k]['claimNum'], 4) : '0';
+            $data[$k]['popNum'] = isset($popData[$v]) ? $popData[$v] : 0;
+            $data[$k]['popRate'] = $data[$k]['claimNum'] ? round($data[$k]['popNum'] * 1.0 / $data[$k]['claimNum'], 4) : '0';
+        }
+        return $data;
+    }
+
+
+
+    /**
      * 获取eBay规则数据统计
      * @param $type
      * @param $ruleName
@@ -777,8 +886,6 @@ class ProductEngine
         return [$arr, $refuseData];
     }
 
-
-
     /**
      * 根据匹配结果，按照ItemID查找数据
      * @param $itemId
@@ -800,7 +907,6 @@ class ProductEngine
         return $ret;
 
     }
-
 
     /**
      * 入库处理
@@ -908,7 +1014,6 @@ class ProductEngine
         return $result;
     }
 
-
     /**
      */
     private static function getImages()
@@ -939,6 +1044,33 @@ class ProductEngine
 
 
 
+    }
+
+    /**
+     * 获取已出单的goodsCode
+     * @param $goodsCodes
+     * Date: 2020-01-09 11:06
+     * Author: henry
+     * @return array
+     */
+    private static function getDevSkuOrderNum($goodsCodes){
+        $codeList = implode("','",$goodsCodes);
+        $sql = " SELECT DISTINCT g.GoodsCode FROM (
+	                SELECT sku FROM P_TradeDt  UNION SELECT sku FROM P_TradeDt_His
+                  ) d
+                  LEFT JOIN B_GoodsSKU gs ON gs.sku=d.sku
+                  LEFT JOIN B_Goods g ON g.NID=gs.GoodsID
+                  WHERE g.GoodsCode IN ('{$codeList}')";
+        $orderCodeData = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $list = ArrayHelper::getColumn($orderCodeData,'GoodsCode');
+        $allQuery = (new \yii\db\Query())
+            ->from('proCenter.oa_goodsinfo gs')
+            ->select('g.developer, count(gs.goodsCode) as num')
+            ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
+            ->andFilterWhere(['gs.goodsCode' => $list])
+            ->groupBy('g.developer')->all();
+        $data = ArrayHelper::map($allQuery,'developer', 'num');
+        return $data;
     }
 
 }
