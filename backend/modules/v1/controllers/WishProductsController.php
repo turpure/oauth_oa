@@ -17,9 +17,9 @@
 
 namespace backend\modules\v1\controllers;
 
+use backend\models\ShopeeRule;
 use backend\models\WishRule;
 use Yii;
-use backend\modules\v1\models\ApiWishProducts;
 use yii\helpers\ArrayHelper;
 
 class WishProductsController extends AdminController
@@ -32,37 +32,9 @@ class WishProductsController extends AdminController
     ];
 
 
-    public function actionRecommend()
-    {
-        try {
-            return ApiWishProducts::recommend();
-
-        } catch (\Exception $why) {
-            return ['code' => 401, 'message' => $why->getMessage()];
-        }
-    }
-
-
     //=======================================================================================
     //WISH 推送规则
 
-    /**
-     * 立即执行规则
-     * @return array
-     */
-    public function actionRunRule()
-    {
-        try {
-            $condition = Yii::$app->request->post('condition');
-            $ruleType = Yii::$app->request->get('type', '');
-            $ruleId = $condition['ruleId'];
-            return ApiProductsEngine::run($ruleType, $ruleId);
-
-
-        } catch (\Exception $why) {
-            return ['code' => 401, 'message' => $why->getMessage()];
-        }
-    }
 
     /**
      * 规则列表
@@ -70,8 +42,14 @@ class WishProductsController extends AdminController
      */
     public function actionRule()
     {
+        $plat = Yii::$app->request->get('plat','wish');
         try {
-            return WishRule::find()->all();
+            if($plat == 'wish'){
+                $data = WishRule::find()->all();
+            }elseif($plat == 'shopee'){
+                $data = ShopeeRule::find()->all();
+            }
+            return $data;
         } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }
@@ -88,10 +66,19 @@ class WishProductsController extends AdminController
             $userName = Yii::$app->user->identity->username;
             $condition = \Yii::$app->request->post('condition');
             $id = ArrayHelper::getValue($condition, 'id', '');
-            $rule = WishRule::findOne($id);
-            if (empty($rule)) {
-                $rule = new WishRule();
-                $condition['creator'] = $userName;
+            $plat = ArrayHelper::getValue($condition, 'plat', 'wish');
+            if($plat == 'wish'){
+                $rule = WishRule::findOne($id);
+                if (empty($rule)) {
+                    $rule = new WishRule();
+                    $condition['creator'] = $userName;
+                }
+            }elseif($plat == 'shopee'){
+                $rule = ShopeeRule::findOne($id);
+                if (empty($rule)) {
+                    $rule = new WishRule();
+                    $condition['creator'] = $userName;
+                }
             }
             $rule->setAttributes($condition);
             if (!$rule->save(false)) {
@@ -113,15 +100,19 @@ class WishProductsController extends AdminController
     {
         $condition = \Yii::$app->request->post('condition');
         $id = ArrayHelper::getValue($condition, 'id', '');
+        $plat = ArrayHelper::getValue($condition, 'plat', 'wish');
         try {
-            WishRule::findOne($id)->delete();
+            if($plat == 'wish'){
+                WishRule::findOne($id)->delete();
+            }elseif($plat == 'shopee'){
+                ShopeeRule::findOne($id)->delete();
+            }
         } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }
     }
 
-    //=======================================================================================
-    //WISH 分配规则
+
 
 
 
