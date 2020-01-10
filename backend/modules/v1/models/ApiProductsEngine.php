@@ -162,7 +162,8 @@ class ApiProductsEngine
         foreach ($ruleDoc as $rd) {
             $rule = $rd;
         }
-        $ruleId = $rule['_id'];
+        //var_dump($rule);exit;
+        $ruleId = isset($rule['_id']) && $rule['_id'] ? $rule['_id'] : '';
         $oldRule = !empty($doc['rules']) ? $doc['rules'] : [];
         $currentRule = array_unique(array_merge($oldRule, [$ruleId]));
 
