@@ -42,7 +42,8 @@ class WishProductsController extends AdminController
      */
     public function actionRule()
     {
-        $plat = Yii::$app->request->get('plat','wish');
+        $condition = Yii::$app->request->post('condition');
+        $plat = ArrayHelper::getValue($condition, 'plat', 'wish');
         try {
             if($plat == 'wish'){
                 $data = WishRule::find()->all();
@@ -76,7 +77,7 @@ class WishProductsController extends AdminController
             }elseif($plat == 'shopee'){
                 $rule = ShopeeRule::findOne($id);
                 if (empty($rule)) {
-                    $rule = new WishRule();
+                    $rule = new ShopeeRule();
                     $condition['creator'] = $userName;
                 }
             }
