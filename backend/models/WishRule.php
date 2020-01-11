@@ -65,7 +65,7 @@ class WishRule extends \yii\mongodb\ActiveRecord
         if(parent::beforeSave($insert)) {
 
             $defaultAttributes = [
-                'cids' =>'', 'index' => 1, 'merchantStatus' => 1, 'sort' => 'DESC', 'pageSize' => 20
+                'cids' =>'', 'index' => 1, 'merchantStatus' => 1, 'sort' => 'DESC', 'pageSize' => 20, 'isUsed' => 1
                 ];
             $this->setAttributes($defaultAttributes);
         }
@@ -120,7 +120,9 @@ class WishRule extends \yii\mongodb\ActiveRecord
             'ruleName',
             'ruleMark',
             'ruleType',
-            'listedTime'
+            'listedTime',
+            'isUsed',
+            'type',
         ];
     }
 
@@ -133,7 +135,7 @@ class WishRule extends \yii\mongodb\ActiveRecord
             [['cids','genTimeEnd','genTimeStart','hwc','index','intervalRatingEnd','intervalRatingStart','maxNumBoughtEnd','maxNumBoughtStart',
                 'merchant','merchantStatus','orderColumn','pageSize','pb','pid','pidStatus','pname','pnameStatus',
                 'ratingEnd','ratingStart','sort','totalpriceEnd','totalpriceStart','verified','viewRate1End','viewRate1Start',
-                'creator','createdDate','updatedDate','ruleName','ruleMark','ruleType','listedTime'], 'safe']
+                'creator','createdDate','updatedDate','ruleName','ruleMark','ruleType','listedTime','type','isUsed'], 'safe']
         ];
     }
 

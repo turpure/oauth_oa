@@ -76,7 +76,7 @@ class ShopeeRule extends \yii\mongodb\ActiveRecord
 
             $defaultAttributes = [
                 'cids' =>[], 'index' => 1, 'merchantStatus' => 1, 'sort' => 'DESC', 'pageSize' => 20,
-                'titleStatus' => 1, 'pidStatus' => 1
+                'titleStatus' => 1, 'pidStatus' => 1, 'isUsed' => 1
                 ];
             $this->setAttributes($defaultAttributes);
         }
@@ -143,7 +143,9 @@ class ShopeeRule extends \yii\mongodb\ActiveRecord
             'ruleName',
             'ruleMark',
             'ruleType',
-            'listedTime'
+            'listedTime',
+            'type',
+            'isUsed'
         ];
     }
 
@@ -159,7 +161,7 @@ class ShopeeRule extends \yii\mongodb\ActiveRecord
                 'pid', 'pidOrTitle', 'pidStatus', 'priceEnd', 'priceStart', 'ratingEnd', 'ratingStart', 'ratingCountEnd', 'ratingCountStart',
                 'salesThreeDay1End', 'salesThreeDay1Start', 'salesThreeDayGrowthEnd', 'salesThreeDayGrowthStart',
                 'shopLocation', 'shopLocationStatus', 'soldEnd', 'soldStart', 'sort', 'title', 'titleStatus',
-                'creator','createdDate','updatedDate','ruleName','ruleMark','ruleType','listedTime'], 'safe']
+                'creator','createdDate','updatedDate','ruleName','ruleMark','ruleType','listedTime','type','isUsed'], 'safe']
         ];
     }
 
