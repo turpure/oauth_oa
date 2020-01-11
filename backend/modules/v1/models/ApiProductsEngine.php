@@ -244,7 +244,7 @@ class ApiProductsEngine
             $col->update(['_id' => $id], ['accept' => array_unique($accept)]);
 
             //推送新数据到固定端口
-            Helper::pushData();
+            Helper::pushData($plat);
 
             // 转至逆向开发
             $product_info = [
@@ -279,7 +279,7 @@ class ApiProductsEngine
             $col->update(['_id' => $id], ['accept' => array_unique($accept)]);
 
             //推送新数据到固定端口
-            Helper::pushData();
+            Helper::pushData($plat);
 
             // 转至逆向开发
             $product_info = [
@@ -323,7 +323,7 @@ class ApiProductsEngine
             $col->update(['_id' => $id], ['refuse' => $refuse]);
 
             //推送新数据到固定端口
-            Helper::pushData();
+            Helper::pushData($plat);
 
             // 更改推荐状态
             $table = $doc['productType'] === 'new' ? 'ebay_new_product' : 'ebay_hot_product';
@@ -345,7 +345,7 @@ class ApiProductsEngine
             $col->update(['_id' => $id], ['refuse' => $refuse]);
 
             //推送新数据到固定端口
-            Helper::pushData();
+            Helper::pushData($plat);
 
             // 更改推荐状态
             $table = 'wish_new_product';

@@ -430,10 +430,8 @@ class ProductEngine
      * Author: henry
      * @return array
      */
-    public static function getDailyReportData()
+    public static function getDailyReportData($plat)
     {
-        $condition = Yii::$app->request->post('condition');
-        $plat = isset($condition['plat']) && $condition['plat'] ? $condition['plat'] : 'ebay';
         $db = Yii::$app->mongodb;
 
         //获取开发数据统计
@@ -501,7 +499,7 @@ class ProductEngine
             ];
         }
         //print_r()
-        return array_merge($dailyData, ['devData' => $devData, 'claimData' => $claimData]);
+        return array_merge(['plat' => $plat], $dailyData, ['devData' => $devData, 'claimData' => $claimData]);
     }
 
     /**

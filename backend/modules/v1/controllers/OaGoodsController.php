@@ -275,10 +275,15 @@ class OaGoodsController extends AdminController
                     //恢复智能推荐认领状态
                     if($introducer == 'proEngine'){
                         $recommend = explode('.', $recommendId);
+                        if($recommend[0] == 'new' || $recommend[0] == 'hot'){
+                            $plat = 'ebay';
+                        }else{
+                            $plat = $recommend[0];
+                        }
                         Yii::$app->mongodb->getCollection('ebay_recommended_product')
                             ->update(['_id' => $recommend[1]], ['accept' => null]);
                         //推送新数据到固定端口
-                        Helper::pushData();
+                        Helper::pushData($plat);
                     }
 
                 }

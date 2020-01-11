@@ -678,7 +678,9 @@ class ProductsEngineController extends AdminController
      */
     public function actionDailyReport()
     {
-        return ProductEngine::getDailyReportData();
+        $condition = Yii::$app->request->post('condition');
+        $plat = isset($condition['plat']) && $condition['plat'] ? $condition['plat'] : 'ebay';
+        return ProductEngine::getDailyReportData($plat);
     }
 
     /**
