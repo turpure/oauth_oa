@@ -222,10 +222,10 @@ class Helper
 
 
 
-    public static function pushData($plat = 'ebay'){
+    public static function pushData(){
         // 推送的url地址，使用自己的服务器地址
         $push_api_url = "tcp://127.0.0.1:5678/";
-        $info = ProductEngine::getDailyReportData($plat);
+        $info = ProductEngine::getDailyReportData();
         $client = stream_socket_client($push_api_url, $errno, $errmsg, 1);
         $data = json_encode($info);
         fwrite($client, (string)$data."\n");

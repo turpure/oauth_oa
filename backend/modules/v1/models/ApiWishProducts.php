@@ -87,7 +87,7 @@ class ApiWishProducts
             $col->update(['_id' => $id], ['accept' => array_unique($accept)]);
 
             //推送新数据到固定端口
-            Helper::pushData($plat);
+            Helper::pushData();
 
             // 转至逆向开发
             $product_info = [
@@ -132,7 +132,7 @@ class ApiWishProducts
             $col->update(['_id' => $id], ['refuse' => array_unique($refuse)]);
 
             //推送新数据到固定端口
-            Helper::pushData($plat);
+            Helper::pushData();
 
             // 更改推荐状态
             $table = $doc['productType'] === 'new' ? 'ebay_new_product' : 'ebay_hot_product';
