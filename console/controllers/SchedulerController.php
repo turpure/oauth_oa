@@ -606,7 +606,7 @@ class SchedulerController extends Controller
                     Yii::$app->db->createCommand()->batchInsert('cache_stockWaringTmpData',
                         [
                             'sku', 'storeName', 'goodsStatus', 'salerName', 'costPrice', 'useNum', 'costmoney',
-                            'notInStore', 'notInCostmoney', 'hopeUseNum', 'totalCostmoney', 'updateTime'
+                            'notInStore', 'notInCostmoney', 'hopeUseNum', 'totalCostmoney', 'sellCount1', 'sellCount2', 'sellCount3', 'weight', 'updateTime'
                         ],
                         array_slice($stockList,$i*$step, $step))->execute();
                 }
