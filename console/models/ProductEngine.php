@@ -734,25 +734,10 @@ class ProductEngine
                 ->count(['productType' => $type, 'rules' => $v['_id'], "refuse" => ['$ne' => null], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
             $unhandledNewNum = $db->getCollection('ebay_recommended_product')
                 ->count(['productType' => $type,'rules' => $v['_id'],  "refuse" => null, 'accept' => null, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
-            //
-            $allQuery = (new \yii\db\Query())
-                ->from('proCenter.oa_goodsinfo gs')
-                ->select('g.developer, gs.goodsCode')
-                ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
-                ->andFilterWhere(['g.introducer' => 'proEngine'])
-                ->andFilterWhere(['like', 'g.recommendId', $type])
-                ->andFilterWhere(['between', 'left(g.createDate,10)', $beginDate, $endDate])->all();
-            //var_dump($allQuery);exit;
+
+            //var_dump($v['_id']);exit;
             //计算出单数
-            $goodsCodeList = ArrayHelper::getColumn($allQuery, 'goodsCode');
-            $codeList = implode("','", $goodsCodeList);
-            $sql = " SELECT count(DISTINCT g.GoodsCode) AS num FROM (
-	                SELECT sku FROM P_TradeDt  UNION SELECT sku FROM P_TradeDt_His
-                  ) d
-                  LEFT JOIN B_GoodsSKU gs ON gs.sku=d.sku
-                  LEFT JOIN B_Goods g ON g.NID=gs.GoodsID
-                  WHERE g.GoodsCode IN ('{$codeList}')";
-            $orderNum = Yii::$app->py_db->createCommand($sql)->queryScalar();
+            $orderNum = self::getDispatchRuleOrderNum($v['_id'], $plat, $type, $beginDate, $endDate);
 
             $item['totalNum'] = $totalNum;
             $item['dispatchNum'] = $dispatchNum;
@@ -824,22 +809,7 @@ class ProductEngine
             $unhandledNewNum = $db->getCollection('wish_recommended_product')
                 ->count(['rules' => $v['_id'],  "refuse" => null, 'accept' => null, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
             //计算出单数
-            $allQuery = (new \yii\db\Query())
-                ->from('proCenter.oa_goodsinfo gs')
-                ->select('g.developer, gs.goodsCode')
-                ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
-                ->andFilterWhere(['g.introducer' => 'proEngine'])
-                ->andFilterWhere(['like', 'g.recommendId', $plat])
-                ->andFilterWhere(['between', 'left(g.createDate,10)', $beginDate, $endDate])->all();
-            $goodsCodeList = ArrayHelper::getColumn($allQuery, 'goodsCode');
-            $codeList = implode("','", $goodsCodeList);
-            $sql = " SELECT count(DISTINCT g.GoodsCode) AS num FROM (
-	                SELECT sku FROM P_TradeDt  UNION SELECT sku FROM P_TradeDt_His
-                  ) d
-                  LEFT JOIN B_GoodsSKU gs ON gs.sku=d.sku
-                  LEFT JOIN B_Goods g ON g.NID=gs.GoodsID
-                  WHERE g.GoodsCode IN ('{$codeList}')";
-            $orderNum = Yii::$app->py_db->createCommand($sql)->queryScalar();
+            $orderNum = self::getDispatchRuleOrderNum($v['_id'], $plat, '', $beginDate, $endDate);
 
             $item['totalNum'] = $totalNum;
             $item['dispatchNum'] = $dispatchNum;
@@ -879,6 +849,48 @@ class ProductEngine
             $data[] = $item;
         }
         return $data;
+    }
+
+    public static function getDispatchRuleOrderNum($ruleId, $plat, $type, $beginDate, $endDate){
+        $db = Yii::$app->mongodb;
+        if($plat == 'ebay'){
+            $recommend = $db->getCollection('ebay_recommended_product')
+                ->find(['rules' => ['$in' => [$ruleId]]]);
+            //var_dump($ruleId);exit;
+            //var_dump($recommend);exit;
+            $num = 5;
+        }elseif($plat == 'wish'){
+            $recommend = $db->getCollection('wish_recommended_product')
+                ->find(['rules' => $ruleId]);
+            $num = 6;
+        }else{
+            $recommend = [];
+        }
+
+        $ids = ArrayHelper::getColumn($recommend, '_id');
+        //var_dump($ids);exit;
+
+        $allQuery = (new \yii\db\Query())
+            ->from('proCenter.oa_goodsinfo gs')
+            ->select('g.developer, gs.goodsCode')
+            ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
+            ->andFilterWhere(['g.introducer' => 'proEngine'])
+            ->andFilterWhere(['like', 'g.recommendId', $type])
+            ->andFilterWhere(["substr(g.recommendId,{$num})" => $ids])
+            ->andFilterWhere(['between', 'left(g.createDate,10)', $beginDate, $endDate])->all();
+
+        $goodsCodeList = ArrayHelper::getColumn($allQuery, 'goodsCode');
+        $codeList = implode("','", $goodsCodeList);
+        //var_dump($codeList);
+        $sql = " SELECT count(DISTINCT g.GoodsCode) AS num FROM (
+	                SELECT sku FROM P_TradeDt  UNION SELECT sku FROM P_TradeDt_His
+                  ) d
+                  LEFT JOIN B_GoodsSKU gs ON gs.sku=d.sku
+                  LEFT JOIN B_Goods g ON g.NID=gs.GoodsID
+                  WHERE g.GoodsCode IN ('{$codeList}')";
+        $num = Yii::$app->py_db->createCommand($sql)->queryScalar();
+        //var_dump($orderNum);exit;
+        return $num;
     }
 
     /**
