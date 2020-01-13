@@ -444,9 +444,9 @@ class ProductEngine
         $db = Yii::$app->mongodb;
 
         //获取开发数据统计
-        $devList = EbayAllotRule::find()->all();
         $devData = [];
         if($plat == 'ebay'){
+            $devList = EbayAllotRule::find()->all();
             //获取eBay新品统计数据
             $ebayNewData = self::getEbayDailyData('new');
             //获取eBay热销品统计数据
@@ -455,6 +455,7 @@ class ProductEngine
             $table = 'ebay_recommended_product';
         }elseif ($plat == 'wish'){
             //获取wish统计数据
+            $devList = EbayAllotRule::find()->where(['<>', 'depart' , '运营一部'])->all();
             $dailyData = self::getWishDailyData();
             $table = 'wish_recommended_product';
         }
