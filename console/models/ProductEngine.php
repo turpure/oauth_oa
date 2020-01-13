@@ -734,13 +734,32 @@ class ProductEngine
                 ->count(['productType' => $type, 'rules' => $v['_id'], "refuse" => ['$ne' => null], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
             $unhandledNewNum = $db->getCollection('ebay_recommended_product')
                 ->count(['productType' => $type,'rules' => $v['_id'],  "refuse" => null, 'accept' => null, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
-
+            //
+            $allQuery = (new \yii\db\Query())
+                ->from('proCenter.oa_goodsinfo gs')
+                ->select('g.developer, gs.goodsCode')
+                ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
+                ->andFilterWhere(['g.introducer' => 'proEngine'])
+                ->andFilterWhere(['like', 'g.recommendId', $type])
+                ->andFilterWhere(['between', 'left(g.createDate,10)', $beginDate, $endDate])->all();
+            //var_dump($allQuery);exit;
+            //计算出单数
+            $goodsCodeList = ArrayHelper::getColumn($allQuery, 'goodsCode');
+            $codeList = implode("','", $goodsCodeList);
+            $sql = " SELECT count(DISTINCT g.GoodsCode) AS num FROM (
+	                SELECT sku FROM P_TradeDt  UNION SELECT sku FROM P_TradeDt_His
+                  ) d
+                  LEFT JOIN B_GoodsSKU gs ON gs.sku=d.sku
+                  LEFT JOIN B_Goods g ON g.NID=gs.GoodsID
+                  WHERE g.GoodsCode IN ('{$codeList}')";
+            $orderNum = Yii::$app->py_db->createCommand($sql)->queryScalar();
 
             $item['totalNum'] = $totalNum;
             $item['dispatchNum'] = $dispatchNum;
             $item['claimNum'] = $claimNum;
             $item['filterNum'] = $filterNum;
             $item['unhandledNewNum'] = $unhandledNewNum;
+            $item['orderNum'] = $orderNum;
 
             //获取智能推荐新品 爆旺款全部产品
             $dataList = $hotQuery = (new \yii\db\Query())
@@ -766,6 +785,7 @@ class ProductEngine
 
             $item['claimRate'] = $dispatchNum ? round($claimNum*1.0/$dispatchNum,4) : 0;
             $item['filterRate'] = $dispatchNum ? round($filterNum*1.0/$dispatchNum,4) : 0;
+            $item['orderRate'] = $claimNum ? round($orderNum*1.0/$claimNum,4) : 0;
             $item['hotRate'] = $claimNum ? round($hotNum*1.0/$claimNum,4) : 0;
             $item['popRate'] = $claimNum ? round($popNum*1.0/$claimNum,4) : 0;
 
@@ -803,13 +823,30 @@ class ProductEngine
                 ->count(['rules' => $v['_id'], "refuse" => ['$ne' => null], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
             $unhandledNewNum = $db->getCollection('wish_recommended_product')
                 ->count(['rules' => $v['_id'],  "refuse" => null, 'accept' => null, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
-
+            //计算出单数
+            $allQuery = (new \yii\db\Query())
+                ->from('proCenter.oa_goodsinfo gs')
+                ->select('g.developer, gs.goodsCode')
+                ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
+                ->andFilterWhere(['g.introducer' => 'proEngine'])
+                ->andFilterWhere(['like', 'g.recommendId', $plat])
+                ->andFilterWhere(['between', 'left(g.createDate,10)', $beginDate, $endDate])->all();
+            $goodsCodeList = ArrayHelper::getColumn($allQuery, 'goodsCode');
+            $codeList = implode("','", $goodsCodeList);
+            $sql = " SELECT count(DISTINCT g.GoodsCode) AS num FROM (
+	                SELECT sku FROM P_TradeDt  UNION SELECT sku FROM P_TradeDt_His
+                  ) d
+                  LEFT JOIN B_GoodsSKU gs ON gs.sku=d.sku
+                  LEFT JOIN B_Goods g ON g.NID=gs.GoodsID
+                  WHERE g.GoodsCode IN ('{$codeList}')";
+            $orderNum = Yii::$app->py_db->createCommand($sql)->queryScalar();
 
             $item['totalNum'] = $totalNum;
             $item['dispatchNum'] = $dispatchNum;
             $item['claimNum'] = $claimNum;
             $item['filterNum'] = $filterNum;
             $item['unhandledNewNum'] = $unhandledNewNum;
+            $item['orderNum'] = $orderNum;
 
             //获取智能推荐新品 爆旺款全部产品
             $dataList = $hotQuery = (new \yii\db\Query())
@@ -835,6 +872,7 @@ class ProductEngine
 
             $item['claimRate'] = $dispatchNum ? round($claimNum*1.0/$dispatchNum,4) : 0;
             $item['filterRate'] = $dispatchNum ? round($filterNum*1.0/$dispatchNum,4) : 0;
+            $item['orderRate'] = $claimNum ? round($orderNum*1.0/$claimNum,4) : 0;
             $item['hotRate'] = $claimNum ? round($hotNum*1.0/$claimNum,4) : 0;
             $item['popRate'] = $claimNum ? round($popNum*1.0/$claimNum,4) : 0;
 
@@ -1075,7 +1113,7 @@ class ProductEngine
             ->from('proCenter.oa_goodsinfo gs')
             ->select('g.developer, count(gs.goodsCode) as num')
             ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
-            ->andFilterWhere(['gs.goodsCode' => $list])
+            ->andWhere(['gs.goodsCode' => $list])
             ->groupBy('g.developer')->all();
         $data = ArrayHelper::map($allQuery,'developer', 'num');
         return $data;
