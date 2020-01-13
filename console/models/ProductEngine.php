@@ -758,7 +758,11 @@ class ProductEngine
                 ->all();
             $hotNum = $popNum = 0;
             foreach ($dataList as $value) {
-                $recommend = $db->getCollection('ebay_recommended_product')->count(['_id' => explode('.', $value['recommendId'])[1]]);
+                $recommend = $db->getCollection('ebay_recommended_product')
+                    ->count([
+                        '_id' => explode('.', $value['recommendId'])[1],
+                        'rules' => ['$in' => [$v['_id']]]
+                        ]);
                 if ($value['goodsStatus'] == '爆款' && $recommend) {
                     $hotNum += 1;
                 } elseif ($value['goodsStatus'] == '旺款' && $recommend) {
@@ -830,7 +834,11 @@ class ProductEngine
                 ->all();
             $hotNum = $popNum = 0;
             foreach ($dataList as $value) {
-                $recommend = $db->getCollection('wish_recommended_product')->count(['_id' => explode('.', $value['recommendId'])[1]]);
+                $recommend = $db->getCollection('wish_recommended_product')
+                    ->count([
+                        '_id' => explode('.', $value['recommendId'])[1],
+                        'rules' => ['$in' => [$v['_id']]]
+                    ]);
                 if ($value['goodsStatus'] == '爆款' && $recommend) {
                     $hotNum += 1;
                 } elseif ($value['goodsStatus'] == '旺款' && $recommend) {
