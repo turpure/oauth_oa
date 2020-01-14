@@ -527,9 +527,6 @@ class SiteController extends AdminController
     public function actionSalesRanking()
     {
         $plat = \Yii::$app->request->get('plat','eBay-义乌仓');
-        if(strtolower($plat) === 'aliexpress') {
-            $plat = 'smt';
-        }
         $sql = "SELECT * FROM cache_siteSalesRanking 
                 WHERE  platform = '{$plat}'
                 ORDER BY thisProfit DESC";
