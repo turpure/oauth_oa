@@ -1066,7 +1066,7 @@ class TinyToolController extends AdminController
 				WHERE salerName IN ('{$userList}')";
         $res = new SqlDataProvider([
             'sql' => $sql,
-            'totalCount' => $count,
+            'totalCount' => (int)$count,
             'pagination' => [
                 'pageSize' => 20
             ]
