@@ -1056,9 +1056,10 @@ class TinyToolController extends AdminController
         $userList = implode("','", $userArr);
         $countSql = "SELECT COUNT(*) FROM cache_stockWaringTmpData WHERE salerName IN ('{$userList}')";
         $count = Yii::$app->db->createCommand($countSql)->queryScalar();
-        $sql = "SELECT c.*,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart 
+        $sql = "SELECT c.*,ss.seller1,ss.seller2,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart 
                 FROM `cache_stockWaringTmpData` c
-                LEFT JOIN `user` u ON u.username=c.salerName
+                LEFT JOIN `cache_skuSeller` ss ON ss.goodsCode=c.goodsCode
+                LEFT JOIN `user` u ON u.username=ss.seller1
 				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
 				LEFT JOIN auth_department d ON d.id=dc.department_id
 				LEFT JOIN auth_department p ON p.id=d.parent
