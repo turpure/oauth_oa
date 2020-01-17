@@ -1051,6 +1051,9 @@ class TinyToolController extends AdminController
      */
     public function actionSku()
     {
+        $cond = Yii::$app->request->post('condition');
+        $goodsCode = ArrayHelper::getValue($cond,'goodsCode');
+        $seller = ArrayHelper::getValue($cond,'seller');
         $username = Yii::$app->user->identity->username;
         $userArr = ApiUser::getUserList($username);
         $userList = implode("','", $userArr);
@@ -1063,7 +1066,9 @@ class TinyToolController extends AdminController
 				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
 				LEFT JOIN auth_department d ON d.id=dc.department_id
 				LEFT JOIN auth_department p ON p.id=d.parent
-				WHERE salerName IN ('{$userList}')";
+				WHERE seller1 IN ('{$userList}')";
+        if($goodsCode) $sql .= " AND c.goodsCode LIKE '%{$goodsCode}%'";
+        if($seller) $sql .= " AND ss.seller1 LIKE '%{$seller}%'";
         $res = new SqlDataProvider([
             'sql' => $sql,
             'totalCount' => (int)$count,
@@ -1072,6 +1077,42 @@ class TinyToolController extends AdminController
             ]
         ]);
         return $res;
+    }
+
+    /**
+     * Date: 2020-01-17 11:49
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     * @throws \yii\db\Exception
+     */
+    public function actionSkuExport()
+    {
+        $cond = Yii::$app->request->post('condition');
+        $goodsCode = ArrayHelper::getValue($cond,'goodsCode');
+        $seller = ArrayHelper::getValue($cond,'seller');
+        $username = Yii::$app->user->identity->username;
+        $userArr = ApiUser::getUserList($username);
+        $userList = implode("','", $userArr);
+        $countSql = "SELECT COUNT(*) FROM cache_stockWaringTmpData WHERE salerName IN ('{$userList}')";
+        $count = Yii::$app->db->createCommand($countSql)->queryScalar();
+        $sql = "SELECT c.goodsCode,sku,skuName,storeName,goodsStatus,salerName,costPrice,costmoney,hopeUseNum,sellCount1,sellCount2,sellCount3,weight,
+                  ss.seller1,ss.seller2,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart 
+                FROM `cache_stockWaringTmpData` c
+                LEFT JOIN `cache_skuSeller` ss ON ss.goodsCode=c.goodsCode
+                LEFT JOIN `user` u ON u.username=ss.seller1
+				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
+				LEFT JOIN auth_department d ON d.id=dc.department_id
+				LEFT JOIN auth_department p ON p.id=d.parent
+				WHERE seller1 IN ('{$userList}')";
+        if($goodsCode) $sql .= " AND c.goodsCode LIKE '%{$goodsCode}%'";
+        if($seller) $sql .= " AND ss.seller1 LIKE '%{$seller}%'";
+
+
+        $res = Yii::$app->db->createCommand($sql)->queryAll();
+        $name = 'ProductInventoryTurnoverDetails';
+        $title = ['商品编码','SKU','商品名称','仓库','商品状态','开发员','平均单价','成本','预计可用库存','5天销量','10天销量','20天销量%','重量','销售1','销售2',''];
+        ExportTools::toExcelOrCsv($name, $res, 'Xls', $title);
     }
 
 
