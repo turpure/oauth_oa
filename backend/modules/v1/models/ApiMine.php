@@ -124,6 +124,9 @@ class ApiMine
             foreach ($proId as $id) {
                 $queryPro = OaDataMine::findOne(['proId' => $id]);
                 if($queryPro){
+                    $jobId = $queryPro->id;
+                    $redis = Yii::$app->redis;
+                    $redis->lpush('job_list', $jobId . ',' . $id);
                     throw  new Exception("该产品已采集过，请勿重复采集!",'400003');
                 }
                 $newMine = clone $mine;
