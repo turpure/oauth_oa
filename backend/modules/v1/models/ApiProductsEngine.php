@@ -12,6 +12,7 @@ use backend\models\EbayCategory;
 use backend\models\EbayCateRule;
 use backend\models\EbayHotRule;
 use backend\models\EbayNewRule;
+use backend\models\ShopeeCategory;
 use backend\models\WishRule;
 use Yii;
 use backend\models\ShopElf\BGoods;
@@ -611,7 +612,9 @@ class ApiProductsEngine
             if ($value == 'ebay') {
                 $detail[] = self::getEbayCateInfo($value, $detailArr);
             } elseif ($value == 'wish') {
-                $detail[] = self::getWishCateInfo($value, $detailArr);;
+                $detail[] = self::getWishCateInfo($value, $detailArr);
+            }elseif ($value == 'shopee'){
+                $detail[] = self::getShopeeCateInfo($value, $detailArr);
             }
         }
         if ($rule) $res['_id'] = $rule['_id'];
@@ -682,7 +685,6 @@ class ApiProductsEngine
         $item = [$newDetail, $hotDetail];
         return $item;
     }
-
     private static function getWishAllotInfo($plat, $detailArr)
     {
         $newRule = WishRule::find()->all();
@@ -710,6 +712,7 @@ class ApiProductsEngine
         }
         return $item;
     }
+
 
     private static function getEbayCateInfo($plat, $detailArr)
     {
@@ -765,8 +768,6 @@ class ApiProductsEngine
         }
         return $item;
     }
-
-
     private static function getWishCateInfo($plat, $detailArr)
     {
         $marketplace = '全选';// wish 平台没有站点，为保持结构和eBay一致，添加一个默认站点
@@ -801,6 +802,60 @@ class ApiProductsEngine
                                                         isset($marketplaceValue['cateValue']['subCateChecked']) && $marketplaceValue['cateValue']['subCateChecked']
                                                     ) {
                                                         $item['platValue'][0]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = $marketplaceValue['cateValue']['subCateChecked'];
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $item;
+    }
+    private static function getShopeeCateInfo($plat, $detailArr)
+    {
+        $item['plat'] = $plat;
+        $item['flag'] = false;
+        $item['platValue'] = [];
+        $allMarketplaceArr = ShopeeCategory::find()->andFilterWhere(['plat' => $plat])->distinct('country');
+        foreach ($allMarketplaceArr as $mk => $marketplace) {
+            $item['platValue'][$mk]['marketplace'] = $marketplace;
+            $item['platValue'][$mk]['flag'] = false;
+            $item['platValue'][$mk]['marketplaceValue'] = [];
+            //获取平台站点下所有一级类目
+            $allCateArr = ShopeeCategory::find()
+                ->andFilterWhere(['plat' => $plat])
+                ->andFilterWhere(['country' => $marketplace])
+                ->orderBy('cate')->asArray()->all();
+            foreach ($allCateArr as $ck => $cate) {//遍历平台下所有一级类目
+                $item['platValue'][$mk]['marketplaceValue'][$ck]['cate'] = $cate['cate'];
+                $item['platValue'][$mk]['marketplaceValue'][$ck]['flag'] = false;
+                foreach ($cate['subCate'] as $sk => $subCate) {  //遍历已有二级类目
+                    $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCate'][$sk] = $subCate;
+                    $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = [];
+                    if ($detailArr) {
+                        foreach ($detailArr as $detailValue) {
+                            if (isset($detailValue['plat']) && $detailValue['plat'] == $plat) { //判断是否有该平台
+                                $item['flag'] = true;
+                                if (isset($detailValue['platValue']) && $detailValue['platValue']) {
+                                    foreach ($detailValue['platValue'] as $platValue) {
+                                        if (isset($platValue['marketplace']) && $platValue['marketplace'] == $marketplace) {//判断是否有该站点
+                                            $item['platValue'][$mk]['flag'] = true;
+                                            if (isset($platValue['marketplaceValue']) && $platValue['marketplaceValue']) {
+                                                foreach ($platValue['marketplaceValue'] as $marketplaceValue) {
+                                                    if (isset($marketplaceValue['cate']) && $marketplaceValue['cate'] == $cate['cate']) {//判断是否有该一级类目
+                                                        $item['platValue'][$mk]['marketplaceValue'][$ck]['flag'] = true;
+                                                        $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCate'] = $cate['subCate'];
+                                                        $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = [];
+                                                        if (isset($marketplaceValue['cateValue']) && $marketplaceValue['cateValue'] &&
+                                                            isset($marketplaceValue['cateValue']['subCateChecked']) && $marketplaceValue['cateValue']['subCateChecked']
+                                                        ) {
+                                                            $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = $marketplaceValue['cateValue']['subCateChecked'];
+                                                        }
                                                     }
                                                 }
                                             }

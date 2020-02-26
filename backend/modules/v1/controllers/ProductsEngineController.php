@@ -436,7 +436,7 @@ class ProductsEngineController extends AdminController
         return [
             'ebay',
             'wish',
-            //'joom',
+            'shopee',
         ];
     }
 
