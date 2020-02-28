@@ -9,6 +9,7 @@ namespace console\controllers;
 
 use console\models\ConScheduler;
 use console\models\ProductEngine;
+use console\models\ShopeeProductEngine;
 use console\models\WishProductEngine;
 use yii\console\Controller;
 use Yii;
@@ -220,6 +221,84 @@ class ProductEngineSchedulerController extends Controller
             print 'fail to recommend cause of ' . $why->getMessage();
         }
     }
+
+
+    //====================================================================================================
+    //Shopee推荐
+    /**
+     * 给产品打标签
+     */
+    public function actionShopeeProductTag()
+    {
+        // 新品打标签
+        ShopeeProductEngine::setProductTag();
+    }
+
+    /**
+     * 按照分配算法分配产品
+     * @param $type
+     */
+    public function actionShopeeDispatchAll($type='new')
+    {
+        $developers = ProductEngine::getDevelopers('运营一部');
+        shuffle($developers);
+        $products = ShopeeProductEngine::getProducts($type);
+        $engine = new ShopeeProductEngine($products, $developers);
+        $ret = $engine->dispatch();
+        foreach ($ret as $itemId => $productResult) {
+            $row = ShopeeProductEngine::pullData($itemId, $productResult);
+            ShopeeProductEngine::pushData($row, 'all');
+        }
+    }
+
+    /**
+     * 按数量分配给每个开发员
+     * @param string $type
+     */
+    public function actionShopeeDispatchToPerson($type='new')
+    {
+        $ret = ShopeeProductEngine::dispatchToPersons($type);
+        foreach ($ret as $itemId => $productResult) {
+            $row = ShopeeProductEngine::pullData($itemId, $productResult);
+            ShopeeProductEngine::pushData($row, 'person');
+        }
+
+    }
+
+    /**
+     * 更新每日推荐的推荐人
+     */
+    public function actionShopeeSetRecommendToPersons()
+    {
+        //$day = '2019-12-12';
+        $day = date('Y-m-d');
+        ShopeeProductEngine::getAndSetRecommendToPersons($day);
+    }
+
+
+    /**
+     * 每日推荐
+     */
+    public function actionShopeeDailyRecommend()
+    {   //默认ebay平台
+        try {
+            //打标签
+            ShopeeProductEngine::setProductTag();
+
+            // 分配所有产品
+            $this->actionShopeeDispatchAll();
+
+            //分配产品给开发
+            $this->actionShopeeDispatchToPerson();
+
+            //更新每日推荐的推荐人
+            $this->actionShopeeSetRecommendToPersons();
+        } catch (\Exception $why) {
+            print 'fail to recommend cause of ' . $why->getMessage();
+        }
+    }
+
+
 
 
 

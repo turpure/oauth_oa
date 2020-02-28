@@ -13,6 +13,7 @@ use backend\models\EbayCateRule;
 use backend\models\EbayDeveloperCategory;
 use backend\models\EbayHotRule;
 use backend\models\EbayNewRule;
+use backend\models\ShopeeCategory;
 use backend\models\WishRule;
 use backend\modules\v1\models\ApiUser;
 use console\models\ProductEngine;
@@ -442,9 +443,13 @@ class ProductsEngineController extends AdminController
 
     public function actionMarketplace()
     {
-        $plat = Yii::$app->request->get('plat', null);
+        $plat = Yii::$app->request->get('plat', 'ebay');
         try {
-            return EbayCategory::find()->andFilterWhere(['plat' => $plat])->distinct('marketplace');
+            if($plat == 'ebay'){
+                return EbayCategory::find()->andFilterWhere(['plat' => $plat])->distinct('marketplace');
+            }elseif($plat == 'shopee'){
+                return ShopeeCategory::find()->andFilterWhere(['plat' => $plat])->distinct('country');
+            }
         } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }
