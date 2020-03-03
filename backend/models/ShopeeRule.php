@@ -76,7 +76,7 @@ class ShopeeRule extends \yii\mongodb\ActiveRecord
 
             $defaultAttributes = [
                 'cids' =>[], 'index' => 1, 'merchantStatus' => 1, 'sort' => 'DESC', 'pageSize' => 20,
-                'titleStatus' => 1, 'pidStatus' => 1, 'isUsed' => 1
+                'titleStatus' => 1, 'pidStatus' => 1, 'isUsed' => 1, 'type' => 'auto'
                 ];
             $this->setAttributes($defaultAttributes);
         }
