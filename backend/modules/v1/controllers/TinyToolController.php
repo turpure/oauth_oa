@@ -1059,9 +1059,14 @@ class TinyToolController extends AdminController
         $userList = implode("','", $userArr);
         $countSql = "SELECT COUNT(*) FROM cache_stockWaringTmpData WHERE salerName IN ('{$userList}')";
         $count = Yii::$app->db->createCommand($countSql)->queryScalar();
-        $sql = "SELECT c.*,ss.seller1,ss.seller2,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart 
-                FROM `cache_stockWaringTmpData` c
-                LEFT JOIN `cache_skuSeller` ss ON ss.goodsCode=c.goodsCode
+        $sql = "SELECT c.*,ss.seller1,ss.seller2,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart ,
+                ca.threeSellCount, ca.sevenSellCount, ca.fourteenSellCount, ca.thirtySellCount,
+         CASE WHEN threeSellCount/3*0.4 + sevenSellCount/7*0.4 + fourteenSellCount/14*0.4 + thirtySellCount/30*0.1 = 0 THEN 10000
+         ELSE  ifnull(hopeUseNum,0)/(threeSellCount/3*0.4 + sevenSellCount/7*0.1 + fourteenSellCount/14*0.4 + thirtySellCount/30*0.1)
+         END  AS turnoverDays
+                FROM `cache_skuSeller` ss
+                LEFT JOIN cache_stockWaringTmpData c ON ss.goodsCode=c.goodsCode
+                LEFT JOIN cache_30DayOrderTmpData ca ON ca.sku=c.sku
                 LEFT JOIN `user` u ON u.username=ss.seller1
 				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
 				LEFT JOIN auth_department d ON d.id=dc.department_id
