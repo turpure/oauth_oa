@@ -630,9 +630,10 @@ class ApiProductsEngine
         foreach ($allPlatArr as $value) {//遍历所有平台
             if ($value == 'ebay') {
                 $detail[$value] = self::getEbayAllotInfo($value, $detailArr);
-            } elseif ($value == 'wish') {
+            } else{
                 $detail[$value] = self::getWishAllotInfo($value, $detailArr);;
             }
+
         }
 
 
@@ -735,7 +736,11 @@ class ApiProductsEngine
 
     private static function getWishAllotInfo($plat, $detailArr)
     {
-        $newRule = WishRule::find()->all();
+        if($plat == 'wish'){
+            $newRule = WishRule::find()->all();
+        }else{
+            $newRule = ShopeeRule::find()->all();
+        }
         foreach ($newRule as $k => $value) {
             $item[$k] =
                 [
@@ -760,6 +765,7 @@ class ApiProductsEngine
         }
         return $item;
     }
+
 
 
     private static function getEbayCateInfo($plat, $detailArr)
