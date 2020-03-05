@@ -326,11 +326,35 @@ class ApiProductsEngine
 
             //推送新数据到固定端口
             Helper::pushData();
+            $imgUrl = $url = '';
+            if($doc['country'] == 'Malaysia'){
+                $imgUrl = 'https://s-cf-my.shopeesz.com/file/';
+                $url = 'https://s-cf-my.shopeesz.com/file/';
+            }elseif ($doc['country'] == 'Indonesia'){
+                $imgUrl = 'https://s-cf-id.shopeesz.com/file/';
+                $url = 'https://shopee.co.id/';
+            }elseif ($doc['country'] == 'Thailand'){
+                $imgUrl = 'https://s-cf-th.shopeesz.com/file/';
+                $url = 'https://shopee.co.th/';
+            }elseif ($doc['country'] == 'Philippines'){
+                $imgUrl = 'https://s-cf-ph.shopeesz.com/file/';
+                $url = 'https://shopee.ph/';
+            }elseif ($doc['country'] == 'Taiwan'){
+                $imgUrl = 'https://s-cf-tw.shopeesz.com/file/';
+                $url = 'https://tw.shopeesz.com/';
+            }elseif ($doc['country'] == 'Singapore'){
+                $imgUrl = 'https://s-cf-sg.shopeesz.com/file/';
+                $url = 'https://shopee.sg/';
+            }elseif ($doc['country'] == 'Vietnam'){
+                $imgUrl = 'https://s-cf-vn.shopeesz.com/file/';
+                $url = 'https://shopee.vn/';
+            }
+
 
             // 转至逆向开发
             $product_info = [
-                'recommendId' => $recommendId, 'img' => "https://https://s-cf-my.shopeesz.com/file/" . $doc['image'] . "_tn", 'cate' => '女人世界',
-                'origin1' => 'https://shopee.com.my/' . $doc['title'] . '-i.' . $doc['shopId'] . '.' . $doc['pid'],
+                'recommendId' => $recommendId, 'img' => $imgUrl . $doc['image'] . "_tn", 'cate' => '女人世界',
+                'origin1' => $url . $doc['title'] . '-i.' . $doc['shopId'] . '.' . $doc['pid'],
                 'stockUp' => '否', 'subCate' => '女包', 'salePrice' => $doc['price'], 'flag' => 'backward',
                 'type' => 'create', 'introducer' => 'proEngine'
             ];
