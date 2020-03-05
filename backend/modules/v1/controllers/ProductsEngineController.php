@@ -148,6 +148,45 @@ class ProductsEngineController extends AdminController
                     ],
                 ]);
                 return $data;
+            }elseif ($plat == 'shopee'){
+                $list = (new \yii\mongodb\Query())
+                    ->from('shopee_recommended_product')
+                    ->andFilterWhere(['productType' => $type])
+                    ->andFilterWhere(['dispatchDate' => ['$regex' => date('Y-m-d')]])
+                    ->all();
+                foreach ($list as $row) {
+                    if (isset($row['accept']) && $row['accept'] ||    //过滤掉已经认领的产品
+                        isset($row['refuse'][$username])       //过滤掉当前用户已经过滤的产品
+                    ) {
+                        continue;
+                    } else {
+                        $receiver = [];
+                        foreach ($row['receiver'] as $v) {
+                            if (in_array($v, $userList)) {  //过滤被推荐人(不在自己权限下的被推荐人筛选掉)
+                                $receiver[] = $v;
+                            }
+                        }
+                        //过滤当前用户的权限下的用户
+                        $row['receiver'] = $receiver;
+                        if ($receiver) {
+                            $ret[] = $row;
+                        }
+                    }
+                }
+                $data = new ArrayDataProvider([
+                    'allModels' => $ret,
+                    'sort' => [
+                        'attributes' => ['rating', 'totalprice', 'maxNumBought', 'genTime'],
+                        'defaultOrder' => [
+                            'maxNumBought' => SORT_DESC,
+                        ]
+                    ],
+                    'pagination' => [
+                        'page' => $page - 1,
+                        'pageSize' => $pageSize,
+                    ],
+                ]);
+                return $data;
             }
 
         } catch (\Exception $why) {

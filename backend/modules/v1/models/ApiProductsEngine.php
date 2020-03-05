@@ -129,6 +129,9 @@ class ApiProductsEngine
             $table = 'wish_new_product';
             $ruleTable = 'wish_rule';
             $cur = $db->getCollection($table)->find(['pid' => $itemId]);
+        }elseif ($plat == 'shopee'){
+            $table = 'shopee_product';
+            $ruleTable = 'shopee_rule';
         }
 
         // 追加recommendToPersons
@@ -183,7 +186,12 @@ class ApiProductsEngine
             $recommend = $db->getCollection('wish_recommended_product');
             $allRecommend = $db->getCollection('wish_all_recommended_product');
             $key = 'pid';
+        } elseif ($plat == 'shopee') {
+            $recommend = $db->getCollection('shopee_recommended_product');
+            $allRecommend = $db->getCollection('shopee_all_recommended_product');
+            $key = 'pid';
         }
+
         try {
             //查找并更新ItemId
             $db->getCollection($table)->update([$key => $itemId], ['recommendToPersons' => $oldRecommendToPersons, 'rules' => $currentRule]);
@@ -297,6 +305,41 @@ class ApiProductsEngine
             Yii::$app->request->setBodyParams(['condition' => $product_info]);
             $ret = Yii::$app->runAction('/v1/oa-goods/dev-create');
             return $ret;
+        } elseif ($plat == 'shopee') {
+            $col = $db->getCollection('shopee_recommended_product');
+            $doc = $col->findOne(['_id' => $id]);
+
+            $itemId = $doc['pid'];
+
+            $recommendId = 'shopee.' . $id;
+
+            if (empty($doc)) {
+                throw new \Exception('产品不存在');
+            }
+            $accept = ArrayHelper::getValue($doc, 'accept', []);
+            if (!empty($accept)) {
+                throw new \Exception('产品已被认领');
+            }
+            $accept[] = $username;
+            $col->update(['_id' => $id], ['accept' => array_unique($accept)]);
+
+            //推送新数据到固定端口
+            Helper::pushData();
+
+            // 转至逆向开发
+            $product_info = [
+                'recommendId' => $recommendId, 'img' => "https://https://s-cf-my.shopeesz.com/file/" . $doc['image'] . "_tn", 'cate' => '女人世界',
+                'origin1' => 'https://shopee.com.my/' . $doc['title'] . '-i.' . $doc['shopId'] . '.' . $doc['pid'],
+                'stockUp' => '否', 'subCate' => '女包', 'salePrice' => $doc['price'], 'flag' => 'backward',
+                'type' => 'create', 'introducer' => 'proEngine'
+            ];
+
+            // 更改推荐状态
+            $table = 'shopee_product';
+            static::setRecommendToPersons($table, $plat, $itemId, 'new');
+            Yii::$app->request->setBodyParams(['condition' => $product_info]);
+            $ret = Yii::$app->runAction('/v1/oa-goods/dev-create');
+            return $ret;
         }
     }
 
@@ -351,6 +394,27 @@ class ApiProductsEngine
 
             // 更改推荐状态
             $table = 'wish_new_product';
+            static::setRecommendToPersons($table, $plat, $itemId, 'hot', $reason);
+
+
+            return $col->findOne(['_id' => $id]);
+        }elseif ($plat == 'shopee') {
+            $col = $db->getCollection('shopee_recommended_product');
+            $doc = $col->findOne(['_id' => $id]);
+            $itemId = $doc['pid'];
+
+            if (empty($doc)) {
+                throw new \Exception('产品不存在');
+            }
+            $refuse = ArrayHelper::getValue($doc, 'refuse', []);
+            $refuse[$username] = $reason;
+            $col->update(['_id' => $id], ['refuse' => $refuse]);
+
+            //推送新数据到固定端口
+            Helper::pushData();
+
+            // 更改推荐状态
+            $table = 'shopee_product';
             static::setRecommendToPersons($table, $plat, $itemId, 'hot', $reason);
 
 
@@ -550,9 +614,8 @@ class ApiProductsEngine
             'allModels' => $ret,
             'sort' => [
                 'attributes' => [
-                    'price', 'visit', 'sold',
-                    'salesThreeDay1', 'salesThreeDayGrowth', 'paymentThreeDay1',
-                    'salesWeek1', 'paymentWeek1', 'salesWeekGrowth', 'listedTime'
+                    'price', 'genTime', 'sold', 'payment',
+                    'historicalSold', 'likedCount', 'ratingCount'
                 ],
                 'defaultOrder' => [
                     'sold' => SORT_DESC,
