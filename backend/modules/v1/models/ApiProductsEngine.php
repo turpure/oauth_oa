@@ -132,6 +132,7 @@ class ApiProductsEngine
         }elseif ($plat == 'shopee'){
             $table = 'shopee_product';
             $ruleTable = 'shopee_rule';
+            $cur = $db->getCollection($table)->find(['pid' => $itemId]);
         }
 
         // 追加recommendToPersons
