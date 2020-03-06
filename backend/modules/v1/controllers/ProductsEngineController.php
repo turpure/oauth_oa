@@ -774,13 +774,16 @@ class ProductsEngineController extends AdminController
             $ebayData = array_merge($newData, $hotData);
         }
         $wishData = ProductEngine::getWishRuleData('wish', 'new', $ruleName, $beginDate, $endDate);
+        $shopeeData = ProductEngine::getShopeeRuleData('shopee', 'new', $ruleName, $beginDate, $endDate);
 
         if(!$plat) {
-            return array_merge($ebayData, $wishData);
+            return array_merge($ebayData, $wishData, $shopeeData);
         }if($plat == 'ebay'){
             return $ebayData;
         }elseif($plat == 'wish'){
             return $wishData;
+        }elseif($plat == 'shopee'){
+            return $shopeeData;
         }
     }
 
@@ -799,6 +802,7 @@ class ProductsEngineController extends AdminController
 
         list($ebayRefuseData, $ebayOtherRefuseData) = ProductEngine::getRefuseData('ebay', $beginDate, $endDate);
         list($wishRefuseData, $wishOtherRefuseData) = ProductEngine::getRefuseData('wish', $beginDate, $endDate);
+        list($ShopeeRefuseData, $ShopeeOtherRefuseData) = ProductEngine::getRefuseData('shopee', $beginDate, $endDate);
 
         $refuseData = $otherDetailData = [];
         foreach ($ebayRefuseData as $k => $val){
