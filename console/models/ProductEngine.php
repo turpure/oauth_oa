@@ -621,11 +621,11 @@ class ProductEngine
         $unhandledNum = $db->getCollection('shopee_recommended_product')
             ->count(["refuse" => null, 'accept' => null, 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
         return [
-            'totalWishNum' => $totalNum,        //获取新品总数
-            'dispatchWishNum' => $dispatchNum,  //分配新品总数
-            'claimWishNum' => $claimNum,        //认领新品总数
-            'filterWishNum' => $filterNum,      //过滤新品总数
-            'unhandledWishNum' => $unhandledNum,//未处理新品总数
+            'totalShopeeNum' => $totalNum,        //获取新品总数
+            'dispatchShopeeNum' => $dispatchNum,  //分配新品总数
+            'claimShopeeNum' => $claimNum,        //认领新品总数
+            'filterShopeeNum' => $filterNum,      //过滤新品总数
+            'unhandledShopeeNum' => $unhandledNum,//未处理新品总数
         ];
 
     }
