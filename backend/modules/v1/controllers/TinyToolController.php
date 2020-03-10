@@ -1067,7 +1067,7 @@ class TinyToolController extends AdminController
          END  AS turnoverDays
                 FROM `cache_skuSeller` ss
                 LEFT JOIN cache_stockWaringTmpData c ON ss.goodsCode=c.goodsCode
-                LEFT JOIN cache_30DayOrderTmpData ca ON ca.sku=c.sku
+                LEFT JOIN cache_30DayOrderTmpData ca ON ca.sku=c.sku AND ca.storeName=c.storeName
                 LEFT JOIN `user` u ON u.username=ss.seller1
 				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
 				LEFT JOIN auth_department d ON d.id=dc.department_id
@@ -1102,10 +1102,16 @@ class TinyToolController extends AdminController
         $userList = implode("','", $userArr);
         $countSql = "SELECT COUNT(*) FROM cache_stockWaringTmpData WHERE salerName IN ('{$userList}')";
         $count = Yii::$app->db->createCommand($countSql)->queryScalar();
-        $sql = "SELECT c.goodsCode,sku,skuName,storeName,goodsStatus,salerName,costPrice,costmoney,hopeUseNum,sellCount1,sellCount2,sellCount3,weight,
-                  ss.seller1,ss.seller2,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart 
-                FROM `cache_stockWaringTmpData` c
-                LEFT JOIN `cache_skuSeller` ss ON ss.goodsCode=c.goodsCode
+        $sql = "SELECT c.goodsCode,c.sku,c.skuName,c.storeName,c.goodsStatus,c.salerName,costPrice,c.costmoney,hopeUseNum,weight,
+                  ss.seller1,ss.seller2,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart ,
+               IFNULL(ca.threeSellCount,0) AS threeSellCount, IFNULL(ca.sevenSellCount,0) AS sevenSellCount, 
+                IFNULL(ca.fourteenSellCount,0) AS fourteenSellCount, IFNULL(ca.thirtySellCount,0) AS thirtySellCount,
+         CASE WHEN IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.4 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1 = 0 THEN 10000
+         ELSE  ifnull(hopeUseNum,0)/(IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.1 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1)
+         END  AS turnoverDays
+                FROM `cache_skuSeller` ss
+                LEFT JOIN cache_stockWaringTmpData c ON ss.goodsCode=c.goodsCode
+                LEFT JOIN cache_30DayOrderTmpData ca ON ca.sku=c.sku AND ca.storeName=c.storeName
                 LEFT JOIN `user` u ON u.username=ss.seller1
 				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
 				LEFT JOIN auth_department d ON d.id=dc.department_id
@@ -1117,7 +1123,9 @@ class TinyToolController extends AdminController
 
         $res = Yii::$app->db->createCommand($sql)->queryAll();
         $name = 'ProductInventoryTurnoverDetails';
-        $title = ['商品编码','SKU','商品名称','仓库','商品状态','开发员','平均单价','成本','预计可用库存','5天销量','10天销量','20天销量%','重量','销售1','销售2',''];
+        $title = ['商品编码','SKU','商品名称','仓库','商品状态','开发员','平均单价','成本','预计可用库存','重量','销售1','销售2','部门',
+            '3天销量','7天销量','14天销量','30天销量','周转天数'
+            ];
         ExportTools::toExcelOrCsv($name, $res, 'Xls', $title);
     }
 
