@@ -1054,6 +1054,7 @@ class TinyToolController extends AdminController
         $cond = Yii::$app->request->post('condition');
         $goodsCode = ArrayHelper::getValue($cond,'goodsCode');
         $seller = ArrayHelper::getValue($cond,'seller');
+        $pageSize = ArrayHelper::getValue($cond,'pageSize');
         $username = Yii::$app->user->identity->username;
         $userArr = ApiUser::getUserList($username);
         $userList = implode("','", $userArr);
@@ -1072,7 +1073,7 @@ class TinyToolController extends AdminController
 				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
 				LEFT JOIN auth_department d ON d.id=dc.department_id
 				LEFT JOIN auth_department p ON p.id=d.parent
-				WHERE seller1 IN ('{$userList}')";
+				WHERE seller1 IN ('{$userList}') AND c.storeName='万邑通UK'";
         if($goodsCode) {
             $sql .= " AND c.goodsCode LIKE '%{$goodsCode}%'";
             $countSql .= " AND c.goodsCode LIKE '%{$goodsCode}%'";
@@ -1086,7 +1087,7 @@ class TinyToolController extends AdminController
             'sql' => $sql,
             'totalCount' => (int)$count,
             'pagination' => [
-                'pageSize' => 20
+                'pageSize' => $pageSize ? $pageSize : 20
             ]
         ]);
         return $res;
@@ -1121,7 +1122,7 @@ class TinyToolController extends AdminController
 				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
 				LEFT JOIN auth_department d ON d.id=dc.department_id
 				LEFT JOIN auth_department p ON p.id=d.parent
-				WHERE seller1 IN ('{$userList}')";
+				WHERE seller1 IN ('{$userList}') AND c.storeName='万邑通UK'";
         if($goodsCode) $sql .= " AND c.goodsCode LIKE '%{$goodsCode}%'";
         if($seller) $sql .= " AND ss.seller1 LIKE '%{$seller}%'";
 
