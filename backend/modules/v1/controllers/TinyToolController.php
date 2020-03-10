@@ -1060,9 +1060,10 @@ class TinyToolController extends AdminController
         $countSql = "SELECT COUNT(*) FROM cache_stockWaringTmpData WHERE salerName IN ('{$userList}')";
         $count = Yii::$app->db->createCommand($countSql)->queryScalar();
         $sql = "SELECT c.*,ss.seller1,ss.seller2,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart ,
-                ca.threeSellCount, ca.sevenSellCount, ca.fourteenSellCount, ca.thirtySellCount,
-         CASE WHEN threeSellCount/3*0.4 + sevenSellCount/7*0.4 + fourteenSellCount/14*0.4 + thirtySellCount/30*0.1 = 0 THEN 10000
-         ELSE  ifnull(hopeUseNum,0)/(threeSellCount/3*0.4 + sevenSellCount/7*0.1 + fourteenSellCount/14*0.4 + thirtySellCount/30*0.1)
+                IFNULL(ca.threeSellCount,0) AS threeSellCount, IFNULL(ca.sevenSellCount,0) AS sevenSellCount, 
+                IFNULL(ca.fourteenSellCount,0) AS fourteenSellCount, IFNULL(ca.thirtySellCount,0) AS thirtySellCount,
+         CASE WHEN IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.4 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1 = 0 THEN 10000
+         ELSE  ifnull(hopeUseNum,0)/(IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.1 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1)
          END  AS turnoverDays
                 FROM `cache_skuSeller` ss
                 LEFT JOIN cache_stockWaringTmpData c ON ss.goodsCode=c.goodsCode
