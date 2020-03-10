@@ -36,6 +36,7 @@ class ApiMine
         // todo 权限需要重写
 
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $condition['platForm'] = isset($condition['platForm']) && $condition['platForm'] ? $condition['pageSize'] : 'joom';
         $query = OaDataMine::find();
         $filterFields = ['like' => ['proId', 'platForm', 'progress', 'creator', 'detailStatus',
             'cat', 'subCat', 'goodsCode', 'devStatus', 'pyGoodsCode']];

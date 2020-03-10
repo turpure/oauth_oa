@@ -1057,8 +1057,8 @@ class TinyToolController extends AdminController
         $username = Yii::$app->user->identity->username;
         $userArr = ApiUser::getUserList($username);
         $userList = implode("','", $userArr);
-        $countSql = "SELECT COUNT(*) FROM cache_stockWaringTmpData WHERE salerName IN ('{$userList}')";
-        $count = Yii::$app->db->createCommand($countSql)->queryScalar();
+        $countSql = "SELECT COUNT(*) FROM `cache_skuSeller` ss 
+                INNER JOIN `cache_stockWaringTmpData` c ON ss.goodsCode=c.goodsCode WHERE seller1 IN ('{$userList}')";
         $sql = "SELECT c.*,ss.seller1,ss.seller2,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart ,
                 IFNULL(ca.threeSellCount,0) AS threeSellCount, IFNULL(ca.sevenSellCount,0) AS sevenSellCount, 
                 IFNULL(ca.fourteenSellCount,0) AS fourteenSellCount, IFNULL(ca.thirtySellCount,0) AS thirtySellCount,
@@ -1066,15 +1066,22 @@ class TinyToolController extends AdminController
          ELSE  ifnull(hopeUseNum,0)/(IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.1 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1)
          END  AS turnoverDays
                 FROM `cache_skuSeller` ss
-                LEFT JOIN cache_stockWaringTmpData c ON ss.goodsCode=c.goodsCode
+                INNER JOIN cache_stockWaringTmpData c ON ss.goodsCode=c.goodsCode
                 LEFT JOIN cache_30DayOrderTmpData ca ON ca.sku=c.sku AND ca.storeName=c.storeName
                 LEFT JOIN `user` u ON u.username=ss.seller1
 				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
 				LEFT JOIN auth_department d ON d.id=dc.department_id
 				LEFT JOIN auth_department p ON p.id=d.parent
 				WHERE seller1 IN ('{$userList}')";
-        if($goodsCode) $sql .= " AND c.goodsCode LIKE '%{$goodsCode}%'";
-        if($seller) $sql .= " AND ss.seller1 LIKE '%{$seller}%'";
+        if($goodsCode) {
+            $sql .= " AND c.goodsCode LIKE '%{$goodsCode}%'";
+            $countSql .= " AND c.goodsCode LIKE '%{$goodsCode}%'";
+        }
+        if($seller) {
+            $sql .= " AND ss.seller1 LIKE '%{$seller}%'";
+            $countSql .= " AND ss.seller1 LIKE '%{$seller}%'";
+        }
+        $count = Yii::$app->db->createCommand($countSql)->queryScalar();
         $res = new SqlDataProvider([
             'sql' => $sql,
             'totalCount' => (int)$count,
@@ -1100,8 +1107,6 @@ class TinyToolController extends AdminController
         $username = Yii::$app->user->identity->username;
         $userArr = ApiUser::getUserList($username);
         $userList = implode("','", $userArr);
-        $countSql = "SELECT COUNT(*) FROM cache_stockWaringTmpData WHERE salerName IN ('{$userList}')";
-        $count = Yii::$app->db->createCommand($countSql)->queryScalar();
         $sql = "SELECT c.goodsCode,c.sku,c.skuName,c.storeName,c.goodsStatus,c.salerName,costPrice,c.costmoney,hopeUseNum,weight,
                   ss.seller1,ss.seller2,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart ,
                IFNULL(ca.threeSellCount,0) AS threeSellCount, IFNULL(ca.sevenSellCount,0) AS sevenSellCount, 
@@ -1110,7 +1115,7 @@ class TinyToolController extends AdminController
          ELSE  ifnull(hopeUseNum,0)/(IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.1 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1)
          END  AS turnoverDays
                 FROM `cache_skuSeller` ss
-                LEFT JOIN cache_stockWaringTmpData c ON ss.goodsCode=c.goodsCode
+                INNER JOIN cache_stockWaringTmpData c ON ss.goodsCode=c.goodsCode
                 LEFT JOIN cache_30DayOrderTmpData ca ON ca.sku=c.sku AND ca.storeName=c.storeName
                 LEFT JOIN `user` u ON u.username=ss.seller1
 				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
