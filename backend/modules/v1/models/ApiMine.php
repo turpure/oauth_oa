@@ -116,6 +116,8 @@ class ApiMine
     public static function mine($condition)
     {
         $proId = isset($condition['proId']) ? $condition['proId'] : '';
+        $platForm = isset($condition['platForm']) ? $condition['platForm'] : 'joom';
+        $table = $platForm == 'joom' ? 'job_list' : 'vova_job_list';
         $proId = explode(',', $proId);
         $maxCode = static::getMaxCode();
         $creator = Yii::$app->user->identity->username;
@@ -127,7 +129,7 @@ class ApiMine
                 if($queryPro){
                     $jobId = $queryPro->id;
                     $redis = Yii::$app->redis;
-                    $redis->lpush('job_list', $jobId . ',' . $id);
+                    $redis->lpush($table, $jobId . ',' . $id);
                     throw  new Exception("该产品已采集过，请勿重复采集!",'400003');
                 }
                 $newMine = clone $mine;
@@ -135,7 +137,7 @@ class ApiMine
                 $goodsCode = static::generateCode($maxCode);
                 $createTime = date('Y-m-d H:i:s');
                 $newMine->proId = $id;
-                $newMine->platForm = 'joom';
+                $newMine->platForm = $platForm;
                 $newMine->creator = $creator;
                 $newMine->createTime = $createTime;
                 $newMine->updateTime = $createTime;
@@ -147,7 +149,7 @@ class ApiMine
                 }
                 $jobId = $newMine->id;
                 $redis = Yii::$app->redis;
-                $redis->lpush('job_list', $jobId . ',' . $id);
+                $redis->lpush($table, $jobId . ',' . $id);
                 $maxCode = $goodsCode;
             }
             $trans->commit();
