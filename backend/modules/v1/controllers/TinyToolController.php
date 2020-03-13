@@ -1108,7 +1108,7 @@ class TinyToolController extends AdminController
         $username = Yii::$app->user->identity->username;
         $userArr = ApiUser::getUserList($username);
         $userList = implode("','", $userArr);
-        $sql = "SELECT c.goodsCode,c.sku,c.skuName,c.storeName,c.goodsStatus,c.salerName,costPrice,c.costmoney,hopeUseNum,weight,
+        $sql = "SELECT c.goodsCode,c.sku,c.skuName,c.storeName,c.goodsStatus,c.salerName,createDate,costPrice,c.costmoney,hopeUseNum,weight,
                   ss.seller1,ss.seller2,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart ,
                IFNULL(ca.threeSellCount,0) AS threeSellCount, IFNULL(ca.sevenSellCount,0) AS sevenSellCount, 
                 IFNULL(ca.fourteenSellCount,0) AS fourteenSellCount, IFNULL(ca.thirtySellCount,0) AS thirtySellCount,
@@ -1129,12 +1129,38 @@ class TinyToolController extends AdminController
 
         $res = Yii::$app->db->createCommand($sql)->queryAll();
         $name = 'ProductInventoryTurnoverDetails';
-        $title = ['商品编码','SKU','商品名称','仓库','商品状态','开发员','平均单价','成本','预计可用库存','重量','销售1','销售2','部门',
+        $title = ['商品编码','SKU','商品名称','仓库','商品状态','开发员','普源创建时间','平均单价','成本','预计可用库存','重量','销售1','销售2','部门',
             '3天销量','7天销量','14天销量','30天销量','周转天数'
             ];
         ExportTools::toExcelOrCsv($name, $res, 'Xls', $title);
     }
 
+    /**
+     * Date: 2020-03-13 11:49
+     * Author: henry
+     * @throws \yii\db\Exception
+     */
+    public function actionSkuUpdate(){
+        $cond = Yii::$app->request->post('condition');
+        $goodsCode = ArrayHelper::getValue($cond,'goodsCode');
+        $seller = ArrayHelper::getValue($cond,'seller');
+        if(!$goodsCode || !$seller){
+            return ['code' => 400, 'message' => '商品编码或销售员不能为空!'];
+        }
+        $sqlOne = "SELECT count(1) from cache_skuSeller WHERE goodsCode='{$goodsCode}';";
+        $count = Yii::$app->db->createCommand($sqlOne)->queryScalar();
+        if($count){
+            $sql = "UPDATE cache_skuSeller SET seller1='{$seller}' WHERE goodsCode='{$goodsCode}';";
+        }else{
+            $sql = "INSERT INTO cache_skuSeller(goodsCode,seller1) values('{$goodsCode}','{$seller}');";
+        }
+        try{
+            Yii::$app->db->createCommand($sql)->execute();
+            return true;
+        }catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
 
 
 
