@@ -1149,10 +1149,11 @@ class TinyToolController extends AdminController
         }
         $sqlOne = "SELECT count(1) from cache_skuSeller WHERE goodsCode='{$goodsCode}';";
         $count = Yii::$app->db->createCommand($sqlOne)->queryScalar();
+        $date = date('Y-m-d H:i:s');
         if($count){
-            $sql = "UPDATE cache_skuSeller SET seller1='{$seller}' WHERE goodsCode='{$goodsCode}';";
+            $sql = "UPDATE cache_skuSeller SET seller1='{$seller}',updateDate='{$date}' WHERE goodsCode='{$goodsCode}';";
         }else{
-            $sql = "INSERT INTO cache_skuSeller(goodsCode,seller1) values('{$goodsCode}','{$seller}');";
+            $sql = "INSERT INTO cache_skuSeller(goodsCode,seller1,updateDate) values('{$goodsCode}','{$seller}','{$date}');";
         }
         try{
             Yii::$app->db->createCommand($sql)->execute();
