@@ -10,6 +10,7 @@ namespace console\models;
 use backend\models\EbayAllotRule;
 use backend\models\EbayHotRule;
 use backend\models\EbayNewRule;
+use backend\models\ShopeeRule;
 use backend\models\ShopElf\BGoods;
 use backend\models\WishRule;
 use backend\modules\v1\models\ApiProductsEngine;
@@ -432,14 +433,21 @@ class ProductEngine
      */
     public static function getDailyReportData()
     {
-        $condition = Yii::$app->request->post('condition');
-        $plat = isset($condition['plat']) && $condition['plat'] ? $condition['plat'] : 'ebay';
+        $plat = ['ebay','wish','shopee'];
+        $data = [];
+        foreach ($plat as $v){
+            $data[$v] = ProductEngine::getDailyReportDataDetail($v);
+        }
+        return $data;
+    }
+
+    public static function getDailyReportDataDetail($plat){
         $db = Yii::$app->mongodb;
 
         //获取开发数据统计
-        $devList = EbayAllotRule::find()->all();
         $devData = [];
         if($plat == 'ebay'){
+            $devList = EbayAllotRule::find()->all();
             //获取eBay新品统计数据
             $ebayNewData = self::getEbayDailyData('new');
             //获取eBay热销品统计数据
@@ -448,8 +456,14 @@ class ProductEngine
             $table = 'ebay_recommended_product';
         }elseif ($plat == 'wish'){
             //获取wish统计数据
+            $devList = EbayAllotRule::find()->where(['<>', 'depart' , '运营一部'])->all();
             $dailyData = self::getWishDailyData();
             $table = 'wish_recommended_product';
+        }elseif ($plat == 'shopee'){
+            //获取shopee统计数据
+            $devList = EbayAllotRule::find()->where(['<>', 'depart' , '运营一部'])->all();
+            $dailyData = self::getShopeeDailyData();
+            $table = 'shopee_recommended_product';
         }
 
 
@@ -583,6 +597,40 @@ class ProductEngine
     }
 
     /**
+     * 获取shopee每日统计数据
+     * @param $type
+     * Date: 2019-12-27 10:16
+     * Author: henry
+     * @return array
+     */
+    public static function getShopeeDailyData(){
+        $db = Yii::$app->mongodb;
+        //获取产品统计数
+        $totalNum = $db->getCollection('shopee_product')
+            ->count(['recommendDate' => ['$regex' => date('Y-m-d')]]);
+        //分配总数
+        $dispatchNum = $db->getCollection('shopee_recommended_product')
+            ->count(['dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        //认领总数量
+        $claimNum = $db->getCollection('shopee_recommended_product')
+            ->count(['accept' => ['$size' => 1], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        //过滤总数量
+        $filterNum = $db->getCollection('shopee_recommended_product')
+            ->count(["refuse" => ['$ne' => null], 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        //未处理总数量
+        $unhandledNum = $db->getCollection('shopee_recommended_product')
+            ->count(["refuse" => null, 'accept' => null, 'dispatchDate' => ['$regex' => date('Y-m-d')]]);
+        return [
+            'totalShopeeNum' => $totalNum,        //获取新品总数
+            'dispatchShopeeNum' => $dispatchNum,  //分配新品总数
+            'claimShopeeNum' => $claimNum,        //认领新品总数
+            'filterShopeeNum' => $filterNum,      //过滤新品总数
+            'unhandledShopeeNum' => $unhandledNum,//未处理新品总数
+        ];
+
+    }
+
+    /**
      * 获取产品认领统计数据
      * @param $developer
      * @param $beginDate
@@ -629,10 +677,14 @@ class ProductEngine
             $data[$k]['dispatchNum'] = $db->getCollection('ebay_recommended_product')
                     ->count(['receiver' => $v, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]])
                 + $db->getCollection('wish_recommended_product')
+                    ->count(['receiver' => $v, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]])
+                + $db->getCollection('shopee_recommended_product')
                     ->count(['receiver' => $v, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
             $data[$k]['claimNum'] = $db->getCollection('ebay_recommended_product')
                     ->count(['accept' => $v, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]])
                 + $db->getCollection('wish_recommended_product')
+                    ->count(['accept' => $v, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]])
+                + $db->getCollection('shopee_recommended_product')
                     ->count(['accept' => $v, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
             $data[$k]['filterNum'] = $db->getCollection('ebay_recommended_product')
                     ->count([
@@ -661,6 +713,20 @@ class ProductEngine
                         ],
                         "receiver" => $v ,
                         'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]
+                    ])
+                + $db->getCollection('shopee_recommended_product')
+                    ->count([
+                        '$or' => [
+                            [
+                                "refuse.".$v => null,
+                                'accept' => ['$nin' => [null, $v]],
+                            ],
+                            [
+                                "refuse.".$v => ['$ne' => null]
+                            ]
+                        ],
+                        "receiver" => $v ,
+                        'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]
                     ]);
             $data[$k]['unhandledNum'] = $db->getCollection('ebay_recommended_product')
                     ->count([
@@ -670,6 +736,13 @@ class ProductEngine
                         'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]
                     ])
                 + $db->getCollection('wish_recommended_product')
+                    ->count([
+                        "refuse.".$v => null,
+                        'accept' => null,
+                        "receiver" => $v ,
+                        'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]
+                    ])
+                + $db->getCollection('shopee_recommended_product')
                     ->count([
                         "refuse.".$v => null,
                         'accept' => null,
@@ -727,12 +800,16 @@ class ProductEngine
             $unhandledNewNum = $db->getCollection('ebay_recommended_product')
                 ->count(['productType' => $type,'rules' => $v['_id'],  "refuse" => null, 'accept' => null, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
 
+            //var_dump($v['_id']);exit;
+            //计算出单数
+            $orderNum = self::getDispatchRuleOrderNum($v['_id'], $plat, $type, $beginDate, $endDate);
 
             $item['totalNum'] = $totalNum;
             $item['dispatchNum'] = $dispatchNum;
             $item['claimNum'] = $claimNum;
             $item['filterNum'] = $filterNum;
             $item['unhandledNewNum'] = $unhandledNewNum;
+            $item['orderNum'] = $orderNum;
 
             //获取智能推荐新品 爆旺款全部产品
             $dataList = $hotQuery = (new \yii\db\Query())
@@ -746,7 +823,11 @@ class ProductEngine
                 ->all();
             $hotNum = $popNum = 0;
             foreach ($dataList as $value) {
-                $recommend = $db->getCollection('ebay_recommended_product')->count(['_id' => explode('.', $value['recommendId'])[1]]);
+                $recommend = $db->getCollection('ebay_recommended_product')
+                    ->count([
+                        '_id' => explode('.', $value['recommendId'])[1],
+                        'rules' => ['$in' => [$v['_id']]]
+                        ]);
                 if ($value['goodsStatus'] == '爆款' && $recommend) {
                     $hotNum += 1;
                 } elseif ($value['goodsStatus'] == '旺款' && $recommend) {
@@ -758,6 +839,7 @@ class ProductEngine
 
             $item['claimRate'] = $dispatchNum ? round($claimNum*1.0/$dispatchNum,4) : 0;
             $item['filterRate'] = $dispatchNum ? round($filterNum*1.0/$dispatchNum,4) : 0;
+            $item['orderRate'] = $claimNum ? round($orderNum*1.0/$claimNum,4) : 0;
             $item['hotRate'] = $claimNum ? round($hotNum*1.0/$claimNum,4) : 0;
             $item['popRate'] = $claimNum ? round($popNum*1.0/$claimNum,4) : 0;
 
@@ -795,13 +877,15 @@ class ProductEngine
                 ->count(['rules' => $v['_id'], "refuse" => ['$ne' => null], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
             $unhandledNewNum = $db->getCollection('wish_recommended_product')
                 ->count(['rules' => $v['_id'],  "refuse" => null, 'accept' => null, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
-
+            //计算出单数
+            $orderNum = self::getDispatchRuleOrderNum($v['_id'], $plat, '', $beginDate, $endDate);
 
             $item['totalNum'] = $totalNum;
             $item['dispatchNum'] = $dispatchNum;
             $item['claimNum'] = $claimNum;
             $item['filterNum'] = $filterNum;
             $item['unhandledNewNum'] = $unhandledNewNum;
+            $item['orderNum'] = $orderNum;
 
             //获取智能推荐新品 爆旺款全部产品
             $dataList = $hotQuery = (new \yii\db\Query())
@@ -815,7 +899,11 @@ class ProductEngine
                 ->all();
             $hotNum = $popNum = 0;
             foreach ($dataList as $value) {
-                $recommend = $db->getCollection('wish_recommended_product')->count(['_id' => explode('.', $value['recommendId'])[1]]);
+                $recommend = $db->getCollection('wish_recommended_product')
+                    ->count([
+                        '_id' => explode('.', $value['recommendId'])[1],
+                        'rules' => ['$in' => [$v['_id']]]
+                    ]);
                 if ($value['goodsStatus'] == '爆款' && $recommend) {
                     $hotNum += 1;
                 } elseif ($value['goodsStatus'] == '旺款' && $recommend) {
@@ -827,12 +915,134 @@ class ProductEngine
 
             $item['claimRate'] = $dispatchNum ? round($claimNum*1.0/$dispatchNum,4) : 0;
             $item['filterRate'] = $dispatchNum ? round($filterNum*1.0/$dispatchNum,4) : 0;
+            $item['orderRate'] = $claimNum ? round($orderNum*1.0/$claimNum,4) : 0;
             $item['hotRate'] = $claimNum ? round($hotNum*1.0/$claimNum,4) : 0;
             $item['popRate'] = $claimNum ? round($popNum*1.0/$claimNum,4) : 0;
 
             $data[] = $item;
         }
         return $data;
+    }
+    /**
+     * 获取shopee规则数据统计
+     * @param $type
+     * @param $ruleName
+     * @param $beginDate
+     * @param $endDate
+     * Date: 2019-12-27 10:45
+     * Author: henry
+     * @return array
+     */
+    public static function getShopeeRuleData($plat, $type, $ruleName, $beginDate, $endDate){
+        $data = [];
+        $db = Yii::$app->mongodb;
+        $newRuleList = ShopeeRule::find()->andFilterWhere(['ruleName' => ['$regex' => $ruleName]])->all();
+        foreach ($newRuleList as $v) {
+            $item['plat'] = $plat;
+            $item['ruleType'] = $v['ruleType'];
+            $item['ruleName'] = $v['ruleName'];
+
+            $totalNum = $db->getCollection('shopee_product')
+                ->count(['rules' => [$v['_id']], 'recommendDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+            $dispatchNum = $db->getCollection('shopee_recommended_product')
+                ->count(['rules' => $v['_id'], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+            $claimNum = $db->getCollection('shopee_recommended_product')
+                ->count(['rules' => $v['_id'], 'accept' => ['$size' => 1], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+            $filterNum = $db->getCollection('shopee_recommended_product')
+                ->count(['rules' => $v['_id'], "refuse" => ['$ne' => null], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+            $unhandledNewNum = $db->getCollection('shopee_recommended_product')
+                ->count(['rules' => $v['_id'],  "refuse" => null, 'accept' => null, 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
+            //计算出单数
+            $orderNum = self::getDispatchRuleOrderNum($v['_id'], $plat, '', $beginDate, $endDate);
+
+            $item['totalNum'] = $totalNum;
+            $item['dispatchNum'] = $dispatchNum;
+            $item['claimNum'] = $claimNum;
+            $item['filterNum'] = $filterNum;
+            $item['unhandledNewNum'] = $unhandledNewNum;
+            $item['orderNum'] = $orderNum;
+
+            //获取智能推荐新品 爆旺款全部产品
+            $dataList = $hotQuery = (new \yii\db\Query())
+                ->from('proCenter.oa_goodsinfo')
+                ->select('g.recommendId,goodsStatus')
+                ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
+                ->andWhere(['g.introducer' => 'proEngine'])
+                ->andFilterWhere(['between', 'left(g.createDate,10)', $beginDate, $endDate])
+                ->andFilterWhere(['like', 'g.recommendId', $plat])
+                ->andFilterWhere(['goodsStatus' => ['爆款', '旺款']])
+                ->all();
+            $hotNum = $popNum = 0;
+            foreach ($dataList as $value) {
+                $recommend = $db->getCollection('wish_recommended_product')
+                    ->count([
+                        '_id' => explode('.', $value['recommendId'])[1],
+                        'rules' => ['$in' => [$v['_id']]]
+                    ]);
+                if ($value['goodsStatus'] == '爆款' && $recommend) {
+                    $hotNum += 1;
+                } elseif ($value['goodsStatus'] == '旺款' && $recommend) {
+                    $popNum += 1;
+                }
+            }
+            $item['hotNum'] = $hotNum;
+            $item['popNum'] = $popNum;
+
+            $item['claimRate'] = $dispatchNum ? round($claimNum*1.0/$dispatchNum,4) : 0;
+            $item['filterRate'] = $dispatchNum ? round($filterNum*1.0/$dispatchNum,4) : 0;
+            $item['orderRate'] = $claimNum ? round($orderNum*1.0/$claimNum,4) : 0;
+            $item['hotRate'] = $claimNum ? round($hotNum*1.0/$claimNum,4) : 0;
+            $item['popRate'] = $claimNum ? round($popNum*1.0/$claimNum,4) : 0;
+
+            $data[] = $item;
+        }
+        return $data;
+    }
+
+    public static function getDispatchRuleOrderNum($ruleId, $plat, $type, $beginDate, $endDate){
+        $db = Yii::$app->mongodb;
+        if($plat == 'ebay'){
+            $recommend = $db->getCollection('ebay_recommended_product')
+                ->find(['rules' => ['$in' => [$ruleId]]]);
+            //var_dump($ruleId);exit;
+            //var_dump($recommend);exit;
+            $num = 5;
+        }elseif($plat == 'wish'){
+            $recommend = $db->getCollection('wish_recommended_product')
+                ->find(['rules' => $ruleId]);
+            $num = 6;
+        }elseif($plat == 'shopee'){
+            $recommend = $db->getCollection('shopee_recommended_product')
+                ->find(['rules' => $ruleId]);
+            $num = 6;
+        }else{
+            $recommend = [];
+        }
+
+        $ids = ArrayHelper::getColumn($recommend, '_id');
+        //var_dump($ids);exit;
+
+        $allQuery = (new \yii\db\Query())
+            ->from('proCenter.oa_goodsinfo gs')
+            ->select('g.developer, gs.goodsCode')
+            ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
+            ->andFilterWhere(['g.introducer' => 'proEngine'])
+            ->andFilterWhere(['like', 'g.recommendId', $type])
+            ->andFilterWhere(["substr(g.recommendId,{$num})" => $ids])
+            ->andFilterWhere(['between', 'left(g.createDate,10)', $beginDate, $endDate])->all();
+
+        $goodsCodeList = ArrayHelper::getColumn($allQuery, 'goodsCode');
+        $codeList = implode("','", $goodsCodeList);
+        //var_dump($codeList);
+        $sql = " SELECT count(DISTINCT g.GoodsCode) AS num FROM (
+	                SELECT sku FROM P_TradeDt  UNION SELECT sku FROM P_TradeDt_His
+                  ) d
+                  LEFT JOIN B_GoodsSKU gs ON gs.sku=d.sku
+                  LEFT JOIN B_Goods g ON g.NID=gs.GoodsID
+                  WHERE g.GoodsCode IN ('{$codeList}')";
+        $num = Yii::$app->py_db->createCommand($sql)->queryScalar();
+        //var_dump($orderNum);exit;
+        return $num;
     }
 
     /**
@@ -846,7 +1056,8 @@ class ProductEngine
      */
     public static function getRefuseData($plat, $beginDate, $endDate){
         $db = Yii::$app->mongodb;
-        $table = $plat == 'ebay' ? 'ebay_recommended_product' : 'wish_recommended_product';
+
+        $table = $plat == 'ebay' ? 'ebay_recommended_product' : ($plat == 'wish' ? 'wish_recommended_product' : 'shopee_recommended_product');
         $product = $db->getCollection($table)
             ->find(["refuse" => ['$ne' => null], 'dispatchDate' => ['$gte' => $beginDate, '$lte' => $endDate]]);
         $refuseArr = ArrayHelper::getColumn($product,'refuse');
@@ -1067,7 +1278,7 @@ class ProductEngine
             ->from('proCenter.oa_goodsinfo gs')
             ->select('g.developer, count(gs.goodsCode) as num')
             ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
-            ->andFilterWhere(['gs.goodsCode' => $list])
+            ->andWhere(['gs.goodsCode' => $list])
             ->groupBy('g.developer')->all();
         $data = ArrayHelper::map($allQuery,'developer', 'num');
         return $data;

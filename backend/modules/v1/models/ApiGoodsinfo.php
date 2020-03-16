@@ -95,6 +95,8 @@ class ApiGoodsinfo
 
             if (isset($condition['stockUp'])) $query->andFilterWhere(['gi.stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'gi.developer', $condition['developer']]);
+
+
         } elseif ($type === 'picture-info') {
             $query = (new Query())->select('gi.*,g.vendor1,g.vendor2,g.vendor3,
              g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer')
@@ -120,13 +122,15 @@ class ApiGoodsinfo
             }
             if (isset($condition['stockUp'])) $query->andFilterWhere(['gi.stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'gi.developer', $condition['developer']]);
-        } elseif ($type === 'plat-info') {
+
+
+        } elseif ($type === 'plat-info') {  //平台信息
+
             $query = (new Query())->select('gi.*,g.vendor1,g.vendor2,g.vendor3,
              g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer')
                 ->from('proCenter.oa_goodsinfo gi')
                 ->join('LEFT JOIN', 'proCenter.oa_goods g', 'g.nid=gi.goodsId');
             $query->where(['picStatus' => self::PlatInfo]);
-
 
             //美工,开发，采购看自己,
             if(strpos($userRole, '销售') === false) {
@@ -137,8 +141,14 @@ class ApiGoodsinfo
                 }
             }
             //print_r($userRole);exit;
-
-
+            if(isset($condition['codeStr']) && $condition['codeStr']){
+                $codeArr = explode(',', $condition['codeStr']);
+                $map = ['or'];
+                foreach ($codeArr as $v){
+                    $map[] = ['like', 'goodsCode', $v];
+                }
+                $query->andFilterWhere($map);
+            }
 
             if (isset($condition['stockUp'])) $query->andFilterWhere(['gi.stockUp' => $condition['stockUp']]);
             if (isset($condition['developer'])) $query->andFilterWhere(['like', 'gi.developer', $condition['developer']]);

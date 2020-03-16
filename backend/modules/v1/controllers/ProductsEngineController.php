@@ -13,6 +13,7 @@ use backend\models\EbayCateRule;
 use backend\models\EbayDeveloperCategory;
 use backend\models\EbayHotRule;
 use backend\models\EbayNewRule;
+use backend\models\ShopeeCategory;
 use backend\models\WishRule;
 use backend\modules\v1\models\ApiUser;
 use console\models\ProductEngine;
@@ -111,6 +112,45 @@ class ProductsEngineController extends AdminController
             }elseif ($plat == 'wish'){
                 $list = (new \yii\mongodb\Query())
                     ->from('wish_recommended_product')
+                    ->andFilterWhere(['productType' => $type])
+                    ->andFilterWhere(['dispatchDate' => ['$regex' => date('Y-m-d')]])
+                    ->all();
+                foreach ($list as $row) {
+                    if (isset($row['accept']) && $row['accept'] ||    //过滤掉已经认领的产品
+                        isset($row['refuse'][$username])       //过滤掉当前用户已经过滤的产品
+                    ) {
+                        continue;
+                    } else {
+                        $receiver = [];
+                        foreach ($row['receiver'] as $v) {
+                            if (in_array($v, $userList)) {  //过滤被推荐人(不在自己权限下的被推荐人筛选掉)
+                                $receiver[] = $v;
+                            }
+                        }
+                        //过滤当前用户的权限下的用户
+                        $row['receiver'] = $receiver;
+                        if ($receiver) {
+                            $ret[] = $row;
+                        }
+                    }
+                }
+                $data = new ArrayDataProvider([
+                    'allModels' => $ret,
+                    'sort' => [
+                        'attributes' => ['rating', 'totalprice', 'maxNumBought', 'genTime'],
+                        'defaultOrder' => [
+                            'maxNumBought' => SORT_DESC,
+                        ]
+                    ],
+                    'pagination' => [
+                        'page' => $page - 1,
+                        'pageSize' => $pageSize,
+                    ],
+                ]);
+                return $data;
+            }elseif ($plat == 'shopee'){
+                $list = (new \yii\mongodb\Query())
+                    ->from('shopee_recommended_product')
                     ->andFilterWhere(['productType' => $type])
                     ->andFilterWhere(['dispatchDate' => ['$regex' => date('Y-m-d')]])
                     ->all();
@@ -436,15 +476,19 @@ class ProductsEngineController extends AdminController
         return [
             'ebay',
             'wish',
-            //'joom',
+            'shopee',
         ];
     }
 
     public function actionMarketplace()
     {
-        $plat = Yii::$app->request->get('plat', null);
+        $plat = Yii::$app->request->get('plat', 'ebay');
         try {
-            return EbayCategory::find()->andFilterWhere(['plat' => $plat])->distinct('marketplace');
+            if($plat == 'ebay'){
+                return EbayCategory::find()->andFilterWhere(['plat' => $plat])->distinct('marketplace');
+            }elseif($plat == 'shopee'){
+                return ShopeeCategory::find()->andFilterWhere(['plat' => $plat])->distinct('country');
+            }
         } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }
@@ -730,13 +774,16 @@ class ProductsEngineController extends AdminController
             $ebayData = array_merge($newData, $hotData);
         }
         $wishData = ProductEngine::getWishRuleData('wish', 'new', $ruleName, $beginDate, $endDate);
+        $shopeeData = ProductEngine::getShopeeRuleData('shopee', 'new', $ruleName, $beginDate, $endDate);
 
         if(!$plat) {
-            return array_merge($ebayData, $wishData);
+            return array_merge($ebayData, $wishData, $shopeeData);
         }if($plat == 'ebay'){
             return $ebayData;
         }elseif($plat == 'wish'){
             return $wishData;
+        }elseif($plat == 'shopee'){
+            return $shopeeData;
         }
     }
 
@@ -755,6 +802,7 @@ class ProductsEngineController extends AdminController
 
         list($ebayRefuseData, $ebayOtherRefuseData) = ProductEngine::getRefuseData('ebay', $beginDate, $endDate);
         list($wishRefuseData, $wishOtherRefuseData) = ProductEngine::getRefuseData('wish', $beginDate, $endDate);
+        list($ShopeeRefuseData, $ShopeeOtherRefuseData) = ProductEngine::getRefuseData('shopee', $beginDate, $endDate);
 
         $refuseData = $otherDetailData = [];
         foreach ($ebayRefuseData as $k => $val){

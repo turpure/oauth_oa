@@ -109,23 +109,23 @@ class TinyToolController extends AdminController
      */
     public function actionSetPassword()
     {
-        $post = Yii::$app->request->post();
-        $userInfo = $post['user'];
+        $post = Yii::$app->request->post()['condition'];
+        $username = Yii::$app->user->identity->username;
+        $password = $post['password'];
         try {
-            foreach ($userInfo as $user) {
-                $username = $user['username'];
-                $one = User::findOne(['username' => $username]);
-                if (!empty($one)) {
-                    $one->password = $user['password'];
-                    $one->password_hash = Yii::$app->security->generatePasswordHash($user['password']);
-                    $ret = $one->save();
-                    if (!$ret) {
-                        throw new \Exception("fail to set $username");
-                    }
-
+            $one = User::findOne(['username' => $username]);
+            if (!empty($one)) {
+                $one->password_reset_token = $password;
+                $one->setPassword($password);//设置新密码
+                $one->generateApiToken();//生成新的TOKEN
+                $ret = $one->save();
+                if (!$ret) {
+                    throw new \Exception("fail to set $username");
                 }
+                return 'job done!';
+            }else{
+                throw new \Exception("Cant't find user '{$username}''");
             }
-            return 'job done!';
         } catch (\Exception  $why) {
             return [$why];
         }
@@ -1051,29 +1051,118 @@ class TinyToolController extends AdminController
      */
     public function actionSku()
     {
+        $cond = Yii::$app->request->post('condition');
+        $goodsCode = ArrayHelper::getValue($cond, 'goodsCode');
+        $seller = ArrayHelper::getValue($cond, 'seller');
+        $pageSize = ArrayHelper::getValue($cond, 'pageSize');
         $username = Yii::$app->user->identity->username;
         $userArr = ApiUser::getUserList($username);
         $userList = implode("','", $userArr);
-        $countSql = "SELECT COUNT(*) FROM cache_stockWaringTmpData WHERE salerName IN ('{$userList}')";
-        $count = Yii::$app->db->createCommand($countSql)->queryScalar();
-        $sql = "SELECT c.*,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart 
-                FROM `cache_stockWaringTmpData` c
-                LEFT JOIN `user` u ON u.username=c.salerName
+        $countSql = "SELECT COUNT(*) FROM `cache_skuSeller` ss 
+                INNER JOIN `cache_stockWaringTmpData` c ON ss.goodsCode=c.goodsCode WHERE seller1 IN ('{$userList}')";
+        $sql = "SELECT c.*,ss.seller1,ss.seller2,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart ,
+                IFNULL(ca.threeSellCount,0) AS threeSellCount, IFNULL(ca.sevenSellCount,0) AS sevenSellCount, 
+                IFNULL(ca.fourteenSellCount,0) AS fourteenSellCount, IFNULL(ca.thirtySellCount,0) AS thirtySellCount,
+         CASE WHEN IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.4 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1 = 0 THEN 10000
+         ELSE  round(ifnull(hopeUseNum,0)/(IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.1 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1),0)
+         END  AS turnoverDays
+                FROM `cache_skuSeller` ss
+                INNER JOIN cache_stockWaringTmpData c ON ss.goodsCode=c.goodsCode
+                LEFT JOIN cache_30DayOrderTmpData ca ON ca.sku=c.sku AND ca.storeName=c.storeName
+                LEFT JOIN `user` u ON u.username=ss.seller1
 				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
 				LEFT JOIN auth_department d ON d.id=dc.department_id
 				LEFT JOIN auth_department p ON p.id=d.parent
-				WHERE salerName IN ('{$userList}')";
+				WHERE seller1 IN ('{$userList}') AND c.storeName='万邑通UK'";
+        if ($goodsCode) {
+            $sql .= " AND c.goodsCode LIKE '%{$goodsCode}%'";
+            $countSql .= " AND c.goodsCode LIKE '%{$goodsCode}%'";
+        }
+        if ($seller) {
+            $sql .= " AND ss.seller1 LIKE '%{$seller}%'";
+            $countSql .= " AND ss.seller1 LIKE '%{$seller}%'";
+        }
+        $count = Yii::$app->db->createCommand($countSql)->queryScalar();
         $res = new SqlDataProvider([
             'sql' => $sql,
-            'totalCount' => $count,
+            'totalCount' => (int)$count,
             'pagination' => [
-                'pageSize' => 20
+                'pageSize' => $pageSize ? $pageSize : 20
             ]
         ]);
         return $res;
     }
 
+    /**
+     * Date: 2020-01-17 11:49
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     * @throws \yii\db\Exception
+     */
+    public function actionSkuExport()
+    {
+        $cond = Yii::$app->request->post('condition');
+        $goodsCode = ArrayHelper::getValue($cond, 'goodsCode');
+        $seller = ArrayHelper::getValue($cond, 'seller');
+        $username = Yii::$app->user->identity->username;
+        $userArr = ApiUser::getUserList($username);
+        $userList = implode("','", $userArr);
+        $sql = "SELECT c.goodsCode,c.sku,c.skuName,c.storeName,c.goodsStatus,c.salerName,createDate,costPrice,c.costmoney,hopeUseNum,weight,
+                  ss.seller1,ss.seller2,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart ,
+               IFNULL(ca.threeSellCount,0) AS threeSellCount, IFNULL(ca.sevenSellCount,0) AS sevenSellCount, 
+                IFNULL(ca.fourteenSellCount,0) AS fourteenSellCount, IFNULL(ca.thirtySellCount,0) AS thirtySellCount,
+         CASE WHEN IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.4 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1 = 0 THEN 10000
+         ELSE  round(ifnull(hopeUseNum,0)/(IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.1 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1),0)
+         END  AS turnoverDays
+                FROM `cache_skuSeller` ss
+                INNER JOIN cache_stockWaringTmpData c ON ss.goodsCode=c.goodsCode
+                LEFT JOIN cache_30DayOrderTmpData ca ON ca.sku=c.sku AND ca.storeName=c.storeName
+                LEFT JOIN `user` u ON u.username=ss.seller1
+				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
+				LEFT JOIN auth_department d ON d.id=dc.department_id
+				LEFT JOIN auth_department p ON p.id=d.parent
+				WHERE seller1 IN ('{$userList}') AND c.storeName='万邑通UK'";
+        if ($goodsCode) $sql .= " AND c.goodsCode LIKE '%{$goodsCode}%'";
+        if ($seller) $sql .= " AND ss.seller1 LIKE '%{$seller}%'";
 
+
+        $res = Yii::$app->db->createCommand($sql)->queryAll();
+        $name = 'ProductInventoryTurnoverDetails';
+        $title = ['商品编码', 'SKU', '商品名称', '仓库', '商品状态', '开发员', '普源创建时间', '平均单价', '成本', '预计可用库存', '重量', '销售1', '销售2', '部门',
+            '3天销量', '7天销量', '14天销量', '30天销量', '周转天数'
+        ];
+        ExportTools::toExcelOrCsv($name, $res, 'Xls', $title);
+    }
+
+    /**
+     * Date: 2020-03-13 11:49
+     * Author: henry
+     * @throws \yii\db\Exception
+     */
+    public function actionSkuUpdate()
+    {
+        $cond = Yii::$app->request->post('condition');
+        $goodsCode = ArrayHelper::getValue($cond, 'goodsCode');
+        $seller = ArrayHelper::getValue($cond, 'seller');
+        if (!$goodsCode || !$seller) {
+            return ['code' => 400, 'message' => '商品编码或销售员不能为空!'];
+        }
+        $sqlOne = "SELECT count(1) from cache_skuSeller WHERE goodsCode='{$goodsCode}';";
+        $count = Yii::$app->db->createCommand($sqlOne)->queryScalar();
+        $date = date('Y-m-d H:i:s');
+        if ($count) {
+            $sql = "UPDATE cache_skuSeller SET seller1='{$seller}',updateDate='{$date}' WHERE goodsCode='{$goodsCode}';";
+        } else {
+            $sql = "INSERT INTO cache_skuSeller(goodsCode,seller1,updateDate) values('{$goodsCode}','{$seller}','{$date}');";
+        }
+        try {
+            Yii::$app->db->createCommand($sql)->execute();
+            return true;
+        } catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
 
 
 }

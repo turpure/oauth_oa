@@ -12,6 +12,8 @@ use backend\models\EbayCategory;
 use backend\models\EbayCateRule;
 use backend\models\EbayHotRule;
 use backend\models\EbayNewRule;
+use backend\models\ShopeeCategory;
+use backend\models\ShopeeRule;
 use backend\models\WishRule;
 use Yii;
 use backend\models\ShopElf\BGoods;
@@ -41,7 +43,7 @@ class ApiProductsEngine
         $page = \Yii::$app->request->get('page', 1);
         $pageSize = \Yii::$app->request->get('pageSize', 20);
         $marketplace = \Yii::$app->request->get('marketplace');//站点
-        $recommendStatus = \Yii::$app->request->get('recommendStatus', '');//站点
+        $recommendStatus = \Yii::$app->request->get('recommendStatus', '');//
 
         //平台数据
         if ($plat === 'ebay') {
@@ -51,8 +53,8 @@ class ApiProductsEngine
             return static::getWishRecommend($type, $page, $pageSize, [$recommendStatus]);
         }
 
-        if ($plat === 'joom') {
-            return JoomProducts::find()->all();
+        if ($plat === 'shopee') {
+            return static::getShopeeRecommend($type, $marketplace, $page, $pageSize, [$recommendStatus]);
         }
     }
 
@@ -119,13 +121,17 @@ class ApiProductsEngine
         $developer = $condition['developer'];
         $type = $condition['type'];
         $plat = isset($condition['plat']) && $condition['plat'] ? $condition['plat'] : 'ebay';
-        if($plat == 'ebay'){
+        if ($plat == 'ebay') {
             $table = 'ebay_' . $type . '_product';
             $ruleTable = 'ebay_' . $type . '_rule';
             $cur = $db->getCollection($table)->find(['itemId' => $itemId]);
-        }elseif ($plat == 'wish'){
+        } elseif ($plat == 'wish') {
             $table = 'wish_new_product';
             $ruleTable = 'wish_rule';
+            $cur = $db->getCollection($table)->find(['pid' => $itemId]);
+        }elseif ($plat == 'shopee'){
+            $table = 'shopee_product';
+            $ruleTable = 'shopee_rule';
             $cur = $db->getCollection($table)->find(['pid' => $itemId]);
         }
 
@@ -173,15 +179,20 @@ class ApiProductsEngine
         $doc['productType'] = $type;
         $doc['dispatchDate'] = date('Y-m-d');
         $doc['recommendDate'] = date('Y-m-d');
-        if($plat == 'ebay'){
+        if ($plat == 'ebay') {
             $recommend = $db->getCollection('ebay_recommended_product');
             $allRecommend = $db->getCollection('ebay_all_recommended_product');
             $key = 'itemId';
-        }elseif ($plat == 'wish'){
+        } elseif ($plat == 'wish') {
             $recommend = $db->getCollection('wish_recommended_product');
             $allRecommend = $db->getCollection('wish_all_recommended_product');
             $key = 'pid';
+        } elseif ($plat == 'shopee') {
+            $recommend = $db->getCollection('shopee_recommended_product');
+            $allRecommend = $db->getCollection('shopee_all_recommended_product');
+            $key = 'pid';
         }
+
         try {
             //查找并更新ItemId
             $db->getCollection($table)->update([$key => $itemId], ['recommendToPersons' => $oldRecommendToPersons, 'rules' => $currentRule]);
@@ -260,7 +271,7 @@ class ApiProductsEngine
             Yii::$app->request->setBodyParams(['condition' => $product_info]);
             $ret = Yii::$app->runAction('/v1/oa-goods/dev-create');
             return $ret;
-        }elseif ($plat == 'wish'){
+        } elseif ($plat == 'wish') {
             $col = $db->getCollection('wish_recommended_product');
             $doc = $col->findOne(['_id' => $id]);
 
@@ -283,7 +294,7 @@ class ApiProductsEngine
 
             // 转至逆向开发
             $product_info = [
-                'recommendId' => $recommendId, 'img' => "https://contestimg.wish.com/api/webimage/".$doc['pid']."-small.jpg", 'cate' => '女人世界',
+                'recommendId' => $recommendId, 'img' => "https://contestimg.wish.com/api/webimage/" . $doc['pid'] . "-small.jpg", 'cate' => '女人世界',
                 'origin1' => 'https://www.wish.com/product/' . $doc['pid'],
                 'stockUp' => '否', 'subCate' => '女包', 'salePrice' => $doc['price'], 'flag' => 'backward',
                 'type' => 'create', 'introducer' => 'proEngine'
@@ -291,6 +302,65 @@ class ApiProductsEngine
 
             // 更改推荐状态
             $table = 'wish_new_product';
+            static::setRecommendToPersons($table, $plat, $itemId, 'new');
+            Yii::$app->request->setBodyParams(['condition' => $product_info]);
+            $ret = Yii::$app->runAction('/v1/oa-goods/dev-create');
+            return $ret;
+        } elseif ($plat == 'shopee') {
+            $col = $db->getCollection('shopee_recommended_product');
+            $doc = $col->findOne(['_id' => $id]);
+
+            $itemId = $doc['pid'];
+
+            $recommendId = 'shopee.' . $id;
+
+            if (empty($doc)) {
+                throw new \Exception('产品不存在');
+            }
+            $accept = ArrayHelper::getValue($doc, 'accept', []);
+            if (!empty($accept)) {
+                throw new \Exception('产品已被认领');
+            }
+            $accept[] = $username;
+            $col->update(['_id' => $id], ['accept' => array_unique($accept)]);
+
+            //推送新数据到固定端口
+            Helper::pushData();
+            $imgUrl = $url = '';
+            if($doc['country'] == 'Malaysia'){
+                $imgUrl = 'https://s-cf-my.shopeesz.com/file/';
+                $url = 'https://s-cf-my.shopeesz.com/file/';
+            }elseif ($doc['country'] == 'Indonesia'){
+                $imgUrl = 'https://s-cf-id.shopeesz.com/file/';
+                $url = 'https://shopee.co.id/';
+            }elseif ($doc['country'] == 'Thailand'){
+                $imgUrl = 'https://s-cf-th.shopeesz.com/file/';
+                $url = 'https://shopee.co.th/';
+            }elseif ($doc['country'] == 'Philippines'){
+                $imgUrl = 'https://s-cf-ph.shopeesz.com/file/';
+                $url = 'https://shopee.ph/';
+            }elseif ($doc['country'] == 'Taiwan'){
+                $imgUrl = 'https://s-cf-tw.shopeesz.com/file/';
+                $url = 'https://tw.shopeesz.com/';
+            }elseif ($doc['country'] == 'Singapore'){
+                $imgUrl = 'https://s-cf-sg.shopeesz.com/file/';
+                $url = 'https://shopee.sg/';
+            }elseif ($doc['country'] == 'Vietnam'){
+                $imgUrl = 'https://s-cf-vn.shopeesz.com/file/';
+                $url = 'https://shopee.vn/';
+            }
+
+
+            // 转至逆向开发
+            $product_info = [
+                'recommendId' => $recommendId, 'img' => $imgUrl . $doc['image'] . "_tn", 'cate' => '女人世界',
+                'origin1' => $url . $doc['title'] . '-i.' . $doc['shopId'] . '.' . $doc['pid'],
+                'stockUp' => '否', 'subCate' => '女包', 'salePrice' => $doc['price'], 'flag' => 'backward',
+                'type' => 'create', 'introducer' => 'proEngine'
+            ];
+
+            // 更改推荐状态
+            $table = 'shopee_product';
             static::setRecommendToPersons($table, $plat, $itemId, 'new');
             Yii::$app->request->setBodyParams(['condition' => $product_info]);
             $ret = Yii::$app->runAction('/v1/oa-goods/dev-create');
@@ -332,7 +402,7 @@ class ApiProductsEngine
 
             return $col->findOne(['_id' => $id]);
 
-        }elseif($plat == 'wish'){
+        } elseif ($plat == 'wish') {
             $col = $db->getCollection('wish_recommended_product');
             $doc = $col->findOne(['_id' => $id]);
             $itemId = $doc['pid'];
@@ -349,6 +419,27 @@ class ApiProductsEngine
 
             // 更改推荐状态
             $table = 'wish_new_product';
+            static::setRecommendToPersons($table, $plat, $itemId, 'hot', $reason);
+
+
+            return $col->findOne(['_id' => $id]);
+        }elseif ($plat == 'shopee') {
+            $col = $db->getCollection('shopee_recommended_product');
+            $doc = $col->findOne(['_id' => $id]);
+            $itemId = $doc['pid'];
+
+            if (empty($doc)) {
+                throw new \Exception('产品不存在');
+            }
+            $refuse = ArrayHelper::getValue($doc, 'refuse', []);
+            $refuse[$username] = $reason;
+            $col->update(['_id' => $id], ['refuse' => $refuse]);
+
+            //推送新数据到固定端口
+            Helper::pushData();
+
+            // 更改推荐状态
+            $table = 'shopee_product';
             static::setRecommendToPersons($table, $plat, $itemId, 'hot', $reason);
 
 
@@ -518,6 +609,51 @@ class ApiProductsEngine
         return $data;
     }
 
+    private static function getShopeeRecommend($type, $marketplace, $page, $pageSize, $recommendStatus = [])
+    {
+        $ret = [];
+        //当天推荐数据
+        $today = date('Y-m-d');
+        //当前在用规则下数据
+        $newRules = ShopeeRule::find()->select(['id'])->all();
+        $cur = (new \yii\mongodb\Query())->from('shopee_product')
+            ->andFilterWhere(['country' => $marketplace])
+            ->andWhere(['recommendDate' => ['$regex' => $today]])
+            ->all();
+        foreach ($cur as $row) {
+            foreach ($newRules as $rule) {
+                $productRules = $row['rules'];
+                if (in_array($rule->_id, $productRules, false)) {
+                    //推荐状态筛选
+                    $item = static::recommendStatusFilter($recommendStatus, $row);
+                    if (!empty($item)) {
+                        $ret[] = $item;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // 分页，排序
+        $data = new ArrayDataProvider([
+            'allModels' => $ret,
+            'sort' => [
+                'attributes' => [
+                    'price', 'genTime', 'sold', 'payment',
+                    'historicalSold', 'likedCount', 'ratingCount'
+                ],
+                'defaultOrder' => [
+                    'sold' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'page' => $page - 1,
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $data;
+    }
+
 
     private static function recommendStatusFilter($recommendStatus, $row)
     {
@@ -582,9 +718,10 @@ class ApiProductsEngine
         foreach ($allPlatArr as $value) {//遍历所有平台
             if ($value == 'ebay') {
                 $detail[$value] = self::getEbayAllotInfo($value, $detailArr);
-            } elseif ($value == 'wish') {
+            } else{
                 $detail[$value] = self::getWishAllotInfo($value, $detailArr);;
             }
+
         }
 
 
@@ -611,7 +748,9 @@ class ApiProductsEngine
             if ($value == 'ebay') {
                 $detail[] = self::getEbayCateInfo($value, $detailArr);
             } elseif ($value == 'wish') {
-                $detail[] = self::getWishCateInfo($value, $detailArr);;
+                $detail[] = self::getWishCateInfo($value, $detailArr);
+            } elseif ($value == 'shopee') {
+                $detail[] = self::getShopeeCateInfo($value, $detailArr);
             }
         }
         if ($rule) $res['_id'] = $rule['_id'];
@@ -685,7 +824,11 @@ class ApiProductsEngine
 
     private static function getWishAllotInfo($plat, $detailArr)
     {
-        $newRule = WishRule::find()->all();
+        if($plat == 'wish'){
+            $newRule = WishRule::find()->all();
+        }else{
+            $newRule = ShopeeRule::find()->all();
+        }
         foreach ($newRule as $k => $value) {
             $item[$k] =
                 [
@@ -710,6 +853,8 @@ class ApiProductsEngine
         }
         return $item;
     }
+
+
 
     private static function getEbayCateInfo($plat, $detailArr)
     {
@@ -766,7 +911,6 @@ class ApiProductsEngine
         return $item;
     }
 
-
     private static function getWishCateInfo($plat, $detailArr)
     {
         $marketplace = '全选';// wish 平台没有站点，为保持结构和eBay一致，添加一个默认站点
@@ -816,6 +960,61 @@ class ApiProductsEngine
         return $item;
     }
 
+    private static function getShopeeCateInfo($plat, $detailArr)
+    {
+        $item['plat'] = $plat;
+        $item['flag'] = false;
+        $item['platValue'] = [];
+        $allMarketplaceArr = ShopeeCategory::find()->andFilterWhere(['plat' => $plat])->distinct('country');
+        foreach ($allMarketplaceArr as $mk => $marketplace) {
+            $item['platValue'][$mk]['marketplace'] = $marketplace;
+            $item['platValue'][$mk]['flag'] = false;
+            $item['platValue'][$mk]['marketplaceValue'] = [];
+            //获取平台站点下所有一级类目
+            $allCateArr = ShopeeCategory::find()
+                ->andFilterWhere(['plat' => $plat])
+                ->andFilterWhere(['country' => $marketplace])
+                ->orderBy('cate')->asArray()->all();
+            foreach ($allCateArr as $ck => $cate) {//遍历平台下所有一级类目
+                $item['platValue'][$mk]['marketplaceValue'][$ck]['cate'] = $cate['cate'];
+                $item['platValue'][$mk]['marketplaceValue'][$ck]['flag'] = false;
+                foreach ($cate['subCate'] as $sk => $subCate) {  //遍历已有二级类目
+                    $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCate'][$sk] = $subCate;
+                    $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = [];
+                    if ($detailArr) {
+                        foreach ($detailArr as $detailValue) {
+                            if (isset($detailValue['plat']) && $detailValue['plat'] == $plat) { //判断是否有该平台
+                                $item['flag'] = true;
+                                if (isset($detailValue['platValue']) && $detailValue['platValue']) {
+                                    foreach ($detailValue['platValue'] as $platValue) {
+                                        if (isset($platValue['marketplace']) && $platValue['marketplace'] == $marketplace) {//判断是否有该站点
+                                            $item['platValue'][$mk]['flag'] = true;
+                                            if (isset($platValue['marketplaceValue']) && $platValue['marketplaceValue']) {
+                                                foreach ($platValue['marketplaceValue'] as $marketplaceValue) {
+                                                    if (isset($marketplaceValue['cate']) && $marketplaceValue['cate'] == $cate['cate']) {//判断是否有该一级类目
+                                                        $item['platValue'][$mk]['marketplaceValue'][$ck]['flag'] = true;
+                                                        $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCate'] = $cate['subCate'];
+                                                        $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = [];
+                                                        if (isset($marketplaceValue['cateValue']) && $marketplaceValue['cateValue'] &&
+                                                            isset($marketplaceValue['cateValue']['subCateChecked']) && $marketplaceValue['cateValue']['subCateChecked']
+                                                        ) {
+                                                            $item['platValue'][$mk]['marketplaceValue'][$ck]['cateValue']['subCateChecked'] = $marketplaceValue['cateValue']['subCateChecked'];
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $item;
+    }
+
 
     /**
      * @param $table
@@ -836,9 +1035,9 @@ class ApiProductsEngine
         $product = $collection->findOne(['itemId' => $itemId]);
         $oldPersons = $product['recommendToPersons'];
         $currentPersons = static::insertOrUpdateRecommendToPersons($person, $oldPersons);
-        if($plat === 'ebay'){
+        if ($plat === 'ebay') {
             $collection->update(['itemId' => $itemId], ['recommendToPersons' => $currentPersons]);
-        }else{
+        } else {
             $collection->update(['pid' => $itemId], ['recommendToPersons' => $currentPersons]);
         }
     }

@@ -605,8 +605,8 @@ class SchedulerController extends Controller
                 for ($i = 0; $i < $max; $i++){
                     Yii::$app->db->createCommand()->batchInsert('cache_stockWaringTmpData',
                         [
-                            'sku', 'storeName', 'goodsStatus', 'salerName', 'costPrice', 'useNum', 'costmoney',
-                            'notInStore', 'notInCostmoney', 'hopeUseNum', 'totalCostmoney', 'updateTime'
+                            'goodsCode', 'sku', 'skuName', 'storeName', 'goodsStatus', 'salerName', 'createDate', 'costPrice', 'useNum', 'costmoney',
+                            'notInStore', 'notInCostmoney', 'hopeUseNum', 'totalCostmoney', 'sellCount1', 'sellCount2', 'sellCount3', 'weight', 'updateTime'
                         ],
                         array_slice($stockList,$i*$step, $step))->execute();
                 }
@@ -621,7 +621,8 @@ class SchedulerController extends Controller
             for ($i = 0; $i < $max; $i++){
                 Yii::$app->db->createCommand()->batchInsert('cache_30DayOrderTmpData',
                     [
-                        'sku','salerName', 'storeName', 'goodsStatus', 'costMoney', 'updateTime'
+                        'sku','salerName', 'storeName', 'goodsStatus', 'costMoney', 'updateTime',
+                        'threeSellCount', 'sevenSellCount', 'fourteenSellCount', 'thirtySellCount', 'trend'
                     ],
                     array_slice($saleList,$i*$step, $step))->execute();
             }
