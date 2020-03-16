@@ -125,7 +125,7 @@ class ApiMine
                 $queryPro = OaDataMine::findOne(['proId' => $id]);
                 if($queryPro){
                     $jobId = $queryPro->id;
-                    $redis = Yii::$app->redis;
+                    $redis = Yii::$app->redis1;
                     $redis->lpush('job_list', $jobId . ',' . $id);
                     throw  new Exception("该产品已采集过，请勿重复采集!",'400003');
                 }
@@ -145,7 +145,7 @@ class ApiMine
                     throw  new Exception("保存失败！", '400003');
                 }
                 $jobId = $newMine->id;
-                $redis = Yii::$app->redis;
+                $redis = Yii::$app->redis1;
                 $redis->lpush('job_list', $jobId . ',' . $id);
                 $maxCode = $goodsCode;
             }
