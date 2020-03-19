@@ -543,7 +543,6 @@ class ApiMine
                     'Extra Image URL 19' => '',
                     'Extra Image URL 20' => '',
                 ];
-                var_dump($row);exit;
                 $ret[] = $row;
             }
         }
