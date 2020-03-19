@@ -503,20 +503,20 @@ class ApiMine
             $variations = $info['detailsInfo'];
             foreach ($variations as $var) {
                 $row = [
-                    'Vova Category ID' => $basicInfo['goodsCode'],
-                    'Parent SKU' => '',
-                    'SKU' => '',
+                    'Vova Category ID' => '',
+                    'Parent SKU' => $basicInfo['goodsCode'],
+                    'SKU' => $var['childId'],
                     'Goods Name' =>  $basicInfo['proName'],
                     'Quantity' =>  $var['quantity'],
                     'Goods Description' =>  $basicInfo['description'],
                     'Tags' => $basicInfo['tags'],
-                    'Goods Brand' => $var['childId'],
+                    'Goods Brand' => '',
                     'Market Price' => $var['price'],
                     'Shop Price' => $var['price'],
                     'Shipping Fee' => $var['shipping'],
                     'Shipping Weight' => $var['shippingWeight'],
                     'Shipping Time' => $var['shippingTime'],
-                    'From Platform' => $var['color'],
+                    'From Platform' => '',
                     'Size' => $var['proSize'],
                     'Color' => $var['color'],
                     'Style Quantity' => $var['quantity'],
@@ -543,6 +543,7 @@ class ApiMine
                     'Extra Image URL 19' => '',
                     'Extra Image URL 20' => '',
                 ];
+                var_dump($row);exit;
                 $ret[] = $row;
             }
         }
