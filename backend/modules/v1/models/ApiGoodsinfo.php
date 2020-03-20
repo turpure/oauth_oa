@@ -51,7 +51,7 @@ class ApiGoodsinfo
     private static $goodsInfo = ['待处理', '已完善'];
     private static $pictureInfo = ['待处理'];
     const PlatInfo = '已完善';
-    const UsdExchange = 6.88;
+    const UsdExchange = 1;
     const WishTitleLength = 110;
     const EbayTitleLength = 80;
     const JoomTitleLength = 100;
@@ -1349,7 +1349,7 @@ class ApiGoodsinfo
                     $var['localized_price'] = (string)floor($sku['price']);
                 }
                 else {
-                    $var['localized_currency_code'] = 'CNY';
+                    $var['localized_currency_code'] = 'USD';
                     $var['localized_price'] = (string)floor($sku['price'] * self::UsdExchange);
                 }
                 $variation[] = $var;
@@ -1371,7 +1371,7 @@ class ApiGoodsinfo
                 else {
                     $ret['local_price'] = floor($ret['price'] * self::UsdExchange);
                     $ret['local_shippingfee'] = floor($shipping * self::UsdExchange);
-                    $ret['local_currency'] = 'CNY';
+                    $ret['local_currency'] = 'USD';
                 }
             } else {
                 $ret['variant'] = '';
@@ -1388,7 +1388,7 @@ class ApiGoodsinfo
                 else {
                     $ret['local_price'] = floor($ret['price'] * self::UsdExchange);
                     $ret['local_shippingfee'] = floor($shipping * self::UsdExchange);
-                    $ret['local_currency'] = 'CNY';
+                    $ret['local_currency'] = 'USD';
                 }
 
             }
