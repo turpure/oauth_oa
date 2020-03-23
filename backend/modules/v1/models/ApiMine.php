@@ -129,7 +129,7 @@ class ApiMine
                 if($queryPro){
                     $jobId = $queryPro->id;
                     $redis = Yii::$app->redis1;
-                    $redis->lpush('job_list', $jobId . ',' . $id);
+                    $redis->lpush($table, $jobId . ',' . $id);
                     throw  new Exception("该产品已采集过，请勿重复采集!",'400003');
                 }
                 $newMine = clone $mine;
@@ -149,7 +149,7 @@ class ApiMine
                 }
                 $jobId = $newMine->id;
                 $redis = Yii::$app->redis1;
-                $redis->lpush('job_list', $jobId . ',' . $id);
+                $redis->lpush($table, $jobId . ',' . $id);
                 $maxCode = $goodsCode;
             }
             $trans->commit();
@@ -480,6 +480,73 @@ class ApiMine
             }
         }
         ExportTools::toExcelOrCsv('test-joom',$ret,'Csv');
+    }
+
+
+    /**
+     * @brief 导出VOVA模板
+     * @param $condition
+     * @throws Exception
+     */
+    public static function exportToVova($condition)
+    {
+        $id = isset($condition['id']) ? $condition['id'] : '';
+        if(!is_array($id)) {
+            $id = [$id];
+        }
+        $ret = [];
+        foreach ($id as $mid) {
+            $condition = ['id' => $mid];
+            $info = static::getMineInfo($condition);
+            $basicInfo = $info['basicInfo'];
+            $images = $info['images'];
+            $variations = $info['detailsInfo'];
+            foreach ($variations as $var) {
+                $row = [
+                    'Vova Category ID' => '',
+                    'Parent SKU' => $basicInfo['goodsCode'],
+                    'SKU' => $var['childId'],
+                    'Goods Name' =>  $basicInfo['proName'],
+                    'Quantity' =>  $var['quantity'],
+                    'Goods Description' =>  $basicInfo['description'],
+                    'Tags' => $basicInfo['tags'],
+                    'Goods Brand' => '',
+                    'Market Price' => $var['price'],
+                    'Shop Price' => $var['price'],
+                    'Shipping Fee' => $var['shipping'],
+                    'Shipping Weight' => $var['shippingWeight'],
+                    'Shipping Time' => $var['shippingTime'],
+                    'From Platform' => '',
+                    'Size' => $var['proSize'],
+                    'Color' => $var['color'],
+                    'Style Quantity' => $var['quantity'],
+                    'Main Image URL' => $images['mainImage'],
+                    'Extra Image URL' => $images['extraImage1'],
+                    'Extra Image URL 1' => $images['extraImage2'],
+                    'Extra Image URL 2' => $images['extraImage3'],
+                    'Extra Image URL 3' => $images['extraImage4'],
+                    'Extra Image URL 4' => $images['extraImage5'],
+                    'Extra Image URL 5' => $images['extraImage6'],
+                    'Extra Image URL 6' => $images['extraImage7'],
+                    'Extra Image URL 7' => $images['extraImage8'],
+                    'Extra Image URL 8' => $images['extraImage9'],
+                    'Extra Image URL 9' => $images['extraImage10'],
+                    'Extra Image URL 10' => '',
+                    'Extra Image URL 11' => '',
+                    'Extra Image URL 12' => '',
+                    'Extra Image URL 13' => '',
+                    'Extra Image URL 14' => '',
+                    'Extra Image URL 15' => '',
+                    'Extra Image URL 16' => '',
+                    'Extra Image URL 17' => '',
+                    'Extra Image URL 18' => '',
+                    'Extra Image URL 19' => '',
+                    'Extra Image URL 20' => '',
+                ];
+                $ret[] = $row;
+            }
+        }
+        ExportTools::toExcelOrCsv('test-vova',$ret,'Csv');
     }
 
     /**

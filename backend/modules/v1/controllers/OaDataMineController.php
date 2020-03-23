@@ -79,8 +79,14 @@ class OaDataMineController extends AdminController
     public function actionExport()
     {
         $condition = Yii::$app->request->post()['condition'];
+        $plat = isset($condition['plat']) && $condition['plat'] ? $condition['plat'] : 'joom';
         try {
-            ApiMine::exportToJoom($condition);
+            if($plat == 'joom'){
+                ApiMine::exportToJoom($condition);
+            }else{
+                ApiMine::exportToVova($condition);
+            }
+
         }
         catch (\Exception $why) {
             $ret['code'] = $why->getCode();

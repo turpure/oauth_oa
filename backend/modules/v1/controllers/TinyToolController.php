@@ -130,6 +130,34 @@ class TinyToolController extends AdminController
             return [$why];
         }
 
+    }
+
+    /**
+     * @brief set password
+     */
+    public function actionResetPassword()
+    {
+        $post = Yii::$app->request->post()['condition'];
+        $username = $post['username'];
+        $password = $post['password'];
+        try {
+            $one = User::findOne(['username' => $username]);
+            if (!empty($one)) {
+                $one->password_reset_token = $password;
+                $one->setPassword($password);//设置新密码
+                $one->generateApiToken();//生成新的TOKEN
+                $ret = $one->save();
+                if (!$ret) {
+                    throw new \Exception("fail to set $username");
+                }
+                return 'job done!';
+            }else{
+                throw new \Exception("Cant't find user '{$username}''");
+            }
+        } catch (\Exception  $why) {
+            return [$why];
+        }
+
 
     }
 
