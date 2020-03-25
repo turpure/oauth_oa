@@ -498,12 +498,14 @@ class ApiMine
         foreach ($id as $mid) {
             $condition = ['id' => $mid];
             $info = static::getMineInfo($condition);
+            $sql = "select cateId from proCenter.vova_dataMineCate WHERE proId='" . $info['basicInfo']['proId'] . "'";
+            $cateId = Yii::$app->db->createCommand($sql)->queryScalar();
             $basicInfo = $info['basicInfo'];
             $images = $info['images'];
             $variations = $info['detailsInfo'];
             foreach ($variations as $var) {
                 $row = [
-                    'Vova Category ID' => '',
+                    'Vova Category ID' => $cateId,
                     'Parent SKU' => $basicInfo['goodsCode'],
                     'SKU' => $var['childId'],
                     'Goods Name' =>  $basicInfo['proName'],
