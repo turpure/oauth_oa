@@ -7,16 +7,13 @@
 
 namespace console\controllers;
 
-use backend\models\OaGoodsinfo;
-use backend\modules\v1\controllers\ReportController;
 use backend\modules\v1\models\ApiReport;
-use backend\modules\v1\models\ApiSettings;
 use backend\modules\v1\models\ApiUkFic;
-use backend\modules\v1\utils\Handler;
 use console\models\ConScheduler;
 use yii\console\Controller;
 
 use Yii;
+use yii\db\Exception;
 use yii\helpers\ArrayHelper;
 
 class SchedulerController extends Controller
@@ -827,6 +824,18 @@ class SchedulerController extends Controller
         }
     }
 
+    /**
+     * Date: 2020-03-27 11:12
+     * Author: henry
+     */
+    public function actionWarehouseIntegral(){
+        try{
+            ConScheduler::getWarehouseIntegralData();
+            print date('Y-m-d H:i:s') . " INFO:success to get warehouse integral data";
+        }catch (Exception $why){
+            print date('Y-m-d H:i:s') . " INFO:fail to get warehouse integral data because $why \n";
+        }
+    }
 
 
     /**

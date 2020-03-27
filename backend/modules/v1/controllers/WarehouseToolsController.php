@@ -128,4 +128,16 @@ class WarehouseToolsController extends AdminController
         }
     }
 
+
+
+    public function actionIntegral(){
+        $month = date('Y-m', strtotime('-1 days'));
+        $sql = "SELECT wu.group,wu.job,wu.team,w.* 
+                FROM warehouse_user_info  wu
+                LEFT JOIN warehouse_integral_report w ON w.name=wu.name
+                AND w.month = '{$month}'";
+        return Yii::$app->db->createCommand($sql)->queryAll();
+    }
+
+
 }
