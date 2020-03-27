@@ -576,6 +576,22 @@ class SiteController extends AdminController
     }
 
 
+    /**
+     * 仓库积分排行
+     * Date: 2019-01-10 18:38
+     * Author: henry
+     * @return mixed
+     * @throws \yii\db\Exception
+     */
+    public function actionIntegralRanking()
+    {
+        $job = \Yii::$app->request->get('job','拆包');
+        $sql = "SELECT * FROM site_warehouse_integral_ranking 
+                WHERE  job LIKE '%{$job}%'
+                ORDER BY this_num DESC";
+        $query = \Yii::$app->db->createCommand($sql)->queryAll();
+        return $query;
+    }
 
 
 }

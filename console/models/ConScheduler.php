@@ -208,7 +208,38 @@ class ConScheduler
         }
     }
 
+    //=================================================================
+
+    /**
+     * Date: 2020-03-27 10:54
+     * Author: henry
+     */
+    public static function getWarehouseIntegralData(){
+        $month = date('Y-m', strtotime('-1 days'));
+        $beginDate = $month . '-01';
+        $endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
+        $beginDate = '2020-03-01';
+        $endDate = '2020-03-25';
+        $num = date('t', strtotime('-1 days'));
+        $dateRate = round(((strtotime($endDate) - strtotime($beginDate))/24/3600 + 1)*100/$num, 2);
+//        var_dump($num);exit;
+
+        $userQuery = Yii::$app->db->createCommand('SELECT * FROM warehouse_user_info')->queryAll();
+        $user = ArrayHelper::getColumn($userQuery,'name');
+        $userPara = implode(',', $user);
+
+        $dataQuery = Yii::$app->py_db->createCommand("EXEC oauth_siteWarehouseIntegral '{$beginDate}','{$endDate}','$userPara'")->queryAll();
+
+        //将数据保存到临时表中
+        Yii::$app->db->createCommand('TRUNCATE TABLE  warehouse_integral_data_tmp')->execute();
+        Yii::$app->db->createCommand()->batchInsert(
+            'warehouse_integral_data_tmp',
+            ['username','caiGouRuKuBaoGuo','ruKuBaoGuo','ruKuNum','pdaSkuNum','danPinBaoGuo','heDanBaoGuo','zongBaoGuo','jianHuoShuLiang','janHuoSkuZhongShu'],
+            $dataQuery
+        )->execute();
 
 
+        var_dump($user);
+    }
 
 }
