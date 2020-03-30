@@ -815,7 +815,7 @@ class ApiGoodsinfo
             'Variant Main Image URL' => '', 'Extra Image URL' => '', 'Extra Image URL 1' => '', 'Extra Image URL 2' => '',
             'Extra Image URL 3' => '', 'Extra Image URL 4' => '', 'Extra Image URL 5' => '', 'Extra Image URL 6' => '',
             'Extra Image URL 7' => '', 'Extra Image URL 8' => '', 'Extra Image URL 9' => '', 'Dangerous Kind' => '',
-            'Declared Value' => '',
+            'Declared Value' => '','Store id'=> ''
         ];
         $out = [];
         foreach ($ids as $id) {

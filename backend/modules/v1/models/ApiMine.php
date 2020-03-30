@@ -474,7 +474,8 @@ class ApiMine
                     'Extra Image URL 9' => $images['extraImage10'],
                     'Extra Image URL 10' => '',
                     'Dangerous Kind' => static::_getDangerousKind($basicInfo),
-                    'Declared Value' => static::getJoomDeclaredValue($var['price'])
+                    'Declared Value' => static::getJoomDeclaredValue($var['price']),
+                    'Store id' => ''
                 ];
                 $ret[] = $row;
             }
