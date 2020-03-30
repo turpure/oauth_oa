@@ -521,7 +521,7 @@ class ApiMine
                     'From Platform' => '',
                     'Size' => $var['proSize'],
                     'Color' => $var['color'],
-                    'Style Quantity' => $var['quantity'],
+                    'Style Quantity' => '',
                     'Main Image URL' => $images['mainImage'],
                     'Extra Image URL' => $images['extraImage1'],
                     'Extra Image URL 1' => $images['extraImage2'],
