@@ -70,6 +70,7 @@ class ApiCondition
                 $row['id'] = $value['department_id'];
                 $row['department'] = $value['department'];
                 $row['parent'] = $value['parent_id'];
+                $row['type'] = $value['department_type'];
                 $department[] = $row;
             }
         }
