@@ -271,11 +271,10 @@ class SettingsController extends AdminController
     }
 
 
-    /**
-     * update
-     * Date: 2020-03-31 14:22
+    /** update
+     * Date: 2020-03-31 15:56
      * Author: henry
-     * @return array
+     * @return array|bool
      * @throws Exception
      */
     public function actionWarehouseRate(){
@@ -308,16 +307,28 @@ class SettingsController extends AdminController
                         'rate' => $cond['rate']
                     ])->execute();
                 }
+                return true;
             }catch (Exception $why){
                 return [
                     'code' => 400,
                     'message' => $why->getMessage(),
                 ];
             }
-
-
         }
-
+        if ($request->isDelete) {
+            $post = $request->post();
+            $cond = $post['condition'];
+            $id = isset($cond['id']) && $cond['id'] ? $cond['id'] : 0;
+            try{
+                Yii::$app->db->createCommand()->delete('warehouse_integral_rate',['id' => $id])->execute();
+                return true;
+            }catch (Exception $why){
+                return [
+                    'code' => 400,
+                    'message' => $why->getMessage(),
+                ];
+            }
+        }
 
     }
 
