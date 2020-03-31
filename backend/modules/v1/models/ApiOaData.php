@@ -45,7 +45,7 @@ class ApiOaData
             aliasCnName, aliasEnName,packName, purchaser, gi.developer,season, goodsCode, completeStatus, 
             goodsStatus,dictionaryName, storeName, picUrl, requiredKeywords, randomKeywords, wishTags, 
             mapPersons,possessMan1, possessMan2,achieveStatus, attributeName,picStatus,isVar, gi.stockUp, 
-            isLiquid, isPowder, isMagnetism, isCharged, wishPublish,headKeywords, tailKeywords,g.cate,g.subCate,
+            isLiquid, isPowder, isMagnetism, isCharged, wishPublish,headKeywords, tailKeywords,g.cate,g.subCate,introducer,
             CASE WHEN  INSTR(mapPersons,'" . $user .
                 "')>0 AND (SELECT COUNT(1) FROM proCenter.oa_goodsinfoExtendsStatus ge WHERE ge.infoId=gi.id AND status='已推广' AND saler='" . $user .
                 "')>0  THEN '已推广' WHEN  INSTR(mapPersons,'" . $user .
