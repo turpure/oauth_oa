@@ -260,6 +260,7 @@ class OaDataController extends AdminController
             'plat' => $cond['plat'],
             'suffix' => $cond['suffix'],
             'goodsCode' => $cond['goodsCode'],
+            'warehouse' => $cond['warehouse'],
             'orderBeginDate' => $cond['orderDate'][0],
             'orderEndDate' => $cond['orderDate'][1],
         ];
