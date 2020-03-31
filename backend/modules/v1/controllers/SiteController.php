@@ -43,7 +43,7 @@ class SiteController extends AdminController
     public function actionHeadDepart()
     {
         try {
-            $sql = "select  DISTINCT department from auth_department where parent=0 and department like '运营%'" ;
+            $sql = "select  DISTINCT department from auth_department where parent=0 and department like '%部%'" ;
             $query = Yii::$app->db->createCommand($sql)->queryAll();
             return ArrayHelper::getColumn($query,'department');
         }
@@ -240,7 +240,7 @@ class SiteController extends AdminController
             $depart = isset($condition['depart']) ? $condition['depart'] : '';
             if(empty($depart)) {
                 $sql = "SELECT * FROM site_profit 
-                WHERE depart NOT LIKE '%郑州分部%' AND role = '销售' AND ifnull(display,0)=0
+                WHERE depart NOT LIKE '%郑州%' AND role = '销售' AND ifnull(display,0)=0
                 ORDER BY Rate DESC";
             }
             else {
@@ -272,7 +272,7 @@ class SiteController extends AdminController
             $depart = isset($condition['depart']) ? $condition['depart'] : '';
             if(empty($depart)) {
                 $sql = "SELECT * FROM site_profit 
-                WHERE depart LIKE '%郑州分部%' AND role = '销售' AND IFNULL(display,0)=0
+                WHERE depart LIKE '%郑州%' AND role = '销售' AND IFNULL(display,0)=0
                 ORDER BY Rate DESC";
             }
             else {
@@ -393,7 +393,7 @@ class SiteController extends AdminController
             $depart = isset($condition['depart']) ? $condition['depart'] : '';
             if(empty($depart)) {
                 $sql = "SELECT * FROM site_sales_amt
-                WHERE depart NOT LIKE '%郑州分部%' AND role = '销售' AND ifnull(display,0)=0
+                WHERE depart NOT LIKE '%郑州%' AND role = '销售' AND ifnull(display,0)=0
                 ORDER BY Rate DESC";
             }
             else {
@@ -423,7 +423,7 @@ class SiteController extends AdminController
             $depart = isset($condition['depart']) ? $condition['depart'] : '';
             if(empty($depart)) {
                 $sql = "SELECT * FROM site_sales_amt 
-                WHERE depart LIKE '%郑州分部%' AND role = '销售' AND IFNULL(display,0)=0
+                WHERE depart LIKE '%郑州%' AND role = '销售' AND IFNULL(display,0)=0
                 ORDER BY Rate DESC";
             }
             else {
@@ -518,7 +518,7 @@ class SiteController extends AdminController
 
 
     /**
-     * 今日爆款
+     * 销售排名
      * Date: 2019-01-10 18:38
      * Author: henry
      * @return mixed
