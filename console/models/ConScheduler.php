@@ -220,8 +220,6 @@ class ConScheduler
         $endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
         //$beginDate = '2020-03-01';
         //$endDate = '2020-03-25';
-        $num = date('t', strtotime('-1 days'));
-        $dateRate = round(((strtotime($endDate) - strtotime($beginDate))/24/3600 + 1)*100/$num, 2);
 //        var_dump($num);exit;
 
         $userQuery = Yii::$app->db->createCommand('SELECT * FROM warehouse_user_info')->queryAll();
@@ -239,6 +237,8 @@ class ConScheduler
             $dataQuery
         )->execute();
 
+        //处理临时数据
+        Yii::$app->db->createCommand('CALL warehouse_integral_data_parser();')->execute();
     }
 
 }

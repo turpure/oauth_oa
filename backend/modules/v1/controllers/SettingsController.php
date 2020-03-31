@@ -8,6 +8,7 @@
 namespace backend\modules\v1\controllers;
 
 use backend\modules\v1\models\ApiSettings;
+use yii\db\Exception;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
 use Yii;
@@ -268,6 +269,59 @@ class SettingsController extends AdminController
             if($res !== true) return ['code' => 400, 'message' => $res];
         }
     }
+
+
+    /**
+     * update
+     * Date: 2020-03-31 14:22
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
+    public function actionWarehouseRate(){
+        $request = Yii::$app->request;
+        if($request->isGet){
+            $sql = "SELECT * FROM warehouse_integral_rate";
+            return Yii::$app->db->createCommand($sql)->queryAll();
+        }
+        if ($request->isPost) {
+            $post = $request->post();
+            $cond = $post['condition'];
+            if (!$cond['type'] || !$cond['rate']) {
+                return [
+                    'code' => 400,
+                    'message' => 'The type and the rate can not be empty at the same time！',
+                ];
+            }
+
+            $id = isset($cond['id']) && $cond['id'] ? $cond['id'] : 0;
+            $query = Yii::$app->db->createCommand("SELECT * FROM warehouse_integral_rate WHERE id={$id}")->queryOne();
+            try{
+                if($query){
+                    Yii::$app->db->createCommand()->update('warehouse_integral_rate',[
+                        'type' => $cond['type'],
+                        'rate' => $cond['rate']
+                    ],['id' => $id])->execute();
+                }else{
+                    Yii::$app->db->createCommand()->insert('warehouse_integral_rate',[
+                        'type' => $cond['type'],
+                        'rate' => $cond['rate']
+                    ])->execute();
+                }
+            }catch (Exception $why){
+                return [
+                    'code' => 400,
+                    'message' => $why->getMessage(),
+                ];
+            }
+
+
+        }
+
+
+    }
+
+
 
 
 }

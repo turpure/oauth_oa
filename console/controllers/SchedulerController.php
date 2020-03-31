@@ -238,8 +238,8 @@ class SchedulerController extends Controller
 
             //获取现有开发人员及部门
             $sql = "SELECT u.username,
-		                  CASE WHEN INSTR(d.department,'郑州分部')>0 THEN '郑州分部'
-								WHEN INSTR(d.department,'郑州分部')=0 AND LENGTH(d.department)>12 THEN p.department 
+		                  CASE WHEN INSTR(d.department,'郑州')>0 THEN '郑州'
+								WHEN INSTR(d.department,'郑州')=0 AND LENGTH(d.department)>6 THEN p.department 
 								ELSE d.department 
 						  END AS depart
                     FROM `user` u 
