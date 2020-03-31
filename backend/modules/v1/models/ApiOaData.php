@@ -136,7 +136,8 @@ class ApiOaData
             }else{
                 $map[0] = 'or';
                 foreach ($userList as $k => $username) {
-                    $map[$k + 1] = ['like', "IFNULL(mapPersons,'')", $username];
+                    $map[2 * $k + 1] = ['like', "IFNULL(mapPersons,'')", $username];
+                    $map[2 * ($k + 1)] = ['like', "introducer", $username];
                 }
                 $query->andWhere($map);
             }
