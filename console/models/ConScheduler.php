@@ -218,8 +218,8 @@ class ConScheduler
         $month = date('Y-m', strtotime('-1 days'));
         $beginDate = $month . '-01';
         $endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
-        $beginDate = '2020-03-01';
-        $endDate = '2020-03-25';
+        //$beginDate = '2020-03-01';
+        //$endDate = '2020-03-25';
         $num = date('t', strtotime('-1 days'));
         $dateRate = round(((strtotime($endDate) - strtotime($beginDate))/24/3600 + 1)*100/$num, 2);
 //        var_dump($num);exit;
@@ -234,12 +234,11 @@ class ConScheduler
         Yii::$app->db->createCommand('TRUNCATE TABLE  warehouse_integral_data_tmp')->execute();
         Yii::$app->db->createCommand()->batchInsert(
             'warehouse_integral_data_tmp',
-            ['username','caiGouRuKuBaoGuo','ruKuBaoGuo','ruKuNum','pdaSkuNum','danPinBaoGuo','heDanBaoGuo','zongBaoGuo','jianHuoShuLiang','janHuoSkuZhongShu'],
+            ['username','month','caiGouRuKuBaoGuo','ruKuBaoGuo','ruKuNum','pdaSkuNum','danPinBaoGuo','heDanBaoGuo','zongBaoGuo',
+                'jianHuoShuLiang','janHuoSkuZhongShu','danPinBaoGuoDaBao','heDanBaoGuoDaBao','dateRate'],
             $dataQuery
         )->execute();
 
-
-        var_dump($user);
     }
 
 }
