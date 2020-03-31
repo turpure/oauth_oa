@@ -70,6 +70,7 @@ class ApiCondition
                 $row['id'] = $value['department_id'];
                 $row['department'] = $value['department'];
                 $row['parent'] = $value['parent_id'];
+                $row['type'] = $value['sec_department_type'];
                 $department[] = $row;
             }
         }
@@ -193,7 +194,7 @@ class ApiCondition
         //if ($role === AuthAssignment::ACCOUNT_ADMIN) {
         if (in_array(AuthAssignment::ACCOUNT_ADMIN,$role) !== false || $flag == true) {
             $users = (new Query())->select("u.id,username,p.position,d.department as department,d.id as department_id,pd.department as parent_department,pd.id as parent_id,
-                     IFNULL(pd.`type`,d.`type`) as department_type")
+                     IFNULL(pd.`type`,d.`type`) as department_type, d.`type` as sec_department_type")
                 ->from('`user` as u ')
                 ->leftJoin('auth_position_child pc','pc.user_id=u.id')
                 ->leftJoin('auth_position p','p.id=pc.position_id')
