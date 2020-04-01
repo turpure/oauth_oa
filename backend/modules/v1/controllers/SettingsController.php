@@ -329,8 +329,31 @@ class SettingsController extends AdminController
                 ];
             }
         }
+	}
+		
+	public function actionImportIntegralData(){
+		$file = $_FILES['file'];
+		if (!$file) {
+			return ['code' => 400, 'message' => 'The file can not be empty!'];
+		}
+		//判断文件后缀
+		$extension = ApiSettings::get_extension($file['name']);
+		if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
 
-    }
+		//文件上传
+		$result = ApiSettings::file($file, 'warehouseIntegralData');
+		
+		if (!$result) {
+			return ['code' => 400, 'message' => 'File upload failed'];
+		}else{
+			//获取上传excel文件的内容并保存
+			return ApiSettings::saveIntegralData($result);
+		}
+	}
+		
+		
+
+    
 
 
 

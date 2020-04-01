@@ -344,6 +344,64 @@ class ApiSettings
 
         return $res;
     }
+	
+	
+	 public static function saveIntegralData($file){
+		$reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        //$reader->setLoadSheetsOnly(["Sheet 1"]);
+        $spreadsheet = $reader->load(Yii::$app->basePath . $file);
+        $sheet = $spreadsheet->getSheet(0);
+        $highestRow = $sheet->getHighestRow(); // 取得总行数
+        //print_r($file);exit;
+        try {
+            for ($i = 2; $i <= $highestRow; $i++) {
+				$data['name'] = $sheet->getCell("A" . $i)->getValue();
+				$data['month'] = $sheet->getCell("B" . $i)->getValue();
+				$data['job'] = $sheet->getCell("C" . $i)->getValue();
+				$data['team'] = $sheet->getCell("D" . $i)->getValue();
+                $data['labeling_days'] = $sheet->getCell("E" . $i)->getValue();
+                $data['sorting_days'] = $sheet->getCell("F" . $i)->getValue();
+                $data['other_integral'] = $sheet->getCell("G" . $i)->getValue();
+                $data['deduction_integral'] = $sheet->getCell("H" . $i)->getValue();
+				//print_r($data['name']);exit;
+				if (!$data['name']) break;//取到数据为空时跳出循环
+				//设置贴标出勤天数时，必须设置所属贴标小组
+				if ( $data['labeling_days'] && !$data['team']) {
+					return [
+						'code' => 400,
+						'message' => 'Attribute team cannot be empty when attribute labeling_days have value'
+					];
+				}
+
+
+				$sql_select = "select * from warehouse_integral_report WHERE name='{$data['name']}' AND `month`='{$data['month']}'";
+				$res = Yii::$app->db->createCommand($sql_select)->queryOne();
+				if (!$res) {//插入
+					$sql = "INSERT INTO warehouse_integral_report (name,`month`,job,team,labeling_days,sorting_days,other_integral,deduction_integral) 
+							VALUES('$data[name]','$data[month]','$data[job]','$data[team]','$data[labeling_days]',
+							'$data[sorting_days]','$data[other_integral]','$data[deduction_integral]')";
+				} else {
+					$sql = "UPDATE warehouse_integral_report 
+							SET team='$data[team]',labeling_days='$data[labeling_days]',sorting_days='$data[sorting_days]',
+								other_integral=other_integral + '$data[other_integral]',
+								deduction_integral=deduction_integral + '$data[deduction_integral]' 
+							WHERE name='$data[name]' AND `month`='$data[month]'";
+				}
+				Yii::$app->db->createCommand($sql)->execute();
+				
+			}
+			
+			return true;
+		}catch (\Exception $e) {
+			return [
+				'code' => 400,
+				'message' => $e->getMessage()
+			];
+        }
+		
+	 }
+	
+	
 
 
 }

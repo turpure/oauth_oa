@@ -137,9 +137,10 @@ class WarehouseToolsController extends AdminController
         $con = Yii::$app->request->post('condition');
         $month = isset($con['month']) && $con['month'] ? $con['month'] : $month;
         $sql = "SELECT * FROM warehouse_integral_report WHERE month = '{$month}'";
-        if(isset($con['group']) && $con['group']) $sql .= " AND group=" . $con['group'];
-        if(isset($con['job']) && $con['job']) $sql .= " AND job=" . $con['job'];
-        if(isset($con['team']) && $con['team']) $sql .= " AND team=" . $con['team'];
+        if(isset($con['group']) && $con['group']) $sql .= " AND `group`='{$con['group']}'";
+        if(isset($con['job']) && $con['job']) $sql .= " AND job='{$con['job']}'";
+        if(isset($con['team']) && $con['team']) $sql .= " AND team='{$con['team']}'";
+        if(isset($con['name']) && $con['name']) $sql .= " AND name='{$con['team']}'";
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
 
@@ -162,5 +163,12 @@ class WarehouseToolsController extends AdminController
             ];
         }
     }
+	
+	
+
+	
+	
+	
+	
 
 }
