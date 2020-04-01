@@ -190,10 +190,11 @@ class SchedulerController extends Controller
     public function actionProfit()
     {
         //获取上月时间
-        $lastBeginDate = date('Y-m-01', strtotime('-1 month'));
-        $lastEndDate = date('Y-m-t', strtotime('-1 month'));
-        $beginDate = date('Y-m-01');
+        $lastBeginDate = date('Y-m-01', strtotime('-1 month -1 day'));
+        $lastEndDate = date('Y-m-t', strtotime(' -1 month -1 day'));
+        $beginDate = date('Y-m-01', strtotime('-1 day'));
         $endDate = date('Y-m-d', strtotime('-1 day'));
+		//var_dump($lastBeginDate);exit;
         try {
             //获取开发人员上月和本月毛利的初步数据.
             $devSql = "EXEC oauth_siteDeveloperProfit";
@@ -211,7 +212,7 @@ class SchedulerController extends Controller
                 $devData)->execute();
 
             //插入销售和开发毛利数据(存储过程插入)
-            Yii::$app->db->createCommand("CALL oauth_site_profit(0);")->execute();
+            Yii::$app->db->createCommand("CALL oauth_site_profit(0,'{$lastBeginDate}','{$lastEndDate}','{$beginDate}','{$endDate}');")->execute();
 
             print date('Y-m-d H:i:s') . " INFO:success to update data of profit changes!\n";
         } catch (\Exception $why) {
@@ -227,10 +228,15 @@ class SchedulerController extends Controller
      */
     public function actionSalesAmt()
     {
+		//获取上月时间
+        $lastBeginDate = date('Y-m-01', strtotime('-1 month -1 day'));
+        $lastEndDate = date('Y-m-t', strtotime(' -1 month -1 day'));
+        $beginDate = date('Y-m-01', strtotime('-1 day'));
+        $endDate = date('Y-m-d', strtotime('-1 day'));
         try {
 
             //插入销售销售额数据(存储过程插入)
-            Yii::$app->db->createCommand("CALL oauth_site_amt;")->execute();
+            Yii::$app->db->createCommand("CALL oauth_site_amt('{$lastBeginDate}','{$lastEndDate}','{$beginDate}','{$endDate}');")->execute();
 
             //获取开发人员销售额
             $devSql = "EXEC oauth_siteDeveloperAmt";
@@ -348,9 +354,14 @@ class SchedulerController extends Controller
      * Author: henry
      */
     public function actionSalesRanking(){
+		//获取上月时间
+        $lastBeginDate = date('Y-m-01', strtotime('-1 month -1 day'));
+        $lastEndDate = date('Y-m-t', strtotime(' -1 month -1 day'));
+        $beginDate = date('Y-m-01', strtotime('-1 day'));
+        $endDate = date('Y-m-d', strtotime('-1 day'));
         try {
             //插入销售毛利数据(存储过程插入)
-            Yii::$app->db->createCommand("CALL oauth_site_profit(1);")->execute();
+            Yii::$app->db->createCommand("CALL oauth_site_profit(1,'{$lastBeginDate}','{$lastEndDate}','{$beginDate}','{$endDate}');")->execute();
             print date('Y-m-d H:i:s') . " INFO:success to update data of sales profit ranking!\n";
         } catch (\Exception $why) {
             print date('Y-m-d H:i:s') . " INFO:fail to update data of sales profit ranking cause of $why \n";
