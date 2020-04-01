@@ -264,7 +264,7 @@ class SchedulerController extends Controller
                 $data[$k]['amt'] = 0;
                 $data[$k]['rate'] = 0;
                 $data[$k]['dateRate'] = 0;
-                $data[$k]['updateTime'] = date('Y-m-d');
+                $data[$k]['updateTime'] = $endDate;
                 foreach ($devList as $v){
                     if($val['username'] == $v['username']){
                         $data[$k]['lastAmt'] = $v['lastAmt'];
