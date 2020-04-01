@@ -353,6 +353,7 @@ class ApiSettings
         $sheet = $spreadsheet->getSheet(0);
         $highestRow = $sheet->getHighestRow(); // 取得总行数
         //print_r($file);exit;
+		$errorUser = '';
         try {
             for ($i = 2; $i <= $highestRow; $i++) {
 				$data['name'] = $sheet->getCell("A" . $i)->getValue();
@@ -374,21 +375,30 @@ class ApiSettings
 				}
 
 
+				$user_sql = "select * from warehouse_user_info WHERE name='{$data['name']}'";
+				$user = Yii::$app->db->createCommand($user_sql)->queryOne();
 				$sql_select = "select * from warehouse_integral_report WHERE name='{$data['name']}' AND `month`='{$data['month']}'";
 				$res = Yii::$app->db->createCommand($sql_select)->queryOne();
-				if (!$res) {//插入
-					$sql = "INSERT INTO warehouse_integral_report (name,`month`,job,team,labeling_days,sorting_days,other_integral,deduction_integral) 
+				if(!$user){
+					$errorUser .= ','.$data['name'];
+				}else {
+					if(!$res) {//插入
+						$sql = "INSERT INTO warehouse_integral_report (name,`month`,job,team,labeling_days,sorting_days,other_integral,deduction_integral) 
 							VALUES('$data[name]','$data[month]','$data[job]','$data[team]','$data[labeling_days]',
 							'$data[sorting_days]','$data[other_integral]','$data[deduction_integral]')";
-				} else {
-					$sql = "UPDATE warehouse_integral_report 
+					} else {
+						$sql = "UPDATE warehouse_integral_report 
 							SET team='$data[team]',labeling_days='$data[labeling_days]',sorting_days='$data[sorting_days]',
 								other_integral=other_integral + '$data[other_integral]',
 								deduction_integral=deduction_integral + '$data[deduction_integral]' 
 							WHERE name='$data[name]' AND `month`='$data[month]'";
+					}
+					Yii::$app->db->createCommand($sql)->execute();
 				}
-				Yii::$app->db->createCommand($sql)->execute();
 				
+			}
+			if($errorUser){
+				return "User '{$errorUser}' can not be find!"
 			}
 			
 			return true;

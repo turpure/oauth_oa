@@ -140,7 +140,7 @@ class WarehouseToolsController extends AdminController
         if(isset($con['group']) && $con['group']) $sql .= " AND `group`='{$con['group']}'";
         if(isset($con['job']) && $con['job']) $sql .= " AND job='{$con['job']}'";
         if(isset($con['team']) && $con['team']) $sql .= " AND team='{$con['team']}'";
-        if(isset($con['name']) && $con['name']) $sql .= " AND name='{$con['team']}'";
+        if(isset($con['name']) && $con['name']) $sql .= " AND name='{$con['name']}'";
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
 
