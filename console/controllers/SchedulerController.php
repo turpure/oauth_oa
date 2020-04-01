@@ -824,7 +824,7 @@ class SchedulerController extends Controller
         }
     }
 
-    /**
+    /**  获取仓库积分数据 并 计算 积分排行榜
      * Date: 2020-03-27 11:12
      * Author: henry
      */
