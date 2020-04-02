@@ -239,6 +239,10 @@ class ConScheduler
 
         //处理临时数据
         Yii::$app->db->createCommand('CALL warehouse_integral_data_parser();')->execute();
+
+        //计算排行榜
+        Yii::$app->db->createCommand('CALL warehouse_intrgral_ranking();')->execute();
+
     }
 
 }

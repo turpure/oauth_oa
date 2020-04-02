@@ -27,7 +27,7 @@ class SiteController extends AdminController
     {
         try {
 
-            $sql = "select  DISTINCT department from auth_department where department like '郑州%'" ;
+            $sql = "select  DISTINCT department from auth_department where parent=0 AND department like '郑州%'" ;
             $query = Yii::$app->db->createCommand($sql)->queryAll();
             return ArrayHelper::getColumn($query,'department');
         }
@@ -43,7 +43,7 @@ class SiteController extends AdminController
     public function actionHeadDepart()
     {
         try {
-            $sql = "select  DISTINCT department from auth_department where parent=0 and department like '%部%'" ;
+            $sql = "select  DISTINCT department from auth_department where parent=0 AND type LIKE '业务%' and department NOT like '郑州%'" ;
             $query = Yii::$app->db->createCommand($sql)->queryAll();
             return ArrayHelper::getColumn($query,'department');
         }

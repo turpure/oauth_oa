@@ -11,6 +11,8 @@ namespace backend\modules\v1\controllers;
 use backend\modules\v1\models\ApiWarehouseTools;
 use backend\modules\v1\utils\ExportTools;
 use Yii;
+use yii\db\Exception;
+use yii\helpers\ArrayHelper;
 
 class WarehouseToolsController extends AdminController
 {
@@ -133,10 +135,40 @@ class WarehouseToolsController extends AdminController
     public function actionIntegral(){
         $month = date('Y-m', strtotime('-1 days'));
         $con = Yii::$app->request->post('condition');
-        $month = isset($con['mon']) && $con['mon'] ? $con['mon'] : $month;
+        $month = isset($con['month']) && $con['month'] ? $con['month'] : $month;
         $sql = "SELECT * FROM warehouse_integral_report WHERE month = '{$month}'";
+        if(isset($con['group']) && $con['group']) $sql .= " AND `group`='{$con['group']}'";
+        if(isset($con['job']) && $con['job']) $sql .= " AND job='{$con['job']}'";
+        if(isset($con['team']) && $con['team']) $sql .= " AND team='{$con['team']}'";
+        if(isset($con['name']) && $con['name']) $sql .= " AND name='{$con['name']}'";
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
 
+    public function actionQueryInfo(){
+        $type = Yii::$app->request->get('type','job');
+        if(!in_array($type, ['job','name','group'])) {
+            return [
+                'code' => 400,
+                'message' => 'type is not correct value!',
+            ];
+        }
+        try{
+            $sql = "SELECT DISTINCT `{$type}` FROM warehouse_user_info";
+            $query = Yii::$app->db->createCommand($sql)->queryAll();
+            return ArrayHelper::getColumn($query, $type);
+        }catch (Exception $why){
+            return [
+                'code' => 400,
+                'message' => $why->getMessage(),
+            ];
+        }
+    }
+	
+	
+
+	
+	
+	
+	
 
 }

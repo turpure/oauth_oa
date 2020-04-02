@@ -271,11 +271,10 @@ class SettingsController extends AdminController
     }
 
 
-    /**
-     * update
-     * Date: 2020-03-31 14:22
+    /** update
+     * Date: 2020-03-31 15:56
      * Author: henry
-     * @return array
+     * @return array|bool
      * @throws Exception
      */
     public function actionWarehouseRate(){
@@ -308,18 +307,53 @@ class SettingsController extends AdminController
                         'rate' => $cond['rate']
                     ])->execute();
                 }
+                return true;
             }catch (Exception $why){
                 return [
                     'code' => 400,
                     'message' => $why->getMessage(),
                 ];
             }
-
-
         }
+        if ($request->isDelete) {
+            $post = $request->post();
+            $cond = $post['condition'];
+            $id = isset($cond['id']) && $cond['id'] ? $cond['id'] : 0;
+            try{
+                Yii::$app->db->createCommand()->delete('warehouse_integral_rate',['id' => $id])->execute();
+                return true;
+            }catch (Exception $why){
+                return [
+                    'code' => 400,
+                    'message' => $why->getMessage(),
+                ];
+            }
+        }
+	}
+		
+	public function actionImportIntegralData(){
+		$file = $_FILES['file'];
+		if (!$file) {
+			return ['code' => 400, 'message' => 'The file can not be empty!'];
+		}
+		//判断文件后缀
+		$extension = ApiSettings::get_extension($file['name']);
+		if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
 
+		//文件上传
+		$result = ApiSettings::file($file, 'warehouseIntegralData');
+		
+		if (!$result) {
+			return ['code' => 400, 'message' => 'File upload failed'];
+		}else{
+			//获取上传excel文件的内容并保存
+			return ApiSettings::saveIntegralData($result);
+		}
+	}
+		
+		
 
-    }
+    
 
 
 
