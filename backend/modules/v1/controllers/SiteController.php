@@ -585,12 +585,22 @@ class SiteController extends AdminController
      */
     public function actionIntegralRanking()
     {
-        $job = \Yii::$app->request->get('job','拆包');
-        $sql = "SELECT * FROM site_warehouse_integral_ranking 
-                WHERE  job LIKE '%{$job}%'
-                ORDER BY this_num DESC";
-        $query = \Yii::$app->db->createCommand($sql)->queryAll();
-        return $query;
+        $job = \Yii::$app->request->get('job','all');
+		if($job == 'all'){
+			$sql = "SELECT * FROM site_warehouse_integral_ranking 
+                WHERE  type='all'
+                ORDER BY this_total_num DESC";
+			$query = \Yii::$app->db->createCommand($sql)->queryAll();
+			return $query;
+		
+		}else{
+			$sql = "SELECT * FROM site_warehouse_integral_ranking 
+                WHERE  job LIKE '%{$job}%' and type='job'
+                ORDER BY this_job_num DESC";
+			$query = \Yii::$app->db->createCommand($sql)->queryAll();
+			return $query;
+		}
+        
     }
 
 

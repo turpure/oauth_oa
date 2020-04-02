@@ -219,8 +219,8 @@ class ConScheduler
         $beginDate = $month . '-01';
         $endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
         //$beginDate = '2020-03-01';
-        //$endDate = '2020-03-25';
-//        var_dump($num);exit;
+        //$endDate = '2020-03-31';
+        //var_dump($num);exit;
 
         $userQuery = Yii::$app->db->createCommand('SELECT * FROM warehouse_user_info')->queryAll();
         $user = ArrayHelper::getColumn($userQuery,'name');
@@ -238,7 +238,7 @@ class ConScheduler
         )->execute();
 
         //处理临时数据
-        Yii::$app->db->createCommand('CALL warehouse_integral_data_parser();')->execute();
+        Yii::$app->db->createCommand("CALL warehouse_integral_data_parser('{$endDate}');")->execute();
 
         //计算排行榜
         Yii::$app->db->createCommand('CALL warehouse_intrgral_ranking();')->execute();
