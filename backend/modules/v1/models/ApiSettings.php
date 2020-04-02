@@ -398,7 +398,7 @@ class ApiSettings
 				
 			}
 			if($errorUser){
-				return "User '{$errorUser}' can not be find!"
+				return "User '{$errorUser}' can not be find!";
 			}
 			
 			return true;
