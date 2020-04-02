@@ -227,7 +227,7 @@ class SiteController extends AdminController
 //=====================  Profit Changes  ============================
 
     /**
-     * 上海销售毛利
+     * 所有销售毛利
      * Date: 2019-01-10 18:38
      * Author: henry
      * @return mixed
@@ -238,16 +238,12 @@ class SiteController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             $depart = isset($condition['depart']) ? $condition['depart'] : '';
-            if(empty($depart)) {
-                $sql = "SELECT * FROM site_profit 
-                WHERE depart NOT LIKE '%郑州%' AND role = '销售' AND ifnull(display,0)=0
-                ORDER BY Rate DESC";
+            $sql = "SELECT * FROM site_profit 
+                WHERE role = '销售' AND ifnull(display,0)=0 ";
+            if($depart) {
+                $sql .= " AND depart LIKE '%{$depart}%' ";
             }
-            else {
-                $sql = "SELECT * FROM site_profit 
-                WHERE depart = '{$depart}' AND role = '销售'
-                ORDER BY Rate DESC";
-            }
+            $sql .= " ORDER BY Rate DESC";
             $query = \Yii::$app->db->createCommand($sql)->queryAll();
             return $query;
         }
@@ -380,7 +376,7 @@ class SiteController extends AdminController
     //=====================  Amt Changes  ============================
 
     /**
-     * 上海销售额
+     * 所有销售额
      * Date: 2019-04-16 09:38
      * Author: henry
      * @return mixed
@@ -391,16 +387,12 @@ class SiteController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             $depart = isset($condition['depart']) ? $condition['depart'] : '';
-            if(empty($depart)) {
-                $sql = "SELECT * FROM site_sales_amt
-                WHERE depart NOT LIKE '%郑州%' AND role = '销售' AND ifnull(display,0)=0
-                ORDER BY Rate DESC";
+            $sql = "SELECT * FROM site_sales_amt
+                WHERE role = '销售' AND ifnull(display,0)=0 ";
+            if($depart) {
+                $sql .= "AND depart LIKE '%{$depart}%' ";
             }
-            else {
-                $sql = "SELECT * FROM site_sales_amt 
-                WHERE depart = '{$depart}' AND role = '销售'
-                ORDER BY Rate DESC";
-            }
+            $sql .= " ORDER BY Rate DESC";
             $query = \Yii::$app->db->createCommand($sql)->queryAll();
             return $query;
         }
