@@ -577,22 +577,20 @@ class SiteController extends AdminController
      */
     public function actionIntegralRanking()
     {
-        $job = \Yii::$app->request->get('job','all');
-		if($job == 'all'){
-			$sql = "SELECT * FROM site_warehouse_integral_ranking 
-                WHERE  type='all'
-                ORDER BY this_total_num DESC";
-			$query = \Yii::$app->db->createCommand($sql)->queryAll();
-			return $query;
-		
-		}else{
-			$sql = "SELECT * FROM site_warehouse_integral_ranking 
-                WHERE  job LIKE '%{$job}%' and type='job'
-                ORDER BY this_job_num DESC";
-			$query = \Yii::$app->db->createCommand($sql)->queryAll();
-			return $query;
-		}
-        
+        $job = \Yii::$app->request->get('job','');
+        $type = \Yii::$app->request->get('type','all');
+        if($type != 'all' && $job == '') return [
+            'code' => '400',
+            'message' => 'job can not be empty!',
+        ];
+
+        $sql = "SELECT * FROM site_warehouse_integral_ranking 
+            WHERE  type='{$type}' ";
+        if($job) $sql .= " AND job = '{$job}' ";
+        $sql .= " ORDER BY this_total_num DESC";
+        $query = \Yii::$app->db->createCommand($sql)->queryAll();
+        return $query;
+
     }
 
 
