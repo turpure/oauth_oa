@@ -346,13 +346,12 @@ class ApiSettings
     }
 	
 	
-	 public static function saveIntegralData($file){
+	 public static function saveIntegralData($file, $fileName, $fileSize){
 		$reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
         //$reader->setLoadSheetsOnly(["Sheet 1"]);
         $spreadsheet = $reader->load(Yii::$app->basePath . $file);
         $sheet = $spreadsheet->getSheet(0);
         $highestRow = $sheet->getHighestRow(); // 取得总行数
-        //print_r($file);exit;
 		$errorUser = '';
         try {
             for ($i = 2; $i <= $highestRow; $i++) {
@@ -396,16 +395,18 @@ class ApiSettings
 							WHERE name='$data[name]' AND `month`='$data[month]'";
 					}
 					Yii::$app->db->createCommand($sql)->execute();
-                    $date = date('Y-m-d H:i:s');
-					//插入日志
-                    $logSql = "INSERT INTO warehouse_intergral_import_log 
-                                (name,`month`,team,all_days,labeling_days,sorting_days,other_integral,deduction_integral,create_date) 
-							VALUES('$data[name]','$data[month]','$data[team]','$data[all_days]','$data[labeling_days]',
-							'$data[sorting_days]','$data[other_integral]','$data[deduction_integral]','{$date}')";
 
-                    Yii::$app->db->createCommand($logSql)->execute();
 				}
-				
+                //插入日志
+                $data = [
+                    'fileName' => $fileName,
+                    'fileSize' => $fileSize,
+                    'creator' => Yii::$app->user->identity->username,
+                    'createdDate' => $updateDate = date('Y-m-d H:i:s'),
+                    'updatedDate' => $updateDate = date('Y-m-d H:i:s')
+                ];
+
+                Yii::$app->db->createCommand()->insert('warehouse_intergral_import_log', $data)->execute();
 			}
 			if($errorUser){
 				return "User '{$errorUser}' can not be find!";
