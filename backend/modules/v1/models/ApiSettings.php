@@ -377,17 +377,17 @@ class ApiSettings
 
 				$user_sql = "select * from warehouse_user_info WHERE name='{$data['name']}'";
 				$user = Yii::$app->db->createCommand($user_sql)->queryOne();
-				$sql_select = "select * from warehouse_integral_report WHERE name='{$data['name']}' AND `month`='{$data['month']}'";
+				$sql_select = "select * from warehouse_intergral_other_data_every_month WHERE name='{$data['name']}' AND `month`='{$data['month']}'";
 				$res = Yii::$app->db->createCommand($sql_select)->queryOne();
 				if(!$user){
 					$errorUser .= ','.$data['name'];
 				}else {
 					if(!$res) {//插入
-						$sql = "INSERT INTO warehouse_integral_report (name,`month`,job,team,labeling_days,sorting_days,other_integral,deduction_integral) 
-							VALUES('$data[name]','$data[month]','$data[job]','$data[team]','$data[labeling_days]',
+						$sql = "INSERT INTO warehouse_intergral_other_data_every_month (name,`month`,team,labeling_days,sorting_days,other_integral,deduction_integral) 
+							VALUES('$data[name]','$data[month]','$data[team]','$data[labeling_days]',
 							'$data[sorting_days]','$data[other_integral]','$data[deduction_integral]')";
 					} else {
-						$sql = "UPDATE warehouse_integral_report 
+						$sql = "UPDATE warehouse_intergral_other_data_every_month 
 							SET team='$data[team]',labeling_days='$data[labeling_days]',sorting_days='$data[sorting_days]',
 								other_integral=other_integral + '$data[other_integral]',
 								deduction_integral=deduction_integral + '$data[deduction_integral]' 

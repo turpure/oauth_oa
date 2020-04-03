@@ -330,6 +330,67 @@ class SettingsController extends AdminController
             }
         }
 	}
+	
+	
+	public function actionWarehouseUser(){
+        $request = Yii::$app->request;
+        if($request->isGet){
+            $sql = "SELECT * FROM warehouse_user_info";
+            return Yii::$app->db->createCommand($sql)->queryAll();
+        }
+        if ($request->isPost) {
+            $post = $request->post();
+            $cond = $post['condition'];
+            if (!$cond['name']) {
+                return [
+                    'code' => 400,
+                    'message' => 'The usernamecan not be empty！',
+                ];
+            }
+
+            $id = isset($cond['id']) && $cond['id'] ? $cond['id'] : 0;
+            $query = Yii::$app->db->createCommand("SELECT * FROM warehouse_user_info WHERE id={$id}")->queryOne();
+            try{
+                if($query){
+                    Yii::$app->db->createCommand()->update('warehouse_user_info',[
+                        'name' => $cond['name'],
+                        'group' => $cond['group'],
+                        'job' => $cond['job'],
+                        'team' => $cond['team']
+                    ],['id' => $id])->execute();
+                }else{
+                    Yii::$app->db->createCommand()->insert('warehouse_user_info',[
+                        'name' => $cond['name'],
+                        'group' => $cond['group'],
+                        'job' => $cond['job'],
+                        'team' => $cond['team']
+                    ])->execute();
+                }
+                return true;
+            }catch (Exception $why){
+                return [
+                    'code' => 400,
+                    'message' => $why->getMessage(),
+                ];
+            }
+        }
+        if ($request->isDelete) {
+            $post = $request->post();
+            $cond = $post['condition'];
+            $id = isset($cond['id']) && $cond['id'] ? $cond['id'] : 0;
+            try{
+                Yii::$app->db->createCommand()->delete('warehouse_user_info',['id' => $id])->execute();
+                return true;
+            }catch (Exception $why){
+                return [
+                    'code' => 400,
+                    'message' => $why->getMessage(),
+                ];
+            }
+        }
+	}
+	
+	
 		
 	public function actionImportIntegralData(){
 		$file = $_FILES['file'];
