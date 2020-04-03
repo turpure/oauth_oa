@@ -411,7 +411,20 @@ class SettingsController extends AdminController
 			return ApiSettings::saveIntegralData($result);
 		}
 	}
-		
+
+    public function actionIntegralLog(){
+
+        $month = date('Y-m');
+        $lastMonth = date('Y-m', strtotime('-1 month'));
+        //var_dump($lastMonth);exit;
+        $logSql = "SELECT * FROM warehouse_intergral_import_log where create_date >= '{$month}'";
+        $sql = "SELECT * FROM warehouse_intergral_other_data_every_month where `month` in ('{$lastMonth}','{$month}')";
+
+        return [
+            'log' => Yii::$app->db->createCommand($logSql)->queryAll(),
+            'content' => Yii::$app->db->createCommand($sql)->queryAll(),
+        ];
+    }
 		
 
     

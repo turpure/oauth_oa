@@ -394,6 +394,13 @@ class ApiSettings
 							WHERE name='$data[name]' AND `month`='$data[month]'";
 					}
 					Yii::$app->db->createCommand($sql)->execute();
+                    $date = date('Y-m-d H:i:s');
+					//插入日志
+                    $logSql = "INSERT INTO warehouse_intergral_import_log (name,`month`,team,labeling_days,sorting_days,other_integral,deduction_integral,create_date) 
+							VALUES('$data[name]','$data[month]','$data[team]','$data[labeling_days]',
+							'$data[sorting_days]','$data[other_integral]','$data[deduction_integral]','{$date}')";
+
+                    Yii::$app->db->createCommand($logSql)->execute();
 				}
 				
 			}
