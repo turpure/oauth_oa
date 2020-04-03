@@ -360,10 +360,11 @@ class ApiSettings
 				$data['month'] = $sheet->getCell("B" . $i)->getValue();
 				$data['job'] = $sheet->getCell("C" . $i)->getValue();
 				$data['team'] = $sheet->getCell("D" . $i)->getValue();
-                $data['labeling_days'] = $sheet->getCell("E" . $i)->getValue();
-                $data['sorting_days'] = $sheet->getCell("F" . $i)->getValue();
-                $data['other_integral'] = $sheet->getCell("G" . $i)->getValue();
-                $data['deduction_integral'] = $sheet->getCell("H" . $i)->getValue();
+                $data['all_days'] = $sheet->getCell("E" . $i)->getValue();
+                $data['labeling_days'] = $sheet->getCell("F" . $i)->getValue();
+                $data['sorting_days'] = $sheet->getCell("G" . $i)->getValue();
+                $data['other_integral'] = $sheet->getCell("H" . $i)->getValue();
+                $data['deduction_integral'] = $sheet->getCell("I" . $i)->getValue();
 				//print_r($data['name']);exit;
 				if (!$data['name']) break;//取到数据为空时跳出循环
 				//设置贴标出勤天数时，必须设置所属贴标小组
@@ -383,12 +384,13 @@ class ApiSettings
 					$errorUser .= ','.$data['name'];
 				}else {
 					if(!$res) {//插入
-						$sql = "INSERT INTO warehouse_intergral_other_data_every_month (name,`month`,team,labeling_days,sorting_days,other_integral,deduction_integral) 
-							VALUES('$data[name]','$data[month]','$data[team]','$data[labeling_days]',
+						$sql = "INSERT INTO warehouse_intergral_other_data_every_month 
+                                (name,`month`,team,all_days,labeling_days,sorting_days,other_integral,deduction_integral) 
+							VALUES('$data[name]','$data[month]','$data[team]','$data[all_days]','$data[labeling_days]',
 							'$data[sorting_days]','$data[other_integral]','$data[deduction_integral]')";
 					} else {
 						$sql = "UPDATE warehouse_intergral_other_data_every_month 
-							SET team='$data[team]',labeling_days='$data[labeling_days]',sorting_days='$data[sorting_days]',
+							SET team='$data[team]',all_days='$data[all_days]',labeling_days='$data[labeling_days]',sorting_days='$data[sorting_days]',
 								other_integral=other_integral + '$data[other_integral]',
 								deduction_integral=deduction_integral + '$data[deduction_integral]' 
 							WHERE name='$data[name]' AND `month`='$data[month]'";
@@ -396,8 +398,9 @@ class ApiSettings
 					Yii::$app->db->createCommand($sql)->execute();
                     $date = date('Y-m-d H:i:s');
 					//插入日志
-                    $logSql = "INSERT INTO warehouse_intergral_import_log (name,`month`,team,labeling_days,sorting_days,other_integral,deduction_integral,create_date) 
-							VALUES('$data[name]','$data[month]','$data[team]','$data[labeling_days]',
+                    $logSql = "INSERT INTO warehouse_intergral_import_log 
+                                (name,`month`,team,all_days,labeling_days,sorting_days,other_integral,deduction_integral,create_date) 
+							VALUES('$data[name]','$data[month]','$data[team]','$data[all_days]','$data[labeling_days]',
 							'$data[sorting_days]','$data[other_integral]','$data[deduction_integral]','{$date}')";
 
                     Yii::$app->db->createCommand($logSql)->execute();

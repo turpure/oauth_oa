@@ -417,7 +417,7 @@ class SettingsController extends AdminController
         $month = date('Y-m');
         $lastMonth = date('Y-m', strtotime('-1 month'));
         //var_dump($lastMonth);exit;
-        $logSql = "SELECT * FROM warehouse_intergral_import_log where create_date >= '{$month}'";
+        $logSql = "SELECT * FROM warehouse_intergral_import_log where create_date >= '{$lastMonth}'";
         $sql = "SELECT * FROM warehouse_intergral_other_data_every_month where `month` in ('{$lastMonth}','{$month}')";
 
         return [
