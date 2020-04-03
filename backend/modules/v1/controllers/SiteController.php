@@ -397,7 +397,7 @@ class SiteController extends AdminController
             return $query;
         }
         catch (\Exception $why) {
-            return ['msg' => $why->getMessage(), 'code' => $why->getCode()];
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
     }
 
