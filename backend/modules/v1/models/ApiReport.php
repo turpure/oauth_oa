@@ -74,9 +74,10 @@ class ApiReport
                 $item = $value;
                 foreach ($userList as $u) {
                     if ($value['salernameZero'] === $u['username']) {
-                        if ($u['depart'] === '运营一部') {
+//                        var_dump($u['departId']);exit;
+                        if ($u['departId'] == 1) {   //  一部
                             $rate = $rateArr['devRate1'];
-                        } elseif ($u['depart'] === '运营五部') {
+                        } elseif ($u['departId'] == 4) {  //五部
                             $rate = $rateArr['devRate5'];
                         } else {
                             $rate = $rateArr['devRate'];
@@ -340,7 +341,8 @@ class ApiReport
     private static function getAllDeveloper()
     {
         //获取现有开发以及部门
-        $userSql = "SELECT u.username,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart
+        $userSql = "SELECT u.username,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart,
+                        CASE WHEN IFNULL(p.id,'')<>'' THEN p.id ELSE d.id END as departId
                         FROM user u
                         LEFT JOIN auth_department_child dc ON dc.user_id=u.id
                         LEFT JOIN auth_department d ON d.id=dc.department_id
