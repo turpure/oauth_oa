@@ -150,9 +150,9 @@ class ApiReport
                 $item = $value;
                 foreach ($userList as $u) {
                     if ($value['salerName'] === $u['username']) {
-                        if ($u['depart'] === '运营一部') {
+                        if ($u['departId'] == 1) { //一部
                             $rate = $rateArr['devRate1'];
-                        } elseif ($u['depart'] === '运营五部') {
+                        } elseif ($u['departId'] == 4) { //五部
                             $rate = $rateArr['devRate5'];
                         } else {
                             $rate = $rateArr['devRate'];
@@ -227,9 +227,9 @@ class ApiReport
                 $item = $value;
                 foreach ($userList as $u) {
                     if ($value['salerNameZero'] === $u['username']) {
-                        if ($u['depart'] === '运营一部') {
+                        if ($u['departId'] == 1) {   //一部
                             $rate = $rateArr['devRate1'];
-                        } elseif ($u['depart'] === '运营五部') {
+                        } elseif ($u['departId'] == 4) {   //五部
                             $rate = $rateArr['devRate5'];
                         } else {
                             $rate = $rateArr['devRate'];
