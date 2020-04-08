@@ -29,6 +29,7 @@ use yii\db\Expression;
  * @property int $isPowder
  * @property int $isMagnetism
  * @property int $isCharged
+ * @property string $storeId
  */
 class OaDataMine extends \yii\db\ActiveRecord
 {
@@ -61,7 +62,7 @@ class OaDataMine extends \yii\db\ActiveRecord
             [['goodsCode'], 'unique'],
             [['createTime', 'updateTime','infoId'], 'safe'],
             [['isLiquid', 'isPowder', 'isMagnetism', 'isCharged'], 'integer'],
-            [['proId', 'platForm', 'progress', 'creator', 'detailStatus', 'cat', 'subCat', 'goodsCode', 'devStatus', 'mainImage', 'pyGoodsCode', 'spAttribute'], 'string', 'max' => 255],
+            [['storeId','proId', 'platForm', 'progress', 'creator', 'detailStatus', 'cat', 'subCat', 'goodsCode', 'devStatus', 'mainImage', 'pyGoodsCode', 'spAttribute'], 'string', 'max' => 255],
         ];
     }
 
@@ -91,6 +92,7 @@ class OaDataMine extends \yii\db\ActiveRecord
             'isPowder' => 'Is Powder',
             'isMagnetism' => 'Is Magnetism',
             'isCharged' => 'Is Charged',
+            'Store Id' => 'Store Id',
         ];
     }
 }
