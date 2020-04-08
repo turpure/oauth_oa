@@ -90,7 +90,7 @@ class ApiMine
             $mine = ['id' => '','proId'=> '', 'progress' => '', 'creator' => '', 'createTime' => '', 'updateTime' => '',
             'detailStatus' => '', 'cat' => '', 'subCat' => '', 'goodsCode' => '', 'devStatus' => '', 'mainImage' => '',
             'pyGoodsCode' => '', 'infoId' => '', 'spAttribute' => '', 'isLiquid' => 0, 'isPowder' => 0, 'isMagnetism' => 0,
-            'isCharged' => 0, 'proName' => 0, 'description' => 0, 'tags' => ''];
+            'isCharged' => 0, 'proName' => 0, 'description' => 0, 'tags' => '', 'storeId' => ''];
         }
         if($images === null) {
             $images = [
@@ -475,7 +475,7 @@ class ApiMine
                     'Extra Image URL 10' => '',
                     'Dangerous Kind' => static::_getDangerousKind($basicInfo),
                     'Declared Value' => static::getJoomDeclaredValue($var['price']),
-                    'Store id' => ''
+                    'Store id' => $basicInfo['storeId']
                 ];
                 $ret[] = $row;
             }
