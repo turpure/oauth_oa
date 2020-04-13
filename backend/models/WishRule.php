@@ -66,7 +66,7 @@ class WishRule extends \yii\mongodb\ActiveRecord
 
             $defaultAttributes = [
                 'cids' =>'', 'index' => 1, 'merchantStatus' => 1, 'sort' => 'DESC', 'pageSize' => 20,
-                'isUsed' => 1, 'pnameStatus' => 1, 'pidStatus' => 1, 'orderColumn' => ''
+                'isUsed' => 1, 'pnameStatus' => 1, 'pidStatus' => 1, 'orderColumn' => '', 'type' => 'auto'
                 ];
             $this->setAttributes($defaultAttributes);
         }
