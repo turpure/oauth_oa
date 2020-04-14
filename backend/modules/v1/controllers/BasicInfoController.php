@@ -23,7 +23,6 @@ use backend\models\OaPaypal;
 use backend\models\OaShippingService;
 use backend\models\OaSysRules;
 use backend\models\OaWishSuffix;
-use backend\models\OaShopify;
 use backend\modules\v1\models\ApiBasicInfo;
 use Yii;
 use yii\data\ActiveDataProvider;
