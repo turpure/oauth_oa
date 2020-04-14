@@ -51,7 +51,8 @@ class ApiGoodsinfo
     private static $goodsInfo = ['待处理', '已完善'];
     private static $pictureInfo = ['待处理'];
     const PlatInfo = '已完善';
-    const UsdExchange = 1;
+//    const UsdExchange = 1;
+    const UsdExchange = 6.88;
     const WishTitleLength = 110;
     const EbayTitleLength = 80;
     const JoomTitleLength = 100;
@@ -1343,13 +1344,15 @@ class ApiGoodsinfo
                 $var['shipping_time'] = $sku['shippingTime'];
                 $var['main_image'] = $sku['linkUrl'];
 
-                //美国账号
-                if(strpos($account['shortName'], 'WISEB') !== false) {
+                //美元账号
+                if($account['localCurrency'] === 'USD') {
                     $var['localized_currency_code'] = 'USD';
                     $var['localized_price'] = (string)floor($sku['price']);
                 }
+
+                // 人民币账号
                 else {
-                    $var['localized_currency_code'] = 'USD';
+                    $var['localized_currency_code'] = 'RMB';
                     $var['localized_price'] = (string)floor($sku['price'] * self::UsdExchange);
                 }
                 $variation[] = $var;
@@ -1362,16 +1365,17 @@ class ApiGoodsinfo
                 $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1;
                 $ret['msrp'] = $maxMsrp;
 
-                //美国账号
-                if(strpos($account['shortName'], 'WISEB') !== false) {
+                //美元账号
+                if($account['localCurrency'] === 'USD') {
                     $ret['local_price'] = floor($ret['price']);
                     $ret['local_shippingfee'] = floor($shipping);
                     $ret['local_currency'] = 'USD';
                 }
+                //人民币账号
                 else {
                     $ret['local_price'] = floor($ret['price'] * self::UsdExchange);
                     $ret['local_shippingfee'] = floor($shipping * self::UsdExchange);
-                    $ret['local_currency'] = 'USD';
+                    $ret['local_currency'] = 'RMB';
                 }
             } else {
                 $ret['variant'] = '';
@@ -1379,16 +1383,17 @@ class ApiGoodsinfo
                 $ret['shipping'] = $shipping;
                 $ret['msrp'] = $maxMsrp;
 
-                //美国账号
-                if(strpos($account['shortName'], 'WISEB') !== false) {
+                //美元账号
+                if($account['localCurrency'] === 'USD' ) {
                     $ret['local_price'] = floor($ret['price']);
                     $ret['local_shippingfee'] = floor($shipping);
                     $ret['local_currency'] = 'USD';
                 }
+                // 人民币账号
                 else {
                     $ret['local_price'] = floor($ret['price'] * self::UsdExchange);
                     $ret['local_shippingfee'] = floor($shipping * self::UsdExchange);
-                    $ret['local_currency'] = 'USD';
+                    $ret['local_currency'] = 'RMB';
                 }
 
             }
