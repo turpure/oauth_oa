@@ -27,8 +27,10 @@ class EbayBalanceTime extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
+            [['id'], 'integer'],
             [['account'], 'string', 'max' => 50],
             [['balanceTime'], 'string', 'max' => 10],
+            [['account'], 'unique'],
         ];
     }
 
