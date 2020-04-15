@@ -13,6 +13,7 @@ use backend\modules\v1\utils\Helper;
 use backend\modules\v1\utils\ExportTools;
 use backend\models\CacheExpress;
 use backend\models\EbayBalance;
+use backend\models\EbayBalanceTime;
 use backend\models\TaskJoomTracking;
 use backend\models\ShopElf\OauthJoomUpdateExpressFare;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -993,6 +994,87 @@ class ApiTinyTool
         }
         return $query->all();
     }
+
+    #####################ebayBalanceTime 操作########################
+
+    /**
+     * 查找
+     * @param $condition
+     * @return mixed
+     */
+    public static function ebayBalanceTimeGet($condition)
+    {
+
+        // 默认查询条件
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 100000;
+        $query = EbayBalanceTime::find()->asArray();
+        $filterFields = ['like' => ['account','balanceTime']];
+        $query = Helper::generateFilter($query, $filterFields, $condition);
+        return new ActiveDataProvider([
+            'query' => $query,
+            'sort'=> [
+                'defaultOrder' => ['account'=>SORT_ASC],
+                'attributes' => ['id','account','balanceTime'],
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize
+            ]
+        ]);
+
+    }
+
+    /**
+     * 修改
+     * @param $condition
+     * @return mixed
+     */
+    public static function ebayBalanceTimeUpdate($condition)
+    {
+        $model = EbayBalanceTime::findOne($condition['id']);
+        $model->setAttributes($condition);
+        $model->save();
+        return $model;
+    }
+
+
+    /**
+     * 删除
+     * @param $condition
+     * @return array
+     */
+    public static function ebayBalanceTimeDelete($condition)
+    {
+        EbayBalanceTime::deleteAll(['id' => $condition['id']]);
+        return ['success to delete '. $condition['id']];
+    }
+
+    /**
+     * 创建
+     * @param $condition
+     * @return EbayBalanceTime
+     */
+    public static function ebayBalanceTimeCreate($condition)
+    {
+        $rows = $condition;
+        $model = new EbayBalanceTime();
+        $model->setAttributes($rows);
+        $model->save();
+        return $model;
+    }
+
+
+    /**
+     * 详情
+     * @param $condition
+     * @return EbayBalanceTime
+     */
+    public static function ebayBalanceTimeDetail($condition)
+    {
+        return EbayBalanceTime::find()->where(['cdcid' => $condition['id']])->one();
+    }
+
+
+
 
     public static function handelKeyword($keyword){
         $keyword = explode(' ', $keyword);

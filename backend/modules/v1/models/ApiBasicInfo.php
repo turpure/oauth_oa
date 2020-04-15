@@ -120,6 +120,7 @@ class ApiBasicInfo
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
         $query = OaWishSuffix::find();
         if(isset($condition['ibaySuffix'])) $query->andFilterWhere(['like', 'ibaySuffix', $condition['ibaySuffix']]);
+        if(isset($condition['localCurrency'])) $query->andFilterWhere(['like', 'localCurrency', $condition['localCurrency']]);
         if(isset($condition['shortName'])) $query->andFilterWhere(['like', 'shortName', $condition['shortName']]);
         if(isset($condition['suffix'])) $query->andFilterWhere(['like', 'suffix', $condition['suffix']]);
         if(isset($condition['mainImg'])) $query->andFilterWhere(['like', 'mainImg', $condition['mainImg']]);

@@ -1028,7 +1028,7 @@ class ProductCenterTools
 
    private static function _getBillNumber()
    {
-       $billNumberQuery = "P_S_CodeRuleGet 22328,'' ";
+       $billNumberQuery = " exec  P_S_CodeRuleGet 22328,'' ";
        $connection = yii::$app->py_db;
        $ret = $connection->createCommand($billNumberQuery)->queryOne();
        return $ret['MaxBillCode'];

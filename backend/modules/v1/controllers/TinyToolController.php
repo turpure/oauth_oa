@@ -1061,6 +1061,11 @@ class TinyToolController extends AdminController
         }
     }
 
+
+    /**
+     * ebay账单查询条件
+     * @return array
+     */
     public function actionEbayBalanceCondition()
     {
         try {
@@ -1070,6 +1075,89 @@ class TinyToolController extends AdminController
         }
     }
 
+    #################ebay账单时间设置#########################
+
+    /**
+     * 查询
+     */
+    public function actionEbayBalanceTimeGet()
+    {
+
+        try {
+            $condition = Yii::$app->request->post('condition',[]);
+            return ApiTinyTool::ebayBalanceTimeGet($condition);
+        }
+
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+
+    /**
+     * 修改
+     */
+    public function actionEbayBalanceTimeUpdate()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            return ApiTinyTool::ebayBalanceTimeUpdate($condition);
+
+        }
+
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+
+    }
+
+    /**
+     * 创建
+     */
+    public function actionEbayBalanceTimeCreate()
+    {
+
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            return ApiTinyTool::ebayBalanceTimeCreate($condition);
+        }
+
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+
+    /**
+     * 删除
+     */
+    public function actionEbayBalanceTimeDelete()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            return ApiTinyTool::ebayBalanceTimeDelete($condition);
+        }
+
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+
+    }
+
+
+    /**
+     * 详情
+     */
+    public function actionEbayBalanceTimeDetail()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            return ApiTinyTool::ebayBalanceTimeDetail($condition);
+        }
+
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+
+    }
     /**
      * 销售员产品库存
      * Date: 2019-12-06 11:55
