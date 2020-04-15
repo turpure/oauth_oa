@@ -51,6 +51,22 @@ class SchedulerController extends Controller
     }
 
 
+    public function actionBackupSuffix(){
+        try {
+            $sql = 'SELECT DictionaryName AS suffix,FitCode AS plat FROM B_Dictionary WHERE CategoryID=12 AND Used=0';
+            $list = Yii::$app->py_db->createCommand($sql)->queryAll();
+            Yii::$app->db->createCommand()->truncateTable('cache_suffix')->execute();
+            Yii::$app->db->createCommand()->batchInsert('cache_suffix',['suffix','plat'],$list)->execute();
+            print date('Y-m-d H:i:s') . "INFO:success to backup py suffix data!\n";
+        }catch (Exception $e){
+            print date('Y-m-d H:i:s') . "INFO:fail to  to backup py suffix data cause of $e \n";
+        }
+
+
+    }
+
+
+
     /**
      * @brief display info of sku are out of stock
      */
@@ -270,6 +286,9 @@ class SchedulerController extends Controller
                         $data[$k]['dateRate'] = $v['dateRate'];
                         continue;
                     }
+                }
+                if($data[$k]['amt'] == 0 && $data[$k]['lastAmt'] == 0){
+                    unset($data[$k]);
                 }
             }
             //var_dump($data);exit;
