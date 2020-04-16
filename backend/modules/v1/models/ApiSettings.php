@@ -359,11 +359,11 @@ class ApiSettings
 				$data['month'] = $sheet->getCell("B" . $i)->getValue();
 				$data['job'] = $sheet->getCell("C" . $i)->getValue();
 				$data['team'] = $sheet->getCell("D" . $i)->getValue();
-                $data['all_days'] = $sheet->getCell("E" . $i)->getValue();
-                $data['labeling_days'] = $sheet->getCell("F" . $i)->getValue();
-                $data['sorting_days'] = $sheet->getCell("G" . $i)->getValue();
-                $data['other_integral'] = $sheet->getCell("H" . $i)->getValue();
-                $data['deduction_integral'] = $sheet->getCell("I" . $i)->getValue();
+                $data['all_days'] = $sheet->getCell("E" . $i)->getValue()?:0;
+                $data['labeling_days'] = $sheet->getCell("F" . $i)->getValue()?:0;
+                $data['sorting_days'] = $sheet->getCell("G" . $i)->getValue()?:0;
+                $data['other_integral'] = $sheet->getCell("H" . $i)->getValue()?:0;
+                $data['deduction_integral'] = $sheet->getCell("I" . $i)->getValue()?:0;
 				//print_r($data['name']);exit;
 				if (!$data['name']) break;//取到数据为空时跳出循环
 				//设置贴标出勤天数时，必须设置所属贴标小组
@@ -373,7 +373,6 @@ class ApiSettings
 						'message' => 'Attribute team cannot be empty when attribute labeling_days have value'
 					];
 				}
-
 
 				$user_sql = "select * from warehouse_user_info WHERE name='{$data['name']}'";
 				$user = Yii::$app->db->createCommand($user_sql)->queryOne();
