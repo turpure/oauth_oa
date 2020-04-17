@@ -200,6 +200,38 @@ class ApiOaData
         return $result;
     }
 
+
+    /**
+     * 获取推广详情
+     * @param $id
+     * @param $mapPersons
+     * @return mixed
+     */
+    public static function getExtendDetail($id, $mapPersons)
+    {
+        $model =  OaGoodsinfoExtendsStatus::find()->where(['infoId' => $id, 'status' => '已推广'])->asArray()->all();
+        $donePersons = ArrayHelper::getColumn($model,'saler',[]);
+        $allPersons = explode(',', $mapPersons);
+        $ret = ['extended' => [], 'toExtend' =>[], 'progress' =>[]];
+
+        // 推广人
+        foreach ($allPersons as $ps) {
+            if(in_array($ps, $donePersons, false)) {
+                $ret['extended'][] = $ps;
+            }
+            else {
+                $ret['toExtend'][] = $ps;
+            }
+        }
+
+
+        // 推广进度
+        $ret['progress'] = count($ret['extended'])  / count($allPersons);
+        return $ret;
+
+    }
+
+
     /**
      * @param $condition
      * Date: 2019-07-31 16:18
