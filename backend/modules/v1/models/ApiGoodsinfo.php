@@ -1352,7 +1352,7 @@ class ApiGoodsinfo
 
                 // 人民币账号
                 else {
-                    $var['localized_currency_code'] = 'RMB';
+                    $var['localized_currency_code'] = 'CNY';
                     $var['localized_price'] = (string)floor($sku['price'] * self::UsdExchange);
                 }
                 $variation[] = $var;
@@ -1375,7 +1375,7 @@ class ApiGoodsinfo
                 else {
                     $ret['local_price'] = floor($ret['price'] * self::UsdExchange);
                     $ret['local_shippingfee'] = floor($shipping * self::UsdExchange);
-                    $ret['local_currency'] = 'RMB';
+                    $ret['local_currency'] = 'CNY';
                 }
             } else {
                 $ret['variant'] = '';
@@ -1393,7 +1393,7 @@ class ApiGoodsinfo
                 else {
                     $ret['local_price'] = floor($ret['price'] * self::UsdExchange);
                     $ret['local_shippingfee'] = floor($shipping * self::UsdExchange);
-                    $ret['local_currency'] = 'RMB';
+                    $ret['local_currency'] = 'CNY';
                 }
 
             }

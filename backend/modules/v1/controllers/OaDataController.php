@@ -123,6 +123,26 @@ class OaDataController extends AdminController
         }
     }
 
+
+    /**
+     * 获取推广详情
+     * @return array|mixed
+     */
+    public static function actionExtendDetail()
+    {
+        try {
+
+            $post = Yii::$app->request->post('condition',[]);
+            $id = $post['id'];
+            $mapPersons = $post['mapPersons'];
+            return ApiOaData::getExtendDetail($id, $mapPersons);
+        }
+
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+
     /**
      * Wish待刊登
      * Date: 2019-03-08 9:11

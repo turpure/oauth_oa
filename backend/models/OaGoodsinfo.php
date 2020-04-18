@@ -100,7 +100,7 @@ class OaGoodsinfo extends \yii\db\ActiveRecord
             [['achieveStatus', 'attributeName'], 'string', 'max' => 60],
             [['picStatus'], 'string', 'max' => 30],
             [['isVar', 'stockUp', 'isLiquid', 'isPowder', 'isMagnetism', 'isCharged', 'wishPublish'], 'string', 'max' => 10],
-            [['headKeywords', 'tailKeywords'], 'string', 'max' => 20],
+            [['headKeywords', 'tailKeywords'], 'string', 'max' => 200],
             [['goodsCode'], 'unique'],
         ];
     }
