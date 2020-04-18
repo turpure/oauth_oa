@@ -505,6 +505,7 @@ class ApiMine
             $images = $info['images'];
             $variations = $info['detailsInfo'];
             foreach ($variations as $var) {
+//                var_dump($variations);exit;
                 $row = [
                     'Vova Category ID' => $cateId,
                     'Parent SKU' => $basicInfo['goodsCode'],
@@ -524,17 +525,17 @@ class ApiMine
                     'Color' => $var['color'],
                     'Style Quantity' => '',
                     'Main Image URL' => $images['mainImage'],
-                    'Extra Image URL' => $images['extraImage1'],
-                    'Extra Image URL 1' => $images['extraImage2'],
-                    'Extra Image URL 2' => $images['extraImage3'],
-                    'Extra Image URL 3' => $images['extraImage4'],
-                    'Extra Image URL 4' => $images['extraImage5'],
-                    'Extra Image URL 5' => $images['extraImage6'],
-                    'Extra Image URL 6' => $images['extraImage7'],
-                    'Extra Image URL 7' => $images['extraImage8'],
-                    'Extra Image URL 8' => $images['extraImage9'],
-                    'Extra Image URL 9' => $images['extraImage10'],
-                    'Extra Image URL 10' => '',
+                    'Extra Image URL' => $var['varMainImage'],
+                    'Extra Image URL 1' => $images['extraImage1'],
+                    'Extra Image URL 2' => $images['extraImage2'],
+                    'Extra Image URL 3' => $images['extraImage3'],
+                    'Extra Image URL 4' => $images['extraImage4'],
+                    'Extra Image URL 5' => $images['extraImage5'],
+                    'Extra Image URL 6' => $images['extraImage6'],
+                    'Extra Image URL 7' => $images['extraImage7'],
+                    'Extra Image URL 8' => $images['extraImage8'],
+                    'Extra Image URL 9' => $images['extraImage9'],
+                    'Extra Image URL 10' => $images['extraImage10'],
                     'Extra Image URL 11' => '',
                     'Extra Image URL 12' => '',
                     'Extra Image URL 13' => '',
