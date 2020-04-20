@@ -49,7 +49,7 @@ class OaWishGoods extends \yii\db\ActiveRecord
             [['price', 'msrp', 'shipping'], 'number'],
             [['sku'], 'string', 'max' => 50],
             [['title', 'mainImage'], 'string', 'max' => 2000],
-            [['shippingTime', 'headKeywords', 'tailKeywords'], 'string', 'max' => 20],
+            [['shippingTime', 'headKeywords', 'tailKeywords'], 'string', 'max' => 30],
             [['tags', 'wishTags'], 'string', 'max' => 500],
             [['requiredKeywords', 'randomKeywords'], 'string', 'max' => 300],
         ];

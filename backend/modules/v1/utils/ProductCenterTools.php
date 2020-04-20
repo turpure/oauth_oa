@@ -31,6 +31,7 @@ use backend\models\ShopElf\BGoodsAttribute;
 use backend\models\ShopElf\BCurrencyCode;
 use backend\modules\v1\models\ApiGoodsinfo;
 use Yii;
+use yii\db\Exception;
 use yii\helpers\ArrayHelper;
 
 class ProductCenterTools
@@ -132,7 +133,8 @@ class ProductCenterTools
      */
     public static function finishPicture($infoId)
     {
-        self::saveAttributeToPlat($infoId);
+        $res = self::saveAttributeToPlat($infoId);
+        //var_dump($res);exit;
         //update oa-goodsInfo status
         $pictureInfo = Oagoodsinfo::findOne(['id' => $infoId]);
         $pictureInfo->setAttributes(
@@ -163,7 +165,6 @@ class ProductCenterTools
 
         //oa-goodsInfo to oa-wish-goods
         static::_goodsInfoToWishGoods($goodsInfo);
-
         //oa-goodsInfo to oa-ebay-goods
         static::_goodsInfoToEbayGoods($goodsInfo);
 
@@ -569,10 +570,10 @@ class ProductCenterTools
             $wishGoods = new OaWishGoods();
         }
         $wishGoods->setAttributes($wishGoodsAttributes);
-        if ($wishGoods->save()) {
-            return true;
+        if (!$wishGoods->save()) {
+            throw new Exception('failed save info to oa_wishgoods!');
         }
-        return false;
+        return true;
     }
 
     /**
@@ -694,10 +695,10 @@ class ProductCenterTools
             $ebayGoods = new OaEbayGoods();
         }
         $ebayGoods->setAttributes($ebayGoodsAttributes);
-        if ($ebayGoods->save()) {
-            return true;
+        if (!$ebayGoods->save()) {
+            throw new Exception('failed save info to oa_ebaygoods!');
         }
-        return false;
+        return true;
     }
 
     /**

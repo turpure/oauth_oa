@@ -872,9 +872,9 @@ class SchedulerController extends Controller
     public function actionMacroUpdate()
     {
         $this->actionProfit();
-//        $this->actionSite();
-//        $this->actionZzTarget();
         $this->actionSalesRanking();
+        $this->actionSalesAmt();
+        $this->actionWarehouseIntegral();
     }
 
 }
