@@ -156,6 +156,7 @@ class WishRule extends \yii\mongodb\ActiveRecord
             'hwc' => 'Hwc',
             'intervalRatingEnd' => 'Interval Rating End',
             'intervalRatingStart' => 'Interval Rating Start',
+            'maxNumBought' => 'Max Num Bought',
             'maxNumBoughtEnd' => 'Max Num Bought End',
             'maxNumBoughtStart' => 'Max Num Bought Start',
             'merchantStatus' => 'Merchant Status',
