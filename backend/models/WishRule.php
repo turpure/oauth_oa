@@ -18,6 +18,7 @@ use yii\behaviors\TimestampBehavior;
  * @property mixed $intervalRatingStart
  * @property mixed $maxNumBoughtEnd
  * @property mixed $maxNumBoughtStart
+ * @property mixed $maxNumBought
  * @property mixed $merchant
  * @property mixed $merchantStatus
  * @property mixed $orderColumn
@@ -95,6 +96,7 @@ class WishRule extends \yii\mongodb\ActiveRecord
             'hwc',
             'index',
             'intervalRatingEnd',
+            'maxNumBought',
             'intervalRatingStart',
             'maxNumBoughtEnd',
             'maxNumBoughtStart',
@@ -133,7 +135,7 @@ class WishRule extends \yii\mongodb\ActiveRecord
     public function rules()
     {
         return [
-            [['cids','genTimeEnd','genTimeStart','hwc','index','intervalRatingEnd','intervalRatingStart','maxNumBoughtEnd','maxNumBoughtStart',
+            [['cids','genTimeEnd','genTimeStart','hwc','index','intervalRatingEnd','intervalRatingStart','maxNumBought','maxNumBoughtEnd','maxNumBoughtStart',
                 'merchant','merchantStatus','orderColumn','pageSize','pb','pid','pidStatus','pname','pnameStatus',
                 'ratingEnd','ratingStart','sort','totalpriceEnd','totalpriceStart','verified','viewRate1End','viewRate1Start',
                 'creator','createdDate','updatedDate','ruleName','ruleMark','ruleType','listedTime','type','isUsed'], 'safe']
