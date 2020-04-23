@@ -575,8 +575,8 @@ class ApiWishProducts
                     $maxNumBoughtStart .= '100001';
                     $maxNumBoughtEnd .= '';
                 }else{
-                    $maxNumBoughtStart .= $v;
-                    $maxNumBoughtEnd .= $v;
+                    $maxNumBoughtStart .= str_replace('+','',$v);
+                    $maxNumBoughtEnd .= str_replace('+','',$v);
                 }
             }
         }
