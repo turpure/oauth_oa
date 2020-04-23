@@ -39,6 +39,7 @@ class ApiProductsEngine
 
         // 请求参数
         $plat = \Yii::$app->request->get('plat');
+        $ruleName = \Yii::$app->request->get('$ruleName','');
         $type = \Yii::$app->request->get('type', '');
         $page = \Yii::$app->request->get('page', 1);
         $pageSize = \Yii::$app->request->get('pageSize', 20);
@@ -50,7 +51,7 @@ class ApiProductsEngine
             return static::getEbayRecommend($type, $marketplace, $page, $pageSize, [$recommendStatus]);
         }
         if ($plat === 'wish') {
-            return static::getWishRecommend($type, $page, $pageSize, [$recommendStatus]);
+            return static::getWishRecommend($type,$ruleName, $page, $pageSize, [$recommendStatus]);
         }
 
         if ($plat === 'shopee') {
@@ -493,7 +494,7 @@ class ApiProductsEngine
     }
 
 
-    private static function getWishRecommend($type, $page, $pageSize, $recommendStatus = [])
+    private static function getWishRecommend($type,$ruleName, $page, $pageSize, $recommendStatus = [])
     {
         $ret = [];
         //当天推荐数据
@@ -503,6 +504,7 @@ class ApiProductsEngine
         $newRules = WishRule::find()->select(['id'])->andFilterWhere(['ruleType' => $type])->all();
         $cur = (new \yii\mongodb\Query())->from('wish_new_product')
             ->andFilterWhere(['ruleType' => $type])
+            ->andFilterWhere(['like', 'ruleType', $ruleName])
             ->andWhere(['recommendDate' => ['$regex' => $today]])
             ->all();
         foreach ($cur as $row) {
