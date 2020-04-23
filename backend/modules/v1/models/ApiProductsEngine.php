@@ -504,7 +504,7 @@ class ApiProductsEngine
         $newRules = WishRule::find()->select(['id'])->andFilterWhere(['ruleType' => $type])->all();
         $cur = (new \yii\mongodb\Query())->from('wish_new_product')
             ->andFilterWhere(['ruleType' => $type])
-            ->andFilterWhere(['like', 'ruleType', $ruleName])
+            ->andFilterWhere(['like', 'ruleName', $ruleName])
             ->andWhere(['recommendDate' => ['$regex' => $today]])
             ->all();
         foreach ($cur as $row) {
