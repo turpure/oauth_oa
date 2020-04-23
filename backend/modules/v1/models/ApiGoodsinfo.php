@@ -585,7 +585,7 @@ class ApiGoodsinfo
                 throw new \Exception('save goods failed');
             }
             $tran->commit();
-            return true;
+            return ["success to save {$goodsInfo['sku']}"];
         } catch (\Exception $e) {
             $tran->rollBack();
             return [
@@ -994,11 +994,11 @@ class ApiGoodsinfo
             $row['InternationalShippingService1'] = static::getShippingService($ebayInfo['outShippingMethod1']);
             $row['InternationalShippingServiceCost1'] = $ebayInfo['outFirstCost1'];
             $row['InternationalShippingServiceAdditionalCost1'] = $ebayInfo['outSuccessorCost1'];
-            $row['InternationalShipToLocation1'] = static::getShippingService('outShippingMethod1') ? 'Worldwide' : '';
-            $row['InternationalShippingService2'] = static::getShippingService('outShippingMethod2');
+            $row['InternationalShipToLocation1'] = static::getShippingService($ebayInfo['outShippingMethod1']) ? 'Worldwide' : '';
+            $row['InternationalShippingService2'] = static::getShippingService($ebayInfo['outShippingMethod2']);
             $row['InternationalShippingServiceCost2'] = $ebayInfo['outFirstCost2'];
             $row['InternationalShippingServiceAdditionalCost2'] = $ebayInfo['outSuccessorCost2'];
-            $row['InternationalShipToLocation2'] = static::getShippingService('outShippingMethod2') ? 'Worldwide' : '';
+            $row['InternationalShipToLocation2'] = static::getShippingService($ebayInfo['outShippingMethod2']) ? 'Worldwide' : '';
             $row['InternationalShippingService3'] = '';
             $row['InternationalShippingServiceCost3'] = '';
             $row['InternationalShippingServiceAdditionalCost3'] = '';
