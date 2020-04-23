@@ -48,14 +48,14 @@ class ApiProductsEngine
 
         //平台数据
         if ($plat === 'ebay') {
-            return static::getEbayRecommend($type, $marketplace, $page, $pageSize, [$recommendStatus]);
+            return static::getEbayRecommend($type,$ruleName, $marketplace, $page, $pageSize, [$recommendStatus]);
         }
         if ($plat === 'wish') {
             return static::getWishRecommend($type, $ruleName, $page, $pageSize, [$recommendStatus]);
         }
 
         if ($plat === 'shopee') {
-            return static::getShopeeRecommend($type, $marketplace, $page, $pageSize, [$recommendStatus]);
+            return static::getShopeeRecommend($type,$ruleName, $marketplace, $page, $pageSize, [$recommendStatus]);
         }
     }
 
@@ -541,7 +541,7 @@ class ApiProductsEngine
         return $data;
     }
 
-    private static function getEbayRecommend($type, $marketplace, $page, $pageSize, $recommendStatus = [])
+    private static function getEbayRecommend($type,$ruleName, $marketplace, $page, $pageSize, $recommendStatus = [])
     {
         $ret = [];
         //当天推荐数据
@@ -552,6 +552,7 @@ class ApiProductsEngine
             $newRules = EbayNewRule::find()->select(['id'])->all();
             $cur = (new \yii\mongodb\Query())->from('ebay_new_product')
                 ->andFilterWhere(['marketplace' => $marketplace])
+                ->andFilterWhere(['like', 'ruleName' , $ruleName])
                 ->andWhere(['recommendDate' => ['$regex' => $today]])
                 ->all();
             foreach ($cur as $row) {
@@ -574,6 +575,7 @@ class ApiProductsEngine
             $hotRules = EbayHotRule::find()->select(['id'])->all();
             $cur = (new \yii\mongodb\Query())->from('ebay_hot_product')
                 ->andFilterWhere(['marketplace' => $marketplace])
+                ->andFilterWhere(['like', 'ruleName' , $ruleName])
                 ->andWhere(['recommendDate' => ['$regex' => $today]])
                 ->all();
             foreach ($cur as $row) {
@@ -611,7 +613,7 @@ class ApiProductsEngine
         return $data;
     }
 
-    private static function getShopeeRecommend($type, $marketplace, $page, $pageSize, $recommendStatus = [])
+    private static function getShopeeRecommend($type,$ruleName, $marketplace, $page, $pageSize, $recommendStatus = [])
     {
         $ret = [];
         //当天推荐数据
@@ -620,6 +622,7 @@ class ApiProductsEngine
         $newRules = ShopeeRule::find()->select(['id'])->all();
         $cur = (new \yii\mongodb\Query())->from('shopee_product')
             ->andFilterWhere(['country' => $marketplace])
+            ->andFilterWhere(['like', 'ruleName' , $ruleName])
             ->andWhere(['recommendDate' => ['$regex' => $today]])
             ->all();
         foreach ($cur as $row) {
