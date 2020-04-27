@@ -1436,13 +1436,21 @@ class ApiGoodsinfo
                 $shipping = ceil($minPrice * $account['rate']);
             }
 
+
             //打包变体
             $variation = [];
             foreach ($wishSku as $sku) {
                 //价格判断
                 $totalPrice = ceil($sku['price'] + $sku['shipping']);
+
+                # shipping - 0.01
                 $sku['shipping'] = $shipping;
+                $sku['shipping'] -= 0.01;
+
+                // price - 0.01
                 $sku['price'] = $totalPrice - $shipping < 1 ? 1 : ceil($totalPrice - $shipping);
+                $sku['price'] -= 0.01;
+
                 $var['sku'] = $sku['sku'] . $account['suffix'];
                 $var['color'] = $sku['color'];
                 $var['size'] = $sku['size'];
@@ -1454,13 +1462,15 @@ class ApiGoodsinfo
                 $var['main_image'] = $sku['linkUrl'];
 
                 //美元账号
-                if ($account['localCurrency'] === 'USD') {
+                if($account['localCurrency'] === 'USD') {
                     $var['localized_currency_code'] = 'USD';
-                    $var['localized_price'] = (string)floor($sku['price']);
-                } // 人民币账号
+                    $var['localized_price'] = (string)$sku['price'];
+                }
+
+                // 人民币账号
                 else {
                     $var['localized_currency_code'] = 'CNY';
-                    $var['localized_price'] = (string)floor($sku['price'] * self::UsdExchange);
+                    $var['localized_price'] = (string)$sku['price'] * self::UsdExchange;
                 }
                 $variation[] = $var;
             }
@@ -1468,36 +1478,53 @@ class ApiGoodsinfo
             $ret = [];
             if ($isVar === '是') {
                 $ret['variant'] = $variant;
-                $ret['shipping'] = $shipping;
+
+
+                # price -0.01
                 $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1;
+                $ret['price'] -= 0.01;
+
+                // shipping - 0.01
+                $shipping -= 0.01;
+                $ret['shipping'] = $shipping;
+
                 $ret['msrp'] = $maxMsrp;
 
                 //美元账号
-                if ($account['localCurrency'] === 'USD') {
-                    $ret['local_price'] = floor($ret['price']);
-                    $ret['local_shippingfee'] = floor($shipping);
+                if($account['localCurrency'] === 'USD') {
+                    $ret['local_price'] = $ret['price'];
+                    $ret['local_shippingfee'] = $shipping;
                     $ret['local_currency'] = 'USD';
-                } //人民币账号
+                }
+                //人民币账号
                 else {
-                    $ret['local_price'] = floor($ret['price'] * self::UsdExchange);
-                    $ret['local_shippingfee'] = floor($shipping * self::UsdExchange);
+                    $ret['local_price'] = $ret['price'] * self::UsdExchange;
+                    $ret['local_shippingfee'] = $shipping * self::UsdExchange;
                     $ret['local_currency'] = 'CNY';
                 }
             } else {
                 $ret['variant'] = '';
+
+                #price -0.01
                 $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1;
+                $ret['price'] -= 0.01;
+
+                // shipping - 0.01
+                $shipping -= 0.01;
                 $ret['shipping'] = $shipping;
+
                 $ret['msrp'] = $maxMsrp;
 
                 //美元账号
-                if ($account['localCurrency'] === 'USD') {
-                    $ret['local_price'] = floor($ret['price']);
-                    $ret['local_shippingfee'] = floor($shipping);
+                if($account['localCurrency'] === 'USD' ) {
+                    $ret['local_price'] = $ret['price'];
+                    $ret['local_shippingfee'] = $shipping;
                     $ret['local_currency'] = 'USD';
-                } // 人民币账号
+                }
+                // 人民币账号
                 else {
-                    $ret['local_price'] = floor($ret['price'] * self::UsdExchange);
-                    $ret['local_shippingfee'] = floor($shipping * self::UsdExchange);
+                    $ret['local_price'] = $ret['price'] * self::UsdExchange;
+                    $ret['local_shippingfee'] = $shipping * self::UsdExchange;
                     $ret['local_currency'] = 'CNY';
                 }
 
@@ -1509,6 +1536,7 @@ class ApiGoodsinfo
         }
 
     }
+
 
     /**
      * @brief 生成随机顺序的标题
