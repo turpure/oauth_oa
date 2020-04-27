@@ -22,7 +22,7 @@ Thumbs.db
 /vendor/*
 /backend/uploads/*
 # composer itself is not needed
-composer.phar
+vagrant/composer.phar
 
 # Mac DS_Store Files
 .DS_Store

@@ -771,5 +771,26 @@ class OaGoodsinfoController extends AdminController
         return true;
     }
 
+    ########################### smt  plat info ########################################
+    public function actionSmtAccount(){
+        try {
+            return ApiGoodsinfo::getSmtAccounts();
+        }
+        catch (\Exception  $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+
+    public function actionSmtCategory(){
+        try {
+            return ApiGoodsinfo::getSmtCategory();
+        }
+        catch (\Exception  $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+
+
+
 
 }

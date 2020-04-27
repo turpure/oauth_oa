@@ -41,7 +41,8 @@ class StoreSearch extends Store
     {
         $query = Store::find()->select('auth_store.*,u.username')
             ->join('LEFT JOIN','auth_store_child sc','sc.store_id=auth_store.id')
-            ->join('LEFT JOIN','user u','u.id=sc.user_id');
+            ->join('LEFT JOIN','user u','u.id=sc.user_id')
+            ->orderBy('auth_store.store ASC');
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,

@@ -19,6 +19,7 @@ namespace backend\modules\v1\controllers;
 
 use backend\models\ShopeeRule;
 use backend\models\WishRule;
+use backend\modules\v1\models\ApiWishProducts;
 use Yii;
 use yii\helpers\ArrayHelper;
 
@@ -74,6 +75,7 @@ class WishProductsController extends AdminController
                     $rule = new WishRule();
                     $condition['creator'] = $userName;
                 }
+                $condition = ApiWishProducts::handleParams($condition);
             }elseif($plat == 'shopee'){
                 $rule = ShopeeRule::findOne($id);
                 if (empty($rule)) {

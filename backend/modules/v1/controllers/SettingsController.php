@@ -394,6 +394,7 @@ class SettingsController extends AdminController
 		
 	public function actionImportIntegralData(){
 		$file = $_FILES['file'];
+
 		if (!$file) {
 			return ['code' => 400, 'message' => 'The file can not be empty!'];
 		}
@@ -403,12 +404,13 @@ class SettingsController extends AdminController
 
 		//文件上传
 		$result = ApiSettings::file($file, 'warehouseIntegralData');
-		
+        $fileName = $file['name'];
+        $fileSize = $file['size'];
 		if (!$result) {
 			return ['code' => 400, 'message' => 'File upload failed'];
 		}else{
 			//获取上传excel文件的内容并保存
-			return ApiSettings::saveIntegralData($result);
+			return ApiSettings::saveIntegralData($result, $fileName, $fileSize);
 		}
 	}
 
@@ -417,7 +419,7 @@ class SettingsController extends AdminController
         $month = date('Y-m');
         $lastMonth = date('Y-m', strtotime('-1 month'));
         //var_dump($lastMonth);exit;
-        $logSql = "SELECT * FROM warehouse_intergral_import_log where create_date >= '{$lastMonth}'";
+        $logSql = "SELECT * FROM warehouse_intergral_import_log where createdDate >= '{$lastMonth}'";
         $sql = "SELECT * FROM warehouse_intergral_other_data_every_month where `month` in ('{$lastMonth}','{$month}')";
 
         return [

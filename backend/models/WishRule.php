@@ -18,6 +18,7 @@ use yii\behaviors\TimestampBehavior;
  * @property mixed $intervalRatingStart
  * @property mixed $maxNumBoughtEnd
  * @property mixed $maxNumBoughtStart
+ * @property mixed $maxNumBought
  * @property mixed $merchant
  * @property mixed $merchantStatus
  * @property mixed $orderColumn
@@ -65,7 +66,9 @@ class WishRule extends \yii\mongodb\ActiveRecord
         if(parent::beforeSave($insert)) {
 
             $defaultAttributes = [
-                'cids' =>'', 'index' => 1, 'merchantStatus' => 1, 'sort' => 'DESC', 'pageSize' => 20, 'isUsed' => 1
+                'cids' =>'', 'index' => 1, 'merchantStatus' => 1, 'sort' => 'DESC', 'pageSize' => 20,
+                'isUsed' => 1, 'pnameStatus' => 1, 'pidStatus' => 1, 'orderColumn' => 'view_rate1', 'type' => 'auto',
+                'dailySalesAccuracyStart' => '', 'dailySalesAccuracyEnd' => '', 'totalSalesArrivalDateStart' => '', 'totalSalesArrivalDateEnd' => '',
                 ];
             $this->setAttributes($defaultAttributes);
         }
@@ -94,11 +97,16 @@ class WishRule extends \yii\mongodb\ActiveRecord
             'hwc',
             'index',
             'intervalRatingEnd',
+            'maxNumBought',
             'intervalRatingStart',
             'maxNumBoughtEnd',
             'maxNumBoughtStart',
             'merchant',
             'merchantStatus',
+            'dailySalesAccuracyStart',
+            'dailySalesAccuracyEnd',
+            'totalSalesArrivalDateStart',
+            'totalSalesArrivalDateEnd',
             'orderColumn',
             'pageSize',
             'pb',
@@ -132,9 +140,10 @@ class WishRule extends \yii\mongodb\ActiveRecord
     public function rules()
     {
         return [
-            [['cids','genTimeEnd','genTimeStart','hwc','index','intervalRatingEnd','intervalRatingStart','maxNumBoughtEnd','maxNumBoughtStart',
+            [['cids','genTimeEnd','genTimeStart','hwc','index','intervalRatingEnd','intervalRatingStart','maxNumBought','maxNumBoughtEnd','maxNumBoughtStart',
                 'merchant','merchantStatus','orderColumn','pageSize','pb','pid','pidStatus','pname','pnameStatus',
                 'ratingEnd','ratingStart','sort','totalpriceEnd','totalpriceStart','verified','viewRate1End','viewRate1Start',
+                'dailySalesAccuracyStart', 'dailySalesAccuracyEnd', 'totalSalesArrivalDateStart', 'totalSalesArrivalDateEnd',
                 'creator','createdDate','updatedDate','ruleName','ruleMark','ruleType','listedTime','type','isUsed'], 'safe']
         ];
     }
@@ -153,9 +162,11 @@ class WishRule extends \yii\mongodb\ActiveRecord
             'hwc' => 'Hwc',
             'intervalRatingEnd' => 'Interval Rating End',
             'intervalRatingStart' => 'Interval Rating Start',
+            'maxNumBought' => 'Max Num Bought',
             'maxNumBoughtEnd' => 'Max Num Bought End',
             'maxNumBoughtStart' => 'Max Num Bought Start',
             'merchantStatus' => 'Merchant Status',
+            'merchant' => 'Merchant',
             'orderColumn' => 'Order Column',
             'sort' => 'Sort',
             'pageSize' => 'Page Size',
@@ -178,6 +189,10 @@ class WishRule extends \yii\mongodb\ActiveRecord
             'ruleMark' => 'Rule Mark',
             'ruleType' => 'Rule Type',
             'listedTime' => 'Listed Time',
+            'dailySalesAccuracyStart' => 'Daily Sales Accuracy Start',
+            'dailySalesAccuracyEnd' => 'Daily Sales Accuracy End',
+            'totalSalesArrivalDateStart' => 'Total Sales Arrival Date Start',
+            'totalSalesArrivalDateEnd' => 'Total Sales Arrival Date End',
         ];
     }
 }

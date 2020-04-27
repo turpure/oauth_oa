@@ -558,4 +558,33 @@ class ApiWishProducts
         return $ret[1]['data'];
     }
 
+
+
+    public static function handleParams($params){
+        $maxNumBoughtStart = $maxNumBoughtEnd = '';
+        if($params['maxNumBought']){
+            foreach ($params['maxNumBought'] as $k => $v){
+                if($k != 0){
+                    $maxNumBoughtStart .= ',';
+                    $maxNumBoughtEnd .= ',';
+                }
+                if($v == '1-9') {
+                    $maxNumBoughtStart .= "1";
+                    $maxNumBoughtEnd .= "9";
+                }elseif($v == '其他'){
+                    $maxNumBoughtStart .= '100001';
+                    $maxNumBoughtEnd .= '';
+                }else{
+                    $maxNumBoughtStart .= str_replace('+','',$v);
+                    $maxNumBoughtEnd .= str_replace('+','',$v);
+                }
+            }
+        }
+        $params['maxNumBoughtStart'] = $maxNumBoughtStart;
+        $params['maxNumBoughtEnd'] = $maxNumBoughtEnd;
+        return $params;
+    }
+
+
+
 }

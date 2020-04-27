@@ -346,13 +346,12 @@ class ApiSettings
     }
 	
 	
-	 public static function saveIntegralData($file){
+	 public static function saveIntegralData($file, $fileName, $fileSize){
 		$reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
         //$reader->setLoadSheetsOnly(["Sheet 1"]);
         $spreadsheet = $reader->load(Yii::$app->basePath . $file);
         $sheet = $spreadsheet->getSheet(0);
         $highestRow = $sheet->getHighestRow(); // 取得总行数
-        //print_r($file);exit;
 		$errorUser = '';
         try {
             for ($i = 2; $i <= $highestRow; $i++) {
@@ -360,11 +359,11 @@ class ApiSettings
 				$data['month'] = $sheet->getCell("B" . $i)->getValue();
 				$data['job'] = $sheet->getCell("C" . $i)->getValue();
 				$data['team'] = $sheet->getCell("D" . $i)->getValue();
-                $data['all_days'] = $sheet->getCell("E" . $i)->getValue();
-                $data['labeling_days'] = $sheet->getCell("F" . $i)->getValue();
-                $data['sorting_days'] = $sheet->getCell("G" . $i)->getValue();
-                $data['other_integral'] = $sheet->getCell("H" . $i)->getValue();
-                $data['deduction_integral'] = $sheet->getCell("I" . $i)->getValue();
+                $data['all_days'] = $sheet->getCell("E" . $i)->getValue()?:0;
+                $data['labeling_days'] = $sheet->getCell("F" . $i)->getValue()?:0;
+                $data['sorting_days'] = $sheet->getCell("G" . $i)->getValue()?:0;
+                $data['other_integral'] = $sheet->getCell("H" . $i)->getValue()?:0;
+                $data['deduction_integral'] = $sheet->getCell("I" . $i)->getValue()?:0;
 				//print_r($data['name']);exit;
 				if (!$data['name']) break;//取到数据为空时跳出循环
 				//设置贴标出勤天数时，必须设置所属贴标小组
@@ -375,38 +374,42 @@ class ApiSettings
 					];
 				}
 
-
 				$user_sql = "select * from warehouse_user_info WHERE name='{$data['name']}'";
 				$user = Yii::$app->db->createCommand($user_sql)->queryOne();
 				$sql_select = "select * from warehouse_intergral_other_data_every_month WHERE name='{$data['name']}' AND `month`='{$data['month']}'";
 				$res = Yii::$app->db->createCommand($sql_select)->queryOne();
+                $date = date('Y-m-d H:i:s');
 				if(!$user){
 					$errorUser .= ','.$data['name'];
 				}else {
 					if(!$res) {//插入
 						$sql = "INSERT INTO warehouse_intergral_other_data_every_month 
-                                (name,`month`,team,all_days,labeling_days,sorting_days,other_integral,deduction_integral) 
+                                (name,`month`,team,all_days,labeling_days,sorting_days,other_integral,deduction_integral,update_time) 
 							VALUES('$data[name]','$data[month]','$data[team]','$data[all_days]','$data[labeling_days]',
-							'$data[sorting_days]','$data[other_integral]','$data[deduction_integral]')";
+							'$data[sorting_days]','$data[other_integral]','$data[deduction_integral]','$date')";
 					} else {
 						$sql = "UPDATE warehouse_intergral_other_data_every_month 
 							SET team='$data[team]',all_days='$data[all_days]',labeling_days='$data[labeling_days]',sorting_days='$data[sorting_days]',
-								other_integral=other_integral + '$data[other_integral]',
-								deduction_integral=deduction_integral + '$data[deduction_integral]' 
+								other_integral='$data[other_integral]',
+								deduction_integral='$data[deduction_integral]',update_time='$date' 
 							WHERE name='$data[name]' AND `month`='$data[month]'";
 					}
 					Yii::$app->db->createCommand($sql)->execute();
-                    $date = date('Y-m-d H:i:s');
-					//插入日志
-                    $logSql = "INSERT INTO warehouse_intergral_import_log 
-                                (name,`month`,team,all_days,labeling_days,sorting_days,other_integral,deduction_integral,create_date) 
-							VALUES('$data[name]','$data[month]','$data[team]','$data[all_days]','$data[labeling_days]',
-							'$data[sorting_days]','$data[other_integral]','$data[deduction_integral]','{$date}')";
 
-                    Yii::$app->db->createCommand($logSql)->execute();
 				}
-				
 			}
+
+            //插入日志
+            $data = [
+                'fileName' => $fileName,
+                'fileSize' => $fileSize,
+                'creator' => Yii::$app->user->identity->username,
+                'createdDate' => $updateDate = date('Y-m-d H:i:s'),
+                'updatedDate' => $updateDate = date('Y-m-d H:i:s')
+            ];
+
+            Yii::$app->db->createCommand()->insert('warehouse_intergral_import_log', $data)->execute();
+
 			if($errorUser){
 				return "User '{$errorUser}' can not be find!";
 			}

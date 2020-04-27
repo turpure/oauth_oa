@@ -191,6 +191,9 @@ class ApiCondition
         $userId = Yii::$app->user->id;
         $role = User::getRole($userId);//登录用户角色
         $position = AuthPosition::getPosition($userId);//登录用户职位
+        $dataScope = User::findOne($userId)['dataScope'];
+        if($dataScope == 'all') $flag = true;
+
         //if ($role === AuthAssignment::ACCOUNT_ADMIN) {
         if (in_array(AuthAssignment::ACCOUNT_ADMIN,$role) !== false || $flag == true) {
             $users = (new Query())->select("u.id,username,p.position,d.department as department,d.id as department_id,	IFnull(`pd`.`department`,d.department) AS `parent_department`,IFNULL(`pd`.`id`, d.id) AS `parent_id`,
