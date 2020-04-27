@@ -233,6 +233,19 @@ class Helper
     }
 
 
+    public static function tree($data, $pid = 0){
+        $tree = [];
+        foreach($data as $k => $v)
+        {
+            if($v['pid'] == $pid) {
+                $v['children'] = self::tree($data, $v['id']);
+                $tree[] = $v;
+            }
+        }
+        return $tree;
+    }
+
+
 
 
 }
