@@ -20,6 +20,7 @@ namespace backend\modules\v1\controllers;
 use backend\models\OaEbayGoodsSku;
 use backend\models\OaJoomSuffix;
 use backend\models\OaSiteCountry;
+use backend\models\OaSmtGoodsSku;
 use backend\models\OaWishGoodsSku;
 use backend\modules\v1\models\ApiGoodsinfo;
 use backend\modules\v1\utils\Helper;
@@ -785,6 +786,8 @@ class OaGoodsinfoController extends AdminController
             OaWishGoodsSku::deleteAll(['id' => $skuId]);
         } elseif ($condition['plat'] == 'eBay') {
             OaEbayGoodsSku::deleteAll(['id' => $skuId]);
+        }elseif ($condition['plat'] == 'smt') {
+            OaSmtGoodsSku::deleteAll(['id' => $skuId]);
         }
         return true;
     }
