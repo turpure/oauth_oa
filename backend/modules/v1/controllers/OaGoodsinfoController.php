@@ -437,7 +437,25 @@ class OaGoodsinfoController extends AdminController
         }
     }
 
-
+    /**
+     * @brief 保存SMT模板信息
+     * @return array
+     * @throws \Exception
+     */
+    public function actionSaveSmtInfo()
+    {
+        try {
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            return ApiGoodsinfo::saveSmtInfo($condition);
+        }
+        catch (\Exception $why) {
+            return ['code' => 400, 'message' => $why->getMessage()];
+        }
+    }
 
     /**
      * @brief 保存ebay模板信息
@@ -784,6 +802,20 @@ class OaGoodsinfoController extends AdminController
     public function actionSmtCategory(){
         try {
             return ApiGoodsinfo::getSmtCategory();
+        }
+        catch (\Exception  $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+
+    /** 添加SMT 模本队列
+     * Date: 2020-04-27 12:01
+     * Author: henry
+     * @return array|bool
+     */
+    public function actionPlatSmtExport(){
+        try {
+            return ApiGoodsinfo::addSmtExportModel();
         }
         catch (\Exception  $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];

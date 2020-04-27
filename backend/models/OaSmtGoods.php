@@ -24,7 +24,12 @@ use Yii;
  * @property string $addWeight 对应增加的重量。取值范围:0.001-500.000,保留三位小数,单位:公斤。
  * @property string $freighttemplate 运费模板的名称[字符串]
  * @property string $promisetemplate 服务模板的名称[字符串]
- * @property string $imageUrl 商品主图 。多个url以分号(;)分割最多6个商品主图
+ * @property string $imageUrl0 商品主图 。多个url以分号(;)分割最多6个商品主图
+ * @property string $imageUrl1 商品主图 。多个url以分号(;)分割最多6个商品主图
+ * @property string $imageUrl2 商品主图 。多个url以分号(;)分割最多6个商品主图
+ * @property string $imageUrl3 商品主图 。多个url以分号(;)分割最多6个商品主图
+ * @property string $imageUrl4 商品主图 。多个url以分号(;)分割最多6个商品主图
+ * @property string $imageUrl5 商品主图 。多个url以分号(;)分割最多6个商品主图
  * @property string $productPrice 商品单价
  * @property int $quantity
  * @property int $lotNum 每包件数量
@@ -62,7 +67,7 @@ class OaSmtGoods extends \yii\db\ActiveRecord
             [['itemtitle'], 'string', 'max' => 2000],
             [['freighttemplate'], 'string', 'max' => 30],
             [['promisetemplate'], 'string', 'max' => 11],
-            [['imageUrl'], 'string', 'max' => 300],
+            [['imageUrl0','imageUrl1','imageUrl2','imageUrl3','imageUrl4','imageUrl5'], 'string', 'max' => 300],
             [['productunit', 'groupid', 'remarks', 'publicmubanedit'], 'string', 'max' => 255],
         ];
     }
@@ -90,7 +95,12 @@ class OaSmtGoods extends \yii\db\ActiveRecord
             'addWeight' => 'Add Weight',
             'freighttemplate' => 'Freighttemplate',
             'promisetemplate' => 'Promisetemplate',
-            'imageUrl' => 'Image Url',
+            'imageUrl0' => 'Image Url',
+            'imageUrl1' => 'Image Url1',
+            'imageUrl2' => 'Image Url2',
+            'imageUrl3' => 'Image Url3',
+            'imageUrl4' => 'Image Url4',
+            'imageUrl5' => 'Image Url5',
             'productPrice' => 'Product Price',
             'quantity' => 'Quantity',
             'lotNum' => 'Lot Num',

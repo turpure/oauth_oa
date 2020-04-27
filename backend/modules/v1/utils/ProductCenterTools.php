@@ -12,6 +12,8 @@ use backend\models\OaGoodsinfo;
 use backend\models\OaGoodsSku;
 use backend\models\OaEbayGoods;
 use backend\models\OaEbayGoodsSku;
+use backend\models\OaSmtGoods;
+use backend\models\OaSmtGoodsSku;
 use backend\models\OaWishGoods;
 use backend\models\OaWishGoodsSku;
 use backend\models\ShopElf\BDictionary;
@@ -168,8 +170,12 @@ class ProductCenterTools
         //oa-goodsInfo to oa-ebay-goods
         static::_goodsInfoToEbayGoods($goodsInfo);
 
+        static::_goodsInfoToSmtGoods($goodsInfo);
+
         // oa-goodsSku to oa-wish-goodsSku
         static::_goodsInfoToWishGoodsSku($goodsSku);
+
+        static::_goodsInfoToSmtGoodsSku($goodsSku);
 
         //oa-goodsSku to oa-ebay-goodsSku
         $res = static::_goodsSkuToEbayGoodsSku($goodsSku);
@@ -576,6 +582,8 @@ class ProductCenterTools
         return true;
     }
 
+
+
     /**
      * @brief import goodsSku into wishGoodsSKu
      * @param $goodsSku
@@ -622,6 +630,75 @@ class ProductCenterTools
             }
             $wishGoodsSku->setAttributes($wishGoodsSkuAttributes);
             if (!$wishGoodsSku->save()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static function _goodsInfoToSmtGoods($goodsInfo)
+    {
+        $smtGoodsAttributes = [
+            'infoId' => $goodsInfo['id'],
+            'sku' => $goodsInfo['isVar'] == '是' ? $goodsInfo['goodsCode'] : ($goodsInfo['goodsCode'].'01'),
+            'itemtitle' => '',
+            'description' => $goodsInfo['description'],
+            'descriptionmobile' => '',
+            'quantity' => 10000,
+            'category1' => '',
+            'price' => $goodsInfo['oaGoods']['salePrice'],
+            'mainImage' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_0_.jpg',
+        ];
+        $smtGoods = OaSmtGoods::findOne(['infoId' => $goodsInfo['id']]);
+        if ($smtGoods === null) {
+            $smtGoods = new OaSmtGoods();
+        }
+        $smtGoods->setAttributes($smtGoodsAttributes);
+        if (!$smtGoods->save()) {
+            throw new Exception('failed save info to oa_smtGoods!');
+        }
+        return true;
+    }
+
+    private static function _goodsInfoToSmtGoodsSku($goodsSku)
+    {
+        //删除OaWishGoodsSku中已存在且$goodsSku中不存在的错误SKU信息
+        $skuArrNew = ArrayHelper::getColumn($goodsSku, 'sku');
+        $skuList = OaSmtGoodsSku::findAll(['infoId' => $goodsSku[0]['infoId']]);
+        $skuArrOld = ArrayHelper::getColumn($skuList, 'sku');
+        $skuDiff = array_diff($skuArrOld, $skuArrNew);
+        if($skuDiff){
+            foreach($skuList as $item){
+                foreach($skuDiff as $v){
+                    if($item['sku'] == $v){
+                        $item->delete();
+                        //print_r($item);exit;
+                    }
+                }
+            }
+        }
+        foreach ($goodsSku as $sku) {
+            $smtGoodsSkuAttributes = [
+                'infoId' => $sku['infoId'],
+                'sid' => $sku['id'],
+                'sku' => $sku['sku'],
+                'color' => $sku['property1'],
+                'size' => $sku['property2'],
+                'quantity' => 10000,
+                'price' => $sku['retailPrice'],
+                'shipping' => 0,
+                'msrp' => $sku['retailPrice'] * 6,
+                'shippingTime' => '7-21',
+                'pic_url' => $sku['linkUrl'],
+                'goodsSkuId' => $sku['goodsSkuId'],
+                'weight' => $sku['weight'],
+            ];
+            $smtGoodsSku = OaSmtGoodsSku::findOne(['sku' => $sku['sku']]);
+            if ($smtGoodsSku === null) {
+                $smtGoodsSku = new OaSmtGoodsSku();
+            }
+            $smtGoodsSku->setAttributes($smtGoodsSkuAttributes);
+            if (!$smtGoodsSku->save()) {
                 return false;
             }
         }

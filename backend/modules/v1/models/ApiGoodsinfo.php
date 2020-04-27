@@ -1366,6 +1366,32 @@ class ApiGoodsinfo
     }
 
     /**
+     * Date: 2020-04-27 12:01
+     * Author: henry
+     * @return bool
+     * @throws \yii\db\Exception
+     */
+    public static function addSmtExportModel()
+    {
+       //$condition = Yii::$app->request->post('condition', []);
+        $condition = Yii::$app->request->post()['condition'];
+        $ids = isset($condition['ids']) && $condition['ids'] ? $condition['ids'] : [];
+        $suffixList = isset($condition['suffix']) && $condition['suffix'] ? $condition['suffix'] : [];
+        $list = [];
+        foreach ($ids as $id) {
+            $model = OaSmtGoods::findOne(['infoId' => $id]);
+            foreach ($suffixList as $suffix) {
+                $list[] = [
+                    'ibaySuffix' => $suffix,
+                    'sku' => $model['sku'],
+                    'createDate' => date('Y-m-d H:i:s')
+                ];
+            }
+        }
+        return Yii::$app->db->createCommand()->batchInsert('proCenter.oa_smtImportToIbayLog',['ibaySuffix','sku','createDate'],$list )->execute();
+    }
+
+    /**
      * @brief 获取wish账号主图链接
      * @param $goodsCode
      * @param $mainImage
