@@ -502,7 +502,7 @@ class ProductEngine
             $devItem['filterRate'] = $dispatchNum ? round($filterNum * 1.0 / $dispatchNum * 100, 2) : 0;
             $devItem['unhandledNum'] = $unhandledNum;    //过滤数量
             $devItem['unhandledRate'] = $dispatchNum ? round($unhandledNum * 1.0 / $dispatchNum * 100, 2) : 0;
-            
+
             $devData[] = $devItem;
         }
         $claimData = [];
@@ -656,14 +656,14 @@ class ProductEngine
         $hotQuery = (new \yii\db\Query())->from('proCenter.oa_goodsinfo')
             ->select('g.developer, count(goodsCode) as hotNum')
             ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
-            ->andFilterWhere(['g.introducer' => 'proEngine', 'goodsCode' => $goodsCodeList, 'goodsStatus' => '爆款'])
+            ->andWhere(['g.introducer' => 'proEngine', 'goodsCode' => $goodsCodeList, 'goodsStatus' => '爆款'])
             ->groupBy('g.developer')->all();
         $hotData = ArrayHelper::map($hotQuery,'developer','hotNum');
         //计算旺款数量
         $popQuery = (new \yii\db\Query())->from('proCenter.oa_goodsinfo')
             ->select('g.developer, count(goodsCode) as popNum')
             ->leftJoin('proCenter.oa_goods g', 'g.nid=goodsid')
-            ->andFilterWhere(['g.introducer' => 'proEngine', 'goodsCode' => $goodsCodeList, 'goodsStatus' => '旺款'])
+            ->andWhere(['g.introducer' => 'proEngine', 'goodsCode' => $goodsCodeList, 'goodsStatus' => '旺款'])
             ->groupBy('g.developer')->all();
         $popData = ArrayHelper::map($popQuery,'developer','popNum');
 
