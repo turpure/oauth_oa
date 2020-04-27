@@ -1442,10 +1442,7 @@ class ApiGoodsinfo
             foreach ($wishSku as $sku) {
                 //价格判断
                 $totalPrice = ceil($sku['price'] + $sku['shipping']);
-
-                # shipping - 0.01
                 $sku['shipping'] = $shipping;
-                $sku['shipping'] -= 0.01;
 
                 // price - 0.01
                 $sku['price'] = $totalPrice - $shipping < 1 ? 1 : ceil($totalPrice - $shipping);
@@ -1483,9 +1480,6 @@ class ApiGoodsinfo
                 # price -0.01
                 $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1;
                 $ret['price'] -= 0.01;
-
-                // shipping - 0.01
-                $shipping -= 0.01;
                 $ret['shipping'] = $shipping;
 
                 $ret['msrp'] = $maxMsrp;
@@ -1508,9 +1502,6 @@ class ApiGoodsinfo
                 #price -0.01
                 $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1;
                 $ret['price'] -= 0.01;
-
-                // shipping - 0.01
-                $shipping -= 0.01;
                 $ret['shipping'] = $shipping;
 
                 $ret['msrp'] = $maxMsrp;
