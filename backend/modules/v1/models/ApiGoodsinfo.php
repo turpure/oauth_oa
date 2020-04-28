@@ -1365,7 +1365,7 @@ class ApiGoodsinfo
 
     public static function getSmtCategory()
     {
-        $sql = "SELECT categoryid as id,pid,name,namecn FROM public.aliexpress_category;";
+        $sql = "SELECT categoryid as id,pid,concat_ws('(',name,namecn) || ')' AS name FROM public.aliexpress_category;";
 
         $ret = Yii::$app->ibay->createCommand($sql)->queryAll();
         $data = Helper::tree($ret);
