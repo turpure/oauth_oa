@@ -238,7 +238,10 @@ class Helper
         foreach($data as $k => $v)
         {
             if($v['pid'] == $pid) {
-                $v['children'] = self::tree($data, $v['id']);
+                $item = self::tree($data, $v['id']);
+                if($item){
+                    $v['children'] = $item;
+                }
                 $tree[] = $v;
             }
         }
