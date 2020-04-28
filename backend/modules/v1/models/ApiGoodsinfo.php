@@ -1389,19 +1389,24 @@ class ApiGoodsinfo
         foreach ($ids as $id) {
             $model = OaSmtGoods::findOne(['infoId' => $id]);
             foreach ($suffixList as $suffix) {
-                $sql = "select * from proCenter.oa_smtImportToIbayLog where ibaySuffix=:suffix and sku=:sku";
+                $sql = "select * from proCenter.oa_smtImportToIbayLog where ibaySuffix=:suffix and sku=:sku and status1=0 and status2=0";
                 $logQ = Yii::$app->db->createCommand($sql)->bindValues([':suffix' => $suffix, ':sku' => $model['sku']])->queryOne();
+                $list = [
+                    'ibaySuffix' => $suffix,
+                    'sku' => $model['sku'],
+                    'category' => $category,
+                    'createDate' => date('Y-m-d H:i:s')
+                ];
                 if(!$logQ){
-                    $list[] = [
-                        'ibaySuffix' => $suffix,
-                        'sku' => $model['sku'],
-                        'category' => $category,
-                        'createDate' => date('Y-m-d H:i:s')
-                    ];
+                    Yii::$app->db->createCommand()->insert('proCenter.oa_smtImportToIbayLog', $list )->execute();
+                }else{
+                    Yii::$app->db->createCommand()->update('proCenter.oa_smtImportToIbayLog',
+                        ['category' => $category,'createDate' => date('Y-m-d H:i:s')],
+                        ['ibaySuffix' => $suffix, 'sku' => $model['sku'], 'status1' => 0, 'status2' => 0] )->execute();
                 }
             }
         }
-        return Yii::$app->db->createCommand()->batchInsert('proCenter.oa_smtImportToIbayLog',['ibaySuffix','sku','category','createDate'],$list )->execute();
+        return true;
     }
 
     /**
