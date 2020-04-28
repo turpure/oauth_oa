@@ -673,6 +673,13 @@ class ApiGoodsinfo
         $goodsInfo = $condition['basicInfo'];
         $skuInfo = $condition['skuInfo'];
         $goods = OaSmtGoods::findOne(['id' => $goodsInfo['id']]);
+        $imgArr = [];
+        for ($i=0;$i<6;$i++){
+            if($condition['basicInfo']['imageUrl'.$i]){
+                $imgArr[] = $condition['basicInfo']['imageUrl'.$i];
+            }
+        }
+        $condition['basicInfo']['imageUrl'] = implode(';',$imgArr);
         $goods->setAttributes($goodsInfo);
         $tran = Yii::$app->db->beginTransaction();
         try {
@@ -1376,6 +1383,7 @@ class ApiGoodsinfo
        //$condition = Yii::$app->request->post('condition', []);
         $condition = Yii::$app->request->post()['condition'];
         $ids = isset($condition['ids']) && $condition['ids'] ? $condition['ids'] : [];
+        $category = isset($condition['category']) && $condition['category'] ? $condition['ids'] : 0;
         $suffixList = isset($condition['suffix']) && $condition['suffix'] ? $condition['suffix'] : [];
         $list = [];
         foreach ($ids as $id) {
@@ -1384,6 +1392,7 @@ class ApiGoodsinfo
                 $list[] = [
                     'ibaySuffix' => $suffix,
                     'sku' => $model['sku'],
+                    'category' => $category,
                     'createDate' => date('Y-m-d H:i:s')
                 ];
             }
