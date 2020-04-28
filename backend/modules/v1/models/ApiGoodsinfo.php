@@ -1389,12 +1389,16 @@ class ApiGoodsinfo
         foreach ($ids as $id) {
             $model = OaSmtGoods::findOne(['infoId' => $id]);
             foreach ($suffixList as $suffix) {
-                $list[] = [
-                    'ibaySuffix' => $suffix,
-                    'sku' => $model['sku'],
-                    'category' => $category,
-                    'createDate' => date('Y-m-d H:i:s')
-                ];
+                $sql = "select * from proCenter.oa_smtImportToIbayLog where ibaySuffix=:suffix and sku=:sku";
+                $logQ = Yii::$app->db->createCommand($sql)->bindValues([':suffix' => $suffix, ':sku' => $model['sku']])->queryOne();
+                if(!$logQ){
+                    $list[] = [
+                        'ibaySuffix' => $suffix,
+                        'sku' => $model['sku'],
+                        'category' => $category,
+                        'createDate' => date('Y-m-d H:i:s')
+                    ];
+                }
             }
         }
         return Yii::$app->db->createCommand()->batchInsert('proCenter.oa_smtImportToIbayLog',['ibaySuffix','sku','category','createDate'],$list )->execute();
