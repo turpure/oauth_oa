@@ -1375,12 +1375,12 @@ class ApiGoodsinfo
     /**
      * Date: 2020-04-27 12:01
      * Author: henry
-     * @return array
+     * @return mixed
      * @throws \yii\db\Exception
      */
     public static function addSmtExportModel()
     {
-       $res = [];
+       $res = '';
         $condition = Yii::$app->request->post()['condition'];
         $ids = isset($condition['ids']) && $condition['ids'] ? $condition['ids'] : [];
         $suffixList = isset($condition['suffix']) && $condition['suffix'] ? $condition['suffix'] : [];
@@ -1388,10 +1388,10 @@ class ApiGoodsinfo
             $model = OaSmtGoods::findOne(['infoId' => $id]);
             $goodsInfo = OaGoodsinfo::findOne($id);
             if(strpos($goodsInfo['completeStatus'], 'smt') === false){
-                $res[] = '商品 '.$goodsInfo['goodsCode']." 没有完善Aliexpress模板，加入导出队列失败!";
+                $res .= '商品 '.$goodsInfo['goodsCode']." 没有完善Aliexpress模板，加入导出队列失败! \n";
                 continue;
             }else{
-                $res[] = '商品 '.$goodsInfo['goodsCode']." 加入导出队列成功!";
+                $res .= '商品 '.$goodsInfo['goodsCode']." 加入导出队列成功! \n";
             }
             foreach ($suffixList as $suffix) {
                 $sql = "select * from proCenter.oa_smtImportToIbayLog where ibaySuffix=:suffix and sku=:sku and status1=0 and status2=0";
