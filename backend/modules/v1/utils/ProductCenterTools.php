@@ -647,7 +647,12 @@ class ProductCenterTools
             'quantity' => 10000,
             'category1' => '',
             'price' => $goodsInfo['oaGoods']['salePrice'],
-            'mainImage' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_0_.jpg',
+            'imageUrl0' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_0_.jpg',
+            'imageUrl1' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_1_.jpg',
+            'imageUrl2' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_2_.jpg',
+            'imageUrl3' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_3_.jpg',
+            'imageUrl4' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_4_.jpg',
+            'imageUrl5' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_5_.jpg',
         ];
         $smtGoods = OaSmtGoods::findOne(['infoId' => $goodsInfo['id']]);
         if ($smtGoods === null) {
