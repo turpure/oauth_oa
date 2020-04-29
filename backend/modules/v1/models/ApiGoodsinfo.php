@@ -1383,9 +1383,7 @@ class ApiGoodsinfo
        //$condition = Yii::$app->request->post('condition', []);
         $condition = Yii::$app->request->post()['condition'];
         $ids = isset($condition['ids']) && $condition['ids'] ? $condition['ids'] : [];
-        $category = isset($condition['category']) && $condition['category'] ? $condition['category'] : 0;
         $suffixList = isset($condition['suffix']) && $condition['suffix'] ? $condition['suffix'] : [];
-        $list = [];
         foreach ($ids as $id) {
             $model = OaSmtGoods::findOne(['infoId' => $id]);
             foreach ($suffixList as $suffix) {
@@ -1394,14 +1392,13 @@ class ApiGoodsinfo
                 $list = [
                     'ibaySuffix' => $suffix,
                     'sku' => $model['sku'],
-                    'category' => $category,
                     'createDate' => date('Y-m-d H:i:s')
                 ];
                 if(!$logQ){
                     Yii::$app->db->createCommand()->insert('proCenter.oa_smtImportToIbayLog', $list )->execute();
                 }else{
                     Yii::$app->db->createCommand()->update('proCenter.oa_smtImportToIbayLog',
-                        ['category' => $category,'createDate' => date('Y-m-d H:i:s')],
+                        ['createDate' => date('Y-m-d H:i:s')],
                         ['ibaySuffix' => $suffix, 'sku' => $model['sku'], 'status1' => 0, 'status2' => 0] )->execute();
                 }
             }
