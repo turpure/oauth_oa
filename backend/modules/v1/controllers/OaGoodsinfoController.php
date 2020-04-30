@@ -525,7 +525,7 @@ class OaGoodsinfoController extends AdminController
      */
     public function actionPlatCompletedPlat()
     {
-        return ['未设置','joom', 'wish', 'ebay'];
+        return ['未设置','aliexpress','joom', 'wish', 'ebay'];
     }
 
     public function actionPlatForbidPlat()
