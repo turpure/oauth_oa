@@ -653,6 +653,10 @@ class ProductCenterTools
             'imageUrl3' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_3_.jpg',
             'imageUrl4' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_4_.jpg',
             'imageUrl5' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_5_.jpg',
+            'headKeywords' => $goodsInfo['headKeywords'],
+            'requiredKeywords' => $goodsInfo['requiredKeywords'],
+            'randomKeywords' => $goodsInfo['randomKeywords'],
+            'tailKeywords' => $goodsInfo['tailKeywords'],
         ];
         $smtGoods = OaSmtGoods::findOne(['infoId' => $goodsInfo['id']]);
         if ($smtGoods === null) {

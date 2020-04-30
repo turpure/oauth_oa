@@ -59,6 +59,7 @@ class ApiGoodsinfo
     const WishTitleLength = 110;
     const EbayTitleLength = 80;
     const JoomTitleLength = 100;
+    const smtTitleLength = 128;
 
     /**
      * @brief 属性信息列表
@@ -560,7 +561,10 @@ class ApiGoodsinfo
                         'autoDelay' => '', 'description' => '', 'descriptionmobile' => '', 'packageLength' => '', 'packageWidth' => '',
                         'packageHeight' => '', 'grossWeight' => '', 'addWeight' => '', 'productPrice' => '', 'sku' => '', 'itemtitle' => '',
                         'freighttemplate' => '', 'promisetemplate' => '', 'imageUrl' => '', 'productunit' => '', 'groupid' => '',
-                        'remarks' => '', 'publicmubanedit' => '',
+                        'remarks' => '', 'publicmubanedit' => '','headKeywords' => '',
+                        'requiredKeywords' => '["","","","","",""]',
+                        'randomKeywords' => '["","","","","","","","","",""]',
+                        'tailKeywords' => ''
                     ],
                     'skuInfo' => [[
                         'id' => '', 'infoId' => '', 'sid' => '', 'sku' => '', 'color' => '', 'size' => '',
@@ -568,6 +572,8 @@ class ApiGoodsinfo
                         'shippingTime' => '', 'pic_url' => '', 'goodsSkuId' => '', 'weight' => '',
                     ]]
                 ];
+                if(!$goods['requiredKeywords']) $goods['requiredKeywords'] = '["","","","","",""]';
+                if(!$goods['randomKeywords']) $goods['randomKeywords'] = '["","","","","",""]';
                 return $ret;
             }
         } else {
@@ -680,6 +686,19 @@ class ApiGoodsinfo
             }
         }
         $condition['basicInfo']['imageUrl'] = implode(';',$imgArr);
+        $keyWords = static::preKeywords($goodsInfo);
+        $titlePool = [];
+        $title = '';
+        $len = self::smtTitleLength;
+        while (true) {
+            $title = static::getTitleName($keyWords, $len);
+            --$len;
+            if (empty($title) || !in_array($title, $titlePool, false)) {
+                $titlePool[] = $title;
+                break;
+            }
+        }
+        $condition['basicInfo']['itemtitle'] = $title;
         $goods->setAttributes($goodsInfo);
         $tran = Yii::$app->db->beginTransaction();
         try {
