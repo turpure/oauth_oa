@@ -518,12 +518,12 @@ class ApiReport
         $key = Yii::$app->db->createCommand($sql)->bindValues($params)->getRawSql();
         //获取缓存
         $res = Yii::$app->cache->get($key);
-        if($res){
-            $list = $res;
-        }else{
+//        if($res){
+//            $list = $res;
+//        }else{
             $list = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
-            Yii::$app->cache->set($key, $list, 3600*12);
-        }
+//            Yii::$app->cache->set($key, $list, 3600*12);
+//        }
         try {
             $provider = new ArrayDataProvider([
                 'allModels' => $list,
