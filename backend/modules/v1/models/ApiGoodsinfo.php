@@ -1399,7 +1399,8 @@ class ApiGoodsinfo
      */
     public static function addSmtExportModel()
     {
-       $res = '';
+        $res = '';
+        $username = Yii::$app->user->identity->username;
         $condition = Yii::$app->request->post()['condition'];
         $ids = isset($condition['ids']) && $condition['ids'] ? $condition['ids'] : [];
         $suffixList = isset($condition['suffix']) && $condition['suffix'] ? $condition['suffix'] : [];
@@ -1418,13 +1419,14 @@ class ApiGoodsinfo
                 $list = [
                     'ibaySuffix' => $suffix,
                     'sku' => $model['sku'],
+                    'creator' => $username,
                     'createDate' => date('Y-m-d H:i:s')
                 ];
                 if(!$logQ){
                     Yii::$app->db->createCommand()->insert('proCenter.oa_smtImportToIbayLog', $list )->execute();
                 }else{
                     Yii::$app->db->createCommand()->update('proCenter.oa_smtImportToIbayLog',
-                        ['createDate' => date('Y-m-d H:i:s')],
+                        ['creator' => $username, 'createDate' => date('Y-m-d H:i:s')],
                         ['ibaySuffix' => $suffix, 'sku' => $model['sku'], 'status1' => 0, 'status2' => 0] )->execute();
                 }
             }
