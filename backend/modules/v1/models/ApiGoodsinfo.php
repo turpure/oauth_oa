@@ -550,16 +550,16 @@ class ApiGoodsinfo
             foreach ($goodsSku as $sku) {
                 $sku['property'] = json_decode($sku['property']);
             }
-        } elseif ($plat === 'smt') {
+        } elseif ($plat === 'aliexpress') {
             $goods = OaSmtGoods::findOne(['infoId' => $infoId]);
             $goodsSku = OaSmtGoodsSku::findAll(['infoId' => $infoId]);
             if (!$goods && !$goodsSku) {
                 $ret = [
                     'basicInfo' => [
-                        'infoId' => '', 'category1' => '', 'isPackSell' => '', 'baseUnit' => '', 'addUnit' => '', 'quantity' => '',
-                        'lotNum' => '', 'wsvalidnum' => '', 'packageType' => '', 'bulkOrder' => '', 'bulkDiscount' => '', 'deliverytime' => '',
+                        'infoId' => '', 'category1' => '', 'isPackSell' => '', 'baseUnit' => '', 'addUnit' => '', 'quantity' => 100,
+                        'lotNum' => 1, 'wsvalidnum' => '', 'packageType' => '', 'bulkOrder' => '', 'bulkDiscount' => '', 'deliverytime' => '',
                         'autoDelay' => '', 'description' => '', 'descriptionmobile' => '', 'packageLength' => '', 'packageWidth' => '',
-                        'packageHeight' => '', 'grossWeight' => '', 'addWeight' => '', 'productPrice' => '', 'sku' => '', 'itemtitle' => '',
+                        'packageHeight' => '', 'grossWeight' => 0, 'addWeight' => '', 'productPrice' => 0, 'sku' => '', 'itemtitle' => '',
                         'freighttemplate' => '', 'promisetemplate' => '', 'imageUrl' => '', 'productunit' => '', 'groupid' => '',
                         'remarks' => '', 'publicmubanedit' => '','headKeywords' => '',
                         'requiredKeywords' => '["","","","","",""]',
@@ -572,10 +572,14 @@ class ApiGoodsinfo
                         'shippingTime' => '', 'pic_url' => '', 'goodsSkuId' => '', 'weight' => '',
                     ]]
                 ];
-                if(!$goods['requiredKeywords']) $goods['requiredKeywords'] = '["","","","","",""]';
-                if(!$goods['randomKeywords']) $goods['randomKeywords'] = '["","","","","",""]';
                 return $ret;
             }
+            if(!$goods['requiredKeywords']) $goods['requiredKeywords'] = '["","","","","",""]';
+            if(!$goods['randomKeywords']) $goods['randomKeywords'] = '["","","","","",""]';
+            if(!$goods['grossWeight']) $goods['grossWeight'] = 0;
+            if(!$goods['lotNum']) $goods['lotNum'] = 1;
+            if(!$goods['quantity']) $goods['quantity'] = 1000;
+            if(!$goods['productPrice']) $goods['productPrice'] = 0;
         } else {
             $goods = [];
             $goodsSku = [];
@@ -780,7 +784,7 @@ class ApiGoodsinfo
         if ($plat === 'joom') {
             static::saveWishInfo($condition);
         }
-        if ($plat === 'smt') {
+        if ($plat === 'aliexpress') {
             static::saveSmtInfo($condition);
         }
         $platCondition = ['id' => $condition['id'], 'plat' => [$plat]];

@@ -786,7 +786,7 @@ class OaGoodsinfoController extends AdminController
             OaWishGoodsSku::deleteAll(['id' => $skuId]);
         } elseif ($condition['plat'] == 'eBay') {
             OaEbayGoodsSku::deleteAll(['id' => $skuId]);
-        }elseif ($condition['plat'] == 'smt') {
+        }elseif ($condition['plat'] == 'aliexpress') {
             OaSmtGoodsSku::deleteAll(['id' => $skuId]);
         }
         return true;
