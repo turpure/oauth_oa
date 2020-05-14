@@ -30,11 +30,10 @@ class ApiPerform
 
         //开发人员列表
         //$salers = array('刘珊珊', '宋现中', '王漫漫', '陈微微', '常金彩', '薛晨昕', '廖露露', '陈曦曦', '李星', '赵润连');
-        $salersSql = "SELECT username FROM `user` u INNER JOIN auth_assignment a ON u.id=a.user_id WHERE a.item_name='产品开发' ORDER BY username";
+        $salersSql = "SELECT username FROM `user` u INNER JOIN auth_assignment a ON u.id=a.user_id WHERE a.item_name='产品开发' and status=10 ORDER BY username";
         $saleList = Yii::$app->db->createCommand($salersSql)->queryAll();
         $salers = ArrayHelper::getColumn($saleList, 'username');
         $salers_str = implode(',', $salers);
-
         $sql = "EXEC z_demo_wo_test_sku_lirun '{$params['DateFlag']}','{$params['BeginDate']}','{$params['EndDate']}','{$params['CreateBeginDate']}','{$params['CreateEndDate']}','{$salers_str}'";
         $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
         if ($ret === false) {
