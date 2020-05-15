@@ -41,7 +41,8 @@ class ApiSettings
     public static function updateExchangeRate($condition)
     {
         $sql = "UPDATE Y_RateManagement SET salerRate='{$condition['salerRate']}',
-                devRate='{$condition['devRate']}',devRate1='{$condition['devRate1']}',devRate5='{$condition['devRate5']}'";
+                devRate='{$condition['devRate']}',devRate1='{$condition['devRate1']}',
+                devRate5='{$condition['devRate5']}',devRate7='{$condition['devRate7']}'";
         $res = Yii::$app->py_db->createCommand($sql)->execute();
         if ($res) {
             $result = true;
@@ -344,8 +345,8 @@ class ApiSettings
 
         return $res;
     }
-	
-	
+
+
 	 public static function saveIntegralData($file, $fileName, $fileSize){
 		$reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
         //$reader->setLoadSheetsOnly(["Sheet 1"]);
@@ -413,7 +414,7 @@ class ApiSettings
 			if($errorUser){
 				return "User '{$errorUser}' can not be find!";
 			}
-			
+
 			return true;
 		}catch (\Exception $e) {
 			return [
@@ -421,10 +422,10 @@ class ApiSettings
 				'message' => $e->getMessage()
 			];
         }
-		
+
 	 }
-	
-	
+
+
 
 
 }
