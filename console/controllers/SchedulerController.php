@@ -869,12 +869,12 @@ class SchedulerController extends Controller
      * @brief 批量更新依赖毛利润报表的命令
      */
 
-    public function actionMacroUpdate()
+    public function actionMacroUpdateHomePage()
     {
         $this->actionProfit();
         $this->actionSalesRanking();
         $this->actionSalesAmt();
-        $this->actionWarehouseIntegral();
+//        $this->actionWarehouseIntegral();
     }
 
 }
