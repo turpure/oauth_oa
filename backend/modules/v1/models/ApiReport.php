@@ -79,6 +79,8 @@ class ApiReport
                             $rate = $rateArr['devRate1'];
                         } elseif ($u['departId'] == 4) {  //五部
                             $rate = $rateArr['devRate5'];
+                        } elseif ($u['departId'] == 40) {  //七部
+                            $rate = $rateArr['devRate7'];
                         } else {
                             $rate = $rateArr['devRate'];
                         }
