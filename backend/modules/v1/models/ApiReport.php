@@ -1033,7 +1033,7 @@ class ApiReport
             'allModels' => $query,
             'sort' => ['attributes' =>
                 [
-                    'developer','goodsCode', 'devDate', 'goodsStatus',
+                    'developer','goodsCode', 'goodsName','devDate', 'goodsStatus',
                     'sold','amt','profit','rate','ebaySold','ebayProfit',
                     'wishSold','wishProfit','smtSold','smtProfit',
                     'joomSold','joomProfit','amazonSold','amazonProfit'
