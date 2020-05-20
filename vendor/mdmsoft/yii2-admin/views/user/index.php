@@ -1,6 +1,8 @@
 <?php
 
 use yii\helpers\Html;
+use yii\helpers\Url;
+use yii\bootstrap\Modal;
 use yii\grid\GridView;
 use mdm\admin\components\Helper;
 
@@ -16,6 +18,30 @@ $this->params['breadcrumbs'][] = $this->title;
     <p>
         <?= Html::a(Yii::t('rbac-admin', '新增用户'), ['create'], ['class' => 'btn btn-success']) ?>
     </p>
+
+    <?php // 更新操作
+    Modal::begin([
+        'id' => 'reset-modal',
+        'header' => '<h4 class="modal-title">重置密码</h4>',
+        'footer' => '<a href="#" class="btn btn-primary" data-dismiss="modal">Close</a>',
+    ]);
+    Modal::end();
+
+    $requestUpdateUrl = Url::toRoute('change-password');
+    $updateJs = <<<JS
+    $('.data-update').on('click', function () {
+         // $('.document-nav-form').remove();
+        $.get('{$requestUpdateUrl}', { id: $(this).data('id') },
+            function (data) {
+                console.log(123123)
+                $('.modal-body').html(123123123123);
+            }  
+        );
+    });
+JS;
+    $this->registerJs($updateJs);
+
+    ?>
 
     <?=
     GridView::widget([
@@ -105,8 +131,22 @@ $this->params['breadcrumbs'][] = $this->title;
             ],
             [
                 'class' => 'yii\grid\ActionColumn',
-                'template' => Helper::filterActionColumn(['view', 'update', 'activate', 'inactivate', 'delete']),
+                'template' => Helper::filterActionColumn(['view', 'update', 'change-password', 'activate', 'inactivate', 'delete']),
                 'buttons' => [
+                    'change-password' => function ($url, $model, $key) {
+                        $options = [
+                            'title' => Yii::t('rbac-admin', 'Change Password'),
+                            'aria-label' => Yii::t('rbac-admin', 'Change Password'),
+//                            'data-prompt' => Yii::t('rbac-admin', 'Are you sure you want to reset password of this user?'),
+                            'data-method' => 'post',
+//                            'data-pjax' => '0',
+//                            'data-id' => $key,
+//                            'data-toggle' => 'modal',
+//                            'data-target' => '#update-modal',
+//                            'class' => 'data-update',
+                        ];
+                        return Html::a('<span class="glyphicon-edit"></span>', $url , $options);
+                    },
                     'activate' => function ($url, $model) {
                         if ($model->status == 10 || $model->id == 1) {
                             return '';
@@ -146,10 +186,13 @@ $this->params['breadcrumbs'][] = $this->title;
                         ];
                         return Html::a('<span class="glyphicon glyphicon-trash"></span>', $url, $options);
                     },
-
                 ],
             ],
         ]
     ]);
+
+
+
+
     ?>
 </div>

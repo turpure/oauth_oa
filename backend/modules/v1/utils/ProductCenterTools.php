@@ -638,21 +638,28 @@ class ProductCenterTools
 
     private static function _goodsInfoToSmtGoods($goodsInfo)
     {
+        $maxSkuWeight = OaGoodsSku::find()->where(['infoId' => $goodsInfo['id']])->max('weight');
         $smtGoodsAttributes = [
             'infoId' => $goodsInfo['id'],
             'sku' => $goodsInfo['isVar'] == '是' ? $goodsInfo['goodsCode'] : ($goodsInfo['goodsCode'].'01'),
             'itemtitle' => '',
+            'productPrice' => 0,
+            'lotNum' => 1,
             'description' => $goodsInfo['description'],
             'descriptionmobile' => '',
             'quantity' => 10000,
             'category1' => '',
-            'price' => $goodsInfo['oaGoods']['salePrice'],
+            'grossWeight' => $maxSkuWeight ? : 0,
             'imageUrl0' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_0_.jpg',
             'imageUrl1' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_1_.jpg',
             'imageUrl2' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_2_.jpg',
             'imageUrl3' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_3_.jpg',
             'imageUrl4' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_4_.jpg',
             'imageUrl5' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_5_.jpg',
+            'headKeywords' => $goodsInfo['headKeywords'],
+            'requiredKeywords' => $goodsInfo['requiredKeywords'],
+            'randomKeywords' => $goodsInfo['randomKeywords'],
+            'tailKeywords' => $goodsInfo['tailKeywords'],
         ];
         $smtGoods = OaSmtGoods::findOne(['infoId' => $goodsInfo['id']]);
         if ($smtGoods === null) {

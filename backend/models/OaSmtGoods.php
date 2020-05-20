@@ -65,10 +65,10 @@ class OaSmtGoods extends \yii\db\ActiveRecord
             [['packageLength', 'packageWidth', 'packageHeight', 'grossWeight', 'addWeight', 'productPrice'], 'number'],
             [['sku'], 'string', 'max' => 50],
             [['itemtitle'], 'string', 'max' => 2000],
-            [['freighttemplate'], 'string', 'max' => 30],
+            [['freighttemplate', 'headKeywords', 'tailKeywords'], 'string', 'max' => 30],
             [['promisetemplate'], 'string', 'max' => 11],
             [['imageUrl0','imageUrl1','imageUrl2','imageUrl3','imageUrl4','imageUrl5'], 'string', 'max' => 300],
-            [['productunit', 'groupid', 'remarks', 'publicmubanedit'], 'string', 'max' => 255],
+            [['productunit', 'groupid', 'remarks', 'publicmubanedit','requiredKeywords', 'randomKeywords'], 'string', 'max' => 255],
         ];
     }
 

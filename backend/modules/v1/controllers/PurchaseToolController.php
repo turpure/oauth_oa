@@ -28,7 +28,9 @@ class PurchaseToolController extends AdminController
     {
         try {
             $url = $this->host . 'cleaned-generator';
-            $data = file_get_contents($url);
+            $context = stream_context_create(array('http'=>array('ignore_errors'=>true)));
+            $data = file_get_contents($url, FALSE, $context);
+            //$data = file_get_contents($url);
             $arr = json_decode($data, true);
             return implode(',', array_values($arr));
         }catch (Exception $e){
@@ -48,7 +50,9 @@ class PurchaseToolController extends AdminController
     {
         try {
             $url = $this->host . 'uncleaned-generator';
-            $data = file_get_contents($url);
+            $context = stream_context_create(array('http'=>array('ignore_errors'=>true)));
+            $data = file_get_contents($url, FALSE, $context);
+//            $data = file_get_contents($url);
             $arr = json_decode($data, true);
             return implode(',', array_values($arr));
         }catch (Exception $e){
@@ -68,7 +72,9 @@ class PurchaseToolController extends AdminController
     {
         try {
             $url = $this->host . 'sku_generator';
-            $data = file_get_contents($url);
+            $context = stream_context_create(array('http'=>array('ignore_errors'=>true)));
+            $data = file_get_contents($url, FALSE, $context);
+//            $data = file_get_contents($url);
             $arr = json_decode($data, true);
             return implode(',', array_values($arr));
         }catch (Exception $e){
@@ -88,7 +94,9 @@ class PurchaseToolController extends AdminController
     {
         $url = $this->host . 'check';
         try {
-            $data = file_get_contents($url);
+            $context = stream_context_create(array('http'=>array('ignore_errors'=>true)));
+            $data = file_get_contents($url, FALSE, $context);
+//            $data = file_get_contents($url);
             $arr = json_decode($data, true);
             if ($arr['msg'] == 'done'){
                 return true;
@@ -112,7 +120,9 @@ class PurchaseToolController extends AdminController
     {
         try {
             $url = $this->host . 'ali_sync';
-            $data = file_get_contents($url);
+            $context = stream_context_create(array('http'=>array('ignore_errors'=>true)));
+            $data = file_get_contents($url, FALSE, $context);
+//            $data = file_get_contents($url);
             $arr = json_decode($data, true);
             if ($arr['msg'] == 'done'){
                 return true;

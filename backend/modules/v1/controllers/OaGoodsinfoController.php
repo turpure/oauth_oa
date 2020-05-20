@@ -652,7 +652,8 @@ class OaGoodsinfoController extends AdminController
             $logData['infoId'] = $infoId;
 
             //post到iBay接口
-            $api = 'http://139.196.109.214/index.php/api/ImportEbayMuban/auth/youran';
+            //$api = 'http://139.196.109.214/index.php/api/ImportEbayMuban/auth/youran';
+            $api = 'http://47.103.119.215//index.php/api/ImportEbayMuban/auth/youran';
             $ret = Helper::request($api, $data)[1];
             if (isset($ret['ack']) && $ret['ack'] === 'success') {
                 $logData['result'] = 'success';
@@ -786,7 +787,7 @@ class OaGoodsinfoController extends AdminController
             OaWishGoodsSku::deleteAll(['id' => $skuId]);
         } elseif ($condition['plat'] == 'eBay') {
             OaEbayGoodsSku::deleteAll(['id' => $skuId]);
-        }elseif ($condition['plat'] == 'smt') {
+        }elseif ($condition['plat'] == 'aliexpress') {
             OaSmtGoodsSku::deleteAll(['id' => $skuId]);
         }
         return true;

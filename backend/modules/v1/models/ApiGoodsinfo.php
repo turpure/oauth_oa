@@ -59,6 +59,7 @@ class ApiGoodsinfo
     const WishTitleLength = 110;
     const EbayTitleLength = 80;
     const JoomTitleLength = 100;
+    const smtTitleLength = 128;
 
     /**
      * @brief 属性信息列表
@@ -549,18 +550,21 @@ class ApiGoodsinfo
             foreach ($goodsSku as $sku) {
                 $sku['property'] = json_decode($sku['property']);
             }
-        } elseif ($plat === 'smt') {
+        } elseif ($plat === 'aliexpress') {
             $goods = OaSmtGoods::findOne(['infoId' => $infoId]);
             $goodsSku = OaSmtGoodsSku::findAll(['infoId' => $infoId]);
             if (!$goods && !$goodsSku) {
                 $ret = [
                     'basicInfo' => [
-                        'infoId' => '', 'category1' => '', 'isPackSell' => '', 'baseUnit' => '', 'addUnit' => '', 'quantity' => '',
-                        'lotNum' => '', 'wsvalidnum' => '', 'packageType' => '', 'bulkOrder' => '', 'bulkDiscount' => '', 'deliverytime' => '',
+                        'infoId' => '', 'category1' => '', 'isPackSell' => '', 'baseUnit' => '', 'addUnit' => '', 'quantity' => 100,
+                        'lotNum' => 1, 'wsvalidnum' => '', 'packageType' => '', 'bulkOrder' => '', 'bulkDiscount' => '', 'deliverytime' => '',
                         'autoDelay' => '', 'description' => '', 'descriptionmobile' => '', 'packageLength' => '', 'packageWidth' => '',
-                        'packageHeight' => '', 'grossWeight' => '', 'addWeight' => '', 'productPrice' => '', 'sku' => '', 'itemtitle' => '',
+                        'packageHeight' => '', 'grossWeight' => 0, 'addWeight' => '', 'productPrice' => 0, 'sku' => '', 'itemtitle' => '',
                         'freighttemplate' => '', 'promisetemplate' => '', 'imageUrl' => '', 'productunit' => '', 'groupid' => '',
-                        'remarks' => '', 'publicmubanedit' => '',
+                        'remarks' => '', 'publicmubanedit' => '','headKeywords' => '',
+                        'requiredKeywords' => '["","","","","",""]',
+                        'randomKeywords' => '["","","","","","","","","",""]',
+                        'tailKeywords' => ''
                     ],
                     'skuInfo' => [[
                         'id' => '', 'infoId' => '', 'sid' => '', 'sku' => '', 'color' => '', 'size' => '',
@@ -570,6 +574,12 @@ class ApiGoodsinfo
                 ];
                 return $ret;
             }
+            if(!$goods['requiredKeywords']) $goods['requiredKeywords'] = '["","","","","",""]';
+            if(!$goods['randomKeywords']) $goods['randomKeywords'] = '["","","","","",""]';
+            if(!$goods['grossWeight']) $goods['grossWeight'] = 0;
+            if(!$goods['lotNum']) $goods['lotNum'] = 1;
+            if(!$goods['quantity']) $goods['quantity'] = 1000;
+            if(!$goods['productPrice']) $goods['productPrice'] = 0;
         } else {
             $goods = [];
             $goodsSku = [];
@@ -680,6 +690,19 @@ class ApiGoodsinfo
             }
         }
         $condition['basicInfo']['imageUrl'] = implode(';',$imgArr);
+        $keyWords = static::preKeywords($goodsInfo);
+        $titlePool = [];
+        $title = '';
+        $len = self::smtTitleLength;
+        while (true) {
+            $title = static::getTitleName($keyWords, $len);
+            --$len;
+            if (empty($title) || !in_array($title, $titlePool, false)) {
+                $titlePool[] = $title;
+                break;
+            }
+        }
+        $condition['basicInfo']['itemtitle'] = $title;
         $goods->setAttributes($goodsInfo);
         $tran = Yii::$app->db->beginTransaction();
         try {
@@ -761,7 +784,7 @@ class ApiGoodsinfo
         if ($plat === 'joom') {
             static::saveWishInfo($condition);
         }
-        if ($plat === 'smt') {
+        if ($plat === 'aliexpress') {
             static::saveSmtInfo($condition);
         }
         $platCondition = ['id' => $condition['id'], 'plat' => [$plat]];
@@ -1380,7 +1403,8 @@ class ApiGoodsinfo
      */
     public static function addSmtExportModel()
     {
-       $res = '';
+        $res = '';
+        $username = Yii::$app->user->identity->username;
         $condition = Yii::$app->request->post()['condition'];
         $ids = isset($condition['ids']) && $condition['ids'] ? $condition['ids'] : [];
         $suffixList = isset($condition['suffix']) && $condition['suffix'] ? $condition['suffix'] : [];
@@ -1399,13 +1423,14 @@ class ApiGoodsinfo
                 $list = [
                     'ibaySuffix' => $suffix,
                     'sku' => $model['sku'],
+                    'creator' => $username,
                     'createDate' => date('Y-m-d H:i:s')
                 ];
                 if(!$logQ){
                     Yii::$app->db->createCommand()->insert('proCenter.oa_smtImportToIbayLog', $list )->execute();
                 }else{
                     Yii::$app->db->createCommand()->update('proCenter.oa_smtImportToIbayLog',
-                        ['createDate' => date('Y-m-d H:i:s')],
+                        ['creator' => $username, 'createDate' => date('Y-m-d H:i:s')],
                         ['ibaySuffix' => $suffix, 'sku' => $model['sku'], 'status1' => 0, 'status2' => 0] )->execute();
                 }
             }

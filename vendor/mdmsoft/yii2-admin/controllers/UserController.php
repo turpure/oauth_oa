@@ -296,7 +296,6 @@ class UserController extends Controller
         } catch (InvalidParamException $e) {
             throw new BadRequestHttpException($e->getMessage());
         }
-
         if ($model->load(Yii::$app->getRequest()->post()) && $model->validate() && $model->resetPassword()) {
             Yii::$app->getSession()->setFlash('success', 'New password was saved.');
 
@@ -312,16 +311,19 @@ class UserController extends Controller
      * Reset password
      * @return string
      */
-    public function actionChangePassword()
+    public function actionChangePassword($id)
     {
         $model = new ChangePassword();
-        if ($model->load(Yii::$app->getRequest()->post()) && $model->change()) {
-            return $this->goHome();
+        if ($model->load(Yii::$app->getRequest()->post()) && $model->change($id)) {
+            $this->redirect('index');
+        }else{
+            return $this->render('change-password', [
+                'username' => User::findOne($id)->username,
+                'model' => $model,
+            ]);
         }
 
-        return $this->render('change-password', [
-                'model' => $model,
-        ]);
+
     }
 
     /**

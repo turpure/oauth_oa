@@ -79,6 +79,8 @@ class ApiReport
                             $rate = $rateArr['devRate1'];
                         } elseif ($u['departId'] == 4) {  //五部
                             $rate = $rateArr['devRate5'];
+                        } elseif ($u['departId'] == 40) {  //七部
+                            $rate = $rateArr['devRate7'];
                         } else {
                             $rate = $rateArr['devRate'];
                         }
@@ -518,12 +520,12 @@ class ApiReport
         $key = Yii::$app->db->createCommand($sql)->bindValues($params)->getRawSql();
         //获取缓存
         $res = Yii::$app->cache->get($key);
-        if($res){
-            $list = $res;
-        }else{
+//        if($res){
+//            $list = $res;
+//        }else{
             $list = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
-            Yii::$app->cache->set($key, $list, 3600*12);
-        }
+//            Yii::$app->cache->set($key, $list, 3600*12);
+//        }
         try {
             $provider = new ArrayDataProvider([
                 'allModels' => $list,
