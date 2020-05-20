@@ -80,4 +80,23 @@ class ApiUser
         return ArrayHelper::getColumn($roleList, 'item_name');
     }
 
+    /**
+     * 根据用户名获取用户职位
+     * @param $username
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    public static function getUserPosition($username)
+    {
+        //根据角色 过滤
+        $sql = "SELECT p.position FROM auth_position_child c
+                INNER JOIN `user` u ON u.id=c.user_id
+                INNER JOIN auth_position p ON p.id=c.position_id
+                WHERE   username='" . $username . "'";
+        $roleList = Yii::$app->db->createCommand($sql)->queryAll();
+        return ArrayHelper::getColumn($roleList, 'position');
+    }
+
+
+
 }

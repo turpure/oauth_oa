@@ -48,8 +48,8 @@ class ApiMine
         $user = Yii::$app->user->identity->username;
         $userList = ApiUser::getUserList($user);
         $userRole = implode('',ApiUser::getUserRole($user));
-        //销售看自己(没有开发身份)
-        if(strpos($userRole, '销售') !== false && strpos($userRole, '开发') === false) {
+        //销售看自己
+        if(strpos($userRole, '销售') !== false) {
             $query->andWhere(['in', 'creator', $userList]);
         }
 
