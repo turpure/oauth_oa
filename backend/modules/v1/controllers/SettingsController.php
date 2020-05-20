@@ -330,8 +330,8 @@ class SettingsController extends AdminController
             }
         }
 	}
-	
-	
+
+
 	public function actionWarehouseUser(){
         $request = Yii::$app->request;
         if($request->isGet){
@@ -389,9 +389,9 @@ class SettingsController extends AdminController
             }
         }
 	}
-	
-	
-		
+
+
+
 	public function actionImportIntegralData(){
 		$file = $_FILES['file'];
 
@@ -419,17 +419,17 @@ class SettingsController extends AdminController
         $month = date('Y-m');
         $lastMonth = date('Y-m', strtotime('-1 month'));
         //var_dump($lastMonth);exit;
-        $logSql = "SELECT * FROM warehouse_intergral_import_log where createdDate >= '{$lastMonth}'";
-        $sql = "SELECT * FROM warehouse_intergral_other_data_every_month where `month` in ('{$lastMonth}','{$month}')";
+        $logSql = "SELECT * FROM warehouse_intergral_import_log where createdDate >= '{$lastMonth}' order by createdDate desc";
+        $sql = "SELECT * FROM warehouse_intergral_other_data_every_month where `month` in ('{$lastMonth}','{$month}') order by update_time desc";
 
         return [
             'log' => Yii::$app->db->createCommand($logSql)->queryAll(),
             'content' => Yii::$app->db->createCommand($sql)->queryAll(),
         ];
     }
-		
 
-    
+
+
 
 
 

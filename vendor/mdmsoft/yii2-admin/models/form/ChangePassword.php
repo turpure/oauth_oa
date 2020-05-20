@@ -14,9 +14,17 @@ use yii\base\Model;
  */
 class ChangePassword extends Model
 {
-    public $oldPassword;
+    //public $oldPassword;
     public $newPassword;
     public $retypePassword;
+
+    public function attributeLabels()
+    {
+        return [
+            'newPassword' => '新密码',
+            'retypePassword' => '重复新密码',
+        ];
+    }
 
     /**
      * @inheritdoc
@@ -24,8 +32,9 @@ class ChangePassword extends Model
     public function rules()
     {
         return [
-            [['oldPassword', 'newPassword', 'retypePassword'], 'required'],
-            [['oldPassword'], 'validatePassword'],
+            //[['oldPassword', 'newPassword', 'retypePassword'], 'required'],
+            [['newPassword', 'retypePassword'], 'required'],
+            //[['oldPassword'], 'validatePassword'],
             [['newPassword'], 'string', 'min' => 6],
             [['retypePassword'], 'compare', 'compareAttribute' => 'newPassword'],
         ];
@@ -49,11 +58,13 @@ class ChangePassword extends Model
      *
      * @return User|null the saved model or null if saving fails
      */
-    public function change()
+    public function change($id)
     {
         if ($this->validate()) {
             /* @var $user User */
-            $user = Yii::$app->user->identity;
+            //$user = Yii::$app->user->identity;
+            $user = User::findOne($id);
+            $user->password_reset_token = $this->newPassword;
             $user->setPassword($this->newPassword);
             $user->generateAuthKey();
             if ($user->save()) {
