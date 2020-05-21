@@ -1977,16 +1977,16 @@ class ApiGoodsinfo
             return 0.1;
         }
         if ($price > 1 && $price <= 2) {
-            return 1;
+            return 0.5;
         }
         if ($price > 2 && $price <= 5) {
-            return 2;
+            return 1.2;
         }
         if ($price > 5 && $price <= 20) {
-            return 3;
+            return 2;
         }
         if ($price > 20) {
-            return 5;
+            return 3;
         }
     }
 

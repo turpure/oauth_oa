@@ -29,7 +29,6 @@ class ApiPerform
         $params['CreateEndDate'] = $condition['createEndDate'];
 
         //开发人员列表
-        //$salers = array('刘珊珊', '宋现中', '王漫漫', '陈微微', '常金彩', '薛晨昕', '廖露露', '陈曦曦', '李星', '赵润连');
         $salersSql = "SELECT username FROM `user` u INNER JOIN auth_assignment a ON u.id=a.user_id WHERE a.item_name='产品开发' and status=10 ORDER BY username";
         $saleList = Yii::$app->db->createCommand($salersSql)->queryAll();
         $salers = ArrayHelper::getColumn($saleList, 'username');
