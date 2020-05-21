@@ -212,6 +212,7 @@ class ApiOaData
         $model =  OaGoodsinfoExtendsStatus::find()->where(['infoId' => $id, 'status' => '已推广'])->asArray()->all();
         $donePersons = ArrayHelper::getColumn($model,'saler',[]);
         $allPersons = explode(',', $mapPersons);
+        $allPersons = array_filter($allPersons);
         $ret = ['extended' => [], 'toExtend' =>[], 'progress' =>[]];
 
         // 推广人
