@@ -221,6 +221,19 @@ class Helper
     }
 
 
+    public  static function post($url, $data){
+        $content = http_build_query($data);
+        $options = array(
+            'http' => array(
+                'method' => 'POST',
+                'header' => "Content-type: application/x-www-form-urlencoded\r\n" .
+                    "Authorization: Bearer " . $data['access_token'] . "\r\n",
+                'content' => $content
+            )
+        );
+        $ret = file_get_contents($url, false, stream_context_create($options));
+        return $ret;
+    }
     public  static function get($url, $jsonStr, $header = [])
     {
         $ch = curl_init();

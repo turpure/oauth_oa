@@ -602,12 +602,7 @@ class OaGoodsinfoController extends AdminController
     public function actionPlatJoomToBackstage()
     {
         try {
-            $logData = [
-                'infoId' => '',
-                'ibayTemplateId' => '',
-                'result' => 'failed',
-                'platForm' => 'ebay',
-            ];
+
             $request = Yii::$app->request;
             $condition = $request->post()['condition'];
             $infoId = $condition['id'];

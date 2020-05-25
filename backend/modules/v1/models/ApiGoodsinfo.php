@@ -690,7 +690,7 @@ class ApiGoodsinfo
                 $imgArr[] = $condition['basicInfo']['imageUrl'.$i];
             }
         }
-        $condition['basicInfo']['imageUrl'] = implode(';',$imgArr);
+        $goodsInfo['imageUrl'] = implode(';',$imgArr);
         $keyWords = static::preKeywords($goodsInfo);
         $titlePool = [];
         $title = '';
@@ -703,7 +703,7 @@ class ApiGoodsinfo
                 break;
             }
         }
-        $condition['basicInfo']['itemtitle'] = $title;
+        $goodsInfo['itemtitle'] = $title;
         $goods->setAttributes($goodsInfo);
         $tran = Yii::$app->db->beginTransaction();
         try {
@@ -985,13 +985,12 @@ class ApiGoodsinfo
             'landing_page_url' => '', 'dangerous_kind' => 'notDangerous',  'declaredValue' => ''
         ];
         $variationRow = [
-            'id' => '','original_image_url' => '','product_id' => '','main_image' => '',
-            'parent_sku' => '', 'enabled' => true, 'color' => '','sku' => '','hs_code' => '',
+            'main_image' => '','sku' => '','parent_sku' => '',
+             'enabled' => true, 'color' => '','hs_code' => '','declaredValue' => '',
             'size' => '', 'inventory' => '', 'price' => '', 'msrp' => '', 'shipping' => '',
-            'shipping_weight' => '', 'shipping_height' => '','shipping_length' => '','shipping_width' => '',
-            'declaredValue' => ''
+            'shipping_weight' => '', 'shipping_height' => '','shipping_length' => '','shipping_width' => ''
+
         ];
-        $out = [];
         foreach ($ids as $id) {
             if (is_numeric($id)) {
                 $goodsInfo = OaGoodsinfo::findOne(['id' => $id]);
@@ -1021,7 +1020,7 @@ class ApiGoodsinfo
                 $row['shipping'] = $joomSku[0]['joomShipping'];
                 $row['shipping_weight'] = (float)$joomSku[0]['weight'] * 1.0 / 1000;
                 $row['product_main_image'] = $imageInfo['mainImage'];
-                $row['variation_main_image'] = str_replace('/10023/', '/' . $joomAccounts['imgCode'] . '/', $joomSku[0]['linkUrl']);
+                $row['main_image'] = $row['variation_main_image'] = str_replace('/10023/', '/' . $joomAccounts['imgCode'] . '/', $joomSku[0]['linkUrl']);
                 foreach ($imageInfo['extraImages'] as $k => $v){
                     if ($k <= 9 && $v){
                         if($k == 0){
@@ -1040,56 +1039,35 @@ class ApiGoodsinfo
                         INNER JOIN B_Dictionary d ON d.DictionaryName=s.AliasName AND d.CategoryID=12 
                         WHERE AliasName LIKE '{$account}%'" ;
                 $tokens = Yii::$app->py_db->createCommand($sql)->queryAll();
-                $token = self::filterJoomAccount($goodsInfo['goodsId'], $tokens);
-                //$row['access_token'] = $token ? $token['token'] : '';
+//                $token = self::filterJoomAccount($goodsInfo['goodsId'], $tokens);
+                $token = [
+                    "suffix"=>"JoomJ1-J1Women",
+                    "memo"=>"女人世界",
+                    "token"=>"SEV0001MTU4OTUyNzQzMXx6Qkh5MmFOek1wS1ViRVhIeFFET0tTUjFremVTQnNqM0lWUDBISG5wRTMwcDcwQ2VuRkFYUnpfQkljTTNNcTRCNGJCRUZPeW1UUk9fakNNY29lYUtONjdFTWlHaGQtdWU5NlpCQWFqVW5INFBwcEhIcnJoVl82V1B3aVMxdzN1TzNrQ3F5X2dRQl9uNTZuaGs5aVZXMlR2bDFUZVV4MjE5YmMtWVFkRUdqWWFaS2VrPXzGotYhVOhafOhHPFvD9RHMpdW7bK2B-8NbUCQzE7Oouw==",
+                ];
+                //var_dump($row);exit;
+                $row['access_token'] = $token ? $token['token'] : '';
                 $url = 'https://api-merchant.joom.com/api/v2/product/add';
-//                $header['Authorization'] = 'Bearer ' . $token['token'];
-//                var_dump($header);exit;
+                //$ret = Helper::post($url , $row);
+                //var_dump($ret);exit;
+                foreach ($joomSku as $k => $sku) {
+                    if($k == 0) continue;
+                    $variationRow['parent_sku'] = $joomInfo['sku'] . $joomAccounts['skuCode'];
+                    $variationRow['sku'] = $sku['sku'] . $joomAccounts['skuCode'];
+                    $variationRow['color'] = $sku['color'];
+                    $variationRow['size'] = $sku['size'];
+                    $variationRow['inventory'] = $sku['inventory'];
+                    $variationRow['price'] = $sku['joomPrice'];
+                    $variationRow['msrp'] = ($sku['joomPrice'] + $sku['joomShipping']) * 5;
+                    $variationRow['shipping'] = $sku['joomShipping'];
+                    $variationRow['shipping_weight'] = (float)$sku['weight'] * 1.0 / 1000;
+                    $variationRow['main_image'] = str_replace('/10023/', '/' . $joomAccounts['imgCode'] . '/', $sku['linkUrl']);
+                    $variationRow['declaredValue'] = static::getJoomDeclaredValue($sku['joomPrice']);
+                    $variationRow['access_token'] = $token ? $token['token'] : '';
 
-                $content = http_build_query($row);
-                $content_length = strlen($content);
-                $options = array(
-                    'http' => array(
-                        'method' => 'POST',
-                        'header' => "Content-type: application/x-www-form-urlencoded\r\n" .
-                                    "Authorization: Bearer " . $token['token'] . "\r\n",
-                        'content' => $content
-                    )
-                );
-                $ret = file_get_contents($url, false, stream_context_create($options));
-
-//                $ret = Helper::get($url, json_encode($row), $header);
-                var_dump($ret);exit;
-                foreach ($joomSku as $sku) {
-//                    var_dump(123);
-//                    $price = static::getJoomAdjust($sku['weight'], $priceInfo['price']);
-                    $row['parent_sku'] = $joomInfo['sku'] . $joomAccounts['skuCode'];
-                    $row['name'] = $title;
-                    $row['description'] = $joomInfo['description'];
-                    $row['tags'] = $joomInfo['tags'];
-                    $row['sku'] = $sku['sku'] . $joomAccounts['skuCode'];
-                    $row['color'] = $sku['color'];
-                    $row['size'] = $sku['size'];
-                    $row['inventory'] = $sku['inventory'];
-                    $row['price'] = $sku['joomPrice'];
-                    $row['msrp'] = ($sku['joomPrice'] + $sku['joomShipping']) * 5;
-                    $row['shipping'] = $sku['joomShipping'];
-                    $row['shipping_weight'] = (float)$sku['weight'] * 1.0 / 1000;
-                    $row['Shipping Time(enter without " ", just the estimated days )'] = '15-45';
-                    $row['product_main_image'] = $imageInfo['mainImage'];
-                    $row['variation_main_image'] = str_replace('/10023/', '/' . $joomAccounts['imgCode'] . '/', $sku['linkUrl']);
-                    foreach ($imageInfo as $k => $v){
-                        if ($k <= 9 && $v){
-                            if($k == 0){
-                                $row['extra_images'] .= $imageInfo['extraImages'][$k];
-                            }else{
-                                $row['extra_images'] .= '|'.$imageInfo['extraImages'][$k];
-                            }
-                        }
-                    }
-                    $row['dangerous_kind'] = static::getJoomDangerousKind($goodsInfo);
-                    $row['declaredValue'] = static::getJoomDeclaredValue($sku['joomPrice']);
-                    $out[] = $row;
+                    $variationUrl = 'https://api-merchant.joom.com/api/v2/variant/add';
+                    $ret = Helper::post($variationUrl , $variationRow);
+                    var_dump($ret);
                 }
 
 
@@ -1097,37 +1075,43 @@ class ApiGoodsinfo
 
             }
         }
-        $ret['data'] = $out;
+        //$ret['data'] = $out;
 
 
 
         //日志
+        $logData = [
+            'infoId' => '',
+            'ibayTemplateId' => '',
+            'result' => 'failed',
+            'platForm' => 'ebay',
+        ];
 //        $logData['infoId'] = $infoId;
 
         //post到joom后台接口
 //        $api = 'http://139.196.109.214/index.php/api/ImportEbayMuban/auth/youran';
 //        $ret = Helper::request($api, $data)[1];
-        if (isset($ret['ack']) && $ret['ack'] === 'success') {
-            $logData['result'] = 'success';
-            $templates = array_values($ret['importebaymubanResponse']);
-            foreach ($templates as $tm) {
-                $logData['ibayTemplateId'] = str_replace('成功, 模板编号为: ','',
-                    $tm);
-                //逐个写入日志
-                Logger::ibayLog($logData);
-            }
-            $out = $ret;
-        }
-        else {
-            $out = ['code' => 400, 'message' => isset($ret['message']) ? $ret['message'] : '导入失败！'];
+//        if (isset($ret['ack']) && $ret['ack'] === 'success') {
+//            $logData['result'] = 'success';
+//            $templates = array_values($ret['importebaymubanResponse']);
+//            foreach ($templates as $tm) {
+//                $logData['ibayTemplateId'] = str_replace('成功, 模板编号为: ','',
+//                    $tm);
+//                //逐个写入日志
+//                Logger::ibayLog($logData);
+//            }
+//            $out = $ret;
+//        }
+//        else {
+//            $out = ['code' => 400, 'message' => isset($ret['message']) ? $ret['message'] : '导入失败！'];
             // 写入日志
 //            Logger::ibayLog($logData);
 
 
-        }
+//        }
 
 
-        return $out;
+        //return $out;
     }
 
     /** 过滤joom账号后随机选择一个账号
