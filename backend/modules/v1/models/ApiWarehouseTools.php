@@ -147,8 +147,9 @@ class ApiWarehouseTools
      */
     public static function getFreightSpaceMatched($condition)
     {
-        $begin = $condition['begin'];
-        $end = $condition['end'];
+        $date =  $condition['date'];
+        $begin = $date[0];
+        $end = $date[1];
         $member = isset($condition['member']) ? $condition['member'] : [];
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
         if(empty($member)) {
@@ -167,6 +168,19 @@ class ApiWarehouseTools
             ],
         ]);
         return $provider;
+
+    }
+
+    /**
+     * 扫描人
+     * @return mixed
+     */
+    public static function getFreightMen()
+    {
+        $sql = "select distinct recorder from CG_StockInM(nolock) where recorder in (select personCode from B_Person where used=0)";
+        $db = Yii::$app->py_db;
+        $data = $db->createCommand($sql)->queryAll();
+        return ArrayHelper::getColumn($data, 'recorder');
 
     }
 

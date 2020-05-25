@@ -93,7 +93,7 @@ class WarehouseToolsController extends AdminController
 
 
     /**
-     * 仓位匹配绩效查询
+     * 库位匹配绩效查询
      * @return array|mixed
      */
     public function actionFreight()
@@ -107,6 +107,22 @@ class WarehouseToolsController extends AdminController
         }
 
     }
+    /**
+     * 库位匹配扫描人
+     * @return array|mixed
+     */
+    public function actionFreightMen()
+    {
+        try {
+            return ApiWarehouseTools::getFreightMen();
+        }
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+
+    }
+
+
 
     /**
      * @brief 仓库仓位统计报表
