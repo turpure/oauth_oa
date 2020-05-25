@@ -221,26 +221,26 @@ class Helper
     }
 
 
-    public  static function get($url)
+    public  static function get($url, $jsonStr, $header = [])
     {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_POST, 0);
-        curl_setopt($ch, CURLOPT_URL, $url);
-//        curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonStr);
-//        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $header = array_merge($header,['Content-Type: application/json', 'charset=utf-8',"Accept: application/json"]);
         $user_agent = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.146 Safari/537.36";
         curl_setopt($ch, CURLOPT_USERAGENT,$user_agent);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonStr);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                'Content-Type: application/json', 'charset=utf-8',"Accept: application/json",
+                'Content-Type: application/json; charset=utf-8',
 //                'Content-Length: ' . strlen($jsonStr)
             )
         );
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-        var_dump(curl_getinfo($ch));exit;
-        var_dump($response);exit;
         curl_close($ch);
+
         return [$httpCode, json_decode($response, true)];
     }
 

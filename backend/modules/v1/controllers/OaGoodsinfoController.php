@@ -598,6 +598,33 @@ class OaGoodsinfoController extends AdminController
 
     }
 
+
+    public function actionPlatJoomToBackstage()
+    {
+        try {
+            $logData = [
+                'infoId' => '',
+                'ibayTemplateId' => '',
+                'result' => 'failed',
+                'platForm' => 'ebay',
+            ];
+            $request = Yii::$app->request;
+            $condition = $request->post()['condition'];
+            $infoId = $condition['id'];
+            $account = $condition['account'];
+//            $data = ApiGoodsinfo::preExportJoom($infoId, $account);
+            $res = ApiGoodsinfo::uploadToJoomBackstage($infoId, $account);
+            var_dump($res);exit;
+
+        }
+
+        catch (\Exception $why) {
+            return ['code' => 400, 'message'=>$why->getMessage()];
+        }
+    }
+
+
+
     /**
      * @brief 导出ebay模板
      * @throws \PhpOffice\PhpSpreadsheet\Exception
@@ -647,6 +674,8 @@ class OaGoodsinfoController extends AdminController
             $condition = $request->post()['condition'];
             $infoId = $condition['id'];
             $data = json_encode($this->actionPlatEbayData()['data']);
+
+
 
             //日志
             $logData['infoId'] = $infoId;

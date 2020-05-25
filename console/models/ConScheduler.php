@@ -225,7 +225,7 @@ class ConScheduler
         $userQuery = Yii::$app->db->createCommand('SELECT * FROM warehouse_user_info')->queryAll();
         $user = ArrayHelper::getColumn($userQuery,'name');
         $userPara = implode(',', $user);
-
+        var_dump($userPara);exit;
         $dataQuery = Yii::$app->py_db->createCommand("EXEC oauth_siteWarehouseIntegral '{$beginDate}','{$endDate}','$userPara'")->queryAll();
 
         //将数据保存到临时表中
