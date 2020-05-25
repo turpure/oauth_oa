@@ -616,7 +616,7 @@ class ProductCenterTools
                 'inventory' => 10000,
                 'price' => $sku['retailPrice'],
                 'shipping' => 0,
-                'msrp' => $sku['retailPrice'] * 6,
+                'msrp' => $sku['retailPrice'] * 2,
                 'shippingTime' => '7-21',
                 'linkUrl' => $sku['linkUrl'],
                 'goodsSkuId' => $sku['goodsSkuId'],
