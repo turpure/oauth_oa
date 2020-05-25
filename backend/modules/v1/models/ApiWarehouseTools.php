@@ -139,6 +139,37 @@ class ApiWarehouseTools
         return $provider;
     }
 
+
+    /**
+     * 仓位匹配绩效查询
+     * @param $condition
+     * @return mixed
+     */
+    public static function getFreightSpaceMatched($condition)
+    {
+        $begin = $condition['begin'];
+        $end = $condition['end'];
+        $member = isset($condition['member']) ? $condition['member'] : [];
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
+        if(empty($member)) {
+            $sql = "select makeDate,recorder, billNumber  from CG_StockInM(nolock) where convert(varchar(10),makeDate,121) BETWEEN :begin and  :end ";
+        }
+        else {
+            $member = implode("','",$member);
+            $sql = "select makeDate,recorder, billNumber  from CG_StockInM(nolock) where recorder in ('{$member}') and convert(varchar(10),makeDate,121) BETWEEN :begin and  :end ";
+        }
+        $db = Yii::$app->py_db;
+        $data = $db->createCommand($sql,[':begin' => $begin, ':end' => $end])->queryAll();
+        $provider = new ArrayDataProvider([
+            'allModels' => $data,
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
+
+    }
+
     /** 获取拣货统计数据
      * @param $condition
      * Date: 2019-08-23 16:16

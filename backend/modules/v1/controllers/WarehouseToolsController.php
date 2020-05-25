@@ -91,6 +91,23 @@ class WarehouseToolsController extends AdminController
         return ApiWarehouseTools::getPickStatisticsData($condition);
     }
 
+
+    /**
+     * 仓位匹配绩效查询
+     * @return array|mixed
+     */
+    public function actionFreight()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiWarehouseTools::getFreightSpaceMatched($condition);
+        }
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+
+    }
+
     /**
      * @brief 仓库仓位统计报表
      * @return \yii\data\ActiveDataProvider
@@ -100,6 +117,7 @@ class WarehouseToolsController extends AdminController
         $condition = Yii::$app->request->post()['condition'];
         return ApiWarehouseTools::getWareStatisticsData($condition);
     }
+
 
     /** 仓库仓位SKU对应表
      * Date: 2019-09-03 10:14
