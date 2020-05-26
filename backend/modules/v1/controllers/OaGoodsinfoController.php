@@ -607,13 +607,11 @@ class OaGoodsinfoController extends AdminController
             $condition = $request->post()['condition'];
             $infoId = $condition['id'];
             $account = $condition['account'];
-//            $data = ApiGoodsinfo::preExportJoom($infoId, $account);
             $res = ApiGoodsinfo::uploadToJoomBackstage($infoId, $account);
+            return true;
             var_dump($res);exit;
 
-        }
-
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => 400, 'message'=>$why->getMessage()];
         }
     }

@@ -422,7 +422,7 @@ class DataCenterController extends AdminController
 					  	LEFT JOIN auth_department d ON d.id=dc.department_id
 						LEFT JOIN auth_department p ON p.id=d.parent
                         GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END
-                ) bb ON aa.depart=bb.depart
+                ) bb ON IFNULL(aa.depart,'无部门')=IFNULL(bb.depart,'无部门')
                 ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
         try{
             return Yii::$app->db->createCommand($sql)->queryAll();
@@ -467,7 +467,7 @@ class DataCenterController extends AdminController
 						LEFT JOIN auth_department p ON p.id=d.parent
                         WHERE 1=1 ";
         if(isset($cond['depart']) && $cond['depart'])
-            $sql .= " AND (d.department LIKE '%{$cond['depart']}%' OR p.department LIKE '%{$cond['depart']}%')";
+            $sql .= " AND (IFNULL(d.department,'无部门') LIKE '%{$cond['depart']}%' AND IFNULL(p.department,'无部门') LIKE '%{$cond['depart']}%')";
 
         $sql .=   " GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END,IFNULL(goodsStatus,'无状态')
                 ) aa LEFT JOIN 
@@ -484,7 +484,7 @@ class DataCenterController extends AdminController
 						LEFT JOIN auth_department p ON p.id=d.parent
                         WHERE 1=1 ";
         if(isset($cond['storeName']) && $cond['storeName'])
-            $sql .= " AND (d.department LIKE '%{$cond['depart']}%' OR p.department LIKE '%{$cond['depart']}%')";
+            $sql .= " AND (IFNULL(d.department,'无部门') LIKE '%{$cond['depart']}%' AND IFNULL(p.department,'无部门') LIKE '%{$cond['depart']}%')";
         $sql .=  " GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END,IFNULL(goodsStatus,'无状态')
                 ) bb ON aa.depart=bb.depart AND IFNULL(aa.goodsStatus,'无状态')=IFNULL(bb.goodsStatus,'无状态')
                 ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
@@ -530,7 +530,7 @@ class DataCenterController extends AdminController
 						LEFT JOIN auth_department p ON p.id=d.parent
                         WHERE 1=1 ";
         if(isset($cond['depart']) && $cond['depart'])
-            $sql .= " AND (d.department LIKE '%{$cond['depart']}%' OR p.department LIKE '%{$cond['depart']}%')";
+            $sql .= " AND (IFNULL(d.department,'无部门') LIKE '%{$cond['depart']}%' AND IFNULL(p.department,'无部门') LIKE '%{$cond['depart']}%')";
         $sql .=  " GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END,
                             CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END
                 ) aa LEFT JOIN 
@@ -547,7 +547,7 @@ class DataCenterController extends AdminController
 						LEFT JOIN auth_department p ON p.id=d.parent
                         WHERE 1=1 ";
         if(isset($cond['depart']) && $cond['depart'])
-            $sql .= " AND (d.department LIKE '%{$cond['depart']}%' OR p.department LIKE '%{$cond['depart']}%')";
+            $sql .= " AND (IFNULL(d.department,'无部门') LIKE '%{$cond['depart']}%' AND IFNULL(p.department,'无部门') LIKE '%{$cond['depart']}%')";
         $sql .=    " GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END,
                               CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END
                 ) bb ON aa.depart=bb.depart AND IFNULL(aa.salerName,'无人')=IFNULL(bb.salerName,'无人')

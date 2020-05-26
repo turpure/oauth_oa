@@ -220,41 +220,32 @@ class Helper
         return [$httpCode, json_decode($response, true)];
     }
 
-
-    public  static function post($url, $data){
+    /**
+     * @param $url
+     * @param $data
+     * @param string $method
+     * Date: 2020-05-26 14:05
+     * Author: henry
+     * @return mixed
+     */
+    public  static function post($url, $data, $method = 'POST'){
         $content = http_build_query($data);
         $options = array(
             'http' => array(
-                'method' => 'POST',
+                'method' => $method,
                 'header' => "Content-type: application/x-www-form-urlencoded\r\n" .
                     "Authorization: Bearer " . $data['access_token'] . "\r\n",
                 'content' => $content
             )
         );
         $ret = file_get_contents($url, false, stream_context_create($options));
-        return $ret;
+        return json_decode($ret, true);
     }
-    public  static function get($url, $jsonStr, $header = [])
-    {
-        $ch = curl_init();
-        $header = array_merge($header,['Content-Type: application/json', 'charset=utf-8',"Accept: application/json"]);
-        $user_agent = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.146 Safari/537.36";
-        curl_setopt($ch, CURLOPT_USERAGENT,$user_agent);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonStr);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                'Content-Type: application/json; charset=utf-8',
-//                'Content-Length: ' . strlen($jsonStr)
-            )
-        );
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
 
-        return [$httpCode, json_decode($response, true)];
+
+    public  static function get($url, $data, $header = [])
+    {
+
     }
 
 
