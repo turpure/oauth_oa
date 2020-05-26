@@ -152,12 +152,17 @@ class ApiWarehouseTools
         $end = $date[1];
         $member = isset($condition['member']) ? $condition['member'] : [];
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
+        $billNumber = isset($condition['billNumber']) ? $condition['billNumber'] : '';
+
         if(empty($member)) {
             $sql = "select makeDate,recorder, billNumber  from CG_StockInM(nolock) where convert(varchar(10),makeDate,121) BETWEEN :begin and  :end ";
         }
         else {
             $member = implode("','",$member);
             $sql = "select makeDate,recorder, billNumber  from CG_StockInM(nolock) where recorder in ('{$member}') and convert(varchar(10),makeDate,121) BETWEEN :begin and  :end ";
+        }
+        if(!empty($billNumber)) {
+            $sql .= "And billNumber='{$billNumber}'";
         }
         $db = Yii::$app->py_db;
         $data = $db->createCommand($sql,[':begin' => $begin, ':end' => $end])->queryAll();
