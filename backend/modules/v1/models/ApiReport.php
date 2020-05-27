@@ -1021,21 +1021,23 @@ class ApiReport
      */
     public static function getDevGoodsProfit($condition)
     {
-
-        $developer = $condition['developer'];
-        $goodsStatus = $condition['goodsStatus'];
+        $developer = isset($condition['developer']) ? $condition['developer'] : [];
+        $goodsStatus = isset($condition['goodsStatus']) ? $condition['goodsStatus'] : [];
+        $introducer = isset($condition['introducer']) ? $condition['introducer'] : '';
+        $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
         list($beginDate, $endDate) = $condition['dateRange'];
         $dateFlag = $condition['dateType'];
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-        $sql = 'call report_devGoodsProfitAPI (:developer,:goodsStatus, :beginDate, :endDate, :dateFlag) ';
-        $params = [':developer' => implode(',', $developer), ':goodsStatus' => implode(',', $goodsStatus),
+        $sql = 'call report_devGoodsProfitAPI (:developer,:introducer,:goodsCode,:goodsStatus, :beginDate, :endDate, :dateFlag) ';
+        $params = [':developer' => implode(',', $developer),':introducer' => $introducer,
+            ':goodsCode' => $goodsCode, ':goodsStatus' => implode(',', $goodsStatus),
             ':beginDate' => $beginDate, ':endDate' => $endDate, ':dateFlag' => (int)$dateFlag ];
         $query = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
         $provider = new ArrayDataProvider([
             'allModels' => $query,
             'sort' => ['attributes' =>
                 [
-                    'developer','goodsCode', 'goodsName','devDate', 'goodsStatus',
+                    'developer', 'introducer', 'goodsCode', 'goodsName','devDate', 'goodsStatus',
                     'sold','amt','profit','rate','ebaySold','ebayProfit',
                     'wishSold','wishProfit','smtSold','smtProfit',
                     'joomSold','joomProfit','amazonSold','amazonProfit'
