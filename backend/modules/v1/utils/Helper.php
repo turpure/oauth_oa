@@ -243,9 +243,25 @@ class Helper
     }
 
 
-    public  static function get($url, $data, $header = [])
-    {
+    public  static function curlRequest($url, $data, $method = 'POST'){
+        $ch = curl_init();
+        if($method == 'POST'){
+            curl_setopt($ch, CURLOPT_POST, 1);
+        }
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                'Content-Type: application/json; charset=utf-8',
+                "Authorization: Bearer " . $data['access_token'],
+//                'Content-Length: ' . strlen($jsonStr)
+            )
+        );
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
 
+        return json_decode($response, true);
     }
 
 

@@ -1054,14 +1054,17 @@ class ApiGoodsinfo
                         WHERE AliasName LIKE '{$account}%'";
             $tokens = Yii::$app->py_db->createCommand($sql)->queryAll();
             $token = self::filterJoomAccount($goodsInfo['goodsId'], $tokens);
-            $token = [
-                "suffix" => "JoomJ1-J1Women",
-                "memo" => "女人世界",
-                "token" => "SEV0001MTU4OTUyNzQzMXx6Qkh5MmFOek1wS1ViRVhIeFFET0tTUjFremVTQnNqM0lWUDBISG5wRTMwcDcwQ2VuRkFYUnpfQkljTTNNcTRCNGJCRUZPeW1UUk9fakNNY29lYUtONjdFTWlHaGQtdWU5NlpCQWFqVW5INFBwcEhIcnJoVl82V1B3aVMxdzN1TzNrQ3F5X2dRQl9uNTZuaGs5aVZXMlR2bDFUZVV4MjE5YmMtWVFkRUdqWWFaS2VrPXzGotYhVOhafOhHPFvD9RHMpdW7bK2B-8NbUCQzE7Oouw==",
-            ];
+            var_dump($token);
+//            $token = [
+//                "suffix" => "JoomJ1-J1Women",
+//                "memo" => "女人世界",
+//                "token" => "SEV0001MTU4OTUyNzQzMXx6Qkh5MmFOek1wS1ViRVhIeFFET0tTUjFremVTQnNqM0lWUDBISG5wRTMwcDcwQ2VuRkFYUnpfQkljTTNNcTRCNGJCRUZPeW1UUk9fakNNY29lYUtONjdFTWlHaGQtdWU5NlpCQWFqVW5INFBwcEhIcnJoVl82V1B3aVMxdzN1TzNrQ3F5X2dRQl9uNTZuaGs5aVZXMlR2bDFUZVV4MjE5YmMtWVFkRUdqWWFaS2VrPXzGotYhVOhafOhHPFvD9RHMpdW7bK2B-8NbUCQzE7Oouw==",
+//            ];
             $row['access_token'] = $token ? $token['token'] : '';
             $url = 'https://api-merchant.joom.com/api/v2/product/add';
-            $ret = Helper::post($url , $row);
+//            $ret = Helper::post($url , $row);
+            $ret = Helper::curlRequest($url , $row);
+            var_dump($ret);exit;
             if($ret['code'] == 0 && $ret['data']){
                 $logData['ibayTemplateId'] = $ret['data']['Product']['id'];
             }
@@ -1513,7 +1516,12 @@ class ApiGoodsinfo
 
             foreach ($accounts as $act) {
                 $account = OaVovaSuffix::findOne(['account' => $act]);
-                $postfix = '@#' . substr(explode('-', $act)[1], 0, 2);
+                $fixArr = explode('-', $act);
+                if(count($fixArr) == 2){
+                    $postfix = '@#' . substr($fixArr[1], 0, 2);
+                }else{
+                    $postfix = '@#' . $fixArr[1];
+                }
                 $titlePool = [];
                 $title = '';
                 $len = self::WishTitleLength;
