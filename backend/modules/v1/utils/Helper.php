@@ -246,19 +246,26 @@ class Helper
     public  static function curlRequest($url, $data, $method = 'POST'){
         $ch = curl_init();
         if($method == 'POST'){
+            curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+        }else{
+            curl_setopt($ch,CURLOPT_URL, $url. (strpos($url, '?') === FALSE ? '?' : ''). http_build_query($data));
         }
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                'Content-Type: application/json; charset=utf-8',
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 4);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/x-www-form-urlencoded',
                 "Authorization: Bearer " . $data['access_token'],
-//                'Content-Length: ' . strlen($jsonStr)
-            )
-        );
+            ]);
+        //如果用的协议是https则打开下面这个注释
+        if(strpos($url,'https:') !== false){
+            curl_setopt ( $ch, CURLOPT_SSL_VERIFYPEER, false );
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        }
+
         $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
         return json_decode($response, true);
