@@ -755,7 +755,7 @@ class ApiGoodsinfo
         foreach ($ibayArr as $k => $var){
             #第一行是关联图片属性 ，匹配颜色
             if($k == 0 && $row['color']){
-                //$row['color'] = self::getAliexpressSkuAttributes($row['color'], $var);
+                $row['color'] = self::getAliexpressSkuAttributes($row['color'], $var);
             }
             #匹配 Size
             if($row['size'] && strpos($var['name'], 'Size') !== false){
