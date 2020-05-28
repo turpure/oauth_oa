@@ -582,6 +582,11 @@ class ApiGoodsinfo
             if (!$goods['lotNum']) $goods['lotNum'] = 1;
             if (!$goods['quantity']) $goods['quantity'] = 1000;
             if (!$goods['productPrice']) $goods['productPrice'] = 0;
+            if(isset($goods['category1']) && $goods['category1']){
+                foreach ($goodsSku as &$sku){
+                    $sku = self::filterAliexpressSkuColorAndSize($goods['category1'], $sku);
+                }
+            }
         } else {
             $goods = [];
             $goodsSku = [];
@@ -714,6 +719,11 @@ class ApiGoodsinfo
                     $sku = new OaSmtGoodsSku();
                 }
                 $sku->setAttributes($row);
+                if(isset($goods['category1']) && $goods['category1']){
+                    $newRow = self::filterAliexpressSkuColorAndSize($goods['category1'], $row);
+                    $sku->color = $newRow['color'];
+                    $sku->size = $newRow['size'];
+                }
                 if (!$sku->save()) {
                     throw new \Exception('save sku failed');
                 }
@@ -731,6 +741,105 @@ class ApiGoodsinfo
             ];
         }
     }
+
+    /**
+     * @param $categoryId
+     * @param $row
+     * Date: 2020-05-28 16:41
+     * Author: henry
+     * @return mixed
+     */
+    public static function filterAliexpressSkuColorAndSize($categoryId, $row){
+        $sql = "select name,value from aliexpress_specifics where categoryid={$categoryId} and isskuattribute=1 order by customizedpic desc";
+        $ibayArr = Yii::$app->ibay->createCommand($sql)->queryAll();
+        foreach ($ibayArr as $k => $var){
+            #第一行是关联图片属性 ，匹配颜色
+            if($k == 0 && $row['color']){
+                //$row['color'] = self::getAliexpressSkuAttributes($row['color'], $var);
+            }
+            #匹配 Size
+            if($row['size'] && strpos($var['name'], 'Size') !== false){
+                $row['size'] = self::getAliexpressSkuAttributes($row['size'], $var, true);
+            }
+        }
+        return  $row;
+    }
+
+    /** SKU 和ibay数据匹配
+     * @param $attribute
+     * @param $var
+     * Date: 2020-05-28 15:55
+     * Author: henry
+     * @return string
+     */
+    public static function getAliexpressSkuAttributes($attribute, $var, $flag = false){
+        $attributeArr = unserialize($var['value']);
+        //var_dump($attributeArr);exit;
+        $newAttrArr = $zhAttr = $enAttr = [];
+        foreach ($attributeArr as $attrVal){
+            if($flag == true){
+                if($attrVal['names']['zh'] == $attribute || $attrVal['names']['en'] == $attribute
+                    || $attrVal['names']['zh'] == 'XL' && $attribute == '1XL'
+                    || $attrVal['names']['zh'] == 'XXL' && $attribute == '2XL'
+                    || $attrVal['names']['zh'] == 'XXXL' && $attribute == '3XL'
+                    ){
+                    $newAttrArr[] = ['zh' => $attrVal['names']['zh'], 'en' => $attrVal['names']['en']];
+                }
+                if($attrVal['names']['zh'] == $attribute
+                    || $attrVal['names']['zh'] == 'XL' && $attribute == '1XL'
+                    || $attrVal['names']['zh'] == 'XXL' && $attribute == '2XL'
+                    || $attrVal['names']['zh'] == 'XXXL' && $attribute == '3XL'
+                ){
+                    $zhAttr[] = $attrVal['names']['zh']; //中文颜色
+                }
+                if($attrVal['names']['en'] == $attribute
+                    || $attrVal['names']['zh'] == 'XL' && $attribute == '1XL'
+                    || $attrVal['names']['zh'] == 'XXL' && $attribute == '2XL'
+                    || $attrVal['names']['zh'] == 'XXXL' && $attribute == '3XL'
+                ){
+                    $enAttr[] = $attrVal['names']['en']; //英文颜色
+                }
+            }else{
+                if(strpos($attrVal['names']['zh'], $attribute) !== false ||
+                    strpos($attrVal['names']['en'], $attribute)
+                ){
+                    $newAttrArr[] = ['zh' => $attrVal['names']['zh'], 'en' => $attrVal['names']['en']];
+                }
+                if(strpos($attrVal['names']['zh'], $attribute) !== false){
+                    $zhAttr[] = $attrVal['names']['zh']; //中文颜色
+                }
+                if(strpos($attrVal['names']['en'], $attribute) !== false){
+                    $enAttr[] = $attrVal['names']['en']; //英文颜色
+                }
+            }
+        }
+        //获取最终属性值，先匹配中文，没有则匹配英文
+        $minZhAttr = $minEnAttr = '';
+        if($zhAttr){
+            $minZhAttr = min($zhAttr);//取最小中文颜色
+            foreach($newAttrArr as $v){
+                if($v['zh'] == $minZhAttr){
+                    $minEnAttr = $v['en'];
+                }
+            }
+            if($minZhAttr && $minEnAttr){
+                $attribute = $minEnAttr . '(' . $minZhAttr . ')';
+            }
+        }elseif ($enAttr){
+            $minEnAttr = min($enAttr);//取最小英文颜色
+            foreach($newAttrArr as $v){
+                if($v['en'] == $minEnAttr){
+                    $minZhAttr = $v['en'];
+                }
+            }
+            if($minZhAttr && $minEnAttr){
+                $attribute = $minEnAttr . '(' . $minZhAttr . ')';
+            }
+        }
+        return $attribute;
+    }
+
+
 
     /** 平台信息标记完善
      * @param $condition
