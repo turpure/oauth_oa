@@ -801,7 +801,7 @@ class ApiGoodsinfo
                 }
             }else{
                 if(strpos($attrVal['names']['zh'], $attribute) !== false ||
-                    strpos($attrVal['names']['en'], $attribute)
+                    strpos($attrVal['names']['en'], $attribute) !== false
                 ){
                     $newAttrArr[] = ['zh' => $attrVal['names']['zh'], 'en' => $attrVal['names']['en']];
                 }
@@ -815,6 +815,7 @@ class ApiGoodsinfo
         }
         //获取最终属性值，先匹配中文，没有则匹配英文
         $minZhAttr = $minEnAttr = '';
+
         if($zhAttr){
             $minZhAttr = min($zhAttr);//取最小中文颜色
             foreach($newAttrArr as $v){
@@ -829,7 +830,7 @@ class ApiGoodsinfo
             $minEnAttr = min($enAttr);//取最小英文颜色
             foreach($newAttrArr as $v){
                 if($v['en'] == $minEnAttr){
-                    $minZhAttr = $v['en'];
+                    $minZhAttr = $v['zh'];
                 }
             }
             if($minZhAttr && $minEnAttr){
