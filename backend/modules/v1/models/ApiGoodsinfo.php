@@ -582,8 +582,8 @@ class ApiGoodsinfo
             if (!$goods['lotNum']) $goods['lotNum'] = 1;
             if (!$goods['quantity']) $goods['quantity'] = 1000;
             if (!$goods['productPrice']) $goods['productPrice'] = 0;
-            if(isset($goods['category1']) && $goods['category1']){
-                foreach ($goodsSku as &$sku){
+            if (isset($goods['category1']) && $goods['category1']) {
+                foreach ($goodsSku as &$sku) {
                     $sku = self::filterAliexpressSkuColorAndSize($goods['category1'], $sku);
                 }
             }
@@ -719,7 +719,7 @@ class ApiGoodsinfo
                     $sku = new OaSmtGoodsSku();
                 }
                 $sku->setAttributes($row);
-                if(isset($goods['category1']) && $goods['category1']){
+                if (isset($goods['category1']) && $goods['category1']) {
                     $newRow = self::filterAliexpressSkuColorAndSize($goods['category1'], $row);
                     $sku->color = $newRow['color'];
                     $sku->size = $newRow['size'];
@@ -749,20 +749,21 @@ class ApiGoodsinfo
      * Author: henry
      * @return mixed
      */
-    public static function filterAliexpressSkuColorAndSize($categoryId, $row){
+    public static function filterAliexpressSkuColorAndSize($categoryId, $row)
+    {
         $sql = "select name,value from aliexpress_specifics where categoryid={$categoryId} and isskuattribute=1 order by customizedpic desc";
         $ibayArr = Yii::$app->ibay->createCommand($sql)->queryAll();
-        foreach ($ibayArr as $k => $var){
+        foreach ($ibayArr as $k => $var) {
             #第一行是关联图片属性 ，匹配颜色
-            if($k == 0 && $row['color']){
+            if ($k == 0 && $row['color']) {
                 $row['color'] = self::getAliexpressSkuAttributes($row['color'], $var);
             }
             #匹配 Size
-            if($row['size'] && strpos($var['name'], 'Size') !== false){
+            if ($row['size'] && strpos($var['name'], 'Size') !== false) {
                 $row['size'] = self::getAliexpressSkuAttributes($row['size'], $var, true);
             }
         }
-        return  $row;
+        return $row;
     }
 
     /** SKU 和ibay数据匹配
@@ -772,43 +773,44 @@ class ApiGoodsinfo
      * Author: henry
      * @return string
      */
-    public static function getAliexpressSkuAttributes($attribute, $var, $flag = false){
+    public static function getAliexpressSkuAttributes($attribute, $var, $flag = false)
+    {
         $attributeArr = unserialize($var['value']);
         //var_dump($attributeArr);exit;
         $newAttrArr = $zhAttr = $enAttr = [];
-        foreach ($attributeArr as $attrVal){
-            if($flag == true){
-                if($attrVal['names']['zh'] == $attribute || $attrVal['names']['en'] == $attribute
+        foreach ($attributeArr as $attrVal) {
+            if ($flag == true) {
+                if ($attrVal['names']['zh'] == $attribute || $attrVal['names']['en'] == $attribute
                     || $attrVal['names']['zh'] == 'XL' && $attribute == '1XL'
                     || $attrVal['names']['zh'] == 'XXL' && $attribute == '2XL'
                     || $attrVal['names']['zh'] == 'XXXL' && $attribute == '3XL'
-                    ){
+                ) {
                     $newAttrArr[] = ['zh' => $attrVal['names']['zh'], 'en' => $attrVal['names']['en']];
                 }
-                if($attrVal['names']['zh'] == $attribute
+                if ($attrVal['names']['zh'] == $attribute
                     || $attrVal['names']['zh'] == 'XL' && $attribute == '1XL'
                     || $attrVal['names']['zh'] == 'XXL' && $attribute == '2XL'
                     || $attrVal['names']['zh'] == 'XXXL' && $attribute == '3XL'
-                ){
+                ) {
                     $zhAttr[] = $attrVal['names']['zh']; //中文颜色
                 }
-                if($attrVal['names']['en'] == $attribute
+                if ($attrVal['names']['en'] == $attribute
                     || $attrVal['names']['zh'] == 'XL' && $attribute == '1XL'
                     || $attrVal['names']['zh'] == 'XXL' && $attribute == '2XL'
                     || $attrVal['names']['zh'] == 'XXXL' && $attribute == '3XL'
-                ){
+                ) {
                     $enAttr[] = $attrVal['names']['en']; //英文颜色
                 }
-            }else{
-                if(strpos($attrVal['names']['zh'], $attribute) !== false ||
+            } else {
+                if (strpos($attrVal['names']['zh'], $attribute) !== false ||
                     strpos($attrVal['names']['en'], $attribute) !== false
-                ){
+                ) {
                     $newAttrArr[] = ['zh' => $attrVal['names']['zh'], 'en' => $attrVal['names']['en']];
                 }
-                if(strpos($attrVal['names']['zh'], $attribute) !== false){
+                if (strpos($attrVal['names']['zh'], $attribute) !== false) {
                     $zhAttr[] = $attrVal['names']['zh']; //中文颜色
                 }
-                if(strpos($attrVal['names']['en'], $attribute) !== false){
+                if (strpos($attrVal['names']['en'], $attribute) !== false) {
                     $enAttr[] = $attrVal['names']['en']; //英文颜色
                 }
             }
@@ -816,30 +818,29 @@ class ApiGoodsinfo
         //获取最终属性值，先匹配中文，没有则匹配英文
         $minZhAttr = $minEnAttr = '';
 
-        if($zhAttr){
+        if ($zhAttr) {
             $minZhAttr = min($zhAttr);//取最小中文颜色
-            foreach($newAttrArr as $v){
-                if($v['zh'] == $minZhAttr){
+            foreach ($newAttrArr as $v) {
+                if ($v['zh'] == $minZhAttr) {
                     $minEnAttr = $v['en'];
                 }
             }
-            if($minZhAttr && $minEnAttr){
+            if ($minZhAttr && $minEnAttr) {
                 $attribute = $minEnAttr . '(' . $minZhAttr . ')';
             }
-        }elseif ($enAttr){
+        } elseif ($enAttr) {
             $minEnAttr = min($enAttr);//取最小英文颜色
-            foreach($newAttrArr as $v){
-                if($v['en'] == $minEnAttr){
+            foreach ($newAttrArr as $v) {
+                if ($v['en'] == $minEnAttr) {
                     $minZhAttr = $v['zh'];
                 }
             }
-            if($minZhAttr && $minEnAttr){
+            if ($minZhAttr && $minEnAttr) {
                 $attribute = $minEnAttr . '(' . $minZhAttr . ')';
             }
         }
         return $attribute;
     }
-
 
 
     /** 平台信息标记完善
@@ -1114,6 +1115,7 @@ class ApiGoodsinfo
             $id = $goodsInfo['id'];
         }
         $joomSku = OaWishGoodsSku::find()->where(['infoId' => $id])->asArray()->all();
+
         $joomInfo = OaWishGoods::find()->where(['infoId' => $id])->asArray()->one();
         $keyWords = static::preKeywords($joomInfo);
         $title = static::getTitleName($keyWords, self::JoomTitleLength);
@@ -1128,62 +1130,68 @@ class ApiGoodsinfo
                         WHERE AliasName LIKE '{$account}%'";
             $tokens = Yii::$app->py_db->createCommand($sql)->queryAll();
             #判断账号是否存在该产品
-//            $checkNum = self::checkJoomProducts($joomInfo['sku'], $account);
-//            if ($checkNum > 0) {
-//                throw new Exception("账号" . $account . "已存在产品" . $joomInfo['sku']);
-//            }
             $check = self::selectAndCheckJoomProducts($row['parent_sku'], $tokens);
-            if($check){
-                $joomSku = OaWishGoodsSku::find()->andFilterWhere(['infoId' => $id])->andFilterWhere(['not in','sku', $check[1]])->asArray()->all();
-                var_dump($joomSku);exit;
-                $rr = self::uploadProductVariationToJoomBackstage($row['parent_sku'], $check, $joomAccounts);
-            }
-            var_dump($check);exit;
+//            var_dump($check);exit;
+            if ($check) {
+                $joomSku = OaWishGoodsSku::find()->andFilterWhere(['infoId' => $id])->andFilterWhere(['not in', 'sku', $check[1]])->asArray()->all();
+//                var_dump($joomSku);exit;
+                # 上架新增加变体（已排除已有变体）
+                $varRes = self::uploadProductVariationToJoomBackstage($row['parent_sku'], $joomSku, $check[0], $joomAccounts);
+            } else {
+                $row['name'] = $title;
+                $row['description'] = $joomInfo['description'];
+                $row['tags'] = $joomInfo['wishTags'];
+                $row['sku'] = $joomSku[0]['sku'] . $joomAccounts['skuCode'];
+                $row['color'] = $joomSku[0]['color'];
+                $row['size'] = $joomSku[0]['size'];
+                $row['inventory'] = $joomSku[0]['inventory'];
+                $row['price'] = $joomSku[0]['joomPrice'];
+                $row['msrp'] = ($joomSku[0]['joomPrice'] + $joomSku[0]['joomShipping']) * 5;
+                $row['shipping'] = $joomSku[0]['joomShipping'];
+                $row['shipping_weight'] = (float)$joomSku[0]['weight'] * 1.0 / 1000;
+                //$row['product_main_image'] = $imageInfo['mainImage'];
+                $row['main_image'] = $imageInfo['mainImage'];
+                $row['variation_main_image'] = str_replace('/10023/', '/' . $joomAccounts['imgCode'] . '/', $joomSku[0]['linkUrl']);
 
-            $row['name'] = $title;
-            $row['description'] = $joomInfo['description'];
-            $row['tags'] = $joomInfo['wishTags'];
-            $row['sku'] = $joomSku[0]['sku'] . $joomAccounts['skuCode'];
-            $row['color'] = $joomSku[0]['color'];
-            $row['size'] = $joomSku[0]['size'];
-            $row['inventory'] = $joomSku[0]['inventory'];
-            $row['price'] = $joomSku[0]['joomPrice'];
-            $row['msrp'] = ($joomSku[0]['joomPrice'] + $joomSku[0]['joomShipping']) * 5;
-            $row['shipping'] = $joomSku[0]['joomShipping'];
-            $row['shipping_weight'] = (float)$joomSku[0]['weight'] * 1.0 / 1000;
-            $row['product_main_image'] = $imageInfo['mainImage'];
-            //$row['main_image'] =
-            $row['variation_main_image'] = str_replace('/10023/', '/' . $joomAccounts['imgCode'] . '/', $joomSku[0]['linkUrl']);
-            foreach ($imageInfo['extraImages'] as $k => $v) {
-                if ($k <= 9 && $v) {
-                    if ($k == 0) {
-                        $row['extra_images'] .= $imageInfo['extraImages'][$k];
-                    } else {
-                        $row['extra_images'] .= '|' . $imageInfo['extraImages'][$k];
+                foreach ($imageInfo['extraImages'] as $k => $v) {
+                    if ($k <= 9 && $v) {
+                        if ($k == 0) {
+                            $row['extra_images'] .= $imageInfo['extraImages'][$k];
+                        } else {
+                            $row['extra_images'] .= '|' . $imageInfo['extraImages'][$k];
+                        }
                     }
                 }
+                $row['dangerous_kind'] = static::getJoomDangerousKind($goodsInfo);
+                $row['declaredValue'] = static::getJoomDeclaredValue($joomSku[0]['joomPrice']);
+                #随机获取符合条件的token
+                $token = self::filterJoomAccount($goodsInfo['goodsId'], $tokens);
+                $row['access_token'] = $token ? $token['token'] : '';
+                # 上架产品
+                $url = 'https://api-merchant.joom.com/api/v2/product/add';
+                $ret = Helper::curlRequest($url, $row);
+                if ($ret['code'] == 0 && $ret['data']) {
+                    $logData['ibayTemplateId'] = $ret['data']['Product']['id'];
+                    $logData['result'] = 'Success';
+                } else {
+                    $logData['result'] = $ret['message'];
+                }
+                Logger::ibayLog($logData);
+                if ($ret['code'] != 0) {
+                    throw new Exception($ret['message']);
+                }
+                # 上架新增加变体（已排除已有变体）
+                unset($joomSku[0]);
+//                var_dump($joomSku);exit;
+                $varRes = self::uploadProductVariationToJoomBackstage($row['parent_sku'], $joomSku, $token, $joomAccounts);
             }
-            $row['dangerous_kind'] = static::getJoomDangerousKind($goodsInfo);
-            $row['declaredValue'] = static::getJoomDeclaredValue($joomSku[0]['joomPrice']);
-
-
-             $token = self::filterJoomAccount($goodsInfo['goodsId'], $tokens);
-//            var_dump($row);exit;
-            $row['access_token'] = $token ? $token['token'] : '';
-            $url = 'https://api-merchant.joom.com/api/v2/product/add';
-//            $ret = Helper::curlRequest($url , $row);
-//            if($ret['code'] == 0 && $ret['data']){
-//                $logData['ibayTemplateId'] = $ret['data']['Product']['id'];
-//                $logData['result'] = 'Success';
-//            }else{
-//                 $logData['result'] = $ret['message'];
-//            }
-//            Logger::ibayLog($logData);
-//            if($ret['code'] != 0){
-//                throw new Exception($ret['message']);
-//            }
-            //var_dump($ret);exit;
-
+            if ($varRes) {
+                return [
+                    'code' => 400,
+                    'msg' => 'Failed upload variants',
+                    'data' => $varRes
+                ];
+            }
         }
         return true;
     }
@@ -1195,9 +1203,10 @@ class ApiGoodsinfo
      * @param $joomAccounts
      * Date: 2020-05-27 14:44
      * Author: henry
-     * @return array
+     * @return array | boolean
      */
-    public static function uploadProductVariationToJoomBackstage($parentSku, $joomSku, $account, $joomAccounts){
+    public static function uploadProductVariationToJoomBackstage($parentSku, $joomSku, $token, $joomAccounts)
+    {
         $variationRow = [
             'main_image' => '', 'sku' => '', 'parent_sku' => '',
             'enabled' => true, 'color' => '', 'hs_code' => '', 'declaredValue' => '',
@@ -1205,8 +1214,7 @@ class ApiGoodsinfo
             'shipping_weight' => '', 'shipping_height' => '', 'shipping_length' => '', 'shipping_width' => ''
         ];
         $message = [];
-        foreach ($joomSku as $k => $sku) {
-            if ($k == 0) continue;
+        foreach ($joomSku as $sku) {
             $variationRow['parent_sku'] = $parentSku;
             $variationRow['sku'] = $sku['sku'] . $joomAccounts['skuCode'];
             $variationRow['color'] = $sku['color'];
@@ -1218,15 +1226,14 @@ class ApiGoodsinfo
             $variationRow['shipping_weight'] = (float)$sku['weight'] * 1.0 / 1000;
             $variationRow['main_image'] = str_replace('/10023/', '/' . $joomAccounts['imgCode'] . '/', $sku['linkUrl']);
             $variationRow['declaredValue'] = static::getJoomDeclaredValue($sku['joomPrice']);
-            $variationRow['access_token'] = $account ? $account['token'] : '';
+            $variationRow['access_token'] = $token ? $token['token'] : '';
 
             $variationUrl = 'https://api-merchant.joom.com/api/v2/variant/add';
             $res = Helper::curlRequest($variationUrl, $variationRow);
-             if($res['code'] == 0 && $res['data']){
-                 $message[] = 'SKU '.$sku['sku'].' upload successful!';
-             }else{
-                 $message[] = 'SKU '.$sku['sku'].' upload failed cause of '. $res['message'];
-             }
+//            var_dump($res);exit;
+            if ($res['code']) {
+                $message[] = 'SKU ' . $sku['sku'] . ' upload failed cause of ' . $res['message'];
+            }
         }
         return $message;
     }
@@ -1238,23 +1245,24 @@ class ApiGoodsinfo
      * Author: henry
      * @return bool|mixed
      */
-    public static function selectAndCheckJoomProducts($parentSku, $account){
+    public static function selectAndCheckJoomProducts($parentSku, $account)
+    {
         $url = "https://api-merchant.joom.com/api/v2/product";
-        foreach ($account as $v){
+        foreach ($account as $v) {
             $params = [
                 'access_token' => $v['token'],
                 'parent_sku' => $parentSku,
             ];
             $res = Helper::curlRequest($url, $params, 'GET');
-            if($res['code'] == 0){
+            if ($res['code'] == 0) {
 //                var_dump($res);exit;
                 $sku = [];
                 $skuArr = $res['data']['Product']['variants'];
-                foreach ($skuArr as $var){
+                foreach ($skuArr as $var) {
                     $item = explode('@#', $var['Variant']['sku']);
                     $sku[] = $item[0];
                 }
-                return [$v,$sku];
+                return [$v, $sku];
             }
         }
         return false;
@@ -1677,9 +1685,9 @@ class ApiGoodsinfo
             foreach ($accounts as $act) {
                 $account = OaVovaSuffix::findOne(['account' => $act]);
                 $fixArr = explode('-', $act);
-                if(count($fixArr) == 2){
+                if (count($fixArr) == 2) {
                     $postfix = '@#' . substr($fixArr[1], 0, 2);
-                }else{
+                } else {
                     $postfix = '@#' . $fixArr[1];
                 }
                 $titlePool = [];
