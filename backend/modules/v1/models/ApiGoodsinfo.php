@@ -965,7 +965,8 @@ class ApiGoodsinfo
                     break;
                 }
             }
-
+            if(count($wishSku) > 1) $goodsInfo['isVar'] = '是'; // 2020-06-02 添加（单平台添加多属性）
+//            var_dump($goodsInfo['isVar']);exit;
             $variantInfo = static::getWishVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
             $row['sku'] = $wishInfo['sku'] . $account['suffix'];
             $row['selleruserid'] = $account['ibaySuffix'];
@@ -1483,6 +1484,8 @@ class ApiGoodsinfo
             $row['IBayEffectType'] = '1';
             $row['IbayEffectImg'] = static::getEbayPicture($goodsInfo, $ebayInfo, $account);
             $row['IbayCrossSelling'] = '';
+            //var_dump($ebayInfo);exit;
+            if(count($ebayInfo['oaEbayGoodsSku']) > 1) $goodsInfo['isVar'] = '是'; // 2020-06-02 添加（单平台添加多属性）
             $row['Variation'] = static::getEbayVariation($goodsInfo['isVar'], $ebayInfo, $ebayAccount['nameCode']);
             $row['outofstockcontrol'] = '0';
             $row['EPID'] = 'Does not apply';
@@ -1888,9 +1891,9 @@ class ApiGoodsinfo
             }
             $variant = json_encode($variation);
             $ret = [];
+//            var_dump($variant);exit;
             if ($isVar === '是') {
                 $ret['variant'] = $variant;
-
 
                 # price -0.01
                 $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1;
