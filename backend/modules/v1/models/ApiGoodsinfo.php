@@ -1124,10 +1124,12 @@ class ApiGoodsinfo
             $imageInfo = static::getJoomImageInfo($joomInfo, $joomAccounts);
             $row['parent_sku'] = $joomInfo['sku'] . $joomAccounts['skuCode'];
             #获取账号TOKEN
+            if($account == 'Joom') $account .= '0';
+//            var_dump($account);exit;
             $sql = "SELECT AliasName AS suffix,d.memo,AccessToken AS token 
                         FROM [dbo].[S_JoomSyncInfo] s
                         INNER JOIN B_Dictionary d ON d.DictionaryName=s.AliasName AND d.CategoryID=12 
-                        WHERE AliasName LIKE '{$account}%'";
+                        WHERE  AliasName LIKE '{$account}%'";
             $tokens = Yii::$app->py_db->createCommand($sql)->queryAll();
             #判断账号是否存在该产品
             $check = self::selectAndCheckJoomProducts($row['parent_sku'], $tokens);
