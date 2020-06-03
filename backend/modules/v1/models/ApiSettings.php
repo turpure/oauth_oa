@@ -385,13 +385,13 @@ class ApiSettings
 				}else {
 					if(!$res) {//插入
 						$sql = "INSERT INTO warehouse_intergral_other_data_every_month 
-                                (name,`month`,team,all_days,labeling_days,sorting_days,other_integral,deduction_integral,update_time) 
-							VALUES('$data[name]','$data[month]','$data[team]','$data[all_days]','$data[labeling_days]',
+                                (name,`month`,job,team,all_days,labeling_days,sorting_days,other_integral,deduction_integral,update_time) 
+							VALUES('$data[name]','$data[month]','$data[job]','$data[team]','$data[all_days]','$data[labeling_days]',
 							'$data[sorting_days]','$data[other_integral]','$data[deduction_integral]','$date')";
 					} else {
 						$sql = "UPDATE warehouse_intergral_other_data_every_month 
-							SET team='$data[team]',all_days='$data[all_days]',labeling_days='$data[labeling_days]',sorting_days='$data[sorting_days]',
-								other_integral='$data[other_integral]',
+							SET job='$data[job]',team='$data[team]',all_days='$data[all_days]',labeling_days='$data[labeling_days]',
+							    sorting_days='$data[sorting_days]',other_integral='$data[other_integral]',
 								deduction_integral='$data[deduction_integral]',update_time='$date' 
 							WHERE name='$data[name]' AND `month`='$data[month]'";
 					}
