@@ -631,7 +631,7 @@ class ApiReport
             Yii::$app->db->createCommand("TRUNCATE TABLE cache_introduceProfitTmp;")->execute();
             Yii::$app->db->createCommand()->batchInsert('cache_introduceProfitTmp',
                 ['goodsCode','salerName','createDate','costMoneyRmb','saleMoneyRmb','ppEbayRmb',
-                    'inPackageFeeRmb','expressFareRmb','devRateUs','devRate','devRate1','devRate5'],
+                    'inPackageFeeRmb','expressFareRmb','devRateUs','devRate','devRate1','devRate5','devRate7'],
                 $list
             )->execute();
             //获取初步计算结果
