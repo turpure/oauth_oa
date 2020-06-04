@@ -358,13 +358,14 @@ class ApiSettings
             for ($i = 2; $i <= $highestRow; $i++) {
 				$data['name'] = $sheet->getCell("A" . $i)->getValue();
 				$data['month'] = $sheet->getCell("B" . $i)->getValue();
-				$data['job'] = $sheet->getCell("C" . $i)->getValue();
-				$data['team'] = $sheet->getCell("D" . $i)->getValue();
-                $data['all_days'] = $sheet->getCell("E" . $i)->getValue()?:0;
-                $data['labeling_days'] = $sheet->getCell("F" . $i)->getValue()?:0;
-                $data['sorting_days'] = $sheet->getCell("G" . $i)->getValue()?:0;
-                $data['other_integral'] = $sheet->getCell("H" . $i)->getValue()?:0;
-                $data['deduction_integral'] = $sheet->getCell("I" . $i)->getValue()?:0;
+				$data['group'] = $sheet->getCell("C" . $i)->getValue();
+				$data['job'] = $sheet->getCell("D" . $i)->getValue();
+				$data['team'] = $sheet->getCell("E" . $i)->getValue();
+                $data['all_days'] = $sheet->getCell("F" . $i)->getValue()?:0;
+                $data['labeling_days'] = $sheet->getCell("G" . $i)->getValue()?:0;
+                $data['sorting_days'] = $sheet->getCell("H" . $i)->getValue()?:0;
+                $data['other_integral'] = $sheet->getCell("I" . $i)->getValue()?:0;
+                $data['deduction_integral'] = $sheet->getCell("J" . $i)->getValue()?:0;
 				//print_r($data['name']);exit;
 				if (!$data['name']) break;//取到数据为空时跳出循环
 				//设置贴标出勤天数时，必须设置所属贴标小组
@@ -386,11 +387,11 @@ class ApiSettings
 					if(!$res) {//插入
 						$sql = "INSERT INTO warehouse_intergral_other_data_every_month 
                                 (name,`month`,job,team,all_days,labeling_days,sorting_days,other_integral,deduction_integral,update_time) 
-							VALUES('$data[name]','$data[month]','$data[job]','$data[team]','$data[all_days]','$data[labeling_days]',
+							VALUES('$data[name]','$data[month]','$data[group]','$data[job]','$data[team]','$data[all_days]','$data[labeling_days]',
 							'$data[sorting_days]','$data[other_integral]','$data[deduction_integral]','$date')";
 					} else {
 						$sql = "UPDATE warehouse_intergral_other_data_every_month 
-							SET job='$data[job]',team='$data[team]',all_days='$data[all_days]',labeling_days='$data[labeling_days]',
+							SET `group`='$data[group]',job='$data[job]',team='$data[team]',all_days='$data[all_days]',labeling_days='$data[labeling_days]',
 							    sorting_days='$data[sorting_days]',other_integral='$data[other_integral]',
 								deduction_integral='$data[deduction_integral]',update_time='$date' 
 							WHERE name='$data[name]' AND `month`='$data[month]'";
