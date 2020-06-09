@@ -77,14 +77,25 @@ class ApiUk
         } else if ($weight <= Yii::$app->params['w_uk_out_4']) {
             $data['out'] = Yii::$app->params['w_uk_out_fee_4'];
         } else {
-            $data['out'] = ceil($weight - Yii::$app->params['w_uk_out_4']) * Yii::$app->params['w_uk_out_fee_5'];
+            $data['out'] = ceil(($weight - Yii::$app->params['w_uk_out_4'])/1000.0) * Yii::$app->params['w_uk_out_fee_5'];
         }
 
         //获取运费,超重、超长、超宽、超高取快递方式Yodel - Packet Home Mini 否则取快递方式 Royal Mail - Untracked 48 Large Letter
-        if ($weight > Yii::$app->params['w_uk_tran_3_6'] || $length > Yii::$app->params['len_uk_tran_3'] ||
-            $width > Yii::$app->params['wid_uk_tran_3'] || $height > Yii::$app->params['hei_uk_tran_3']) {
+        if ($weight > Yii::$app->params['w_uk_tran_4_3'] || $length > Yii::$app->params['len_uk_tran_4'] ||
+            $width + $height > Yii::$app->params['w_h_uk_tran_4'] || $length + 2*($width + $height) > Yii::$app->params['circum_uk_tran_4']) {
             $data['name'] = '无法获取对应物流！';
             $data['cost'] = 0;
+        } elseif ($weight > Yii::$app->params['w_uk_tran_3_6'] || $length > Yii::$app->params['len_uk_tran_3'] ||
+            $width > Yii::$app->params['wid_uk_tran_3'] || $height > Yii::$app->params['hei_uk_tran_3']) {
+            $data['name'] = Yii::$app->params['transport_uk4'];
+            //获取方式4的运费
+            if ($weight <= Yii::$app->params['w_uk_tran_4_1']) {
+                $data['cost'] = Yii::$app->params['w_uk_tran_fee_4_1'];
+            } else if ($weight <= Yii::$app->params['w_uk_tran_4_2']) {
+                $data['cost'] = Yii::$app->params['w_uk_tran_fee_4_2'];
+            } else {
+                $data['cost'] = Yii::$app->params['w_uk_tran_fee_4_3'];
+            }
         } elseif ($weight > Yii::$app->params['w_uk_tran_2_2'] || $length > Yii::$app->params['len_uk_tran_2'] ||
             $width > Yii::$app->params['wid_uk_tran_2'] || $height > Yii::$app->params['hei_uk_tran_2']) {
             $data['name'] = Yii::$app->params['transport_uk3'];
