@@ -24,6 +24,7 @@ use backend\models\OaSmtGoodsSku;
 use backend\models\OaWishGoods;
 use backend\models\OaWishGoodsSku;
 use backend\modules\v1\models\ApiGoodsinfo;
+use backend\modules\v1\utils\Helper;
 use Yii;
 class TestController extends AdminController
 {
@@ -37,51 +38,25 @@ class TestController extends AdminController
     public  function actionTest(){
         try {
 
-            $request = Yii::$app->request;
-            $condition = $request->post()['condition'];
-            $id = $condition['id'];
-            $accounts = $condition['account'];
-//            $res = ApiGoodsinfo::uploadToJoomBackstage($infoId, $account);
+            //$str = "a:9:{i:0;a:11:{s:3:\"sku\";s:14:\"7A553701@#E278\";s:5:\"color\";s:6:\"Yellow\";s:4:\"size\";N;s:9:\"inventory\";s:5:\"10000\";s:5:\"price\";d:2.9900000000000002131628207280300557613372802734375;s:8:\"shipping\";i:1;s:4:\"msrp\";i:8;s:13:\"shipping_time\";s:4:\"7-21\";s:10:\"main_image\";s:55:\"https://www.tupianku.com/view/full/10023/7A5537-_1_.jpg\";s:23:\"localized_currency_code\";s:3:\"CNY\";s:15:\"localized_price\";d:20.57000000000000028421709430404007434844970703125;}i:1;a:11:{s:3:\"sku\";s:14:\"7A553702@#E278\";s:5:\"color\";s:5:\"Green\";s:4:\"size\";N;s:9:\"inventory\";s:5:\"10000\";s:5:\"price\";d:2.9900000000000002131628207280300557613372802734375;s:8:\"shipping\";i:1;s:4:\"msrp\";i:8;s:13:\"shipping_time\";s:4:\"7-21\";s:10:\"main_image\";s:55:\"https://www.tupianku.com/view/full/10023/7A5537-_2_.jpg\";s:23:\"localized_currency_code\";s:3:\"CNY\";s:15:\"localized_price\";d:20.57000000000000028421709430404007434844970703125;}i:2;a:11:{s:3:\"sku\";s:14:\"7A553703@#E278\";s:5:\"color\";s:5:\"Black\";s:4:\"size\";N;s:9:\"inventory\";s:5:\"10000\";s:5:\"price\";d:2.9900000000000002131628207280300557613372802734375;s:8:\"shipping\";i:1;s:4:\"msrp\";i:8;s:13:\"shipping_time\";s:4:\"7-21\";s:10:\"main_image\";s:55:\"https://www.tupianku.com/view/full/10023/7A5537-_3_.jpg\";s:23:\"localized_currency_code\";s:3:\"CNY\";s:15:\"localized_price\";d:20.57000000000000028421709430404007434844970703125;}i:3;a:11:{s:3:\"sku\";s:14:\"7A553704@#E278\";s:5:\"color\";s:6:\"Orange\";s:4:\"size\";N;s:9:\"inventory\";s:5:\"10000\";s:5:\"price\";d:2.9900000000000002131628207280300557613372802734375;s:8:\"shipping\";i:1;s:4:\"msrp\";i:8;s:13:\"shipping_time\";s:4:\"7-21\";s:10:\"main_image\";s:55:\"https://www.tupianku.com/view/full/10023/7A5537-_4_.jpg\";s:23:\"localized_currency_code\";s:3:\"CNY\";s:15:\"localized_price\";d:20.57000000000000028421709430404007434844970703125;}i:4;a:11:{s:3:\"sku\";s:14:\"7A553705@#E278\";s:5:\"color\";s:8:\"Rose red\";s:4:\"size\";N;s:9:\"inventory\";s:5:\"10000\";s:5:\"price\";d:2.9900000000000002131628207280300557613372802734375;s:8:\"shipping\";i:1;s:4:\"msrp\";i:8;s:13:\"shipping_time\";s:4:\"7-21\";s:10:\"main_image\";s:55:\"https://www.tupianku.com/view/full/10023/7A5537-_5_.jpg\";s:23:\"localized_currency_code\";s:3:\"CNY\";s:15:\"localized_price\";d:20.57000000000000028421709430404007434844970703125;}i:5;a:11:{s:3:\"sku\";s:14:\"7A553706@#E278\";s:5:\"color\";s:4:\"Navy\";s:4:\"size\";N;s:9:\"inventory\";s:5:\"10000\";s:5:\"price\";d:2.9900000000000002131628207280300557613372802734375;s:8:\"shipping\";i:1;s:4:\"msrp\";i:8;s:13:\"shipping_time\";s:4:\"7-21\";s:10:\"main_image\";s:55:\"https://www.tupianku.com/view/full/10023/7A5537-_6_.jpg\";s:23:\"localized_currency_code\";s:3:\"CNY\";s:15:\"localized_price\";d:20.57000000000000028421709430404007434844970703125;}i:6;a:11:{s:3:\"sku\";s:14:\"7A553707@#E278\";s:5:\"color\";s:10:\"Light blue\";s:4:\"size\";N;s:9:\"inventory\";s:5:\"10000\";s:5:\"price\";d:2.9900000000000002131628207280300557613372802734375;s:8:\"shipping\";i:1;s:4:\"msrp\";i:8;s:13:\"shipping_time\";s:4:\"7-21\";s:10:\"main_image\";s:55:\"https://www.tupianku.com/view/full/10023/7A5537-_7_.jpg\";s:23:\"localized_currency_code\";s:3:\"CNY\";s:15:\"localized_price\";d:20.57000000000000028421709430404007434844970703125;}i:7;a:11:{s:3:\"sku\";s:14:\"7A553708@#E278\";s:5:\"color\";s:3:\"Red\";s:4:\"size\";N;s:9:\"inventory\";s:5:\"10000\";s:5:\"price\";d:2.9900000000000002131628207280300557613372802734375;s:8:\"shipping\";i:1;s:4:\"msrp\";i:8;s:13:\"shipping_time\";s:4:\"7-21\";s:10:\"main_image\";s:55:\"https://www.tupianku.com/view/full/10023/7A5537-_8_.jpg\";s:23:\"localized_currency_code\";s:3:\"CNY\";s:15:\"localized_price\";d:20.57000000000000028421709430404007434844970703125;}i:8;a:11:{s:3:\"sku\";s:14:\"7A553709@#E278\";s:5:\"color\";s:4:\"Pink\";s:4:\"size\";N;s:9:\"inventory\";s:5:\"10000\";s:5:\"price\";d:2.9900000000000002131628207280300557613372802734375;s:8:\"shipping\";i:1;s:4:\"msrp\";i:8;s:13:\"shipping_time\";s:4:\"7-21\";s:10:\"main_image\";s:55:\"https://www.tupianku.com/view/full/10023/7A5537-_9_.jpg\";s:23:\"localized_currency_code\";s:3:\"CNY\";s:15:\"localized_price\";d:20.57000000000000028421709430404007434844970703125;}}";
+            //var_dump(json_encode(unserialize($str)));exit;
 
-            if (!is_array($accounts)) {
-                $accounts = [$accounts];
-            }
-            $row = [
-                'parent_sku' => '', 'brand' => '', 'description' => '',
-                'tags' => '', 'upc' => '', 'color' => '', 'sku' => '', 'name' => '', 'hs_code' => '',
-                'size' => '', 'inventory' => '', 'price' => '', 'msrp' => '', 'shipping' => '',
-                'shipping_weight' => '', 'shipping_height' => '', 'shipping_length' => '', 'shipping_width' => '',
-                'main_image' => '', 'product_main_image' => '', 'variation_main_image' => '', 'extra_images' => '',
-                'landing_page_url' => '', 'dangerous_kind' => 'notDangerous', 'declaredValue' => ''
-            ];
-
-            if (is_numeric($id)) {
-                $goodsInfo = OaGoodsinfo::findOne(['id' => $id]);
-            } else {
-                $goodsInfo = OaGoodsinfo::findOne(['goodsCode' => $id]);
-                $id = $goodsInfo['id'];
-            }
-            $smtSku = OaSmtGoodsSku::find()->where(['infoId' => $id])->asArray()->all();
-            $smtInfo = OaSmtGoods::find()->where(['infoId' => $id])->asArray()->one();
-//            $keyWords = static::preKeywords($smtInfo);
-//            $title = static::getTitleName($keyWords, self::JoomTitleLength);
-//            var_dump($smtInfo);exit;
-
-            foreach ($accounts as $account) {
-//                $joomAccounts = OaJoomSuffix::find()->where(['joomName' => $account])->asArray()->one();
-//                $imageInfo = static::getJoomImageInfo($smtInfo, $joomAccounts);
-//                $row['parent_sku'] = $smtInfo['sku'] . $joomAccounts['skuCode'];
-                #获取账号TOKEN
-                $sql = "SELECT AliasName AS suffix, AccessToken AS token FROM [dbo].[S_AliSyncInfo] 
-                        WHERE AliasName='{$account}' ORDER BY AliasName;";
-                $tokens = Yii::$app->py_db->createCommand($sql)->queryOne();
-                #获取分类必填信息
-                $url = "";
-                var_dump($tokens);exit;
+            //测试awish接口
+            $sql = "SELECT AccessToken,aliasname FROM S_WishSyncInfo WHERE  
+               aliasname is not null
+                and  AliasName not in  and aliasname like'%%'
+              (select DictionaryName from B_Dictionary where CategoryID=12 and used=1 and FitCode='Wish')";
+            $token = Yii::$app->db->createCommand($sql)->queryAll();
+            $url= "https://merchant.wish.com/api/v2/product/multi-get";
+            $res = Helper::curlRequest($url,$token);
 
 
-                return $res;
-            }
+
+
+
+
+
+
         } catch (\Exception $why) {
             return ['code' => 400, 'message'=>$why->getMessage()];
         }

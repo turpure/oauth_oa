@@ -101,6 +101,27 @@ class ReportController extends AdminController
         return $ret;
     }
 
+    /** 开发毛利详情
+     * Date: 2020-06-08 18:30
+     * Author: henry
+     * @return ArrayDataProvider
+     * @throws \yii\db\Exception
+     */
+    public function actionDevelopProfitDetail()
+    {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        $condition = [
+            'dateFlag' => $cond['dateType'],
+            'beginDate' => $cond['dateRange'][0],
+            'endDate' => $cond['dateRange'][1],
+            'seller' => $cond['member'] ? implode(',', $cond['member']) : '',
+            'pageSize' => $cond['pageSize']
+        ];
+        $ret = ApiReport::getDevelopProfitDetailReport($condition);
+        return $ret;
+    }
+
     /**
      * @brief Purchase profit report
      * @return array

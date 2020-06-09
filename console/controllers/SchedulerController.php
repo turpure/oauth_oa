@@ -224,7 +224,7 @@ class SchedulerController extends Controller
                     'ppebayusSix','ppebayznSix','inpackagefeermbSix','expressfarermbSix','devofflinefeeSix','devOpeFeeSix',
                     'netprofitSix','netrateSix','timegroupTwe','salemoneyrmbusTwe','salemoneyrmbznTwe','costmoneyrmbTwe',
                     'ppebayusTwe','ppebayznTwe','inpackagefeermbTwe','expressfarermbTwe','devofflinefeeTwe','devOpeFeeTwe',
-                    'netprofitTwe','netrateTwe','salemoneyrmbtotal','netprofittotal','netratetotal','devRate','devRate1','devRate5','type'],
+                    'netprofitTwe','netrateTwe','salemoneyrmbtotal','netprofittotal','netratetotal','devRate','devRate1','devRate5','devRate7','type'],
                 $devData)->execute();
 
             //插入销售和开发毛利数据(存储过程插入)

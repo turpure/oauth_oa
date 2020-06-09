@@ -123,6 +123,78 @@ class ApiReport
 
     }
 
+    /** 开发毛利明细
+     * @param $condition
+     * Date: 2020-06-08 13:53
+     * Author: henry
+     * @return ArrayDataProvider
+     * @throws \yii\db\Exception
+     */
+    public static function getDevelopProfitDetailReport($condition){
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
+        $sql = "EXEC oauth_developer_sku_profit_detail @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,@SalerName=:seller";
+        $con = Yii::$app->py_db;
+        $params = [
+            ':dateFlag' => $condition['dateFlag'],
+            ':beginDate' => $condition['beginDate'],
+            ':endDate' => $condition['endDate'],
+            ':seller' => $condition['seller'],
+        ];
+        try {
+            //return $con->createCommand($sql)->bindValues($params)->queryAll();
+            $list = $con->createCommand($sql)->bindValues($params)->queryAll();
+            //获取现有开发以及部门
+            $userList = self::getAllDeveloper();
+            $rateArr = Yii::$app->py_db->createCommand("select * from Y_Ratemanagement")->queryOne();
+            $result = [];
+            foreach ($list as $value) {
+                $item = $value;
+                foreach ($userList as $u) {
+                    if ($value['salerName'] === $u['username']) {
+//                        var_dump($u['departId']);exit;
+                        if ($u['departId'] == 1) {   //  一部
+                            $rate = $rateArr['devRate1'];
+                        } elseif ($u['departId'] == 4) {  //五部
+                            $rate = $rateArr['devRate5'];
+                        } elseif ($u['departId'] == 40) {  //七部
+                            $rate = $rateArr['devRate7'];
+                        } else {
+                            $rate = $rateArr['devRate'];
+                        }
+                        break;//跳出内层循环
+                    } else {
+                        $rate = $rateArr['devRate'];
+                    }
+                }
+                //print_r($rate);exit;
+                //重新计算各时间段销售额（￥）、pp交易费（￥）、毛利润、毛利率
+
+                $item['saleMoneyRmbZn'] *= $rate;
+                $item['ppEbayZn'] *= $rate;
+                $item['profit'] = $item['saleMoneyRmbZn'] - $item['costMoneyRmb'] - $item['ppEbayZn']
+                    - $item['packageFeeRmb'] - $item['expressFareRmb'];
+                $item['rate'] = $item['saleMoneyRmbZn'] == 0 ? 0 : round($item['profit'] / $item['saleMoneyRmbZn'], 4) * 100;
+                $result[] = $item;
+            }
+            $provider = new ArrayDataProvider([
+                'allModels' => $result,
+                'sort' => ['attributes' =>
+                    [
+                        'timeGroup','salerName', 'goodsCode', 'goodsName','categoryName', 'goodsSkuStatus',
+                        'salerName2','sku','createDate','saleMoneyRmbZn','costMoneyRmb','ppEbayZn',
+                        'packageFeeRmb','expressFareRmb','profit','rate'
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+            return $provider;
+        } catch (\Exception $why) {
+            return [$why];
+        }
+    }
+
 
     /**
      * @brief Purchase profit report
