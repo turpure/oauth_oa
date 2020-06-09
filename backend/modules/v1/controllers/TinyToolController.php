@@ -461,13 +461,19 @@ class TinyToolController extends AdminController
         //获取运费和出库费
         $data['transport'] = ApiUk::getTransport($res['weight'], $res['length'], $res['width'], $res['height']);
 
-        //根据售价获取利润率
-        if ($post['price']) {
-            $data['rate'] = ApiUk::getRate($post['price'], $data['transport']['cost'], $data['transport']['out'], $res['price']);
-        }
 
-        //根据利润率获取售价
-        $data['price'] = ApiUk::getPrice($post['rate'], $data['transport']['cost'], $data['transport']['out'], $res['price']);
+        foreach ($data['transport'] as $v){
+            //根据售价获取利润率
+            if ($post['price']) {
+                $rateItem = ApiUk::getRate($post['price'], $v['cost'], $v['out'], $res['price']);
+                $rateItem['name'] = $v['name'];
+                $data['rate'][] = $rateItem;
+            }
+            //根据利润率获取售价
+            $priceItem = ApiUk::getPrice($post['rate'], $v['cost'], $v['out'], $res['price']);
+            $priceItem['name'] = $v['name'];
+            $data['price'][] = $rateItem;
+        }
 
         //print_r($data);exit;
         return $data;
@@ -627,7 +633,7 @@ class TinyToolController extends AdminController
         try {
             /*$sql = "SELECT SKU, SKUName, goodsCode, salerName, goodsStatus, purchaser, supplierName,
                         saleNum3days, saleNum7days, saleNum15days, saleNum30days, trend, saleNumDailyAve, hopeUseNum,
-                        amount, totalHopeUN, hopeSaleDays, purchaseNum, price, purCost 
+                        amount, totalHopeUN, hopeSaleDays, purchaseNum, price, purCost
                     FROM cache_overseasReplenish WHERE type='UK虚拟仓'";
             if (isset($cond['sku']) && $cond['sku']) $sql .= " AND SKU LIKE '%{$cond['sku']}%'";
             if (isset($cond['salerName']) && $cond['salerName']) $sql .= " AND salerName LIKE '%{$cond['salerName']}%'";
@@ -704,7 +710,7 @@ class TinyToolController extends AdminController
         try {
             /*$sql = "SELECT SKU, SKUName, goodsCode, salerName, goodsStatus, price, weight, purchaser, supplierName,
                         saleNum3days, saleNum7days, saleNum15days, saleNum30days, trend, saleNumDailyAve, 399HopeUseNum,
-                        uHopeUseNum, totalHopeUseNum, uHopeSaleDays, hopeSaleDays, purchaseNum, shipNum, purCost, shipWeight 
+                        uHopeUseNum, totalHopeUseNum, uHopeSaleDays, hopeSaleDays, purchaseNum, shipNum, purCost, shipWeight
                     FROM cache_overseasReplenish WHERE type='UK真仓'";
             if (isset($cond['sku']) && $cond['sku']) $sql .= " AND SKU LIKE '%{$cond['sku']}%'";
             if (isset($cond['salerName']) && $cond['salerName']) $sql .= " AND salerName LIKE '%{$cond['salerName']}%'";
@@ -803,7 +809,7 @@ class TinyToolController extends AdminController
                 $name = 'auRealReplenish';
                 /*$sql = "SELECT SKU, SKUName, goodsCode, salerName, goodsStatus, price, weight, purchaser, supplierName,
                         saleNum3days, saleNum7days, saleNum15days, saleNum30days, trend, saleNumDailyAve, 399HopeUseNum,
-                        uHopeUseNum, totalHopeUseNum, uHopeSaleDays, hopeSaleDays, purchaseNum, shipNum, purCost, shipWeight 
+                        uHopeUseNum, totalHopeUseNum, uHopeSaleDays, hopeSaleDays, purchaseNum, shipNum, purCost, shipWeight
                     FROM cache_overseasReplenish WHERE type='AU真仓'";
                 if (isset($cond['sku']) && $cond['sku']) $sql .= " AND SKU LIKE '%{$cond['sku']}%'";
                 if (isset($cond['salerName']) && $cond['salerName']) $sql .= " AND salerName LIKE '%{$cond['salerName']}%'";
@@ -822,7 +828,7 @@ class TinyToolController extends AdminController
                 $name = 'ukRealReplenish';
                 /*$sql = "SELECT SKU, SKUName, goodsCode, salerName, goodsStatus, price, weight, purchaser, supplierName,
                         saleNum3days, saleNum7days, saleNum15days, saleNum30days, trend, saleNumDailyAve, 399HopeUseNum,
-                        uHopeUseNum, totalHopeUseNum, uHopeSaleDays, hopeSaleDays, purchaseNum, shipNum, purCost, shipWeight 
+                        uHopeUseNum, totalHopeUseNum, uHopeSaleDays, hopeSaleDays, purchaseNum, shipNum, purCost, shipWeight
                     FROM cache_overseasReplenish WHERE type='UK真仓'";
                 if (isset($cond['sku']) && $cond['sku']) $sql .= " AND SKU LIKE '%{$cond['sku']}%'";
                 if (isset($cond['salerName']) && $cond['salerName']) $sql .= " AND salerName LIKE '%{$cond['salerName']}%'";

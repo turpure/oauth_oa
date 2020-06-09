@@ -140,7 +140,25 @@ class ApiUk
         }
         $data['costRmb'] = $data['cost'] * Yii::$app->params['poundRate'];
         $data['outRmb'] = $data['out'] * Yii::$app->params['poundRate'];
-        return $data;
+
+        $res[] = $data;
+        if($data['name'] != '无法获取对应物流！'){
+            $item['out'] = $data['out'];
+            $item['name'] = Yii::$app->params['transport_uk4'];
+            //获取方式4的运费
+            if ($weight <= Yii::$app->params['w_uk_tran_4_1']) {
+                $item['cost'] = Yii::$app->params['w_uk_tran_fee_4_1'];
+            } else if ($weight <= Yii::$app->params['w_uk_tran_4_2']) {
+                $item['cost'] = Yii::$app->params['w_uk_tran_fee_4_2'];
+            } else {
+                $item['cost'] = Yii::$app->params['w_uk_tran_fee_4_3'];
+            }
+            $item['costRmb'] = $data['cost'] * Yii::$app->params['poundRate'];
+            $item['outRmb'] = $data['out'] * Yii::$app->params['poundRate'];
+            $res[] = $item;
+//            var_dump($item);exit;
+        }
+        return $res;
     }
 
 
