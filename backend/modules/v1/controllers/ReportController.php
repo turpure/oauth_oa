@@ -54,8 +54,8 @@ class ReportController extends AdminController
 
     /**
      * @brief sales profit report
-     * @throws \Exception
      * @return array
+     * @throws \Exception
      */
 
     public function actionSales()
@@ -118,21 +118,38 @@ class ReportController extends AdminController
         ];
         $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
         $ret = ApiReport::getDevelopProfitDetailReport($condition);
+        $totalSaleMoney = array_sum(ArrayHelper::getColumn($ret, 'saleMoneyRmbZn'));
+        $totalCostMoney = array_sum(ArrayHelper::getColumn($ret, 'costMoneyRmb'));
+        $totalPpEbay = array_sum(ArrayHelper::getColumn($ret, 'ppEbayZn'));
+        $totalPackage = array_sum(ArrayHelper::getColumn($ret, 'packageFeeRmb'));
+        $totalExpress = array_sum(ArrayHelper::getColumn($ret, 'expressFareRmb'));
         $totalProfit = array_sum(ArrayHelper::getColumn($ret, 'profit'));
+        $totalRate = round($totalProfit * 100 / $totalSaleMoney, 2);
         $provider = new ArrayDataProvider([
             'allModels' => $ret,
             'sort' => ['attributes' =>
                 [
-                    'timeGroup','salerName', 'goodsCode', 'goodsName','categoryName', 'goodsSkuStatus',
-                    'salerName2','sku','createDate','saleMoneyRmbZn','costMoneyRmb','ppEbayZn',
-                    'packageFeeRmb','expressFareRmb','profit','rate'
+                    'timeGroup', 'salerName', 'goodsCode', 'goodsName', 'categoryName', 'goodsSkuStatus',
+                    'salerName2', 'sku', 'createDate', 'saleMoneyRmbZn', 'costMoneyRmb', 'ppEbayZn',
+                    'packageFeeRmb', 'expressFareRmb', 'profit', 'rate'
                 ]
             ],
             'pagination' => [
                 'pageSize' => $pageSize,
             ],
         ]);
-        return ['provider' => $provider, 'extra' => ['totalProfit' => $totalProfit]];
+        return [
+            'provider' => $provider,
+            'extra' => [
+                'totalSaleMoney' => $totalSaleMoney,
+                'totalCostMoney' => $totalCostMoney,
+                'totalPpEbay' => $totalPpEbay,
+                'totalPackage' => $totalPackage,
+                'totalExpress' => $totalExpress,
+                'totalProfit' => $totalProfit,
+                'totalRate' => $totalRate
+            ]
+        ];
     }
 
     /** 开发毛利详情 導出
@@ -154,7 +171,7 @@ class ReportController extends AdminController
         ];
         $data = ApiReport::getDevelopProfitDetailReport($condition);
 //        var_dump($ret);exit;
-        $title = ['时间区域','开发员1','开发员2','商品编码','SKU','商品名称','类目','商品状态','开发时间','销售额￥','成本￥','PP+Ebay费用￥','打包费￥','物流费￥','利润','利润率%'];
+        $title = ['时间区域', '开发员1', '开发员2', '商品编码', 'SKU', '商品名称', '类目', '商品状态', '开发时间', '销售额￥', '成本￥', 'PP+Ebay费用￥', '打包费￥', '物流费￥', '利润', '利润率%'];
         ExportTools::toExcelOrCsv('dev-profit-detail', $data, 'Xls', $title);
     }
 
@@ -387,7 +404,7 @@ class ReportController extends AdminController
             'limit' => $cond['limit'],
         ];
         $name = 'AccountExport';
-        list($title,$data) = ApiReport::getProfitReportExport($condition);
+        list($title, $data) = ApiReport::getProfitReportExport($condition);
         ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
 
     }
@@ -444,10 +461,9 @@ class ReportController extends AdminController
             $refund = $this->actionRefund()['provider']->allModels;
             $ret = [];
             foreach ($refund as $row) {
-                if(array_key_exists($row['suffix'], $ret)) {
+                if (array_key_exists($row['suffix'], $ret)) {
                     $ret[$row['suffix']] += $row['refundZn'];
-                }
-                else {
+                } else {
                     $ret[$row['suffix']] = $row['refundZn'];
                 }
             }
@@ -455,9 +471,8 @@ class ReportController extends AdminController
             arsort($ret);
             if (count($ret) <= 10) {
                 $item = $ret;
-            }
-            else {
-                $item = array_slice($ret,0,(int)(0.2 * count($ret)));
+            } else {
+                $item = array_slice($ret, 0, (int)(0.2 * count($ret)));
                 $item['other'] = $total - array_sum(array_values($item));
             }
             $out = [];
@@ -466,8 +481,7 @@ class ReportController extends AdminController
             }
             $out['unit'] = '￥';
             return $out;
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
 
@@ -483,10 +497,9 @@ class ReportController extends AdminController
             $refund = $this->actionRefund()['provider']->allModels;
             $ret = [];
             foreach ($refund as $row) {
-                if(array_key_exists($row['platform'], $ret)) {
+                if (array_key_exists($row['platform'], $ret)) {
                     $ret[$row['platform']] += (float)$row['refundZn'];
-                }
-                else {
+                } else {
                     $ret[$row['platform']] = (float)$row['refundZn'];
                 }
             }
@@ -494,9 +507,8 @@ class ReportController extends AdminController
             arsort($ret);
             if (count($ret) <= 10) {
                 $item = $ret;
-            }
-            else {
-                $item = array_slice($ret,0,(int)(0.2 * count($ret)));
+            } else {
+                $item = array_slice($ret, 0, (int)(0.2 * count($ret)));
                 $item['other'] = $total - array_sum(array_values($item));
             }
             $out = [];
@@ -505,8 +517,7 @@ class ReportController extends AdminController
             }
             $out['unit'] = '￥';
             return $out;
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
 
@@ -522,10 +533,9 @@ class ReportController extends AdminController
             $refund = $this->actionRefund()['provider']->allModels;
             $ret = [];
             foreach ($refund as $row) {
-                if(array_key_exists($row['goodsCode'], $ret)) {
+                if (array_key_exists($row['goodsCode'], $ret)) {
                     $ret[$row['goodsCode']] += (int)$row['times'];
-                }
-                else {
+                } else {
                     $ret[$row['goodsCode']] = (int)$row['times'];
                 }
             }
@@ -533,9 +543,8 @@ class ReportController extends AdminController
             arsort($ret);
             if (count($ret) <= 10) {
                 $item = $ret;
-            }
-            else {
-                $item = array_slice($ret,0,(int)(0.2 * count($ret)));
+            } else {
+                $item = array_slice($ret, 0, (int)(0.2 * count($ret)));
                 $item['other'] = $total - array_sum(array_values($item));
             }
             $out = [];
@@ -544,8 +553,7 @@ class ReportController extends AdminController
             }
             $out['unit'] = '次';
             return $out;
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
     }
@@ -561,10 +569,9 @@ class ReportController extends AdminController
             $refund = $this->actionRefund()['provider']->allModels;
             $ret = [];
             foreach ($refund as $row) {
-                if(array_key_exists($row['expressWay'], $ret)) {
+                if (array_key_exists($row['expressWay'], $ret)) {
                     ++$ret[$row['expressWay']];
-                }
-                else {
+                } else {
                     $ret[$row['expressWay']] = 1;
                 }
             }
@@ -572,9 +579,8 @@ class ReportController extends AdminController
             arsort($ret);
             if (count($ret) <= 10) {
                 $item = $ret;
-            }
-            else {
-                $item = array_slice($ret,0,(int)(0.2 * count($ret)));
+            } else {
+                $item = array_slice($ret, 0, (int)(0.2 * count($ret)));
                 $item['other'] = $total - array_sum(array_values($item));
             }
             $out = [];
@@ -583,8 +589,7 @@ class ReportController extends AdminController
             }
             $out['unit'] = '次';
             return $out;
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
     }
@@ -599,8 +604,7 @@ class ReportController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiReport::getRefundExpressRate($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
     }
@@ -610,14 +614,13 @@ class ReportController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiReport::getRefundSuffixRate($condition);
-        }
-        catch (\Exception $why)
-        {
+        } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
     }
 
-  ##################### 退款分析-结束 #############################################
+    ##################### 退款分析-结束 #############################################
+
     /**
      * 销售死库明细
      * Date: 2019-01-04 10:21
@@ -715,18 +718,18 @@ class ReportController extends AdminController
         switch ($cond['type']) {
             case 'order'://退款订单明细下载
                 $fileName = 'refundOrderData';
-                $title = ['退款月份', '账号简称','销售员', '商品名称', '商品编码', 'SKU',
-                    '交易单号', '店铺单号', '合并单号', '仓库', '退款金额(原始币种)','退款金额(￥)', '退款时间','交易时间',
-                    '国家','平台','物流方式',];
-                $headers = ['refMonth', 'suffix','salesman', 'goodsName', 'goodsCode', 'goodsSku',
-                    'tradeId', 'orderId', 'mergeBillId', 'storeName', 'refund','refundZn', 'refundTime','orderTime',
-                    'orderCountry','platform','expressWay'];
+                $title = ['退款月份', '账号简称', '销售员', '商品名称', '商品编码', 'SKU',
+                    '交易单号', '店铺单号', '合并单号', '仓库', '退款金额(原始币种)', '退款金额(￥)', '退款时间', '交易时间',
+                    '国家', '平台', '物流方式',];
+                $headers = ['refMonth', 'suffix', 'salesman', 'goodsName', 'goodsCode', 'goodsSku',
+                    'tradeId', 'orderId', 'mergeBillId', 'storeName', 'refund', 'refundZn', 'refundTime', 'orderTime',
+                    'orderCountry', 'platform', 'expressWay'];
                 $data = $this->actionRefund()['provider']->getModels();
                 break;
             case 'goods'://退款产品明细下载
                 $fileName = 'refundGoodsData';
-                $title = ['账号简称','销售员', '商品名称', '商品编码', 'SKU', '退款次数'];
-                $headers = ['suffix','salesman', 'goodsName', 'goodsCode', 'goodsSku', 'times'];
+                $title = ['账号简称', '销售员', '商品名称', '商品编码', 'SKU', '退款次数'];
+                $headers = ['suffix', 'salesman', 'goodsName', 'goodsCode', 'goodsSku', 'times'];
                 $data = $this->actionRefund()['provider']->getModels();
                 break;
             case 'extra'://杂费明细下载
@@ -738,32 +741,32 @@ class ReportController extends AdminController
                 break;
             case 'otherDeadFee'://其他死库明细下载
                 $fileName = 'otherDeadFeeData';
-                $title = ['导入时间', '死库类型', '开发员','开发员2', '美工', '推荐人','采购','仓库',
-                    '商品编码', 'SKU', '商品名称', '创建时间', '最后采购时间','盘点数量', '盘点前单价', '盘少单价(死库)','盘后单价',
-                    '分摊死库','创建时间2'];
-                $headers = ['importDate', 'type', 'developer','developer2', 'possessMan', 'introducer','purchaser','storeName',
-                    'goodsCode', 'sku', 'goodsName', 'createDate', 'lastPurchaseDate','checkNumber', 'preCheckPrice', 'deadPrice','aftCheckPrice',
-                    'aveAmount','createDate2'];
+                $title = ['导入时间', '死库类型', '开发员', '开发员2', '美工', '推荐人', '采购', '仓库',
+                    '商品编码', 'SKU', '商品名称', '创建时间', '最后采购时间', '盘点数量', '盘点前单价', '盘少单价(死库)', '盘后单价',
+                    '分摊死库', '创建时间2'];
+                $headers = ['importDate', 'type', 'developer', 'developer2', 'possessMan', 'introducer', 'purchaser', 'storeName',
+                    'goodsCode', 'sku', 'goodsName', 'createDate', 'lastPurchaseDate', 'checkNumber', 'preCheckPrice', 'deadPrice', 'aftCheckPrice',
+                    'aveAmount', 'createDate2'];
                 //print_r($this->actionOtherDeadFee());exit;
                 $data = $this->actionOtherDeadFee()['provider']->getModels();
                 break;
             case 'salesDeadFee'://销售死库明细下载
                 $fileName = 'salesDeadFeeData';
-                $title = ['导入时间', '死库类型', '平台','账号简称', '销售员', '仓库',
-                    '商品编码', 'SKU', '商品名称', '创建时间', '最后采购时间','盘点数量', '盘点前单价', '盘少单价(死库)','盘后单价',
-                    '账号销量', '总销量','库存金额','分摊死库'];
-                $headers = [ 'importDate', 'type', 'plat','suffix', 'salesman', 'storeName',
-                    'goodsCode', 'sku', 'goodsName', 'createDate', 'lastPurchaseDate','checkNumber', 'preCheckPrice', 'deadPrice','aftCheckPrice',
+                $title = ['导入时间', '死库类型', '平台', '账号简称', '销售员', '仓库',
+                    '商品编码', 'SKU', '商品名称', '创建时间', '最后采购时间', '盘点数量', '盘点前单价', '盘少单价(死库)', '盘后单价',
+                    '账号销量', '总销量', '库存金额', '分摊死库'];
+                $headers = ['importDate', 'type', 'plat', 'suffix', 'salesman', 'storeName',
+                    'goodsCode', 'sku', 'goodsName', 'createDate', 'lastPurchaseDate', 'checkNumber', 'preCheckPrice', 'deadPrice', 'aftCheckPrice',
                     'suffixSalesNumber', 'totalNumber', 'amount', 'aveAmount'];
                 $data = $this->actionDeadFee()['provider']->getModels();
                 break;
             default://默认销售死库明细下载
                 $fileName = 'salesDeadFeeData';
-                $title = ['导入时间', '死库类型', '平台','账号简称', '销售员', '仓库',
-                    '商品编码', 'SKU', '商品名称', '创建时间', '最后采购时间','盘点数量', '盘点前单价', '盘少单价(死库)','盘后单价',
-                    '账号销量', '总销量','库存金额','分摊死库'];
-                $headers = [ 'importDate', 'type', 'plat','suffix', 'salesman', 'storeName',
-                    'goodsCode', 'sku', 'goodsName', 'createDate', 'lastPurchaseDate','checkNumber', 'preCheckPrice', 'deadPrice','aftCheckPrice',
+                $title = ['导入时间', '死库类型', '平台', '账号简称', '销售员', '仓库',
+                    '商品编码', 'SKU', '商品名称', '创建时间', '最后采购时间', '盘点数量', '盘点前单价', '盘少单价(死库)', '盘后单价',
+                    '账号销量', '总销量', '库存金额', '分摊死库'];
+                $headers = ['importDate', 'type', 'plat', 'suffix', 'salesman', 'storeName',
+                    'goodsCode', 'sku', 'goodsName', 'createDate', 'lastPurchaseDate', 'checkNumber', 'preCheckPrice', 'deadPrice', 'aftCheckPrice',
                     'suffixSalesNumber', 'totalNumber', 'amount', 'aveAmount'];
                 $data = $this->actionDeadFee()['provider']->getModels();
         }
@@ -776,22 +779,23 @@ class ReportController extends AdminController
 
         //设置表头字段名称
         foreach ($title as $key => $value) {
-            $worksheet->setCellValueByColumnAndRow($key + 1, 1,  $value);
+            $worksheet->setCellValueByColumnAndRow($key + 1, 1, $value);
         }
         //填充表内容
         foreach ($data as $k => $rows) {
             foreach ($headers as $i => $val) {
-                $worksheet->setCellValueExplicitByColumnAndRow($i + 1, $k + 2, $rows[$val],DataType::TYPE_STRING);
+                $worksheet->setCellValueExplicitByColumnAndRow($i + 1, $k + 2, $rows[$val], DataType::TYPE_STRING);
             }
         }
         header('pragma:public');
         header('Access-Control-Allow-Origin: *');
         header('Content-Type: application/vnd.ms-excel');
-        header('Content-Disposition: attachment;filename="'.$fileName.'.xls"');
+        header('Content-Disposition: attachment;filename="' . $fileName . '.xls"');
         header('Cache-Control: max-age=0');
         //attachment新窗口打印inline本窗口打印
         $writer = IOFactory::createWriter($spreadsheet, 'Xls');
-        $writer->save('php://output');exit;
+        $writer->save('php://output');
+        exit;
     }
 
     /**
@@ -804,8 +808,7 @@ class ReportController extends AdminController
             $request = Yii::$app->request->post();
             $condition = $request['condition'];
             return ApiReport::getDevLimit($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
     }
@@ -820,8 +823,7 @@ class ReportController extends AdminController
             $request = Yii::$app->request->post();
             $condition = $request['condition'];
             return ApiReport::getDevGoodsProfit($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
     }
@@ -838,29 +840,27 @@ class ReportController extends AdminController
             $condition = $request['condition'];
             $condition['pageSize'] = 100000;
             $data = ApiReport::getDevGoodsProfit($condition)->models;
-            $title = ['开发员','产品编码','产品名称','产品图片','开发日期','产品状态','销量','销售额(￥)','总利润(￥)','利润率',
-                'eBay销量','eBay利润(￥)','Wish销量','Wish利润(￥)','SMT销量','SMT利润(￥)','Joom销量',
-                'Joom利润(￥)','Amazon销量','Amazon利润(￥)','时间类型(0交易时间，1发货时间)', '时间'];
+            $title = ['开发员', '产品编码', '产品名称', '产品图片', '开发日期', '产品状态', '销量', '销售额(￥)', '总利润(￥)', '利润率',
+                'eBay销量', 'eBay利润(￥)', 'Wish销量', 'Wish利润(￥)', 'SMT销量', 'SMT利润(￥)', 'Joom销量',
+                'Joom利润(￥)', 'Amazon销量', 'Amazon利润(￥)', '时间类型(0交易时间，1发货时间)', '时间'];
             ExportTools::toExcelOrCsv('dev-profit', $data, 'Xls', $title);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
     }
 
-     /**
-         * @brief 开发产品利润表
-         * @return array
-         */
+    /**
+     * @brief 开发产品利润表
+     * @return array
+     */
     public function actionDevGoodsProfitDetail()
     {
-       try {
-           $request = Yii::$app->request->post();
-           $condition = $request['condition'];
-           return ApiReport::getDevGoodsProfitDetail($condition);
+        try {
+            $request = Yii::$app->request->post();
+            $condition = $request['condition'];
+            return ApiReport::getDevGoodsProfitDetail($condition);
 
-       }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
     }
@@ -869,7 +869,8 @@ class ReportController extends AdminController
      * @brief 开发状态
      * @return array
      */
-    public function actionDevStatus() {
+    public function actionDevStatus()
+    {
         return ApiReport::getDevStatus();
     }
 
