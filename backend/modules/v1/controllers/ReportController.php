@@ -166,8 +166,7 @@ class ReportController extends AdminController
             'dateFlag' => $cond['dateType'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'seller' => $cond['member'] ? implode(',', $cond['member']) : '',
-            'pageSize' => $cond['pageSize']
+            'seller' => $cond['member'] ? implode(',', $cond['member']) : ''
         ];
         $data = ApiReport::getDevelopProfitDetailReport($condition);
 //        var_dump($ret);exit;
