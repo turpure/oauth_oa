@@ -66,11 +66,14 @@ class TestController extends AdminController
             unset($cur['_id'], $cur['creator'], $cur['created'], $cur['updated']);
 
 //            var_dump($cur);exit;
-            $url= "https://merchant.wish.com/api/v2/product/multi-get";
+//            $url = "https://merchant.wish.com/api/v2/product";
+            $url = "https://merchant.wish.com/api/v2/product/add";
             foreach ($tokens as $value){
                 $cur['access_token'] = $value['access_token'];
+                $cur['name'] = $cur['title'];
+//                $cur['parent_sku'] = $cur['sku'];
 //                var_dump($cur);exit;
-                $res = Helper::curlRequest($url, $value);
+                $res = Helper::curlRequest($url, $cur);
                 var_dump($res);exit;
             }
 

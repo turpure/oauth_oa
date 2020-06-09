@@ -125,13 +125,12 @@ class ApiReport
 
     /** 开发毛利明细
      * @param $condition
-     * Date: 2020-06-08 13:53
+     * Date: 2020-06-09 14:10
      * Author: henry
-     * @return ArrayDataProvider
-     * @throws \yii\db\Exception
+     * @return array
      */
     public static function getDevelopProfitDetailReport($condition){
-        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
+
         $sql = "EXEC oauth_developer_sku_profit_detail @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,@SalerName=:seller";
         $con = Yii::$app->py_db;
         $params = [
@@ -176,20 +175,8 @@ class ApiReport
                 $item['rate'] = $item['saleMoneyRmbZn'] == 0 ? 0 : round($item['profit'] / $item['saleMoneyRmbZn'], 4) * 100;
                 $result[] = $item;
             }
-            $provider = new ArrayDataProvider([
-                'allModels' => $result,
-                'sort' => ['attributes' =>
-                    [
-                        'timeGroup','salerName', 'goodsCode', 'goodsName','categoryName', 'goodsSkuStatus',
-                        'salerName2','sku','createDate','saleMoneyRmbZn','costMoneyRmb','ppEbayZn',
-                        'packageFeeRmb','expressFareRmb','profit','rate'
-                    ]
-                ],
-                'pagination' => [
-                    'pageSize' => $pageSize,
-                ],
-            ]);
-            return $provider;
+            return $result;
+
         } catch (\Exception $why) {
             return [$why];
         }

@@ -102,10 +102,9 @@ class ReportController extends AdminController
     }
 
     /** 开发毛利详情
-     * Date: 2020-06-08 18:30
+     * Date: 2020-06-09 14:12
      * Author: henry
-     * @return ArrayDataProvider
-     * @throws \yii\db\Exception
+     * @return array
      */
     public function actionDevelopProfitDetail()
     {
@@ -116,11 +115,49 @@ class ReportController extends AdminController
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
             'seller' => $cond['member'] ? implode(',', $cond['member']) : '',
+        ];
+        $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
+        $ret = ApiReport::getDevelopProfitDetailReport($condition);
+        $totalProfit = array_sum(ArrayHelper::getColumn($ret, 'profit'));
+        $provider = new ArrayDataProvider([
+            'allModels' => $ret,
+            'sort' => ['attributes' =>
+                [
+                    'timeGroup','salerName', 'goodsCode', 'goodsName','categoryName', 'goodsSkuStatus',
+                    'salerName2','sku','createDate','saleMoneyRmbZn','costMoneyRmb','ppEbayZn',
+                    'packageFeeRmb','expressFareRmb','profit','rate'
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return ['provider' => $provider, 'extra' => ['totalProfit' => $totalProfit]];
+    }
+
+    /** 开发毛利详情 導出
+     * Date: 2020-06-09 14:15
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionDevelopProfitDetailExport()
+    {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        $condition = [
+            'dateFlag' => $cond['dateType'],
+            'beginDate' => $cond['dateRange'][0],
+            'endDate' => $cond['dateRange'][1],
+            'seller' => $cond['member'] ? implode(',', $cond['member']) : '',
             'pageSize' => $cond['pageSize']
         ];
-        $ret = ApiReport::getDevelopProfitDetailReport($condition);
-        return $ret;
+        $data = ApiReport::getDevelopProfitDetailReport($condition);
+//        var_dump($ret);exit;
+        $title = ['时间区域','开发员1','开发员2','商品编码','SKU','商品名称','类目','商品状态','开发时间','销售额￥','成本￥','PP+Ebay费用￥','打包费￥','物流费￥','利润','利润率%'];
+        ExportTools::toExcelOrCsv('dev-profit-detail', $data, 'Xls', $title);
     }
+
 
     /**
      * @brief Purchase profit report
