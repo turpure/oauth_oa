@@ -36,7 +36,7 @@ class Department extends ActiveRecord
     public function rules()
     {
         return [
-            [['department'], 'required'],
+            [['department', 'type'], 'required'],
             [['id','parent'], 'integer'],
             ['parent', 'default', 'value' => 0],
             [['department','description'], 'string'],
