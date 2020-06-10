@@ -575,6 +575,34 @@ class OaGoodsinfoController extends AdminController
 
         }
 
+
+    /**
+     * @brief 导出wish模板数据
+     * @throws \Exception
+     */
+    public function actionPlatExportWishData()
+    {
+        try{
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            $infoId = $condition['id'];
+            $ret = ApiGoodsinfo::preExportWish($infoId);
+            foreach ($ret['data'] as &$row) {
+                $row['extra_images'] = str_replace("\n", '|', $row['extra_images']);
+                $row['variants'] = json_decode($row['variants'], true);
+            }
+            return  $ret;
+        }
+
+        catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+
+    }
+
     /**
      * @brief joom批量导出
      * @return array
