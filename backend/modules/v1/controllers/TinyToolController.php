@@ -472,7 +472,7 @@ class TinyToolController extends AdminController
             //根据利润率获取售价
             $priceItem = ApiUk::getPrice($post['rate'], $v['cost'], $v['out'], $res['price']);
             $priceItem['name'] = $v['name'];
-            $data['price'][] = $rateItem;
+            $data['price'][] = $priceItem;
         }
 
         //print_r($data);exit;
