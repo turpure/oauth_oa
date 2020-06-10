@@ -40,6 +40,7 @@ class Department extends ActiveRecord
             [['id','parent'], 'integer'],
             ['parent', 'default', 'value' => 0],
             [['department','description'], 'string'],
+            [['type'], 'safe'],
         ];
     }
 
@@ -52,6 +53,7 @@ class Department extends ActiveRecord
             'id' => '部门编号',
             'parent' => '上级部门',
             'department' => '部门名称',
+            'type' => '业务类型',
             'description' => '描述',
             'created_at' => '创建时间',
             'updated_at' => '更新时间',

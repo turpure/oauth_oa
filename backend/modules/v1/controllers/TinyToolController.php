@@ -434,8 +434,8 @@ class TinyToolController extends AdminController
         $post = [
             'sku' => $cond['sku'],
             'num' => $cond['num'] ? $cond['num'] : 1,
-            'price' => $cond['price'],
-            'rate' => $cond['rate'],
+            'price' => $cond['price'] ? $cond['price'] : 0,
+            'rate' => $cond['rate'] ? $cond['rate'] : 0,
         ];
         $data = [
             'detail' => [],
@@ -448,8 +448,6 @@ class TinyToolController extends AdminController
         //print_r($res);exit;
         if (!$res) return $data;
 
-        $post['num'] = $post['num'] ? $post['num'] : 1;
-        $post['rate'] = $post['rate'] ? $post['rate'] : 0;
 
         $data['detail'] = $res;
         $res['num'] = $post['num'];
@@ -460,7 +458,6 @@ class TinyToolController extends AdminController
         $res['width'] = max(ArrayHelper::getColumn($res, 'width'));
         //获取运费和出库费
         $data['transport'] = ApiUk::getTransport($res['weight'], $res['length'], $res['width'], $res['height']);
-
 
         foreach ($data['transport'] as $v){
             //根据售价获取利润率

@@ -57,8 +57,12 @@ class DepartmentController extends Controller
 
     public function actionCreate()
     {
+        $post = Yii::$app->request->post();
+        if(isset($post['Department']['type']) && $post['Department']['type']){
+            $post['Department']['type'] = implode(',', $post['Department']['type']);
+        }
         $model = new Department();
-        if ($model->load(Yii::$app->request->post()) && $model->save())
+        if ($model->load($post) && $model->save())
         {
             $model = new Department(); //reset model
             $this->redirect('index');
@@ -71,8 +75,18 @@ class DepartmentController extends Controller
     public function actionUpdate($id)
     {
         $model = Department::findOne($id);
-        if ($model->load(Yii::$app->request->post()) && $model->save())
-        {
+        $request = Yii::$app->request;
+        $post = $request->post();
+        if($request->isPost){
+            if($post['Department']['type']){
+                $post['Department']['type'] = implode(',', $post['Department']['type']);
+            }
+        }else{
+            if($model->type){
+                $model->type = explode(',', $model->type);
+            }
+        }
+        if ($model->load($post) && $model->save()) {
             $this->redirect('index');
         }
         return $this->render('update', [

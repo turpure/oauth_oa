@@ -24,7 +24,13 @@ use mdm\admin\models\Department;
 
             <?= $form->field($model, 'department')->textInput(['maxlength' => 128]) ?>
 
-            <?= $form->field($model, 'description')->textInput(['id' => 'parent_name']) ?>
+            <?= $form->field($model, 'type')->widget(Select2::classname(), [
+                'data' => ['业务' => '业务','销售' => '销售','开发' => '开发','采购' => '采购','供应链' => '供应链','仓储' => '仓储'],
+                'options' => ['multiple' => true, 'placeholder' => '--请选择业务类型--'],
+                'pluginOptions' => ['allowClear' => true],
+            ]); ?>
+
+            <?= $form->field($model, 'description')->textInput(['id' => 'description']) ?>
 
         </div>
     </div>

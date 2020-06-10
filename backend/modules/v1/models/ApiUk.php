@@ -153,7 +153,7 @@ class ApiUk
             } else {
                 $item['cost'] = Yii::$app->params['w_uk_tran_fee_4_3'];
             }
-            $item['costRmb'] = $data['cost'] * Yii::$app->params['poundRate'];
+            $item['costRmb'] = $item['cost'] * Yii::$app->params['poundRate'];
             $item['outRmb'] = $data['out'] * Yii::$app->params['poundRate'];
             $res[] = $item;
 //            var_dump($item);exit;
