@@ -995,6 +995,72 @@ class ApiGoodsinfo
 
 
     /**
+     * @brief wish模板预处理
+     * @param $id
+     * @return array
+     * @throws \Exception
+     */
+    public static function preExportWishData($id)
+    {
+        $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
+        $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
+        $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
+        $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
+        $wishAccounts = OaWishSuffix::find()->where(['like', 'parentCategory', $goods['cate']])
+            ->orWhere(["IFNULL(parentCategory,'')" => ''])
+            ->asArray()->all();
+        $keyWords = static::preKeywords($wishInfo);
+
+        $row = [
+            'sku' => '', 'selleruserid' => '', 'name' => '', 'inventory' => '', 'price' => '', 'msrp' => '',
+            'shipping' => '', 'shipping_time' => '', 'main_image' => '', 'extra_images' => '', 'variants' => '',
+            'landing_page_url' => '', 'tags' => '', 'description' => '', 'brand' => '', 'upc' => '', 'local_price' => '',
+            'local_shippingfee' => '', 'local_currency' => ''
+        ];
+        $ret = ['name' => 'wish-' . $goodsInfo['goodsCode']];
+        $out = [];
+        foreach ($wishAccounts as $account) {
+            $titlePool = [];
+            $title = '';
+            $len = self::WishTitleLength;
+            while (true) {
+                $title = static::getTitleName($keyWords, $len);
+                --$len;
+                if (empty($title) || !in_array($title, $titlePool, false)) {
+                    $titlePool[] = $title;
+                    break;
+                }
+            }
+            if(count($wishSku) > 1) $goodsInfo['isVar'] = '是'; // 2020-06-02 添加（单平台添加多属性）
+//            var_dump($goodsInfo['isVar']);exit;
+            $variantInfo = static::getWishVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
+            $row['sku'] = $wishInfo['sku'] . $account['suffix'];
+            $row['selleruserid'] = $account['shortName'];
+            $row['name'] = $title;
+            $row['inventory'] = $wishInfo['inventory'];
+            $row['price'] = $variantInfo['price'];
+            $row['msrp'] = $variantInfo['msrp'];
+            $row['shipping'] = $variantInfo['shipping'];
+            $row['shipping_time'] = '7-21';
+            $row['main_image'] = static::getWishMainImage($goodsInfo['goodsCode'], $account['mainImg']);
+            $row['extra_images'] = $wishInfo['extraImages'];
+            $row['variants'] = $variantInfo['variant'];
+            $row['landing_page_url'] = $wishInfo['mainImage'];
+            $row['tags'] = $wishInfo['wishTags'];
+            $row['description'] = $wishInfo['description'];
+            $row['brand'] = '';
+            $row['upc'] = '';
+            $row['local_price'] = $variantInfo['local_price'];
+            $row['local_shippingfee'] = $variantInfo['local_shippingfee'];
+            $row['local_currency'] = $variantInfo['local_currency'];
+            $out[] = $row;
+        }
+        $ret['data'] = $out;
+        return $ret;
+    }
+
+
+    /**
      * @brief 导出joom模板
      * @param $ids
      * @param $accounts
