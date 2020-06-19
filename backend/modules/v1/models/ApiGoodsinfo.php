@@ -105,7 +105,7 @@ class ApiGoodsinfo
 
 
         } elseif ($type === 'picture-info') {
-            $query = (new Query())->select('gi.*,g.vendor1,g.vendor2,g.vendor3,
+            $query = (new Query())->select('gg.*,g.vendor1,g.vendor2,g.vendor3,
              g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer')
                 ->from('proCenter.oa_goodsinfo gi')
                 ->join('LEFT JOIN', 'proCenter.oa_goods g', 'g.nid=gi.goodsId');
@@ -135,7 +135,7 @@ class ApiGoodsinfo
 
         } elseif ($type === 'plat-info') {  //平台信息
 
-            $query = (new Query())->select('gi.*,g.vendor1,g.vendor2,g.vendor3,
+            $query = (new Query())->select('gig.*,g.vendor1,g.vendor2,g.vendor3,
              g.origin2,g.origin3,g.origin1,g.cate,g.subCate,g.introducer')
                 ->from('proCenter.oa_goodsinfo gi')
                 ->join('LEFT JOIN', 'proCenter.oa_goods g', 'g.nid=gi.goodsId');
@@ -942,6 +942,7 @@ class ApiGoodsinfo
         $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
         $wishAccounts = OaWishSuffix::find()->where(['like', 'parentCategory', $goods['cate']])
             ->orWhere(["IFNULL(parentCategory,'')" => ''])
+            ->andWhere(['isIbay' => 1])
             ->asArray()->all();
         $keyWords = static::preKeywords($wishInfo);
 
@@ -1008,6 +1009,7 @@ class ApiGoodsinfo
         $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
         $wishAccounts = OaWishSuffix::find()->where(['like', 'parentCategory', $goods['cate']])
             ->orWhere(["IFNULL(parentCategory,'')" => ''])
+            ->andWhere(['isIbay' => 0])
             ->asArray()->all();
         $keyWords = static::preKeywords($wishInfo);
 
