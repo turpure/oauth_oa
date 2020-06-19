@@ -201,10 +201,11 @@ class ApiTool
 						where gs.GoodsSKUStatus<>'停产' AND GoodsCode='$GoodsCode'";
                 //print_r($dispatchtimesql);exit;
                 $DispatchTimeMax = Yii::$app->py_db->createCommand($dispatchtimesql)->queryAll();
+//                var_dump($DispatchTimeMax);exit;
                 if ($site == 0 || $site == 2 || $site == 100) {
-                    if ($DispatchTimeMax[0]['GoodsSKUStatus'] == '爆款' || $DispatchTimeMax[0]['GoodsSKUStatus'] == '旺款') {
+                    if ($DispatchTimeMax && ($DispatchTimeMax[0]['GoodsSKUStatus'] == '爆款' || $DispatchTimeMax[0]['GoodsSKUStatus'] == '旺款')) {
                         $da['DispatchTimeMax'] = 3;
-                    } elseif ($DispatchTimeMax[0]['GoodsSKUStatus'] == 'wish新款' || $DispatchTimeMax[0]['GoodsSKUStatus'] == '盈利款') {
+                    } elseif ($DispatchTimeMax && ($DispatchTimeMax[0]['GoodsSKUStatus'] == 'wish新款' || $DispatchTimeMax[0]['GoodsSKUStatus'] == '盈利款')) {
                         $da['DispatchTimeMax'] = 5;
                     } else {
                         $da['DispatchTimeMax'] = 10;
