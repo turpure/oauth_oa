@@ -15,6 +15,7 @@ use Yii;
  * @property string $rate
  * @property string $mainImg
  * @property string $parentCategory
+ * @property int $isIbay
  */
 class OaWishSuffix extends \yii\db\ActiveRecord
 {
@@ -33,6 +34,7 @@ class OaWishSuffix extends \yii\db\ActiveRecord
     {
         return [
             [['rate'], 'number'],
+            [['isIbay'], 'safe'],
             [['ibaySuffix', 'shortName','localCurrency', 'suffix', 'mainImg', 'parentCategory'], 'string', 'max' => 255],
         ];
     }
@@ -51,6 +53,7 @@ class OaWishSuffix extends \yii\db\ActiveRecord
             'rate' => 'Rate',
             'mainImg' => 'Main Img',
             'parentCategory' => 'Parent Category',
+            'isIbay' => 'isIbay',
         ];
     }
 }
