@@ -55,6 +55,7 @@ use yii\db\Expression;
  * @property string $extendStatus
  * @property string $mapPersons
  * @property string $filterType
+ * @property string $hsCode
  */
 
 
@@ -94,7 +95,7 @@ class OaGoodsinfo extends \yii\db\ActiveRecord
             [['devDatetime', 'updateTime', 'picCompleteTime'], 'safe'],
             [['goodsName', 'aliasCnName', 'aliasEnName'], 'string', 'max' => 200],
             [['packName', 'purchaser', 'developer'], 'string', 'max' => 50],
-            [['season', 'goodsCode', 'completeStatus', 'goodsStatus'], 'string', 'max' => 100],
+            [['season', 'goodsCode', 'completeStatus', 'goodsStatus','hsCode'], 'string', 'max' => 100],
             [['dictionaryName', 'storeName', 'picUrl', 'requiredKeywords', 'randomKeywords', 'wishTags', 'extendStatus', 'mapPersons'], 'string', 'max' => 255],
             [['possessMan1', 'possessMan2'], 'string', 'max' => 64],
             [['achieveStatus', 'attributeName'], 'string', 'max' => 60],
@@ -158,6 +159,7 @@ class OaGoodsinfo extends \yii\db\ActiveRecord
             'mid' => 'mid',
             'extendStatus' => 'Extend Status',
             'mapPersons' => 'Map Persons',
+            'hsCode' => 'Hs Code',
         ];
     }
 

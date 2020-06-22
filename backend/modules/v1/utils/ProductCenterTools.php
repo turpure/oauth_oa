@@ -471,7 +471,8 @@ class ProductCenterTools
             'isMagnetism' => $goodsInfo['basicInfo']['goodsInfo']['isMagnetism'] === '是' ? 1 : 0,
             'DeclaredValue' => static::getDeclaredValue($goodsInfo['basicInfo']['goodsInfo']['id']),
             'PackFee' => static::getPackFee($goodsInfo['basicInfo']['goodsInfo']['packName']),
-            'description' => $goodsInfo['basicInfo']['goodsInfo']['description']
+            'description' => $goodsInfo['basicInfo']['goodsInfo']['description'],
+            'hsCode' => $goodsInfo['basicInfo']['goodsInfo']['hsCode']
         ];
         return $bGoods;
 
