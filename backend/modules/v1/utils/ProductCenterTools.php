@@ -472,7 +472,7 @@ class ProductCenterTools
             'DeclaredValue' => static::getDeclaredValue($goodsInfo['basicInfo']['goodsInfo']['id']),
             'PackFee' => static::getPackFee($goodsInfo['basicInfo']['goodsInfo']['packName']),
             'description' => $goodsInfo['basicInfo']['goodsInfo']['description'],
-            'hsCode' => $goodsInfo['basicInfo']['goodsInfo']['hsCode']
+            'HSCODE' => $goodsInfo['basicInfo']['goodsInfo']['hsCode']
         ];
         return $bGoods;
 
