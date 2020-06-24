@@ -33,8 +33,8 @@ class OaGoods1688 extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['infoId', 'offerId', 'specId', 'supplierLoginId'], 'integer'],
-            [['subject', 'style', 'multiStyle', 'companyName'], 'string', 'max' => 255],
+            [['infoId', 'offerId', 'multiStyle'], 'integer'],
+            [['specId', 'subject', 'style', 'supplierLoginId', 'companyName'], 'string', 'max' => 255],
         ];
     }
 

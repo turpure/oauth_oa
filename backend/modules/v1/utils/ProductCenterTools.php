@@ -8,6 +8,7 @@
 namespace backend\modules\v1\utils;
 
 use backend\models\OaGoods;
+use backend\models\OaGoods1688;
 use backend\models\OaGoodsinfo;
 use backend\models\OaGoodsSku;
 use backend\models\OaEbayGoods;
@@ -31,6 +32,7 @@ use backend\models\ShopElf\BPerson;
 use backend\models\ShopElf\SUserGoodsRight;
 use backend\models\ShopElf\BGoodsAttribute;
 use backend\models\ShopElf\BCurrencyCode;
+use backend\modules\v1\aliApi\AgentProductSimpleGet;
 use backend\modules\v1\models\ApiGoodsinfo;
 use Yii;
 use yii\db\Exception;
@@ -96,8 +98,8 @@ class ProductCenterTools
         if ((int)$repeat === 0) {
             $goodsCode = OaGoodsinfo::find()->select('goodsCode')->where(['id' => $infoId])->scalar();
             $pyGoodsCode = BGoods::find()->select('goodsCode')->where(['goodsCode' => $goodsCode])->scalar();
-            if(!empty($pyGoodsCode)) {
-                return ['code' => 0, 'message' =>'该商品已导入过普源'];
+            if (!empty($pyGoodsCode)) {
+                return ['code' => 0, 'message' => '该商品已导入过普源'];
             }
         }
         return static::_preImport($infoId);
@@ -119,8 +121,7 @@ class ProductCenterTools
             static::_generatePurchasingOrderD($stockOrderId, $goodsCode);
             $trans->commit();
             return ['生成采购单:' . $billNumber];
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             $trans->rollback();
             throw new \Exception($why->getMessage());
         }
@@ -161,7 +162,8 @@ class ProductCenterTools
      * Author: henry
      * @return bool
      */
-    public static function saveAttributeToPlat($infoId){
+    public static function saveAttributeToPlat($infoId)
+    {
         $goodsInfo = OaGoodsinfo::find()->with('oaGoods')->where(['id' => $infoId])->asArray()->one();
         $goodsSku = OaGoodsSku::findAll(['infoId' => $infoId]);
 
@@ -189,7 +191,7 @@ class ProductCenterTools
     public static function uploadImagesToFtp($infoId)
     {
         $goodsSku = OaGoodsSku::findAll(['infoId' => $infoId]);
-        $tmpDir = Yii::getAlias('@app'). '/runtime/image/';
+        $tmpDir = Yii::getAlias('@app') . '/runtime/image/';
         $mode = FTP_BINARY;
         $asynchronous = false;
         foreach ($goodsSku as $sku) {
@@ -199,7 +201,7 @@ class ProductCenterTools
                 $remote_file = '/' . $filename;
                 $local_file = $tmpDir . $filename;
                 $ret = static::DownloadImage($url, $local_file);
-                if(!$ret) {
+                if (!$ret) {
                     throw new \Exception('failure');
                 }
                 Yii::$app->ftp->put($local_file, $remote_file, $mode, $asynchronous);
@@ -237,17 +239,17 @@ class ProductCenterTools
                 static::_stockImport($stock);
 
                 //更新产品信息状态
-                if($goodsInfo['basicInfo']['goodsInfo']->achieveStatus !== '已完善') {
+                if ($goodsInfo['basicInfo']['goodsInfo']->achieveStatus !== '已完善') {
                     $goodsInfo['basicInfo']['goodsInfo']->achieveStatus = '已导入';
                 }
                 $goodsInfo['basicInfo']['goodsInfo']->picStatus = '待处理';
                 $goodsInfo['basicInfo']['goodsInfo']->updateTime = date('Y-m-d H:i:s');
-                if(!$goodsInfo['basicInfo']['goodsInfo']->save()){
+                if (!$goodsInfo['basicInfo']['goodsInfo']->save()) {
                     throw new \Exception('save goods info failed');
                 }
             }
             $trans->commit();
-            return ['code' => 1, 'message' => '导入成功' ];
+            return ['code' => 1, 'message' => '导入成功'];
         } catch (\Exception $why) {
             $trans->rollBack();
             return [
@@ -270,12 +272,11 @@ class ProductCenterTools
         $bGoods = BGoods::findOne(['GoodsCode' => $goodsCode]);
         if ($bGoods === null) {
             $bGoods = new BGoods();
-        }
-        //如果存在则部分字段不更新
+        } //如果存在则部分字段不更新
         else {
             $excludeFields = [
-                'GoodsName','GoodsStatus','Weight', 'RetailPrice', 'CostPrice',
-                'LinkUrl','LinkUrl2','LinkUrl3','LinkUrl4','LinkUrl5','LinkUrl6',
+                'GoodsName', 'GoodsStatus', 'Weight', 'RetailPrice', 'CostPrice',
+                'LinkUrl', 'LinkUrl2', 'LinkUrl3', 'LinkUrl4', 'LinkUrl5', 'LinkUrl6',
             ];
             foreach ($excludeFields as $field) {
                 unset($goodsInfo[$field]);
@@ -313,19 +314,19 @@ class ProductCenterTools
     private static function _bindShopSku($goodsInfo)
     {
         $mid = $goodsInfo['basicInfo']['goodsInfo']['mid'] ?: '';
-        if(!empty($mid)) {
-           $sql = "SELECT ogs.sku as SKU,amd.childId as ShopSKU FROM proCenter.oa_goodssku AS ogs LEFT JOIN proCenter.oa_dataMineDetail AS amd ON ogs.did = amd.id WHERE amd.mid = $mid";
-           $ret = Yii::$app->db->createCommand($sql)->queryAll();
-           foreach ($ret as $row) {
-               $linkShop =  BGoodsSKULinkShop::findOne(['ShopSKU' => $row['ShopSKU']]);
-               if ($linkShop === null) {
-                   $linkShop = new BGoodsSKULinkShop();
-               }
-               $linkShop->setAttributes($row);
-               if(!$linkShop->save()) {
-                   throw new \Exception('关联店铺SKU失败！','400');
-               }
-           }
+        if (!empty($mid)) {
+            $sql = "SELECT ogs.sku as SKU,amd.childId as ShopSKU FROM proCenter.oa_goodssku AS ogs LEFT JOIN proCenter.oa_dataMineDetail AS amd ON ogs.did = amd.id WHERE amd.mid = $mid";
+            $ret = Yii::$app->db->createCommand($sql)->queryAll();
+            foreach ($ret as $row) {
+                $linkShop = BGoodsSKULinkShop::findOne(['ShopSKU' => $row['ShopSKU']]);
+                if ($linkShop === null) {
+                    $linkShop = new BGoodsSKULinkShop();
+                }
+                $linkShop->setAttributes($row);
+                if (!$linkShop->save()) {
+                    throw new \Exception('关联店铺SKU失败！', '400');
+                }
+            }
         }
     }
 
@@ -376,7 +377,7 @@ class ProductCenterTools
     {
         // 绕开触发器
         $skuModel = BGoodsSku::findOne(['SKU' => $bGoods['GoodsCode']]);
-        if($skuModel){
+        if ($skuModel) {
             $skuModel->delete();
         }
 
@@ -385,10 +386,10 @@ class ProductCenterTools
         $skuList = BGoodsSku::findAll(['GoodsID' => $bGoods['goodsId']]);
         $skuArrOld = ArrayHelper::getColumn($skuList, 'SKU');
         $skuDiff = array_diff($skuArrOld, $skuArrNew);
-        if($skuDiff){
-            foreach($skuList as $item){
-                foreach($skuDiff as $v){
-                    if($item['SKU'] === $v){
+        if ($skuDiff) {
+            foreach ($skuList as $item) {
+                foreach ($skuDiff as $v) {
+                    if ($item['SKU'] === $v) {
                         $item->delete();
                     }
                 }
@@ -400,18 +401,17 @@ class ProductCenterTools
             $bGoodsSku = BGoodsSku::findOne(['SKU' => $sku['SKU']]);
             if ($bGoodsSku === null) {
                 $bGoodsSku = new BGoodsSku();
-            }
-            //如果SKU已存在，部分字段保留不变
+            } //如果SKU已存在，部分字段保留不变
             else {
-                $excludeFields = ['SKUName','property1', 'property2', 'property3','GoodsSKUStatus','Weight','CostPrice','RetailPrice'];
+                $excludeFields = ['SKUName', 'property1', 'property2', 'property3', 'GoodsSKUStatus', 'Weight', 'CostPrice', 'RetailPrice'];
                 foreach ($excludeFields as $field) {
-                    if(!empty($bGoodsSku[$field])) {
+                    if (!empty($bGoodsSku[$field])) {
                         unset($sku[$field]);
                     }
                 }
             }
             //如果SKU状态是空则置为在售
-            if(empty($bGoodsSku->GoodsSKUStatus)) {
+            if (empty($bGoodsSku->GoodsSKUStatus)) {
                 $bGoodsSku->GoodsSKUStatus = '在售';
             }
             $bGoodsSku->setAttributes($sku);
@@ -552,7 +552,7 @@ class ProductCenterTools
     private static function _goodsInfoToWishGoods($goodsInfo)
     {
         $wishGoodsAttributes = [
-            'sku' => $goodsInfo['isVar'] == '是' ? $goodsInfo['goodsCode'] : ($goodsInfo['goodsCode'].'01'),
+            'sku' => $goodsInfo['isVar'] == '是' ? $goodsInfo['goodsCode'] : ($goodsInfo['goodsCode'] . '01'),
             'title' => '',
             'description' => $goodsInfo['description'],
             'inventory' => 10000,
@@ -584,7 +584,6 @@ class ProductCenterTools
     }
 
 
-
     /**
      * @brief import goodsSku into wishGoodsSKu
      * @param $goodsSku
@@ -597,10 +596,10 @@ class ProductCenterTools
         $skuList = OaWishGoodsSku::findAll(['infoId' => $goodsSku[0]['infoId']]);
         $skuArrOld = ArrayHelper::getColumn($skuList, 'sku');
         $skuDiff = array_diff($skuArrOld, $skuArrNew);
-        if($skuDiff){
-            foreach($skuList as $item){
-                foreach($skuDiff as $v){
-                    if($item['sku'] == $v){
+        if ($skuDiff) {
+            foreach ($skuList as $item) {
+                foreach ($skuDiff as $v) {
+                    if ($item['sku'] == $v) {
                         $item->delete();
                         //print_r($item);exit;
                     }
@@ -642,7 +641,7 @@ class ProductCenterTools
         $maxSkuWeight = OaGoodsSku::find()->where(['infoId' => $goodsInfo['id']])->max('weight');
         $smtGoodsAttributes = [
             'infoId' => $goodsInfo['id'],
-            'sku' => $goodsInfo['isVar'] == '是' ? $goodsInfo['goodsCode'] : ($goodsInfo['goodsCode'].'01'),
+            'sku' => $goodsInfo['isVar'] == '是' ? $goodsInfo['goodsCode'] : ($goodsInfo['goodsCode'] . '01'),
             'itemtitle' => '',
             'productPrice' => 0,
             'lotNum' => 1,
@@ -650,7 +649,7 @@ class ProductCenterTools
             'descriptionmobile' => '',
             'quantity' => 10000,
             'category1' => '',
-            'grossWeight' => $maxSkuWeight ? : 0,
+            'grossWeight' => $maxSkuWeight ?: 0,
             'imageUrl0' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_0_.jpg',
             'imageUrl1' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_1_.jpg',
             'imageUrl2' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_2_.jpg',
@@ -680,10 +679,10 @@ class ProductCenterTools
         $skuList = OaSmtGoodsSku::findAll(['infoId' => $goodsSku[0]['infoId']]);
         $skuArrOld = ArrayHelper::getColumn($skuList, 'sku');
         $skuDiff = array_diff($skuArrOld, $skuArrNew);
-        if($skuDiff){
-            foreach($skuList as $item){
-                foreach($skuDiff as $v){
-                    if($item['sku'] == $v){
+        if ($skuDiff) {
+            foreach ($skuList as $item) {
+                foreach ($skuDiff as $v) {
+                    if ($item['sku'] == $v) {
                         $item->delete();
                         //print_r($item);exit;
                     }
@@ -770,7 +769,7 @@ class ProductCenterTools
             'outShipToCountry2' => '',
             'mainPage' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_0_.jpg',
             'extraPage' => static::_generateImages($goodsInfo['goodsCode']),
-            'sku' => $goodsInfo['isVar'] == '是' ? $goodsInfo['goodsCode'] : ($goodsInfo['goodsCode'].'01'),
+            'sku' => $goodsInfo['isVar'] == '是' ? $goodsInfo['goodsCode'] : ($goodsInfo['goodsCode'] . '01'),
             'infoId' => $goodsInfo['id'],
             'specifics' => '{"specifics":[{"Brand":"Unbranded"}]}',
             'iBayTemplate' => 'pr110',
@@ -803,10 +802,10 @@ class ProductCenterTools
         $skuList = OaEbayGoodsSku::findAll(['infoId' => $goodsSku[0]['infoId']]);
         $skuArrOld = ArrayHelper::getColumn($skuList, 'sku');
         $skuDiff = array_diff($skuArrOld, $skuArrNew);
-        if($skuDiff){
-            foreach($skuList as $item){
-                foreach($skuDiff as $v){
-                    if($item['sku'] == $v){
+        if ($skuDiff) {
+            foreach ($skuList as $item) {
+                foreach ($skuDiff as $v) {
+                    if ($item['sku'] == $v) {
                         $item->delete();
                         //print_r($item);exit;
                     }
@@ -851,7 +850,7 @@ class ProductCenterTools
             if ($i === 0) {
                 $images = $images . $baseUrl . $goodsCode . '-_00_.jpg';
             } else {
-                $images = $images . "\n" .  $baseUrl . $goodsCode . '-_' . $i . '_.jpg';
+                $images = $images . "\n" . $baseUrl . $goodsCode . '-_' . $i . '_.jpg';
             }
         }
         return $images;
@@ -900,8 +899,7 @@ class ProductCenterTools
     {
         try {
             return BGoodSCats::findOne(['CategoryName' => $cateName])->NID;
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             throw new \Exception('无效的类目名称！', 400);
         }
     }
@@ -940,8 +938,7 @@ class ProductCenterTools
     {
         try {
             return BGoodSCats::findOne(['CategoryName' => $cateName])->CategoryCode;
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             throw new \Exception('无效的类目名称！', 400);
         }
 
@@ -957,8 +954,7 @@ class ProductCenterTools
     {
         try {
             return BStore::findOne(['StoreName' => $storeName])->NID;
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             throw new \Exception('无效的仓库名称！', 400);
         }
     }
@@ -966,7 +962,7 @@ class ProductCenterTools
 
     public static function getSkuCode($goodsInfo)
     {
-        $goodsCode = $goodsInfo['basicInfo']['goodsInfo']['goodsCode'] ?: '' ;
+        $goodsCode = $goodsInfo['basicInfo']['goodsInfo']['goodsCode'] ?: '';
         $multiStyle = $goodsInfo['basicInfo']['goodsInfo']['isVar'] === '是' ? 1 : 0;
         return $multiStyle === 1 ? $goodsCode : $goodsCode . '01';
     }
@@ -1103,27 +1099,27 @@ class ProductCenterTools
      * @param $sku
      * @return string
      */
-   public static function getBmpFileName($sku)
-   {
-       $skuName = explode('_',$sku->sku)[0];
-       //print_r($skuName);exit;
-       $base = 'http://121.196.233.153/images/';
-       return $base . $skuName . '.jpg';
-   }
+    public static function getBmpFileName($sku)
+    {
+        $skuName = explode('_', $sku->sku)[0];
+        //print_r($skuName);exit;
+        $base = 'http://121.196.233.153/images/';
+        return $base . $skuName . '.jpg';
+    }
 
-   public static function getExchangeRate($currencyCode)
-   {
-       $code = BCurrencyCode::findOne(['CURRENCYCODE' => $currencyCode]);
-       return $code['ExchangeRate'];
-   }
+    public static function getExchangeRate($currencyCode)
+    {
+        $code = BCurrencyCode::findOne(['CURRENCYCODE' => $currencyCode]);
+        return $code['ExchangeRate'];
+    }
 
-   private static function _getBillNumber()
-   {
-       $billNumberQuery = " exec  P_S_CodeRuleGet 22328,'' ";
-       $connection = yii::$app->py_db;
-       $ret = $connection->createCommand($billNumberQuery)->queryOne();
-       return $ret['MaxBillCode'];
-   }
+    private static function _getBillNumber()
+    {
+        $billNumberQuery = " exec  P_S_CodeRuleGet 22328,'' ";
+        $connection = yii::$app->py_db;
+        $ret = $connection->createCommand($billNumberQuery)->queryOne();
+        return $ret['MaxBillCode'];
+    }
 
     /**
      * @brief 生成采购单主表
@@ -1132,40 +1128,40 @@ class ProductCenterTools
      * @return mixed
      * @throws \Exception
      */
-   private static function _generatePurchasingOrderM($billNumber, $goodsCode)
-   {
-       $order = new CGStockOrderM();
-       $goods = BGoods::findOne(['GoodsCode' => $goodsCode]);
-       $purchaser = $goods['Purchaser'];
-       $personId = BPerson::findOne(['PersonName' => $purchaser])['NID'];
-       $row = [
-           'CheckFlag' => 0,
-           'BillNumber' => $billNumber,
-           'PayMoney' => 0,
-           'DisCountMoney' => 0,
-           'MakeDate' => date('Y-m-d H:i:s'),
-           'DelivDate' => date('Y-m-d'),
-           'SupplierID' => $goods['SupplierID'],
-           'SalerID' => $personId,
-           'DeptID' => '11',
-           'BalanceID' => '2',
-           'Memo' => '新品采购单',
-           'DeptMan' => '',
-           'StockMan' => '',
-           'Phone' => '',
-           'Recorder' => 'pro-center',
-           'Note' => '',
-           'PlanBillCode' => '',
-           'ExpressFee' => 0.00,
-           'ExpressName' => '',
-           'StoreID' => '',
-       ];
-       $order->setAttributes($row);
-       if(!$order->save()) {
-           throw new \Exception('保存失败！', 400);
-       }
-       return $order['NID'];
-   }
+    private static function _generatePurchasingOrderM($billNumber, $goodsCode)
+    {
+        $order = new CGStockOrderM();
+        $goods = BGoods::findOne(['GoodsCode' => $goodsCode]);
+        $purchaser = $goods['Purchaser'];
+        $personId = BPerson::findOne(['PersonName' => $purchaser])['NID'];
+        $row = [
+            'CheckFlag' => 0,
+            'BillNumber' => $billNumber,
+            'PayMoney' => 0,
+            'DisCountMoney' => 0,
+            'MakeDate' => date('Y-m-d H:i:s'),
+            'DelivDate' => date('Y-m-d'),
+            'SupplierID' => $goods['SupplierID'],
+            'SalerID' => $personId,
+            'DeptID' => '11',
+            'BalanceID' => '2',
+            'Memo' => '新品采购单',
+            'DeptMan' => '',
+            'StockMan' => '',
+            'Phone' => '',
+            'Recorder' => 'pro-center',
+            'Note' => '',
+            'PlanBillCode' => '',
+            'ExpressFee' => 0.00,
+            'ExpressName' => '',
+            'StoreID' => '',
+        ];
+        $order->setAttributes($row);
+        if (!$order->save()) {
+            throw new \Exception('保存失败！', 400);
+        }
+        return $order['NID'];
+    }
 
     /**
      * @brief 生成采购单明细
@@ -1173,55 +1169,56 @@ class ProductCenterTools
      * @param $goodsCode
      * @throws \Exception
      */
-   private static function _generatePurchasingOrderD($stockOrderID,$goodsCode)
-   {
-       //1.所有备货SKU
-       $info = OaGoodsinfo::findOne(['goodsCode' => $goodsCode]);
-       $infoId = $info['id'];
-       $goodsSku = OaGoodsSku::find()->where(['infoId' => $infoId])->andWhere(['>','ifnull(stockNum ,0)',0])->all();
-       $oderDetail = new CGStockOrdeD();
-       foreach ($goodsSku as $sku) {
-           $detail = clone $oderDetail;
-           $bgSku = BGoodsSku::findOne(['SKU' => $sku['sku']]);
-           $row = [
-               'StockOrderNID' => $stockOrderID,
-               'GoodsID' => $bgSku['GoodsID'],
-               'GoodsSKUID' => $bgSku['NID'],
-               'Amount' => $sku['stockNum']?:0,
-               'TaxPrice' => $sku['costPrice']?:0,
-               'MinPrice' => $sku['costPrice']?:0,
-               'TaxRate' => 0,
-               'Price' => $sku['costPrice']?:0,
-               'Money' => ($sku['stockNum']?:0) * ($sku['costPrice']?:0),
-               'TaxMoney' => 0,
-               'AllMoney' => ($sku['stockNum']?:0) * ($sku['costPrice']?:0),
-               'Remark' => '',
-               'BeforeAvgPrice' => $sku['costPrice']?:0,
-           ];
-           $detail->setAttributes($row);
-           if(!$detail->save()) {
-              throw new \Exception('保存失败！', '400');
-           }
-       }
-   }
+    private static function _generatePurchasingOrderD($stockOrderID, $goodsCode)
+    {
+        //1.所有备货SKU
+        $info = OaGoodsinfo::findOne(['goodsCode' => $goodsCode]);
+        $infoId = $info['id'];
+        $goodsSku = OaGoodsSku::find()->where(['infoId' => $infoId])->andWhere(['>', 'ifnull(stockNum ,0)', 0])->all();
+        $oderDetail = new CGStockOrdeD();
+        foreach ($goodsSku as $sku) {
+            $detail = clone $oderDetail;
+            $bgSku = BGoodsSku::findOne(['SKU' => $sku['sku']]);
+            $row = [
+                'StockOrderNID' => $stockOrderID,
+                'GoodsID' => $bgSku['GoodsID'],
+                'GoodsSKUID' => $bgSku['NID'],
+                'Amount' => $sku['stockNum'] ?: 0,
+                'TaxPrice' => $sku['costPrice'] ?: 0,
+                'MinPrice' => $sku['costPrice'] ?: 0,
+                'TaxRate' => 0,
+                'Price' => $sku['costPrice'] ?: 0,
+                'Money' => ($sku['stockNum'] ?: 0) * ($sku['costPrice'] ?: 0),
+                'TaxMoney' => 0,
+                'AllMoney' => ($sku['stockNum'] ?: 0) * ($sku['costPrice'] ?: 0),
+                'Remark' => '',
+                'BeforeAvgPrice' => $sku['costPrice'] ?: 0,
+            ];
+            $detail->setAttributes($row);
+            if (!$detail->save()) {
+                throw new \Exception('保存失败！', '400');
+            }
+        }
+    }
 
-    private static function DownloadImage($url, $filename=''){
-        $ch = curl_init ($url);
+    private static function DownloadImage($url, $filename = '')
+    {
+        $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_BINARYTRANSFER,1);
-        curl_setopt($ch,CURLOPT_SSL_VERIFYHOST,false);
-        curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,false);
+        curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 //        curl_setopt ($ch, CURLOPT_PROXY, '127.0.0.1:1080');
-        $raw=curl_exec($ch);
-        if(!$raw) {
+        $raw = curl_exec($ch);
+        if (!$raw) {
             return false;
         }
-        curl_close ($ch);
-        if(file_exists($filename)){
+        curl_close($ch);
+        if (file_exists($filename)) {
             unlink($filename);
         }
-        $fp = fopen($filename,'x');
+        $fp = fopen($filename, 'x');
         fwrite($fp, $raw);
         fclose($fp);
         return true;
@@ -1229,14 +1226,110 @@ class ProductCenterTools
 
 
     //==========================================================
-    public static function get1688Goods($id){
-       $sql = "B_get1688Urls :id";
-       $idUrls = Yii::$app->py_db->createCommand($sql)->bindValues([':id' => $id])->queryAll();
-       var_dump($idUrls);exit;
 
+    /** 同步1688 产品
+     * @param $id
+     * Date: 2020-06-24 15:06
+     * Author: henry
+     * @throws Exception
+     * @throws \Throwable
+     */
+    public static function sync1688Goods($id)
+    {
+        //获取供应商产品连接信息
+        $sql = "SELECT * FROM ( 
+                 select vendor1 AS LinkUrl,ID,goodsCode from proCenter.oa_goodsinfo gs 
+                 LEFT JOIN proCenter.oa_goods g ON g.nid=gs.goodsId 
+                 where LOCATE('detail.1688.com/offer',vendor1)>0  union 
+                 select vendor2 AS LinkUrl,ID,goodsCode from proCenter.oa_goodsinfo gs 
+                 LEFT JOIN proCenter.oa_goods g ON g.nid=gs.goodsId 
+                 where LOCATE('detail.1688.com/offer',vendor2)>0 union 
+                 select vendor3 AS LinkUrl,ID,goodsCode from proCenter.oa_goodsinfo gs 
+                 LEFT JOIN proCenter.oa_goods g ON g.nid=gs.goodsId 
+                 where LOCATE('detail.1688.com/offer',vendor3)>0 
+                 ) a WHERE id = :id";
+        $idUrls = Yii::$app->db->createCommand($sql)->bindValues([':id' => $id])->queryAll();
+        //获取1688 账号token信息
+        $tokenSql = "select m.AliasName, m.LastSyncTime,m.AccessToken,m.RefreshToken  
+                 from S_AlibabaCGInfo m with(nolock)  
+                 inner join S_AlibabaCGInfo d with(nolock) on d.mainLoginId=m.loginId  
+                 where d.AliasName='caigoueasy'";
+        $tokenInfo = Yii::$app->py_db->createCommand($tokenSql)->queryOne();
+        //删除已有的1688产品信息
+        OaGoods1688::deleteAll(['infoId' => $id]);
+        $transaction = OaGoods1688::getDb()->beginTransaction();
+        try {
+            foreach ($idUrls as $url) {
+                $goods = array_merge($url, $tokenInfo);
+                self::syncGoodsInfoFrom1688($goods);
+            }
+            $transaction->commit();
+            return true;
+        } catch (Exception $e) {
+            $transaction->rollBack();
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
     }
 
+    /** 同步1688 产品
+     * @param $data
+     * Date: 2020-06-24 15:07
+     * Author: henry
+     * @throws Exception
+     */
+    public static function syncGoodsInfoFrom1688($data)
+    {
+        $goodsUrl = $data['LinkUrl'];
+        $urlArr = explode('/', $goodsUrl);
+        $urlLastStr = end($urlArr);
+        $goodsId = explode('.', $urlLastStr)[0];
 
+        $infoId = $data['ID'];
+        $oauth = new AgentProductSimpleGet($data['AliasName']);
+        $params = [
+            'webSite' => '1688',
+            'productID' => $goodsId,
+            'access_token' => $oauth->token,
+            'api_type' => 'com.alibaba.product',
+            'api_name' => 'alibaba.agent.product.simple.get'
+        ];
+        $base_url = $oauth->get_request_url($params);
+        $ret = Helper::post($base_url, [], 'GET');
+        if (isset($ret['productInfo'])) {
+            foreach ($ret['productInfo']['skuInfos'] as $sku) {
+                $item['infoId'] = $infoId;
+                $item['offerId'] = $goodsId;
+                $item['specId'] = $sku['specId'];
+                $item['subject'] = $ret['productInfo']['subject'];
+                $item['style'] = '';
+                $item['multiStyle'] = 0;
+                $item['supplierLoginId'] = $ret['productInfo']['sellerLoginId'];
+                $item['companyName'] = $ret['productInfo']['sellerLoginId'];
+                foreach ($sku['attributes'] as $attr) {
+                    if ($attr['attributeDisplayName'] == '颜色') {
+                        $item['style'] = $attr['attributeValue'];
+                        break;
+                    }
+                }
+                $model = new OaGoods1688();
+                $model->setAttributes($item);
+                if (!$model->save()) {
+//                    var_dump($model->getErrors());
+                    throw new Exception('Failed to save 1688 goods info!');
+                }
+            }
+        }
+
+    }
 
 
 }

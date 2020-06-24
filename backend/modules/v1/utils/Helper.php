@@ -233,8 +233,7 @@ class Helper
         $options = array(
             'http' => array(
                 'method' => $method,
-                'header' => "Content-type: application/x-www-form-urlencoded\r\n" .
-                    "Authorization: Bearer " . $data['access_token'] . "\r\n",
+                'header' => "Content-type: application/x-www-form-urlencoded\r\n",
                 'content' => $content
             )
         );

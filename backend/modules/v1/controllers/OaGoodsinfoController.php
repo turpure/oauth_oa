@@ -18,6 +18,7 @@
 namespace backend\modules\v1\controllers;
 
 use backend\models\OaEbayGoodsSku;
+use backend\models\OaGoods1688;
 use backend\models\OaJoomSuffix;
 use backend\models\OaSiteCountry;
 use backend\models\OaSmtGoodsSku;
@@ -176,8 +177,8 @@ class OaGoodsinfoController extends AdminController
                 'code' => 400,
                 'message' => 'Please choose the items you want to operate on.',
             ];
-        }else{
-            return ProductCenterTools::importShopElf($infoIds,$repeat);
+        } else {
+            return ProductCenterTools::importShopElf($infoIds, $repeat);
         }
     }
 
@@ -253,9 +254,8 @@ class OaGoodsinfoController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiGoodsinfo::makePurchasingOrder($condition);
-        }
-        catch (\Exception $why) {
-            return ['code' => $why->getCode(),'message' => $why->getMessage()];
+        } catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
 
@@ -271,7 +271,7 @@ class OaGoodsinfoController extends AdminController
             return [];
         }
         $infoId = $request->post()['condition']['id'];
-        if(!$infoId || !is_array($infoId)){
+        if (!$infoId || !is_array($infoId)) {
             return [
                 'code' => 400,
                 'message' => "Parameter's format is not correct!",
@@ -280,23 +280,65 @@ class OaGoodsinfoController extends AdminController
         return ProductCenterTools::generateCode($infoId);
     }
 
-
-    public function actionSync1688Goods(){
+    /** 同步1688 产品信息
+     * Date: 2020-06-24 15:50
+     * Author: henry
+     * @return array|bool
+     * @throws \Throwable
+     * @throws \yii\db\Exception
+     */
+    public function actionSync1688Goods()
+    {
         $request = Yii::$app->request;
         if (!$request->isPost) {
             return [];
         }
         $infoId = $request->post()['condition']['id'];
-        if(!$infoId){
+        if (!$infoId) {
             return [
                 'code' => 400,
                 'message' => "Attribute of id can not be empty!",
             ];
         }
-        return ProductCenterTools::get1688Goods($infoId);
+        return ProductCenterTools::sync1688Goods($infoId);
     }
 
+    /** 获取1688 商家
+     * Date: 2020-06-24 16:13
+     * Author: henry
+     * @return array|\yii\db\ActiveQuery
+     */
+    public function actionGet1688Suppliers()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $infoId = $request->post()['condition']['id'];
+        if (!$infoId) {
+            return [
+                'code' => 400,
+                'message' => "Attribute of id can not be empty!",
+            ];
+        }
+        return OaGoods1688::find()->select('companyName,offerId,subject')->where(['infoId' => $infoId])->distinct()->asArray()->all();
+    }
 
+    /** 获取1688 商家商品SKU
+     * Date: 2020-06-24 16:13
+     * Author: henry
+     * @return array|\yii\db\ActiveQuery
+     */
+    public function actionGet1688GoodsStyle()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        $company = isset($condition['companyName']) ? $condition['companyName'] : '';
+        $offerId = isset($condition['offerId']) ? $condition['offerId'] : '';
+        $subject = isset($condition['subject']) ? $condition['subject'] : '';
+        $query = OaGoods1688::find()->select('specId,style')
+            ->where(['offerId' => $offerId, 'companyName' => $company, 'subject' => $subject])->asArray()->all();
+        return ArrayHelper::map($query, 'specId', 'style');
+    }
 
 
 
@@ -363,7 +405,7 @@ class OaGoodsinfoController extends AdminController
      */
     public function actionFinishPicture()
     {
-        try{
+        try {
             $request = Yii::$app->request;
             if (!$request->isPost) {
                 return [];
@@ -371,7 +413,7 @@ class OaGoodsinfoController extends AdminController
             $condition = $request->post()['condition'];
             ApiGoodsinfo::savePictureInfo($condition);
             return ApiGoodsinfo::finishPicture($condition);
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
@@ -390,9 +432,7 @@ class OaGoodsinfoController extends AdminController
             $infoId = $request->post()['condition']['id'];
             ProductCenterTools::uploadImagesToFtp($infoId);
             return [];
-        }
-
-        catch (\Exception  $why) {
+        } catch (\Exception  $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
     }
@@ -453,8 +493,7 @@ class OaGoodsinfoController extends AdminController
             }
             $condition = $request->post()['condition'];
             return ApiGoodsinfo::saveWishInfo($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => 400, 'message' => $why->getMessage()];
         }
     }
@@ -473,8 +512,7 @@ class OaGoodsinfoController extends AdminController
             }
             $condition = $request->post()['condition'];
             return ApiGoodsinfo::saveSmtInfo($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => 400, 'message' => $why->getMessage()];
         }
     }
@@ -522,13 +560,11 @@ class OaGoodsinfoController extends AdminController
             }
             $condition = $request->post()['condition'];
             return ApiGoodsinfo::saveFinishPlat($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => 400, 'message' => $why->getMessage()];
         }
 
     }
-
 
 
     /**
@@ -546,12 +582,12 @@ class OaGoodsinfoController extends AdminController
      */
     public function actionPlatCompletedPlat()
     {
-        return ['未设置','aliexpress','joom', 'wish', 'ebay'];
+        return ['未设置', 'aliexpress', 'joom', 'wish', 'ebay'];
     }
 
     public function actionPlatForbidPlat()
     {
-        return array_merge(['未设置'],AttributeInfoTools::getPlat());
+        return array_merge(['未设置'], AttributeInfoTools::getPlat());
     }
 
     /**
@@ -579,7 +615,7 @@ class OaGoodsinfoController extends AdminController
     public function actionPlatExportWish()
     {
 
-        try{
+        try {
             $request = Yii::$app->request;
             if (!$request->isPost) {
                 return [];
@@ -588,13 +624,11 @@ class OaGoodsinfoController extends AdminController
             $infoId = $condition['id'];
             $ret = ApiGoodsinfo::preExportWish($infoId);
             ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Xls');
-        }
-
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }
 
-        }
+    }
 
 
     /**
@@ -603,7 +637,7 @@ class OaGoodsinfoController extends AdminController
      */
     public function actionPlatExportWishData()
     {
-        try{
+        try {
             $request = Yii::$app->request;
             if (!$request->isPost) {
                 return [];
@@ -615,10 +649,8 @@ class OaGoodsinfoController extends AdminController
                 $row['extra_images'] = str_replace("\n", '|', $row['extra_images']);
                 $row['variants'] = json_decode($row['variants'], true);
             }
-            return  $ret;
-        }
-
-        catch (\Exception $why) {
+            return $ret;
+        } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }
 
@@ -628,7 +660,8 @@ class OaGoodsinfoController extends AdminController
      * @brief joom批量导出
      * @return array
      */
-    public function actionPlatExportJoom() {
+    public function actionPlatExportJoom()
+    {
         try {
             $request = Yii::$app->request;
             if (!$request->isPost) {
@@ -640,9 +673,8 @@ class OaGoodsinfoController extends AdminController
             $ret = ApiGoodsinfo::preExportJoom($infoId, $account);
             ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
 
-        }
-        catch (\Exception $why) {
-            return ['message' => $why->getMessage(),'code' => $why->getCode()];
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
 
     }
@@ -660,10 +692,9 @@ class OaGoodsinfoController extends AdminController
             return $res;
 
         } catch (\Exception $why) {
-            return ['code' => 400, 'message'=>$why->getMessage()];
+            return ['code' => 400, 'message' => $why->getMessage()];
         }
     }
-
 
 
     /**
@@ -717,7 +748,6 @@ class OaGoodsinfoController extends AdminController
             $data = json_encode($this->actionPlatEbayData()['data']);
 
 
-
             //日志
             $logData['infoId'] = $infoId;
 
@@ -728,14 +758,13 @@ class OaGoodsinfoController extends AdminController
                 $logData['result'] = 'success';
                 $templates = array_values($ret['importebaymubanResponse']);
                 foreach ($templates as $tm) {
-                    $logData['ibayTemplateId'] = str_replace('成功, 模板编号为: ','',
+                    $logData['ibayTemplateId'] = str_replace('成功, 模板编号为: ', '',
                         $tm);
                     //逐个写入日志
                     Logger::ibayLog($logData);
                 }
                 $out = $ret;
-            }
-            else {
+            } else {
                 $out = ['code' => 400, 'message' => isset($ret['message']) ? $ret['message'] : '导入失败！'];
                 // 写入日志
                 Logger::ibayLog($logData);
@@ -743,10 +772,8 @@ class OaGoodsinfoController extends AdminController
 
 
             return $out;
-        }
-
-        catch (\Exception $why) {
-           return ['code' => 400, 'message'=>$why->getMessage()];
+        } catch (\Exception $why) {
+            return ['code' => 400, 'message' => $why->getMessage()];
         }
     }
 
@@ -766,8 +793,7 @@ class OaGoodsinfoController extends AdminController
             $accounts = $condition['account'];
             $ret = ApiGoodsinfo::preExportShopify($infoId, $accounts);
             ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
-        }
-        catch (\Exception  $why) {
+        } catch (\Exception  $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
@@ -776,8 +802,7 @@ class OaGoodsinfoController extends AdminController
     {
         try {
             return ApiGoodsinfo::getShopifyAccounts();
-        }
-        catch (\Exception  $why) {
+        } catch (\Exception  $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
@@ -799,8 +824,7 @@ class OaGoodsinfoController extends AdminController
             $accounts = $condition['account'];
             $ret = ApiGoodsinfo::preExportVova($infoId, $accounts);
             ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
-        }
-        catch (\Exception  $why) {
+        } catch (\Exception  $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
@@ -809,8 +833,7 @@ class OaGoodsinfoController extends AdminController
     {
         try {
             return ApiGoodsinfo::getVovaAccounts();
-        }
-        catch (\Exception  $why) {
+        } catch (\Exception  $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
@@ -856,27 +879,27 @@ class OaGoodsinfoController extends AdminController
             OaWishGoodsSku::deleteAll(['id' => $skuId]);
         } elseif ($condition['plat'] == 'eBay') {
             OaEbayGoodsSku::deleteAll(['id' => $skuId]);
-        }elseif ($condition['plat'] == 'aliexpress') {
+        } elseif ($condition['plat'] == 'aliexpress') {
             OaSmtGoodsSku::deleteAll(['id' => $skuId]);
         }
         return true;
     }
 
     ########################### smt  plat info ########################################
-    public function actionSmtAccount(){
+    public function actionSmtAccount()
+    {
         try {
             return ApiGoodsinfo::getSmtAccounts();
-        }
-        catch (\Exception  $why) {
+        } catch (\Exception  $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
 
-    public function actionSmtCategory(){
+    public function actionSmtCategory()
+    {
         try {
             return ApiGoodsinfo::getSmtCategory();
-        }
-        catch (\Exception  $why) {
+        } catch (\Exception  $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
@@ -886,16 +909,14 @@ class OaGoodsinfoController extends AdminController
      * Author: henry
      * @return array|bool
      */
-    public function actionPlatSmtExport(){
+    public function actionPlatSmtExport()
+    {
         try {
             return ApiGoodsinfo::addSmtExportModel();
-        }
-        catch (\Exception  $why) {
+        } catch (\Exception  $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
-
-
 
 
 }
