@@ -1227,5 +1227,17 @@ class ProductCenterTools
         return true;
     }
 
+
+    //==========================================================
+    public static function get1688Goods($id){
+       $sql = "B_get1688Urls :id";
+       $idUrls = Yii::$app->py_db->createCommand($sql)->bindValues([':id' => $id])->queryAll();
+       var_dump($idUrls);exit;
+
+    }
+
+
+
+
 }
 

@@ -280,6 +280,27 @@ class OaGoodsinfoController extends AdminController
         return ProductCenterTools::generateCode($infoId);
     }
 
+
+    public function actionSync1688Goods(){
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $infoId = $request->post()['condition']['id'];
+        if(!$infoId){
+            return [
+                'code' => 400,
+                'message' => "Attribute of id can not be empty!",
+            ];
+        }
+        return ProductCenterTools::get1688Goods($infoId);
+    }
+
+
+
+
+
+
     ###########################  picture info ########################################
 
     /**
