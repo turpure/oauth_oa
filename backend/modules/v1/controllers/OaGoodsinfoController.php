@@ -604,6 +604,29 @@ class OaGoodsinfoController extends AdminController
     }
 
     /**
+     * @brief 导出mymall模板
+     * @throws \Exception
+     */
+    public function actionPlatExportMyMall()
+    {
+        try{
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            $infoId = $condition['id'];
+            $ret = ApiGoodsinfo::preExportMyMall($infoId);
+            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Xls');
+        }
+
+        catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+
+    }
+
+    /**
      * @brief joom批量导出
      * @return array
      */

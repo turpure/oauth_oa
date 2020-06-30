@@ -23,6 +23,7 @@ use backend\models\OaEbayGoodsSku;
 use backend\models\OaGoods;
 use backend\models\OaGoodsinfo;
 use backend\models\OaGoodsSku;
+use backend\models\OaMyMallSuffix;
 use backend\models\OaPaypal;
 use backend\models\OaSmtGoods;
 use backend\models\OaSmtGoodsSku;
@@ -59,6 +60,7 @@ class ApiGoodsinfo
 //    const UsdExchange = 1;
     const UsdExchange = 6.88;
     const WishTitleLength = 110;
+    const myMallTitleLength = 110;
     const EbayTitleLength = 80;
     const JoomTitleLength = 100;
     const smtTitleLength = 128;
@@ -989,6 +991,70 @@ class ApiGoodsinfo
             $row['local_shippingfee'] = $variantInfo['local_shippingfee'];
             $row['local_currency'] = $variantInfo['local_currency'];
             $out[] = $row;
+        }
+        $ret['data'] = $out;
+        return $ret;
+    }
+
+
+
+    /**
+     * @brief 导出myMall模板
+     * @param $ids
+     * @param $accounts
+     * @return array
+     */
+    public static function preExportMyMall($id)
+    {
+        $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->one();
+        $ret = ['name' =>$goodsInfo['goodsCode']];
+        $myMallAccounts = OaMyMallSuffix::find()
+            ->asArray()->all();
+        $aRow = [
+            'SKU' => '', 'group_id' => '', 'enable' => 'TRUE', 'stock' => '9000', 'name' => '', 'price' => '',
+            'old_price' => '', 'color' => '', 'size' => '', 'weight' => '', 'packaging_size' => '',
+            'brand' => '', 'tags' => '', 'upc' => '', 'description' => '', 'main_image_url' => '', 'image_url_1' => '',
+            'image_url_2' => '', 'image_url_3' => '', 'image_url_4' => '', 'image_url_5' => '', 'image_url_6' => '',
+            'image_url_7' => '', 'image_url_8' => '', 'image_url_9' => '', 'image_url_10' => '',
+            'shipping_template_id' => '', 'shipping_time' => '3', 'lp_url' => ''
+
+        ];
+
+        $out = [];
+        $id = $goodsInfo['id'];
+        $myMallSku = OaWishGoodsSku::find()
+            ->where(['infoId' => $id])
+            ->asArray()->all();
+        $myMallInfo = OaWishGoods::find()->where(['infoId' => $id])->asArray()->one();
+        $keyWords = static::preKeywords($myMallInfo);
+        $title = static::getTitleName($keyWords, self::myMallTitleLength);
+        foreach ($myMallAccounts as $account) {
+            $imageInfo = static::getJoomImageInfo($myMallInfo, $account);
+            foreach ($myMallSku as $sku) {
+                $row = $aRow;
+                $row['SKU'] = $sku['sku'] . $account['skuCode'];
+                $row['group_id'] = $myMallInfo['sku'] . $account['skuCode'];
+                $row['name'] = $title;
+                $row['price'] = $sku['price'];
+                $row['old_price'] = ceil($sku['price'] * 3);
+                $row['color'] = $sku['color'];
+                $row['size'] = $sku['size'];
+                $row['weight'] = $sku['weight'];
+                $row['tags'] = $myMallInfo['tags'];
+                $row['description'] = $myMallInfo['description'];
+                $row['main_image_url'] = $imageInfo['mainImage'];
+                $row['image_url_1'] = $imageInfo['extraImages'][0];
+                $row['image_url_2'] = $imageInfo['extraImages'][1];
+                $row['image_url_3'] = $imageInfo['extraImages'][2];
+                $row['image_url_4'] = $imageInfo['extraImages'][3];
+                $row['image_url_5'] = $imageInfo['extraImages'][4];
+                $row['image_url_6'] = $imageInfo['extraImages'][5];
+                $row['image_url_7'] = $imageInfo['extraImages'][6];
+                $row['image_url_8'] = $imageInfo['extraImages'][7];
+                $row['image_url_9'] = $imageInfo['extraImages'][8];
+                $row['image_url_10'] = $imageInfo['extraImages'][9];
+                $out[] = $row;
+            }
         }
         $ret['data'] = $out;
         return $ret;
