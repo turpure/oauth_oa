@@ -1062,7 +1062,7 @@ class ApiGoodsinfo
                 $row['color'] = $sku['color'];
                 $row['size'] = $sku['size'];
                 $row['weight'] = $sku['weight'];
-                $row['tags'] = $myMallInfo['tags'];
+                $row['tags'] = $myMallInfo['wishTags'];
                 $row['description'] = $myMallInfo['description'];
                 $row['main_image_url'] = $imageInfo['mainImage'];
                 $row['image_url_1'] = $imageInfo['extraImages'][0];
@@ -1206,7 +1206,7 @@ class ApiGoodsinfo
                     $row['Parent Unique ID'] = $joomInfo['sku'] . $joomAccounts['skuCode'];
                     $row['*Product Name'] = $title;
                     $row['Description'] = $joomInfo['description'];
-                    $row['*Tags'] = $joomInfo['tags'];
+                    $row['*Tags'] = $joomInfo['wishTags'];
                     $row['*Unique ID'] = $sku['sku'] . $joomAccounts['skuCode'];
                     $row['Color'] = $sku['color'];
                     $row['Size'] = $sku['size'];
