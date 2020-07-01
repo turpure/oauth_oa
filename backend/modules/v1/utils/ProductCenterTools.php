@@ -13,15 +13,18 @@ use backend\models\OaGoodsinfo;
 use backend\models\OaGoodsSku;
 use backend\models\OaEbayGoods;
 use backend\models\OaEbayGoodsSku;
+use backend\models\OaGoodsSku1688;
 use backend\models\OaSmtGoods;
 use backend\models\OaSmtGoodsSku;
 use backend\models\OaWishGoods;
 use backend\models\OaWishGoodsSku;
 use backend\models\ShopElf\BDictionary;
 use backend\models\ShopElf\BGoods;
+use backend\models\ShopElf\BGoods1688;
 use backend\models\ShopElf\BGoodSCats;
 use backend\models\ShopElf\BGoodsSku;
 use backend\models\ShopElf\BGoodsSKULinkShop;
+use backend\models\ShopElf\BGoodsSkuWith1688;
 use backend\models\ShopElf\BStore;
 use backend\models\ShopElf\CGStockOrdeD;
 use backend\models\ShopElf\CGStockOrderM;
@@ -239,7 +242,8 @@ class ProductCenterTools
                 static::_stockImport($stock);
                 // 关联1688商品信息
                 static::_bGoods1688Import($bGoods);
-                static::_bGoodsSkuWith1688Import($skuInfo, $bGoods);
+                static::_bGoodsSkuWith1688Import($bGoodsSku);
+                static::_addSupplier($bGoods);//添加供应商
 
                 //更新产品信息状态
                 if ($goodsInfo['basicInfo']['goodsInfo']->achieveStatus !== '已完善') {
@@ -295,50 +299,65 @@ class ProductCenterTools
     private static function _bGoods1688Import($_goodsInfo)
     {
         $goodsInfo = $_goodsInfo;
+        $goodsId = $goodsInfo['goodsId'];
         $goodsCode = $goodsInfo['GoodsCode'];
-        $bGoods = BGoods::findOne(['GoodsCode' => $goodsCode]);
-        if ($bGoods === null) {
-            $bGoods = new BGoods();
-        } //如果存在则部分字段不更新
-        else {
-            $excludeFields = [
-                'GoodsName', 'GoodsStatus', 'Weight', 'RetailPrice', 'CostPrice',
-                'LinkUrl', 'LinkUrl2', 'LinkUrl3', 'LinkUrl4', 'LinkUrl5', 'LinkUrl6',
-            ];
-            foreach ($excludeFields as $field) {
-                unset($goodsInfo[$field]);
+        //删除已同步的1688产品信息
+        BGoods1688::deleteAll(['GoodsID' => $goodsId]);
+        $oaGoodsinfo = OaGoodsinfo::findOne(['goodsCode' => $goodsCode]);
+        $oaGoodsId = $oaGoodsinfo ? $oaGoodsinfo['id'] : 0;
+        $oaGoods1688 = OaGoods1688::find()->where(['infoId' => $oaGoodsId])->asArray()->all();
+        foreach ($oaGoods1688 as $field) {
+            $bGoods1688Model = new BGoods1688();
+            $bGoods1688Model->setAttributes($field);
+            $bGoods1688Model->GoodsID = $goodsId;
+            $bGoods1688Model->offerid = $field['offerId'];
+            if (!$bGoods1688Model->save()) {
+                throw new \Exception('fail to import 1688 goods info');
             }
         }
-        $bGoods->setAttributes($goodsInfo);
-        if (!$bGoods->save()) {
-            throw new \Exception('fail to import goods');
-        }
-        $_goodsInfo['goodsId'] = BGoods::findOne(['GoodsCode' => $goodsCode])['NID'];
-        return $_goodsInfo;
     }
-    private static function _bGoodsSkuWith1688Import($skuInfo, $_goodsInfo)
+    private static function _bGoodsSkuWith1688Import($skuInfo)
     {
+        foreach ($skuInfo as $sku){
+            $bGoodsSkuId = $sku['goodsSkuId'];
+            $bGoodsSku = $sku['SKU'];
+            $oaGoodsSku = OaGoodsSku::findOne(['sku' => $bGoodsSku]);
+            $oaGoodsSkuId = $oaGoodsSku ? $oaGoodsSku['id'] : 0;
+            $oaGoodsSku1688 = OaGoodsSku1688::find()->where(['goodsSkuId' => $oaGoodsSkuId])->asArray()->one();
+            if(!$oaGoodsSku1688) return;  //没有设置对应1688SKU信息，则跳过当前SKU
+            $bGoodsSkuWith1688 = BGoodsSkuWith1688::findOne(['GoodsSKUID' => $bGoodsSkuId]);
+            if ($bGoodsSkuWith1688 === null) {
+                $bGoodsSkuWith1688 = new BGoodsSkuWith1688();
+            }
+            $bGoodsSkuWith1688->setAttributes($oaGoodsSku1688);
+            $bGoodsSkuWith1688->GoodsSKUID = $bGoodsSkuId;
+            $bGoodsSkuWith1688->offerid = $oaGoodsSku1688['offerId'];
+            if (!$bGoodsSkuWith1688->save()) {
+                throw new \Exception('fail to import goods sku with 1688');
+            }
+        }
+    }
+    private static function _addSupplier($_goodsInfo){
         $goodsInfo = $_goodsInfo;
         $goodsCode = $goodsInfo['GoodsCode'];
-        $bGoods = BGoods::findOne(['GoodsCode' => $goodsCode]);
-        if ($bGoods === null) {
-            $bGoods = new BGoods();
-        } //如果存在则部分字段不更新
-        else {
-            $excludeFields = [
-                'GoodsName', 'GoodsStatus', 'Weight', 'RetailPrice', 'CostPrice',
-                'LinkUrl', 'LinkUrl2', 'LinkUrl3', 'LinkUrl4', 'LinkUrl5', 'LinkUrl6',
-            ];
-            foreach ($excludeFields as $field) {
-                unset($goodsInfo[$field]);
+        $oaGoodsinfo = OaGoodsinfo::findOne(['goodsCode' => $goodsCode]);
+        $oaGoodsId = $oaGoodsinfo ? $oaGoodsinfo['id'] : 0;
+        $oaGoods1688 = OaGoods1688::find()->select('companyName')->distinct()->where(['infoId' => $oaGoodsId])->asArray()->one();
+        if($oaGoods1688){
+            $bSupplier = BSupplier::findOne(['SupplierName' => $oaGoods1688['companyName']]);
+            if(!$bSupplier){
+                $bSupplier = new BSupplier();
+            }
+            $bSupplier->SupplierName = $oaGoods1688['companyName'];
+            $bSupplier->supplierLoginId = $oaGoods1688['companyName'];
+            $bSupplier->Used = 0;
+            $bSupplier->Recorder = Yii::$app->user->identity->username;
+            $bSupplier->InputDate = date('Y-m-d H:i:s');
+            if (!$bSupplier->save()) {
+                throw new \Exception('fail to save supplier info');
             }
         }
-        $bGoods->setAttributes($goodsInfo);
-        if (!$bGoods->save()) {
-            throw new \Exception('fail to import goods');
-        }
-        $_goodsInfo['goodsId'] = BGoods::findOne(['GoodsCode' => $goodsCode])['NID'];
-        return $_goodsInfo;
+
     }
 
     /**
@@ -1365,6 +1384,7 @@ class ProductCenterTools
         if (isset($ret['productInfo'])) {
             $skuInfos = isset($ret['productInfo']['skuInfos']) ? $ret['productInfo']['skuInfos'] : [];
             if($skuInfos){
+//                var_dump($skuInfos);exit;
                 foreach ($skuInfos as $sku) {
                     $item['infoId'] = $infoId;
                     $item['offerId'] = $goodsId;
@@ -1378,12 +1398,11 @@ class ProductCenterTools
                     foreach ($sku['attributes'] as $attr) {
                         if ($attr['attributeDisplayName'] == '颜色') {
                             $color = $attr['attributeValue'];
-                        }
-                        if ($attr['attributeDisplayName'] == '尺码') {
+                        }else{
                             $size = $attr['attributeValue'];
                         }
                     }
-                    $item['style'] = $color . ' ' . $size;
+                    $item['style'] = count($sku['attributes']) > 1 ? $color . ' ' . $size : ($color ? $color : $size);
                     $model = new OaGoods1688();
                     $model->setAttributes($item);
                     if (!$model->save()) {

@@ -392,20 +392,23 @@ class ApiGoodsinfo
                 //保存SKU关联1688信息
                 $specId = isset($skuRow['specId']) ? $skuRow['specId'] : '';
                 if($offerId){
-                    $goods1688 = OaGoods1688::find()->andFilterWhere(['infoId' => $infoId, 'offerId' => $offerId, 'specId' => $specId])->one();
-                    $goodsSku1688 = OaGoodsSku1688::findOne(['goodsSkuId' => $skuModel->id]);
-                    if(!$goodsSku1688){
-                        $goodsSku1688 = new OaGoodsSku1688();
-                        $goodsSku1688->goodsSkuId = $skuModel->id;
-                    }
-                    $goodsSku1688->offerId = $offerId;
-                    $goodsSku1688->specId = $specId;
-                    $goodsSku1688->supplierLoginId = $goods1688->supplierLoginId;
-                    $goodsSku1688->companyName = $goods1688->companyName;
-                    $goodsSku1688->isDefault = 1;
-                    $ss = $goodsSku1688->save();
-                    if (!$ss) {
-                        throw new \Exception("failed save 1688 goods sku info！");
+                    $count = OaGoods1688::find()->andFilterWhere(['infoId' => $infoId, 'offerId' => $offerId])->count();
+                    if($specId || $count == 1){
+                        $goods1688 = OaGoods1688::find()->andFilterWhere(['infoId' => $infoId, 'offerId' => $offerId, 'specId' => $specId])->one();
+                        $goodsSku1688 = OaGoodsSku1688::findOne(['goodsSkuId' => $skuModel->id]);
+                        if(!$goodsSku1688){
+                            $goodsSku1688 = new OaGoodsSku1688();
+                            $goodsSku1688->goodsSkuId = $skuModel->id;
+                        }
+                        $goodsSku1688->offerId = $offerId;
+                        $goodsSku1688->specId = $specId;
+                        $goodsSku1688->supplierLoginId = $goods1688->supplierLoginId;
+                        $goodsSku1688->companyName = $goods1688->companyName;
+                        $goodsSku1688->isDefault = 1;
+                        $ss = $goodsSku1688->save();
+                        if (!$ss) {
+                            throw new \Exception("failed save 1688 goods sku info！");
+                        }
                     }
                 }
             }
