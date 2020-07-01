@@ -53,9 +53,6 @@ class OaGoodsSku1688 extends \yii\db\ActiveRecord
     }
 
 
-    public function getGoodsSku()
-    {
-        return $this->hasOne(OaGoodsSku::className(),['id' => 'goodsSkuId']);
-    }
+
 
 }

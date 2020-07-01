@@ -78,4 +78,10 @@ class OaGoodsSku extends \yii\db\ActiveRecord
             'joomShipping' => 'Joom Shipping',
         ];
     }
+
+    public function getGoodsSku1688()
+    {
+        return $this->hasOne(OaGoodsSku1688::className(),['goodsSkuId' => 'id']);
+    }
+
 }

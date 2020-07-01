@@ -275,20 +275,18 @@ class ApiGoodsinfo
                 'origin3' => '',
             ];
         }
-//        $skuInfo = OaGoodsSku::findAll(['infoId' => $id]);
         $skuInfo = (new Query())->select('gs.*, ss.specId')
             ->from('proCenter.oa_goodssku gs')
             ->leftJoin('proCenter.oa_goodsSku1688 ss', 'ss.goodsSkuId=gs.id')->where(['infoId' => $id])->all();
-        //$goods1688 = OaGoodsSku1688::findOne(['infoId' => $id]);
-        //$offerId = $goods1688 ? $goods1688['offerId'] : '';
-        $offerId = '';
+        $goodsSku = OaGoodsSku::find()->with('goodsSku1688')->where(['infoId' => $id])->asArray()->one();
+        $offerId = $goodsSku && $goodsSku['goodsSku1688'] ? $goodsSku['goodsSku1688']['offerId'] : '';
         return [
+            'offerId' => $offerId,
             'basicInfo' => [
                 'goodsInfo' => $goodsInfo,
                 'oaGoods' => $oaGoods,
             ],
             'skuInfo' => $skuInfo,
-            'offerId' => $offerId
         ];
     }
 
