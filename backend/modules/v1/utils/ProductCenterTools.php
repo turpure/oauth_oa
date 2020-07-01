@@ -347,17 +347,16 @@ class ProductCenterTools
             $bSupplier = BSupplier::findOne(['SupplierName' => $oaGoods1688['companyName']]);
             if(!$bSupplier){
                 $bSupplier = new BSupplier();
-            }
-            $bSupplier->SupplierName = $oaGoods1688['companyName'];
-            $bSupplier->supplierLoginId = $oaGoods1688['companyName'];
-            $bSupplier->Used = 0;
-            $bSupplier->Recorder = Yii::$app->user->identity->username;
-            $bSupplier->InputDate = date('Y-m-d H:i:s');
-            if (!$bSupplier->save()) {
-                throw new \Exception('fail to save supplier info');
+                $bSupplier->SupplierName = $oaGoods1688['companyName'];
+                $bSupplier->supplierLoginId = $oaGoods1688['companyName'];
+                $bSupplier->Used = 0;
+                $bSupplier->Recorder = Yii::$app->user->identity->username;
+                $bSupplier->InputDate = date('Y-m-d H:i:s');
+                if (!$bSupplier->save()) {
+                    throw new \Exception('fail to save supplier info');
+                }
             }
         }
-
     }
 
     /**
@@ -1403,6 +1402,7 @@ class ProductCenterTools
                         }
                     }
                     $item['style'] = count($sku['attributes']) > 1 ? $color . ' ' . $size : ($color ? $color : $size);
+//                    var_dump($item['style']);exit;
                     $model = new OaGoods1688();
                     $model->setAttributes($item);
                     if (!$model->save()) {
