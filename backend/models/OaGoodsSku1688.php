@@ -31,8 +31,8 @@ class OaGoodsSku1688 extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['goodsSkuId', 'offerId', 'specId', 'supplierLoginId'], 'integer'],
-            [['companyName', 'isDefault'], 'string', 'max' => 255],
+            [['goodsSkuId', 'offerId', 'isDefault'], 'integer'],
+            [['companyName', 'specId', 'supplierLoginId'], 'string', 'max' => 255],
         ];
     }
 

@@ -398,7 +398,7 @@ class ApiGoodsinfo
                         $goodsSku1688 = new OaGoodsSku1688();
                         $goodsSku1688->goodsSkuId = $skuModel->id;
                     }
-                    $goodsSku1688->offerId = $skuModel->id;
+                    $goodsSku1688->offerId = $offerId;
                     $goodsSku1688->specId = $specId;
                     $goodsSku1688->supplierLoginId = $goods1688->supplierLoginId;
                     $goodsSku1688->companyName = $goods1688->companyName;
