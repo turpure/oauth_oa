@@ -237,6 +237,9 @@ class ProductCenterTools
                 $bGoodsSku = static::_bGoodsSkuImport($bGoodsSku, $bGoods);
                 $stock = static::_preCurrentStockInfo($bGoodsSku);
                 static::_stockImport($stock);
+                // 关联1688商品信息
+                //static::_bGoods1688Import($bGoods);
+                //static::_bGoodsSkuWith1688Import($skuInfo, $bGoods);
 
                 //更新产品信息状态
                 if ($goodsInfo['basicInfo']['goodsInfo']->achieveStatus !== '已完善') {
@@ -266,6 +269,54 @@ class ProductCenterTools
      * @throws \Exception
      */
     private static function _bGoodsImport($_goodsInfo)
+    {
+        $goodsInfo = $_goodsInfo;
+        $goodsCode = $goodsInfo['GoodsCode'];
+        $bGoods = BGoods::findOne(['GoodsCode' => $goodsCode]);
+        if ($bGoods === null) {
+            $bGoods = new BGoods();
+        } //如果存在则部分字段不更新
+        else {
+            $excludeFields = [
+                'GoodsName', 'GoodsStatus', 'Weight', 'RetailPrice', 'CostPrice',
+                'LinkUrl', 'LinkUrl2', 'LinkUrl3', 'LinkUrl4', 'LinkUrl5', 'LinkUrl6',
+            ];
+            foreach ($excludeFields as $field) {
+                unset($goodsInfo[$field]);
+            }
+        }
+        $bGoods->setAttributes($goodsInfo);
+        if (!$bGoods->save()) {
+            throw new \Exception('fail to import goods');
+        }
+        $_goodsInfo['goodsId'] = BGoods::findOne(['GoodsCode' => $goodsCode])['NID'];
+        return $_goodsInfo;
+    }
+    private static function _bGoods1688Import($_goodsInfo)
+    {
+        $goodsInfo = $_goodsInfo;
+        $goodsCode = $goodsInfo['GoodsCode'];
+        $bGoods = BGoods::findOne(['GoodsCode' => $goodsCode]);
+        if ($bGoods === null) {
+            $bGoods = new BGoods();
+        } //如果存在则部分字段不更新
+        else {
+            $excludeFields = [
+                'GoodsName', 'GoodsStatus', 'Weight', 'RetailPrice', 'CostPrice',
+                'LinkUrl', 'LinkUrl2', 'LinkUrl3', 'LinkUrl4', 'LinkUrl5', 'LinkUrl6',
+            ];
+            foreach ($excludeFields as $field) {
+                unset($goodsInfo[$field]);
+            }
+        }
+        $bGoods->setAttributes($goodsInfo);
+        if (!$bGoods->save()) {
+            throw new \Exception('fail to import goods');
+        }
+        $_goodsInfo['goodsId'] = BGoods::findOne(['GoodsCode' => $goodsCode])['NID'];
+        return $_goodsInfo;
+    }
+    private static function _bGoodsSkuWith1688Import($skuInfo, $_goodsInfo)
     {
         $goodsInfo = $_goodsInfo;
         $goodsCode = $goodsInfo['GoodsCode'];
