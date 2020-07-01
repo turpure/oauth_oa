@@ -238,8 +238,8 @@ class ProductCenterTools
                 $stock = static::_preCurrentStockInfo($bGoodsSku);
                 static::_stockImport($stock);
                 // 关联1688商品信息
-                //static::_bGoods1688Import($bGoods);
-                //static::_bGoodsSkuWith1688Import($skuInfo, $bGoods);
+                static::_bGoods1688Import($bGoods);
+                static::_bGoodsSkuWith1688Import($skuInfo, $bGoods);
 
                 //更新产品信息状态
                 if ($goodsInfo['basicInfo']['goodsInfo']->achieveStatus !== '已完善') {
@@ -1362,34 +1362,48 @@ class ProductCenterTools
         ];
         $base_url = $oauth->get_request_url($params);
         $ret = Helper::post($base_url, [], 'GET');
-//        var_dump($ret);exit;
         if (isset($ret['productInfo'])) {
-            foreach ($ret['productInfo']['skuInfos'] as $sku) {
+            $skuInfos = isset($ret['productInfo']['skuInfos']) ? $ret['productInfo']['skuInfos'] : [];
+            if($skuInfos){
+                foreach ($skuInfos as $sku) {
+                    $item['infoId'] = $infoId;
+                    $item['offerId'] = $goodsId;
+                    $item['specId'] = $sku['specId'];
+                    $item['subject'] = $ret['productInfo']['subject'];
+                    $item['style'] = '';
+                    $item['multiStyle'] = 0;
+                    $item['supplierLoginId'] = $ret['productInfo']['sellerLoginId'];
+                    $item['companyName'] = $ret['productInfo']['sellerLoginId'];
+                    $color = $size = '';
+                    foreach ($sku['attributes'] as $attr) {
+                        if ($attr['attributeDisplayName'] == '颜色') {
+                            $color = $attr['attributeValue'];
+                        }
+                        if ($attr['attributeDisplayName'] == '尺码') {
+                            $size = $attr['attributeValue'];
+                        }
+                    }
+                    $item['style'] = $color . ' ' . $size;
+                    $model = new OaGoods1688();
+                    $model->setAttributes($item);
+                    if (!$model->save()) {
+                        throw new Exception('Failed to save 1688 goods info!');
+                    }
+                }
+            }else{
                 $item['infoId'] = $infoId;
                 $item['offerId'] = $goodsId;
-                $item['specId'] = $sku['specId'];
                 $item['subject'] = $ret['productInfo']['subject'];
-                $item['style'] = '';
                 $item['multiStyle'] = 0;
                 $item['supplierLoginId'] = $ret['productInfo']['sellerLoginId'];
                 $item['companyName'] = $ret['productInfo']['sellerLoginId'];
-                $color = $size = '';
-                foreach ($sku['attributes'] as $attr) {
-                    if ($attr['attributeDisplayName'] == '颜色') {
-                        $color = $attr['attributeValue'];
-                    }
-                    if ($attr['attributeDisplayName'] == '尺码') {
-                        $size = $attr['attributeValue'];
-                    }
-                }
-                $item['style'] = $color . ' ' . $size;
                 $model = new OaGoods1688();
                 $model->setAttributes($item);
                 if (!$model->save()) {
-//                    var_dump($model->getErrors());
                     throw new Exception('Failed to save 1688 goods info!');
                 }
             }
+
         }
 
     }

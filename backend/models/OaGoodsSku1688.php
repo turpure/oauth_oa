@@ -9,11 +9,11 @@ use Yii;
  *
  * @property string $id
  * @property int $goodsSkuId
- * @property int $offerId
- * @property int $specId
- * @property int $supplierLoginId
+ * @property string $offerId
+ * @property string $specId
+ * @property string $supplierLoginId
  * @property string $companyName
- * @property string $isDefault
+ * @property int $isDefault
  */
 class OaGoodsSku1688 extends \yii\db\ActiveRecord
 {
