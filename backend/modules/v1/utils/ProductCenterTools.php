@@ -1383,7 +1383,7 @@ class ProductCenterTools
         if (isset($ret['productInfo'])) {
             $skuInfos = isset($ret['productInfo']['skuInfos']) ? $ret['productInfo']['skuInfos'] : [];
             if($skuInfos){
-//                var_dump($skuInfos);exit;
+//                var_dump($skuInfos);
                 foreach ($skuInfos as $sku) {
                     $item['infoId'] = $infoId;
                     $item['offerId'] = $goodsId;
@@ -1394,14 +1394,19 @@ class ProductCenterTools
                     $item['supplierLoginId'] = $ret['productInfo']['sellerLoginId'];
                     $item['companyName'] = $ret['productInfo']['sellerLoginId'];
                     $color = $size = '';
+                    $attributeIDs = ArrayHelper::getColumn($sku['attributes'], 'attributeID');
+                    sort($attributeIDs);
+//                    var_dump($attributeIDs);exit;
+                    $styleArr = [];
                     foreach ($sku['attributes'] as $attr) {
-                        if ($attr['attributeDisplayName'] == '颜色') {
-                            $color = $attr['attributeValue'];
-                        }else{
-                            $size = $attr['attributeValue'];
+                        foreach ($attributeIDs as $val){
+                            if ($attr['attributeID'] == $val) {
+                                $styleArr[] = $attr['attributeValue'];
+                                break;
+                            }
                         }
                     }
-                    $item['style'] = count($sku['attributes']) > 1 ? $color . ' ' . $size : ($color ? $color : $size);
+                    $item['style'] = implode(' ', $styleArr);
 //                    var_dump($item['style']);exit;
                     $model = new OaGoods1688();
                     $model->setAttributes($item);
