@@ -21,8 +21,10 @@ namespace backend\modules\v1\models;
 use backend\models\OaEbayGoods;
 use backend\models\OaEbayGoodsSku;
 use backend\models\OaGoods;
+use backend\models\OaGoods1688;
 use backend\models\OaGoodsinfo;
 use backend\models\OaGoodsSku;
+use backend\models\OaGoodsSku1688;
 use backend\models\OaMyMallSuffix;
 use backend\models\OaPaypal;
 use backend\models\OaSmtGoods;
@@ -367,6 +369,7 @@ class ApiGoodsinfo
         $transaction = Yii::$app->db->beginTransaction();
         try {
             foreach ($skuInfo as $skuRow) {
+                //保存SKU信息
                 $skuId = isset($skuRow['id']) ? $skuRow['id'] : '';
                 $skuModel = OaGoodsSku::findOne(['id' => $skuId]);
                 if ($skuModel === null) {
@@ -380,8 +383,27 @@ class ApiGoodsinfo
                 if (!$a) {
                     throw new \Exception("Goods sku is already exists！");
                 }
+                //保存SKU关联1688信息
+                $specId = isset($skuRow['specId']) ? $skuRow['specId'] : '';
+                $offerId = isset($skuRow['offerId']) ? $skuRow['offerId'] : '';
+                if($skuRow['specId']){
+                    $goods1688 = OaGoods1688::findOne(['infoId' => $infoId, 'offerId' => $offerId, 'specId' => $specId]);
+                    $goodsSku1688 = OaGoodsSku1688::findOne(['goodsSkuId' => $skuModel->id]);
+                    if(!$goodsSku1688){
+                        $goodsSku1688 = new OaGoodsSku1688();
+                        $goodsSku1688->goodsSkuId = $skuModel->id;
+                    }
+                    $goodsSku1688->offerId = $skuModel->id;
+                    $goodsSku1688->specId = $skuRow['specId'];
+                    $goodsSku1688->supplierLoginId = $goods1688->supplierLoginId;
+                    $goodsSku1688->companyName = $goods1688->companyName;
+                    $goodsSku1688->isDefault = 1;
+                    $ss = $goodsSku1688->save();
+                    if (!$ss) {
+                        throw new \Exception("failed save 1688 goods sku info！");
+                    }
+                }
             }
-
             $oaGoods = OaGoods::findOne(['nid' => $oaInfo['nid']]);
             if ($oaGoods === null) {
                 $oaGoods = new OaGoods();

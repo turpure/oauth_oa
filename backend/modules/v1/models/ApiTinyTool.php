@@ -221,7 +221,7 @@ class ApiTinyTool
         $endDate = ArrayHelper::getValue($condition, 'endDate', '') ?: date('Y-m-d');
         $goodsName = explode(',', ArrayHelper::getValue($condition, 'goodsName', ''));
         $supplierName = ArrayHelper::getValue($condition, 'supplierName', '');
-        $goodsSkuStatus = ArrayHelper::getValue($condition, 'goodsSkuStatus', '');
+        $goodsSkuStatus = ArrayHelper::getValue($condition, 'goodsSkuStatus', []);
         $categoryParentName = ArrayHelper::getValue($condition, 'categoryParentName', '');
         $categoryName = ArrayHelper::getValue($condition, 'categoryName', '');
         $pageSize = ArrayHelper::getValue($condition, 'pageSize', 30);
@@ -256,7 +256,7 @@ class ApiTinyTool
                 }
             }
 
-            if ($goodsSkuStatus) $sql .= " AND bgs.GoodsSKUStatus LIKE '%$goodsSkuStatus%' ";
+            if ($goodsSkuStatus) $sql .= " AND bgs.GoodsSKUStatus IN ('$goodsSkuStatus') ";
             if ($categoryParentName) $sql .= " AND bgc.CategoryParentName LIKE '%$categoryParentName%' ";
             if ($categoryName) $sql .= " AND bgc.CategoryName LIKE '%$categoryName%'";
             $sql .= "  ORDER BY bg.CreateDate DESC";

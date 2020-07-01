@@ -1310,6 +1310,7 @@ class ProductCenterTools
         ];
         $base_url = $oauth->get_request_url($params);
         $ret = Helper::post($base_url, [], 'GET');
+//        var_dump($ret);exit;
         if (isset($ret['productInfo'])) {
             foreach ($ret['productInfo']['skuInfos'] as $sku) {
                 $item['infoId'] = $infoId;
@@ -1320,12 +1321,16 @@ class ProductCenterTools
                 $item['multiStyle'] = 0;
                 $item['supplierLoginId'] = $ret['productInfo']['sellerLoginId'];
                 $item['companyName'] = $ret['productInfo']['sellerLoginId'];
+                $color = $size = '';
                 foreach ($sku['attributes'] as $attr) {
                     if ($attr['attributeDisplayName'] == '颜色') {
-                        $item['style'] = $attr['attributeValue'];
-                        break;
+                        $color = $attr['attributeValue'];
+                    }
+                    if ($attr['attributeDisplayName'] == '尺码') {
+                        $size = $attr['attributeValue'];
                     }
                 }
+                $item['style'] = $color . ' ' . $size;
                 $model = new OaGoods1688();
                 $model->setAttributes($item);
                 if (!$model->save()) {
