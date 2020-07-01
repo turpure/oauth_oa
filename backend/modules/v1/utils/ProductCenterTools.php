@@ -1249,6 +1249,12 @@ class ProductCenterTools
                  where LOCATE('detail.1688.com/offer',vendor3)>0 
                  ) a WHERE id = :id";
         $idUrls = Yii::$app->db->createCommand($sql)->bindValues([':id' => $id])->queryAll();
+        if(!$idUrls){
+            return [
+                'code' => 400,
+                'message' => "There is no 1688 supplier for this product!",
+            ];
+        }
         //获取1688 账号token信息
         $tokenSql = "select m.AliasName, m.LastSyncTime,m.AccessToken,m.RefreshToken  
                  from S_AlibabaCGInfo m with(nolock)  
