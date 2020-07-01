@@ -219,9 +219,11 @@ class ApiTinyTool
         $possessMan2 = ArrayHelper::getValue($condition, 'possessMan2', '');
         $beginDate = ArrayHelper::getValue($condition, 'beginDate', '') ?: '2015-06-01';
         $endDate = ArrayHelper::getValue($condition, 'endDate', '') ?: date('Y-m-d');
-        $goodsName = explode(',', ArrayHelper::getValue($condition, 'goodsName', ''));
+        $goodsName = ArrayHelper::getValue($condition, 'goodsName', []);
+        if($goodsName) $goodsName = explode(',', $goodsName);
         $supplierName = ArrayHelper::getValue($condition, 'supplierName', '');
         $goodsSkuStatus = ArrayHelper::getValue($condition, 'goodsSkuStatus', []);
+        $goodsSkuStatus = implode("','", $goodsSkuStatus);
         $categoryParentName = ArrayHelper::getValue($condition, 'categoryParentName', '');
         $categoryName = ArrayHelper::getValue($condition, 'categoryName', '');
         $pageSize = ArrayHelper::getValue($condition, 'pageSize', 30);

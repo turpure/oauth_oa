@@ -391,7 +391,7 @@ class ApiGoodsinfo
                 }
                 //保存SKU关联1688信息
                 $specId = isset($skuRow['specId']) ? $skuRow['specId'] : '';
-                if($skuRow['specId']){
+                if($specId){
                     $goods1688 = OaGoods1688::findOne(['infoId' => $infoId, 'offerId' => $offerId, 'specId' => $specId]);
                     $goodsSku1688 = OaGoodsSku1688::findOne(['goodsSkuId' => $skuModel->id]);
                     if(!$goodsSku1688){
