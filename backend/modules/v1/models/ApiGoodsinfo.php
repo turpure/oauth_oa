@@ -351,6 +351,7 @@ class ApiGoodsinfo
     public static function saveAttribute($condition)
     {
         $attributeInfo = $condition['basicInfo']['goodsInfo'];
+        $offerId = isset($condition['offerId']) ? $condition['offerId'] : '';
         // 处理特殊商品信息
         $map = ['带磁商品' => 'isMagnetism', '带电商品' => 'isCharged', '液体商品' => 'isLiquid', '粉末商品' => 'isPowder'];
         if (array_key_exists($attributeInfo['attributeName'], $map)) {
@@ -385,7 +386,6 @@ class ApiGoodsinfo
                 }
                 //保存SKU关联1688信息
                 $specId = isset($skuRow['specId']) ? $skuRow['specId'] : '';
-                $offerId = isset($skuRow['offerId']) ? $skuRow['offerId'] : '';
                 if($skuRow['specId']){
                     $goods1688 = OaGoods1688::findOne(['infoId' => $infoId, 'offerId' => $offerId, 'specId' => $specId]);
                     $goodsSku1688 = OaGoodsSku1688::findOne(['goodsSkuId' => $skuModel->id]);
