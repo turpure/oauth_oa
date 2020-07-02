@@ -1393,10 +1393,8 @@ class ProductCenterTools
                     $item['multiStyle'] = 0;
                     $item['supplierLoginId'] = $ret['productInfo']['sellerLoginId'];
                     $item['companyName'] = $ret['productInfo']['sellerLoginId'];
-                    $color = $size = '';
                     $attributeIDs = ArrayHelper::getColumn($sku['attributes'], 'attributeID');
                     sort($attributeIDs);
-//                    var_dump($attributeIDs);exit;
                     $styleArr = [];
                     foreach ($sku['attributes'] as $attr) {
                         foreach ($attributeIDs as $val){
@@ -1407,7 +1405,6 @@ class ProductCenterTools
                         }
                     }
                     $item['style'] = implode(' ', $styleArr);
-//                    var_dump($item['style']);exit;
                     $model = new OaGoods1688();
                     $model->setAttributes($item);
                     if (!$model->save()) {
