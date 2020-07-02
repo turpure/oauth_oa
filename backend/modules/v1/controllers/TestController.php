@@ -66,7 +66,7 @@ class TestController extends AdminController
             $result = curl_exec($ch);
 
 
-
+            $result = iconv("gb2312", "utf-8", $result);
 
 
 
