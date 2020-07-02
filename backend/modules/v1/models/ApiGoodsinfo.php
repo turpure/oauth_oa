@@ -279,12 +279,9 @@ class ApiGoodsinfo
             ->from('proCenter.oa_goodssku gs')
             ->leftJoin('proCenter.oa_goodsSku1688 ss', 'ss.goodsSkuId=gs.id')->where(['infoId' => $id])->all();
         foreach ($skuInfo as &$v){
-            $v['selectData'] = [];
+            $v['selectData'] = Yii::$app->runAction('/v1/oa-goodsinfo/get1688-suppliers')['data'];
         }
-        $goodsSku = OaGoodsSku::find()->with('goodsSku1688')->where(['infoId' => $id])->asArray()->one();
-        $offerId = $goodsSku && $goodsSku['goodsSku1688'] ? $goodsSku['goodsSku1688']['offerId'] : '';
         return [
-            'offerId' => $offerId,
             'basicInfo' => [
                 'goodsInfo' => $goodsInfo,
                 'oaGoods' => $oaGoods,
