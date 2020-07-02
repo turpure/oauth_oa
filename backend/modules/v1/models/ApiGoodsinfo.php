@@ -275,9 +275,12 @@ class ApiGoodsinfo
                 'origin3' => '',
             ];
         }
-        $skuInfo = (new Query())->select('gs.*, ss.offerId, ss.specId')
+        $skuInfo = (new Query())->select("gs.*, ss.offerId, ss.specId")
             ->from('proCenter.oa_goodssku gs')
             ->leftJoin('proCenter.oa_goodsSku1688 ss', 'ss.goodsSkuId=gs.id')->where(['infoId' => $id])->all();
+        foreach ($skuInfo as &$v){
+            $v['selectData'] = [];
+        }
         $goodsSku = OaGoodsSku::find()->with('goodsSku1688')->where(['infoId' => $id])->asArray()->one();
         $offerId = $goodsSku && $goodsSku['goodsSku1688'] ? $goodsSku['goodsSku1688']['offerId'] : '';
         return [

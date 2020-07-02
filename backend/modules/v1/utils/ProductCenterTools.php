@@ -1380,6 +1380,7 @@ class ProductCenterTools
         ];
         $base_url = $oauth->get_request_url($params);
         $ret = Helper::post($base_url, [], 'GET');
+//        var_dump($ret);exit;
         if (isset($ret['productInfo'])) {
             $skuInfos = isset($ret['productInfo']['skuInfos']) ? $ret['productInfo']['skuInfos'] : [];
             if($skuInfos){
