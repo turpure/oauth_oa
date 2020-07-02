@@ -329,23 +329,6 @@ class OaGoodsinfoController extends AdminController
         return $goods1688;
     }
 
-    /** 获取1688 商家商品SKU
-     * Date: 2020-06-24 16:13
-     * Author: henry
-     * @return array|\yii\db\ActiveQuery
-     */
-    public function actionGet1688GoodsStyle()
-    {
-        $condition = Yii::$app->request->post()['condition'];
-        $company = isset($condition['companyName']) ? $condition['companyName'] : '';
-        $offerId = isset($condition['offerId']) ? $condition['offerId'] : '';
-        $subject = isset($condition['subject']) ? $condition['subject'] : '';
-        $query = OaGoods1688::find()->select('specId,style')
-            ->where(['offerId' => $offerId, 'companyName' => $company, 'subject' => $subject])->asArray()->all();
-        return ArrayHelper::map($query, 'specId', 'style');
-    }
-
-
 
 
     ###########################  picture info ########################################

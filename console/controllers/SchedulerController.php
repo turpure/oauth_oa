@@ -8,6 +8,7 @@
 namespace console\controllers;
 
 use backend\modules\v1\models\ApiReport;
+use backend\modules\v1\models\ApiUk;
 use backend\modules\v1\models\ApiUkFic;
 use console\models\ConScheduler;
 use yii\console\Controller;
@@ -250,9 +251,10 @@ class SchedulerController extends Controller
         $beginDate = date('Y-m-01', strtotime('-1 day'));
         $endDate = date('Y-m-d', strtotime('-1 day'));
         try {
-
+            //获取普源美元汇率
+            $usRate = ApiUkFic::getRateUkOrUs('USD');
             //插入销售销售额数据(存储过程插入)
-            Yii::$app->db->createCommand("CALL oauth_site_amt('{$lastBeginDate}','{$lastEndDate}','{$beginDate}','{$endDate}');")->execute();
+            Yii::$app->db->createCommand("CALL oauth_site_amt('{$lastBeginDate}','{$lastEndDate}','{$beginDate}','{$endDate}','{$usRate}');")->execute();
 
             //获取开发人员销售额
             $devSql = "EXEC oauth_siteDeveloperAmt";
