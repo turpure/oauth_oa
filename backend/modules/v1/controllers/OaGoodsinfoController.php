@@ -323,8 +323,9 @@ class OaGoodsinfoController extends AdminController
         }
         $goods1688 =  OaGoods1688::find()->select('companyName,offerId,subject')->where(['infoId' => $infoId])->distinct()->asArray()->all();
         foreach ($goods1688 as &$val){
-            $val['value'] = OaGoods1688::find()->select('offerId,specId,style')
+            $goods = OaGoods1688::find()->select('offerId,specId,style')
                 ->where(['offerId' => $val['offerId']])->asArray()->all();
+            $val['value'] = array_merge([["offerId" => '无', "specId" => '无', 'style' => '无']],$goods);
         }
         return $goods1688;
     }
