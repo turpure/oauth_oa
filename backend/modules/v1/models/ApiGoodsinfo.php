@@ -279,8 +279,9 @@ class ApiGoodsinfo
             ->from('proCenter.oa_goodssku gs')
             ->leftJoin('proCenter.oa_goodsSku1688 ss', 'ss.goodsSkuId=gs.id')->where(['infoId' => $id])->all();
         foreach ($skuInfo as &$v){
-            $v['selectData'] =  OaGoods1688::find()->select('offerId,specId,style')
+            $goods =  OaGoods1688::find()->select('offerId,specId,style')
                 ->where(['infoId' => $id, 'offerId' => $v['offerId']])->distinct()->asArray()->all();
+            $v['selectData'] = array_merge([["offerId" => '无', "specId" => '无', 'style' => '无']], $goods);
         }
         return [
             'basicInfo' => [
