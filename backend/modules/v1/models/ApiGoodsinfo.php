@@ -279,7 +279,8 @@ class ApiGoodsinfo
             ->from('proCenter.oa_goodssku gs')
             ->leftJoin('proCenter.oa_goodsSku1688 ss', 'ss.goodsSkuId=gs.id')->where(['infoId' => $id])->all();
         foreach ($skuInfo as &$v){
-            $v['selectData'] = Yii::$app->runAction('/v1/oa-goodsinfo/get1688-suppliers')['data'];
+            $v['selectData'] =  OaGoods1688::find()->select('offerId,specId,style')
+                ->where(['infoId' => $id, 'offerId' => $v['offerId']])->distinct()->asArray()->all();
         }
         return [
             'basicInfo' => [
@@ -355,6 +356,7 @@ class ApiGoodsinfo
      */
     public static function saveAttribute($condition)
     {
+        var_dump(111);exit;
         $attributeInfo = $condition['basicInfo']['goodsInfo'];
         // 处理特殊商品信息
         $map = ['带磁商品' => 'isMagnetism', '带电商品' => 'isCharged', '液体商品' => 'isLiquid', '粉末商品' => 'isPowder'];

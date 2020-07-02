@@ -51,7 +51,25 @@ class TestController extends AdminController
 //            $res = iconv("gb2312", "utf-8", $res);
 
 
-            $result = file_get_contents($url);
+//            $result = file_get_contents($url);
+
+
+
+
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+            curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)');
+            curl_setopt ( $ch, CURLOPT_SSL_VERIFYPEER, false );
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+
+            $result = curl_exec($ch);
+
+
+
+
+
+
             var_dump($result);exit;
 
 
