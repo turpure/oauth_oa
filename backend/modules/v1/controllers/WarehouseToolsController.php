@@ -187,7 +187,8 @@ class WarehouseToolsController extends AdminController
             ];
         }
         try{
-            $sql = "SELECT DISTINCT `{$type}` FROM warehouse_intergral_other_data_every_month";
+            $sql = "SELECT DISTINCT `{$type}` FROM warehouse_intergral_other_data_every_month 
+                    where IFNULL(`{$type}`,'')<>'' ";
             $query = Yii::$app->db->createCommand($sql)->queryAll();
             return ArrayHelper::getColumn($query, $type);
         }catch (Exception $why){

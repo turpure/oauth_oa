@@ -321,7 +321,12 @@ class OaGoodsinfoController extends AdminController
                 'message' => "Attribute of id can not be empty!",
             ];
         }
-        return OaGoods1688::find()->select('companyName,offerId,subject')->where(['infoId' => $infoId])->distinct()->asArray()->all();
+        $goods1688 =  OaGoods1688::find()->select('companyName,offerId,subject')->where(['infoId' => $infoId])->distinct()->asArray()->all();
+        foreach ($goods1688 as &$val){
+            $val['value'] = OaGoods1688::find()->select('offerId,specId,style')
+                ->where(['offerId' => $val['offerId']])->asArray()->all();
+        }
+        return $goods1688;
     }
 
     /** 获取1688 商家商品SKU
