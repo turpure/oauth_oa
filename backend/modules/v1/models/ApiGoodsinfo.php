@@ -275,7 +275,7 @@ class ApiGoodsinfo
                 'origin3' => '',
             ];
         }
-        $skuInfo = (new Query())->select('gs.*, ss.specId')
+        $skuInfo = (new Query())->select('gs.*, ss.offerId, ss.specId')
             ->from('proCenter.oa_goodssku gs')
             ->leftJoin('proCenter.oa_goodsSku1688 ss', 'ss.goodsSkuId=gs.id')->where(['infoId' => $id])->all();
         $goodsSku = OaGoodsSku::find()->with('goodsSku1688')->where(['infoId' => $id])->asArray()->one();
@@ -356,7 +356,6 @@ class ApiGoodsinfo
     public static function saveAttribute($condition)
     {
         $attributeInfo = $condition['basicInfo']['goodsInfo'];
-        $offerId = isset($condition['offerId']) ? $condition['offerId'] : '';
         // 处理特殊商品信息
         $map = ['带磁商品' => 'isMagnetism', '带电商品' => 'isCharged', '液体商品' => 'isLiquid', '粉末商品' => 'isPowder'];
         if (array_key_exists($attributeInfo['attributeName'], $map)) {
@@ -391,6 +390,7 @@ class ApiGoodsinfo
                 }
                 //保存SKU关联1688信息
                 $specId = isset($skuRow['specId']) ? $skuRow['specId'] : '';
+                $offerId = isset($skuRow['offerId']) ? $skuRow['offerId'] : '';
                 if($offerId){
                     $count = OaGoods1688::find()->andFilterWhere(['infoId' => $infoId, 'offerId' => $offerId])->count();
                     if($specId || $count == 1){
