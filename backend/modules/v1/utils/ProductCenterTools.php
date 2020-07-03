@@ -1335,9 +1335,9 @@ class ProductCenterTools
         OaGoods1688::deleteAll(['infoId' => $id]);
         $transaction = OaGoods1688::getDb()->beginTransaction();
         try {
-            foreach ($idUrls as $url) {
+            foreach ($idUrls as $k => $url) {
                 $goods = array_merge($url, $tokenInfo);
-                self::syncGoodsInfoFrom1688($goods);
+                self::syncGoodsInfoFrom1688($k+1, $goods);
             }
             $transaction->commit();
             return true;
@@ -1362,7 +1362,7 @@ class ProductCenterTools
      * Author: henry
      * @throws Exception
      */
-    public static function syncGoodsInfoFrom1688($data)
+    public static function syncGoodsInfoFrom1688($k, $data)
     {
         $goodsUrl = $data['LinkUrl'];
         $urlArr = explode('/', $goodsUrl);
@@ -1391,6 +1391,7 @@ class ProductCenterTools
                     $item['specId'] = $sku['specId'];
                     $item['subject'] = $ret['productInfo']['subject'];
                     $item['style'] = '';
+                    $item['linkUrl'] = '供应商'.$k;
                     $item['multiStyle'] = 0;
                     $item['supplierLoginId'] = $ret['productInfo']['sellerLoginId'];
                     $item['companyName'] = $ret['productInfo']['sellerLoginId'];
@@ -1417,6 +1418,7 @@ class ProductCenterTools
                 $item['offerId'] = $goodsId;
                 $item['subject'] = $ret['productInfo']['subject'];
                 $item['multiStyle'] = 0;
+                $item['linkUrl'] = '供应商'.$k;
                 $item['supplierLoginId'] = $ret['productInfo']['sellerLoginId'];
                 $item['companyName'] = $ret['productInfo']['sellerLoginId'];
                 $model = new OaGoods1688();

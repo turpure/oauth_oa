@@ -321,10 +321,11 @@ class OaGoodsinfoController extends AdminController
                 'message' => "Attribute of id can not be empty!",
             ];
         }
-        $goods1688 =  OaGoods1688::find()->select('companyName,offerId,subject')->where(['infoId' => $infoId])->distinct()->asArray()->all();
+        $goods1688 =  OaGoods1688::find()->select('linkUrl as vendor,companyName,offerId,subject')->where(['infoId' => $infoId])->distinct()->asArray()->all();
         foreach ($goods1688 as &$val){
             $goods = OaGoods1688::find()->select('offerId,specId,style')
                 ->where(['offerId' => $val['offerId']])->asArray()->all();
+            $val['vendor'] = $val['vendor'].'商品ID:'.$val['offerId'];
             $val['value'] = array_merge([["offerId" => '无', "specId" => '无', 'style' => '无']],$goods);
         }
         return $goods1688;

@@ -16,6 +16,7 @@ use Yii;
  * @property string $multiStyle
  * @property int $supplierLoginId
  * @property string $companyName
+ * @property string $linkUrl
  */
 class OaGoods1688 extends \yii\db\ActiveRecord
 {
@@ -34,7 +35,7 @@ class OaGoods1688 extends \yii\db\ActiveRecord
     {
         return [
             [['infoId', 'offerId', 'multiStyle'], 'integer'],
-            [['specId', 'subject', 'style', 'supplierLoginId', 'companyName'], 'string', 'max' => 255],
+            [['specId', 'subject', 'style', 'supplierLoginId', 'companyName', 'linkUrl'], 'string', 'max' => 255],
         ];
     }
 
@@ -53,6 +54,7 @@ class OaGoods1688 extends \yii\db\ActiveRecord
             'multiStyle' => 'Multi Style',
             'supplierLoginId' => 'Supplier Login ID',
             'companyName' => 'Company Name',
+            'linkUrl' => 'Link Url',
         ];
     }
 }
