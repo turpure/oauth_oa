@@ -1079,17 +1079,17 @@ class ApiGoodsinfo
                 $row['weight'] = $sku['weight'];
                 $row['tags'] = $myMallInfo['wishTags'];
                 $row['description'] = $myMallInfo['description'];
-                $row['main_image_url'] = $imageInfo['mainImage'];
-                $row['image_url_1'] = $imageInfo['extraImages'][0];
-                $row['image_url_2'] = $imageInfo['extraImages'][1];
-                $row['image_url_3'] = $imageInfo['extraImages'][2];
-                $row['image_url_4'] = $imageInfo['extraImages'][3];
-                $row['image_url_5'] = $imageInfo['extraImages'][4];
-                $row['image_url_6'] = $imageInfo['extraImages'][5];
-                $row['image_url_7'] = $imageInfo['extraImages'][6];
-                $row['image_url_8'] = $imageInfo['extraImages'][7];
-                $row['image_url_9'] = $imageInfo['extraImages'][8];
-                $row['image_url_10'] = $imageInfo['extraImages'][9];
+                $row['main_image_url'] = $sku['linkUrl'];
+                $row['image_url_1'] = $imageInfo['mainImage'];
+                $row['image_url_2'] = $imageInfo['extraImages'][0];
+                $row['image_url_3'] = $imageInfo['extraImages'][1];
+                $row['image_url_4'] = $imageInfo['extraImages'][2];
+                $row['image_url_5'] = $imageInfo['extraImages'][3];
+                $row['image_url_6'] = $imageInfo['extraImages'][4];
+                $row['image_url_7'] = $imageInfo['extraImages'][5];
+                $row['image_url_8'] = $imageInfo['extraImages'][6];
+                $row['image_url_9'] = $imageInfo['extraImages'][7];
+                $row['image_url_10'] = $imageInfo['extraImages'][8];
                 $out[] = $row;
             }
         }
