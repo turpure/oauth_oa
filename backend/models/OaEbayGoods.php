@@ -85,7 +85,7 @@ class OaEbayGoods extends \yii\db\ActiveRecord
             [['country', 'postCode', 'site', 'listedCate', 'listedSubcate', 'unit', 'bundleListing'], 'string', 'max' => 10],
             [['title', 'subTitle', 'outShipToCountry1', 'outShipToCountry2', 'mainPage'], 'string', 'max' => 200],
             [['UPC', 'EAN', 'MPN', 'color', 'type', 'material'], 'string', 'max' => 20],
-            [['intendedUse', 'headKeywords', 'tailKeywords'], 'string', 'max' => 30],
+            [['intendedUse', 'headKeywords', 'tailKeywords'], 'string', 'max' => 200],
             [['reserveField'], 'string', 'max' => 100],
             [['requiredKeywords', 'randomKeywords'], 'string', 'max' => 300],
         ];
