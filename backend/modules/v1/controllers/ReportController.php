@@ -364,10 +364,10 @@ class ReportController extends AdminController
         $cond = $request['condition'];
         $condition = [
             'dateFlag' => $cond['dateType'],
-            'beginDate' => $cond['dateRange'][0],
-            'endDate' => $cond['dateRange'][1],
-            'devBeginDate' => $cond['devDateRange'][0],
-            'devEndDate' => $cond['devDateRange'][1],
+            'beginDate' => isset($cond['dateRange'][0]) ? $cond['dateRange'][0] :'',
+            'endDate' => isset($cond['dateRange'][1]) ? $cond['dateRange'][1] :'',
+            'devBeginDate' => isset($cond['devDateRange'][0]) ? $cond['devDateRange'][0] :'',
+            'devEndDate' => isset($cond['devDateRange'][1]) ? $cond['devDateRange'][1] :'',
             'sku' => $cond['sku'],
             'goodsName' => isset($cond['goodsName']) && $cond['goodsName'] ? $cond['goodsName'] : '',
             'salesman' => $cond['member'] ? implode(',', $cond['member']) : '',
