@@ -366,6 +366,8 @@ class ReportController extends AdminController
             'dateFlag' => $cond['dateType'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
+            'devBeginDate' => $cond['dateRange'][0],
+            'devEndDate' => $cond['dateRange'][1],
             'sku' => $cond['sku'],
             'goodsName' => isset($cond['goodsName']) && $cond['goodsName'] ? $cond['goodsName'] : '',
             'salesman' => $cond['member'] ? implode(',', $cond['member']) : '',

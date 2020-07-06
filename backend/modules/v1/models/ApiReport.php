@@ -564,12 +564,14 @@ class ApiReport
      */
     public static function getProfitReport($condition)
     {
-        $sql = "CALL report_suffixSkuProfit(:dateFlag,:beginDate,:endDate,:chanel,:suffix,:salesman,:storeName,:sku,:goodsName)";
+        $sql = "CALL report_suffixSkuProfit(:dateFlag,:beginDate,:endDate,:devBeginDate,:devEndDate,:chanel,:suffix,:salesman,:storeName,:sku,:goodsName)";
         $params = [
             ':chanel' => $condition['chanel'],
             ':dateFlag' => $condition['dateFlag'],
             ':beginDate' => $condition['beginDate'],
             ':endDate' => $condition['endDate'],
+            ':devBeginDate' => $condition['devBeginDate'],
+            ':devEndDate' => $condition['devEndDate'],
             ':suffix' => $condition['suffix'],
             ':salesman' => $condition['salesman'],
             ':storeName' => $condition['storeName'],
