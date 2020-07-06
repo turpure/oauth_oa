@@ -2210,11 +2210,7 @@ class ApiGoodsinfo
     {
         $mainImage = $info['mainImage'];
         $extraImages = explode("\n", $info['extraImages']);
-        $images = [];
-        foreach ($extraImages as $img) {
-            $images[] = $img;
-        }
-        return ['mainImage' => $mainImage, 'extraImages' => $images];
+        return ['mainImage' => $mainImage, 'extraImages' => $extraImages];
     }
 
     /**
