@@ -1029,7 +1029,7 @@ class ApiGoodsinfo
         $keyWords = static::preKeywords($myMallInfo);
         $title = static::getTitleName($keyWords, self::myMallTitleLength);
         foreach ($myMallAccounts as $account) {
-            $imageInfo = static::getJoomImageInfo($myMallInfo, $account);
+            $imageInfo = static::getMyMallImageInfo($myMallInfo, $account);
             foreach ($myMallSku as $sku) {
                 $row = $aRow;
                 $row['SKU'] = $sku['sku'] . $account['skuCode'];
@@ -2187,6 +2187,20 @@ class ApiGoodsinfo
             $extraImages[] = '';
             $countImages++;
         }
+        return ['mainImage' => $mainImage, 'extraImages' => $extraImages];
+    }
+
+
+    /**
+     * @brief 设置myMall图片信息
+     * @param $info
+     * @param $account
+     * @return array
+     */
+    private static function getMyMallImageInfo($info, $account)
+    {
+        $mainImage = $info['mainImage'];
+        $extraImages = explode("\n", $info['extraImages']);
         return ['mainImage' => $mainImage, 'extraImages' => $extraImages];
     }
 
