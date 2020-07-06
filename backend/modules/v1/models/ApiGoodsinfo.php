@@ -2194,14 +2194,17 @@ class ApiGoodsinfo
     /**
      * @brief 设置myMall图片信息
      * @param $info
-     * @param $account
      * @return array
      */
-    private static function getMyMallImageInfo($info, $account)
+    private static function getMyMallImageInfo($info)
     {
         $mainImage = $info['mainImage'];
         $extraImages = explode("\n", $info['extraImages']);
-        return ['mainImage' => $mainImage, 'extraImages' => $extraImages];
+        $images = [];
+        foreach ($extraImages as $img) {
+            $images[] = $img;
+        }
+        return ['mainImage' => $mainImage, 'extraImages' => $images];
     }
 
     /**
