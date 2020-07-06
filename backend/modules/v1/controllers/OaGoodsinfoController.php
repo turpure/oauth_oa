@@ -660,7 +660,7 @@ class OaGoodsinfoController extends AdminController
             $condition = $request->post()['condition'];
             $infoId = $condition['id'];
             $ret = ApiGoodsinfo::preExportMyMall($infoId);
-            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Xls');
+            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
         }
 
         catch (\Exception $why) {
