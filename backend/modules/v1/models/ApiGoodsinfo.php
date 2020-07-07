@@ -1037,8 +1037,8 @@ class ApiGoodsinfo
             $keyWords = static::preKeywords($myMallInfo);
             $title = static::getTitleName($keyWords, self::myMallTitleLength);
             foreach ($myMallAccounts as $account) {
-                $imageInfo = static::getMyMallImageInfo($myMallInfo);
                 foreach ($myMallSku as $sku) {
+                    $imageInfo = static::getMyMallImageInfo($myMallInfo, $sku);
                     $row = $aRow;
                     $row['SKU'] = $sku['sku'] . $account['skuCode'];
                     $row['group_id'] = $myMallInfo['sku'] . $account['skuCode'];
@@ -1050,17 +1050,17 @@ class ApiGoodsinfo
                     $row['weight'] = $sku['weight'];
                     $row['tags'] = $myMallInfo['wishTags'];
                     $row['description'] = $myMallInfo['description'];
-                    $row['main_image_url'] = $sku['linkUrl'];
-                    $row['image_url_1'] = $imageInfo['mainImage'];
-                    $row['image_url_2'] = isset($imageInfo['extraImages'][0])? $imageInfo['extraImages'][0]:'';
-                    $row['image_url_3'] = isset($imageInfo['extraImages'][1])? $imageInfo['extraImages'][1]:'';
-                    $row['image_url_4'] = isset($imageInfo['extraImages'][2])? $imageInfo['extraImages'][2]:'';
-                    $row['image_url_5'] = isset($imageInfo['extraImages'][3])? $imageInfo['extraImages'][3]:'';
-                    $row['image_url_6'] = isset($imageInfo['extraImages'][4])? $imageInfo['extraImages'][4]:'';
-                    $row['image_url_7'] = isset($imageInfo['extraImages'][5])? $imageInfo['extraImages'][5]:'';
-                    $row['image_url_8'] = isset($imageInfo['extraImages'][6])? $imageInfo['extraImages'][6]:'';
-                    $row['image_url_9'] = isset($imageInfo['extraImages'][7])? $imageInfo['extraImages'][7]:'';
-                    $row['image_url_10'] = isset($imageInfo['extraImages'][8])? $imageInfo['extraImages'][8]:'';
+                    $row['main_image_url'] = $imageInfo[0];
+                    $row['image_url_1'] = $imageInfo[1];
+                    $row['image_url_2'] = $imageInfo[2];
+                    $row['image_url_3'] = $imageInfo[3];
+                    $row['image_url_4'] = $imageInfo[4];
+                    $row['image_url_5'] = $imageInfo[5];
+                    $row['image_url_6'] = $imageInfo[6];
+                    $row['image_url_7'] = $imageInfo[7];
+                    $row['image_url_8'] = $imageInfo[8];
+                    $row['image_url_9'] = $imageInfo[9];
+                    $row['image_url_10'] = $imageInfo[10];
                     $out[] = $row;
                 }
             }
@@ -2204,13 +2204,31 @@ class ApiGoodsinfo
     /**
      * @brief 设置myMall图片信息
      * @param $info
+     * @param $sku
      * @return array
      */
-    private static function getMyMallImageInfo($info)
+    private static function getMyMallImageInfo($info, $sku)
     {
         $mainImage = $info['mainImage'];
+        $images = [$sku['linkUrl'],$mainImage];
         $extraImages = explode("\n", $info['extraImages']);
-        return ['mainImage' => $mainImage, 'extraImages' => $extraImages];
+        foreach ($extraImages as $eg) {
+            if(!empty($eg)) {
+                $images[] = $eg;
+            }
+        }
+        $images = array_filter($images, function ($ele) {return !empty($ele);});
+        $countImages = count($images);
+        while($countImages < 13) {
+            $images[] = '';
+            $countImages++;
+
+        }
+        $out = [];
+        foreach ($images as $ig) {
+            $out[] = $ig;
+        }
+        return $out;
     }
 
     /**
