@@ -27,7 +27,6 @@ class ApiCondition
     public static function getUserDepartment()
     {
         $userInfo = self::getUsers();
-//        var_dump($userInfo);exit;
         $department = [];
         foreach ($userInfo as $key=>$value) {
             $row = [];
@@ -36,6 +35,7 @@ class ApiCondition
                 foreach ($type as $v){
                     $row['id'] = $value['parent_id'];
                     $row['department'] = $value['parent_department'];
+                    $row['order'] = $value['parent_order'];
                     $row['type'] = $v;
                     $department[] = $row;
                 }
@@ -45,6 +45,7 @@ class ApiCondition
                 foreach ($type as $v){
                     $row['id'] = $value['department_id'];
                     $row['department'] = $value['department'];
+                    $row['order'] = $value['order'];
                     $row['type'] = $v;
                     $department[] = $row;
                 }
@@ -53,8 +54,7 @@ class ApiCondition
             }
         }
         $ret = Helper::arrayUnique($department);
-        var_dump(Helper::arraySort($ret,'department',SORT_ASC));exit;
-        return Helper::arraySort($ret,'id',SORT_ASC);
+        return Helper::arraySort($ret,'order',SORT_ASC);
     }
 
 
@@ -200,7 +200,7 @@ class ApiCondition
         if (in_array(AuthAssignment::ACCOUNT_ADMIN,$role) !== false || $flag == true) {
             $users = (new Query())->select("u.id,username,p.position,d.department as department,d.id as department_id,	
             IFnull(`pd`.`department`,d.department) AS `parent_department`,IFNULL(`pd`.`id`, d.id) AS `parent_id`,
-                     IFNULL(pd.`type`,d.`type`) as department_type, d.`type` as sec_department_type")
+            IFNULL(pd.`order`,d.`order`) as parent_order,d.order,IFNULL(pd.`type`,d.`type`) as department_type, d.`type` as sec_department_type")
                 ->from('`user` as u ')
                 ->leftJoin('auth_position_child pc','pc.user_id=u.id')
                 ->leftJoin('auth_position p','p.id=pc.position_id')
@@ -217,7 +217,7 @@ class ApiCondition
             $depart_id = AuthDepartmentChild::findOne(['user_id' => $userId])['department_id'];
             $users = (new Query())->select("u.id,username,p.position,d.department as department,d.id as department_id,	
             IFnull(`pd`.`department`,d.department) AS `parent_department`,IFNULL(`pd`.`id`, d.id) AS `parent_id`,
-            IFNULL(pd.`type`,d.`type`) as department_type, d.`type` as sec_department_type")
+            IFNULL(pd.`order`,d.`order`) as parent_order,d.order,IFNULL(pd.`type`,d.`type`) as department_type, d.`type` as sec_department_type")
                 ->from('user u')
                 ->innerJoin('auth_position_child pc','pc.user_id=u.id')
                 ->innerJoin('auth_department_child dc','dc.user_id=u.id')
@@ -230,7 +230,7 @@ class ApiCondition
             //登录用户部门
             $users = (new Query())->select("u.id,username,p.position,d.department as department,d.id as department_id,	
             IFnull(`pd`.`department`,d.department) AS `parent_department`,IFNULL(`pd`.`id`, d.id) AS `parent_id`,
-            IFNULL(pd.`type`,d.`type`) as department_type, d.`type` as sec_department_type")
+            IFNULL(pd.`order`,d.`order`) as parent_order,d.order,IFNULL(pd.`type`,d.`type`) as department_type, d.`type` as sec_department_type")
                 ->from('user u')
                 ->innerJoin('auth_position_child pc','pc.user_id=u.id')
                 ->innerJoin('auth_department_child dc','dc.user_id=u.id')
@@ -246,7 +246,7 @@ class ApiCondition
         }else {
             $users = (new Query())->select("u.id,username,p.position,d.department as department,d.id as department_id,	
             IFnull(`pd`.`department`,d.department) AS `parent_department`,IFNULL(`pd`.`id`, d.id) AS `parent_id`,
-             IFNULL(pd.`type`,d.`type`) as department_type, d.`type` as sec_department_type")
+            IFNULL(pd.`order`,d.`order`) as parent_order,d.order,IFNULL(pd.`type`,d.`type`) as department_type, d.`type` as sec_department_type")
                 ->from('user u')
                 ->innerJoin('auth_position_child pc','pc.user_id=u.id')
                 ->innerJoin('auth_position p','p.id=pc.position_id')
