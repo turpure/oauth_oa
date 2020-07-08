@@ -8,7 +8,10 @@
 namespace backend\modules\v1\controllers;
 
 
+use backend\models\OaGoodsSku1688;
 use yii\db\Exception;
+use Yii;
+use yii\helpers\ArrayHelper;
 
 class PurchaseToolController extends AdminController
 {
@@ -138,7 +141,68 @@ class PurchaseToolController extends AdminController
 
     }
 
+    public function actionSearchSuppliers()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition',[]);
+            $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
+            if(!$goodsCode){
+                return [
+                    'code' => 400,
+                    'message' => 'goodsCode can not be empty!'
+                ];
+            }
+            $sql = "SELECT gs.nid,gs.SKU,SKUName,sw.companyName FROM B_GoodsSKU gs
+                    LEFT JOIN B_GoodsSKUWith1688 sw ON gs.NID=sw.GoodsSKUID  AND sw.isDefault=1
+                    LEFT JOIN B_Goods g ON gs.GoodsID=g.NID WHERE g.GoodsCode LIKE :goodsCode ";
+            $goodsSql = "SELECT DISTINCT companyName FROM B_Goods1688 sw 
+                            LEFT JOIN B_Goods g ON sw.GoodsID=g.NID WHERE g.GoodsCode LIKE :goodsCode ";
 
+            $skuInfo = Yii::$app->py_db->createCommand($sql)->bindValues([':goodsCode' => $goodsCode])->queryAll();
+            $suppliers = Yii::$app->py_db->createCommand($goodsSql)->bindValues([':goodsCode' => $goodsCode])->queryAll();
+            return [
+                'skuInfo' => $skuInfo,
+                'companyName' => ArrayHelper::getColumn($suppliers,'companyName'),
+            ];
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+
+    }
+    public function actionSaveSkuSuppliers()
+    {
+        $condition = Yii::$app->request->post('condition',[]);
+        $skuInfo = isset($condition['skuInfo']) ? $condition['skuInfo'] : [];
+        $transaction = Yii::$app->py_db->beginTransaction();
+        try {
+            foreach ($skuInfo as $info){
+                $res = Yii::$app->db->createCommand()->update('B_GoodsSKUWith1688',
+                    ['isDefault' => 1],
+                    ['GoodsSKUID' => $info['nid'], 'companyName' => $info['companyName']])
+                    ->execute();
+                if(!$res){
+                    throw new Exception('Failed to save supplier info!');
+                }
+            }
+            $transaction->commit();
+            return true;
+        } catch (Exception $e) {
+            $transaction->rollBack();
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
 
 
 

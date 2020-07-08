@@ -214,10 +214,10 @@ class ConScheduler
      * Date: 2020-03-27 10:54
      * Author: henry
      */
-    public static function getWarehouseIntegralData(){
+    public static function getWarehouseIntegralData($beginDate, $endDate){
         $month = date('Y-m', strtotime('-1 days'));
-        $beginDate = $month . '-01';
-        $endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
+        if(!$beginDate) $beginDate = $month . '-01';
+        if(!$endDate) $endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
         //$beginDate = '2020-06-01';
         //$endDate = '2020-06-30';
         //var_dump($num);exit;

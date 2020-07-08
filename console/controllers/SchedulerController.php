@@ -857,9 +857,9 @@ class SchedulerController extends Controller
      * Date: 2020-03-27 11:12
      * Author: henry
      */
-    public function actionWarehouseIntegral(){
+    public function actionWarehouseIntegral($begin = '', $end = ''){
         try{
-            ConScheduler::getWarehouseIntegralData();
+            ConScheduler::getWarehouseIntegralData($begin, $end);
             print date('Y-m-d H:i:s') . " INFO:success to get warehouse integral data \n";
         }catch (Exception $why){
             print date('Y-m-d H:i:s') . " INFO:fail to get warehouse integral data because $why \n";
