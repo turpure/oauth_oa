@@ -179,7 +179,7 @@ class PurchaseToolController extends AdminController
         $transaction = Yii::$app->py_db->beginTransaction();
         try {
             foreach ($skuInfo as $info){
-                $res = Yii::$app->db->createCommand()->update('B_GoodsSKUWith1688',
+                $res = Yii::$app->py_db->createCommand()->update('B_GoodsSKUWith1688',
                     ['isDefault' => 1],
                     ['GoodsSKUID' => $info['nid'], 'companyName' => $info['companyName']])
                     ->execute();
