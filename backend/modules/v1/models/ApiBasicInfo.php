@@ -140,6 +140,19 @@ class ApiBasicInfo
         return $dataProvider;
     }
 
+
+    /**
+     * @return mixed
+     */
+    public static function exportWishSuffix()
+    {
+        $ret = ['name' => 'wish-suffix'];
+        $row = ['ibaySuffix', 'shortName','localCurrency', 'suffix','rate', 'mainImg', 'parentCategory'];
+        $query = OaWishSuffix::find()->asArray()->all();
+        $ret['data'] = $query;
+        return $ret;
+    }
+
     /**
      * @param $condition
      * Date: 2019-03-25 15:40

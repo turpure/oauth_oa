@@ -24,6 +24,8 @@ use backend\models\OaShippingService;
 use backend\models\OaSysRules;
 use backend\models\OaWishSuffix;
 use backend\modules\v1\models\ApiBasicInfo;
+use backend\modules\v1\models\ApiGoodsinfo;
+use backend\modules\v1\utils\ExportTools;
 use Yii;
 use yii\data\ActiveDataProvider;
 use yii\db\Query;
@@ -101,6 +103,18 @@ class BasicInfoController extends AdminController
     {
         $condition = Yii::$app->request->post()['condition'];
         return ApiBasicInfo::getWishSuffixList($condition);
+    }
+
+    public function actionExportWishSuffix()
+    {
+        try {
+
+            $ret = ApiBasicInfo::exportWishSuffix();
+            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Xls');
+        } catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+        return [];
     }
 
     /**
