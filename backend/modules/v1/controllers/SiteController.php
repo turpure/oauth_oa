@@ -241,7 +241,7 @@ class SiteController extends AdminController
             $sql = "SELECT * FROM site_profit 
                 WHERE role = '销售' AND ifnull(display,0)=0 ";
             if($depart) {
-                $sql .= " AND depart LIKE '%{$depart}%' ";
+                $sql .= " AND depart = '{$depart}' ";
             }
             $sql .= " ORDER BY Rate DESC";
             $query = \Yii::$app->db->createCommand($sql)->queryAll();
@@ -390,7 +390,7 @@ class SiteController extends AdminController
             $sql = "SELECT * FROM site_sales_amt
                 WHERE role = '销售' AND ifnull(display,0)=0 ";
             if($depart) {
-                $sql .= "AND depart LIKE '%{$depart}%' ";
+                $sql .= "AND depart = '{$depart}' ";
             }
             $sql .= " ORDER BY Rate DESC";
             $query = \Yii::$app->db->createCommand($sql)->queryAll();
