@@ -155,8 +155,10 @@ class PurchaseToolController extends AdminController
             $sql = "SELECT gs.nid,gs.SKU,SKUName,sw.companyName FROM B_GoodsSKU gs
                     LEFT JOIN B_GoodsSKUWith1688 sw ON gs.NID=sw.GoodsSKUID  AND sw.isDefault=1
                     LEFT JOIN B_Goods g ON gs.GoodsID=g.NID WHERE g.GoodsCode LIKE :goodsCode ";
-            $goodsSql = "SELECT DISTINCT companyName FROM B_Goods1688 sw 
-                            LEFT JOIN B_Goods g ON sw.GoodsID=g.NID WHERE g.GoodsCode LIKE :goodsCode ";
+//            $goodsSql = "SELECT DISTINCT companyName FROM B_Goods1688 sw LEFT JOIN B_Goods g ON sw.GoodsID=g.NID WHERE g.GoodsCode LIKE :goodsCode ";
+            $goodsSql = "SELECT DISTINCT sw.companyName FROM B_GoodsSKUWith1688 sw
+                    LEFT JOIN B_GoodsSKU gs ON gs.NID=sw.GoodsSKUID 
+                    LEFT JOIN B_Goods g ON gs.GoodsID=g.NID WHERE g.GoodsCode LIKE :goodsCode ";
 
             $skuInfo = Yii::$app->py_db->createCommand($sql)->bindValues([':goodsCode' => $goodsCode])->queryAll();
             $suppliers = Yii::$app->py_db->createCommand($goodsSql)->bindValues([':goodsCode' => $goodsCode])->queryAll();
