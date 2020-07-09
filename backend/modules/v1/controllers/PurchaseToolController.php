@@ -154,7 +154,7 @@ class PurchaseToolController extends AdminController
                     'message' => 'goodsCode can not be empty!'
                 ];
             }
-            $sql = "SELECT gs.nid,gs.SKU,SKUName,gs.property1,gs.property2,gs.property3,sw.companyName,g16.style FROM B_GoodsSKU gs
+            $sql = "SELECT gs.nid,gs.SKU,SKUName,gs.property1,gs.property2,gs.property3,ISNULL(sw.companyName,'无'),g16.style FROM B_GoodsSKU gs
 					LEFT JOIN B_GoodsSKUWith1688 sw ON gs.NID=sw.GoodsSKUID  AND sw.isDefault=1
 					LEFT JOIN B_Goods1688 g16 ON g16.GoodsID=gs.GoodsID and g16.specId=sw.specId  AND g16.offerid=sw.offerid 
 					WHERE gs.sku LIKE  '%{$goodsCode}%'  ";
