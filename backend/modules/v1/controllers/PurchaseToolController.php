@@ -179,12 +179,21 @@ class PurchaseToolController extends AdminController
         $transaction = Yii::$app->py_db->beginTransaction();
         try {
             foreach ($skuInfo as $info){
-                $res = Yii::$app->py_db->createCommand()->update('B_GoodsSKUWith1688',
-                    ['isDefault' => 1],
-                    ['GoodsSKUID' => $info['nid'], 'companyName' => $info['companyName']])
-                    ->execute();
-                if(!$res){
-                    throw new Exception('Failed to save supplier info!');
+                $num = Yii::$app->py_db->createCommand("SELECT count(1) FROM B_GoodsSKUWith1688 WHERE  GoodsSKUID=:nid AND companyName=:companyName")
+                    ->bindValues([':nid' => $info['nid'], ':companyName' => $info['companyName']])->queryScalar();
+                if($num){
+                    $res1 = Yii::$app->py_db->createCommand()->update('B_GoodsSKUWith1688',
+                        ['isDefault' => 0],
+                        ['GoodsSKUID' => $info['nid']])
+                        ->execute();
+
+                    $res2 = Yii::$app->py_db->createCommand()->update('B_GoodsSKUWith1688',
+                        ['isDefault' => 1],
+                        ['GoodsSKUID' => $info['nid'], 'companyName' => $info['companyName']])
+                        ->execute();
+                    if(!$res1 || !$res2){
+                        throw new Exception('Failed to save supplier info!');
+                    }
                 }
             }
             $transaction->commit();
