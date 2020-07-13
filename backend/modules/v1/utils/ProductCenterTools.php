@@ -1372,11 +1372,11 @@ class ProductCenterTools
         $infoId = $data['ID'];
         $oauth = new AgentProductSimpleGet($data['AliasName']);
         $params = [
-            'webSite' => '1688',
-            'productID' => $goodsId,
-            'access_token' => $oauth->token,
-            'api_type' => 'com.alibaba.product',
-            'api_name' => 'alibaba.agent.product.simple.get'
+                'webSite' => '1688',
+                'productID' => $goodsId,
+                'access_token' => $oauth->token,
+                'api_type' => 'com.alibaba.product',
+                'api_name' => 'alibaba.agent.product.simple.get'
         ];
         $base_url = $oauth->get_request_url($params);
         $ret = Helper::post($base_url, [], 'GET');
