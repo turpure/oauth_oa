@@ -8,6 +8,7 @@
 namespace backend\modules\v1\models;
 
 use backend\models\OaEbayKeyword;
+use backend\models\ShopElf\BGoods;
 use backend\modules\v1\utils\Handler;
 use backend\modules\v1\utils\Helper;
 use backend\modules\v1\utils\ExportTools;
@@ -1112,6 +1113,59 @@ class ApiTinyTool
         }
         return False;
 
+    }
+
+
+    //=================海外仓，订单修改物流方式=====================
+
+    /**
+     * Date: 2020-07-14 9:20
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
+    public static function modifyOrderLogisticsWay(){
+        $doc = Yii::$app->db->createCommand('select * from cache_order_zip_code')->queryAll();
+        $id = Yii::$app->py_db->createCommand("select NID from B_LogisticWay WHERE name LIKE 'Royal Mail - Tracked 48 Parcel%'")->queryScalar();
+        $sql = "SELECT m.nid FROM P_Trade (nolock) m
+                LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
+                LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
+                WHERE FilterFlag IN (5,6) AND e.name LIKE '%万邑通%' AND l.name LIKE 'Hermes%' ";
+
+        foreach ($doc as $k => $ele) {
+            if ($k == 0) {
+                $sql .= " AND (SHIPTOZIP LIKE '{$ele['zipCode']}%'";
+            } else {
+                $sql .= " OR SHIPTOZIP LIKE '{$ele['zipCode']}%'";
+            }
+            if ($k == count($doc) - 1) {
+                $sql .= ")";
+            }
+        }
+        $transaction = BGoods::getDb()->beginTransaction();
+        try {
+            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+//            var_dump(count($data));exit;
+            foreach ($data as $v) {
+                $res = Yii::$app->py_db->createCommand()->update('p_trade',['logicsWayNID' => $id],['NID' => $v['nid']])->execute();
+                if(!$res){
+                    throw new Exception('Failed to update logics way of order '.$v['nid']);
+                }
+            }
+            $transaction->commit();
+        } catch (Exception $e) {
+            $transaction->rollBack();
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
     }
 
 }

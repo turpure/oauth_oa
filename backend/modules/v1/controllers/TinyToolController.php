@@ -9,6 +9,7 @@ namespace backend\modules\v1\controllers;
 
 
 use backend\models\OaEbayKeyword;
+use backend\models\ShopElf\BGoods;
 use backend\modules\v1\models\ApiAu;
 use backend\modules\v1\models\ApiGoodsinfo;
 use backend\modules\v1\models\ApiSettings;
@@ -25,7 +26,9 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Yii;
 use yii\data\ArrayDataProvider;
 use yii\data\SqlDataProvider;
+use yii\db\Exception;
 use yii\helpers\ArrayHelper;
+use yii\mongodb\Query;
 
 class TinyToolController extends AdminController
 {
@@ -123,7 +126,7 @@ class TinyToolController extends AdminController
                     throw new \Exception("fail to set $username");
                 }
                 return 'job done!';
-            }else{
+            } else {
                 throw new \Exception("Cant't find user '{$username}''");
             }
         } catch (\Exception  $why) {
@@ -151,7 +154,7 @@ class TinyToolController extends AdminController
                     throw new \Exception("fail to set $username");
                 }
                 return 'job done!';
-            }else{
+            } else {
                 throw new \Exception("Cant't find user '{$username}''");
             }
         } catch (\Exception  $why) {
@@ -459,7 +462,7 @@ class TinyToolController extends AdminController
         //获取运费和出库费
         $data['transport'] = ApiUk::getTransport($res['weight'], $res['length'], $res['width'], $res['height']);
 
-        foreach ($data['transport'] as $v){
+        foreach ($data['transport'] as $v) {
             //根据售价获取利润率
             if ($post['price']) {
                 $rateItem = ApiUk::getRate($post['price'], $v['cost'], $v['out'], $res['price']);
@@ -1087,11 +1090,9 @@ class TinyToolController extends AdminController
     {
 
         try {
-            $condition = Yii::$app->request->post('condition',[]);
+            $condition = Yii::$app->request->post('condition', []);
             return ApiTinyTool::ebayBalanceTimeGet($condition);
-        }
-
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
@@ -1105,9 +1106,7 @@ class TinyToolController extends AdminController
             $condition = Yii::$app->request->post('condition', []);
             return ApiTinyTool::ebayBalanceTimeUpdate($condition);
 
-        }
-
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
 
@@ -1122,9 +1121,7 @@ class TinyToolController extends AdminController
         try {
             $condition = Yii::$app->request->post('condition', []);
             return ApiTinyTool::ebayBalanceTimeCreate($condition);
-        }
-
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
@@ -1137,9 +1134,7 @@ class TinyToolController extends AdminController
         try {
             $condition = Yii::$app->request->post('condition', []);
             return ApiTinyTool::ebayBalanceTimeDelete($condition);
-        }
-
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
 
@@ -1154,13 +1149,15 @@ class TinyToolController extends AdminController
         try {
             $condition = Yii::$app->request->post('condition', []);
             return ApiTinyTool::ebayBalanceTimeDetail($condition);
-        }
-
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
 
     }
+
+
+    //====================海外仓库存周转===================
+
     /**
      * 销售员产品库存
      * Date: 2019-12-06 11:55
@@ -1254,6 +1251,37 @@ class TinyToolController extends AdminController
         ExportTools::toExcelOrCsv($name, $res, 'Xls', $title);
     }
 
+    /** 销售员总库存周转
+     * Date: 2020-07-14 15:02
+     * Author: henry
+     * @return array
+     */
+    public function actionStockSeller(){
+        $sql = "SELECT seller1,SUM(useNum) AS useNum,sum(30DaySellCount) AS 30DaySellCount,ROUND(sum(30DaySellCount)/30,1) AS ave,
+			    CASE WHEN sum(30DaySellCount) = 0 AND SUM(useNum) > 0 THEN 10000 ELSE ROUND(SUM(useNum)*30/sum(30DaySellCount),1) END AS sellDays
+                FROM (
+                        SELECT IFNULL(u.seller1,'无人') seller1,c.sku,useNum,IFNULL(thirtySellCount,0) 30DaySellCount
+                        FROM `cache_stockWaringTmpData` c
+                        LEFT JOIN `cache_30DayOrderTmpData` co ON co.sku=c.sku
+                        INNER JOIN `cache_skuSeller` u ON u.goodsCode=c.goodsCode WHERE c.storeName='万邑通UK'
+                    UNION
+                        SELECT IFNULL(u.seller1,'无人') seller1,IFNULL(co.sku,'') sku,IFNULL(useNum,0) useNum,IFNULL(thirtySellCount,0) 30DaySellCount
+                        FROM `cache_30DayOrderTmpData` co
+                        INNER JOIN `cache_skuSeller` u ON u.goodsCode=SUBSTR(co.sku,1,LENGTH(u.goodsCode))
+						LEFT JOIN `cache_stockWaringTmpData` c ON co.sku=c.sku WHERE c.sku IS NULL
+                ) aa GROUP BY seller1;";
+        try{
+            return Yii::$app->db->createCommand($sql)->queryAll();
+        }catch (\Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+
+
     /**
      * Date: 2020-03-13 11:49
      * Author: henry
@@ -1282,6 +1310,44 @@ class TinyToolController extends AdminController
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
+
+    /** 万邑通库存
+     * Date: 2020-07-13 16:29
+     * Author: henry
+     * @return ArrayDataProvider
+     * @throws \yii\db\Exception
+     */
+    public function actionWytSkuStorage()
+    {
+        $sql = "SELECT * FROM cache_wyt_sku_storage WHERE 1=1";
+        $cond = Yii::$app->request->post('condition');
+        $sku = ArrayHelper::getValue($cond, 'sku');
+        $skuName = ArrayHelper::getValue($cond, 'skuName');
+        $pageSize = ArrayHelper::getValue($cond, 'pageSize');
+        if ($sku) $sql .= " AND sku like '%{$sku}%' ";
+        if ($skuName) $sql .= " AND skuName like '%{$skuName}%' ";
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
+        $dataProvider = new ArrayDataProvider([
+            'allModels' => $data,
+            'pagination' => [
+                'pageSize' => isset($pageSize) && $pageSize ? $pageSize : 20,
+            ],
+        ]);
+        return $dataProvider;
+    }
+
+    /** 海外仓，订单修改物流方式
+     * Date: 2020-07-14 9:20
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
+    public function actionModifyOrderLogisticsWay()
+    {
+        return ApiTinyTool::modifyOrderLogisticsWay();
+    }
+
+
 
 
 }
