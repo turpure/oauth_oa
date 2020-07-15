@@ -466,7 +466,7 @@ class OaGoodsinfoController extends AdminController
             return [];
         }
         $condition = $request->post()['condition'];
-        return ApiGoodsinfo::getPlatInfoById($condition);
+        return ApiGoodsinfo::getPlatInfoByIdOrCode($condition);
     }
 
     /**

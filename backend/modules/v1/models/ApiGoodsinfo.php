@@ -527,10 +527,21 @@ class ApiGoodsinfo
 ###########################  plat info ########################################
 
 
-    public static function getPlatInfoById($condition)
+    public static function getPlatInfoByIdOrCode($condition)
     {
-        $plat = $condition['plat'];
-        $infoId = $condition['id'];
+        $plat = isset($condition['plat']) ? $condition['plat'] : 'wish';
+        $infoId = isset($condition['id']) ? $condition['id'] : 0;
+        $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
+        if(!$infoId and !$goodsCode){
+            return [
+                'code' => 400,
+                'message' => "infoId and goodsCode can not be empty at the same time!",
+            ];
+        }
+        if(!$infoId and $goodsCode) {
+            $query = OaGoodsinfo::findOne(['goodsCode' => $goodsCode]);
+            $infoId = $query->id;
+        }
         if ($plat === 'wish') {
             $goods = OaWishGoods::findOne(['infoId' => $infoId]);
             $goodsSku = OaWishGoodsSku::findAll(['infoId' => $infoId]);
