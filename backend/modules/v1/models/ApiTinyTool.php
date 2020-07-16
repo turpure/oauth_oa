@@ -1191,6 +1191,7 @@ class ApiTinyTool
             if ($totalWeight >= $v['beginWeight']) {
                 $fee = (ceil(($totalWeight - $v['BeginWeight']) / $v['AddWeight']) * $v['AddMoney'] + $v['BeginMoneyGoods']) *
                     ($v['RegionRate'] ? $v['RegionRate'] : $v['discount']) * 0.01 + $v['BeginMoneyFile'];
+                break;
             }
         }
         return $fee;
