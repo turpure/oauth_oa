@@ -1379,7 +1379,7 @@ class ProductCenterTools
                 'api_name' => 'alibaba.agent.product.simple.get'
         ];
         $base_url = $oauth->get_request_url($params);
-        $ret = Helper::post($base_url, [], 'GET');
+        $ret = Helper::curlRequest($base_url, [], [],'GET');
 //        var_dump($ret);exit;
         if (isset($ret['productInfo'])) {
             $skuInfos = isset($ret['productInfo']['skuInfos']) ? $ret['productInfo']['skuInfos'] : [];

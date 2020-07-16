@@ -242,7 +242,7 @@ class Helper
     }
 
 
-    public  static function curlRequest($url, $data, $method = 'POST'){
+    public  static function curlRequest($url, $data, $header = [], $method = 'POST'){
         $ch = curl_init();
         if($method == 'POST'){
             curl_setopt($ch, CURLOPT_URL, $url);
@@ -254,10 +254,9 @@ class Helper
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         curl_setopt($ch, CURLOPT_TIMEOUT, 4);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'Content-Type: application/x-www-form-urlencoded',
-                "Authorization: Bearer " . $data['access_token'],
-            ]);
+        if($header){
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+        }
         //如果用的协议是https则打开下面这个注释
         if(strpos($url,'https:') !== false){
             curl_setopt ( $ch, CURLOPT_SSL_VERIFYPEER, false );

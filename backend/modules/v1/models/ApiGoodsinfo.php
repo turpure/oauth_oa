@@ -1361,10 +1361,14 @@ class ApiGoodsinfo
                 $row['declaredValue'] = static::getJoomDeclaredValue($joomSku[0]['joomPrice']);
                 #随机获取符合条件的token
                 $token = self::filterJoomAccount($goodsInfo['goodsId'], $tokens);
-                $row['access_token'] = $token ? $token['token'] : '';
+//                $row['access_token'] = $token ? $token['token'] : '';
                 # 上架产品
                 $url = 'https://api-merchant.joom.com/api/v2/product/add';
-                $ret = Helper::curlRequest($url, $row);
+                $header = [
+                    "Content-type: application/x-www-form-urlencoded",
+                    "Authorization: Bearer " . $token,
+                ];
+                $ret = Helper::curlRequest($url, $row, $header);
                 if ($ret['code'] == 0 && $ret['data']) {
                     $logData['ibayTemplateId'] = $ret['data']['Product']['id'];
                     $logData['result'] = 'Success';
@@ -1421,10 +1425,14 @@ class ApiGoodsinfo
             $variationRow['shipping_weight'] = (float)$sku['weight'] * 1.0 / 1000;
             $variationRow['main_image'] = str_replace('/10023/', '/' . $joomAccounts['imgCode'] . '/', $sku['linkUrl']);
             $variationRow['declaredValue'] = static::getJoomDeclaredValue($sku['joomPrice']);
-            $variationRow['access_token'] = $token ? $token['token'] : '';
+//            $variationRow['access_token'] = $token ? $token['token'] : '';
 
+            $header = [
+                "Content-type: application/x-www-form-urlencoded",
+                "Authorization: Bearer " . $token,
+            ];
             $variationUrl = 'https://api-merchant.joom.com/api/v2/variant/add';
-            $res = Helper::curlRequest($variationUrl, $variationRow);
+            $res = Helper::curlRequest($variationUrl, $variationRow, $header);
 //            var_dump($res);exit;
             if ($res['code']) {
                 $message[] = 'SKU ' . $sku['sku'] . ' upload failed cause of ' . $res['message'];
@@ -1445,10 +1453,14 @@ class ApiGoodsinfo
         $url = "https://api-merchant.joom.com/api/v2/product";
         foreach ($account as $v) {
             $params = [
-                'access_token' => $v['token'],
+//                'access_token' => $v['token'],
                 'parent_sku' => $parentSku,
             ];
-            $res = Helper::curlRequest($url, $params, 'GET');
+            $header = [
+                "Content-type: application/x-www-form-urlencoded",
+                "Authorization: Bearer " . $v['token'],
+            ];
+            $res = Helper::curlRequest($url, $params, $header, 'GET');
             if ($res['code'] == 0) {
 //                var_dump($res);exit;
                 $sku = [];

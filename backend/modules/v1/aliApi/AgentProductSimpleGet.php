@@ -50,7 +50,7 @@ class AgentProductSimpleGet{
             'refresh_token' => $this->refresh_token,
         ];
         try{
-            $ret = Helper::post($base_url, $post_data);
+            $ret = Helper::curlRequest($base_url, $post_data);
             return $ret['access_token'];
         }catch (Exception $e){
             return '';
