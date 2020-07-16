@@ -66,6 +66,7 @@ class ApiGoodsinfo
     const EbayTitleLength = 80;
     const JoomTitleLength = 100;
     const smtTitleLength = 128;
+    const lazadaTitleLength = 255;
 
     /**
      * @brief 属性信息列表
@@ -978,6 +979,164 @@ class ApiGoodsinfo
         return ArrayHelper::getColumn($ret, 'storeCountry');
     }
 
+
+    /**
+     * 导出Lazada模板
+     * @param $ids
+     * @return array
+     */
+    public static function preExportLazada($ids)
+    {
+        $ids = implode(',', $ids);
+        $sql = "select og.createDate as '开发日期',cate as '一级类目',subCate as '二级类目', goodsCode as '商品编码', goodsStatus as '商品状态',".
+            "goodsName as '商品名称',".
+            "ogs.sku as 'SKU',".
+            "ogs.property1 '属性1',".
+            "ogs.property2 as '属性2',".
+            "ogs.property1 '属性1', ogs.property2 as '属性2', ogs.property3 as '属性3', mainImage as '商品主图', ogs.linkUrl as '属性主图', owg.extraImages as '附加图', ogi.headKeywords as '头部关键词', ogi.requiredKeywords as '必须关键词', ogi.randomKeywords '随机关键词', ogi.tailKeywords '尾部关键词',".
+            "hopeCost '成本价',hopeWeight '重量',packName '包装规格',ogi.description '描述',".
+            "'' as 'VN原价',".
+            "'' as 'VN售价',".
+            "'' as 'ID原价',".
+            "'' as 'ID售价',".
+            "'' as 'SG原价',".
+            "'' as 'SG售价',".
+            "'' as 'MY原价',".
+            "'' as 'MY售价',".
+            "'' as 'TH原价',".
+            "'' as 'TH售价',".
+            "'' as 'PH原价',".
+            "'' as 'PH售价',".
+            "'' as '产品标题（英文）1',".
+            "'' as '产品标题',".
+            "'' as '关键词1',".
+            "'' as 'Package',".
+            "'' as '多个颜色',".
+            "'' as '多个尺寸',".
+            "'' as 'MY ID',".
+            "'' as 'PH ID',".
+            "'' as 'TH ID',".
+            "'' as 'SG ID',".
+            "'' as 'ID ID',".
+            "'' as 'VN ID',".
+            "'' as '一级类目',".
+            "'' as '主sku',".
+            "'' as '多个子sku',".
+            "'' as '关联sku',".
+            "'' as '描述图片代码',".
+            "'' as 'short' ".
+            'from oa_goods as og LEFT JOIN oa_goodsinfo as ogi on og.nid= ogi.goodsId '.
+            'LEFT JOIN oa_goodssku as ogs on ogs.infoId = ogi.id '.
+            'LEFT JOIN oa_wishGoods as owg on owg.infoId = ogi.id '.
+            "where ogi.id in (" .
+            $ids .
+            ')';
+
+        #生成英文标题
+
+//        $row = ['开发日期','一级类目','二级类目','商品编码','商品名称','SKU','属性1','属性2','属性3','商品主图','属性主图','附加图','头部关键词','必须关键词','随机关键词','尾部关键词','成本价','重量','包装规格','描述','VN原价','VN售价','ID原价','ID售价','SG原价','SG售价','MY原价','MY售价','TH原价','TH售价','PH原价','PH售价','产品标题（英文）1','产品标题','关键词1','Package','多个颜色','多个尺寸','MY ID','PH ID','TH ID','SG ID','ID ID','VN ID','一级类目','主sku','多个子sku','关联sku','描述图片代码','short'];
+        $products = Yii::$app->pro_db->createCommand($sql)->queryAll();
+        $ret = ['name' => 'lazada-template' ];
+        $out = [];
+
+        // 每个产品生成标题
+        $goodsInfo = static::getLazadaTitle($products);
+
+        # 特殊字段处理
+        foreach ($products as $ele) {
+
+            # 生成标题
+            $ele['产品标题（英文）1'] = $goodsInfo[$ele['商品编码']]['title'];
+
+            # 短描述
+            $ele['短描述'] = $goodsInfo[$ele['商品编码']]['shortDescription'];
+            $ele['长描述'] = $goodsInfo[$ele['商品编码']]['longDescription'];
+            $out[] = $ele;
+        }
+        $ret['data'] = $out;
+        return $ret;
+
+    }
+
+    public static function getLazadaTitle($goods)
+    {
+        $ret = [];
+        foreach ($goods as $gd) {
+            $goodsCode = $gd['商品编码'];
+            if (!array_key_exists($goodsCode, $ret)) {
+                $row = [];
+                $keywords = static::combineKeywords($gd['头部关键词'],$gd['尾部关键词'], $gd['必须关键词'], $gd['随机关键词']);
+                $row['title'] = static::getTitleName($keywords, self::lazadaTitleLength);
+                $row['shortDescription'] = static::getShortDescription($gd['描述'], $gd['必须关键词']);
+                $row['longDescription'] = static::getLongDescription($gd['描述'],$gd['附加图']);
+                $ret[$goodsCode] = $row;
+            }
+        }
+        return $ret;
+    }
+    /**
+     * lazada short description
+     * @param $rawDescription
+     * @param $requiredKeywords
+     * @return mixed
+     */
+    public static function getShortDescription($rawDescription,$requiredKeywords)
+    {
+        $raw = explode("\n\n", $rawDescription);
+        $tag = '';
+        $requiredKeywords = json_decode($requiredKeywords);
+        $i = 0;
+        foreach ($requiredKeywords as $kw) {
+            if(!empty($kw)) {
+                $tag .= '<li>'.$kw.'</li>';
+                $i++;
+            }
+        }
+        foreach ($raw as $ele) {
+            if (strpos($ele, ':') !== false || strpos($ele, '：' !== false)) {
+                if(strpos($ele, 'Package included') !== false) {
+                    $ele = str_replace("\n",'',$ele);
+                    $tag .= '<li>'.$ele.'</li>';
+                    $i++;
+                }
+                else {
+                    $row = explode("\n",$ele);
+                    foreach ($row as $rw) {
+                        $tag .= '<li>'.$rw.'</li>';
+                        $i++;
+                    }
+                }
+            }
+        }
+        $li = '<li></li>';
+        while($i < 9) {
+            $tag .= $li;
+            $i++;
+        }
+        $description = '<ul>' . $tag .'</ul>';
+        return $description;
+    }
+
+    /**
+     * lazada 处理描述
+     * @param $description
+     * @param $images
+     * @return  mixed
+     */
+    public static function getLongDescription($description, $images)
+    {
+        # 文字描述部分
+        $description = str_replace("\n", '<br>',$description);
+        # 插入附件图
+        $images = explode("\n", $images);
+        $imagesLinks = '';
+        foreach ($images as $ig) {
+            $imagesLinks .= '<p><img src=" ' . $ig . '" /></p>';
+        }
+
+        $description = '"<p>' . $description.  '</p>' . $imagesLinks  . '"';
+        return $description;
+    }
     /**
      * @brief wish模板预处理
      * @param $id
@@ -1319,9 +1478,9 @@ class ApiGoodsinfo
             #获取账号TOKEN
             if($account == 'Joom') $account .= '0';
 //            var_dump($account);exit;
-            $sql = "SELECT AliasName AS suffix,d.memo,AccessToken AS token 
+            $sql = "SELECT AliasName AS suffix,d.memo,AccessToken AS token
                         FROM [dbo].[S_JoomSyncInfo] s
-                        INNER JOIN B_Dictionary d ON d.DictionaryName=s.AliasName AND d.CategoryID=12 
+                        INNER JOIN B_Dictionary d ON d.DictionaryName=s.AliasName AND d.CategoryID=12
                         WHERE  AliasName LIKE '{$account}%'";
             $tokens = Yii::$app->py_db->createCommand($sql)->queryAll();
             #判断账号是否存在该产品
@@ -2218,6 +2377,26 @@ class ApiGoodsinfo
 
 
     /**
+     * @brief 准备关键词
+     * @param $headKeywords
+     * @param $tailKeywords
+     * @param $requiredKeywords
+     * @param $randomKeywords
+     * @return mixed
+     */
+    private static function combineKeywords($headKeywords, $tailKeywords, $requiredKeywords, $randomKeywords)
+    {
+        $ret['head'] = $headKeywords;
+        $ret['tail'] = $tailKeywords;
+        $requireKeywords = !empty($requiredKeywords) ? array_slice(json_decode($requiredKeywords), 0, 6) : [];
+        $randomKeywords = !empty($randomKeywords) ? array_slice(json_decode($randomKeywords), 0, 10) : [];
+        $ret['need'] = $requireKeywords;
+        $ret['random'] = $randomKeywords;
+        return $ret;
+    }
+
+
+    /**
      * @brief 根据总量调整joom价格
      * @param $weight
      * @param $price
@@ -2403,7 +2582,7 @@ class ApiGoodsinfo
     /**
      * @brief 封装ebay多属性信息
      * @param $isVar
-     * @param $skuInfo
+     * @param $ebayInfo
      * @param $account
      * @return string
      *

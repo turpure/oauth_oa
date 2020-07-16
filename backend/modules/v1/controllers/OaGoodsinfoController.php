@@ -620,6 +620,27 @@ class OaGoodsinfoController extends AdminController
 
     }
 
+    /**
+     * @brief 导出lazada模板
+     * @throws
+     */
+    public function actionPlatExportLazada()
+    {
+        try {
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            $infoIds = $condition['id'];
+            $ret = ApiGoodsinfo::preExportLazada($infoIds);
+//            return $ret;
+            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Xls');
+        } catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+
+    }
 
     /**
      * @brief 导出wish模板数据
