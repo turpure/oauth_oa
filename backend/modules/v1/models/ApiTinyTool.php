@@ -221,7 +221,7 @@ class ApiTinyTool
         $beginDate = ArrayHelper::getValue($condition, 'beginDate', '') ?: '2015-06-01';
         $endDate = ArrayHelper::getValue($condition, 'endDate', '') ?: date('Y-m-d');
         $goodsName = ArrayHelper::getValue($condition, 'goodsName', []);
-        if($goodsName) $goodsName = explode(',', $goodsName);
+        if ($goodsName) $goodsName = explode(',', $goodsName);
         $supplierName = ArrayHelper::getValue($condition, 'supplierName', '');
         $goodsSkuStatus = ArrayHelper::getValue($condition, 'goodsSkuStatus', []);
         $goodsSkuStatus = implode("','", $goodsSkuStatus);
@@ -254,7 +254,7 @@ class ApiTinyTool
             if ($possessMan2) $sql .= " AND bg.possessman2 LIKE '%$possessMan2%' ";
             if ($salerName) $sql .= " AND bg.SalerName LIKE '%$salerName%' ";
             if ($goodsName) {
-                foreach ($goodsName as $v){
+                foreach ($goodsName as $v) {
                     $sql .= " AND bg.GoodsName LIKE '%$v%' ";
                 }
             }
@@ -528,9 +528,9 @@ class ApiTinyTool
         try {
             //判断数据表数据是不是最新数据
             $date = Yii::$app->py_db->createCommand("SELECT DISTINCT updateDate FROM ibay365_eBayOversea_quantity_online")->queryOne();
-            if(!$date || strtotime(date('Y-m-d H:i:s')) >= strtotime(date('Y-m-d').' 14:30:00')
-                        && substr($date['updateDate'],0,10) == date('Y-m-d', strtotime('-1 day'))
-                      || strtotime(substr($date['updateDate'],0,10)) <=  strtotime(date('Y-m-d', strtotime('-2 day'))) ){
+            if (!$date || strtotime(date('Y-m-d H:i:s')) >= strtotime(date('Y-m-d') . ' 14:30:00')
+                && substr($date['updateDate'], 0, 10) == date('Y-m-d', strtotime('-1 day'))
+                || strtotime(substr($date['updateDate'], 0, 10)) <= strtotime(date('Y-m-d', strtotime('-2 day')))) {
 
                 //执行存错过程
                 $exeSql = 'EXEC B_eBayOversea_ModifyOnlineNumberOnTheIbay365';
@@ -539,13 +539,13 @@ class ApiTinyTool
             //获取结果
             $sql = "SELECT * FROM ibay365_eBayOversea_quantity_online WHERE 1=1 ";
 
-            if(isset($cond['sku']) && $cond['sku']) $sql.= " AND sku LIKE '%{$cond['sku']}%'";
-            if(isset($cond['itemId']) && $cond['itemId']) $sql.= " AND itemId LIKE '%{$cond['itemId']}%'";
-            if(isset($cond['parentSku']) && $cond['parentSku']) $sql.= " AND parentSku LIKE '%{$cond['parentSku']}%'";
-            if(isset($cond['sellerUserid']) && $cond['sellerUserid']) $sql.= " AND sellerUserid LIKE '%{$cond['sellerUserid']}%'";
-            if(isset($cond['deliveryStorename']) && $cond['deliveryStorename']) $sql.= " AND deliveryStorename LIKE '%{$cond['deliveryStorename']}%'";
-            if(isset($cond['inventory']) && $cond['inventory']) $sql.= " AND inventory = '{$cond['inventory']}'";
-            if(isset($cond['useNum']) && $cond['useNum']) $sql.= " AND useNum = '{$cond['useNum']}'";
+            if (isset($cond['sku']) && $cond['sku']) $sql .= " AND sku LIKE '%{$cond['sku']}%'";
+            if (isset($cond['itemId']) && $cond['itemId']) $sql .= " AND itemId LIKE '%{$cond['itemId']}%'";
+            if (isset($cond['parentSku']) && $cond['parentSku']) $sql .= " AND parentSku LIKE '%{$cond['parentSku']}%'";
+            if (isset($cond['sellerUserid']) && $cond['sellerUserid']) $sql .= " AND sellerUserid LIKE '%{$cond['sellerUserid']}%'";
+            if (isset($cond['deliveryStorename']) && $cond['deliveryStorename']) $sql .= " AND deliveryStorename LIKE '%{$cond['deliveryStorename']}%'";
+            if (isset($cond['inventory']) && $cond['inventory']) $sql .= " AND inventory = '{$cond['inventory']}'";
+            if (isset($cond['useNum']) && $cond['useNum']) $sql .= " AND useNum = '{$cond['useNum']}'";
 
             $list = Yii::$app->py_db->createCommand($sql)->queryAll();
 
@@ -555,20 +555,20 @@ class ApiTinyTool
                       LEFT JOIN `auth_store` s ON es.ebaySuffix=s.store
                       LEFT JOIN `auth_store_child` sc ON s.id=sc.store_id
                       LEFT JOIN `user` u ON u.id=sc.user_id WHERE u.status=10 AND platform='eBay'";
-            if(isset($cond['salesName']) && $cond['salesName']) $userSql.= " AND username LIKE '%{$cond['salesName']}%'";
+            if (isset($cond['salesName']) && $cond['salesName']) $userSql .= " AND username LIKE '%{$cond['salesName']}%'";
             $userArr = Yii::$app->db->createCommand($userSql)->queryAll();
             $data = [];
-            foreach($list as $v){
+            foreach ($list as $v) {
                 $item = $v;
-                foreach($userArr as $val){
-                    if(strtolower($val['ebayName']) == strtolower($v['sellerUserid'])){
+                foreach ($userArr as $val) {
+                    if (strtolower($val['ebayName']) == strtolower($v['sellerUserid'])) {
                         $item['salesName'] = $val['salesName'];
                     }
                 }
-                if(!isset($item['salesName'])) $item['salesName'] = '';
+                if (!isset($item['salesName'])) $item['salesName'] = '';
                 $data[] = $item;
             }
-            $data = array_filter($data,function ($v){
+            $data = array_filter($data, function ($v) {
                 return $v['salesName'] ? true : false;
             });
             return new ArrayDataProvider([
@@ -589,8 +589,8 @@ class ApiTinyTool
     /**
      * @brief 上传joom单号
      * @param $file
-     * @throws \Exception
      * @return array
+     * @throws \Exception
      */
     public static function uploadJoomTracking($file)
     {
@@ -610,9 +610,9 @@ class ApiTinyTool
             $row['createDate'] = $createDate;
             $row['updateDate'] = $createDate;
             $row['isDone'] = 0;
-            $task->setAttributes($row,false);
-            if(!$task->save()) {
-                throw new \Exception('上传失败！', $code='400');
+            $task->setAttributes($row, false);
+            if (!$task->save()) {
+                throw new \Exception('上传失败！', $code = '400');
             }
         }
         return ['上传成功'];
@@ -625,9 +625,9 @@ class ApiTinyTool
      */
     public static function downLoadJoomTrackingTemplate()
     {
-        $data = [['订单编号' =>'', '物流单号' => '', '承运商名称' => '', '是否合并单号(1代表合并订单，0代表非合并订单)' => '']];
+        $data = [['订单编号' => '', '物流单号' => '', '承运商名称' => '', '是否合并单号(1代表合并订单，0代表非合并订单)' => '']];
         $fileName = 'JoomTrackingTemplate';
-        ExportTools::toExcelOrCsv($fileName, $data=$data, $type='Xlsx');
+        ExportTools::toExcelOrCsv($fileName, $data = $data, $type = 'Xlsx');
     }
 
 
@@ -639,11 +639,11 @@ class ApiTinyTool
     public static function getTaskJoomTracking($condition)
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-        $fieldsFilter = ['like' =>['creator', 'tradeNid', 'trackNumber', 'expressName'], 'equal' => ['isDone']];
+        $fieldsFilter = ['like' => ['creator', 'tradeNid', 'trackNumber', 'expressName'], 'equal' => ['isDone']];
         $timeFilter = ['createDate', 'updateDate'];
         $query = TaskJoomTracking::find();
-        $query = Helper::generateFilter($query,$fieldsFilter,$condition);
-        $query = Helper::timeFilter($query,$timeFilter,$condition);
+        $query = Helper::generateFilter($query, $fieldsFilter, $condition);
+        $query = Helper::timeFilter($query, $timeFilter, $condition);
         $query->orderBy('id DESC');
         $provider = new ActiveDataProvider([
             'query' => $query,
@@ -661,7 +661,8 @@ class ApiTinyTool
      * Author: henry
      * @return array|ArrayDataProvider
      */
-    public static function getKeywordGoodsList($cond){
+    public static function getKeywordGoodsList($cond)
+    {
         try {
             $sql = "SELECT * FROM proCenter.oa_ebayKeyword WHERE 1=1";
             if (isset($cond['keyword']) && $cond['keyword']) $sql .= " AND keyword LIKE '%{$cond['keyword']}%' ";
@@ -693,11 +694,12 @@ class ApiTinyTool
      * Author: henry
      * @return array|ArrayDataProvider
      */
-    public static function getKeywordGoodsListFromShopElf($condition){
-        if (!(isset($condition['goodsCode']) && $condition['goodsCode']) && !(isset($condition['goodsName']) && $condition['goodsName'])){
+    public static function getKeywordGoodsListFromShopElf($condition)
+    {
+        if (!(isset($condition['goodsCode']) && $condition['goodsCode']) && !(isset($condition['goodsName']) && $condition['goodsName'])) {
             return [];
         }
-        try{
+        try {
             $sql = "SELECT goodsCode,goodsName,salerName AS developer,sum(goodsprice)/count(goodsCode) AS costPrice,round(sum(weight)/count(goodsCode),0) AS weight 
                     FROM Y_R_tStockingWaring WHERE 1=1 ";
             if (isset($condition['goodsCode']) && $condition['goodsCode']) $sql .= " AND goodsCode LIKE '%{$condition['goodsCode']}%'";
@@ -711,7 +713,7 @@ class ApiTinyTool
                 ],
             ]);
 
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
@@ -728,7 +730,8 @@ class ApiTinyTool
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    public static function exportKeyword($cond){
+    public static function exportKeyword($cond)
+    {
         $sql = "SELECT * FROM proCenter.oa_ebayKeyword WHERE 1=1 ";
         if (isset($cond['keyword']) && $cond['keyword']) $sql .= " AND keyword LIKE '%{$cond['keyword']}%' ";
         if (isset($cond['keyword2']) && $cond['keyword2']) $sql .= " AND keyword2 LIKE '%{$cond['keyword2']}%' ";
@@ -776,24 +779,25 @@ class ApiTinyTool
      * @return array|bool
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
-    public static function importKeyword(){
+    public static function importKeyword()
+    {
         $file = $_FILES['file'];
         if (!$file) {
             return ['code' => 400, 'message' => 'The file can not be empty!'];
         }
         //判断文件后缀
         $extension = ApiSettings::get_extension($file['name']);
-        if($extension != '.xlsx' && $extension != '.xls') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' or 'xls' format"];
+        if ($extension != '.xlsx' && $extension != '.xls') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' or 'xls' format"];
 
         //文件上传
         $result = ApiSettings::file($file, 'keyword');
         if (!$result) {
             return ['code' => 400, 'message' => 'File upload failed'];
-        }else{
+        } else {
             //获取上传excel文件的内容并保存
-            if($extension === '.xlsx'){
+            if ($extension === '.xlsx') {
                 $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
-            }else{
+            } else {
                 $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
             }
             $spreadsheet = $reader->load(Yii::$app->basePath . $result);
@@ -811,21 +815,21 @@ class ApiTinyTool
                     $data['costPrice'] = $sheet->getCell("F" . $i)->getValue();
                     $data['weight'] = $sheet->getCell("G" . $i)->getValue();
                     //根据关键词获取链接
-                    list($url1,$url2) = ApiTinyTool::handelKeyword($data['keyword']);
+                    list($url1, $url2) = ApiTinyTool::handelKeyword($data['keyword']);
                     $data['ukUrl'] = $url1;
                     $data['auUrl'] = $url2;
-                    list($url3,$url4) = ApiTinyTool::handelKeyword($data['keyword2']);
+                    list($url3, $url4) = ApiTinyTool::handelKeyword($data['keyword2']);
                     $data['ukUrl2'] = $url3;
                     $data['auUrl2'] = $url4;
                     //根据商品编码获取平均价格或重量
                     $sql = "SELECT goodsCode,goodsName,salerName AS developer,sum(goodsprice)/count(goodsCode) AS costPrice,round(sum(weight)/count(goodsCode),0) AS weight 
                     FROM Y_R_tStockingWaring WHERE  goodsCode LIKE '%{$data['goodsCode']}%' GROUP BY goodsCode,goodsName,salerName";
                     $priceArr = Yii::$app->py_db->createCommand($sql)->queryOne();
-                    if($priceArr){
-                        $data['goodsName'] = $data['goodsName'] ? : $priceArr['goodsName'];
-                        $data['developer'] = $data['developer'] ? : $priceArr['developer'];
-                        $data['costPrice'] = $data['costPrice'] ? : $priceArr['costPrice'];
-                        $data['weight'] = $data['weight'] ? : $priceArr['weight'];
+                    if ($priceArr) {
+                        $data['goodsName'] = $data['goodsName'] ?: $priceArr['goodsName'];
+                        $data['developer'] = $data['developer'] ?: $priceArr['developer'];
+                        $data['costPrice'] = $data['costPrice'] ?: $priceArr['costPrice'];
+                        $data['weight'] = $data['weight'] ?: $priceArr['weight'];
                     }
 
                     //保存数据
@@ -834,7 +838,7 @@ class ApiTinyTool
                         $model = new OaEbayKeyword();
                     }
                     $model->setAttributes($data);
-                    if(!$model->save()){
+                    if (!$model->save()) {
                         //print_r($model->getErrors());exit;
                         throw new \Exception('save keyword data failed!');
                     }
@@ -842,7 +846,7 @@ class ApiTinyTool
                 return true;
             } catch (\Exception $e) {
                 return [
-                    'code' =>400,
+                    'code' => 400,
                     'message' => $e->getMessage()
                 ];
             }
@@ -858,15 +862,15 @@ class ApiTinyTool
     public static function getJoomNullExpressFare($condition)
     {
         $sql = 'oa_p_joomNullExpressFare :beginDate';
-        $beginDate = date('Y-m-d',strtotime('-30day')); // 默认查询近30天
+        $beginDate = date('Y-m-d', strtotime('-30day')); // 默认查询近30天
         Yii::$app->py_db->createCommand($sql)->bindValues([':beginDate' => $beginDate])->execute();
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $currentPage = isset($condition['currentPage']) ? $condition['currentPage'] : 1;
-        $fieldsFilter = ['like' =>['suffix', 'shipToCountryCode', 'expressName', 'sku']];
+        $fieldsFilter = ['like' => ['suffix', 'shipToCountryCode', 'expressName', 'sku']];
         $timeFilter = ['orderTime'];
-        $query = OauthJoomUpdateExpressFare::find()->select(['tradeNid','suffix', 'shipToCountryCode','orderTime', 'expressName', 'sku']);
-        $query = Helper::generateFilter($query,$fieldsFilter,$condition);
-        $query = Helper::timeFilter($query,$timeFilter,$condition, 'mssql');
+        $query = OauthJoomUpdateExpressFare::find()->select(['tradeNid', 'suffix', 'shipToCountryCode', 'orderTime', 'expressName', 'sku']);
+        $query = Helper::generateFilter($query, $fieldsFilter, $condition);
+        $query = Helper::timeFilter($query, $timeFilter, $condition, 'mssql');
         $query->orderBy('tradeNid DESC');
         $provider = new ActiveDataProvider([
             'query' => $query,
@@ -906,54 +910,52 @@ class ApiTinyTool
         $username = Yii::$app->user->identity->username;
         $userList = ApiUser::getUserList($username);
         $defaultUsername = [];
-        if(!$isAdmin) {
+        if (!$isAdmin) {
             $defaultUsername = $userList;
         }
 
         // 默认查询条件
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 100000;
-        $departmentFilter = isset($condition['department']) ? $condition['department']: [];
-        $usernameFilter = isset($condition['username']) && !empty($condition['username']) ? $condition['username']: $defaultUsername;
-        $accountFilter = isset($condition['accountName']) ? $condition['accountName']: [];
-        $balanceTimeFilter = isset($condition['balanceTime']) ? $condition['balanceTime']: '';
+        $departmentFilter = isset($condition['department']) ? $condition['department'] : [];
+        $usernameFilter = isset($condition['username']) && !empty($condition['username']) ? $condition['username'] : $defaultUsername;
+        $accountFilter = isset($condition['accountName']) ? $condition['accountName'] : [];
+        $balanceTimeFilter = isset($condition['balanceTime']) ? $condition['balanceTime'] : '';
         $department = new Expression('case when ad.parent=0 then ad.department else adp.department end');
         $balanceTime = new Expression('ifNull(ebt.balanceTime, "未知")');
         $query = EbayBalance::find()->alias('eb')->where(['isUsed' => 0])
             ->asArray()
             ->select([
-                'eb.id','eb.accountName','username', 'department' => $department, 'balanceTime' => $balanceTime,
-                'eb.balance','currency','updatedDate'])
-            ->leftJoin('auth_store as str','str.store=eb.accountName')
-            ->leftJoin('auth_store_child as stc','str.id=stc.store_id')
-            ->leftJoin('`user` as usr','usr.id=stc.user_id')
-            ->leftJoin('`auth_department_child` as adc','usr.id=adc.user_id')
-            ->leftJoin('`auth_department` as ad ','ad.id=adc.department_id')
-            ->leftJoin('`auth_department` as adp ','ad.parent=adp.id')
-            ->leftJoin('`ebay_balance_time` as ebt ','ebt.account=eb.accountName')
-        ;
+                'eb.id', 'eb.accountName', 'username', 'department' => $department, 'balanceTime' => $balanceTime,
+                'eb.balance', 'currency', 'updatedDate'])
+            ->leftJoin('auth_store as str', 'str.store=eb.accountName')
+            ->leftJoin('auth_store_child as stc', 'str.id=stc.store_id')
+            ->leftJoin('`user` as usr', 'usr.id=stc.user_id')
+            ->leftJoin('`auth_department_child` as adc', 'usr.id=adc.user_id')
+            ->leftJoin('`auth_department` as ad ', 'ad.id=adc.department_id')
+            ->leftJoin('`auth_department` as adp ', 'ad.parent=adp.id')
+            ->leftJoin('`ebay_balance_time` as ebt ', 'ebt.account=eb.accountName');
         //部门筛选
         if (!empty($departmentFilter)) {
             $query->andWhere(['or',
                 ['in', 'ad.department', $departmentFilter],
                 ['in', 'adp.department', $departmentFilter],
-                ]);
+            ]);
         }
         // 账号筛选
-        if(!empty($accountFilter)) {
-            $query->andWhere(['in','accountName',$accountFilter]);
+        if (!empty($accountFilter)) {
+            $query->andWhere(['in', 'accountName', $accountFilter]);
         }
         //销售筛选
-        if(!empty($usernameFilter)) {
+        if (!empty($usernameFilter)) {
             $query->andWhere(['in', 'username', $usernameFilter]);
         }
         //账单时间筛选
         if (!empty($balanceTimeFilter)) {
-           if ($balanceTimeFilter === '未知') {
-               $query->andWhere(['is','balanceTime', new Expression('NULL')]);
-           }
-           else {
-               $query->andWhere(['like','balanceTime', $balanceTimeFilter]);
-           }
+            if ($balanceTimeFilter === '未知') {
+                $query->andWhere(['is', 'balanceTime', new Expression('NULL')]);
+            } else {
+                $query->andWhere(['like', 'balanceTime', $balanceTimeFilter]);
+            }
         }
         $filterFields = ['like' => ['currency']];
         $filterTime = ['updatedDate'];
@@ -961,9 +963,9 @@ class ApiTinyTool
         $query = Helper::timeFilter($query, $filterTime, $condition);
         $provider = new ActiveDataProvider([
             'query' => $query,
-            'sort'=> [
-                'defaultOrder' => ['updatedDate'=>SORT_ASC],
-                'attributes' => ['id','balance','accountName', 'currency','username','balanceTime','department','updatedDate'],
+            'sort' => [
+                'defaultOrder' => ['updatedDate' => SORT_ASC],
+                'attributes' => ['id', 'balance', 'accountName', 'currency', 'username', 'balanceTime', 'department', 'updatedDate'],
             ],
             'pagination' => [
                 'pageSize' => $pageSize
@@ -985,15 +987,14 @@ class ApiTinyTool
         $userList = ApiUser::getUserList($username);
         $query = (new Query())
             ->select(['username', 'department' => $department, 'store'])->from('auth_store as str')
-            ->leftJoin('auth_store_child as stc','str.id=stc.store_id')
-            ->leftJoin('`user` as usr','usr.id=stc.user_id')
-            ->leftJoin('`auth_department_child` as adc','usr.id=adc.user_id')
-            ->leftJoin('`auth_department` as ad ','ad.id=adc.department_id')
-            ->leftJoin('`auth_department` as adp ','ad.parent=adp.id')
-            ->where(['str.platform' => 'eBay'])
-        ;
-        if(!$isAdmin) {
-            $query->andWhere(['in','username', $userList]);
+            ->leftJoin('auth_store_child as stc', 'str.id=stc.store_id')
+            ->leftJoin('`user` as usr', 'usr.id=stc.user_id')
+            ->leftJoin('`auth_department_child` as adc', 'usr.id=adc.user_id')
+            ->leftJoin('`auth_department` as ad ', 'ad.id=adc.department_id')
+            ->leftJoin('`auth_department` as adp ', 'ad.parent=adp.id')
+            ->where(['str.platform' => 'eBay']);
+        if (!$isAdmin) {
+            $query->andWhere(['in', 'username', $userList]);
         }
         return $query->all();
     }
@@ -1011,13 +1012,13 @@ class ApiTinyTool
         // 默认查询条件
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 100000;
         $query = EbayBalanceTime::find()->asArray();
-        $filterFields = ['like' => ['account','balanceTime']];
+        $filterFields = ['like' => ['account', 'balanceTime']];
         $query = Helper::generateFilter($query, $filterFields, $condition);
         return new ActiveDataProvider([
             'query' => $query,
-            'sort'=> [
-                'defaultOrder' => ['account'=>SORT_ASC],
-                'attributes' => ['id','account','balanceTime'],
+            'sort' => [
+                'defaultOrder' => ['account' => SORT_ASC],
+                'attributes' => ['id', 'account', 'balanceTime'],
             ],
             'pagination' => [
                 'pageSize' => $pageSize
@@ -1048,7 +1049,7 @@ class ApiTinyTool
     public static function ebayBalanceTimeDelete($condition)
     {
         EbayBalanceTime::deleteAll(['id' => $condition['id']]);
-        return ['success to delete '. $condition['id']];
+        return ['success to delete ' . $condition['id']];
     }
 
     /**
@@ -1077,11 +1078,10 @@ class ApiTinyTool
     }
 
 
-
-
-    public static function handelKeyword($keyword){
+    public static function handelKeyword($keyword)
+    {
         $keyword = explode(' ', $keyword);
-        if($keyword){
+        if ($keyword) {
             $url1 = 'https://www.ebay.co.uk/sch/i.html?_from=R40&_nkw=';
             $url2 = 'https://www.ebay.com.au/sch/i.html?_from=R40&_nkw=';
             foreach ($keyword as $k => $value) {
@@ -1095,7 +1095,7 @@ class ApiTinyTool
             }
             $url1 .= '&_sacat=0&_dmd=1&rt=nc';
             $url2 .= '&_sacat=0&_dmd=1&rt=nc';
-        }else{
+        } else {
             $url1 = $url2 = '';
         }
         return [$url1, $url2];
@@ -1108,7 +1108,7 @@ class ApiTinyTool
     private static function isAdmin()
     {
         $userRole = Yii::$app->authManager->getRolesByUser(Yii::$app->user->getId());
-        if (array_key_exists('超级管理员',$userRole)) {
+        if (array_key_exists('超级管理员', $userRole)) {
             return True;
         }
         return False;
@@ -1124,10 +1124,12 @@ class ApiTinyTool
      * @return array
      * @throws Exception
      */
-    public static function modifyOrderLogisticsWay(){
+    public static function modifyOrderLogisticsWay()
+    {
         $doc = Yii::$app->db->createCommand('select * from cache_order_zip_code')->queryAll();
-        $id = Yii::$app->py_db->createCommand("select NID from B_LogisticWay WHERE name LIKE 'Royal Mail - Tracked 48 Parcel%'")->queryScalar();
-        $sql = "SELECT m.nid FROM P_Trade (nolock) m
+        $id = Yii::$app->py_db->createCommand("select nid from B_LogisticWay WHERE name LIKE 'Royal Mail - Tracked 48 Parcel%'")->queryScalar();
+
+        $sql = "SELECT m.nid,totalWeight FROM P_Trade (nolock) m
                 LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
                 LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
                 WHERE FilterFlag IN (5,6) AND e.name LIKE '%万邑通%' AND l.name LIKE 'Hermes%' ";
@@ -1147,9 +1149,11 @@ class ApiTinyTool
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
 //            var_dump(count($data));exit;
             foreach ($data as $v) {
-                $res = Yii::$app->py_db->createCommand()->update('p_trade',['logicsWayNID' => $id],['NID' => $v['nid']])->execute();
-                if(!$res){
-                    throw new Exception('Failed to update logics way of order '.$v['nid']);
+                $shipFee = self::getOrderShipFee($v, $id);
+//                var_dump($shipFee);exit;
+                $res = Yii::$app->py_db->createCommand()->update('p_trade', ['logicsWayNID' => $id,'ExpressFare' => $shipFee], ['NID' => $v['nid']])->execute();
+                if (!$res) {
+                    throw new Exception('Failed to update logics way of order ' . $v['nid']);
                 }
             }
             $transaction->commit();
@@ -1166,6 +1170,30 @@ class ApiTinyTool
                 'message' => $e->getMessage()
             ];
         }
+    }
+
+    /** 获取订单的指定物流方式的物流费用
+     * @param $order
+     * @param $logisticWayId
+     * Date: 2020-07-16 14:39
+     * Author: henry
+     * @return float|int
+     */
+    private static function getOrderShipFee($order, $logisticWayId)
+    {
+        $sql = "SELECT discount,bf.* FROM B_LogisticWay(nolock) bl 
+                LEFT JOIN B_EmsFare(nolock) bf ON bf.LogisticWayID=bl.nid 
+                WHERE used =0 AND bl.nid={$logisticWayId} ORDER BY beginWeight DESC";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $totalWeight = $order['totalWeight'] * 1000;
+        $fee = 0;
+        foreach ($data as $v) {
+            if ($totalWeight >= $v['beginWeight']) {
+                $fee = (ceil(($totalWeight - $v['BeginWeight']) / $v['AddWeight']) * $v['AddMoney'] + $v['BeginMoneyGoods']) *
+                    ($v['RegionRate'] ? $v['RegionRate'] : $v['discount']) * 0.01 + $v['BeginMoneyFile'];
+            }
+        }
+        return $fee;
     }
 
 }
