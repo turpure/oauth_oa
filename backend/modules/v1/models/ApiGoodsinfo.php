@@ -1284,16 +1284,18 @@ class ApiGoodsinfo
      * @return array
      * @throws \Exception
      */
-    public static function preExportWishData($id)
+    public static function preExportWishData($id, $type = '')
     {
         $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
         $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
         $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
         $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
         $wishAccounts = OaWishSuffix::find()->where(['like', 'parentCategory', $goods['cate']])
-            ->orWhere(["IFNULL(parentCategory,'')" => ''])
-            ->andWhere(['isIbay' => 0])
-            ->asArray()->all();
+            ->orWhere(["IFNULL(parentCategory,'')" => '']);
+        if(!$type){
+            $wishAccounts->andWhere(['isIbay' => 0]);
+        }
+        $wishAccounts = $wishAccounts->asArray()->all();
         $keyWords = static::preKeywords($wishInfo);
 
         $row = [
