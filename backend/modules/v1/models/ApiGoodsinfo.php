@@ -1031,6 +1031,10 @@ class ApiGoodsinfo
         // 每个产品生成标题
         $goodsInfo = static::getLazadaTitle($products);
 
+        // 每个产品从普源获取成本价等信息
+
+        $skuCostPrice  = static::getGoodsCostPrice($products);
+
         # 特殊字段处理
         foreach ($products as $ele) {
 
@@ -1040,10 +1044,36 @@ class ApiGoodsinfo
             # 短描述
             $ele['短描述'] = $goodsInfo[$ele['商品编码']]['shortDescription'];
             $ele['长描述'] = $goodsInfo[$ele['商品编码']]['longDescription'];
+
+            # SKu 信息
+            $ele['成本价'] = $skuCostPrice[$ele['SKU']]['CostPrice'];
+            $ele['重量'] = $skuCostPrice[$ele['SKU']]['Weight'];
             $out[] = $ele;
         }
         $ret['data'] = $out;
         return $ret;
+
+    }
+
+
+    public static function getGoodsCostPrice($products)
+    {
+        $goodsCodes = [];
+        foreach ($products as $pt) {
+            $goodsCodes[] = "'" . $pt['SKU'] ."'";
+        }
+
+        $goodsCodes = implode(',', $goodsCodes);
+
+        $sql = 'select  CostPrice, GoodsSKUStatus,(Weight /1000) as Weight, SKU from b_goodsSKu(nolock) where sku in (' . $goodsCodes . ')';
+        $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $out = [];
+        foreach ($ret as $ele) {
+            if(!array_key_exists($ele['SKU'], $out)) {
+                $out[$ele['SKU']] = $ele;
+            }
+        }
+        return $out;
 
     }
 
