@@ -1258,7 +1258,7 @@ class TinyToolController extends AdminController
      */
     public function actionStockSeller(){
         $sql = "SELECT seller1,SUM(useNum) AS useNum,SUM(costMoney) AS costMoney,sum(30DaySellCount) AS 30DaySellCount,
-                ROUND(sum(30DaySellCount)/30,1) AS ave,ROUND(sum(30DayCostMoney)/30,4) AS aveCostMoney,
+                ROUND(sum(30DaySellCount)/30,1) AS ave,sum(30DayCostMoney) AS 30DayCostMoney,ROUND(sum(30DayCostMoney)/30,4) AS aveCostMoney,
 			    CASE WHEN sum(30DaySellCount) = 0 AND SUM(useNum) > 0 THEN 10000 ELSE ROUND(SUM(useNum)*30/sum(30DaySellCount),1) END AS sellDays,
 			    CASE WHEN sum(30DayCostMoney) = 0 AND SUM(costMoney) > 0 THEN 10000 ELSE ROUND(SUM(costMoney)*30/sum(30DayCostMoney),1) END AS costMoneySellDays
                 FROM (
