@@ -1188,7 +1188,7 @@ class ApiTinyTool
         $totalWeight = $order['totalWeight'] * 1000;
         $fee = 0;
         foreach ($data as $v) {
-            if ($totalWeight >= $v['beginWeight']) {
+            if ($totalWeight >= $v['BeginWeight']) {
                 $fee = (ceil(($totalWeight - $v['BeginWeight']) / $v['AddWeight']) * $v['AddMoney'] + $v['BeginMoneyGoods']) *
                     ($v['RegionRate'] ? $v['RegionRate'] : $v['discount']) * 0.01 + $v['BeginMoneyFile'];
                 break;
