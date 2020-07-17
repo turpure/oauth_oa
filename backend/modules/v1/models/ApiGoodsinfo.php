@@ -1069,15 +1069,15 @@ class ApiGoodsinfo
             $ele['MY售价'] = static::getGoodsSalePrice($ele,$siteInfo['MY'],$packageInfo, $expressInfo);
             $ele['MY原价'] = round($ele['MY售价'] * 1.8,2);
             $ele['PH售价'] = static::getGoodsSalePrice($ele, $siteInfo['PH'],$packageInfo, $expressInfo);
-            $ele['PH原价'] = round($ele['PH售价'] * 18, 2);
+            $ele['PH原价'] = round($ele['PH售价'] * 1.8, 2);
             $ele['ID售价'] = floor(static::getGoodsSalePrice($ele, $siteInfo['ID'],$packageInfo, $expressInfo));
-            $ele['ID原价'] = floor($ele['PH售价'] * 18);
+            $ele['ID原价'] = floor($ele['ID售价'] * 1.8);
             $ele['TH售价'] = static::getGoodsSalePrice($ele, $siteInfo['TH'],$packageInfo ,$expressInfo);
-            $ele['TH原价'] = round($ele['TH售价'] * 18, 2);
+            $ele['TH原价'] = round($ele['TH售价'] * 1.8, 2);
             $ele['VN售价'] = floor(static::getGoodsSalePrice($ele, $siteInfo['VN'],$packageInfo, $expressInfo));
-            $ele['VN原价'] = floor($ele['VN售价'] * 18);
+            $ele['VN原价'] = floor($ele['VN售价'] * 1.8);
             $ele['SG售价'] = static::getGoodsSalePrice($ele, $siteInfo['SG'],$packageInfo, $expressInfo);
-            $ele['SG原价'] = round($ele['SG售价'] * 18, 2);
+            $ele['SG原价'] = round($ele['SG售价'] * 1.8, 2);
             $out[] = $ele;
         }
         $ret['data'] = $out;
