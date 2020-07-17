@@ -1044,6 +1044,13 @@ class ApiGoodsinfo
 
         $skuCostPrice  = static::getGoodsCostPrice($products);
 
+
+        // 包装信息
+        $packageInfo = static::getPackageInfo();
+
+        // 物流信息
+        $expressInfo = static::getGoodsExpressInfo();
+
         # 特殊字段处理
         foreach ($products as $ele) {
 
@@ -1059,17 +1066,17 @@ class ApiGoodsinfo
             $ele['重量'] = $skuCostPrice[$ele['SKU']]['Weight'];
 
             # 售价信息
-            $ele['MY售价'] = static::getGoodsSalePrice($ele,$siteInfo['MY']);
+            $ele['MY售价'] = static::getGoodsSalePrice($ele,$siteInfo['MY'],$packageInfo, $expressInfo);
             $ele['MY原价'] = round($ele['MY售价'] * 1.8,2);
-            $ele['PH售价'] = static::getGoodsSalePrice($ele, $siteInfo['PH']);
+            $ele['PH售价'] = static::getGoodsSalePrice($ele, $siteInfo['PH'],$packageInfo, $expressInfo);
             $ele['PH原价'] = round($ele['PH售价'] * 18, 2);
-            $ele['ID售价'] = floor(static::getGoodsSalePrice($ele, $siteInfo['ID']));
+            $ele['ID售价'] = floor(static::getGoodsSalePrice($ele, $siteInfo['ID'],$packageInfo, $expressInfo));
             $ele['ID原价'] = floor($ele['PH售价'] * 18);
-            $ele['TH售价'] = static::getGoodsSalePrice($ele, $siteInfo['TH']);
+            $ele['TH售价'] = static::getGoodsSalePrice($ele, $siteInfo['TH'],$packageInfo ,$expressInfo);
             $ele['TH原价'] = round($ele['TH售价'] * 18, 2);
-            $ele['VN售价'] = floor(static::getGoodsSalePrice($ele, $siteInfo['VN']));
+            $ele['VN售价'] = floor(static::getGoodsSalePrice($ele, $siteInfo['VN'],$packageInfo, $expressInfo));
             $ele['VN原价'] = floor($ele['VN售价'] * 18);
-            $ele['SG售价'] = static::getGoodsSalePrice($ele, $siteInfo['SG']);
+            $ele['SG售价'] = static::getGoodsSalePrice($ele, $siteInfo['SG'],$packageInfo, $expressInfo);
             $ele['SG原价'] = round($ele['SG售价'] * 18, 2);
             $out[] = $ele;
         }
@@ -1080,7 +1087,7 @@ class ApiGoodsinfo
 
 
     /**
-     * 获取商品信息
+     * 获取包装信息
       * @return array
      */
     public static function getPackageInfo()
@@ -1097,14 +1104,16 @@ class ApiGoodsinfo
      * 计算SKU售价
      * @param $SKU
      * @param $siteInfo
+     * @param $packageInfo
+     * @param $allExpressInfo
      * @return float|int
      */
-    public static function getGoodsSalePrice($SKU,$siteInfo)
+    public static function getGoodsSalePrice($SKU,$siteInfo,$packageInfo, $allExpressInfo)
     {
         $salePrice = 0;
-        $expressFee = static::getGoodsExpressFee($SKU,$site=$siteInfo['site']);
+        $expressFee = static::getGoodsExpressFee($SKU,$site=$siteInfo['site'],$packageInfo, $allExpressInfo);
         $costPrice = $SKU['成本价'];
-        $packageFee = static::getPackageInfo()[$SKU['包装规格']]['costPrice'];
+        $packageFee = $packageInfo[$SKU['包装规格']]['costPrice'];
         $transactionFeeRate = $siteInfo['payFeeRate'];
         $profitRate = 0.08;
         $totalFee = $expressFee + $costPrice + $packageFee;
@@ -1112,19 +1121,36 @@ class ApiGoodsinfo
         return round($salePrice / $siteInfo['exchange'],2);
     }
 
+
+    /**
+     * 各个站点的物流信息
+     */
+    public static function getGoodsExpressInfo()
+    {
+        $sites = ['马来西亚','菲律宾','印尼','泰国','新加坡','越南'];
+        $out = [];
+        foreach ($sites as $st ) {
+            $sql = "SELECT name,Discount,bf.BeginWeight, bf.AddWeight, bf.AddMoney,bf.BeginMoneyGoods FROM B_LogisticWay(nolock) bl left join B_EmsFare(nolock) bf on bf.LogisticWayID=bl.nid where name like 'LGS-". $st ."' order by BeginWeight" ;
+            $expressInfo = Yii::$app->py_db->createCommand($sql)->queryAll();
+            $out[$st] = $expressInfo;
+        }
+        return $out;
+    }
+
     /**
      * lazada运费
      * @param $SKU
      * @param $site
+     * @param $packageInfo
+     * @param $allExpressInfo
      * @return mixed;
      */
-    public static function getGoodsExpressFee($SKU, $site = '越南')
+    public static function getGoodsExpressFee($SKU, $site, $packageInfo, $allExpressInfo)
     {
-        $sql = "SELECT name,Discount,bf.* FROM B_LogisticWay(nolock) bl left join B_EmsFare(nolock) bf on bf.LogisticWayID=bl.nid where name like 'LGS-". $site ."' order by BeginWeight" ;
+        $expressInfo = $allExpressInfo[$site];
         $weight = $SKU['重量'] * 1000;
-        $packageWeight = static::getPackageInfo()[$SKU['包装规格']]['weight'];
+        $packageWeight = $packageInfo[$SKU['包装规格']]['weight'];
         $totalWeight = $weight + $packageWeight;
-        $expressInfo = Yii::$app->py_db->createCommand($sql)->queryAll();
         $mine = $totalWeight - $expressInfo[0]['BeginWeight'];
         $i =0;
          foreach ($expressInfo as $ep) {
