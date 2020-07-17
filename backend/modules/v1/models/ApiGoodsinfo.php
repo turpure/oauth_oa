@@ -1063,7 +1063,7 @@ class ApiGoodsinfo
             $ele['MY原价'] = round($ele['MY售价'] * 1.8,2);
             $ele['PH售价'] = static::getGoodsSalePrice($ele, $siteInfo['PH']);
             $ele['PH原价'] = round($ele['PH售价'] * 18, 2);
-            $ele['ID售价'] = floor(static::getGoodsSalePrice($ele, $siteInfo['ID']);
+            $ele['ID售价'] = floor(static::getGoodsSalePrice($ele, $siteInfo['ID']));
             $ele['ID原价'] = floor($ele['PH售价'] * 18);
             $ele['TH售价'] = static::getGoodsSalePrice($ele, $siteInfo['TH']);
             $ele['TH原价'] = round($ele['TH售价'] * 18, 2);
