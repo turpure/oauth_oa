@@ -1060,11 +1060,17 @@ class ApiGoodsinfo
 
             # 售价信息
             $ele['MY售价'] = static::getGoodsSalePrice($ele,$siteInfo['MY']);
+            $ele['MY原价'] = round($ele['MY售价'] * 1.8,2);
             $ele['PH售价'] = static::getGoodsSalePrice($ele, $siteInfo['PH']);
-            $ele['ID售价'] = static::getGoodsSalePrice($ele, $siteInfo['ID']);
+            $ele['PH原价'] = round($ele['PH售价'] * 18, 2);
+            $ele['ID售价'] = floor(static::getGoodsSalePrice($ele, $siteInfo['ID']);
+            $ele['ID原价'] = floor($ele['PH售价'] * 18);
             $ele['TH售价'] = static::getGoodsSalePrice($ele, $siteInfo['TH']);
-            $ele['VN售价'] = static::getGoodsSalePrice($ele, $siteInfo['VN']);
+            $ele['TH原价'] = round($ele['TH售价'] * 18, 2);
+            $ele['VN售价'] = floor(static::getGoodsSalePrice($ele, $siteInfo['VN']));
+            $ele['VN原价'] = floor($ele['VN售价'] * 18);
             $ele['SG售价'] = static::getGoodsSalePrice($ele, $siteInfo['SG']);
+            $ele['SG原价'] = round($ele['SG售价'] * 18, 2);
             $out[] = $ele;
         }
         $ret['data'] = $out;
@@ -1103,7 +1109,7 @@ class ApiGoodsinfo
         $profitRate = 0.08;
         $totalFee = $expressFee + $costPrice + $packageFee;
         $salePrice = $totalFee / (1 - $profitRate - $transactionFeeRate);
-        return $salePrice / $siteInfo['exchange'];
+        return round($salePrice / $siteInfo['exchange'],2);
     }
 
     /**
