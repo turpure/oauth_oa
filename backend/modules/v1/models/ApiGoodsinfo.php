@@ -1092,7 +1092,7 @@ class ApiGoodsinfo
      */
     public static function getPackageInfo()
     {
-        $sql = 'select PackName, CostPrice, Weight from B_PackInfo order by nid';
+        $sql = 'select PackName, CostPrice, 0 as Weight from B_PackInfo order by nid';
         $info = Yii::$app->py_db->createCommand($sql)->queryAll();
         $ret = [];
         foreach ($info as $ele) {
@@ -1113,6 +1113,8 @@ class ApiGoodsinfo
         $salePrice = 0;
         $expressFee = static::getGoodsExpressFee($SKU,$site=$siteInfo['site'],$packageInfo, $allExpressInfo);
         $costPrice = $SKU['成本价'];
+        #包装费没用
+
         $packageFee = $packageInfo[$SKU['包装规格']]['costPrice'];
         $transactionFeeRate = $siteInfo['payFeeRate'];
         $profitRate = 0.08;
