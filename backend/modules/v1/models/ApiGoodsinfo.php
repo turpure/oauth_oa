@@ -987,6 +987,15 @@ class ApiGoodsinfo
      */
     public static function preExportLazada($ids)
     {
+        $payFeeFixedRate = 0.04;
+        $siteInfo = [
+            'MY' => ['site' => '马来西亚', 'exchange' => '1.575', 'payFeeRate' => 0.02 + $payFeeFixedRate ],
+            'PH' => ['site' => '菲律宾', 'exchange' => '0.125', 'payFeeRate' => 0.02 + $payFeeFixedRate ],
+            'ID' => ['site' => '印尼', 'exchange' => '0.000454', 'payFeeRate' => 0.02 + $payFeeFixedRate ],
+            'TH' => ['site' => '泰国', 'exchange' => '0.2', 'payFeeRate' => 0.02 + $payFeeFixedRate ],
+            'SG' => ['site' => '新加坡', 'exchange' => '4.8', 'payFeeRate' => 0.02 + $payFeeFixedRate ],
+            'VN' => ['site' => '越南', 'exchange' => '0.0003', 'payFeeRate' => 0.02 + $payFeeFixedRate ],
+        ];
         $ids = implode(',', $ids);
         $sql = "select og.createDate as '开发日期',cate as '一级类目',subCate as '二级类目', goodsCode as '商品编码', goodsStatus as '商品状态',".
             "goodsName as '商品名称',".
@@ -1046,6 +1055,13 @@ class ApiGoodsinfo
 
         $skuCostPrice  = static::getGoodsCostPrice($products);
 
+
+        // 包装信息
+        $packageInfo = static::getPackageInfo();
+
+        // 物流信息
+        $expressInfo = static::getGoodsExpressInfo();
+
         # 特殊字段处理
         foreach ($products as $ele) {
 
@@ -1059,6 +1075,20 @@ class ApiGoodsinfo
             # SKu 信息
             $ele['成本价'] = $skuCostPrice[$ele['SKU']]['CostPrice'];
             $ele['重量'] = $skuCostPrice[$ele['SKU']]['Weight'];
+
+            # 售价信息
+            $ele['MY售价'] = static::getGoodsSalePrice($ele,$siteInfo['MY'],$packageInfo, $expressInfo);
+            $ele['MY原价'] = round($ele['MY售价'] * 1.8,2);
+            $ele['PH售价'] = static::getGoodsSalePrice($ele, $siteInfo['PH'],$packageInfo, $expressInfo);
+            $ele['PH原价'] = round($ele['PH售价'] * 1.8, 2);
+            $ele['ID售价'] = floor(static::getGoodsSalePrice($ele, $siteInfo['ID'],$packageInfo, $expressInfo));
+            $ele['ID原价'] = floor($ele['ID售价'] * 1.8);
+            $ele['TH售价'] = static::getGoodsSalePrice($ele, $siteInfo['TH'],$packageInfo ,$expressInfo);
+            $ele['TH原价'] = round($ele['TH售价'] * 1.8, 2);
+            $ele['VN售价'] = floor(static::getGoodsSalePrice($ele, $siteInfo['VN'],$packageInfo, $expressInfo));
+            $ele['VN原价'] = floor($ele['VN售价'] * 1.8);
+            $ele['SG售价'] = static::getGoodsSalePrice($ele, $siteInfo['SG'],$packageInfo, $expressInfo);
+            $ele['SG原价'] = round($ele['SG售价'] * 1.8, 2);
             $out[] = $ele;
         }
         $ret['data'] = $out;
@@ -1067,6 +1097,103 @@ class ApiGoodsinfo
     }
 
 
+    /**
+     * 获取包装信息
+      * @return array
+     */
+    public static function getPackageInfo()
+    {
+        $sql = 'select PackName, CostPrice, 0 as Weight from B_PackInfo order by nid';
+        $info = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $ret = [];
+        foreach ($info as $ele) {
+            $ret[$ele['PackName']] = ['costPrice' => $ele['CostPrice'], 'weight' => $ele['Weight']];
+        }
+        return $ret;
+    }
+    /**
+     * 计算SKU售价
+     * @param $SKU
+     * @param $siteInfo
+     * @param $packageInfo
+     * @param $allExpressInfo
+     * @return float|int
+     */
+    public static function getGoodsSalePrice($SKU,$siteInfo,$packageInfo, $allExpressInfo)
+    {
+        $salePrice = 0;
+        $expressFee = static::getGoodsExpressFee($SKU,$site=$siteInfo['site'],$packageInfo, $allExpressInfo);
+        $costPrice = $SKU['成本价'];
+        #包装费没用
+
+        $packageFee = $packageInfo[$SKU['包装规格']]['costPrice'];
+        $transactionFeeRate = $siteInfo['payFeeRate'];
+        $profitRate = 0.08;
+        $totalFee = $expressFee + $costPrice + $packageFee;
+        $salePrice = $totalFee / (1 - $profitRate - $transactionFeeRate);
+        return round($salePrice / $siteInfo['exchange'],2);
+    }
+
+
+    /**
+     * 各个站点的物流信息
+     */
+    public static function getGoodsExpressInfo()
+    {
+        $sites = ['马来西亚','菲律宾','印尼','泰国','新加坡','越南'];
+        $out = [];
+        foreach ($sites as $st ) {
+            $sql = "SELECT name,Discount,bf.BeginWeight, bf.AddWeight, bf.AddMoney,bf.BeginMoneyGoods FROM B_LogisticWay(nolock) bl left join B_EmsFare(nolock) bf on bf.LogisticWayID=bl.nid where name like 'LGS-". $st ."' order by BeginWeight" ;
+            $expressInfo = Yii::$app->py_db->createCommand($sql)->queryAll();
+            $out[$st] = $expressInfo;
+        }
+        return $out;
+    }
+
+    /**
+     * lazada运费
+     * @param $SKU
+     * @param $site
+     * @param $packageInfo
+     * @param $allExpressInfo
+     * @return mixed;
+     */
+    public static function getGoodsExpressFee($SKU, $site, $packageInfo, $allExpressInfo)
+    {
+        $expressInfo = $allExpressInfo[$site];
+        $weight = $SKU['重量'] * 1000;
+        $packageWeight = $packageInfo[$SKU['包装规格']]['weight'];
+        $totalWeight = $weight + $packageWeight;
+        $mine = $totalWeight - $expressInfo[0]['BeginWeight'];
+        $i =0;
+         foreach ($expressInfo as $ep) {
+             $delta = $totalWeight - $ep['BeginWeight'];
+             if( $delta >= 0  && $delta <= $mine) {
+                 $mine = $delta;
+                 $i++;
+             }
+             else {
+                 break;
+             }
+         }
+         $bestExpress = $expressInfo[$i];
+
+         $expressFee = $bestExpress['BeginMoneyGoods'] + (($totalWeight - $bestExpress['BeginWeight'])/ $bestExpress['AddWeight']) * $bestExpress['AddMoney'];
+         $expressFee = $expressFee * $bestExpress['Discount'] /100;
+         return $expressFee;
+
+
+
+
+
+
+
+    }
+    /**
+     * 计算商品成本价
+     * @param $products
+     * @return array
+     */
     public static function getGoodsCostPrice($products)
     {
         $goodsCodes = [];
