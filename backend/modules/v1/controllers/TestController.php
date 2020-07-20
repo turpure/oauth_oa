@@ -17,15 +17,10 @@
 namespace backend\modules\v1\controllers;
 
 
-use backend\models\OaGoodsinfo;
-use backend\models\OaJoomSuffix;
-use backend\models\OaSmtGoods;
-use backend\models\OaSmtGoodsSku;
-use backend\models\OaWishGoods;
-use backend\models\OaWishGoodsSku;
-use backend\modules\v1\models\ApiGoodsinfo;
-use backend\modules\v1\utils\Helper;
+use backend\models\ShopElf\BGoods;
 use Yii;
+use yii\db\Exception;
+
 class TestController extends AdminController
 {
     public $modelClass = 'backend\models\OaGoodsinfo';
@@ -35,49 +30,21 @@ class TestController extends AdminController
         'collectionEnvelope' => 'items',
     ];
 
+    /** 跟新海外仓 产品责任归属人2
+     * Date: 2020-07-20 11:58
+     * Author: henry
+     * @return array
+     */
     public  function actionTest(){
         try {
 
-
-            $url = "https://detail.1688.com/offer/590071287734.html?spm=a26352.b28411319.offerlist.1.60b71e62fWmCIl";
-//            $res = fopen($url, 'r');
-//            $header= stream_get_meta_data($res);//获取报头信息
-//            $result = '';
-//            while(!feof($res)) {
-//
-//                $result .= fgets($res, 1024);
-//
-//            }
-//            $res = iconv("gb2312", "utf-8", $res);
-
-
-//            $result = file_get_contents($url);
-
-
-
-
-            $ch = curl_init($url);
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-            curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)');
-            curl_setopt ( $ch, CURLOPT_SSL_VERIFYPEER, false );
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-
-            $result = curl_exec($ch);
-
-
-            $result = iconv("gb2312", "utf-8", $result);
-
-
-
-            var_dump($result);exit;
-
-
-
-
-
-
-
+            $sql = "SELECT goodsCode,seller1 FROM cache_skuSeller where IFNULL(seller1,'')<>'' ";
+            $result = Yii::$app->db->createCommand($sql)->queryAll();
+            foreach ($result as $v){
+                $res = BGoods::updateAll(['possessMan2' => $v['seller1']],['goodsCode' => $v['goodsCode']]);
+                if(!$res) throw new Exception('Error');
+            }
+            return true;
 
         } catch (\Exception $why) {
             return ['code' => 400, 'message'=>$why->getMessage()];
