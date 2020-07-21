@@ -1089,12 +1089,14 @@ class ApiReport
         $introducer = isset($condition['introducer']) ? $condition['introducer'] : '';
         $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
         list($beginDate, $endDate) = $condition['dateRange'];
+        list($devBeginDate, $devEndDate) = isset($condition['devDateRange']) && $condition['devDateRange'] ? $condition['devDateRange'] : ['',''];
         $dateFlag = $condition['dateType'];
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-        $sql = 'call report_devGoodsProfitAPI (:developer,:introducer,:goodsCode,:goodsStatus, :beginDate, :endDate, :dateFlag) ';
+        $sql = 'call report_devGoodsProfitAPI (:developer,:introducer,:goodsCode,:goodsStatus, :beginDate, :endDate, :dateFlag, :devBeginDate, :devEndDate)';
         $params = [':developer' => implode(',', $developer),':introducer' => $introducer,
             ':goodsCode' => $goodsCode, ':goodsStatus' => implode(',', $goodsStatus),
-            ':beginDate' => $beginDate, ':endDate' => $endDate, ':dateFlag' => (int)$dateFlag ];
+            ':beginDate' => $beginDate, ':endDate' => $endDate, ':dateFlag' => (int)$dateFlag,
+            ':devBeginDate' => $devBeginDate, ':devEndDate' => $devEndDate,];
         $query = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
         $provider = new ArrayDataProvider([
             'allModels' => $query,
