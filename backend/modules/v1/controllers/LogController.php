@@ -17,6 +17,7 @@
 namespace backend\modules\v1\controllers;
 
 
+use backend\modules\v1\models\ApiUser;
 use Yii;
 use yii\data\ArrayDataProvider;
 
@@ -37,6 +38,12 @@ class LogController extends AdminController
      * @throws \yii\db\Exception
      */
     public function actionSmtExportLog(){
+
+        $username = Yii::$app->user->identity->username;
+        $userArr = ApiUser::getUserList($username);
+        $userList = implode("','", $userArr);
+//        var_dump($userList);exit;
+
         $cond = Yii::$app->request->post('condition');
         $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
         $goodsCode = isset($cond['SKU']) ? $cond['SKU'] : '';
@@ -62,6 +69,8 @@ class LogController extends AdminController
         if($completeDate2)  $sql .= " AND s.completeDate2 BETWEEN '{$completeDate2[0]}' AND '" . $completeDate2[1].' 23:59:59' . "'";
         if($status1 OR $status1 == '0')  $sql .= " AND s.status1 = {$status1} ";
         if($status2 OR $status2 == '0')  $sql .= " AND s.status2 = {$status2} ";
+
+        $sql .= " AND s.creator IN ('{$userList}') ORDER BY s.createDate DESC ";
         $ret = Yii::$app->db->createCommand($sql)->queryAll();
         $provider = new ArrayDataProvider([
             'allModels' => $ret,
