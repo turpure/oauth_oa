@@ -718,7 +718,7 @@ class ProductCenterTools
             'descriptionmobile' => '',
             'quantity' => 10000,
             'category1' => '',
-            'grossWeight' => $maxSkuWeight ?: 0,
+            'grossWeight' => $maxSkuWeight ? $maxSkuWeight*1.0/1000 : 0,
             'imageUrl0' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_0_.jpg',
             'imageUrl1' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_1_.jpg',
             'imageUrl2' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_2_.jpg',
