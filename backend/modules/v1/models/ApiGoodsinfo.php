@@ -1134,7 +1134,7 @@ class ApiGoodsinfo
 
         $packageFee = $packageInfo[$SKU['包装规格']]['costPrice'];
         $transactionFeeRate = $siteInfo['payFeeRate'];
-        $profitRate = 0.08;
+        $profitRate = 0.15;
         $totalFee = $expressFee + $costPrice + $packageFee;
         $salePrice = $totalFee / (1 - $profitRate - $transactionFeeRate);
         return round($salePrice / $siteInfo['exchange'],2);
