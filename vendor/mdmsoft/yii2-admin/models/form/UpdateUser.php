@@ -267,9 +267,16 @@ class UpdateUser extends Model
             'eBay-义乌仓' => 'eBay-义乌仓',
             'eBay-海外仓' => 'eBay-海外仓',
             'Wish' => 'Wish',
-            'SMT' => 'SMT',
+            'Aliexpress' => 'Aliexpress',
             'Amazon' => 'Amazon',
             'Joom' => 'Joom',
+            'Shopee' => 'Shopee',
+            'Lazada' => 'Lazada',
+            'Topbuy' => 'Topbuy',
+            'mymall' => 'mymall',
+            '1688' => '1688',
+            'Shopify' => 'Shopify',
+            'Mercado' => 'Mercado',
             '其他' => '其他'
         ];
     }
