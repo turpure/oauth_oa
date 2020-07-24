@@ -39,6 +39,7 @@ use backend\models\OaVovaSuffix;
 use backend\models\OaJoomToWish;
 use backend\models\OaSiteCountry;
 use backend\models\OaShippingService;
+use backend\models\User;
 use backend\modules\v1\services\Logger;
 use backend\modules\v1\utils\Helper;
 use mdm\admin\models\Store;
@@ -80,6 +81,7 @@ class ApiGoodsinfo
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $type = $condition['type'];
         $user = Yii::$app->user->identity->username;
+        $mapPlat = User::findOne(['username' => $user])['mapPlat'];
         $userList = ApiUser::getUserList($user);
         $userRole = implode('', ApiUser::getUserRole($user));
         if ($type === 'goods-info') {
@@ -151,6 +153,10 @@ class ApiGoodsinfo
                 if (strpos($userRole, '采购') !== false) {
                     $query->andWhere(['or', ['in', 'g.introducer', $userList], ['in', 'gi.purchaser', $userList]]);
                 } else {
+                    $query->andWhere(['or', ['in', 'gi.developer', $userList], ['in', 'possessMan1', $userList]]);
+                }
+            }else{
+                if($mapPlat == 'Joom'){
                     $query->andWhere(['or', ['in', 'gi.developer', $userList], ['in', 'possessMan1', $userList]]);
                 }
             }
