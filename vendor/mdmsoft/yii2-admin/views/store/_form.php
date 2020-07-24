@@ -24,6 +24,7 @@ use \mdm\admin\models\Position;
                     'eBay' => 'eBay',
                     'Wish' => 'Wish',
                     'Joom' => 'Joom',
+                    'VOVA' => 'VOVA',
                     'Shopee' => 'Shopee',
                     'Lazada' => 'Lazada',
                     'Topbuy' => 'Topbuy',
