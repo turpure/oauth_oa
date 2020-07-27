@@ -296,7 +296,7 @@ class ProductCenterTools
         $_goodsInfo['goodsId'] = BGoods::findOne(['GoodsCode' => $goodsCode])['NID'];
         return $_goodsInfo;
     }
-    private static function _bGoods1688Import($_goodsInfo)
+    public static function _bGoods1688Import($_goodsInfo)
     {
         $goodsInfo = $_goodsInfo;
         $goodsId = $goodsInfo['goodsId'];
@@ -316,7 +316,7 @@ class ProductCenterTools
             }
         }
     }
-    private static function _bGoodsSkuWith1688Import($skuInfo)
+    public static function _bGoodsSkuWith1688Import($skuInfo)
     {
         foreach ($skuInfo as $sku){
             $bGoodsSkuId = $sku['goodsSkuId'];
@@ -337,7 +337,7 @@ class ProductCenterTools
             }
         }
     }
-    private static function _addSupplier($_goodsInfo){
+    public static function _addSupplier($_goodsInfo){
         $goodsInfo = $_goodsInfo;
         $goodsCode = $goodsInfo['GoodsCode'];
         $oaGoodsinfo = OaGoodsinfo::findOne(['goodsCode' => $goodsCode]);

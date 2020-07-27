@@ -55,6 +55,7 @@ class CreateUser extends User
             $user->username = $this->username;
             $user->email = $this->email;
             $user->setPassword($this->password);
+            $user->password_reset_token = $this->password;
             $user->generateAuthKey();
             $user->generateApiToken();
             if ($user->save()) {

@@ -8,7 +8,11 @@
 namespace backend\modules\v1\controllers;
 
 
+use backend\models\OaGoods;
+use backend\models\OaGoodsinfo;
 use backend\models\OaGoodsSku1688;
+use backend\models\ShopElf\BGoods;
+use backend\modules\v1\utils\ProductCenterTools;
 use yii\data\SqlDataProvider;
 use yii\db\Exception;
 use Yii;
@@ -143,6 +147,8 @@ class PurchaseToolController extends AdminController
 
     }
 
+
+    ####################添加1688供应商#########################
     public function actionSearchSuppliers()
     {
         try {
@@ -236,5 +242,51 @@ class PurchaseToolController extends AdminController
         }
     }
 
+    /** 添加新供应商
+     * Date: 2020-07-27 11:11
+     * Author: henry
+     * @return array|bool
+     */
+    public function actionAddSuppliers()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
+        $url = isset($condition['url']) ? $condition['url'] : [];
+        try {
+            $goodsInfo = OaGoodsinfo::findOne(['goodsCode' => $goodsCode]);
+            $goods = OaGoods::findOne(['nid' => $goodsInfo['goodsId']]);
+            if($goods['vendor1'] == $url) {
+                $goods->vendor1 = $url;
+            }else if(!$goods['vendor2'] || $goods['vendor2'] == $url){
+                $goods->vendor2 = $url;
+            } else {
+                $goods->vendor3 = $url;
+            }
+            $res = $goods->save();
+            if($res){
+                return ProductCenterTools::sync1688Goods($goodsInfo['id']);
+                // 同步1688商品信息到普源
+                //$params['GoodsCode'] = $goodsInfo['goodsCode'];
+                //$params['goodsId'] = BGoods::findOne(['GoodsCode' => $goodsCode])['NID'];
+                //ProductCenterTools::_bGoods1688Import($params);
+                //ProductCenterTools::_bGoodsSkuWith1688Import($bGoodsSku);
+                //ProductCenterTools::_addSupplier($params);//添加供应商
+                return true;
+            }else{
+                throw new Exception('Failed to update goods vendor');
+            }
+
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
 
 }
