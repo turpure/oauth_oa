@@ -655,8 +655,7 @@ class OaGoodsinfoController extends AdminController
             $condition = $request->post()['condition'];
             $infoIds = $condition['id'];
             $ret = ApiGoodsinfo::preExportShopee($infoIds);
-
-            return $ret;
+//            return $ret;
             ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Xls');
         } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
