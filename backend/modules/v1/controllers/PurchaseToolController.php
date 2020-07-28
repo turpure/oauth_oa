@@ -9,13 +9,16 @@ namespace backend\modules\v1\controllers;
 
 
 use backend\models\OaGoods;
+use backend\models\OaGoods1688;
 use backend\models\OaGoodsinfo;
+use backend\models\OaGoodsSku;
 use backend\models\OaGoodsSku1688;
 use backend\models\ShopElf\BGoods;
 use backend\modules\v1\utils\ProductCenterTools;
 use yii\data\SqlDataProvider;
 use yii\db\Exception;
 use Yii;
+use yii\db\Query;
 use yii\debug\models\timeline\DataProvider;
 use yii\helpers\ArrayHelper;
 
@@ -265,13 +268,6 @@ class PurchaseToolController extends AdminController
             $res = $goods->save();
             if($res){
                 return ProductCenterTools::sync1688Goods($goodsInfo['id']);
-                // 同步1688商品信息到普源
-                //$params['GoodsCode'] = $goodsInfo['goodsCode'];
-                //$params['goodsId'] = BGoods::findOne(['GoodsCode' => $goodsCode])['NID'];
-                //ProductCenterTools::_bGoods1688Import($params);
-                //ProductCenterTools::_bGoodsSkuWith1688Import($bGoodsSku);
-                //ProductCenterTools::_addSupplier($params);//添加供应商
-                return true;
             }else{
                 throw new Exception('Failed to update goods vendor');
             }
@@ -288,5 +284,98 @@ class PurchaseToolController extends AdminController
             ];
         }
     }
+
+    public function actionSkuInfo()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
+            $goodsInfo = OaGoodsinfo::findOne(['goodsCode' => $goodsCode]);
+            $id = isset($goodsInfo['id']) ? $goodsInfo['id'] : '';
+            $skuInfo = (new Query())->select("gs.*, ss.offerId, ss.specId")
+                ->from('proCenter.oa_goodssku gs')
+                ->leftJoin('proCenter.oa_goodsSku1688 ss', 'ss.goodsSkuId=gs.id')->where(['infoId' => $id])->all();
+            foreach ($skuInfo as &$v) {
+                $goods = OaGoods1688::find()->select('offerId,specId,style')
+                    ->where(['infoId' => $id, 'offerId' => $v['offerId']])->distinct()->asArray()->all();
+                $v['selectData'] = array_merge([["offerId" => '无', "specId" => '无', 'style' => '无']], $goods);
+            }
+            return $skuInfo;
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+
+    }
+
+    /** 保存1688SKU信息 并同步到普源
+     * Date: 2020-07-28 11:39
+     * Author: henry
+     * @return array|bool
+     * @throws Exception
+     */
+    public function actionSaveSkuInfo(){
+        $condition = Yii::$app->request->post('condition', []);
+        $skuInfo = isset($condition['skuInfo']) ? $condition['skuInfo'] : [];
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            $skuIds = [];
+            foreach ($skuInfo as $skuRow) {
+                $infoId = $skuRow['infoId'];
+                $id = $skuRow['id'];
+                $item['goodsSkuId'] = $id;
+                $item['SKU'] = $skuRow['sku'];
+                $skuIds[] = $item;
+                //保存SKU关联1688信息
+                $specId = isset($skuRow['specId']) ? $skuRow['specId'] : '';
+                $offerId = isset($skuRow['offerId']) ? $skuRow['offerId'] : '';
+                if ($offerId) {
+                    $count = OaGoods1688::find()->andFilterWhere(['infoId' => $infoId, 'offerId' => $offerId])->count();
+                    if ($specId || $count == 1) {
+                        $goodsSku1688 = OaGoodsSku1688::findOne(['goodsSkuId' => $id]);
+                        if (!$goodsSku1688) {
+                            $goodsSku1688 = new OaGoodsSku1688();
+                            $goodsSku1688->goodsSkuId = $id;
+                        }
+                        if ($specId != '无') {
+                            $goods1688 = OaGoods1688::find()->andFilterWhere(['infoId' => $infoId, 'offerId' => $offerId, 'specId' => $specId])->one();
+                            $goodsSku1688->supplierLoginId = $goods1688->supplierLoginId;
+                            $goodsSku1688->companyName = $goods1688->companyName;
+                        } else {
+                            $goodsSku1688->supplierLoginId = '';
+                            $goodsSku1688->companyName = '';
+                        }
+                        $goodsSku1688->offerId = $offerId;
+                        $goodsSku1688->specId = $specId;
+                        $goodsSku1688->isDefault = 1;
+                        $ss = $goodsSku1688->save();
+                        if (!$ss) {
+                            throw new \Exception("failed save 1688 goods sku info！");
+                        }
+                    }
+                }
+            }
+            // 同步1688商品信息到普源
+            $goodsInfo = OaGoodsinfo::findOne($infoId);
+            $params['GoodsCode'] = $goodsInfo['goodsCode'];
+            $params['goodsId'] = BGoods::findOne(['GoodsCode' => $goodsInfo['goodsCode']])['NID'];
+            ProductCenterTools::_bGoods1688Import($params);
+            ProductCenterTools::_bGoodsSkuWith1688Import($skuIds);
+            ProductCenterTools::_addSupplier($params);//添加供应商
+
+            $transaction->commit();
+            return true;
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+
 
 }

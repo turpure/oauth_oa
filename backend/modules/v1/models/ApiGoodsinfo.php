@@ -68,6 +68,7 @@ class ApiGoodsinfo
     const JoomTitleLength = 100;
     const smtTitleLength = 128;
     const lazadaTitleLength = 255;
+    const shopeeTitleLength = 120;
 
     /**
      * @brief 属性信息列表
@@ -155,8 +156,8 @@ class ApiGoodsinfo
                 } else {
                     $query->andWhere(['or', ['in', 'gi.developer', $userList], ['in', 'possessMan1', $userList]]);
                 }
-            }else{
-                if($mapPlat == 'Joom'){
+            } else {
+                if ($mapPlat == 'Joom') {
                     $query->andWhere(['or', ['in', 'gi.developer', $userList], ['in', 'possessMan1', $userList]]);
                 }
             }
@@ -285,8 +286,8 @@ class ApiGoodsinfo
         $skuInfo = (new Query())->select("gs.*, ss.offerId, ss.specId")
             ->from('proCenter.oa_goodssku gs')
             ->leftJoin('proCenter.oa_goodsSku1688 ss', 'ss.goodsSkuId=gs.id')->where(['infoId' => $id])->all();
-        foreach ($skuInfo as &$v){
-            $goods =  OaGoods1688::find()->select('offerId,specId,style')
+        foreach ($skuInfo as &$v) {
+            $goods = OaGoods1688::find()->select('offerId,specId,style')
                 ->where(['infoId' => $id, 'offerId' => $v['offerId']])->distinct()->asArray()->all();
             $v['selectData'] = array_merge([["offerId" => '无', "specId" => '无', 'style' => '无']], $goods);
         }
@@ -400,19 +401,19 @@ class ApiGoodsinfo
                 //保存SKU关联1688信息
                 $specId = isset($skuRow['specId']) ? $skuRow['specId'] : '';
                 $offerId = isset($skuRow['offerId']) ? $skuRow['offerId'] : '';
-                if($offerId){
+                if ($offerId) {
                     $count = OaGoods1688::find()->andFilterWhere(['infoId' => $infoId, 'offerId' => $offerId])->count();
-                    if($specId || $count == 1){
+                    if ($specId || $count == 1) {
                         $goodsSku1688 = OaGoodsSku1688::findOne(['goodsSkuId' => $skuModel->id]);
-                        if(!$goodsSku1688){
+                        if (!$goodsSku1688) {
                             $goodsSku1688 = new OaGoodsSku1688();
                             $goodsSku1688->goodsSkuId = $skuModel->id;
                         }
-                        if($specId != '无'){
+                        if ($specId != '无') {
                             $goods1688 = OaGoods1688::find()->andFilterWhere(['infoId' => $infoId, 'offerId' => $offerId, 'specId' => $specId])->one();
                             $goodsSku1688->supplierLoginId = $goods1688->supplierLoginId;
                             $goodsSku1688->companyName = $goods1688->companyName;
-                        }else{
+                        } else {
                             $goodsSku1688->supplierLoginId = '';
                             $goodsSku1688->companyName = '';
                         }
@@ -539,13 +540,13 @@ class ApiGoodsinfo
         $plat = isset($condition['plat']) ? $condition['plat'] : 'wish';
         $infoId = isset($condition['id']) ? $condition['id'] : 0;
         $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
-        if(!$infoId and !$goodsCode){
+        if (!$infoId and !$goodsCode) {
             return [
                 'code' => 400,
                 'message' => "infoId and goodsCode can not be empty at the same time!",
             ];
         }
-        if(!$infoId and $goodsCode) {
+        if (!$infoId and $goodsCode) {
             $query = OaGoodsinfo::findOne(['goodsCode' => $goodsCode]);
             $infoId = $query->id;
         }
@@ -995,54 +996,54 @@ class ApiGoodsinfo
     {
         $payFeeFixedRate = 0.04;
         $siteInfo = [
-            'MY' => ['site' => '马来西亚', 'exchange' => '1.575', 'payFeeRate' => 0.02 + $payFeeFixedRate ],
-            'PH' => ['site' => '菲律宾', 'exchange' => '0.125', 'payFeeRate' => 0.02 + $payFeeFixedRate ],
-            'ID' => ['site' => '印尼', 'exchange' => '0.000454', 'payFeeRate' => 0.02 + $payFeeFixedRate ],
-            'TH' => ['site' => '泰国', 'exchange' => '0.2', 'payFeeRate' => 0.02 + $payFeeFixedRate ],
-            'SG' => ['site' => '新加坡', 'exchange' => '4.8', 'payFeeRate' => 0.02 + $payFeeFixedRate ],
-            'VN' => ['site' => '越南', 'exchange' => '0.0003', 'payFeeRate' => 0.02 + $payFeeFixedRate ],
+            'MY' => ['site' => '马来西亚', 'exchange' => '1.575', 'payFeeRate' => 0.02 + $payFeeFixedRate],
+            'PH' => ['site' => '菲律宾', 'exchange' => '0.125', 'payFeeRate' => 0.02 + $payFeeFixedRate],
+            'ID' => ['site' => '印尼', 'exchange' => '0.000454', 'payFeeRate' => 0.02 + $payFeeFixedRate],
+            'TH' => ['site' => '泰国', 'exchange' => '0.2', 'payFeeRate' => 0.02 + $payFeeFixedRate],
+            'SG' => ['site' => '新加坡', 'exchange' => '4.8', 'payFeeRate' => 0.02 + $payFeeFixedRate],
+            'VN' => ['site' => '越南', 'exchange' => '0.0003', 'payFeeRate' => 0.02 + $payFeeFixedRate],
         ];
         $ids = implode(',', $ids);
-        $sql = "select og.createDate as '开发日期',cate as '一级类目',subCate as '二级类目', goodsCode as '商品编码', goodsStatus as '商品状态',".
-            "goodsName as '商品名称',".
-            "ogs.sku as 'SKU',".
-            "ogs.property1 '属性1',".
-            "ogs.property2 as '属性2',".
-            "ogs.property1 '属性1', ogs.property2 as '属性2', ogs.property3 as '属性3', mainImage as '商品主图', ogs.linkUrl as '属性主图', owg.extraImages as '附加图', ogi.headKeywords as '头部关键词', ogi.requiredKeywords as '必须关键词', ogi.randomKeywords '随机关键词', ogi.tailKeywords '尾部关键词',".
-            "hopeCost '成本价',hopeWeight '重量',packName '包装规格',ogi.description '描述',".
-            "'' as 'VN原价',".
-            "'' as 'VN售价',".
-            "'' as 'ID原价',".
-            "'' as 'ID售价',".
-            "'' as 'SG原价',".
-            "'' as 'SG售价',".
-            "'' as 'MY原价',".
-            "'' as 'MY售价',".
-            "'' as 'TH原价',".
-            "'' as 'TH售价',".
-            "'' as 'PH原价',".
-            "'' as 'PH售价',".
-            "'' as '产品标题（英文）1',".
-            "'' as '产品标题',".
-            "'' as '关键词1',".
-            "'' as 'Package',".
-            "'' as '多个颜色',".
-            "'' as '多个尺寸',".
-            "'' as 'MY ID',".
-            "'' as 'PH ID',".
-            "'' as 'TH ID',".
-            "'' as 'SG ID',".
-            "'' as 'ID ID',".
-            "'' as 'VN ID',".
-            "'' as '一级类目',".
-            "'' as '主sku',".
-            "'' as '多个子sku',".
-            "'' as '关联sku',".
-            "'' as '描述图片代码',".
-            "'' as 'short' ".
-            'from oa_goods as og LEFT JOIN oa_goodsinfo as ogi on og.nid= ogi.goodsId '.
-            'LEFT JOIN oa_goodssku as ogs on ogs.infoId = ogi.id '.
-            'LEFT JOIN oa_wishGoods as owg on owg.infoId = ogi.id '.
+        $sql = "select og.createDate as '开发日期',cate as '一级类目',subCate as '二级类目', goodsCode as '商品编码', goodsStatus as '商品状态'," .
+            "goodsName as '商品名称'," .
+            "ogs.sku as 'SKU'," .
+            "ogs.property1 '属性1'," .
+            "ogs.property2 as '属性2'," .
+            "ogs.property1 '属性1', ogs.property2 as '属性2', ogs.property3 as '属性3', mainImage as '商品主图', ogs.linkUrl as '属性主图', owg.extraImages as '附加图', ogi.headKeywords as '头部关键词', ogi.requiredKeywords as '必须关键词', ogi.randomKeywords '随机关键词', ogi.tailKeywords '尾部关键词'," .
+            "hopeCost '成本价',hopeWeight '重量',packName '包装规格',ogi.description '描述'," .
+            "'' as 'VN原价'," .
+            "'' as 'VN售价'," .
+            "'' as 'ID原价'," .
+            "'' as 'ID售价'," .
+            "'' as 'SG原价'," .
+            "'' as 'SG售价'," .
+            "'' as 'MY原价'," .
+            "'' as 'MY售价'," .
+            "'' as 'TH原价'," .
+            "'' as 'TH售价'," .
+            "'' as 'PH原价'," .
+            "'' as 'PH售价'," .
+            "'' as '产品标题（英文）1'," .
+            "'' as '产品标题'," .
+            "'' as '关键词1'," .
+            "'' as 'Package'," .
+            "'' as '多个颜色'," .
+            "'' as '多个尺寸'," .
+            "'' as 'MY ID'," .
+            "'' as 'PH ID'," .
+            "'' as 'TH ID'," .
+            "'' as 'SG ID'," .
+            "'' as 'ID ID'," .
+            "'' as 'VN ID'," .
+            "'' as '一级类目'," .
+            "'' as '主sku'," .
+            "'' as '多个子sku'," .
+            "'' as '关联sku'," .
+            "'' as '描述图片代码'," .
+            "'' as 'short' " .
+            'from oa_goods as og LEFT JOIN oa_goodsinfo as ogi on og.nid= ogi.goodsId ' .
+            'LEFT JOIN oa_goodssku as ogs on ogs.infoId = ogi.id ' .
+            'LEFT JOIN oa_wishGoods as owg on owg.infoId = ogi.id ' .
             "where ogi.id in (" .
             $ids .
             ')';
@@ -1051,7 +1052,7 @@ class ApiGoodsinfo
 
 //        $row = ['开发日期','一级类目','二级类目','商品编码','商品名称','SKU','属性1','属性2','属性3','商品主图','属性主图','附加图','头部关键词','必须关键词','随机关键词','尾部关键词','成本价','重量','包装规格','描述','VN原价','VN售价','ID原价','ID售价','SG原价','SG售价','MY原价','MY售价','TH原价','TH售价','PH原价','PH售价','产品标题（英文）1','产品标题','关键词1','Package','多个颜色','多个尺寸','MY ID','PH ID','TH ID','SG ID','ID ID','VN ID','一级类目','主sku','多个子sku','关联sku','描述图片代码','short'];
         $products = Yii::$app->pro_db->createCommand($sql)->queryAll();
-        $ret = ['name' => 'lazada-template' ];
+        $ret = ['name' => 'lazada-template'];
         $out = [];
 
         // 每个产品生成标题
@@ -1059,7 +1060,7 @@ class ApiGoodsinfo
 
         // 每个产品从普源获取成本价等信息
 
-        $skuCostPrice  = static::getGoodsCostPrice($products);
+        $skuCostPrice = static::getGoodsCostPrice($products);
 
 
         // 包装信息
@@ -1083,17 +1084,97 @@ class ApiGoodsinfo
             $ele['重量'] = $skuCostPrice[$ele['SKU']]['Weight'];
 
             # 售价信息
-            $ele['MY售价'] = static::getGoodsSalePrice($ele,$siteInfo['MY'],$packageInfo, $expressInfo);
-            $ele['MY原价'] = round($ele['MY售价'] * 1.8,2);
-            $ele['PH售价'] = static::getGoodsSalePrice($ele, $siteInfo['PH'],$packageInfo, $expressInfo);
+            $ele['MY售价'] = static::getGoodsSalePrice($ele, $siteInfo['MY'], $packageInfo, $expressInfo);
+            $ele['MY原价'] = round($ele['MY售价'] * 1.8, 2);
+            $ele['PH售价'] = static::getGoodsSalePrice($ele, $siteInfo['PH'], $packageInfo, $expressInfo);
             $ele['PH原价'] = round($ele['PH售价'] * 1.8, 2);
-            $ele['ID售价'] = floor(static::getGoodsSalePrice($ele, $siteInfo['ID'],$packageInfo, $expressInfo));
+            $ele['ID售价'] = floor(static::getGoodsSalePrice($ele, $siteInfo['ID'], $packageInfo, $expressInfo));
             $ele['ID原价'] = floor($ele['ID售价'] * 1.8);
-            $ele['TH售价'] = static::getGoodsSalePrice($ele, $siteInfo['TH'],$packageInfo ,$expressInfo);
+            $ele['TH售价'] = static::getGoodsSalePrice($ele, $siteInfo['TH'], $packageInfo, $expressInfo);
             $ele['TH原价'] = round($ele['TH售价'] * 1.8, 2);
-            $ele['VN售价'] = floor(static::getGoodsSalePrice($ele, $siteInfo['VN'],$packageInfo, $expressInfo));
+            $ele['VN售价'] = floor(static::getGoodsSalePrice($ele, $siteInfo['VN'], $packageInfo, $expressInfo));
             $ele['VN原价'] = floor($ele['VN售价'] * 1.8);
-            $ele['SG售价'] = static::getGoodsSalePrice($ele, $siteInfo['SG'],$packageInfo, $expressInfo);
+            $ele['SG售价'] = static::getGoodsSalePrice($ele, $siteInfo['SG'], $packageInfo, $expressInfo);
+            $ele['SG原价'] = round($ele['SG售价'] * 1.8, 2);
+            $out[] = $ele;
+        }
+        $ret['data'] = $out;
+        return $ret;
+
+    }
+
+    /**
+     * 导出Shopee模板
+     * @param $ids
+     * @return array
+     */
+    public static function preExportShopee($ids)
+    {
+        $payFeeFixedRate = 0.04;
+        $siteInfo = [
+            'MY' => ['site' => '马来西亚', 'exchange' => '1.575', 'payFeeRate' => 0.03],
+            'PH' => ['site' => '菲律宾', 'exchange' => '0.125', 'payFeeRate' => 0.05],
+            'ID' => ['site' => '印尼', 'exchange' => '0.000454', 'payFeeRate' => 0.04],
+            'TH' => ['site' => '泰国', 'exchange' => '0.2', 'payFeeRate' => 0.03],
+            'SG' => ['site' => '新加坡', 'exchange' => '4.8', 'payFeeRate' => 0],
+            'VN' => ['site' => '越南', 'exchange' => '0.0003', 'payFeeRate' => 0.02],
+            'TW' => ['site' => '台湾', 'exchange' => '0.21', 'payFeeRate' => 0.05],
+            //'BR' => ['site' => '巴西', 'exchange' => '6.4', 'payFeeRate' => 0.02 + $payFeeFixedRate],
+        ];
+        $ids = implode(',', $ids);
+        $sql = "select ogi.id,'' as '分类ID','' as '产品属性',goodsCode as 'Parent SKU', owg.title as '产品标题', owg.description as '产品描述',
+            ogs.sku as sku,ogs.color '变种名称','colour' '变种属性名称一','size' '变种属性名称二',ogs.color as '变种属性值一',ogs.size as '变种属性值二',
+            '' as '价格', '' as '货币符号', '' as '促销价', '' as '折扣活动ID', ogs.inventory as '库存', 'weight' as '重量', owg.mainImage as '主图（URL）地址', 
+            '' as '附图1','' as '附图2','' as '附图3','' as '附图4','' as '附图5','' as '附图6','' as '附图7','' as '附图8',ogs.linkUrl as '变种图',
+            '' as '长（cm）', '' as '宽（cm）', '' as '高（cm）', ogs.shippingTime as '发货期', '' as '来源URL',
+            '' as '尺码图','' as '产品id','' as '销量','' as '浏览'" .
+            'from oa_goods as og LEFT JOIN oa_goodsinfo as ogi on og.nid= ogi.goodsId ' .
+            'LEFT JOIN oa_wishGoods as owg on owg.infoId = ogi.id ' .
+            'LEFT JOIN oa_wishGoodsSku as ogs on ogs.infoId = ogi.id ' .
+            "where ogi.id in (" . $ids . ')';
+
+        #生成英文标题
+
+//        $row = ['开发日期','一级类目','二级类目','商品编码','商品名称','SKU','属性1','属性2','属性3','商品主图','属性主图','附加图','头部关键词','必须关键词','随机关键词','尾部关键词','成本价','重量','包装规格','描述','VN原价','VN售价','ID原价','ID售价','SG原价','SG售价','MY原价','MY售价','TH原价','TH售价','PH原价','PH售价','产品标题（英文）1','产品标题','关键词1','Package','多个颜色','多个尺寸','MY ID','PH ID','TH ID','SG ID','ID ID','VN ID','一级类目','主sku','多个子sku','关联sku','描述图片代码','short'];
+        $products = Yii::$app->pro_db->createCommand($sql)->queryAll();
+        $ret = ['name' => 'shopee-template'];
+        $out = [];
+        // 每个产品生成标题
+        $goodsInfo = static::getShopeeTitle($products);
+        var_dump($goodsInfo);exit;
+
+        // 每个产品从普源获取成本价等信息
+        $skuCostPrice = static::getGoodsCostPrice($products);
+
+
+        // 包装信息
+        $packageInfo = static::getPackageInfo();
+
+        // 物流信息
+        $expressInfo = static::getGoodsExpressInfo();
+
+        # 特殊字段处理
+        foreach ($products as $ele) {
+
+            # 生成标题
+            $ele['产品标题（英文）1'] = $goodsInfo[$ele['商品编码']]['title'];
+
+            # SKU 信息
+            $ele['价格'] = $skuCostPrice[$ele['SKU']]['CostPrice'];
+            $ele['重量'] = $skuCostPrice[$ele['SKU']]['Weight'];
+
+            # 售价信息
+            $ele['MY售价'] = static::getGoodsSalePrice($ele, $siteInfo['MY'], $packageInfo, $expressInfo);
+            $ele['MY原价'] = round($ele['MY售价'] * 1.8, 2);
+            $ele['PH售价'] = static::getGoodsSalePrice($ele, $siteInfo['PH'], $packageInfo, $expressInfo);
+            $ele['PH原价'] = round($ele['PH售价'] * 1.8, 2);
+            $ele['ID售价'] = floor(static::getGoodsSalePrice($ele, $siteInfo['ID'], $packageInfo, $expressInfo));
+            $ele['ID原价'] = floor($ele['ID售价'] * 1.8);
+            $ele['TH售价'] = static::getGoodsSalePrice($ele, $siteInfo['TH'], $packageInfo, $expressInfo);
+            $ele['TH原价'] = round($ele['TH售价'] * 1.8, 2);
+            $ele['VN售价'] = floor(static::getGoodsSalePrice($ele, $siteInfo['VN'], $packageInfo, $expressInfo));
+            $ele['VN原价'] = floor($ele['VN售价'] * 1.8);
+            $ele['SG售价'] = static::getGoodsSalePrice($ele, $siteInfo['SG'], $packageInfo, $expressInfo);
             $ele['SG原价'] = round($ele['SG售价'] * 1.8, 2);
             $out[] = $ele;
         }
@@ -1105,7 +1186,7 @@ class ApiGoodsinfo
 
     /**
      * 获取包装信息
-      * @return array
+     * @return array
      */
     public static function getPackageInfo()
     {
@@ -1117,6 +1198,7 @@ class ApiGoodsinfo
         }
         return $ret;
     }
+
     /**
      * 计算SKU售价
      * @param $SKU
@@ -1125,10 +1207,10 @@ class ApiGoodsinfo
      * @param $allExpressInfo
      * @return float|int
      */
-    public static function getGoodsSalePrice($SKU,$siteInfo,$packageInfo, $allExpressInfo)
+    public static function getGoodsSalePrice($SKU, $siteInfo, $packageInfo, $allExpressInfo)
     {
         $salePrice = 0;
-        $expressFee = static::getGoodsExpressFee($SKU,$site=$siteInfo['site'],$packageInfo, $allExpressInfo);
+        $expressFee = static::getGoodsExpressFee($SKU, $site = $siteInfo['site'], $packageInfo, $allExpressInfo);
         $costPrice = $SKU['成本价'];
         #包装费没用
 
@@ -1137,7 +1219,7 @@ class ApiGoodsinfo
         $profitRate = 0.15;
         $totalFee = $expressFee + $costPrice + $packageFee;
         $salePrice = $totalFee / (1 - $profitRate - $transactionFeeRate);
-        return round($salePrice / $siteInfo['exchange'],2);
+        return round($salePrice / $siteInfo['exchange'], 2);
     }
 
 
@@ -1146,10 +1228,10 @@ class ApiGoodsinfo
      */
     public static function getGoodsExpressInfo()
     {
-        $sites = ['马来西亚','菲律宾','印尼','泰国','新加坡','越南'];
+        $sites = ['马来西亚', '菲律宾', '印尼', '泰国', '新加坡', '越南'];
         $out = [];
-        foreach ($sites as $st ) {
-            $sql = "SELECT name,Discount,bf.BeginWeight, bf.AddWeight, bf.AddMoney,bf.BeginMoneyGoods FROM B_LogisticWay(nolock) bl left join B_EmsFare(nolock) bf on bf.LogisticWayID=bl.nid where name like 'LGS-". $st ."' order by BeginWeight" ;
+        foreach ($sites as $st) {
+            $sql = "SELECT name,Discount,bf.BeginWeight, bf.AddWeight, bf.AddMoney,bf.BeginMoneyGoods FROM B_LogisticWay(nolock) bl left join B_EmsFare(nolock) bf on bf.LogisticWayID=bl.nid where name like 'LGS-" . $st . "' order by BeginWeight";
             $expressInfo = Yii::$app->py_db->createCommand($sql)->queryAll();
             $out[$st] = $expressInfo;
         }
@@ -1171,30 +1253,25 @@ class ApiGoodsinfo
         $packageWeight = $packageInfo[$SKU['包装规格']]['weight'];
         $totalWeight = $weight + $packageWeight;
         $mine = $totalWeight - $expressInfo[0]['BeginWeight'];
-        $i =0;
-         foreach ($expressInfo as $ep) {
-             $delta = $totalWeight - $ep['BeginWeight'];
-             if( $delta >= 0  && $delta <= $mine) {
-                 $mine = $delta;
-                 $i++;
-             }
-             else {
-                 break;
-             }
-         }
-         $bestExpress = $expressInfo[$i];
+        $i = 0;
+        foreach ($expressInfo as $ep) {
+            $delta = $totalWeight - $ep['BeginWeight'];
+            if ($delta >= 0 && $delta <= $mine) {
+                $mine = $delta;
+                $i++;
+            } else {
+                break;
+            }
+        }
+        $bestExpress = $expressInfo[$i];
 
-         $expressFee = $bestExpress['BeginMoneyGoods'] + (($totalWeight - $bestExpress['BeginWeight'])/ $bestExpress['AddWeight']) * $bestExpress['AddMoney'];
-         $expressFee = $expressFee * $bestExpress['Discount'] /100;
-         return $expressFee;
-
-
-
-
-
+        $expressFee = $bestExpress['BeginMoneyGoods'] + (($totalWeight - $bestExpress['BeginWeight']) / $bestExpress['AddWeight']) * $bestExpress['AddMoney'];
+        $expressFee = $expressFee * $bestExpress['Discount'] / 100;
+        return $expressFee;
 
 
     }
+
     /**
      * 计算商品成本价
      * @param $products
@@ -1204,7 +1281,7 @@ class ApiGoodsinfo
     {
         $goodsCodes = [];
         foreach ($products as $pt) {
-            $goodsCodes[] = "'" . $pt['SKU'] ."'";
+            $goodsCodes[] = "'" . $pt['SKU'] . "'";
         }
 
         $goodsCodes = implode(',', $goodsCodes);
@@ -1213,7 +1290,7 @@ class ApiGoodsinfo
         $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
         $out = [];
         foreach ($ret as $ele) {
-            if(!array_key_exists($ele['SKU'], $out)) {
+            if (!array_key_exists($ele['SKU'], $out)) {
                 $out[$ele['SKU']] = $ele;
             }
         }
@@ -1228,55 +1305,77 @@ class ApiGoodsinfo
             $goodsCode = $gd['商品编码'];
             if (!array_key_exists($goodsCode, $ret)) {
                 $row = [];
-                $keywords = static::combineKeywords($gd['头部关键词'],$gd['尾部关键词'], $gd['必须关键词'], $gd['随机关键词']);
+                $keywords = static::combineKeywords($gd['头部关键词'], $gd['尾部关键词'], $gd['必须关键词'], $gd['随机关键词']);
                 $row['title'] = static::getTitleName($keywords, self::lazadaTitleLength);
                 $row['shortDescription'] = static::getShortDescription($gd['描述'], $gd['必须关键词']);
-                $row['longDescription'] = static::getLongDescription($gd['描述'],$gd['附加图']);
+                $row['longDescription'] = static::getLongDescription($gd['描述'], $gd['附加图']);
                 $ret[$goodsCode] = $row;
             }
         }
         return $ret;
     }
+
+    public static function getShopeeTitle($goods)
+    {
+        $ret = [];
+        foreach ($goods as $gd) {
+            $goodsCode = $gd['Parent SKU'];
+            if (!array_key_exists($goodsCode, $ret)) {
+                $row = [];
+                $wishGoods = OaWishGoods::findOne(['infoId' => $gd['id']]);
+                $keywords = static::combineKeywords($wishGoods['headKeywords'], $wishGoods['tailKeywords'], $wishGoods['requiredKeywords'], $wishGoods['randomKeywords']);
+                $row['title'] = static::getTitleName($keywords, self::shopeeTitleLength);
+                $extraImage = explode("\n", $wishGoods['extraImages']);
+                foreach ($extraImage as $k => $img){
+                    $row['附图'.($k+1)] = $img;
+                }
+                //$row['shortDescription'] = static::getShortDescription($gd['描述'], $gd['必须关键词']);
+                //$row['longDescription'] = static::getLongDescription($gd['描述'], $gd['附加图']);
+                $ret[$goodsCode] = $row;
+            }
+        }
+        return $ret;
+    }
+
     /**
      * lazada short description
      * @param $rawDescription
      * @param $requiredKeywords
      * @return mixed
      */
-    public static function getShortDescription($rawDescription,$requiredKeywords)
+    public static function getShortDescription($rawDescription, $requiredKeywords)
     {
         $raw = explode("\n\n", $rawDescription);
         $tag = '';
         $requiredKeywords = json_decode($requiredKeywords);
         $i = 0;
         foreach ($requiredKeywords as $kw) {
-            if(!empty($kw)) {
-                $tag .= '<li>'.$kw.'</li>';
+            if (!empty($kw)) {
+                $tag .= '<li>' . $kw . '</li>';
                 $i++;
             }
         }
         foreach ($raw as $ele) {
             if (strpos($ele, ':') !== false || strpos($ele, '：' !== false)) {
-                if(strpos($ele, 'Package included') !== false) {
-                    $ele = str_replace("\n",'',$ele);
-                    $tag .= '<li>'.$ele.'</li>';
+                if (strpos($ele, 'Package included') !== false) {
+                    $ele = str_replace("\n", '', $ele);
+                    $tag .= '<li>' . $ele . '</li>';
                     $i++;
-                }
-                else {
-                    $row = explode("\n",$ele);
+                } else {
+                    $row = explode("\n", $ele);
                     foreach ($row as $rw) {
-                        $tag .= '<li>'.$rw.'</li>';
+                        $tag .= '<li>' . $rw . '</li>';
                         $i++;
                     }
                 }
             }
         }
         $li = '<li></li>';
-        while($i < 9) {
+        while ($i < 9) {
             $tag .= $li;
             $i++;
         }
-        $description = '<ul>' . $tag .'</ul>';
+        $description = '<ul>' . $tag . '</ul>';
         return $description;
     }
 
@@ -1289,7 +1388,7 @@ class ApiGoodsinfo
     public static function getLongDescription($description, $images)
     {
         # 文字描述部分
-        $description = str_replace("\n", '<br>',$description);
+        $description = str_replace("\n", '<br>', $description);
         # 插入附件图
         $images = explode("\n", $images);
         $imagesLinks = '';
@@ -1297,9 +1396,10 @@ class ApiGoodsinfo
             $imagesLinks .= '<p><img src=" ' . $ig . '" /></p>';
         }
 
-        $description = '"<p>' . $description.  '</p>' . $imagesLinks  . '"';
+        $description = '"<p>' . $description . '</p>' . $imagesLinks . '"';
         return $description;
     }
+
     /**
      * @brief wish模板预处理
      * @param $id
@@ -1338,7 +1438,7 @@ class ApiGoodsinfo
                     break;
                 }
             }
-            if(count($wishSku) > 1) $goodsInfo['isVar'] = '是'; // 2020-06-02 添加（单平台添加多属性）
+            if (count($wishSku) > 1) $goodsInfo['isVar'] = '是'; // 2020-06-02 添加（单平台添加多属性）
 //            var_dump($goodsInfo['isVar']);exit;
             $variantInfo = static::getWishVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
             $row['sku'] = $wishInfo['sku'] . $account['suffix'];
@@ -1367,7 +1467,6 @@ class ApiGoodsinfo
     }
 
 
-
     /**
      * @brief 导出myMall模板
      * @param $ids
@@ -1375,7 +1474,7 @@ class ApiGoodsinfo
      */
     public static function preExportMyMall($ids)
     {
-        if(!is_array($ids)) {
+        if (!is_array($ids)) {
             $ids = [$ids];
         }
         $out = [];
@@ -1388,13 +1487,12 @@ class ApiGoodsinfo
             'shipping_template_id' => '', 'shipping_time' => '3', 'lp_url' => ''
 
         ];
-        foreach($ids as $id) {
+        foreach ($ids as $id) {
             $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->one();
             if (count($ids) > 1) {
-                $ret = ['name' =>'MyMall-' . 'Batch'];
-            }
-            else {
-                $ret = ['name' =>'MyMall-' . $goodsInfo['goodsCode']];
+                $ret = ['name' => 'MyMall-' . 'Batch'];
+            } else {
+                $ret = ['name' => 'MyMall-' . $goodsInfo['goodsCode']];
             }
 
             $myMallAccounts = OaMyMallSuffix::find()
@@ -1455,7 +1553,7 @@ class ApiGoodsinfo
         $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
         $wishAccounts = OaWishSuffix::find()->where(['like', 'parentCategory', $goods['cate']])
             ->orWhere(["IFNULL(parentCategory,'')" => '']);
-        if(!$type){
+        if (!$type) {
             $wishAccounts->andWhere(['isIbay' => 0]);
         }
         $wishAccounts = $wishAccounts->asArray()->all();
@@ -1481,7 +1579,7 @@ class ApiGoodsinfo
                     break;
                 }
             }
-            if(count($wishSku) > 1) $goodsInfo['isVar'] = '是'; // 2020-06-02 添加（单平台添加多属性）
+            if (count($wishSku) > 1) $goodsInfo['isVar'] = '是'; // 2020-06-02 添加（单平台添加多属性）
 //            var_dump($goodsInfo['isVar']);exit;
             $variantInfo = static::getWishVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
             $row['sku'] = $wishInfo['sku'] . $account['suffix'];
@@ -1641,7 +1739,7 @@ class ApiGoodsinfo
             $imageInfo = static::getJoomImageInfo($joomInfo, $joomAccounts);
             $row['parent_sku'] = $joomInfo['sku'] . $joomAccounts['skuCode'];
             #获取账号TOKEN
-            if($account == 'Joom') $account .= '0';
+            if ($account == 'Joom') $account .= '0';
 //            var_dump($account);exit;
             $sql = "SELECT AliasName AS suffix,d.memo,AccessToken AS token
                         FROM [dbo].[S_JoomSyncInfo] s
@@ -2013,7 +2111,7 @@ class ApiGoodsinfo
             $row['IbayEffectImg'] = static::getEbayPicture($goodsInfo, $ebayInfo, $account);
             $row['IbayCrossSelling'] = '';
             //var_dump($ebayInfo);exit;
-            if(count($ebayInfo['oaEbayGoodsSku']) > 1) $goodsInfo['isVar'] = '是'; // 2020-06-02 添加（单平台添加多属性）
+            if (count($ebayInfo['oaEbayGoodsSku']) > 1) $goodsInfo['isVar'] = '是'; // 2020-06-02 添加（单平台添加多属性）
             $row['Variation'] = static::getEbayVariation($goodsInfo['isVar'], $ebayInfo, $ebayAccount['nameCode']);
             $row['outofstockcontrol'] = '0';
             $row['EPID'] = 'Does not apply';
@@ -2614,16 +2712,18 @@ class ApiGoodsinfo
     private static function getMyMallImageInfo($info, $sku)
     {
         $mainImage = $info['mainImage'];
-        $images = [$sku['linkUrl'],$mainImage];
+        $images = [$sku['linkUrl'], $mainImage];
         $extraImages = explode("\n", $info['extraImages']);
         foreach ($extraImages as $eg) {
-            if(!empty($eg)) {
+            if (!empty($eg)) {
                 $images[] = $eg;
             }
         }
-        $images = array_filter($images, function ($ele) {return !empty($ele);});
+        $images = array_filter($images, function ($ele) {
+            return !empty($ele);
+        });
         $countImages = count($images);
-        while($countImages < 13) {
+        while ($countImages < 13) {
             $images[] = '';
             $countImages++;
 
