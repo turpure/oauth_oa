@@ -292,9 +292,12 @@ class PurchaseToolController extends AdminController
             $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
             $goodsInfo = OaGoodsinfo::findOne(['goodsCode' => $goodsCode]);
             $id = isset($goodsInfo['id']) ? $goodsInfo['id'] : '';
-            $skuInfo = (new Query())->select("gs.*, ss.offerId, ss.specId")
+            $skuInfo = (new Query())->select("gs.*, ss.offerId, ss.specId,og.style")
                 ->from('proCenter.oa_goodssku gs')
-                ->leftJoin('proCenter.oa_goodsSku1688 ss', 'ss.goodsSkuId=gs.id')->where(['infoId' => $id])->all();
+                ->leftJoin('proCenter.oa_goodsSku1688 ss', 'ss.goodsSkuId=gs.id')
+                ->leftJoin('proCenter.oa_goods1688 og', 'og.specId=ss.specId and og.offerId=ss.offerId')
+                ->where(['gs.infoId' => $id])->all();
+            //var_dump($skuInfo);exit;
             foreach ($skuInfo as &$v) {
                 $goods = OaGoods1688::find()->select('offerId,specId,style')
                     ->where(['infoId' => $id, 'offerId' => $v['offerId']])->distinct()->asArray()->all();
