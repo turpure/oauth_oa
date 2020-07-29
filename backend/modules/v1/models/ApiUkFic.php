@@ -17,7 +17,7 @@ class ApiUkFic{
      * @return int
      */
     public static function getRateUkOrUs($code){
-        $rate = Yii::$app->py_db->createCommand("SELECT ExchangeRate FROM [dbo].[B_CurrencyCode] WHERE CURRENCYCODE = '{$code}'")->queryOne();
+        $rate = Yii::$app->py_db->createCommand("SELECT ExchangeRate FROM [dbo].[B_CurrencyCode](nolock) WHERE CURRENCYCODE = '{$code}'")->queryOne();
         return $rate ? $rate['ExchangeRate'] : 0;
     }
 
@@ -90,9 +90,9 @@ class ApiUkFic{
         $data['pFee'] = round($data['pFee'],2);
         $data['profit'] = round($profit,2);
         $data['profitRmb'] = round($profit * $ukRate,2);
-        
+
         return $data;
-        
+
     }
 
 }

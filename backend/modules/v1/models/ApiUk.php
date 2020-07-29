@@ -39,15 +39,15 @@ class ApiUk
                 FROM (    
                     SELECT w.SKU,w.skuname,w.goodscode,w.CategoryName,w.CreateDate,
                     price = (CASE WHEN w.costprice<=0 THEN w.goodsPrice ELSE w.costprice END)
-                    FROM Y_R_tStockingWaring w WHERE (SKU LIKE 'UK-%' OR SKU IN ('EX-A068401','EX-A137601','EX-A137602','EX-A137603','EX-A137606','EX-A137701_M','EX-A137701_S','EX-A137702_M','EX-A137702_S','EX-A137703_M','EX-A137703_S','EX-A139401','EX-A139402','EX-A139501','EX-A139502','EX-A139504','EX-A139505','EX-A139506','EX-A139507','EX-A140702','EX-A140704','EX-A140706','EX-A140801','EX-A140802','EX-A140901_12W','EX-A140901_24W','EX-A140902_12W','EX-A140902_24W','EX-A140902_36W','EX-A122901','EX-A122902','EX-A122903','EX-A122904','EX-A122905')
+                    FROM Y_R_tStockingWaring(nolock) w WHERE (SKU LIKE 'UK-%' OR SKU IN ('EX-A068401','EX-A137601','EX-A137602','EX-A137603','EX-A137606','EX-A137701_M','EX-A137701_S','EX-A137702_M','EX-A137702_S','EX-A137703_M','EX-A137703_S','EX-A139401','EX-A139402','EX-A139501','EX-A139502','EX-A139504','EX-A139505','EX-A139506','EX-A139507','EX-A140702','EX-A140704','EX-A140706','EX-A140801','EX-A140802','EX-A140901_12W','EX-A140901_24W','EX-A140902_12W','EX-A140902_24W','EX-A140902_36W','EX-A122901','EX-A122902','EX-A122903','EX-A122904','EX-A122905')
                     ) AND storeName='万邑通UK' 
                 UNION ALL 
                     SELECT w.SKU,w.skuname,w.goodscode,w.CategoryName,w.CreateDate,
                     (CASE WHEN w.costprice<=0 THEN w.goodsPrice ELSE w.costprice END) AS price
-                    FROM Y_R_tStockingWaring w WHERE SKU LIKE 'UK-%' AND storeName='金皖399' 
-                    AND SKU NOT IN (SELECT SKU FROM Y_R_tStockingWaring WHERE SKU LIKE 'UK-%' AND storeName='万邑通UK')
+                    FROM Y_R_tStockingWaring(nolock) w WHERE SKU LIKE 'UK-%' AND storeName='金皖399' 
+                    AND SKU NOT IN (SELECT SKU FROM Y_R_tStockingWaring(nolock) WHERE SKU LIKE 'UK-%' AND storeName='万邑通UK')
                     ) AS aa
-                LEFT JOIN UK_Storehouse_WeightAndSize k ON aa.sku=k.sku
+                LEFT JOIN UK_Storehouse_WeightAndSize(nolock) k ON aa.sku=k.sku
                 WHERE  aa.sku='{$newSku}'";
                 $res = Yii::$app->py_db->createCommand($sql)->queryOne();
                 $data[] = $res;

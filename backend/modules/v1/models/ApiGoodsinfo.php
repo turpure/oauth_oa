@@ -287,7 +287,7 @@ class ApiGoodsinfo
             ->from('proCenter.oa_goodssku gs')
             ->leftJoin('proCenter.oa_goodsSku1688 ss', 'ss.goodsSkuId=gs.id')
             ->leftJoin('proCenter.oa_goods1688 og', 'og.specId=ss.specId and og.offerId=ss.offerId')
-            ->where(['gs.infoId' => $id])->all();
+            ->where(['gs.infoId' => $id])->orderBy('gs.id')->all();
         foreach ($skuInfo as &$v) {
             $goods = OaGoods1688::find()->select('offerId,specId,style')
                 ->where(['infoId' => $id, 'offerId' => $v['offerId']])->distinct()->asArray()->all();
@@ -1048,7 +1048,7 @@ class ApiGoodsinfo
             'LEFT JOIN oa_wishGoods as owg on owg.infoId = ogi.id ' .
             "where ogi.id in (" .
             $ids .
-            ')';
+            ")";
 
         #生成英文标题
 
@@ -1073,7 +1073,6 @@ class ApiGoodsinfo
 
         # 特殊字段处理
         foreach ($products as $ele) {
-
             # 生成标题
             $ele['产品标题（英文）1'] = $goodsInfo[$ele['商品编码']]['title'];
 
@@ -1084,7 +1083,6 @@ class ApiGoodsinfo
             # SKu 信息
             $ele['成本价'] = $skuCostPrice[$ele['SKU']]['CostPrice'];
             $ele['重量'] = $skuCostPrice[$ele['SKU']]['Weight'];
-
             # 售价信息
             $ele['MY售价'] = static::getGoodsSalePrice($ele, $siteInfo['MY'], $packageInfo, $expressInfo);
             $ele['MY原价'] = round($ele['MY售价'] * 1.8, 2);
@@ -1268,10 +1266,12 @@ class ApiGoodsinfo
         if($plat == 'lazada'){
             foreach ($expressInfo as $ep) {
                 $delta = $totalWeight - $ep['BeginWeight'];
-                if ($delta >= 0 && $delta <= $ep['AddWeight']) {
-                    break;
-                } else {
+                if ($delta >= 0 && $delta <= $mine) {
+                    $mine = $delta;
                     $i++;
+                } else {
+                    $i--;
+                    break;
                 }
             }
         }
