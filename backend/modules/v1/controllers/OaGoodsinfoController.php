@@ -19,6 +19,7 @@ namespace backend\modules\v1\controllers;
 
 use backend\models\OaEbayGoodsSku;
 use backend\models\OaGoods1688;
+use backend\models\OaGoodsinfo;
 use backend\models\OaJoomSuffix;
 use backend\models\OaSiteCountry;
 use backend\models\OaSmtGoodsSku;
@@ -310,18 +311,21 @@ class OaGoodsinfoController extends AdminController
      */
     public function actionGet1688Suppliers()
     {
-        $request = Yii::$app->request;
-        if (!$request->isPost) {
-            return [];
-        }
-        $infoId = $request->post()['condition']['id'];
-        if (!$infoId) {
+        $condition = Yii::$app->request->post()['condition'];
+        $infoId = isset($condition['id']) ? $condition['id'] : '';
+        $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
+        if (!$infoId && !$goodsCode) {
             return [
                 'code' => 400,
-                'message' => "Attribute of id can not be empty!",
+                'message' => "Attributes of id and goodsCode can not be empty at the same time!",
             ];
         }
-        $goods1688 =  OaGoods1688::find()->select('linkUrl as vendor,companyName,offerId,subject')->where(['infoId' => $infoId])->distinct()->asArray()->all();
+        if(!$infoId && $goodsCode){
+            $query = OaGoodsinfo::findOne(['goodsCode' => $goodsCode]);
+            $infoId = $query ? $query->id : 0;
+        }
+        $goods1688 =  OaGoods1688::find()->select('linkUrl as vendor,companyName,offerId,subject')
+            ->where(['infoId' => $infoId])->distinct()->asArray()->all();
         foreach ($goods1688 as &$val){
             $goods = OaGoods1688::find()->select('offerId,specId,style')
                 ->where(['offerId' => $val['offerId']])->asArray()->all();
