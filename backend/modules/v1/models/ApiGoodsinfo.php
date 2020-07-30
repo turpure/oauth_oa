@@ -1342,6 +1342,11 @@ class ApiGoodsinfo
                 foreach ($extraImage as $k => $img){
                     $row['extraImage'.($k+1)] = $img;
                 }
+                if(count($extraImage) < 20){
+                    for($i = 0; $i < 20 - count($extraImage); $i++){
+                        $row['extraImage'.(20 - $i)] = '';
+                    }
+                }
                 $ret[$goodsCode] = $row;
             }
         }
