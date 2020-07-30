@@ -14,6 +14,7 @@ use backend\models\OaGoodsinfo;
 use backend\models\OaGoodsSku;
 use backend\models\OaGoodsSku1688;
 use backend\models\ShopElf\BGoods;
+use backend\models\ShopElf\BGoodsSku;
 use backend\modules\v1\utils\ProductCenterTools;
 use yii\data\SqlDataProvider;
 use yii\db\Exception;
@@ -186,10 +187,10 @@ class PurchaseToolController extends AdminController
             //var_dump($provider);exit;
             $userInfo = $provider->getModels();
             $suppliers = Yii::$app->py_db->createCommand($goodsSql)->queryAll();
-            foreach ($userInfo as &$v){
+            foreach ($userInfo as &$v) {
                 $skuSql = "SELECT DISTINCT companyName FROM B_GoodsSKUWith1688 WHERE GoodsSKUID = :nid";
                 $res = Yii::$app->py_db->createCommand($skuSql)->bindValues([':nid' => $v['nid']])->queryAll();
-                $v['values'] = array_merge(['无'],ArrayHelper::getColumn($res,'companyName'));
+                $v['values'] = array_merge(['无'], ArrayHelper::getColumn($res, 'companyName'));
             }
             return [
                 'skuInfo' => $userInfo,
@@ -258,17 +259,17 @@ class PurchaseToolController extends AdminController
         try {
             $goodsInfo = OaGoodsinfo::findOne(['goodsCode' => $goodsCode]);
             $goods = OaGoods::findOne(['nid' => $goodsInfo['goodsId']]);
-            if($goods['vendor1'] == $url) {
+            if ($goods['vendor1'] == $url) {
                 $goods->vendor1 = $url;
-            }else if(!$goods['vendor2'] || $goods['vendor2'] == $url){
+            } else if (!$goods['vendor2'] || $goods['vendor2'] == $url) {
                 $goods->vendor2 = $url;
             } else {
                 $goods->vendor3 = $url;
             }
             $res = $goods->save();
-            if($res){
+            if ($res) {
                 return ProductCenterTools::sync1688Goods($goodsInfo['id']);
-            }else{
+            } else {
                 throw new Exception('Failed to update goods vendor');
             }
 
@@ -319,17 +320,18 @@ class PurchaseToolController extends AdminController
      * @return array|bool
      * @throws Exception
      */
-    public function actionSaveSkuInfo(){
+    public function actionSaveSkuInfo()
+    {
         $condition = Yii::$app->request->post('condition', []);
-        $skuInfo = isset($condition['skuInfo']) ? $condition['skuInfo'] : [];
+        $skuInfo = isset($condition['data']) ? $condition['data'] : [];
         $transaction = Yii::$app->db->beginTransaction();
         try {
             $skuIds = [];
             foreach ($skuInfo as $skuRow) {
                 $infoId = $skuRow['infoId'];
                 $id = $skuRow['id'];
-                $item['goodsSkuId'] = $id;
                 $item['SKU'] = $skuRow['sku'];
+                $item['goodsSkuId'] = BGoodsSku::findOne(['SKU' => $skuRow['sku']])['NID'];
                 $skuIds[] = $item;
                 //保存SKU关联1688信息
                 $specId = isset($skuRow['specId']) ? $skuRow['specId'] : '';
@@ -360,6 +362,7 @@ class PurchaseToolController extends AdminController
                     }
                 }
             }
+
             // 同步1688商品信息到普源
             $goodsInfo = OaGoodsinfo::findOne($infoId);
             $params['GoodsCode'] = $goodsInfo['goodsCode'];
@@ -377,8 +380,8 @@ class PurchaseToolController extends AdminController
                 'message' => $e->getMessage()
             ];
         }
-    }
 
+    }
 
 
 }
