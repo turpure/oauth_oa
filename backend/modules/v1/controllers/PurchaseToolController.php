@@ -296,7 +296,7 @@ class PurchaseToolController extends AdminController
             $skuInfo = (new Query())->select("gs.*, ss.offerId, ss.specId,og.style")
                 ->from('proCenter.oa_goodssku gs')
                 ->leftJoin('proCenter.oa_goodsSku1688 ss', 'ss.goodsSkuId=gs.id')
-                ->leftJoin('proCenter.oa_goods1688 og', 'og.specId=ss.specId and og.offerId=ss.offerId')
+                ->leftJoin('proCenter.oa_goods1688 og', 'og.specId=ss.specId and og.offerId=ss.offerId and og.infoId='.$id)
                 ->where(['gs.infoId' => $id])->all();
             //var_dump($skuInfo);exit;
             foreach ($skuInfo as &$v) {
