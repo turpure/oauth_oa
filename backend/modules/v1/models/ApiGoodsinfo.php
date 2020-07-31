@@ -464,6 +464,7 @@ class ApiGoodsinfo
     {
         foreach ($ids as $id) {
             OaGoodsSku::deleteAll(['id' => $id]);
+            OaGoods1688::deleteAll(['goodsSkuId' => $id]);
         }
         return true;
     }
@@ -1623,6 +1624,66 @@ class ApiGoodsinfo
         return $ret;
     }
 
+    /**
+     * @brief 导出joom模板
+     * @param $ids
+     * @param $accounts
+     * @return array
+     */
+    public static function preExportJoomData($ids, $accounts)
+    {
+        if (!is_array($accounts)) {
+            $accounts = [$accounts];
+        }
+        if (!is_array($ids)) {
+            $ids = [$ids];
+        }
+        $row = [
+            'parent_sku' => '', 'name' => '', 'description' => '', 'tags' => '', 'sku' => '', 'color' => '',
+            'size' => '', 'inventory' => '', 'price' => '', 'msrp' => '', 'shipping' => '', 'shipping_weight' => '',
+            'product_main_image' => '', 'variant_main_image' => '', 'extra_images' => '', 'dangerous_kind' => '',
+            'declaredValue' => '', 'selleruserid' => ''
+        ];
+        $out = [];
+        foreach ($ids as $id) {
+            if (is_numeric($id)) {
+                $goodsInfo = OaGoodsinfo::findOne(['id' => $id]);
+            } else {
+                $goodsInfo = OaGoodsinfo::findOne(['goodsCode' => $id]);
+                $id = $goodsInfo['id'];
+            }
+            $joomSku = OaWishGoodsSku::find()->where(['infoId' => $id])->asArray()->all();
+            $joomInfo = OaWishGoods::find()->where(['infoId' => $id])->asArray()->one();
+            $keyWords = static::preKeywords($joomInfo);
+            $title = static::getTitleName($keyWords, self::JoomTitleLength);
+            foreach ($accounts as $account) {
+                $joomAccounts = OaJoomSuffix::find()->where(['joomName' => $account])->asArray()->one();
+                $imageInfo = static::getJoomImageInfo($joomInfo, $joomAccounts);
+                $row['parent_sku'] = $joomInfo['sku'] . $joomAccounts['skuCode'];
+                $row['name'] = $title;
+                $row['description'] = $joomInfo['description'];
+                $row['tags'] = $joomInfo['wishTags'];
+                $row['product_main_image'] = $imageInfo['mainImage'];
+                $row['extra_images'] = $imageInfo['extraImages'];
+                $row['dangerous_kind'] = static::getJoomDangerousKind($goodsInfo);
+                foreach ($joomSku as $sku) {
+                    $row['sku'] = $sku['sku'] . $joomAccounts['skuCode'];
+                    $row['color'] = $sku['color'];
+                    $row['size'] = $sku['size'];
+                    $row['inventory'] = $sku['inventory'];
+                    $row['price'] = $sku['joomPrice'];
+                    $row['msrp'] = ($sku['joomPrice'] + $sku['joomShipping']) * 5;
+                    $row['shipping'] = $sku['joomShipping'];
+                    $row['shipping_weight'] = (float)$sku['weight'] * 1.0 / 1000;
+                    $row['variant_main_image'] = str_replace('/10023/', '/' . $joomAccounts['imgCode'] . '/', $sku['linkUrl']);
+                    $row['declaredValue'] = static::getJoomDeclaredValue($sku['joomPrice']);
+                    $out[] = $row;
+                }
+            }
+        }
+        $ret['data'] = $out;
+        return $ret;
+    }
 
     /**
      * @brief 导出joom模板

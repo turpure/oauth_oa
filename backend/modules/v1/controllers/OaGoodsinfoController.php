@@ -328,7 +328,8 @@ class OaGoodsinfoController extends AdminController
             ->where(['infoId' => $infoId])->distinct()->asArray()->all();
         foreach ($goods1688 as &$val){
             $goods = OaGoods1688::find()->select('offerId,specId,style')
-                ->where(['offerId' => $val['offerId']])->asArray()->all();
+                //->leftJoin('proCenter.oa_goodssku s', 's.id=goodsSkuId')
+                ->where(['offerId' => $val['offerId'],'infoId' => $infoId])->asArray()->all();
             $val['vendor'] = $val['vendor'].'商品ID:'.$val['offerId'];
             $val['value'] = array_merge([["offerId" => '无', "specId" => '无', 'style' => '无']],$goods);
         }
@@ -692,6 +693,34 @@ class OaGoodsinfoController extends AdminController
         }
 
     }
+
+    /**
+     * @brief 导出JOOM模板数据
+     * @throws \Exception
+     */
+    public function actionPlatExportJoomData()
+    {
+        try {
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            $infoId = $condition['id'];
+            $type = isset($condition['type']) ? $condition['type'] : '';
+            $ret = ApiGoodsinfo::preExportJoomData($infoId, $type);
+            foreach ($ret['data'] as &$row) {
+                $row['extra_images'] = str_replace("\n", '|', $row['extra_images']);
+                $row['variants'] = json_decode($row['variants'], true);
+            }
+            return $ret;
+        } catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+
+    }
+
+
 
     /**
      * @brief 导出mymall模板
