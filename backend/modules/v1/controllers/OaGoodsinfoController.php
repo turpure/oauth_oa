@@ -290,16 +290,18 @@ class OaGoodsinfoController extends AdminController
      */
     public function actionSync1688Goods()
     {
-        $request = Yii::$app->request;
-        if (!$request->isPost) {
-            return [];
-        }
-        $infoId = $request->post()['condition']['id'];
-        if (!$infoId) {
+        $condition = Yii::$app->request->post()['condition'];
+        $infoId = isset($condition['id']) ? $condition['id'] : '';
+        $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
+        if (!$infoId && !$goodsCode) {
             return [
                 'code' => 400,
-                'message' => "Attribute of id can not be empty!",
+                'message' => "Attributes of id and goodsCode can not be empty at the same time!",
             ];
+        }
+        if(!$infoId && $goodsCode){
+            $query = OaGoodsinfo::findOne(['goodsCode' => $goodsCode]);
+            $infoId = $query ? $query->id : 0;
         }
         return ProductCenterTools::sync1688Goods($infoId);
     }
