@@ -464,7 +464,7 @@ class ApiGoodsinfo
     {
         foreach ($ids as $id) {
             OaGoodsSku::deleteAll(['id' => $id]);
-            OaGoods1688::deleteAll(['goodsSkuId' => $id]);
+            OaGoodsSku1688::deleteAll(['goodsSkuId' => $id]);
         }
         return true;
     }
