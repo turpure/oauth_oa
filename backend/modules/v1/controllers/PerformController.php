@@ -10,6 +10,7 @@ namespace backend\modules\v1\controllers;
 
 
 use backend\modules\v1\models\ApiPerform;
+use backend\modules\v1\utils\ExportTools;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
 use Yii;
@@ -86,6 +87,32 @@ class PerformController extends AdminController
         ];
         $ret = ApiPerform::getSalesChange($condition);
         return $ret;
+    }
+
+    /** 销售变化表
+     * Date: 2020-08-03 15:59
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public  function actionSalesExport()
+    {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+
+        $condition = [
+            'suffix' => $cond['suffix'],
+            'plat' => $cond['plat'],
+            'salerName' => $cond['saler'],
+            'page' => Yii::$app->request->get('page',1),
+            'pageSize' => 10000,
+        ];
+        $ret = ApiPerform::getSalesChange($condition);
+        $name = 'sale-changes';
+        $title = ['商品编码','商品名称','商品状态','类目','归属1','归属2','创建日期','近1天销量','上1天销量','1天销量变化',
+            '近5天销量','上5天销量','5天销量变化','近10天销量','上10天销量','10天销量变化'];
+        $data = $ret->getModels();
+        ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
     }
 
     /**

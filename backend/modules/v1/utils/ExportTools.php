@@ -28,7 +28,7 @@ class ExportTools
         $fileName .= date('-YmdHis');
         $sheet = new Spreadsheet();
         $workSheet = $sheet->getActiveSheet();
-        $cellName = array_keys($data[0]);
+        $cellName = $data ? array_keys($data[0]) : [];
         $len = count($cellName);
 
         //set title
