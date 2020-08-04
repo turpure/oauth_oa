@@ -15,6 +15,7 @@ use backend\models\OaGoodsSku;
 use backend\models\OaGoodsSku1688;
 use backend\models\ShopElf\BGoods;
 use backend\models\ShopElf\BGoodsSku;
+use backend\modules\v1\models\ApiPurchaseTool;
 use backend\modules\v1\utils\ProductCenterTools;
 use yii\data\SqlDataProvider;
 use yii\db\Exception;
@@ -103,7 +104,11 @@ class PurchaseToolController extends AdminController
      * @brief 自动审核
      * @return array | mixed
      */
-    public function actionChecking()
+
+    /**
+     * @brief 自动审核
+     * @return array | mixed
+     *//*public function actionChecking()
     {
         $url = $this->host . 'check';
         try {
@@ -123,6 +128,17 @@ class PurchaseToolController extends AdminController
             ];
         }
 
+    }*/
+    public function actionChecking()
+    {
+        try {
+            return ApiPurchaseTool::checkPurchaseOrder();
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
     }
 
     /**
