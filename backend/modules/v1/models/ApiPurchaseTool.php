@@ -13,6 +13,7 @@ use backend\modules\v1\aliApi\AgentProductSimpleGet;
 use backend\modules\v1\utils\Helper;
 use Yii;
 use yii\db\Exception;
+use yii\helpers\ArrayHelper;
 
 class ApiPurchaseTool
 {
@@ -53,7 +54,7 @@ class ApiPurchaseTool
                 }
             }
         }
-        return $out;
+        return implode(',', array_values($out));
     }
 
 
@@ -61,11 +62,8 @@ class ApiPurchaseTool
     public static function shortage(){
         $select_sku = 'wo_test_purchasingBill @chkNoShowPur=1';
         $sku_to_handle = Yii::$app->py_db->createCommand($select_sku)->queryAll();
-        $out = [];
-        foreach ($sku_to_handle as $row) {
-            $out[$row['supplierId']] = $row['allSku'];
-        }
-        return $out;
+        $sku = ArrayHelper::getColumn($sku_to_handle, 'allSku');
+        return implode(',', $sku);
     }
 
 
