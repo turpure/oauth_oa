@@ -41,12 +41,7 @@ class PurchaseToolController extends AdminController
     public function actionClearSku()
     {
         try {
-            $url = $this->host . 'cleaned-generator';
-            $context = stream_context_create(array('http' => array('ignore_errors' => true)));
-            $data = file_get_contents($url, FALSE, $context);
-            //$data = file_get_contents($url);
-            $arr = json_decode($data, true);
-            return implode(',', array_values($arr));
+            return ApiPurchaseTool::clearSku();
         } catch (Exception $e) {
             return [
                 'code' => 400,
@@ -56,19 +51,14 @@ class PurchaseToolController extends AdminController
 
     }
 
-    /**  非清仓SKU
+    /**非清仓SKU
      * @brief 拣货人
      * @return array | mixed
      */
     public function actionUnclearSku()
     {
         try {
-            $url = $this->host . 'uncleaned-generator';
-            $context = stream_context_create(array('http' => array('ignore_errors' => true)));
-            $data = file_get_contents($url, FALSE, $context);
-//            $data = file_get_contents($url);
-            $arr = json_decode($data, true);
-            return implode(',', array_values($arr));
+            return ApiPurchaseTool::clearSku(1);
         } catch (Exception $e) {
             return [
                 'code' => 400,
@@ -85,12 +75,7 @@ class PurchaseToolController extends AdminController
     public function actionShortage()
     {
         try {
-            $url = $this->host . 'sku_generator';
-            $context = stream_context_create(array('http' => array('ignore_errors' => true)));
-            $data = file_get_contents($url, FALSE, $context);
-//            $data = file_get_contents($url);
-            $arr = json_decode($data, true);
-            return implode(',', array_values($arr));
+            return ApiPurchaseTool::shortage();
         } catch (Exception $e) {
             return [
                 'code' => 400,

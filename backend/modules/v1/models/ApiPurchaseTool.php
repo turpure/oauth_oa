@@ -16,6 +16,60 @@ use yii\db\Exception;
 
 class ApiPurchaseTool
 {
+    /////////////////////////////清仓SKU/非清仓SKU/////////////////////////////
+    public static function clearSku($is_normal = 0){
+        if (!$is_normal){
+            $select_sku = 'wo_test_purchasingBill @chkNoShowPur=1';
+            $sql = " select DISTINCT bgs.sku from p_tradeun(nolock) as pt LEFT JOIN 
+                   p_tradeDtUn(nolock) as ptd on pt.nid=ptd.tradenid LEFT JOIN 
+                   b_goodssku(nolock) as bgs on bgs.sku=ptd.sku where addressowner in ('shopee','wish','joom')  
+                   and protectionEligibilityType='缺货订单' and 
+                   goodsSKUstatus in  (select DISTINCT skuStatus from y_mark_trades)";
+        } else{
+            $select_sku = 'wo_test_purchasingBill @chkNoShowPur=1 ,@isNormalSku=1';
+            $sql = " select DISTINCT bgs.sku from p_tradeun(nolock) as pt LEFT JOIN 
+                   p_tradeDtUn(nolock) as ptd on pt.nid=ptd.tradenid LEFT JOIN 
+                   b_goodssku(nolock) as bgs on bgs.sku=ptd.sku where addressowner in  ('shopee','wish','joom' )  
+                   and protectionEligibilityType='缺货订单' and goodsSKUstatus not in 
+                   (select DISTINCT skuStatus from y_mark_trades)";
+        }
+        $sku_to_handle = Yii::$app->py_db->createCommand($select_sku)->queryAll();
+        $cleaned_sku = Yii::$app->py_db->createCommand($sql)->queryAll();
+        #转换成key-value
+        $out = [];
+        foreach ($cleaned_sku as $value){
+            foreach ($sku_to_handle as $row){
+                $key = $row['supplierId'];
+                $skuList = explode(',',  $row['allSku']);
+                foreach ($skuList as $v){
+                    if($value['sku'] == $v){
+                        if(array_key_exists($row['supplierId'], $out)){
+                            $out[$key] = $v . ',' . $out[$key];
+                        }else{
+                            $out[$key] = $v;
+                        }
+                        break 2;
+                    }
+                }
+            }
+        }
+        return $out;
+    }
+
+
+    /////////////////////////////缺货管理/////////////////////////////
+    public static function shortage(){
+        $select_sku = 'wo_test_purchasingBill @chkNoShowPur=1';
+        $sku_to_handle = Yii::$app->py_db->createCommand($select_sku)->queryAll();
+        $out = [];
+        foreach ($sku_to_handle as $row) {
+            $out[$row['supplierId']] = $row['allSku'];
+        }
+        return $out;
+    }
+
+
+    ///////////////////////////自动审核////////////////////////////////
 
     /** 审核采购订单
      * Date: 2020-08-04 13:49
