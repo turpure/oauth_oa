@@ -1384,7 +1384,6 @@ class ProductCenterTools
         if (isset($ret['productInfo'])) {
             $skuInfos = isset($ret['productInfo']['skuInfos']) ? $ret['productInfo']['skuInfos'] : [];
             if($skuInfos){
-//                var_dump($skuInfos);
                 foreach ($skuInfos as $sku) {
                     $item['infoId'] = $infoId;
                     $item['offerId'] = $goodsId;
@@ -1406,7 +1405,7 @@ class ProductCenterTools
                             }
                         }
                     }
-                    $item['style'] = implode(' ', $styleArr);
+                    $item['style'] = implode('-->', $styleArr);
                     $model = new OaGoods1688();
                     $model->setAttributes($item);
                     if (!$model->save()) {
