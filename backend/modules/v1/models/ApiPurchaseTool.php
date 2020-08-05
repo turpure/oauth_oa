@@ -126,7 +126,7 @@ class ApiPurchaseTool
                 }
             }
         } else {
-            $someDays = date('Y-m-d',strtotime('-30 day'));
+            $someDays = date('Y-m-d',strtotime('-20 day'));
             $sql = "SELECT DISTINCT billNumber,alibabaOrderid AS orderId,case when loginId like 'caigoueasy%' then 
                  'caigoueasy' else loginId end  AS account ,MakeDate 
                 FROM CG_StockOrderD  AS cd WITH(nolock)  
