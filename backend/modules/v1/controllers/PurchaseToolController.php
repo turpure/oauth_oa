@@ -11,7 +11,6 @@ namespace backend\modules\v1\controllers;
 use backend\models\OaGoods;
 use backend\models\OaGoods1688;
 use backend\models\OaGoodsinfo;
-use backend\models\OaGoodsSku;
 use backend\models\OaGoodsSku1688;
 use backend\models\ShopElf\BGoods;
 use backend\models\ShopElf\BGoodsSku;
@@ -21,7 +20,6 @@ use yii\data\SqlDataProvider;
 use yii\db\Exception;
 use Yii;
 use yii\db\Query;
-use yii\debug\models\timeline\DataProvider;
 use yii\helpers\ArrayHelper;
 
 class PurchaseToolController extends AdminController
@@ -89,31 +87,6 @@ class PurchaseToolController extends AdminController
      * @brief 自动审核
      * @return array | mixed
      */
-
-    /**
-     * @brief 自动审核
-     * @return array | mixed
-     *//*public function actionChecking()
-    {
-        $url = $this->host . 'check';
-        try {
-            $context = stream_context_create(array('http' => array('ignore_errors' => true)));
-            $data = file_get_contents($url, FALSE, $context);
-//            $data = file_get_contents($url);
-            $arr = json_decode($data, true);
-            if ($arr['msg'] == 'done') {
-                return true;
-            } else {
-                return false;
-            }
-        } catch (Exception $e) {
-            return [
-                'code' => 400,
-                'message' => $e->getMessage()
-            ];
-        }
-
-    }*/
     public function actionChecking()
     {
         try {
@@ -133,16 +106,7 @@ class PurchaseToolController extends AdminController
     public function actionAutoSync()
     {
         try {
-            $url = $this->host . 'ali_sync';
-            $context = stream_context_create(array('http' => array('ignore_errors' => true)));
-            $data = file_get_contents($url, FALSE, $context);
-//            $data = file_get_contents($url);
-            $arr = json_decode($data, true);
-            if ($arr['msg'] == 'done') {
-                return true;
-            } else {
-                return false;
-            }
+            return ApiPurchaseTool::checkPurchaseOrder($check = false);
         } catch (Exception $e) {
             return [
                 'code' => 400,

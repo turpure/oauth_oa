@@ -51,7 +51,7 @@ class AgentProductSimpleGet{
         ];
         try{
             $ret = Helper::curlRequest($base_url, $post_data);
-            return $ret['access_token'];
+            return isset($ret['access_token']) ? $ret['access_token'] : '';
         }catch (Exception $e){
             return '';
         }
