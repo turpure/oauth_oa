@@ -80,6 +80,7 @@ class ApiPurchaseTool
     public static function checkPurchaseOrder($check = true)
     {
         $orderList = self::getPurchaseOrderList($check);
+//        var_dump($orderList);exit;
         $res = [];
         foreach ($orderList as $v) {
             $orderInfo = self::getOrderDetails($v);
@@ -115,6 +116,7 @@ class ApiPurchaseTool
                 AND CheckFlag=1 AND Archive=0 AND InFlag=0 AND isnull(note,'') != '' ";
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             foreach ($data as &$val) {
+                $val['orderId'] = '';
                 preg_match_all('/\d+/', $val['note'], $matches);
                 foreach ($matches[0] as $v) {
                     if (strlen($v) > 10) {
