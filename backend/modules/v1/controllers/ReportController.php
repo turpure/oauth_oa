@@ -244,12 +244,12 @@ class ReportController extends AdminController
         $request = Yii::$app->request->post();
         $cond = $request['condition'];
         $queryParams = [
+//            'username' => $cond['member'],
+            'username' => $cond['member'] ? $cond['member'] : $userList,
             'department' => $cond['department'],
             'secDepartment' => $cond['secDepartment'],
             'platform' => $cond['plat'],
-            'username' => $cond['member'] ? $cond['member'] : $userList,
-//            'username' => $cond['member'],
-            'store' => $cond['account']
+            'store' => $cond['account'],
         ];
         $params = Handler::paramsFilter($queryParams);
         $condition = [
