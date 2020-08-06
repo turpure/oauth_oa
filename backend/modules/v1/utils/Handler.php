@@ -181,7 +181,9 @@ class Handler
         // 归化查询类型
         $unEmptyCondition = array_filter($queryParam);
         $keys = array_keys($unEmptyCondition);
-        $queryType = array_pop($keys)?:'';
+//        $queryType = array_pop($keys)?:'';
+        sort($keys);
+        $queryType = isset($keys[0]) ? $keys[0] : '';
         if ($queryType === 'platform') {
            if(!empty($queryParam['department']) && count($queryParam['department']) > 1) {
                $queryType = 'department';

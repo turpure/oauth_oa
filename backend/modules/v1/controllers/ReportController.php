@@ -248,6 +248,7 @@ class ReportController extends AdminController
             'secDepartment' => $cond['secDepartment'],
             'platform' => $cond['plat'],
             'username' => $cond['member'] ? $cond['member'] : $userList,
+//            'username' => $cond['member'],
             'store' => $cond['account']
         ];
         $params = Handler::paramsFilter($queryParams);
@@ -259,6 +260,7 @@ class ReportController extends AdminController
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1]
         ];
+        //print_r($condition);exit;
         $ret = ApiReport::getSalesTrendReport($condition);
         return $ret;
     }
