@@ -1638,7 +1638,7 @@ class ApiGoodsinfo
         }
         $row = [
             'parent_sku' => '', 'name' => '', 'description' => '', 'tags' => '', 'product_main_image' => '',
-            'extra_images' => '', 'dangerous_kind' => '', 'selleruserid' => '', 'variants' => ''
+            'extra_images' => '', 'dangerous_kind' => '', 'selleruserid' => '', 'variants' => '', 'landing_page_url' => '',
         ];
         $out = [];
         foreach ($ids as $id) {

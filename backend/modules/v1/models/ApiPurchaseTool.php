@@ -135,7 +135,7 @@ class ApiPurchaseTool
                 LEFT JOIN B_GoodsSKU AS g WITH(nolock) ON cd.goodsskuid = g.nid  
                 WHERE  CheckFlag=1 AND MakeDate > '{$someDays}'  AND isnull(loginId,'')<>'' 
                 -- AND BillNumber = 'CGD-2020-07-13-2761' 
-                AND StoreID IN (2,7,36) AND ABS(OrderMoney - alibabamoney) > 0.01 ORDER BY MakeDate";
+                AND StoreID IN (2,7,36) AND ABS(OrderMoney - alibabamoney) > 0.1 ORDER BY MakeDate";
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         }
         return $data;

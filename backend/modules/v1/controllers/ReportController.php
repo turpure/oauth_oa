@@ -9,6 +9,7 @@ namespace backend\modules\v1\controllers;
 
 use backend\modules\v1\models\ApiReport;
 use backend\modules\v1\models\ApiSettings;
+use backend\modules\v1\models\ApiUser;
 use Codeception\Template\Api;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -238,13 +239,15 @@ class ReportController extends AdminController
      */
     public function actionSalesTrend()
     {
+        $username = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($username);
         $request = Yii::$app->request->post();
         $cond = $request['condition'];
         $queryParams = [
             'department' => $cond['department'],
             'secDepartment' => $cond['secDepartment'],
             'platform' => $cond['plat'],
-            'username' => $cond['member'],
+            'username' => $cond['member'] ? $cond['member'] : $userList,
             'store' => $cond['account']
         ];
         $params = Handler::paramsFilter($queryParams);
@@ -256,7 +259,6 @@ class ReportController extends AdminController
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1]
         ];
-
         $ret = ApiReport::getSalesTrendReport($condition);
         return $ret;
     }
