@@ -1630,19 +1630,15 @@ class ApiGoodsinfo
      * @param $accounts
      * @return array
      */
-    public static function preExportJoomData($ids, $accounts)
+    public static function preExportJoomData($ids, $type)
     {
-        if (!is_array($accounts)) {
-            $accounts = [$accounts];
-        }
+        $accounts = OaJoomSuffix::find()->asArray()->all();
         if (!is_array($ids)) {
             $ids = [$ids];
         }
         $row = [
-            'parent_sku' => '', 'name' => '', 'description' => '', 'tags' => '', 'sku' => '', 'color' => '',
-            'size' => '', 'inventory' => '', 'price' => '', 'msrp' => '', 'shipping' => '', 'shipping_weight' => '',
-            'product_main_image' => '', 'variant_main_image' => '', 'extra_images' => '', 'dangerous_kind' => '',
-            'declaredValue' => '', 'selleruserid' => ''
+            'parent_sku' => '', 'name' => '', 'description' => '', 'tags' => '', 'product_main_image' => '',
+            'extra_images' => '', 'dangerous_kind' => '', 'selleruserid' => '', 'variants' => ''
         ];
         $out = [];
         foreach ($ids as $id) {
@@ -1657,32 +1653,39 @@ class ApiGoodsinfo
             $keyWords = static::preKeywords($joomInfo);
             $title = static::getTitleName($keyWords, self::JoomTitleLength);
             foreach ($accounts as $account) {
-                $joomAccounts = OaJoomSuffix::find()->where(['joomName' => $account])->asArray()->one();
-                $imageInfo = static::getJoomImageInfo($joomInfo, $joomAccounts);
-                $row['parent_sku'] = $joomInfo['sku'] . $joomAccounts['skuCode'];
+                $imageInfo = static::getJoomImageInfo($joomInfo, $account);
+                $row['parent_sku'] = $joomInfo['sku'] . $account['skuCode'];
                 $row['name'] = $title;
                 $row['description'] = $joomInfo['description'];
                 $row['tags'] = $joomInfo['wishTags'];
                 $row['product_main_image'] = $imageInfo['mainImage'];
-                $row['extra_images'] = $imageInfo['extraImages'];
+                $row['selleruserid'] = $account['joomName'];
+                $row['extra_images'] = implode('|', array_filter($imageInfo['extraImages']));
                 $row['dangerous_kind'] = static::getJoomDangerousKind($goodsInfo);
-                foreach ($joomSku as $sku) {
-                    $row['sku'] = $sku['sku'] . $joomAccounts['skuCode'];
-                    $row['color'] = $sku['color'];
-                    $row['size'] = $sku['size'];
-                    $row['inventory'] = $sku['inventory'];
-                    $row['price'] = $sku['joomPrice'];
-                    $row['msrp'] = ($sku['joomPrice'] + $sku['joomShipping']) * 5;
-                    $row['shipping'] = $sku['joomShipping'];
-                    $row['shipping_weight'] = (float)$sku['weight'] * 1.0 / 1000;
-                    $row['variant_main_image'] = str_replace('/10023/', '/' . $joomAccounts['imgCode'] . '/', $sku['linkUrl']);
-                    $row['declaredValue'] = static::getJoomDeclaredValue($sku['joomPrice']);
-                    $out[] = $row;
+                $var = [];
+                foreach ($joomSku as $k => $sku) {
+                    $variationRow = [
+                        'main_image' => '', 'sku' => '', 'enabled' => true, 'color' => '',  'declaredValue' => '',
+                        'size' => '', 'inventory' => '', 'price' => '', 'msrp' => '', 'shipping' => '',
+                        'shipping_weight' => '', 'shipping_height' => '', 'shipping_length' => '', 'shipping_width' => ''
+                    ];
+                    $variationRow['sku'] = $sku['sku'] . $account['skuCode'];
+                    $variationRow['color'] = $sku['color'];
+                    $variationRow['size'] = $sku['size'];
+                    $variationRow['inventory'] = $sku['inventory'];
+                    $variationRow['price'] = $sku['joomPrice'];
+                    $variationRow['msrp'] = ($sku['joomPrice'] + $sku['joomShipping']) * 5;
+                    $variationRow['shipping'] = $sku['joomShipping'];
+                    $variationRow['shipping_weight'] = (float)$sku['weight'] * 1.0 / 1000;
+                    $variationRow['main_image'] = str_replace('/10023/', '/' . $account['imgCode'] . '/', $sku['linkUrl']);
+                    $variationRow['declaredValue'] = static::getJoomDeclaredValue($sku['joomPrice']);
+                    $var[$k] = $variationRow;
                 }
+                $row['variants'] = json_encode($var);
+                $out[] = $row;
             }
         }
-        $ret['data'] = $out;
-        return $ret;
+        return $out;
     }
 
     /**

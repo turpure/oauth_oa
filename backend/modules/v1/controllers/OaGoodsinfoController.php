@@ -711,18 +711,12 @@ class OaGoodsinfoController extends AdminController
             $infoId = $condition['id'];
             $type = isset($condition['type']) ? $condition['type'] : '';
             $ret = ApiGoodsinfo::preExportJoomData($infoId, $type);
-            foreach ($ret['data'] as &$row) {
-                $row['extra_images'] = str_replace("\n", '|', $row['extra_images']);
-                $row['variants'] = json_decode($row['variants'], true);
-            }
             return $ret;
         } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
         }
 
     }
-
-
 
     /**
      * @brief 导出mymall模板
@@ -770,7 +764,11 @@ class OaGoodsinfoController extends AdminController
 
     }
 
-
+    /**上架JOOM产品
+     * Date: 2020-08-06 9:00
+     * Author: henry
+     * @return array|bool
+     */
     public function actionPlatJoomToBackstage()
     {
         try {

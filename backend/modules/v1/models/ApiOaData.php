@@ -53,7 +53,7 @@ class ApiOaData
                 "')=0 THEN '未推广' WHEN extendStatus is not null then extendStatus ELSE '未推广' END  AS extendStatus")
             ->from('proCenter.oa_goodsinfo gi')
             ->leftJoin('proCenter.oa_goods g','g.nid=goodsid');
-        $query->andFilterWhere(['achieveStatus' => "已完善", 'picStatus' => "已完善"]);
+        $query->andFilterWhere(['achieveStatus' => ["已完善", "已导入"], 'picStatus' => "已完善"]);
         if(isset($condition['goodsCode'])) $query->andFilterWhere(['like', 'goodsCode', $condition['goodsCode']]);
         if(isset($condition['mapPersons'])) $query->andFilterWhere(['like', 'mapPersons', $condition['mapPersons']]);
         if(isset($condition['storeName'])) $query->andFilterWhere(['like', 'storeName', $condition['storeName']]);
