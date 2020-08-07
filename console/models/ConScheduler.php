@@ -218,8 +218,8 @@ class ConScheduler
         $month = date('Y-m', strtotime('-1 days'));
         if(!$beginDate) $beginDate = $month . '-01';
         if(!$endDate) $endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
-        //$beginDate = '2020-06-01';
-        //$endDate = '2020-06-30';
+        //$beginDate = '2020-07-01';
+        //$endDate = '2020-07-31';
         //var_dump($num);exit;
 
         $userQuery = Yii::$app->db->createCommand('SELECT * FROM warehouse_user_info')->queryAll();
