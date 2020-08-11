@@ -100,7 +100,10 @@ class AdminController extends ActiveController
         if ($result === null) {
             $result = [];
         }
-        if ($data['code'] === 200 && $result && $result !== true) {
+//        if ($data['code'] === 200 && $result && $result !== true) {
+//            $data['data'] = $result;
+//        }
+        if ($data['code'] === 200 ) {
             $data['data'] = $result;
         }
         if ($result === false) {

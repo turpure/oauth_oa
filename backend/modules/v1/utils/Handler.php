@@ -196,7 +196,6 @@ class Handler
         // 用户信息
         $ret = self::userFilter($queryParam);
         $store = ArrayHelper::getColumn($ret,'store');
-
         return ['queryType'=>$queryType,'store' => $store]  ;
     }
 
