@@ -126,14 +126,14 @@ class ApiPurchaseTool
                 }
             }
         } else {
-            $someDays = date('Y-m-d',strtotime('-20 day'));
+            $someDays = date('Y-m-d',strtotime('-7 day'));
             $sql = "SELECT DISTINCT billNumber,alibabaOrderid AS orderId,case when loginId like 'caigoueasy%' then 
                  'caigoueasy' else loginId end  AS account ,MakeDate 
                 FROM CG_StockOrderD  AS cd WITH(nolock)  
                 LEFT JOIN CG_StockOrderM  AS cm WITH(nolock) ON cd.stockordernid = cm.nid  
                 LEFT JOIN S_AlibabaCGInfo AS info WITH(nolock) ON Cm.AliasName1688 = info.AliasName  
                 LEFT JOIN B_GoodsSKU AS g WITH(nolock) ON cd.goodsskuid = g.nid  
-                WHERE  CheckFlag=1 AND MakeDate > '{$someDays}'  AND isnull(loginId,'') LIKE 'caigoueasy%'  
+                WHERE  CheckFlag=1 And inflag=0 ANd Archive=0 AND MakeDate > '{$someDays}'  AND isnull(loginId,'') LIKE 'caigoueasy%'  
                 -- AND BillNumber = 'CGD-2020-07-13-2761' 
                 AND StoreID IN (2,7,36) AND ABS(OrderMoney - alibabamoney) > 0.1 ORDER BY MakeDate";
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
