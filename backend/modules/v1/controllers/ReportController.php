@@ -252,9 +252,9 @@ class ReportController extends AdminController
             'store' => $cond['account'],
         ];
         $params = Handler::paramsFilter($queryParams);
-        if($params['queryType'] == 'username' && !$cond['member']){
-            $params['queryType'] = '';
-        }
+//        if($params['queryType'] == 'username' && !$cond['member']){
+//            $params['queryType'] = '';
+//        }
         $condition = [
             'store' => $params['store'] ? implode(',', $params['store']) : '',
             'queryType' => $params['queryType'],
