@@ -459,7 +459,8 @@ class ApiReport
             ':endDate' => $condition['endDate']
         ];
         try {
-            return $con->createCommand($sql)->bindValues($params)->queryAll();
+            $ret = $con->createCommand($sql)->bindValues($params)->queryAll();
+            return !empty($ret)? $ret : [];
         } catch (\Exception $why) {
             return [
                 'code' => 400,

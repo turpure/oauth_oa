@@ -6,6 +6,7 @@
  */
 namespace backend\modules\v1\utils;
 use backend\modules\v1\models\ApiSettings;
+use backend\modules\v1\models\ApiUser;
 use Yii;
 use yii\helpers\ArrayHelper;
 
@@ -176,7 +177,6 @@ class Handler
      */
     public static function paramsFilter($queryParam)
     {
-        $ret = self::userFilter($queryParam);
         // 归化查询类型
         $unEmptyCondition = array_filter($queryParam);
         $keys = array_keys($unEmptyCondition);
@@ -189,8 +189,13 @@ class Handler
                $queryType = 'secDepartment';
            }
         }
-        $store = ArrayHelper::getColumn($ret,'store');
 
+        // 用户列表
+        $username = Yii::$app->user->identity->username;
+        $queryParam['username'] = $queryParam['username'] ?: ApiUser::getUserList($username);
+        // 用户信息
+        $ret = self::userFilter($queryParam);
+        $store = ArrayHelper::getColumn($ret,'store');
         return ['queryType'=>$queryType,'store' => $store]  ;
     }
 

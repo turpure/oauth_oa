@@ -23,6 +23,7 @@ class PowerfulSerializer extends Serializer
             $ret['extra'] = $extra;
             return $ret;
         }
+
         return parent::serialize($data);
     }
 }

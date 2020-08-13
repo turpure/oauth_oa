@@ -239,22 +239,16 @@ class ReportController extends AdminController
      */
     public function actionSalesTrend()
     {
-        $username = Yii::$app->user->identity->username;
-        $userList = ApiUser::getUserList($username);
         $request = Yii::$app->request->post();
         $cond = $request['condition'];
         $queryParams = [
-//            'username' => $cond['member'],
-            'username' => $cond['member'] ? $cond['member'] : $userList,
             'department' => $cond['department'],
             'secDepartment' => $cond['secDepartment'],
             'platform' => $cond['plat'],
+            'username' => $cond['member'],
             'store' => $cond['account'],
         ];
         $params = Handler::paramsFilter($queryParams);
-        if($params['queryType'] == 'username' && !$cond['member']){
-            $params['queryType'] = '';
-        }
         $condition = [
             'store' => $params['store'] ? implode(',', $params['store']) : '',
             'queryType' => $params['queryType'],
@@ -263,7 +257,6 @@ class ReportController extends AdminController
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1]
         ];
-        //print_r($condition);exit;
         $ret = ApiReport::getSalesTrendReport($condition);
         return $ret;
     }
