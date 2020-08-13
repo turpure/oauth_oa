@@ -3166,7 +3166,7 @@ class ApiGoodsinfo
                 LEFT JOIN `auth_department_child` dc ON u.id=dc.user_id
                 LEFT JOIN `auth_department` d ON d.id=dc.department_id
                 LEFT JOIN `auth_department` pd ON pd.id=d.parent
-                WHERE s.platform NOT IN ('eBay','Amazon','Joom','Aliexpress')
+                WHERE s.platform NOT IN ('eBay','Amazon','Joom')
                 UNION SELECT  joomName as suffix,'Joom' AS platform, joomSuffix AS depart FROM proCenter.oa_joomSuffix";
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
