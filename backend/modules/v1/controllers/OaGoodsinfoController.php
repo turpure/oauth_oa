@@ -974,6 +974,22 @@ class OaGoodsinfoController extends AdminController
         return true;
     }
 
+
+    /** 添加SMT 模本队列
+     * Date: 2020-04-27 12:01
+     * Author: henry
+     * @return array|bool
+     */
+    public function actionExportCondition()
+    {
+        try {
+            return ApiGoodsinfo::getPlatExportCondition();
+        } catch (\Exception  $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+
+
     ########################### smt  plat info ########################################
     public function actionSmtAccount()
     {
