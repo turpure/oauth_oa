@@ -68,7 +68,7 @@ class ApiCondition
         $department = [];
         foreach ($userInfo as $key=>$value) {
             $row = [];
-            if(!empty($value['parent_id']) || !empty($value['parent_department'])) {
+            if($value['parent_department'] !== $value['department'] && ( !empty($value['parent_id']) || !empty($value['parent_department']))) {
                 $row['id'] = $value['department_id'];
                 $row['department'] = $value['department'];
                 $row['parent'] = $value['parent_id'];
