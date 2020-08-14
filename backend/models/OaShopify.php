@@ -46,7 +46,7 @@ class OaShopify extends \yii\db\ActiveRecord
     {
         return [
             [['createdDate', 'updatedDate'], 'safe'],
-            [['account'], 'string', 'max' => 50],
+            [['account', 'suffix'], 'string', 'max' => 50],
             [['tags'], 'string', 'max' => 100],
             [['cate', 'subCate'], 'string', 'max' => 20],
         ];

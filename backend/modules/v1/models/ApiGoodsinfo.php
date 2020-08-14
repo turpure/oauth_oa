@@ -1423,7 +1423,7 @@ class ApiGoodsinfo
      * @return array
      * @throws \Exception
      */
-    public static function preExportWish($id)
+    public static function preExportWish($id, $suffix = [])
     {
         $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
         $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
@@ -1432,6 +1432,7 @@ class ApiGoodsinfo
         $wishAccounts = OaWishSuffix::find()->where(['like', 'parentCategory', $goods['cate']])
             ->orWhere(["IFNULL(parentCategory,'')" => ''])
             ->andWhere(['isIbay' => 1])
+            ->andFilterWhere(['shortName' => $suffix])
             ->asArray()->all();
         $keyWords = static::preKeywords($wishInfo);
 
@@ -1489,7 +1490,7 @@ class ApiGoodsinfo
      * @param $ids
      * @return array
      */
-    public static function preExportMyMall($ids)
+    public static function preExportMyMall($ids, $suffixs)
     {
         if (!is_array($ids)) {
             $ids = [$ids];
@@ -1513,6 +1514,7 @@ class ApiGoodsinfo
             }
 
             $myMallAccounts = OaMyMallSuffix::find()
+                ->andFilterWhere(['name' => $suffixs])
                 ->asArray()->all();
             $id = $goodsInfo['id'];
             $myMallSku = OaWishGoodsSku::find()
@@ -2281,7 +2283,7 @@ class ApiGoodsinfo
         $out = [];
 
         foreach ($accounts as $act) {
-            $account = OaShopify::find()->where(['account' => $act])->asArray()->one();
+            $account = OaShopify::find()->orFilterWhere(['account' => $act, 'suffix' => $act])->asArray()->one();
             $titlePool = [];
             $title = '';
             $len = self::WishTitleLength;
@@ -3156,9 +3158,13 @@ class ApiGoodsinfo
 
     }
 
-    public static function getPlatExportCondition()
+    public static function getPlatExportCondition($plat = '', $depart = '')
     {
-        $sql = "SELECT s.store AS suffix,s.platform ,
+        if($plat == 'Joom') {
+            $sql = "SELECT  joomName as suffix,'Joom' AS platform, joomSuffix AS depart FROM proCenter.oa_joomSuffix WHERE 1=1";
+            if ($depart) $sql .= " AND joomSuffix='{$depart}'";
+        }else{
+            $sql = "SELECT s.store AS suffix,s.platform ,
                 CASE WHEN ifnull(pd.department,'')<>'' THEN IFNULL(pd.department,'其他') ELSE IFNULL(d.department,'其他') END AS depart
                 FROM `auth_store` s 
                 LEFT JOIN `auth_store_child` sc ON s.id=sc.store_id
@@ -3166,8 +3172,14 @@ class ApiGoodsinfo
                 LEFT JOIN `auth_department_child` dc ON u.id=dc.user_id
                 LEFT JOIN `auth_department` d ON d.id=dc.department_id
                 LEFT JOIN `auth_department` pd ON pd.id=d.parent
-                WHERE s.platform NOT IN ('eBay','Amazon','Joom')
-                UNION SELECT  joomName as suffix,'Joom' AS platform, joomSuffix AS depart FROM proCenter.oa_joomSuffix";
+                WHERE s.platform NOT IN ('eBay','Amazon','Joom')";
+            if($plat) $sql .= " AND s.platform='{$plat}'";
+            if($depart) $sql .= " AND (ifnull(pd.department,'')<>'' AND IFNULL(pd.department,'')='{$depart}' OR IFNULL(d.department,'')='{$depart}')";
+            if(!$plat){
+                $sql .= "UNION SELECT  joomName as suffix,'Joom' AS platform, joomSuffix AS depart FROM proCenter.oa_joomSuffix WHERE 1=1";
+                if($depart) $sql .= " AND joomSuffix='{$depart}'";
+            }
+        }
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
 

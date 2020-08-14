@@ -605,6 +605,8 @@ class OaGoodsinfoController extends AdminController
         return ApiGoodsinfo::getEbayStore();
     }
 
+    //////////////////平台信息导出摸板/////////////////////////////////
+
     /**
      * @brief 导出wish模板
      * @throws \Exception
@@ -626,7 +628,6 @@ class OaGoodsinfoController extends AdminController
         }
 
     }
-
     /**
      * @brief 导出lazada模板
      * @throws
@@ -669,6 +670,157 @@ class OaGoodsinfoController extends AdminController
         }
 
     }
+    /**
+     * @brief 导出vova模板
+     * @throws \Exception
+     */
+    public function actionPlatExportVova()
+    {
+        try {
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            $infoId = $condition['id'];
+            $accounts = $condition['account'];
+            $ret = ApiGoodsinfo::preExportVova($infoId, $accounts);
+            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
+        } catch (\Exception  $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+    /**
+     * @brief 导出mymall模板
+     * @throws \Exception
+     */
+    public function actionPlatExportMyMall()
+    {
+        try{
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            $infoId = $condition['id'];
+            $ret = ApiGoodsinfo::preExportMyMall($infoId);
+            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
+        }
+
+        catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+
+    }
+    /**
+     * @brief 导出JOOM模板
+     * @return array
+     */
+    public function actionPlatExportJoom()
+    {
+        try {
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            $infoId = $condition['id'];
+            $account = $condition['account'];
+            $ret = ApiGoodsinfo::preExportJoom($infoId, $account);
+            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
+
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+
+    }
+    /**
+     * @brief 导出Shopify模板
+     * @throws \Exception
+     */
+    public function actionPlatExportShopify()
+    {
+        try {
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            $infoId = $condition['id'];
+            $accounts = $condition['account'];
+            $ret = ApiGoodsinfo::preExportShopify($infoId, $accounts);
+            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
+        } catch (\Exception  $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+    public function actionExportTemplate()
+    {
+        try {
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            $infoId = isset($condition['id']) ? $condition['id'] : 0;
+            $accounts = isset($condition['account']) ? $condition['account'] : [];
+            $depart = isset($condition['depart']) ? $condition['depart'] : '';
+            $plat = isset($condition['plat']) ? $condition['plat'] : [];
+            if(!$accounts){
+                $res = ApiGoodsinfo::getPlatExportCondition($plat, $depart);
+                $accounts = ArrayHelper::getColumn($res, 'suffix');
+            }
+//            return $accounts;
+            if($plat == 'Wish'){
+                $type = 'Xls';
+                $ret = ApiGoodsinfo::preExportWish($infoId, $accounts);
+            }elseif ($plat == 'Joom'){
+                $type = 'Csv';
+                $ret = ApiGoodsinfo::preExportJoom($infoId, $accounts);
+            }elseif ($plat == 'Lazada'){
+                $type = 'Xls';
+                $ret = ApiGoodsinfo::preExportLazada($infoId);
+            }elseif ($plat == 'Shopee'){
+                $type = 'Xls';
+                $ret = ApiGoodsinfo::preExportShopee($infoId);
+            }elseif ($plat == 'Shopify'){
+                $type = 'Csv';
+                $ret = ApiGoodsinfo::preExportShopify($infoId, $accounts);
+            }elseif ($plat == 'VOVA'){
+                $type = 'Csv';
+                $ret = ApiGoodsinfo::preExportVova($infoId, $accounts);
+            }elseif ($plat == 'Mymall'){
+                $type = 'Csv';
+                $ret = ApiGoodsinfo::preExportMyMall($infoId, $accounts);
+            }else{
+                $type = 'Csv';
+                $ret = [
+                    'name' => '',
+                    'data' => [],
+                ];
+            }
+            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], $type);
+        } catch (\Exception  $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+    /**
+     * 导出平台模板条件
+     * Date: 2020-08-14 12:01
+     * Author: henry
+     * @return array|bool
+     */
+    public function actionExportCondition()
+    {
+        try {
+            return ApiGoodsinfo::getPlatExportCondition();
+        } catch (\Exception  $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+
+
+
 
     /**
      * @brief 导出wish模板数据
@@ -695,7 +847,6 @@ class OaGoodsinfoController extends AdminController
         }
 
     }
-
     /**
      * @brief 导出JOOM模板数据
      * @throws \Exception
@@ -719,52 +870,7 @@ class OaGoodsinfoController extends AdminController
     }
 
     /**
-     * @brief 导出mymall模板
-     * @throws \Exception
-     */
-    public function actionPlatExportMyMall()
-    {
-        try{
-            $request = Yii::$app->request;
-            if (!$request->isPost) {
-                return [];
-            }
-            $condition = $request->post()['condition'];
-            $infoId = $condition['id'];
-            $ret = ApiGoodsinfo::preExportMyMall($infoId);
-            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
-        }
-
-        catch (\Exception $why) {
-            return ['code' => 401, 'message' => $why->getMessage()];
-        }
-
-    }
-
-    /**
-     * @brief joom批量导出
-     * @return array
-     */
-    public function actionPlatExportJoom()
-    {
-        try {
-            $request = Yii::$app->request;
-            if (!$request->isPost) {
-                return [];
-            }
-            $condition = $request->post()['condition'];
-            $infoId = $condition['id'];
-            $account = $condition['account'];
-            $ret = ApiGoodsinfo::preExportJoom($infoId, $account);
-            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
-
-        } catch (\Exception $why) {
-            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
-        }
-
-    }
-
-    /**上架JOOM产品
+     * @brief 上架JOOM产品
      * Date: 2020-08-06 9:00
      * Author: henry
      * @return array|bool
@@ -784,7 +890,6 @@ class OaGoodsinfoController extends AdminController
             return ['code' => 400, 'message' => $why->getMessage()];
         }
     }
-
 
     /**
      * @brief 导出ebay模板
@@ -866,53 +971,10 @@ class OaGoodsinfoController extends AdminController
         }
     }
 
-    /**
-     * @brief 导出Shopify模板
-     * @throws \Exception
-     */
-    public function actionPlatExportShopify()
-    {
-        try {
-            $request = Yii::$app->request;
-            if (!$request->isPost) {
-                return [];
-            }
-            $condition = $request->post()['condition'];
-            $infoId = $condition['id'];
-            $accounts = $condition['account'];
-            $ret = ApiGoodsinfo::preExportShopify($infoId, $accounts);
-            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
-        } catch (\Exception  $why) {
-            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
-        }
-    }
-
     public function actionShopifyAccounts()
     {
         try {
             return ApiGoodsinfo::getShopifyAccounts();
-        } catch (\Exception  $why) {
-            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
-        }
-    }
-
-
-    /**
-     * @brief 导出vova模板
-     * @throws \Exception
-     */
-    public function actionPlatExportVova()
-    {
-        try {
-            $request = Yii::$app->request;
-            if (!$request->isPost) {
-                return [];
-            }
-            $condition = $request->post()['condition'];
-            $infoId = $condition['id'];
-            $accounts = $condition['account'];
-            $ret = ApiGoodsinfo::preExportVova($infoId, $accounts);
-            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
         } catch (\Exception  $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
@@ -926,6 +988,8 @@ class OaGoodsinfoController extends AdminController
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
+
+
 
 
     /** 获取需要导出的Joom没账号
@@ -949,7 +1013,6 @@ class OaGoodsinfoController extends AdminController
     {
         return OaSiteCountry::find()->all();
     }
-
 
     /** 删除单个SKU
      * Date: 2019-04-10 16:18
@@ -975,21 +1038,6 @@ class OaGoodsinfoController extends AdminController
     }
 
 
-    /** 添加SMT 模本队列
-     * Date: 2020-04-27 12:01
-     * Author: henry
-     * @return array|bool
-     */
-    public function actionExportCondition()
-    {
-        try {
-            return ApiGoodsinfo::getPlatExportCondition();
-        } catch (\Exception  $why) {
-            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
-        }
-    }
-
-
     ########################### smt  plat info ########################################
     public function actionSmtAccount()
     {
@@ -1009,7 +1057,8 @@ class OaGoodsinfoController extends AdminController
         }
     }
 
-    /** 添加SMT 模本队列
+    /**
+     * @brief 添加SMT 模本队列
      * Date: 2020-04-27 12:01
      * Author: henry
      * @return array|bool
