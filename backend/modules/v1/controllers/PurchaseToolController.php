@@ -105,6 +105,7 @@ class PurchaseToolController extends AdminController
      */
     public function actionAutoSync()
     {
+        set_time_limit(1000);
         try {
             return ApiPurchaseTool::checkPurchaseOrder($check = false);
         } catch (Exception $e) {
