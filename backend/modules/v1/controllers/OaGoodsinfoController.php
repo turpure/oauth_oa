@@ -771,11 +771,21 @@ class OaGoodsinfoController extends AdminController
                 $accounts = ArrayHelper::getColumn($res, 'suffix');
             }
 //            return $accounts;
+            if(!$accounts && !in_array($plat,['Lazada', 'Shopee'])){
+                return [
+                    'code' => 400,
+                    'message' => 'account is empty!'
+                ];
+            }
+            $type = 'Csv';
+            $ret = [
+                'name' => '',
+                'data' => [],
+            ];
             if($plat == 'Wish'){
                 $type = 'Xls';
                 $ret = ApiGoodsinfo::preExportWish($infoId, $accounts);
             }elseif ($plat == 'Joom'){
-                $type = 'Csv';
                 $ret = ApiGoodsinfo::preExportJoom($infoId, $accounts);
             }elseif ($plat == 'Lazada'){
                 $type = 'Xls';
@@ -784,20 +794,11 @@ class OaGoodsinfoController extends AdminController
                 $type = 'Xls';
                 $ret = ApiGoodsinfo::preExportShopee($infoId);
             }elseif ($plat == 'Shopify'){
-                $type = 'Csv';
                 $ret = ApiGoodsinfo::preExportShopify($infoId, $accounts);
             }elseif ($plat == 'VOVA'){
-                $type = 'Csv';
                 $ret = ApiGoodsinfo::preExportVova($infoId, $accounts);
             }elseif ($plat == 'Mymall'){
-                $type = 'Csv';
                 $ret = ApiGoodsinfo::preExportMyMall($infoId, $accounts);
-            }else{
-                $type = 'Csv';
-                $ret = [
-                    'name' => '',
-                    'data' => [],
-                ];
             }
             ExportTools::toExcelOrCsv($ret['name'], $ret['data'], $type);
         } catch (\Exception  $why) {
