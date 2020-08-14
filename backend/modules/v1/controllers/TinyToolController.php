@@ -1169,53 +1169,26 @@ class TinyToolController extends AdminController
 
     /**
      * 销售员产品库存
-     * Date: 2019-12-06 11:55
+     * Date: 2020-08-14 14:53
      * Author: henry
-     * @return SqlDataProvider
-     * @throws \yii\db\Exception
+     * @return array|ArrayDataProvider
      */
     public function actionSku()
     {
-        $cond = Yii::$app->request->post('condition');
-        $goodsCode = ArrayHelper::getValue($cond, 'goodsCode');
-        $seller = ArrayHelper::getValue($cond, 'seller');
-        $pageSize = ArrayHelper::getValue($cond, 'pageSize');
-        $username = Yii::$app->user->identity->username;
-        $userArr = ApiUser::getUserList($username);
-        $userList = implode("','", $userArr);
-        $countSql = "SELECT COUNT(*) FROM `cache_skuSeller` ss 
-                INNER JOIN `cache_stockWaringTmpData` c ON ss.goodsCode=c.goodsCode WHERE seller1 IN ('{$userList}')";
-        $sql = "SELECT c.*,ss.seller1,ss.seller2,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart ,
-                IFNULL(ca.threeSellCount,0) AS threeSellCount, IFNULL(ca.sevenSellCount,0) AS sevenSellCount, 
-                IFNULL(ca.fourteenSellCount,0) AS fourteenSellCount, IFNULL(ca.thirtySellCount,0) AS thirtySellCount,
-         CASE WHEN IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.4 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1 = 0 THEN 10000
-         ELSE  round(ifnull(hopeUseNum,0)/(IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.1 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1),0)
-         END  AS turnoverDays
-                FROM `cache_skuSeller` ss
-                INNER JOIN cache_stockWaringTmpData c ON ss.goodsCode=c.goodsCode
-                LEFT JOIN cache_30DayOrderTmpData ca ON ca.sku=c.sku AND ca.storeName=c.storeName
-                LEFT JOIN `user` u ON u.username=ss.seller1
-				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
-				LEFT JOIN auth_department d ON d.id=dc.department_id
-				LEFT JOIN auth_department p ON p.id=d.parent
-				WHERE seller1 IN ('{$userList}') AND c.storeName='万邑通UK'";
-        if ($goodsCode) {
-            $sql .= " AND c.goodsCode LIKE '%{$goodsCode}%'";
-            $countSql .= " AND c.goodsCode LIKE '%{$goodsCode}%'";
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $pageSize = ArrayHelper::getValue($condition, 'pageSize');
+            $data = ApiTinyTool::getSkuStockDetail($condition);
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'pagination' => [
+                    'pageSize' => $pageSize ? $pageSize : 20
+                ]
+            ]);
+        } catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
-        if ($seller) {
-            $sql .= " AND ss.seller1 LIKE '%{$seller}%'";
-            $countSql .= " AND ss.seller1 LIKE '%{$seller}%'";
-        }
-        $count = Yii::$app->db->createCommand($countSql)->queryScalar();
-        $res = new SqlDataProvider([
-            'sql' => $sql,
-            'totalCount' => (int)$count,
-            'pagination' => [
-                'pageSize' => $pageSize ? $pageSize : 20
-            ]
-        ]);
-        return $res;
+
     }
 
     /**
@@ -1227,37 +1200,18 @@ class TinyToolController extends AdminController
      */
     public function actionSkuExport()
     {
-        $cond = Yii::$app->request->post('condition');
-        $goodsCode = ArrayHelper::getValue($cond, 'goodsCode');
-        $seller = ArrayHelper::getValue($cond, 'seller');
-        $username = Yii::$app->user->identity->username;
-        $userArr = ApiUser::getUserList($username);
-        $userList = implode("','", $userArr);
-        $sql = "SELECT c.goodsCode,c.sku,c.skuName,c.storeName,c.goodsStatus,c.salerName,createDate,costPrice,c.costmoney,hopeUseNum,weight,
-                  ss.seller1,ss.seller2,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart ,
-               IFNULL(ca.threeSellCount,0) AS threeSellCount, IFNULL(ca.sevenSellCount,0) AS sevenSellCount, 
-                IFNULL(ca.fourteenSellCount,0) AS fourteenSellCount, IFNULL(ca.thirtySellCount,0) AS thirtySellCount,
-         CASE WHEN IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.4 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1 = 0 THEN 10000
-         ELSE  round(ifnull(hopeUseNum,0)/(IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.1 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1),0)
-         END  AS turnoverDays
-                FROM `cache_skuSeller` ss
-                INNER JOIN cache_stockWaringTmpData c ON ss.goodsCode=c.goodsCode
-                LEFT JOIN cache_30DayOrderTmpData ca ON ca.sku=c.sku AND ca.storeName=c.storeName
-                LEFT JOIN `user` u ON u.username=ss.seller1
-				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
-				LEFT JOIN auth_department d ON d.id=dc.department_id
-				LEFT JOIN auth_department p ON p.id=d.parent
-				WHERE seller1 IN ('{$userList}') AND c.storeName='万邑通UK'";
-        if ($goodsCode) $sql .= " AND c.goodsCode LIKE '%{$goodsCode}%'";
-        if ($seller) $sql .= " AND ss.seller1 LIKE '%{$seller}%'";
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $data = ApiTinyTool::getSkuStockDetail($condition);
+            $name = 'ProductInventoryTurnoverDetails';
+            $title = ['商品编码', 'SKU', '商品名称', '仓库', '商品状态', '开发员', '普源创建时间', '平均单价', '成本', '预计可用库存', '重量', '销售1', '销售2', '部门',
+                '3天销量', '7天销量', '14天销量', '30天销量', '周转天数'
+            ];
+            ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
+        } catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
 
-
-        $res = Yii::$app->db->createCommand($sql)->queryAll();
-        $name = 'ProductInventoryTurnoverDetails';
-        $title = ['商品编码', 'SKU', '商品名称', '仓库', '商品状态', '开发员', '普源创建时间', '平均单价', '成本', '预计可用库存', '重量', '销售1', '销售2', '部门',
-            '3天销量', '7天销量', '14天销量', '30天销量', '周转天数'
-        ];
-        ExportTools::toExcelOrCsv($name, $res, 'Xls', $title);
     }
 
     /** 销售员总库存周转

@@ -1115,8 +1115,50 @@ class ApiTinyTool
 
     }
 
+    /**
+     * getSkuStockDetail
+     * @param $condition
+     * Date: 2020-08-14 14:52
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
+    public static function getSkuStockDetail($condition){
+        $goodsCode = ArrayHelper::getValue($condition, 'goodsCode');
+        $seller = ArrayHelper::getValue($condition, 'seller');
+        $username = Yii::$app->user->identity->username;
+        $userArr = ApiUser::getUserList($username);
+        $userList = implode("','", $userArr);
+
+        $sql = "SELECT c.*,ss.seller1,ss.seller2,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart ,
+                IFNULL(ca.threeSellCount,0) AS threeSellCount, IFNULL(ca.sevenSellCount,0) AS sevenSellCount, 
+                IFNULL(ca.fourteenSellCount,0) AS fourteenSellCount, IFNULL(ca.thirtySellCount,0) AS thirtySellCount,
+         CASE WHEN IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.4 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1 = 0 THEN 10000
+         ELSE  round(ifnull(hopeUseNum,0)/(IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.1 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1),0)
+         END  AS turnoverDays
+                FROM `cache_skuSeller` ss
+                INNER JOIN cache_stockWaringTmpData c ON ss.goodsCode=c.goodsCode
+                LEFT JOIN cache_30DayOrderTmpData ca ON ca.sku=c.sku AND ca.storeName=c.storeName
+                LEFT JOIN `user` u ON u.username=ss.seller1
+				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
+				LEFT JOIN auth_department d ON d.id=dc.department_id
+				LEFT JOIN auth_department p ON p.id=d.parent
+				WHERE seller1 IN ('{$userList}') AND c.storeName='万邑通UK'";
+        if ($goodsCode) {
+            $sql .= " AND c.goodsCode LIKE '%{$goodsCode}%'";
+        }
+        if ($seller) {
+            $sql .= " AND ss.seller1 LIKE '%{$seller}%'";
+        }
+        return Yii::$app->db->createCommand($sql)->queryAll();
+    }
+
+
 
     //=================海外仓，订单修改物流方式=====================
+
+
+
 
     /**
      * Date: 2020-07-14 9:20
