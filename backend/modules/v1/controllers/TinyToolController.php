@@ -806,8 +806,9 @@ class TinyToolController extends AdminController
                 $data = Yii::$app->db->createCommand($sql)->queryAll();*/
                 $sql = "EXEC  [dbo].[LY_eBayUKVirtualWarehouse_Replenishment_20191113] '{$cond['salerName']}','{$cond['purchaser']}'";
                 $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-                $title = ['SKU', 'SKU名称', '商品编码', '开发员', '状态', '采购', '供应商', '3天销量', '7天销量', '15天销量', '30天销量',
-                    '走势', '日均销量', '预计可用库存', '义乌仓库存', '义乌仓采购未审核', '预计可卖天数', '采购数量', '单价', '采购金额'];
+                $title = ['商品编码', 'SKU', 'SKU名称', '状态', '义乌仓采购未审核', '预计可用库存', '仓库', '开发员', '采购',
+                    '供应商', '单价', '平均单价', '重量', '3天销量', '7天销量', '15天销量', '30天销量', '3天平均销量', '7天平均销量', '15天平均销量', '30天平均销量',
+                    '走势', '日均销量', '预计可用总库存', '采购到货天数', '预警销售天数', '预计可卖天数','是否特殊采购','是否采购', '采购数量', '单价', '采购金额'];
                 break;
             case 'auReal':
                 $name = 'auRealReplenish';
@@ -853,7 +854,7 @@ class TinyToolController extends AdminController
                     '采购金额', '发货重量(g)','仓库','销售'];
                 break;
             case 'uk2':
-                $name = 'ukRealReplenish2';
+                $name = 'ukVirtualReplenish2';
                 $sql = "EXEC  [guest].[LY_eBayUK_Replenishment] @salerName=:salerName,@purchaser=:purchaser";
                 $params = [
                     ':salerName' => $cond['salerName'],
@@ -1204,8 +1205,8 @@ class TinyToolController extends AdminController
             $condition = Yii::$app->request->post('condition', []);
             $data = ApiTinyTool::getSkuStockDetail($condition);
             $name = 'ProductInventoryTurnoverDetails';
-            $title = ['商品编码', 'SKU', '商品名称', '仓库', '商品状态', '开发员', '普源创建时间', '平均单价', '成本', '预计可用库存', '重量', '销售1', '销售2', '部门',
-                '3天销量', '7天销量', '14天销量', '30天销量', '周转天数'
+            $title = ['商品编码', 'SKU', '商品名称', '仓库', '商品状态', '开发员', '普源创建时间', '平均单价', '成本', '可用库存',
+                '预计可用库存', '重量', '销售1', '销售2', '部门', '3天销量', '7天销量', '14天销量', '30天销量', '周转天数'
             ];
             ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
         } catch (\Exception $why) {
