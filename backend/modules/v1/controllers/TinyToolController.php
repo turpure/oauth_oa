@@ -438,6 +438,7 @@ class TinyToolController extends AdminController
             'sku' => $cond['sku'],
             'num' => isset($cond['num']) && $cond['num'] ? $cond['num'] : 1,
             'price' => isset($cond['price']) && $cond['price'] ? $cond['price'] : 0,
+            'shippingPrice' => isset($cond['shippingPrice']) && $cond['shippingPrice'] ? $cond['shippingPrice'] : 0,
             'adRate' => isset($cond['adRate']) && $cond['adRate'] ? $cond['adRate'] : 0,
             'rate' => isset($cond['rate']) && $cond['rate'] ? $cond['rate'] : 0,
         ];
@@ -466,7 +467,7 @@ class TinyToolController extends AdminController
         foreach ($data['transport'] as $v) {
             //根据售价获取利润率
             if ($post['price']) {
-                $rateItem = ApiUk::getRate($post['price'], $v['cost'], $v['out'], $res['price'], $post['adRate']);
+                $rateItem = ApiUk::getRate($post['price'], $v['cost'], $v['out'], $res['price'], $post['adRate'], $post['shippingPrice']);
                 $rateItem['name'] = $v['name'];
                 $data['rate'][] = $rateItem;
             }

@@ -171,7 +171,7 @@ class ApiUk
      * @param $adRate
      * @return mixed
      */
-    public static function getRate($price, $cost, $out, $costprice, $adRate)
+    public static function getRate($price, $cost, $out, $costprice, $adRate, $shippingPrice)
     {
         $data['price'] = $price;
         //eBay交易费
@@ -188,7 +188,7 @@ class ApiUk
         }
 
         //计算毛利
-        $profit = $price - $data['pFee'] - $data['eFee'] - $cost - $out - $costprice / $ukRate;
+        $profit = $price - $data['pFee'] - $data['eFee'] - $cost - $out - $costprice / $ukRate - $price * $adRate / 100;
         $data['profit'] = round($profit, 2);
         $data['eFee'] = round($data['eFee'], 2);
         $data['pFee'] = round($data['pFee'], 2);
