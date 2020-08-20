@@ -173,6 +173,7 @@ class ApiUk
      */
     public static function getRate($price, $cost, $out, $costprice, $adRate, $shippingPrice)
     {
+        $price = $price + $shippingPrice;
         $data['price'] = $price;
         //eBay交易费
         $data['eFee'] = $price * Yii::$app->params['eRate_uk'];
@@ -196,7 +197,7 @@ class ApiUk
 
         //计算毛利率
         $data['adRate'] = $adRate;
-        $data['rate'] = round($profit / $price * 100, 2) - $adRate;
+        $data['rate'] = round($profit / $price * 100, 2);
 
         return $data;
     }
