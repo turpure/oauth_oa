@@ -188,7 +188,7 @@ class ApiUk
         }
 
         //计算毛利
-        $profit = $price - $data['pFee'] - $data['eFee'] - $cost - $out - $costprice / $ukRate - $price * $adRate / 100;
+        $profit = $price - $data['pFee'] - $data['eFee'] - $cost - $out - $costprice / $ukRate - ($price  - $shippingPrice) * $adRate / 100;
         $data['profit'] = round($profit, 2);
         $data['eFee'] = round($data['eFee'], 2);
         $data['pFee'] = round($data['pFee'], 2);
