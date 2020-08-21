@@ -1155,11 +1155,7 @@ class ApiTinyTool
     }
 
 
-
     //=================海外仓，订单修改物流方式=====================
-
-
-
 
     /**
      * Date: 2020-07-14 9:20
@@ -1239,5 +1235,28 @@ class ApiTinyTool
         }
         return $fee;
     }
+
+    /**
+     * Ebay 广告费
+     * @param $condition
+     * Date: 2020-08-21 10:14
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
+    public static function getEbayAdFee($condition){
+        $sku = isset($condition['sku']) ? $condition['sku'] : '';
+        $suffix = isset($condition['suffix']) ? $condition['suffix'] : '';
+        $begin = isset($condition['dateRange'][0]) ? $condition['dateRange'][0] : '';
+        $end = isset($condition['dateRange'][1]) ? ($condition['dateRange'][1] . ' 23:59:59') : '';
+        $sql = "select suffix,sku,ad_rate,ad_fee*ad_code_rate as ad_fee, fee_time, description, item_id, 
+                transaction_code_rate*(transaction_price + shipping_fee) as transaction_price,shipping_name
+                from cache_ebayAdFee where sku like 'UK%' and fee_time between '{$begin}' and '{$end}'";
+        if($sku) $sql .= " and sku like '%{$sku}%'";
+        if($suffix) $sql .= " and suffix like '%{$suffix}%'";
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
+        return $data;
+    }
+
 
 }
