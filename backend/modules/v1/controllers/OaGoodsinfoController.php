@@ -869,6 +869,27 @@ class OaGoodsinfoController extends AdminController
         }
 
     }
+    /**
+     * @brief 导出VOVA模板数据
+     * @throws \Exception
+     */
+    public function actionPlatExportVovaData()
+    {
+        try {
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            $infoId = $condition['id'];
+            $type = isset($condition['type']) ? $condition['type'] : '';
+            $ret = ApiGoodsinfo::preExportVovaData($infoId, $type);
+            return $ret;
+        } catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+
+    }
 
     /**
      * @brief 上架JOOM产品

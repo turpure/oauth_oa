@@ -1696,6 +1696,87 @@ class ApiGoodsinfo
      * @param $accounts
      * @return array
      */
+    public static function preExportVovaData($ids, $type)
+    {
+        $accounts = OaVovaSuffix::find()->asArray()->all();
+        if (!is_array($ids)) {
+            $ids = [$ids];
+        }
+        $row = [
+            'parent_sku' => '', 'goods_name' => '', 'goods_description' => '', 'tags' => '', 'main_image' => '',
+            'extra_image_list' => '', 'dangerous_kind' => '', 'suffix' => '', 'variants' => '', 'from_platform' => '',
+            'goods_brand' => '', 'shipping_weight' => '', 'shipping_time' => '',
+        ];
+        $out = [];
+        foreach ($ids as $id) {
+            if (is_numeric($id)) {
+                $goodsInfo = OaGoodsinfo::findOne(['id' => $id]);
+            } else {
+                $goodsInfo = OaGoodsinfo::findOne(['goodsCode' => $id]);
+                $id = $goodsInfo['id'];
+            }
+            $vovaSku = OaWishGoodsSku::find()->where(['infoId' => $id])->asArray()->all();
+            $vovaInfo = OaWishGoods::find()->where(['infoId' => $id])->asArray()->one();
+            $keyWords = static::preKeywords($vovaInfo);
+
+            foreach ($accounts as $account) {
+                $fixArr = explode('-', $account['account']);
+                if (count($fixArr) == 2) {
+                    $postfix = '@#' . substr($fixArr[1], 0, 2);
+                } else {
+                    $postfix = '@#' . $fixArr[1];
+                }
+                $titlePool = [];
+                $title = '';
+                $len = self::WishTitleLength;
+                while (true) {
+                    $title = static::getTitleName($keyWords, $len);
+                    --$len;
+                    if (empty($title) || !in_array($title, $titlePool, false)) {
+                        $titlePool[] = $title;
+                        break;
+                    }
+                }
+                $mainImage = static::getWishMainImage($goodsInfo['goodsCode'], !empty($account) ? $account['mainImage'] : '0');
+                $row['parent_sku'] = $vovaInfo['sku'] . $postfix;
+                $row['goods_name'] = $title;
+                $row['goods_description'] = $vovaInfo['description'];
+                $row['tags'] = $vovaInfo['wishTags'];
+                $row['main_image'] = $mainImage;
+                $row['suffix'] = $account['account'];
+                $row['extra_image_list'] = $vovaInfo['extraImages'];
+                $var = [];
+                foreach ($vovaSku as $k => $sku) {
+                    $variationRow = [
+                        'sku_image' => '', 'goods_sku' => '', 'storage' => '', 'market_price' => '',
+                        'shop_price' => '', 'shipping_fee' => '',
+                        'style_array' => [ 'size' => '', 'color' => '', 'style_quantity' => '']
+                    ];
+                    $variationRow['goods_sku'] = $sku['sku'] . $postfix;
+                    $variationRow['color'] = $sku['color'];
+                    $variationRow['style_array']['style_quantity'] = $sku['inventory'];
+                    $variationRow['style_array']['size'] = $sku['size'];
+                    $variationRow['style_array']['color'] = $sku['color'];
+                    $variationRow['shop_price'] = $sku['price'];
+                    $variationRow['market_price'] = $sku['msrp'];
+                    $variationRow['shipping_fee'] = $sku['shipping'];
+                    $variationRow['shipping_weight'] = (float)$sku['weight'] * 1.0 / 1000;
+                    $variationRow['sku_image'] = $sku['linkUrl'];
+                    $var[$k] = $variationRow;
+                }
+                $row['variants'] = json_encode($var);
+                $out[] = $row;
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * @brief 导出joom模板
+     * @param $ids
+     * @param $accounts
+     * @return array
+     */
     public static function preExportJoom($ids, $accounts)
     {
         if (!is_array($accounts)) {
