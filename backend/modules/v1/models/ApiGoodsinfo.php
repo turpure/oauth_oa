@@ -562,12 +562,12 @@ class ApiGoodsinfo
                         'id' => '', 'sku' => '', 'title' => '', 'description' => '', 'inventory' => '', 'price' => '', 'msrp' => '',
                         'shipping' => '', 'shippingTime' => '', 'tags' => '', 'mainImage' => '', 'goodsId' => '', 'infoId' => '',
                         'extraImages' => '', 'headKeywords' => '', 'requiredKeywords' => '', 'randomKeywords' => '', 'tailKeywords' => '',
-                        'wishTags' => '', 'stockUp' => ''
+                        'wishTags' => '', 'stockUp' => '','wishMainImage' => '','wishExtraImages' => ''
                     ],
                     'skuInfo' => [[
                         'id' => '', 'infoId' => '', 'sid' => '', 'sku' => '', 'color' => '', 'size' => '', 'inventory' => '',
                         'price' => '', 'shipping' => '', 'msrp' => '', 'shippingTime' => '', 'linkUrl' => '', 'goodsSkuId' => '',
-                        'weight' => '', 'joomPrice' => '', 'joomShipping' => ''
+                        'weight' => '', 'joomPrice' => '', 'joomShipping' => '','wishLinkUrl' => ''
                     ]]];
                 return $ret;
             }

@@ -18,9 +18,11 @@ use Yii;
  * @property string $shippingTime
  * @property string $tags
  * @property string $mainImage
+ * @property string $wishMainImage
  * @property int $goodsId
  * @property int $infoId
  * @property string $extraImages
+ * @property string $wishExtraImages
  * @property string $headKeywords
  * @property string $requiredKeywords
  * @property string $randomKeywords
@@ -44,11 +46,11 @@ class OaWishGoods extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['description', 'extraImages','stockUp'], 'string'],
+            [['description', 'extraImages','wishExtraImages','stockUp'], 'string'],
             [['inventory', 'goodsId', 'infoId',], 'integer'],
             [['price', 'msrp', 'shipping'], 'number'],
             [['sku'], 'string', 'max' => 50],
-            [['title', 'mainImage'], 'string', 'max' => 2000],
+            [['title', 'mainImage', 'wishMainImage'], 'string', 'max' => 2000],
             [['shippingTime', 'headKeywords', 'tailKeywords'], 'string', 'max' => 200],
             [['tags', 'wishTags'], 'string', 'max' => 500],
             [['requiredKeywords', 'randomKeywords'], 'string', 'max' => 300],
@@ -72,9 +74,11 @@ class OaWishGoods extends \yii\db\ActiveRecord
             'shippingTime' => 'Shippingtime',
             'tags' => 'Tags',
             'mainImage' => 'Main Image',
+            'WishMainImage' => 'Wish Main Image',
             'goodsId' => 'Goodsid',
             'infoId' => 'Infoid',
             'extraImages' => 'Extra Images',
+            'WishExtraImages' => 'Wish Extra Images',
             'headKeywords' => 'Head Keywords',
             'requiredKeywords' => 'Required Keywords',
             'randomKeywords' => 'Random Keywords',

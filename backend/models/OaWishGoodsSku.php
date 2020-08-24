@@ -19,6 +19,7 @@ use Yii;
  * @property string $msrp
  * @property string $shippingTime
  * @property string $linkUrl
+ * @property string $wishLinkUrl
  * @property int $goodsSkuId
  * @property double $weight
  * @property string $joomPrice
@@ -44,7 +45,7 @@ class OaWishGoodsSku extends \yii\db\ActiveRecord
             [['price', 'shipping', 'msrp', 'weight', 'joomPrice', 'joomShipping'], 'number'],
             [['sku', 'color', 'size'], 'string', 'max' => 200],
             [['shippingTime'], 'string', 'max' => 60],
-            [['linkUrl'], 'string', 'max' => 500],
+            [['linkUrl', 'wishLinkUrl'], 'string', 'max' => 500],
         ];
     }
 
@@ -66,6 +67,7 @@ class OaWishGoodsSku extends \yii\db\ActiveRecord
             'msrp' => 'Msrp',
             'shippingTime' => 'Shipping Time',
             'linkUrl' => 'Link Url',
+            'wishLinkUrl' => 'Wish Link Url',
             'goodsSkuId' => 'Goods Sku Id',
             'weight' => 'Weight',
             'joomPrice' => 'Joom Price',
