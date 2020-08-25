@@ -1703,7 +1703,7 @@ class ApiGoodsinfo
         $row = [
             'parent_sku' => '', 'goods_name' => '', 'goods_description' => '', 'tags' => '', 'main_image' => '',
             'extra_image_list' => '', 'dangerous_kind' => '', 'suffix' => '', 'variants' => '', 'from_platform' => '',
-            'goods_brand' => '', 'shipping_weight' => '', 'shipping_time' => '',
+            'goods_brand' => '', 'shipping_weight' => '', 'shipping_time' => '15-45',
         ];
         $out = [];
         foreach ($ids as $id) {
@@ -1746,7 +1746,7 @@ class ApiGoodsinfo
                 $var = [];
                 foreach ($vovaSku as $k => $sku) {
                     $variationRow = [
-                        'sku_image' => '', 'goods_sku' => '', 'storage' => '', 'market_price' => '',
+                        'sku_image' => '', 'goods_sku' => '', 'storage' => 10000, 'market_price' => '',
                         'shop_price' => '', 'shipping_fee' => '',
                         'style_array' => [ 'size' => '', 'color' => '', 'style_quantity' => '']
                     ];
@@ -1756,7 +1756,7 @@ class ApiGoodsinfo
                     $variationRow['style_array']['size'] = $sku['size'];
                     $variationRow['style_array']['color'] = $sku['color'];
                     $variationRow['shop_price'] = $sku['price'];
-                    $variationRow['market_price'] = $sku['msrp'];
+                    $variationRow['market_price'] = ceil($sku['price'] * 5);
                     $variationRow['shipping_fee'] = $sku['shipping'];
                     $variationRow['shipping_weight'] = (float)$sku['weight'] * 1.0 / 1000;
                     $variationRow['sku_image'] = $sku['linkUrl'];
