@@ -1465,7 +1465,7 @@ class ApiGoodsinfo
             $row['msrp'] = $variantInfo['msrp'];
             $row['shipping'] = $variantInfo['shipping'];
             $row['shipping_time'] = '7-21';
-            $row['main_image'] = static::getNewWishMainImage( $goodsInfo['wishMainImage'],$goodsInfo['goodsCode'], $account['mainImg']);
+            $row['main_image'] = static::getNewWishMainImage( $wishInfo['wishMainImage'],$goodsInfo['goodsCode'], $account['mainImg']);
             $row['extra_images'] = $wishInfo['wishExtraImages'];
             $row['variants'] = $variantInfo['variant'];
             $row['landing_page_url'] = $wishInfo['wishMainImage'];
@@ -1605,7 +1605,7 @@ class ApiGoodsinfo
             $row['msrp'] = $variantInfo['msrp'];
             $row['shipping'] = $variantInfo['shipping'];
             $row['shipping_time'] = '7-21';
-            $row['main_image'] = static::getNewWishMainImage($goodsInfo['wishMainImage'],$goodsInfo['goodsCode'], $account['mainImg']);
+            $row['main_image'] = static::getNewWishMainImage($wishInfo['wishMainImage'],$goodsInfo['goodsCode'], $account['mainImg']);
             $row['extra_images'] = $wishInfo['wishExtraImages'];
             $row['variants'] = $variantInfo['variant'];
             $row['landing_page_url'] = $wishInfo['wishMainImage'];
