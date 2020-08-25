@@ -3278,7 +3278,7 @@ class ApiGoodsinfo
                 LEFT JOIN `auth_department_child` dc ON u.id=dc.user_id
                 LEFT JOIN `auth_department` d ON d.id=dc.department_id
                 LEFT JOIN `auth_department` pd ON pd.id=d.parent
-                WHERE s.platform NOT IN ('eBay','Amazon','Joom')";
+                WHERE s.platform NOT IN ('Amazon','Joom')";
             if($plat) $sql .= " AND s.platform='{$plat}'";
             if($depart) $sql .= " AND (ifnull(pd.department,'')<>'' AND IFNULL(pd.department,'')='{$depart}' OR IFNULL(d.department,'')='{$depart}')";
             if(!$plat){

@@ -38,7 +38,9 @@ class ConditionController extends AdminController
      */
     public function actionPlat ()
     {
-        return ApiCondition::getUserPlat();
+        $condition = \Yii::$app->request->post('condition');
+        $type = isset($condition['type']) && $condition['type'] == true ? $condition['type'] : false;
+        return ApiCondition::getUserPlat($type);
     }
 
     /**

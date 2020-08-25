@@ -84,13 +84,13 @@ class ApiCondition
      * 获取用户平台信息
      * @return array
      */
-    public static function getUserPlat()
+    public static function getUserPlat($type = false)
     {
         $userId = Yii::$app->user->id;
         $role = User::getRole($userId);//登录用户角色
         //获取平台列表
         //if ($role == AuthAssignment::ACCOUNT_ADMIN) {
-        if (in_array(AuthAssignment::ACCOUNT_ADMIN,$role) !== false) {
+        if (in_array(AuthAssignment::ACCOUNT_ADMIN,$role) !== false || $type == true) {
             $plat = (new Query())
                 ->select('platform as plat')
                 ->from('auth_store')
