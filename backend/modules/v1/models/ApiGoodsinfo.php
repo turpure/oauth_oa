@@ -1465,7 +1465,7 @@ class ApiGoodsinfo
             $row['msrp'] = $variantInfo['msrp'];
             $row['shipping'] = $variantInfo['shipping'];
             $row['shipping_time'] = '7-21';
-            $row['main_image'] = static::getWishMainImage($goodsInfo['goodsCode'], $account['mainImg']);
+            $row['main_image'] = static::getNewWishMainImage( $goodsInfo['wishMainImage'],$goodsInfo['goodsCode'], $account['mainImg']);
             $row['extra_images'] = $wishInfo['wishExtraImages'];
             $row['variants'] = $variantInfo['variant'];
             $row['landing_page_url'] = $wishInfo['wishMainImage'];
@@ -1605,7 +1605,7 @@ class ApiGoodsinfo
             $row['msrp'] = $variantInfo['msrp'];
             $row['shipping'] = $variantInfo['shipping'];
             $row['shipping_time'] = '7-21';
-            $row['main_image'] = static::getWishMainImage($goodsInfo['goodsCode'], $account['mainImg']);
+            $row['main_image'] = static::getNewWishMainImage($goodsInfo['wishMainImage'],$goodsInfo['goodsCode'], $account['mainImg']);
             $row['extra_images'] = $wishInfo['wishExtraImages'];
             $row['variants'] = $variantInfo['variant'];
             $row['landing_page_url'] = $wishInfo['wishMainImage'];
@@ -2525,6 +2525,30 @@ class ApiGoodsinfo
     {
         $base = 'https://www.tupianku.com/view/full/10023/';
         return $base . $goodsCode . '-_' . $mainImage . '_.jpg';
+    }
+
+
+    /**
+     * @brief 获取wish账号新的主图链接
+     * @param $wishMainImage
+     * @param $goodsCode
+     * @param $mainImage
+     * @return string
+     * @throws \Exception
+     */
+    private static function getNewWishMainImage($wishMainImage,$goodsCode, $mainImage)
+    {
+        try {
+            $base = explode('_', $wishMainImage);
+            $prefix = $base[0];
+            $suffix =  $mainImage . '_.jpg';
+            return $prefix . $suffix;
+        }
+
+        catch (\Exception  $why) {
+            throw new Exception('please check wish main image address!');
+        }
+
     }
 
 
