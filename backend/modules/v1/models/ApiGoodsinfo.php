@@ -1457,7 +1457,6 @@ class ApiGoodsinfo
                 }
             }
             if (count($wishSku) > 1) $goodsInfo['isVar'] = '是'; // 2020-06-02 添加（单平台添加多属性）
-//            var_dump($goodsInfo['isVar']);exit;
             $variantInfo = static::getWishVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
             $row['sku'] = $wishInfo['sku'] . $account['suffix'];
             $row['selleruserid'] = $account['ibaySuffix'];
@@ -1467,10 +1466,10 @@ class ApiGoodsinfo
             $row['msrp'] = $variantInfo['msrp'];
             $row['shipping'] = $variantInfo['shipping'];
             $row['shipping_time'] = '7-21';
-            $row['main_image'] = static::getWishMainImage($goodsInfo['goodsCode'], $account['mainImg']);
-            $row['extra_images'] = $wishInfo['extraImages'];
+            $row['main_image'] = static::getNewWishMainImage( $wishInfo['wishMainImage'],$goodsInfo['goodsCode'], $account['mainImg']);
+            $row['extra_images'] = $wishInfo['wishExtraImages'];
             $row['variants'] = $variantInfo['variant'];
-            $row['landing_page_url'] = $wishInfo['mainImage'];
+            $row['landing_page_url'] = $wishInfo['wishMainImage'];
             $row['tags'] = $wishInfo['wishTags'];
             $row['description'] = $wishInfo['description'];
             $row['brand'] = '';
@@ -1599,7 +1598,6 @@ class ApiGoodsinfo
                 }
             }
             if (count($wishSku) > 1) $goodsInfo['isVar'] = '是'; // 2020-06-02 添加（单平台添加多属性）
-//            var_dump($goodsInfo['isVar']);exit;
             $variantInfo = static::getWishVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
             $row['sku'] = $wishInfo['sku'] . $account['suffix'];
             $row['selleruserid'] = $account['shortName'];
@@ -1609,10 +1607,10 @@ class ApiGoodsinfo
             $row['msrp'] = $variantInfo['msrp'];
             $row['shipping'] = $variantInfo['shipping'];
             $row['shipping_time'] = '7-21';
-            $row['main_image'] = static::getWishMainImage($goodsInfo['goodsCode'], $account['mainImg']);
-            $row['extra_images'] = $wishInfo['extraImages'];
+            $row['main_image'] = static::getNewWishMainImage($wishInfo['wishMainImage'],$goodsInfo['goodsCode'], $account['mainImg']);
+            $row['extra_images'] = $wishInfo['wishExtraImages'];
             $row['variants'] = $variantInfo['variant'];
-            $row['landing_page_url'] = $wishInfo['mainImage'];
+            $row['landing_page_url'] = $wishInfo['wishMainImage'];
             $row['tags'] = $wishInfo['wishTags'];
             $row['description'] = $wishInfo['description'];
             $row['brand'] = '';
@@ -2614,6 +2612,33 @@ class ApiGoodsinfo
 
 
     /**
+     * @brief 获取wish账号新的主图链接
+     * @param $wishMainImage
+     * @param $goodsCode
+     * @param $mainImage
+     * @return string
+     * @throws \Exception
+     */
+    private static function getNewWishMainImage($wishMainImage,$goodsCode, $mainImage)
+    {
+        try {
+            $base = explode('_', $wishMainImage);
+            $prefix = $base[0];
+            if (strpos($prefix, '.jpg') !== false) {
+                return $prefix;
+            }
+            $suffix =  '_' .$mainImage . '_.jpg';
+            return $prefix . $suffix;
+        }
+
+        catch (\Exception  $why) {
+            throw new Exception('please check wish main image address!');
+        }
+
+    }
+
+
+    /**
      * @brief 整合变体信息
      * @param $isVar
      * @param $wishInfo
@@ -2665,7 +2690,7 @@ class ApiGoodsinfo
                 $var['shipping'] = $sku['shipping'];
                 $var['msrp'] = ceil($sku['msrp']);
                 $var['shipping_time'] = $sku['shippingTime'];
-                $var['main_image'] = $sku['linkUrl'];
+                $var['main_image'] = $sku['wishLinkUrl'];
 
                 //美元账号
                 if ($account['localCurrency'] === 'USD') {
