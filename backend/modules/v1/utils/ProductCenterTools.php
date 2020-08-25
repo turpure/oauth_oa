@@ -245,7 +245,7 @@ class ProductCenterTools
             throw new \Exception('fail to remove '. $local_path);
         }
         $imageUrl = 'http://121.196.233.153/images'. $ret;
-        return [$imageUrl];
+        return ['image' => $imageUrl];
     }
 
     /** 数据预处理和数据导入事务
