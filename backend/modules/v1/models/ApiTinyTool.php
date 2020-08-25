@@ -1249,9 +1249,13 @@ class ApiTinyTool
         $suffix = isset($condition['suffix']) ? $condition['suffix'] : '';
         $begin = isset($condition['dateRange'][0]) ? $condition['dateRange'][0] : '';
         $end = isset($condition['dateRange'][1]) ? ($condition['dateRange'][1] . ' 23:59:59') : '';
-        $sql = "select suffix,sku,ad_rate,ad_fee*ad_code_rate as ad_fee, fee_time, description, item_id, 
-                transaction_code_rate*(transaction_price + shipping_fee) as transaction_price,shipping_name
-                from cache_ebayAdFee where sku like 'UK%' and fee_time between '{$begin}' and '{$end}'";
+        $sql = "select suffix,sku,ad_rate,ad_fee*ad_code_rate as ad_fee,CONCAT(ad_fee,'(',ad_code,')') as ad_fee_original, 
+                fee_time,description, item_id, CONCAT(transaction_price,'(',transaction_code,')') as transaction_price, 
+                CONCAT(shipping_fee,'(',transaction_code,')') as shipping_fee,
+                transaction_code_rate*(transaction_price + shipping_fee) as transaction_price_total,shipping_name
+                from cache_ebayAdFee where fee_time between '{$begin}' and '{$end}'
+                 AND sku like 'UK%'
+                ";
         if($sku) $sql .= " and sku like '%{$sku}%'";
         if($suffix) $sql .= " and suffix like '%{$suffix}%'";
         $data = Yii::$app->db->createCommand($sql)->queryAll();

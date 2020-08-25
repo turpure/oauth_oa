@@ -1359,7 +1359,8 @@ class TinyToolController extends AdminController
             $condition = Yii::$app->request->post('condition');
             $data = ApiTinyTool::getEbayAdFee($condition);
             $name = 'EbayAdFee';
-            $title = ['账号简称', '商品编码', '广告费率', '广告费', '交易时间', '描述', 'ItemId', '成交价', '物流名称'];
+            $title = ['账号简称', '商品编码', '广告费率', '广告费(￥)','广告费(原币种)', '交易时间', '描述', 'ItemId',
+                '成交价(原币种)','物流费(原币种)','总成交价(￥)', '物流名称'];
             ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
         } catch (Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
