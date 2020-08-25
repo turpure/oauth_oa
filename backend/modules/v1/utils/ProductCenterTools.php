@@ -227,7 +227,7 @@ class ProductCenterTools
     {
         $mode = FTP_BINARY;
         $goodsSku = $skuName . '.jpg';
-        $remote_file = '/' . $skuName;
+        $remote_file = '/' . $goodsSku;
         $asynchronous = false;
         $tmpDir = Yii::getAlias('@app') . '/runtime/image/';
         $local_path = $tmpDir . (string)time() . $goodsSku;
