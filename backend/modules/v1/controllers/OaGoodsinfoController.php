@@ -435,6 +435,26 @@ class OaGoodsinfoController extends AdminController
     }
 
 
+    /**
+     * 上传图片
+     * @return array
+     */
+    public function actionPictureUpload()
+    {
+        try {
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $image = $request->post()['condition']['image'];
+            $skuName = $request->post()['condition']['sku'];
+            return ProductCenterTools::pictureUpload($image, $skuName);
+        } catch (\Exception  $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+    }
+
+
     ###########################  plat info ########################################
 
     /**
