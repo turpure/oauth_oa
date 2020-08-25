@@ -2541,7 +2541,7 @@ class ApiGoodsinfo
         try {
             $base = explode('_', $wishMainImage);
             $prefix = $base[0];
-            $suffix =  $mainImage . '_.jpg';
+            $suffix =  '_' .$mainImage . '_.jpg';
             return $prefix . $suffix;
         }
 
