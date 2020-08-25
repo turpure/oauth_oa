@@ -799,6 +799,9 @@ class OaGoodsinfoController extends AdminController
                 $ret = ApiGoodsinfo::preExportVova($infoId, $accounts);
             }elseif ($plat == 'Mymall'){
                 $ret = ApiGoodsinfo::preExportMyMall($infoId, $accounts);
+            }elseif ($plat == 'eBay'){
+                $type = 'Xls';
+                $ret = ApiGoodsinfo::preExportEbay($infoId, $accounts);
             }
             ExportTools::toExcelOrCsv($ret['name'], $ret['data'], $type);
         } catch (\Exception  $why) {
