@@ -225,18 +225,27 @@ class ProductCenterTools
      */
     public static function pictureUpload($image, $skuName)
     {
+        if (strpos($image, ',') !== false){
+            $image = explode(',', $image);
+            $image = $image[1];
+        }
         $mode = FTP_BINARY;
-        $goodsSku = $skuName . '.jpg';
+        $goodsSku = explode('_', $skuName)[0] . '.jpg';
         $remote_file = '/' . $goodsSku;
         $asynchronous = false;
         $tmpDir = Yii::getAlias('@app') . '/runtime/image/';
         $local_path = $tmpDir . (string)time() . $goodsSku;
-        file_put_contents($local_path, base64_decode($image));
+        $local_file = file_put_contents($local_path, base64_decode($image));
+        if (empty($local_file)) {
+            throw new \Exception('fail to save temporary '. $local_path);
+        }
         $ret = Yii::$app->ftp->put($local_path, $remote_file, $mode, $asynchronous);
+
         if (!unlink($local_path)) {
             throw new \Exception('fail to remove '. $local_path);
         }
-        return [$ret];
+        $imageUrl = 'http://121.196.233.153/images'. $ret;
+        return ['image' => $imageUrl];
     }
 
     /** 数据预处理和数据导入事务
