@@ -215,6 +215,30 @@ class ProductCenterTools
         }
     }
 
+
+    /**
+     * 上传图片到远程服务器
+     * @param  $image
+     * @param  $skuName
+     * @throws \Exception
+     * @return mixed
+     */
+    public static function pictureUpload($image, $skuName)
+    {
+        $mode = FTP_BINARY;
+        $goodsSku = $skuName . '.jpg';
+        $remote_file = '/' . $goodsSku;
+        $asynchronous = false;
+        $tmpDir = Yii::getAlias('@app') . '/runtime/image/';
+        $local_path = $tmpDir . (string)time() . $goodsSku;
+        file_put_contents($local_path, base64_decode($image));
+        $ret = Yii::$app->ftp->put($local_path, $remote_file, $mode, $asynchronous);
+        if (!unlink($local_path)) {
+            throw new \Exception('fail to remove '. $local_path);
+        }
+        return [$ret];
+    }
+
     /** 数据预处理和数据导入事务
      * @param $infoId
      * Date: 2019-04-22 10:05
