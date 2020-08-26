@@ -81,6 +81,26 @@ class WarehouseToolsController extends AdminController
     }
 
     /**
+     * @brief 保存入库任务
+     * @return array|bool
+     */
+    public function actionWarehouse()
+    {
+        $condition = Yii::$app->request->post('condition');
+        return ApiWarehouseTools::setWarehouseBatchNumber($condition);
+    }
+
+    /**
+     * @brief 入库扫描记录
+     * @return \yii\data\ActiveDataProvider
+     */
+    public function actionWarehouseLog()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiWarehouseTools::getWarehouseLog($condition);
+    }
+
+    /**
      * @brief 拣货统计
      * @return \yii\data\ActiveDataProvider
      */

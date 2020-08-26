@@ -10,6 +10,7 @@ namespace backend\modules\v1\models;
 use backend\models\ShopElf\BPerson;
 use backend\models\TaskPick;
 use backend\models\TaskSort;
+use backend\models\TaskWarehouse;
 use yii\data\ArrayDataProvider;
 use yii\db\Expression;
 use yii\helpers\ArrayHelper;
@@ -87,9 +88,14 @@ class ApiWarehouseTools
      */
     public static function getSortMember()
     {
+        $identity = Yii::$app->request->get('type','');
 
-        $ret = BPerson::find()
-            ->andWhere(['in', 'Duty', ['拣货','拣货组长','拣货-分拣']])->all();
+        $query = BPerson::find();
+        if($identity == 'warehouse'){
+            $ret = $query->andWhere(['in', 'Duty', ['入库分拣','拣货组长','拣货-分拣']])->all();
+        }else{
+            $ret = $query->andWhere(['in', 'Duty', ['拣货','拣货组长','拣货-分拣']])->all();
+        }
         return ArrayHelper::getColumn($ret, 'PersonName');
     }
 
@@ -127,6 +133,55 @@ class ApiWarehouseTools
         $fieldsFilter = ['like' =>['batchNumber', 'picker', 'scanningMan'], 'equal' => ['isDone']];
         $timeFilter = ['createdTime', 'updatedTime'];
         $query = TaskSort::find();
+        $query = Helper::generateFilter($query,$fieldsFilter,$condition);
+        $query = Helper::timeFilter($query,$timeFilter,$condition);
+        $query->orderBy('id DESC');
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
+    }
+
+    /**
+     * @brief 添加入库任务
+     * @param $condition
+     * @return array|bool
+     */
+    public static function setWarehouseBatchNumber($condition)
+    {
+        $row = [
+            'logisticsNo' => isset($condition['logisticsNo']) ? $condition['logisticsNo'] : '',
+            'user' => $condition['user'],
+            'sku' => $condition['sku'],
+            'number' => isset($condition['number']) ? $condition['number'] : 1,
+            'scanningMan' => Yii::$app->user->identity->username,
+        ];
+
+        $task = new TaskWarehouse();
+        $task->setAttributes($row);
+        if ($task->save()) {
+            return true;
+        }
+        return [
+            'code' => 400,
+            'message' => 'failed'
+        ];
+    }
+
+    /**
+     * @brief 入库扫描记录
+     * @param $condition
+     * @return ActiveDataProvider
+     */
+    public static function getWarehouseLog($condition)
+    {
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $fieldsFilter = ['like' =>['logisticsNo', 'user', 'sku'], 'equal' => ['number']];
+        $timeFilter = ['updatedTime'];
+        $query = TaskWarehouse::find();
         $query = Helper::generateFilter($query,$fieldsFilter,$condition);
         $query = Helper::timeFilter($query,$timeFilter,$condition);
         $query->orderBy('id DESC');
