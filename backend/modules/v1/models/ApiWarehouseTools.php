@@ -92,7 +92,7 @@ class ApiWarehouseTools
 
         $query = BPerson::find();
         if($identity == 'warehouse'){
-            $ret = $query->andWhere(['in', 'Duty', ['入库分拣','拣货组长','拣货-分拣']])->all();
+            $ret = $query->andWhere(['in', 'Duty', ['入库分拣', '快递扫描']])->all();
         }else{
             $ret = $query->andWhere(['in', 'Duty', ['拣货','拣货组长','拣货-分拣']])->all();
         }
