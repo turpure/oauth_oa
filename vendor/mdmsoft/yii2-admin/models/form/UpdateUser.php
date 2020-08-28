@@ -270,6 +270,7 @@ class UpdateUser extends Model
             'Aliexpress' => 'Aliexpress',
             'Amazon' => 'Amazon',
             'Joom' => 'Joom',
+            'VOVA' => 'VOVA',
             'Shopee' => 'Shopee',
             'Lazada' => 'Lazada',
             'Topbuy' => 'Topbuy',

@@ -913,6 +913,6 @@ class ReportController extends AdminController
      */
     public function actionHistoryPlat()
     {
-        return ['eBay-义乌仓', 'eBay-海外仓', 'Wish', 'Aliexpress', 'Amazon', 'Joom'];
+        return ['eBay-义乌仓', 'eBay-海外仓', 'Wish', 'Aliexpress', 'Amazon', 'Joom', 'VOVA'];
     }
 }

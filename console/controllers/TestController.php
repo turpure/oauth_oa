@@ -69,83 +69,10 @@ class TestController extends Controller
         }
     }
 
-    /**
-     * 拉取eBay账号及大小ppp
-     * Date: 2019-12-05 11:53
-     * Author: henry
-     */
-    public function actionGetEbayPp()
-    {
-        $query = (new Query())->select('ebayName ebay,h.paypal big,l.paypal small')
-            ->from('proCenter.oa_ebaySuffix es')
-            ->leftJoin('proCenter.oa_paypal h', 'es.high=h.id')
-            ->leftJoin('proCenter.oa_paypal l', 'es.low=l.id')->all();
-        //print_r($query);exit;
-
-        try {
-            \Yii::$app->py_db->createCommand()->truncateTable('guest.t1')->execute();
-            $res = \Yii::$app->py_db->createCommand()->batchInsert('guest.t1', ["ebay", "big", "small"], $query)->execute();
-            print_r($res);
-            echo "\r\n";
-            //exit;
-
-        } catch (Exception $e) {
-            print_r($e->getMessage());
-            exit;
-        }
-
-
-    }
-
-
-
-    /**
-     * 根据产品中心推荐数据处理Mongo认领状态
-     */
-    public function actionUpdateAccept()
-    {
-        $db = Yii::$app->mongodb;
-        $beginDate = '2019-11-14';
-        $endDate = '2019-11-30 23:59:59';
-
-        //清空认领状态
-        $db->getCollection('ebay_recommended_product')
-            ->update(['recommendDate' => ['$gte' => $beginDate, '$lte' => $endDate]],['accept' => null]);
-        //获取产品中心认领产品
-        $sql = "SELECT * FROM proCenter.oa_goods WHERE introducer='proEngine'";
-        if($beginDate && $endDate){
-            $sql .= " AND createDate BETWEEN '$beginDate' AND '$endDate' ";
-        }
-        $data = Yii::$app->db->createCommand($sql)->queryAll();
-
-        foreach ($data as $v){
-            $recommendId = explode('.', $v['recommendId']);
-            $product = $db->getCollection('ebay_recommended_product')
-                ->find(["_id" => $recommendId[1]]);
-            foreach ($product as $ele){
-                //var_dump($v['developer']);
-                //var_dump(array_values($ele['receiver']));
-                if(!$ele) break;
-                if(in_array($v['developer'], $ele['receiver'])){
-                    $db->getCollection('ebay_recommended_product')->update(['_id' => $ele['_id']], ['accept' => [$v['developer']]]);
-                }
-            }
-        }
-        $step = (strtotime($endDate) + 1 - strtotime($beginDate)) / 3600 / 24;
-        for ($i = 0; $i < $step; $i++) {
-            if ($i == 0) {
-                ConScheduler::getAndSetRecommendToPersons($beginDate);
-            } else {
-                $day = date('Y-m-d', strtotime("+1 days", strtotime($beginDate)));
-                ConScheduler::getAndSetRecommendToPersons($day);
-            }
-
-        }
-    }
 
 
     public function actionTest(){
-        date('Y-m-d');
+        $sql = "";
     }
 
 

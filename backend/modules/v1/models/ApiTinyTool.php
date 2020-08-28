@@ -527,7 +527,7 @@ class ApiTinyTool
     {
         try {
             //判断数据表数据是不是最新数据
-            $date = Yii::$app->py_db->createCommand("SELECT DISTINCT updateDate FROM ibay365_eBayOversea_quantity_online")->queryOne();
+            /*$date = Yii::$app->py_db->createCommand("SELECT DISTINCT updateDate FROM ibay365_eBayOversea_quantity_online")->queryOne();
             if (!$date || strtotime(date('Y-m-d H:i:s')) >= strtotime(date('Y-m-d') . ' 14:30:00')
                 && substr($date['updateDate'], 0, 10) == date('Y-m-d', strtotime('-1 day'))
                 || strtotime(substr($date['updateDate'], 0, 10)) <= strtotime(date('Y-m-d', strtotime('-2 day')))) {
@@ -535,7 +535,7 @@ class ApiTinyTool
                 //执行存错过程
                 $exeSql = 'EXEC B_eBayOversea_ModifyOnlineNumberOnTheIbay365';
                 Yii::$app->py_db->createCommand($exeSql)->execute();
-            }
+            }*/
             //获取结果
             $sql = "SELECT * FROM ibay365_eBayOversea_quantity_online WHERE 1=1 ";
 
@@ -1115,6 +1115,45 @@ class ApiTinyTool
 
     }
 
+    /**
+     * getSkuStockDetail
+     * @param $condition
+     * Date: 2020-08-14 14:52
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
+    public static function getSkuStockDetail($condition){
+        $goodsCode = ArrayHelper::getValue($condition, 'goodsCode');
+        $seller = ArrayHelper::getValue($condition, 'seller');
+        $username = Yii::$app->user->identity->username;
+        $userArr = ApiUser::getUserList($username);
+        $userList = implode("','", $userArr);
+
+        $sql = "SELECT c.goodsCode,c.sku,skuName,c.storeName,c.goodsStatus,c.salerName,createDate,costPrice,c.costmoney,useNum,hopeUseNum,weight,
+                ss.seller1,ss.seller2,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart ,
+                IFNULL(ca.threeSellCount,0) AS threeSellCount, IFNULL(ca.sevenSellCount,0) AS sevenSellCount, 
+                IFNULL(ca.fourteenSellCount,0) AS fourteenSellCount, IFNULL(ca.thirtySellCount,0) AS thirtySellCount,
+         CASE WHEN IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.4 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1 = 0 THEN 10000
+         ELSE  round(ifnull(hopeUseNum,0)/(IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.1 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1),0)
+         END  AS turnoverDays
+                FROM `cache_skuSeller` ss
+                INNER JOIN cache_stockWaringTmpData c ON ss.goodsCode=c.goodsCode
+                LEFT JOIN cache_30DayOrderTmpData ca ON ca.sku=c.sku AND ca.storeName=c.storeName
+                LEFT JOIN `user` u ON u.username=ss.seller1
+				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
+				LEFT JOIN auth_department d ON d.id=dc.department_id
+				LEFT JOIN auth_department p ON p.id=d.parent
+				WHERE seller1 IN ('{$userList}') AND c.storeName='万邑通UK'";
+        if ($goodsCode) {
+            $sql .= " AND c.goodsCode LIKE '%{$goodsCode}%'";
+        }
+        if ($seller) {
+            $sql .= " AND ss.seller1 LIKE '%{$seller}%'";
+        }
+        return Yii::$app->db->createCommand($sql)->queryAll();
+    }
+
 
     //=================海外仓，订单修改物流方式=====================
 
@@ -1196,5 +1235,32 @@ class ApiTinyTool
         }
         return $fee;
     }
+
+    /**
+     * Ebay 广告费
+     * @param $condition
+     * Date: 2020-08-21 10:14
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
+    public static function getEbayAdFee($condition){
+        $sku = isset($condition['sku']) ? $condition['sku'] : '';
+        $suffix = isset($condition['suffix']) ? $condition['suffix'] : '';
+        $begin = isset($condition['dateRange'][0]) ? $condition['dateRange'][0] : '';
+        $end = isset($condition['dateRange'][1]) ? ($condition['dateRange'][1] . ' 23:59:59') : '';
+        $sql = "select suffix,sku,ad_rate,ad_fee*ad_code_rate as ad_fee,CONCAT(ad_fee,'(',ad_code,')') as ad_fee_original, 
+                fee_time,description, item_id, CONCAT(transaction_price,'(',transaction_code,')') as transaction_price, 
+                CONCAT(shipping_fee,'(',transaction_code,')') as shipping_fee,
+                transaction_code_rate*(transaction_price + shipping_fee) as transaction_price_total,shipping_name
+                from cache_ebayAdFee where fee_time between '{$begin}' and '{$end}'
+                 AND sku like 'UK%'
+                ";
+        if($sku) $sql .= " and sku like '%{$sku}%'";
+        if($suffix) $sql .= " and suffix like '%{$suffix}%'";
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
+        return $data;
+    }
+
 
 }

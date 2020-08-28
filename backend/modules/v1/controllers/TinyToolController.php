@@ -436,9 +436,11 @@ class TinyToolController extends AdminController
         }
         $post = [
             'sku' => $cond['sku'],
-            'num' => $cond['num'] ? $cond['num'] : 1,
-            'price' => $cond['price'] ? $cond['price'] : 0,
-            'rate' => $cond['rate'] ? $cond['rate'] : 0,
+            'num' => isset($cond['num']) && $cond['num'] ? $cond['num'] : 1,
+            'price' => isset($cond['price']) && $cond['price'] ? $cond['price'] : 0,
+            'shippingPrice' => isset($cond['shippingPrice']) && $cond['shippingPrice'] ? $cond['shippingPrice'] : 0,
+            'adRate' => isset($cond['adRate']) && $cond['adRate'] ? $cond['adRate'] : 0,
+            'rate' => isset($cond['rate']) && $cond['rate'] ? $cond['rate'] : 0,
         ];
         $data = [
             'detail' => [],
@@ -465,7 +467,7 @@ class TinyToolController extends AdminController
         foreach ($data['transport'] as $v) {
             //根据售价获取利润率
             if ($post['price']) {
-                $rateItem = ApiUk::getRate($post['price'], $v['cost'], $v['out'], $res['price']);
+                $rateItem = ApiUk::getRate($post['price'], $v['cost'], $v['out'], $res['price'], $post['adRate'], $post['shippingPrice']);
                 $rateItem['name'] = $v['name'];
                 $data['rate'][] = $rateItem;
             }
@@ -725,7 +727,7 @@ class TinyToolController extends AdminController
             $totalPurCost = array_sum(ArrayHelper::getColumn($data, 'purCost'));
             $totalShipWeight = array_sum(ArrayHelper::getColumn($data, 'shipWeight'));
 
-            foreach ($data as &$v){
+            foreach ($data as &$v) {
                 $v['seller1'] = Yii::$app->db->createCommand("select seller1 from cache_skuSeller where goodsCode ='{$v['goodsCode']}'")->queryScalar();
             }
 
@@ -806,8 +808,9 @@ class TinyToolController extends AdminController
                 $data = Yii::$app->db->createCommand($sql)->queryAll();*/
                 $sql = "EXEC  [dbo].[LY_eBayUKVirtualWarehouse_Replenishment_20191113] '{$cond['salerName']}','{$cond['purchaser']}'";
                 $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-                $title = ['SKU', 'SKU名称', '商品编码', '开发员', '状态', '采购', '供应商', '3天销量', '7天销量', '15天销量', '30天销量',
-                    '走势', '日均销量', '预计可用库存', '义乌仓库存', '义乌仓采购未审核', '预计可卖天数', '采购数量', '单价', '采购金额'];
+                $title = ['商品编码', 'SKU', 'SKU名称', '状态', '义乌仓采购未审核', '预计可用库存', '仓库', '开发员', '采购',
+                    '供应商', '单价', '平均单价', '重量', '3天销量', '7天销量', '15天销量', '30天销量', '3天平均销量', '7天平均销量', '15天平均销量', '30天平均销量',
+                    '走势', '日均销量', '预计可用总库存', '采购到货天数', '预警销售天数', '预计可卖天数', '是否特殊采购', '是否采购', '采购数量', '单价', '采购金额'];
                 break;
             case 'auReal':
                 $name = 'auRealReplenish';
@@ -844,16 +847,16 @@ class TinyToolController extends AdminController
                 if (isset($cond['isShipping']) && $cond['isShipping'] == '否') $sql .= " AND shipNum=0 ";
                 $data = Yii::$app->db->createCommand($sql)->queryAll();*/
                 $data = Yii::$app->py_db->createCommand("EXEC LY_eBayUKRealWarehouse_Replenishment_20191105 '{$cond['salerName']}','{$cond['purchaser']}';")->queryAll();
-                foreach ($data as &$v){
+                foreach ($data as &$v) {
                     $v['seller1'] = Yii::$app->db->createCommand("select seller1 from cache_skuSeller where goodsCode ='{$v['goodsCode']}'")->queryScalar();
                 }
                 $title = ['SKU', 'SKU名称', '商品编码', '季节', '规格', '类别', '开发员', '状态', '价格(￥)', '重量(g)',
-                    '采购', '供应商', '3天销量', '7天销量', '15天销量', '30天销量','走势', '日均销量', '金皖399预计可用库存',
+                    '采购', '供应商', '3天销量', '7天销量', '15天销量', '30天销量', '走势', '日均销量', '金皖399预计可用库存',
                     '万邑通UK预计可用库存', '预计可用库存', '万邑通UK预计可用天数', '预计可卖天数', '采购数量', '发货数量',
-                    '采购金额', '发货重量(g)','仓库','销售'];
+                    '采购金额', '发货重量(g)', '仓库', '销售'];
                 break;
             case 'uk2':
-                $name = 'ukRealReplenish2';
+                $name = 'ukVirtualReplenish2';
                 $sql = "EXEC  [guest].[LY_eBayUK_Replenishment] @salerName=:salerName,@purchaser=:purchaser";
                 $params = [
                     ':salerName' => $cond['salerName'],
@@ -1169,53 +1172,26 @@ class TinyToolController extends AdminController
 
     /**
      * 销售员产品库存
-     * Date: 2019-12-06 11:55
+     * Date: 2020-08-14 14:53
      * Author: henry
-     * @return SqlDataProvider
-     * @throws \yii\db\Exception
+     * @return array|ArrayDataProvider
      */
     public function actionSku()
     {
-        $cond = Yii::$app->request->post('condition');
-        $goodsCode = ArrayHelper::getValue($cond, 'goodsCode');
-        $seller = ArrayHelper::getValue($cond, 'seller');
-        $pageSize = ArrayHelper::getValue($cond, 'pageSize');
-        $username = Yii::$app->user->identity->username;
-        $userArr = ApiUser::getUserList($username);
-        $userList = implode("','", $userArr);
-        $countSql = "SELECT COUNT(*) FROM `cache_skuSeller` ss 
-                INNER JOIN `cache_stockWaringTmpData` c ON ss.goodsCode=c.goodsCode WHERE seller1 IN ('{$userList}')";
-        $sql = "SELECT c.*,ss.seller1,ss.seller2,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart ,
-                IFNULL(ca.threeSellCount,0) AS threeSellCount, IFNULL(ca.sevenSellCount,0) AS sevenSellCount, 
-                IFNULL(ca.fourteenSellCount,0) AS fourteenSellCount, IFNULL(ca.thirtySellCount,0) AS thirtySellCount,
-         CASE WHEN IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.4 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1 = 0 THEN 10000
-         ELSE  round(ifnull(hopeUseNum,0)/(IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.1 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1),0)
-         END  AS turnoverDays
-                FROM `cache_skuSeller` ss
-                INNER JOIN cache_stockWaringTmpData c ON ss.goodsCode=c.goodsCode
-                LEFT JOIN cache_30DayOrderTmpData ca ON ca.sku=c.sku AND ca.storeName=c.storeName
-                LEFT JOIN `user` u ON u.username=ss.seller1
-				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
-				LEFT JOIN auth_department d ON d.id=dc.department_id
-				LEFT JOIN auth_department p ON p.id=d.parent
-				WHERE seller1 IN ('{$userList}') AND c.storeName='万邑通UK'";
-        if ($goodsCode) {
-            $sql .= " AND c.goodsCode LIKE '%{$goodsCode}%'";
-            $countSql .= " AND c.goodsCode LIKE '%{$goodsCode}%'";
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $pageSize = ArrayHelper::getValue($condition, 'pageSize');
+            $data = ApiTinyTool::getSkuStockDetail($condition);
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'pagination' => [
+                    'pageSize' => $pageSize ? $pageSize : 20
+                ]
+            ]);
+        } catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
-        if ($seller) {
-            $sql .= " AND ss.seller1 LIKE '%{$seller}%'";
-            $countSql .= " AND ss.seller1 LIKE '%{$seller}%'";
-        }
-        $count = Yii::$app->db->createCommand($countSql)->queryScalar();
-        $res = new SqlDataProvider([
-            'sql' => $sql,
-            'totalCount' => (int)$count,
-            'pagination' => [
-                'pageSize' => $pageSize ? $pageSize : 20
-            ]
-        ]);
-        return $res;
+
     }
 
     /**
@@ -1227,37 +1203,18 @@ class TinyToolController extends AdminController
      */
     public function actionSkuExport()
     {
-        $cond = Yii::$app->request->post('condition');
-        $goodsCode = ArrayHelper::getValue($cond, 'goodsCode');
-        $seller = ArrayHelper::getValue($cond, 'seller');
-        $username = Yii::$app->user->identity->username;
-        $userArr = ApiUser::getUserList($username);
-        $userList = implode("','", $userArr);
-        $sql = "SELECT c.goodsCode,c.sku,c.skuName,c.storeName,c.goodsStatus,c.salerName,createDate,costPrice,c.costmoney,hopeUseNum,weight,
-                  ss.seller1,ss.seller2,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart ,
-               IFNULL(ca.threeSellCount,0) AS threeSellCount, IFNULL(ca.sevenSellCount,0) AS sevenSellCount, 
-                IFNULL(ca.fourteenSellCount,0) AS fourteenSellCount, IFNULL(ca.thirtySellCount,0) AS thirtySellCount,
-         CASE WHEN IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.4 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1 = 0 THEN 10000
-         ELSE  round(ifnull(hopeUseNum,0)/(IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.1 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1),0)
-         END  AS turnoverDays
-                FROM `cache_skuSeller` ss
-                INNER JOIN cache_stockWaringTmpData c ON ss.goodsCode=c.goodsCode
-                LEFT JOIN cache_30DayOrderTmpData ca ON ca.sku=c.sku AND ca.storeName=c.storeName
-                LEFT JOIN `user` u ON u.username=ss.seller1
-				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
-				LEFT JOIN auth_department d ON d.id=dc.department_id
-				LEFT JOIN auth_department p ON p.id=d.parent
-				WHERE seller1 IN ('{$userList}') AND c.storeName='万邑通UK'";
-        if ($goodsCode) $sql .= " AND c.goodsCode LIKE '%{$goodsCode}%'";
-        if ($seller) $sql .= " AND ss.seller1 LIKE '%{$seller}%'";
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $data = ApiTinyTool::getSkuStockDetail($condition);
+            $name = 'ProductInventoryTurnoverDetails';
+            $title = ['商品编码', 'SKU', '商品名称', '仓库', '商品状态', '开发员', '普源创建时间', '平均单价', '成本', '可用库存',
+                '预计可用库存', '重量', '销售1', '销售2', '部门', '3天销量', '7天销量', '14天销量', '30天销量', '周转天数'
+            ];
+            ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
+        } catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
 
-
-        $res = Yii::$app->db->createCommand($sql)->queryAll();
-        $name = 'ProductInventoryTurnoverDetails';
-        $title = ['商品编码', 'SKU', '商品名称', '仓库', '商品状态', '开发员', '普源创建时间', '平均单价', '成本', '预计可用库存', '重量', '销售1', '销售2', '部门',
-            '3天销量', '7天销量', '14天销量', '30天销量', '周转天数'
-        ];
-        ExportTools::toExcelOrCsv($name, $res, 'Xls', $title);
     }
 
     /** 销售员总库存周转
@@ -1265,7 +1222,8 @@ class TinyToolController extends AdminController
      * Author: henry
      * @return array
      */
-    public function actionStockSeller(){
+    public function actionStockSeller()
+    {
         $sql = "SELECT seller1,SUM(useNum) AS useNum,SUM(costMoney) AS costMoney,sum(30DaySellCount) AS 30DaySellCount,
                 ROUND(sum(30DaySellCount)/30,1) AS ave,sum(30DayCostMoney) AS 30DayCostMoney,ROUND(sum(30DayCostMoney)/30,4) AS aveCostMoney,
 			    CASE WHEN sum(30DaySellCount) = 0 AND SUM(useNum) > 0 THEN 10000 ELSE ROUND(SUM(useNum)*30/sum(30DaySellCount),1) END AS sellDays,
@@ -1284,16 +1242,15 @@ class TinyToolController extends AdminController
                         INNER JOIN `cache_skuSeller` u ON u.goodsCode=SUBSTR(co.sku,1,LENGTH(u.goodsCode))
 						LEFT JOIN `cache_stockWaringTmpData` c ON co.sku=c.sku WHERE c.sku IS NULL
                 ) aa GROUP BY seller1;";
-        try{
+        try {
             return Yii::$app->db->createCommand($sql)->queryAll();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),
             ];
         }
     }
-
 
 
     /**
@@ -1361,7 +1318,54 @@ class TinyToolController extends AdminController
         return ApiTinyTool::modifyOrderLogisticsWay();
     }
 
+    /**
+     * Ebay 广告费
+     * Date: 2020-08-21 10:19
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionEbayAdFee()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition');
+            $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
+            $data = ApiTinyTool::getEbayAdFee($condition);
+            $dataProvider = new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => ['sku', 'item_id', 'ad_fee', 'transaction_price'],
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+            return $dataProvider;
+        } catch (Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
 
+    /**
+     * actionEbayAdFeeExport
+     * Date: 2020-08-21 10:21
+     * Author: henry
+     * @return array
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionEbayAdFeeExport()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition');
+            $data = ApiTinyTool::getEbayAdFee($condition);
+            $name = 'EbayAdFee';
+            $title = ['账号简称', '商品编码', '广告费率', '广告费(￥)','广告费(原币种)', '交易时间', '描述', 'ItemId',
+                '成交价(原币种)','物流费(原币种)','总成交价(￥)', '物流名称'];
+            ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
+        } catch (Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
 
 
 }

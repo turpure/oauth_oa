@@ -286,7 +286,7 @@ class ApiGoodsinfo
         $skuInfo = (new Query())->select("gs.*, ss.offerId, ss.specId,og.style")
             ->from('proCenter.oa_goodssku gs')
             ->leftJoin('proCenter.oa_goodsSku1688 ss', 'ss.goodsSkuId=gs.id')
-            ->leftJoin('proCenter.oa_goods1688 og', 'og.specId=ss.specId and og.offerId=ss.offerId and og.infoId='.$id)
+            ->leftJoin('proCenter.oa_goods1688 og', 'og.specId=ss.specId and og.offerId=ss.offerId and og.infoId=' . $id)
             ->where(['gs.infoId' => $id])->orderBy('gs.id')->all();
         foreach ($skuInfo as &$v) {
             $goods = OaGoods1688::find()->select('offerId,specId,style')
@@ -1165,7 +1165,7 @@ class ApiGoodsinfo
         $packageInfo = static::getPackageInfo();
 //        var_dump($goodsInfo);exit;
         # 特殊字段处理
-        foreach ($siteInfo as $site){
+        foreach ($siteInfo as $site) {
             foreach ($products as $ele) {
                 # 货币符号
                 $ele['货币符号'] = $site['currencyCode'];
@@ -1181,7 +1181,7 @@ class ApiGoodsinfo
                 $ele['附图8'] = $goodsInfo[$ele['Parent SKU']]['extraImage8'];
                 # SKU 信息
                 $ele['成本价'] = $skuCostPrice[$ele['SKU']]['CostPrice'];
-                $ele['重量'] = round($skuCostPrice[$ele['SKU']]['Weight'],3);
+                $ele['重量'] = round($skuCostPrice[$ele['SKU']]['Weight'], 3);
 
                 #获取站点物流方式
                 $logisticSql = "SELECT top 1 name,Discount,bf.BeginWeight, bf.AddWeight, bf.AddMoney,bf.BeginMoneyGoods 
@@ -1190,9 +1190,9 @@ class ApiGoodsinfo
                 $expressInfo[$site['site']] = Yii::$app->py_db->createCommand($logisticSql)->queryAll();
                 # 售价信息
                 $profitRate = 0.2; //毛利率
-                $ele['价格'] = static::getGoodsSalePrice($ele, $site, $packageInfo, $expressInfo, $profitRate,'shopee');
+                $ele['价格'] = static::getGoodsSalePrice($ele, $site, $packageInfo, $expressInfo, $profitRate, 'shopee');
 //                var_dump($expressInfo);exit;
-                unset($ele['id'],$ele['成本价'],$ele['包装规格']);
+                unset($ele['id'], $ele['成本价'], $ele['包装规格']);
                 $out[] = $ele;
             }
         }
@@ -1281,7 +1281,7 @@ class ApiGoodsinfo
 //            }
 //        }
         # 2020-07-28 update by Henry
-        if($plat == 'lazada'){
+        if ($plat == 'lazada') {
             foreach ($expressInfo as $ep) {
                 $delta = $totalWeight - $ep['BeginWeight'];
                 if ($delta >= 0 && $delta <= $mine) {
@@ -1357,12 +1357,12 @@ class ApiGoodsinfo
                 $keywords = static::combineKeywords($wishGoods['headKeywords'], $wishGoods['tailKeywords'], $wishGoods['requiredKeywords'], $wishGoods['randomKeywords']);
                 $row['title'] = static::getTitleName($keywords, self::shopeeTitleLength);
                 $extraImage = explode("\n", $wishGoods['extraImages']);
-                foreach ($extraImage as $k => $img){
-                    $row['extraImage'.($k+1)] = $img;
+                foreach ($extraImage as $k => $img) {
+                    $row['extraImage' . ($k + 1)] = $img;
                 }
-                if(count($extraImage) < 20){
-                    for($i = 0; $i < 20 - count($extraImage); $i++){
-                        $row['extraImage'.(20 - $i)] = '';
+                if (count($extraImage) < 20) {
+                    for ($i = 0; $i < 20 - count($extraImage); $i++) {
+                        $row['extraImage' . (20 - $i)] = '';
                     }
                 }
                 $ret[$goodsCode] = $row;
@@ -1440,7 +1440,7 @@ class ApiGoodsinfo
      * @return array
      * @throws \Exception
      */
-    public static function preExportWish($id)
+    public static function preExportWish($id, $suffix = [])
     {
         $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
         $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
@@ -1449,6 +1449,7 @@ class ApiGoodsinfo
         $wishAccounts = OaWishSuffix::find()->where(['like', 'parentCategory', $goods['cate']])
             ->orWhere(["IFNULL(parentCategory,'')" => ''])
             ->andWhere(['isIbay' => 1])
+            ->andFilterWhere(['shortName' => $suffix])
             ->asArray()->all();
         $keyWords = static::preKeywords($wishInfo);
 
@@ -1505,7 +1506,7 @@ class ApiGoodsinfo
      * @param $ids
      * @return array
      */
-    public static function preExportMyMall($ids)
+    public static function preExportMyMall($ids, $suffixs)
     {
         if (!is_array($ids)) {
             $ids = [$ids];
@@ -1529,6 +1530,7 @@ class ApiGoodsinfo
             }
 
             $myMallAccounts = OaMyMallSuffix::find()
+                ->andFilterWhere(['name' => $suffixs])
                 ->asArray()->all();
             $id = $goodsInfo['id'];
             $myMallSku = OaWishGoodsSku::find()
@@ -1680,7 +1682,7 @@ class ApiGoodsinfo
                 $var = [];
                 foreach ($joomSku as $k => $sku) {
                     $variationRow = [
-                        'main_image' => '', 'sku' => '', 'enabled' => true, 'color' => '',  'declaredValue' => '',
+                        'main_image' => '', 'sku' => '', 'enabled' => true, 'color' => '', 'declaredValue' => '',
                         'size' => '', 'inventory' => '', 'price' => '', 'msrp' => '', 'shipping' => '',
                         'shipping_weight' => '', 'shipping_height' => '', 'shipping_length' => '', 'shipping_width' => ''
                     ];
@@ -1694,6 +1696,86 @@ class ApiGoodsinfo
                     $variationRow['shipping_weight'] = (float)$sku['weight'] * 1.0 / 1000;
                     $variationRow['main_image'] = str_replace('/10023/', '/' . $account['imgCode'] . '/', $sku['linkUrl']);
                     $variationRow['declaredValue'] = static::getJoomDeclaredValue($sku['joomPrice']);
+                    $var[$k] = $variationRow;
+                }
+                $row['variants'] = json_encode($var);
+                $out[] = $row;
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * @brief 导出joom模板
+     * @param $ids
+     * @param $accounts
+     * @return array
+     */
+    public static function preExportVovaData($ids, $type)
+    {
+        $accounts = OaVovaSuffix::find()->asArray()->all();
+        if (!is_array($ids)) {
+            $ids = [$ids];
+        }
+        $row = [
+            'parent_sku' => '', 'goods_name' => '', 'goods_description' => '', 'tags' => '', 'main_image' => '',
+            'extra_image_list' => '', 'suffix' => '', 'variants' => '', 'from_platform' => '',
+            'goods_brand' => '', 'shipping_weight' => '', 'shipping_time' => '15-45',
+        ];
+        $out = [];
+        foreach ($ids as $id) {
+            if (is_numeric($id)) {
+                $goodsInfo = OaGoodsinfo::findOne(['id' => $id]);
+            } else {
+                $goodsInfo = OaGoodsinfo::findOne(['goodsCode' => $id]);
+                $id = $goodsInfo['id'];
+            }
+            $vovaSku = OaWishGoodsSku::find()->where(['infoId' => $id])->asArray()->all();
+            $vovaInfo = OaWishGoods::find()->where(['infoId' => $id])->asArray()->one();
+            $keyWords = static::preKeywords($vovaInfo);
+
+            foreach ($accounts as $account) {
+                $fixArr = explode('-', $account['account']);
+                if (count($fixArr) == 2) {
+                    $postfix = '@#' . substr($fixArr[1], 0, 2);
+                } else {
+                    $postfix = '@#' . $fixArr[1];
+                }
+                $titlePool = [];
+                $title = '';
+                $len = self::WishTitleLength;
+                while (true) {
+                    $title = static::getTitleName($keyWords, $len);
+                    --$len;
+                    if (empty($title) || !in_array($title, $titlePool, false)) {
+                        $titlePool[] = $title;
+                        break;
+                    }
+                }
+                $mainImage = static::getWishMainImage($goodsInfo['goodsCode'], !empty($account) ? $account['mainImage'] : '0');
+                $row['parent_sku'] = $vovaInfo['sku'] . $postfix;
+                $row['goods_name'] = $title;
+                $row['goods_description'] = $vovaInfo['description'];
+                $row['tags'] = $vovaInfo['wishTags'];
+                $row['main_image'] = $mainImage;
+                $row['suffix'] = $account['account'];
+                $row['extra_image_list'] = $vovaInfo['extraImages'];
+                $var = [];
+                foreach ($vovaSku as $k => $sku) {
+                    $variationRow = [
+                        'sku_image' => '', 'goods_sku' => '', 'storage' => 10000, 'market_price' => '',
+                        'shop_price' => '', 'shipping_fee' => '', 'shipping_weight' => '',
+                        'style_array' => [ 'size' => '', 'color' => '', 'style_quantity' => '']
+                    ];
+                    $variationRow['goods_sku'] = $sku['sku'] . $postfix;
+                    $variationRow['color'] = $sku['color'];
+                    $variationRow['style_array']['size'] = $sku['size'];
+                    $variationRow['style_array']['color'] = $sku['color'];
+                    $variationRow['shop_price'] = $sku['price'];
+                    $variationRow['market_price'] = ceil($sku['price'] * 5);
+                    $variationRow['shipping_fee'] = $sku['shipping'];
+                    $variationRow['shipping_weight'] = $sku['weight'];
+                    $variationRow['sku_image'] = $sku['linkUrl'];
                     $var[$k] = $variationRow;
                 }
                 $row['variants'] = json_encode($var);
@@ -2296,7 +2378,7 @@ class ApiGoodsinfo
         $out = [];
 
         foreach ($accounts as $act) {
-            $account = OaShopify::find()->where(['account' => $act])->asArray()->one();
+            $account = OaShopify::find()->orFilterWhere(['account' => $act, 'suffix' => $act])->asArray()->one();
             $titlePool = [];
             $title = '';
             $len = self::WishTitleLength;
@@ -3197,4 +3279,31 @@ class ApiGoodsinfo
         }
 
     }
+
+    public static function getPlatExportCondition($plat = '', $depart = '')
+    {
+        if($plat == 'Joom') {
+            $sql = "SELECT  joomName as suffix,'Joom' AS platform, joomSuffix AS depart FROM proCenter.oa_joomSuffix WHERE 1=1";
+            if ($depart) $sql .= " AND joomSuffix='{$depart}'";
+        }else{
+            $sql = "SELECT s.store AS suffix,s.platform ,
+                CASE WHEN ifnull(pd.department,'')<>'' THEN IFNULL(pd.department,'其他') ELSE IFNULL(d.department,'其他') END AS depart
+                FROM `auth_store` s 
+                LEFT JOIN `auth_store_child` sc ON s.id=sc.store_id
+                LEFT JOIN `user` u ON u.id=sc.user_id
+                LEFT JOIN `auth_department_child` dc ON u.id=dc.user_id
+                LEFT JOIN `auth_department` d ON d.id=dc.department_id
+                LEFT JOIN `auth_department` pd ON pd.id=d.parent
+                WHERE s.platform NOT IN ('Amazon','Joom')";
+            if($plat) $sql .= " AND s.platform='{$plat}'";
+            if($depart) $sql .= " AND (ifnull(pd.department,'')<>'' AND IFNULL(pd.department,'')='{$depart}' OR IFNULL(d.department,'')='{$depart}')";
+            if(!$plat){
+                $sql .= "UNION SELECT  joomName as suffix,'Joom' AS platform, joomSuffix AS depart FROM proCenter.oa_joomSuffix WHERE 1=1";
+                if($depart) $sql .= " AND joomSuffix='{$depart}'";
+            }
+        }
+        return Yii::$app->db->createCommand($sql)->queryAll();
+    }
+
+
 }
