@@ -660,7 +660,8 @@ class OaGoodsinfoController extends AdminController
             }
             $condition = $request->post()['condition'];
             $infoIds = $condition['id'];
-            $ret = ApiGoodsinfo::preExportLazada($infoIds);
+            $accounts = $condition['accounts'];
+            $ret = ApiGoodsinfo::preExportLazada($infoIds, $accounts);
 //            return $ret;
             ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Xls');
         } catch (\Exception $why) {

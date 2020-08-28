@@ -991,25 +991,53 @@ class ApiGoodsinfo
 
 
     /**
+     * @param $ids
+     * @param $accounts
+     * @return array
+     */
+    public static function preExportLazada($ids, $accounts)
+    {
+
+        $data = static::_preExportLazada($ids);
+        $out = ['name' => $data['name']];
+        $row_data = [];
+        $rows = $data['data'];
+        foreach ($accounts as $at) {
+            $sql = 'select accountName from oa_lazadaSuffix where suffix =:suffix ';
+            $ret = Yii::$app->pro_db->createCommand($sql, [':suffix' => $at])->queryOne();
+            $at = $ret['accountName'];
+            foreach ($rows as $row) {
+                $row['产品标题（英文）1'] = $at . '`s ' . $row['产品标题（英文）1'];
+                $row['长描述'] = '"<p>Welcome to ' . $at . ' <br> <br></p>' . substr($row['长描述'],1) ;
+                $row_data[] = $row;
+            }
+        }
+        $out['data'] = $row_data;
+        return $out;
+
+    }
+
+    /**
      * 导出Lazada模板
      * @param $ids
      * @return array
      */
-    public static function preExportLazada($ids)
+    private static function _preExportLazada($ids)
     {
         $payFeeFixedRate = 0.04;
         $siteInfo = [
-            'MY' => ['site' => '马来西亚', 'exchange' => '1.575', 'payFeeRate' => 0.02 + $payFeeFixedRate],
-            'PH' => ['site' => '菲律宾', 'exchange' => '0.125', 'payFeeRate' => 0.02 + $payFeeFixedRate],
-            'ID' => ['site' => '印尼', 'exchange' => '0.000454', 'payFeeRate' => 0.02 + $payFeeFixedRate],
-            'TH' => ['site' => '泰国', 'exchange' => '0.2', 'payFeeRate' => 0.02 + $payFeeFixedRate],
-            'SG' => ['site' => '新加坡', 'exchange' => '4.8', 'payFeeRate' => 0.02 + $payFeeFixedRate],
-            'VN' => ['site' => '越南', 'exchange' => '0.0003', 'payFeeRate' => 0.02 + $payFeeFixedRate],
+            'MY' => ['site' => '马来西亚', 'exchange' => '1.575', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' =>4.13],
+            'PH' => ['site' => '菲律宾', 'exchange' => '0.125', 'payFeeRate' => 0.02 + $payFeeFixedRate,'lowPrice' => 91],
+            'ID' => ['site' => '印尼', 'exchange' => '0.000454', 'payFeeRate' => 0.02 + $payFeeFixedRate,'lowPrice' => 17500],
+            'TH' => ['site' => '泰国', 'exchange' => '0.2', 'payFeeRate' => 0.02 + $payFeeFixedRate,'lowPrice' => 20],
+            'SG' => ['site' => '新加坡', 'exchange' => '4.8', 'payFeeRate' => 0.02 + $payFeeFixedRate,'lowPrice' => 4],
+            'VN' => ['site' => '越南', 'exchange' => '0.0003', 'payFeeRate' => 0.02 + $payFeeFixedRate,'lowPrice' => 23300],
         ];
         $ids = implode(',', $ids);
         $sql = "select og.createDate as '开发日期',cate as '一级类目',subCate as '二级类目', goodsCode as '商品编码', goodsStatus as '商品状态'," .
             "goodsName as '商品名称'," .
             "ogs.sku as 'SKU'," .
+            "(select sku from oa_goodssku  where infoId= ogs.infoId limit 1) as '关联SKU', " .
             "ogs.property1 '属性1'," .
             "ogs.property2 as '属性2'," .
             "ogs.property1 '属性1', ogs.property2 as '属性2', ogs.property3 as '属性3', mainImage as '商品主图', ogs.linkUrl as '属性主图', owg.extraImages as '附加图', ogi.headKeywords as '头部关键词', ogi.requiredKeywords as '必须关键词', ogi.randomKeywords '随机关键词', ogi.tailKeywords '尾部关键词'," .
@@ -1025,25 +1053,7 @@ class ApiGoodsinfo
             "'' as 'TH原价'," .
             "'' as 'TH售价'," .
             "'' as 'PH原价'," .
-            "'' as 'PH售价'," .
-            "'' as '产品标题（英文）1'," .
-            "'' as '产品标题'," .
-            "'' as '关键词1'," .
-            "'' as 'Package'," .
-            "'' as '多个颜色'," .
-            "'' as '多个尺寸'," .
-            "'' as 'MY ID'," .
-            "'' as 'PH ID'," .
-            "'' as 'TH ID'," .
-            "'' as 'SG ID'," .
-            "'' as 'ID ID'," .
-            "'' as 'VN ID'," .
-            "'' as '一级类目'," .
-            "'' as '主sku'," .
-            "'' as '多个子sku'," .
-            "'' as '关联sku'," .
-            "'' as '描述图片代码'," .
-            "'' as 'short' " .
+            "'' as 'PH售价'" .
             'from oa_goods as og LEFT JOIN oa_goodsinfo as ogi on og.nid= ogi.goodsId ' .
             'LEFT JOIN oa_goodssku as ogs on ogs.infoId = ogi.id ' .
             'LEFT JOIN oa_wishGoods as owg on owg.infoId = ogi.id ' .
@@ -1077,13 +1087,17 @@ class ApiGoodsinfo
             # 生成标题
             $ele['产品标题（英文）1'] = $goodsInfo[$ele['商品编码']]['title'];
 
+
+            # Package
+            $ele['Package'] = '1 X ' . json_decode($ele['必须关键词'])[0];
+
             # 短描述
             $ele['短描述'] = $goodsInfo[$ele['商品编码']]['shortDescription'];
             $ele['长描述'] = $goodsInfo[$ele['商品编码']]['longDescription'];
 
             # SKu 信息
             $ele['成本价'] = $skuCostPrice[$ele['SKU']]['CostPrice'];
-            $ele['重量'] = $skuCostPrice[$ele['SKU']]['Weight'];
+            $ele['重量'] = round($skuCostPrice[$ele['SKU']]['Weight'],2);
             # 售价信息
             $ele['MY售价'] = static::getGoodsSalePrice($ele, $siteInfo['MY'], $packageInfo, $expressInfo);
             $ele['MY原价'] = round($ele['MY售价'] * 1.8, 2);
@@ -1097,6 +1111,9 @@ class ApiGoodsinfo
             $ele['VN原价'] = floor($ele['VN售价'] * 1.8);
             $ele['SG售价'] = static::getGoodsSalePrice($ele, $siteInfo['SG'], $packageInfo, $expressInfo);
             $ele['SG原价'] = round($ele['SG售价'] * 1.8, 2);
+
+            # 删除多余的信息
+            unset($ele['头部关键词'],$ele['必须关键词'],$ele['随机关键词'],$ele['尾部关键词']);
             $out[] = $ele;
         }
         $ret['data'] = $out;
@@ -1219,7 +1236,7 @@ class ApiGoodsinfo
         $transactionFeeRate = $siteInfo['payFeeRate'];
         $totalFee = $expressFee + $costPrice + $packageFee;
         $salePrice = $totalFee / (1 - $profitRate - $transactionFeeRate);
-        return round($salePrice / $siteInfo['exchange'], 2);
+        return max($siteInfo['lowPrice'],round($salePrice / $siteInfo['exchange'], 2));
     }
 
 
@@ -1413,7 +1430,7 @@ class ApiGoodsinfo
             $imagesLinks .= '<p><img src=" ' . $ig . '" /></p>';
         }
 
-        $description = '"<p>' . $description . '</p>' . $imagesLinks . '"';
+        $description = '"<p>&nbsp' . $description . '</p>' . $imagesLinks . '"';
         return $description;
     }
 
