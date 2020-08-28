@@ -810,7 +810,7 @@ class OaGoodsinfoController extends AdminController
                 $ret = ApiGoodsinfo::preExportJoom($infoId, $accounts);
             }elseif ($plat == 'Lazada'){
                 $type = 'Xls';
-                $ret = ApiGoodsinfo::preExportLazada($infoId);
+                $ret = ApiGoodsinfo::preExportLazada($infoId, $accounts);
             }elseif ($plat == 'Shopee'){
                 $type = 'Xls';
                 $ret = ApiGoodsinfo::preExportShopee($infoId);
