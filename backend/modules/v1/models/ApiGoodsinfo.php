@@ -1007,7 +1007,7 @@ class ApiGoodsinfo
             $ret = Yii::$app->pro_db->createCommand($sql, [':suffix' => $at])->queryOne();
             $at = $ret['accountName'];
             foreach ($rows as $row) {
-                $row['产品标题（英文）1'] = $at . '`s ' . $row['产品标题（英文）1'];
+                $row['产品标题（英文）1'] = $at . "'s Shop " . $row['产品标题（英文）1'];
                 $row['长描述'] = '"<p>Welcome to ' . $at . ' <br> <br></p>' . substr($row['长描述'],1) ;
                 $row_data[] = $row;
             }
