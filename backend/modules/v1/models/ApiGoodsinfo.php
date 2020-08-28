@@ -1006,8 +1006,8 @@ class ApiGoodsinfo
             $sql = 'select accountName from oa_lazadaSuffix where suffix =:suffix ';
             $ret = Yii::$app->pro_db->createCommand($sql, [':suffix' => $at])->queryOne();
             $at = $ret['accountName'];
+            $at .=  "'s Shop ";
             foreach ($rows as $row) {
-                $at .=  "'s Shop ";
                 $row['长描述'] = '"<p>Welcome to ' . $at . ' <br> <br></p>' . substr($row['长描述'],1) ;
                 $row_data[] = $row;
             }
