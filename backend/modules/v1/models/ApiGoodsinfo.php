@@ -1007,7 +1007,7 @@ class ApiGoodsinfo
             $ret = Yii::$app->pro_db->createCommand($sql, [':suffix' => $at])->queryOne();
             $at = $ret['accountName'];
             foreach ($rows as $row) {
-                $row['产品标题（英文）1'] = $at . "'s Shop " . $row['产品标题（英文）1'];
+                $at .=  "'s Shop ";
                 $row['长描述'] = '"<p>Welcome to ' . $at . ' <br> <br></p>' . substr($row['长描述'],1) ;
                 $row_data[] = $row;
             }
@@ -1038,9 +1038,22 @@ class ApiGoodsinfo
             "goodsName as '商品名称'," .
             "ogs.sku as 'SKU'," .
             "(select sku from oa_goodssku  where infoId= ogs.infoId limit 1) as '关联SKU', " .
-            "ogs.property1 '属性1'," .
-            "ogs.property2 as '属性2'," .
-            "ogs.property1 '属性1', ogs.property2 as '属性2', ogs.property3 as '属性3', mainImage as '商品主图', ogs.linkUrl as '属性主图', owg.extraImages as '附加图', ogi.headKeywords as '头部关键词', ogi.requiredKeywords as '必须关键词', ogi.randomKeywords '随机关键词', ogi.tailKeywords '尾部关键词'," .
+            "ows.color '属性1', ows.size as '属性2', ogs.property3 as '属性3', mainImage as '商品主图', ogs.linkUrl as '属性主图'," .
+            "owg.extraImages as '附加图'," .
+            "'' as '附加图1'," .
+            "'' as '附加图2'," .
+            "'' as '附加图3'," .
+            "'' as '附加图4'," .
+            "'' as '附加图5'," .
+            "'' as '附加图6'," .
+            "'' as '附加图7'," .
+            "'' as '附加图8'," .
+            "'' as '附加图9'," .
+            "'' as '附加图10'," .
+            "'' as '附加图11'," .
+            "'' as '附加图12'," .
+            " ogi.headKeywords as '头部关键词', ogi.requiredKeywords as '必须关键词', ".
+            "ogi.randomKeywords '随机关键词', ogi.tailKeywords '尾部关键词'," .
             "hopeCost '成本价',hopeWeight '重量',packName '包装规格',ogi.description '描述'," .
             "'' as 'VN原价'," .
             "'' as 'VN售价'," .
@@ -1057,6 +1070,7 @@ class ApiGoodsinfo
             'from oa_goods as og LEFT JOIN oa_goodsinfo as ogi on og.nid= ogi.goodsId ' .
             'LEFT JOIN oa_goodssku as ogs on ogs.infoId = ogi.id ' .
             'LEFT JOIN oa_wishGoods as owg on owg.infoId = ogi.id ' .
+            'LEFT JOIN oa_wishGoodsSku as ows on ows.sid = ogs.id ' .
             "where ogi.id in (" .
             $ids .
             ")";
@@ -1087,6 +1101,22 @@ class ApiGoodsinfo
             # 生成标题
             $ele['产品标题（英文）1'] = $goodsInfo[$ele['商品编码']]['title'];
 
+            # 附件图处理
+
+            $extraImages = explode("\n",$ele['附加图']);
+            unset($ele['附件图']);
+            $ele['附加图1'] = $extraImages[1] ?? '' ;
+            $ele['附加图2'] = $extraImages[2] ?? '' ;
+            $ele['附加图3'] = $extraImages[3] ?? '' ;
+            $ele['附加图4'] = $extraImages[4] ?? '' ;
+            $ele['附加图5'] = $extraImages[5] ?? '' ;
+            $ele['附加图6'] = $extraImages[6] ?? '' ;
+            $ele['附加图7'] = $extraImages[7] ?? '' ;
+            $ele['附加图8'] = $extraImages[8] ?? '' ;
+            $ele['附加图9'] = $extraImages[9] ?? '' ;
+            $ele['附加图10'] = $extraImages[10] ?? '' ;
+            $ele['附加图11'] = $extraImages[11] ?? '' ;
+            $ele['附加图12'] = $extraImages[12] ?? '' ;
 
             # Package
             $ele['Package'] = '1 X ' . json_decode($ele['必须关键词'])[0];
