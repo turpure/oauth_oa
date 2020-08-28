@@ -1052,8 +1052,8 @@ class ApiGoodsinfo
             "'' as '附加图10'," .
             "'' as '附加图11'," .
             "'' as '附加图12'," .
-            " ogi.headKeywords as '头部关键词', ogi.requiredKeywords as '必须关键词', ".
-            "ogi.randomKeywords '随机关键词', ogi.tailKeywords '尾部关键词'," .
+            " owg.headKeywords as '头部关键词', owg.requiredKeywords as '必须关键词', ".
+            "owg.randomKeywords '随机关键词', owg.tailKeywords '尾部关键词'," .
             "hopeCost '成本价',hopeWeight '重量',packName '包装规格',ogi.description '描述'," .
             "'' as 'VN原价'," .
             "'' as 'VN售价'," .
