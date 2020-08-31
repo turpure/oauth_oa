@@ -90,9 +90,9 @@ class SchedulerController extends Controller
      */
     public function actionSite()
     {
-        $beginDate = '2019-09-01';//date('Y-m-d', strtotime('-30 days'));
-        //$endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
-        $endDate = '2019-12-31';//昨天时间
+        $beginDate = '2020-08-01';//date('Y-m-d', strtotime('-30 days'));
+        $endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
+        //$endDate = '2020-12-31';//昨天时间
         $dateRate = round(((strtotime($endDate) - strtotime($beginDate))/24/3600 + 1)*100/122, 2);
         //print_r($dateRate);exit;
         try {
@@ -111,12 +111,14 @@ class SchedulerController extends Controller
                 'dateFlag' => 1,
                 'beginDate' => $beginDate,
                 'endDate' => $endDate,
-                'seller' => '胡小红,廖露露,常金彩,刘珊珊,王漫漫,陈微微,杨笑天,李永恒,崔明宽,张崇,史新慈,邹雅丽,杨晶媛',
+                'seller' => implode(',', ArrayHelper::getColumn($seller,'username')),
             ];
             $devList = ApiReport::getDevelopReport($condition);
             foreach ($devList as $value){
-                $target =  Yii::$app->db->createCommand("SELECT IFNULL(target,0) AS target FROM site_targetAll WHERE username='{$value['salernameZero']} '")->queryScalar();
-                $lastProfit =  Yii::$app->db->createCommand("SELECT sum(profitZn) AS profitZn FROM site_targetAllBackupData WHERE username='{$value['salernameZero']} ' GROUP BY username")->queryScalar();
+                $targetSql = "SELECT IFNULL(target,0) AS target FROM site_targetAll WHERE role='开发' and username='{$value['salernameZero']}'";
+                $target =  Yii::$app->db->createCommand($targetSql)->queryScalar();
+                $backupSql =  "SELECT sum(profitZn) AS profitZn FROM site_targetAllBackupData WHERE role='开发' and username='{$value['salernameZero']}' GROUP BY username";
+                $lastProfit =  Yii::$app->db->createCommand($backupSql)->queryScalar();
                 Yii::$app->db->createCommand()->update(
                     'site_targetAll',
                     [
@@ -128,9 +130,6 @@ class SchedulerController extends Controller
                     ['role' => '开发', 'username' => $value['salernameZero']]
                 )->execute();
             }
-
-
-
 
 
 

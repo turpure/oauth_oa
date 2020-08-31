@@ -73,27 +73,11 @@ class SiteController extends AdminController
      */
     public function actionIndex()
     {
-        $condition = Yii::$app->request->get();
         $username = Yii::$app->user->identity->username;
-        if(isset($condition['role']) && $condition['role']){
-            if($condition['role'] == 'depart'){
-                $sql = "SELECT username,target,bonus,amt,rate,dateRate,updateTime 
-                FROM site_targetAll 
-                WHERE role='部门' AND display<>1 ORDER BY rate DESC";
-            }else{
-                $role = $condition['role'] == 'dev'?'开发':'销售';
-                $sql = "SELECT u.avatar,st.*,CASE WHEN amt-target>0 AND role='销售' THEN floor((amt-target)/2000)*100 ELSE 0 END AS rxtraBonus 
+        $sql = "SELECT u.avatar,st.*,CASE WHEN amt-target>0 AND role='销售' THEN floor((amt-target)/2000)*100 ELSE 0 END AS rxtraBonus 
                 FROM site_targetAll st
                 LEFT JOIN `user` u ON st.username=u.username
-                WHERE role='{$role}' AND display<>1 ORDER BY rate DESC";
-            }
-
-        }else{
-            $sql = "SELECT u.avatar,st.*,CASE WHEN amt-target>0 AND role='销售' THEN floor((amt-target)/2000)*100 ELSE 0 END AS rxtraBonus 
-                FROM site_targetAll st
-                LEFT JOIN `user` u ON st.username=u.username
-                WHERE role IN ('销售','开发') AND display<>1 ORDER BY st.username='{$username}' DESC,rate DESC";
-        }
+                WHERE display<>1 ORDER BY st.username='{$username}' DESC,rate DESC";
 
         $query = \Yii::$app->db->createCommand($sql)->queryAll();
         return $query;

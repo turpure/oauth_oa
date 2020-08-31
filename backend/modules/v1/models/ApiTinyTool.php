@@ -1165,6 +1165,7 @@ class ApiTinyTool
      */
     public static function modifyOrderLogisticsWay()
     {
+        $username = Yii::$app->user->identity->username;
         $doc = Yii::$app->db->createCommand('select * from cache_order_zip_code')->queryAll();
         $id = Yii::$app->py_db->createCommand("select nid from B_LogisticWay WHERE name LIKE 'Royal Mail - Tracked 48 Parcel%'")->queryScalar();
 
@@ -1194,6 +1195,12 @@ class ApiTinyTool
                 if (!$res) {
                     throw new Exception('Failed to update logics way of order ' . $v['nid']);
                 }
+                $logs = $username . '  ' . date('Y-m-d H:i:s') . ' 更改物流方式为 Royal Mail - Tracked 48 Parcel';
+                Yii::$app->py_db->createCommand()->insert('P_TradeLogs', [
+                    'order_id' => $v['nid'],
+                    'Operator' => $username,
+                    'Logs' => $logs
+                ])->execute();
             }
             $transaction->commit();
         } catch (Exception $e) {
