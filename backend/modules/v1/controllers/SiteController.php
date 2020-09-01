@@ -109,9 +109,11 @@ class SiteController extends AdminController
 
         $vacationDaysUsedNum = Yii::$app->db->createCommand("SELECT sum(vacationDays) AS vacationDays FROM site_targetAll WHERE role<>'部门' AND display<>1 AND rate>=100")->queryOne();
         $vacationDaysAllNum = Yii::$app->db->createCommand("SELECT sum(vacationDays) AS vacationDays FROM site_targetAll WHERE role<>'部门' AND display<>1")->queryOne();
+        $dateRate = Yii::$app->db->createCommand("SELECT dateRate FROM site_targetAll limit 1")->queryScalar();
 
         return [
             'list' => $query,
+            'dateRate' => $dateRate,
             'bonusAllNum' => $bonusAllNum['bonus'],
             'bonusUsedNum' => $bonusUsedNum['bonus'],
             'bonusUnUsedNum' => $bonusAllNum['bonus'] - $bonusUsedNum['bonus'],
