@@ -29,6 +29,7 @@ use Yii;
  * @property string $tailKeywords
  * @property string $wishTags
  * @property string $stockUp
+ * @property string $isJoomPublish
  */
 class OaWishGoods extends \yii\db\ActiveRecord
 {
@@ -46,8 +47,8 @@ class OaWishGoods extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['description', 'extraImages','wishExtraImages','stockUp'], 'string'],
-            [['inventory', 'goodsId', 'infoId',], 'integer'],
+            [['description', 'extraImages','wishExtraImages','stockUp', 'isJoomPublish'], 'string'],
+            [['inventory', 'goodsId', 'infoId'], 'integer'],
             [['price', 'msrp', 'shipping'], 'number'],
             [['sku'], 'string', 'max' => 50],
             [['title', 'mainImage', 'wishMainImage'], 'string', 'max' => 2000],
