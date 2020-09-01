@@ -1197,7 +1197,7 @@ class ApiTinyTool
                 }
                 $logs = $username . '  ' . date('Y-m-d H:i:s') . ' 更改物流方式为 Royal Mail - Tracked 48 Parcel';
                 Yii::$app->py_db->createCommand()->insert('P_TradeLogs', [
-                    'order_id' => $v['nid'],
+                    'TradeNID' => $v['nid'],
                     'Operator' => $username,
                     'Logs' => $logs
                 ])->execute();
