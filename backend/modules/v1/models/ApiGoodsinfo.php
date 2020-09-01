@@ -61,7 +61,7 @@ class ApiGoodsinfo
     private static $pictureInfo = ['待处理'];
     const PlatInfo = '已完善';
 //    const UsdExchange = 1;
-    const UsdExchange = 6.88;
+    const UsdExchange = 6.9575;
     const WishTitleLength = 110;
     const myMallTitleLength = 110;
     const EbayTitleLength = 80;
