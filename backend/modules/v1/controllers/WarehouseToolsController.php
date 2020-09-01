@@ -101,6 +101,16 @@ class WarehouseToolsController extends AdminController
     }
 
     /**
+     * @brief 入库扫描记录下载
+     * @return \yii\data\ActiveDataProvider
+     */
+    public function actionWarehouseLogExport()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiWarehouseTools::warehouseLogExport($condition);
+    }
+
+    /**
      * @brief 拣货统计
      * @return \yii\data\ActiveDataProvider
      */
