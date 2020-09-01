@@ -1106,7 +1106,8 @@ class ApiReport
                     'developer', 'introducer', 'goodsCode', 'goodsName','devDate', 'goodsStatus',
                     'sold','amt','profit','rate','ebaySold','ebayProfit',
                     'wishSold','wishProfit','smtSold','smtProfit',
-                    'joomSold','joomProfit','amazonSold','amazonProfit'
+                    'joomSold','joomProfit','amazonSold','amazonProfit',
+                    'vovaSold','vovaProfit','lazadaSold','lazadaProfit'
                 ]
             ],
             'pagination' => [
