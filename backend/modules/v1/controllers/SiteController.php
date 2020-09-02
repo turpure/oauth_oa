@@ -83,7 +83,7 @@ class SiteController extends AdminController
                 LEFT JOIN `user` u ON st.username=u.username WHERE display<>1 ";
         if($role) $sql .= " AND role='{$role}' ";
         if($search) $sql .= " AND ( st.username like '%{$search}%' OR depart like '%{$search}%') ";
-        $sql .= " ORDER BY st.username='{$username}' DESC,rate DESC";
+        $sql .= " ORDER BY st.username='{$username}' DESC,rate DESC,amt DESC";
         $query = \Yii::$app->db->createCommand($sql)->queryAll();
         $data = new ArrayDataProvider([
             'allModels' => $query,

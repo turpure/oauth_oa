@@ -1195,7 +1195,7 @@ class ApiTinyTool
                 if (!$res) {
                     throw new Exception('Failed to update logics way of order ' . $v['nid']);
                 }
-                $logs = $username . '  ' . date('Y-m-d H:i:s') . ' 更改物流方式为 Royal Mail - Tracked 48 Parcel';
+                $logs = $username . '  ' . date('Y-m-d H:i:s') . ' 手动更改物流方式为 Royal Mail - Tracked 48 Parcel';
                 Yii::$app->py_db->createCommand()->insert('P_TradeLogs', [
                     'TradeNID' => $v['nid'],
                     'Operator' => $username,

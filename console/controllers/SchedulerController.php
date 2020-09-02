@@ -96,10 +96,6 @@ class SchedulerController extends Controller
         $dateRate = round(((strtotime($endDate) - strtotime($beginDate))/24/3600 + 1)*100/122, 2);
         //print_r($dateRate);exit;
         try {
-            //更新销售和部门目标完成度
-            $exchangeRate = ApiUkFic::getRateUkOrUs('USD');//美元汇率
-            $sql = "CALL oauth_siteTargetAll($exchangeRate)";
-            Yii::$app->db->createCommand($sql)->execute();
 
             //获取开发备份数据
             $month =  Yii::$app->db->createCommand("SELECT max(month) month FROM site_targetAllBackupData WHERE role='开发'")->queryScalar();
@@ -132,7 +128,10 @@ class SchedulerController extends Controller
                 )->execute();
             }
 
-
+            //更新销售和部门目标完成度
+            $exchangeRate = ApiUkFic::getRateUkOrUs('USD');//美元汇率
+            $sql = "CALL oauth_siteTargetAll($exchangeRate)";
+            Yii::$app->db->createCommand($sql)->execute();
 
             print date('Y-m-d H:i:s') . " INFO:success to get data of target completion!\n";
         } catch (\Exception $why) {

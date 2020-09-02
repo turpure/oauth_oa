@@ -1268,7 +1268,12 @@ class ApiGoodsinfo
         $transactionFeeRate = $siteInfo['payFeeRate'];
         $totalFee = $expressFee + $costPrice + $packageFee;
         $salePrice = $totalFee / (1 - $profitRate - $transactionFeeRate);
-        return max($siteInfo['lowPrice'],round($salePrice / $siteInfo['exchange'], 2));
+        if($plat == 'lazada'){
+            $price = max($siteInfo['lowPrice'],round($salePrice / $siteInfo['exchange'], 2));
+        }else{
+            $price = round($salePrice / $siteInfo['exchange'], 2);
+        }
+        return $price;
     }
 
 
