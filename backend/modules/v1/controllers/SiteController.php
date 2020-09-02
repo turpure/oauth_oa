@@ -10,6 +10,7 @@ namespace backend\modules\v1\controllers;
 
 use backend\modules\v1\utils\Helper;
 use Yii;
+use yii\data\ArrayDataProvider;
 use yii\helpers\ArrayHelper;
 use yii\filters\VerbFilter;
 
@@ -74,13 +75,29 @@ class SiteController extends AdminController
     public function actionIndex()
     {
         $username = Yii::$app->user->identity->username;
-        $sql = "SELECT u.avatar,st.*,CASE WHEN amt-target>0 AND role='销售' THEN floor((amt-target)/2000)*100 ELSE 0 END AS rxtraBonus 
-                FROM site_targetAll st
-                LEFT JOIN `user` u ON st.username=u.username
-                WHERE display<>1 ORDER BY st.username='{$username}' DESC,rate DESC";
-
+        $role = Yii::$app->request->get('role','销售');
+        $search = Yii::$app->request->get('search','');
+        $sql = "SELECT u.avatar,st.*,CASE WHEN amt-target>0 AND role='销售' THEN floor((amt-target)/2000)*100
+                WHEN role='开发' AND amt-target>0 THEN floor((amt-target)/5000)*100
+                ELSE 0 END AS rxtraBonus FROM site_targetAll st 
+                LEFT JOIN `user` u ON st.username=u.username WHERE display<>1 ";
+        if($role) $sql .= " AND role='{$role}' ";
+        if($search) $sql .= " AND ( st.username like '%{$search}%' OR depart like '%{$search}%') ";
+        $sql .= " ORDER BY st.username='{$username}' DESC,rate DESC";
         $query = \Yii::$app->db->createCommand($sql)->queryAll();
-        return $query;
+        $data = new ArrayDataProvider([
+            'allModels' => $query,
+            'sort' => [
+                'attributes' => [
+                    'username', 'depart', 'role', 'target', 'bonus','vacationDays',
+                    'amt','rate','dateRate','order','rxtraBonus'
+                ],
+            ],
+            'pagination' => [
+                'pageSize' => 200,
+            ],
+        ]);
+        return $data;
     }
 
 
