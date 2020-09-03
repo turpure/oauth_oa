@@ -1261,9 +1261,9 @@ class ApiTinyTool
                 fee_time,description, item_id, CONCAT(transaction_price,'(',transaction_code,')') as transaction_price, 
                 CONCAT(shipping_fee,'(',transaction_code,')') as shipping_fee,
                 transaction_code_rate*(transaction_price + shipping_fee) as transaction_price_total,shipping_name
-                from cache_ebayAdFee where fee_time between '{$begin}' and '{$end}'
-                 AND sku like 'UK%'
-                ";
+                from cache_ebayAdFee where sku like 'UK%' ";
+
+        if($begin && $end) $sql .= " AND fee_time between '{$begin}' and '{$end}'";
         if($sku) $sql .= " and sku like '%{$sku}%'";
         if($suffix) $sql .= " and suffix like '%{$suffix}%'";
         if($itemId) $sql .= " and item_id = '{$itemId}'";
