@@ -562,12 +562,12 @@ class ApiGoodsinfo
                         'id' => '', 'sku' => '', 'title' => '', 'description' => '', 'inventory' => '', 'price' => '', 'msrp' => '',
                         'shipping' => '', 'shippingTime' => '', 'tags' => '', 'mainImage' => '', 'goodsId' => '', 'infoId' => '',
                         'extraImages' => '', 'headKeywords' => '', 'requiredKeywords' => '', 'randomKeywords' => '', 'tailKeywords' => '',
-                        'wishTags' => '', 'stockUp' => '','wishMainImage' => '','wishExtraImages' => '', 'isJoomPublish' => ''
+                        'wishTags' => '', 'stockUp' => '', 'wishMainImage' => '', 'wishExtraImages' => '', 'isJoomPublish' => ''
                     ],
                     'skuInfo' => [[
                         'id' => '', 'infoId' => '', 'sid' => '', 'sku' => '', 'color' => '', 'size' => '', 'inventory' => '',
                         'price' => '', 'shipping' => '', 'msrp' => '', 'shippingTime' => '', 'linkUrl' => '', 'goodsSkuId' => '',
-                        'weight' => '', 'joomPrice' => '', 'joomShipping' => '','wishLinkUrl' => ''
+                        'weight' => '', 'joomPrice' => '', 'joomShipping' => '', 'wishLinkUrl' => ''
                     ]]];
                 return $ret;
             }
@@ -1007,10 +1007,10 @@ class ApiGoodsinfo
             $ret = Yii::$app->pro_db->createCommand($sql, [':suffix' => $at])->queryOne();
             $at = $ret['accountName'];
             $postfix = $ret['postfix'];
-            $at .=  "'s Shop ";
+            $at .= "'s Shop ";
             foreach ($rows as $row) {
-                $row['长描述'] = '"<p>Welcome to ' . $at . ' <br> <br></p>' . substr($row['长描述'],1) ;
-                $row['关联SKU'] .= $postfix ;
+                $row['长描述'] = '"<p>Welcome to ' . $at . ' <br> <br></p>' . substr($row['长描述'], 1);
+                $row['关联SKU'] .= $postfix;
                 $row_data[] = $row;
             }
         }
@@ -1028,12 +1028,12 @@ class ApiGoodsinfo
     {
         $payFeeFixedRate = 0.04;
         $siteInfo = [
-            'MY' => ['site' => '马来西亚', 'exchange' => '1.575', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' =>4.13],
-            'PH' => ['site' => '菲律宾', 'exchange' => '0.125', 'payFeeRate' => 0.02 + $payFeeFixedRate,'lowPrice' => 91],
-            'ID' => ['site' => '印尼', 'exchange' => '0.000454', 'payFeeRate' => 0.02 + $payFeeFixedRate,'lowPrice' => 17500],
-            'TH' => ['site' => '泰国', 'exchange' => '0.2', 'payFeeRate' => 0.02 + $payFeeFixedRate,'lowPrice' => 20],
-            'SG' => ['site' => '新加坡', 'exchange' => '4.8', 'payFeeRate' => 0.02 + $payFeeFixedRate,'lowPrice' => 4],
-            'VN' => ['site' => '越南', 'exchange' => '0.0003', 'payFeeRate' => 0.02 + $payFeeFixedRate,'lowPrice' => 23300],
+            'MY' => ['site' => '马来西亚', 'exchange' => '1.575', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 4.13],
+            'PH' => ['site' => '菲律宾', 'exchange' => '0.125', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 91],
+            'ID' => ['site' => '印尼', 'exchange' => '0.000454', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 17500],
+            'TH' => ['site' => '泰国', 'exchange' => '0.2', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 20],
+            'SG' => ['site' => '新加坡', 'exchange' => '4.8', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 4],
+            'VN' => ['site' => '越南', 'exchange' => '0.0003', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 23300],
         ];
         $ids = implode(',', $ids);
         $sql = "select og.createDate as '开发日期',cate as '一级类目',subCate as '二级类目', goodsCode as '商品编码', goodsStatus as '商品状态'," .
@@ -1054,7 +1054,7 @@ class ApiGoodsinfo
             "'' as '附加图10'," .
             "'' as '附加图11'," .
             "'' as '附加图12'," .
-            " owg.headKeywords as '头部关键词', owg.requiredKeywords as '必须关键词', ".
+            " owg.headKeywords as '头部关键词', owg.requiredKeywords as '必须关键词', " .
             "owg.randomKeywords '随机关键词', owg.tailKeywords '尾部关键词'," .
             "hopeCost '成本价',hopeWeight '重量',packName '包装规格',ogi.description '描述'," .
             "'' as 'VN原价'," .
@@ -1105,20 +1105,20 @@ class ApiGoodsinfo
 
             # 附件图处理
 
-            $extraImages = explode("\n",$ele['附加图']);
+            $extraImages = explode("\n", $ele['附加图']);
             unset($ele['附件图']);
-            $ele['附加图1'] = $extraImages[1] ?? '' ;
-            $ele['附加图2'] = $extraImages[2] ?? '' ;
-            $ele['附加图3'] = $extraImages[3] ?? '' ;
-            $ele['附加图4'] = $extraImages[4] ?? '' ;
-            $ele['附加图5'] = $extraImages[5] ?? '' ;
-            $ele['附加图6'] = $extraImages[6] ?? '' ;
-            $ele['附加图7'] = $extraImages[7] ?? '' ;
-            $ele['附加图8'] = $extraImages[8] ?? '' ;
-            $ele['附加图9'] = $extraImages[9] ?? '' ;
-            $ele['附加图10'] = $extraImages[10] ?? '' ;
-            $ele['附加图11'] = $extraImages[11] ?? '' ;
-            $ele['附加图12'] = $extraImages[12] ?? '' ;
+            $ele['附加图1'] = $extraImages[1] ?? '';
+            $ele['附加图2'] = $extraImages[2] ?? '';
+            $ele['附加图3'] = $extraImages[3] ?? '';
+            $ele['附加图4'] = $extraImages[4] ?? '';
+            $ele['附加图5'] = $extraImages[5] ?? '';
+            $ele['附加图6'] = $extraImages[6] ?? '';
+            $ele['附加图7'] = $extraImages[7] ?? '';
+            $ele['附加图8'] = $extraImages[8] ?? '';
+            $ele['附加图9'] = $extraImages[9] ?? '';
+            $ele['附加图10'] = $extraImages[10] ?? '';
+            $ele['附加图11'] = $extraImages[11] ?? '';
+            $ele['附加图12'] = $extraImages[12] ?? '';
 
             # Package
             $ele['Package'] = '1 X ' . json_decode($ele['必须关键词'])[0];
@@ -1129,7 +1129,7 @@ class ApiGoodsinfo
 
             # SKu 信息
             $ele['成本价'] = $skuCostPrice[$ele['SKU']]['CostPrice'];
-            $ele['重量'] = round($skuCostPrice[$ele['SKU']]['Weight'],2);
+            $ele['重量'] = round($skuCostPrice[$ele['SKU']]['Weight'], 2);
             # 售价信息
             $ele['MY售价'] = static::getGoodsSalePrice($ele, $siteInfo['MY'], $packageInfo, $expressInfo);
             $ele['MY原价'] = round($ele['MY售价'] * 1.8, 2);
@@ -1145,7 +1145,7 @@ class ApiGoodsinfo
             $ele['SG原价'] = round($ele['SG售价'] * 1.8, 2);
 
             # 删除多余的信息
-            unset($ele['头部关键词'],$ele['必须关键词'],$ele['随机关键词'],$ele['尾部关键词']);
+            unset($ele['头部关键词'], $ele['必须关键词'], $ele['随机关键词'], $ele['尾部关键词']);
             $out[] = $ele;
         }
         $ret['data'] = $out;
@@ -1268,9 +1268,9 @@ class ApiGoodsinfo
         $transactionFeeRate = $siteInfo['payFeeRate'];
         $totalFee = $expressFee + $costPrice + $packageFee;
         $salePrice = $totalFee / (1 - $profitRate - $transactionFeeRate);
-        if($plat == 'lazada'){
-            $price = max($siteInfo['lowPrice'],round($salePrice / $siteInfo['exchange'], 2));
-        }else{
+        if ($plat == 'lazada') {
+            $price = max($siteInfo['lowPrice'], round($salePrice / $siteInfo['exchange'], 2));
+        } else {
             $price = round($salePrice / $siteInfo['exchange'], 2);
         }
         return $price;
@@ -1520,7 +1520,7 @@ class ApiGoodsinfo
             $row['msrp'] = $variantInfo['msrp'];
             $row['shipping'] = $variantInfo['shipping'];
             $row['shipping_time'] = '7-21';
-            $row['main_image'] = static::getNewWishMainImage( $wishInfo['wishMainImage'],$goodsInfo['goodsCode'], $account['mainImg']);
+            $row['main_image'] = static::getNewWishMainImage($wishInfo['wishMainImage'], $goodsInfo['goodsCode'], $account['mainImg']);
             $row['extra_images'] = $wishInfo['wishExtraImages'];
             $row['variants'] = $variantInfo['variant'];
             $row['landing_page_url'] = $wishInfo['wishMainImage'];
@@ -1661,7 +1661,7 @@ class ApiGoodsinfo
             $row['msrp'] = $variantInfo['msrp'];
             $row['shipping'] = $variantInfo['shipping'];
             $row['shipping_time'] = '7-21';
-            $row['main_image'] = static::getNewWishMainImage($wishInfo['wishMainImage'],$goodsInfo['goodsCode'], $account['mainImg']);
+            $row['main_image'] = static::getNewWishMainImage($wishInfo['wishMainImage'], $goodsInfo['goodsCode'], $account['mainImg']);
             $row['extra_images'] = $wishInfo['wishExtraImages'];
             $row['variants'] = $variantInfo['variant'];
             $row['landing_page_url'] = $wishInfo['wishMainImage'];
@@ -1802,7 +1802,7 @@ class ApiGoodsinfo
                     $variationRow = [
                         'sku_image' => '', 'goods_sku' => '', 'storage' => 10000, 'market_price' => '',
                         'shop_price' => '', 'shipping_fee' => '', 'shipping_weight' => '',
-                        'style_array' => [ 'size' => '', 'color' => '', 'style_quantity' => '']
+                        'style_array' => ['size' => '', 'color' => '', 'style_quantity' => '']
                     ];
                     $variationRow['goods_sku'] = $sku['sku'] . $postfix;
                     $variationRow['color'] = $sku['color'];
@@ -2672,7 +2672,7 @@ class ApiGoodsinfo
      * @return string
      * @throws \Exception
      */
-    private static function getNewWishMainImage($wishMainImage,$goodsCode, $mainImage)
+    private static function getNewWishMainImage($wishMainImage, $goodsCode, $mainImage)
     {
         try {
             $base = explode('_', $wishMainImage);
@@ -2680,11 +2680,9 @@ class ApiGoodsinfo
             if (strpos($prefix, '.jpg') !== false) {
                 return $prefix;
             }
-            $suffix =  '_' .$mainImage . '_.jpg';
+            $suffix = '_' . $mainImage . '_.jpg';
             return $prefix . $suffix;
-        }
-
-        catch (\Exception  $why) {
+        } catch (\Exception  $why) {
             throw new Exception('please check wish main image address!');
         }
 
@@ -3319,11 +3317,8 @@ class ApiGoodsinfo
 
     public static function getPlatExportCondition($plat = '', $depart = '')
     {
-        if($plat == 'Joom') {
-            $sql = "SELECT  joomName as suffix,'Joom' AS platform, joomSuffix AS depart FROM proCenter.oa_joomSuffix WHERE 1=1";
-            if ($depart) $sql .= " AND joomSuffix='{$depart}'";
-        }else{
-            $sql = "SELECT s.store AS suffix,s.platform ,
+        $sql = "SELECT DISTINCT	CASE WHEN SUBSTR(store,1,5) = 'Joom0' THEN 'Joom'
+					WHEN platform = 'Joom' THEN SUBSTR(store,1,5) ELSE store END AS suffix,s.platform ,
                 CASE WHEN ifnull(pd.department,'')<>'' THEN IFNULL(pd.department,'其他') ELSE IFNULL(d.department,'其他') END AS depart
                 FROM `auth_store` s 
                 LEFT JOIN `auth_store_child` sc ON s.id=sc.store_id
@@ -3331,14 +3326,10 @@ class ApiGoodsinfo
                 LEFT JOIN `auth_department_child` dc ON u.id=dc.user_id
                 LEFT JOIN `auth_department` d ON d.id=dc.department_id
                 LEFT JOIN `auth_department` pd ON pd.id=d.parent
-                WHERE s.platform NOT IN ('Amazon','Joom')";
-            if($plat) $sql .= " AND s.platform='{$plat}'";
-            if($depart) $sql .= " AND (ifnull(pd.department,'')<>'' AND IFNULL(pd.department,'')='{$depart}' OR IFNULL(d.department,'')='{$depart}')";
-            if(!$plat){
-                $sql .= "UNION SELECT  joomName as suffix,'Joom' AS platform, joomSuffix AS depart FROM proCenter.oa_joomSuffix WHERE 1=1";
-                if($depart) $sql .= " AND joomSuffix='{$depart}'";
-            }
-        }
+                WHERE s.platform NOT IN ('Amazon')";
+        if ($plat) $sql .= " AND s.platform='{$plat}'";
+        if ($depart) $sql .= " AND (ifnull(pd.department,'')<>'' AND IFNULL(pd.department,'')='{$depart}' OR IFNULL(d.department,'')='{$depart}')";
+
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
 
