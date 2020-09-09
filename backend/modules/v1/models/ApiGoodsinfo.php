@@ -1713,7 +1713,7 @@ class ApiGoodsinfo
                 $row['description'] = $joomInfo['description'];
                 $row['tags'] = $joomInfo['wishTags'];
                 $row['product_main_image'] = $imageInfo['mainImage'];
-                $row['selleruserid'] = $account['joomName'];
+                $row['selleruserid'] = $account['joomSuffix'] ? $account['joomSuffix'] : $account['joomName'];
                 $row['extra_images'] = implode('|', array_filter($imageInfo['extraImages']));
                 $row['dangerous_kind'] = static::getJoomDangerousKind($goodsInfo);
                 $var = [];
