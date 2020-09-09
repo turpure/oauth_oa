@@ -270,7 +270,8 @@ class TinyToolController extends AdminController
 
             $rate4 = ApiUkFic::getRate($param4);
             $rate4['transport'] = $name4;
-            $data['rate'] = [$rate, $rate2, $rate3, $rate4];
+            //$data['rate'] = [$rate, $rate2, $rate3, $rate4];
+            $data['rate'] = [$rate2];
         }
         //根据利润率获取售价
         $param1['rate'] = $param2['rate'] = $param3['rate'] = $param4['rate'] = $post['rate'];
@@ -286,25 +287,26 @@ class TinyToolController extends AdminController
         $price4 = ApiUkFic::getPrice($param4);
         $price4['transport'] = $name4;
 
-        $data['price'] = [$price, $price2, $price3, $price4];
+        //$data['price'] = [$price, $price2, $price3, $price4];
+        $data['price'] = [$price2];
         //print_r($data['price']);exit;
         $data['transport'] = [
-            [
+            /*[
                 'name' => $name,
                 'cost' => round($cost, 2),
-            ],
+            ],*/
             [
                 'name' => $name2,
                 'cost' => round($cost2, 2),
             ],
-            [
+            /*[
                 'name' => $name3,
                 'cost' => round($cost3, 2),
             ],
             [
                 'name' => $name4,
                 'cost' => round($cost4, 2),
-            ]
+            ]*/
         ];
         //print_r($data);exit;
         return $data;
