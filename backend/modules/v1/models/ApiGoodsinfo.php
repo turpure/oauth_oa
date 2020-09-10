@@ -3326,14 +3326,14 @@ class ApiGoodsinfo
                 LEFT JOIN `auth_department_child` dc ON u.id=dc.user_id
                 LEFT JOIN `auth_department` d ON d.id=dc.department_id
                 LEFT JOIN `auth_department` pd ON pd.id=d.parent
-                WHERE s.platform NOT IN ('Amazon')
-                GROUP BY CASE WHEN SUBSTR(store,1,5) = 'Joom0' THEN 'Joom'
-				WHEN platform = 'Joom' THEN SUBSTR(store,1,5) ELSE store END,s.platform 
-                ORDER BY CASE WHEN SUBSTR(store,1,5) = 'Joom0' THEN 'Joom'
-					WHEN platform = 'Joom' THEN SUBSTR(store,1,5) ELSE store END";
+                WHERE s.platform NOT IN ('Amazon')";
+
         if ($plat) $sql .= " AND s.platform='{$plat}'";
         if ($depart) $sql .= " AND (ifnull(pd.department,'')<>'' AND IFNULL(pd.department,'')='{$depart}' OR IFNULL(d.department,'')='{$depart}')";
-
+        $sql .= " GROUP BY CASE WHEN SUBSTR(store,1,5) = 'Joom0' THEN 'Joom'
+				WHEN platform = 'Joom' THEN SUBSTR(store,1,5) ELSE store END,s.platform 
+                ORDER BY CASE WHEN SUBSTR(store,1,5) = 'Joom0' THEN 'Joom'
+				WHEN platform = 'Joom' THEN SUBSTR(store,1,5) ELSE store END";
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
 
