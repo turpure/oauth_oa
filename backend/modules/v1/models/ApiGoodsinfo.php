@@ -3317,16 +3317,20 @@ class ApiGoodsinfo
 
     public static function getPlatExportCondition($plat = '', $depart = '')
     {
-        $sql = "SELECT DISTINCT	CASE WHEN SUBSTR(store,1,5) = 'Joom0' THEN 'Joom'
+        $sql = "SELECT	CASE WHEN SUBSTR(store,1,5) = 'Joom0' THEN 'Joom'
 					WHEN platform = 'Joom' THEN SUBSTR(store,1,5) ELSE store END AS suffix,s.platform ,
-                CASE WHEN ifnull(pd.department,'')<>'' THEN IFNULL(pd.department,'其他') ELSE IFNULL(d.department,'其他') END AS depart
+                MAX(CASE WHEN ifnull(pd.department,'')<>'' THEN IFNULL(pd.department,'其他') ELSE IFNULL(d.department,'其他') END) AS depart
                 FROM `auth_store` s 
                 LEFT JOIN `auth_store_child` sc ON s.id=sc.store_id
                 LEFT JOIN `user` u ON u.id=sc.user_id
                 LEFT JOIN `auth_department_child` dc ON u.id=dc.user_id
                 LEFT JOIN `auth_department` d ON d.id=dc.department_id
                 LEFT JOIN `auth_department` pd ON pd.id=d.parent
-                WHERE s.platform NOT IN ('Amazon')";
+                WHERE s.platform NOT IN ('Amazon')
+                GROUP BY CASE WHEN SUBSTR(store,1,5) = 'Joom0' THEN 'Joom'
+				WHEN platform = 'Joom' THEN SUBSTR(store,1,5) ELSE store END,s.platform 
+                ORDER BY CASE WHEN SUBSTR(store,1,5) = 'Joom0' THEN 'Joom'
+					WHEN platform = 'Joom' THEN SUBSTR(store,1,5) ELSE store END";
         if ($plat) $sql .= " AND s.platform='{$plat}'";
         if ($depart) $sql .= " AND (ifnull(pd.department,'')<>'' AND IFNULL(pd.department,'')='{$depart}' OR IFNULL(d.department,'')='{$depart}')";
 
