@@ -1056,7 +1056,7 @@ class ApiGoodsinfo
             "'' as '附加图12'," .
             " owg.headKeywords as '头部关键词', owg.requiredKeywords as '必须关键词', " .
             "owg.randomKeywords '随机关键词', owg.tailKeywords '尾部关键词'," .
-            "hopeCost '成本价',hopeWeight '重量',packName '包装规格',ogi.description '描述'," .
+            "hopeCost '成本价',ows.weight '重量',packName '包装规格',ogi.description '描述'," .
             "'' as 'VN原价'," .
             "'' as 'VN售价'," .
             "'' as 'ID原价'," .
@@ -1102,6 +1102,7 @@ class ApiGoodsinfo
         foreach ($products as $ele) {
             # 生成标题
             $ele['产品标题（英文）1'] = $goodsInfo[$ele['商品编码']]['title'];
+            $ele['重量'] = max(round($ele['重量'] / 1000, 2), 0.02);
 
             # 附件图处理
 
