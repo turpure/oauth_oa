@@ -707,7 +707,7 @@ class ApiGoodsinfo
      * @return array|bool
      * @throws \Exception
      */
-    public static function syncWishInfo($condition)
+    public static function  syncWishInfo($condition)
     {
         $id = isset($condition['id']) ? $condition['id'] : '';
         if (empty($id)) {
@@ -719,11 +719,15 @@ class ApiGoodsinfo
             foreach ($skuInfo as $row) {
                 $sku = OaEbayGoodsSku::findOne(['sid' => $row['sid']]);
                 $property = json_decode($sku['property'], true);
+                //var_dump($row['color']);
                 foreach ($property['columns'] as &$v) {
-                    if (isset($v['Color'])) $v['Color'] = $row['color'];
-                    if (isset($v['Size'])) $v['Size'] = $row['size'];
+                    if (array_key_exists('Color', $v)) {
+                        $v['Color'] = $row['color'];
+                    }
+                    if (array_key_exists('Size', $v)) {
+                        $v['Size'] = $row['size'];
+                    }
                 }
-//                var_dump($property);exit;
                 $sku->property = json_encode($property);
                 if (!$sku->save()) {
                     throw new \Exception('save sku failed');
@@ -1936,7 +1940,7 @@ class ApiGoodsinfo
             $row['returnPolicy']['Description'] = 'We accept return or exchange item within 30 days from the day customer received the original item. If you have any problem please contact us first before leaving Neutral/Negative feedback! the negative feedback can\'\'t resolve the problem .but we can. ^_^ Hope you have a happy shopping experience in our store!';
             $row['dispatchTimeMax'] = $ebayInfo['prepareDay'];
             $row['pictureDetails']['GalleryType'] = 'Gallery';
-            $row['pictureDetails']['PictureURL'] = static::getEbayPicture($goodsInfo, $ebayInfo, $account);
+            $row['pictureDetails']['PictureURL'] = explode("\n", static::getEbayPicture($goodsInfo, $ebayInfo, $account));
             $row['sku'] = $ebayInfo['sku'] . $account['nameCode'];
             $row['title'] = $title;
             $row['subTitle'] = $ebayInfo['subTitle'];
