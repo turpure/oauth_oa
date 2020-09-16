@@ -550,6 +550,21 @@ class OaGoodsinfoController extends AdminController
     }
 
     /**
+     * @brief EBAY模板同步WISH模板SKU信息
+     * @return array
+     * @throws \Exception
+     */
+    public function actionSyncWishInfo()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        return ApiGoodsinfo::syncWishInfo($condition);
+    }
+
+    /**
      * @brief 标记完善
      * @return array
      * @throws \Exception
@@ -845,8 +860,6 @@ class OaGoodsinfoController extends AdminController
     }
 
 
-
-
     /**
      * @brief 导出wish模板数据
      * @throws \Exception
@@ -914,6 +927,28 @@ class OaGoodsinfoController extends AdminController
         }
 
     }
+    /**
+     * @brief 导出eBay模板数据
+     * @throws \Exception
+     */
+    public function actionPlatExportEbayData()
+    {
+        try {
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            $infoId = $condition['id'];
+            $type = isset($condition['type']) ? $condition['type'] : '';
+            $ret = ApiGoodsinfo::preExportEbayData($infoId, $type);
+            return $ret;
+        } catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+
+    }
+
 
     /**
      * @brief 上架JOOM产品

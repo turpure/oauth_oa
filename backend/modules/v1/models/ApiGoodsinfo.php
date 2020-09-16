@@ -700,6 +700,46 @@ class ApiGoodsinfo
 
     }
 
+    /** save ebay info
+     * @param $condition
+     * Date: 2019-04-22 16:12
+     * Author: henry
+     * @return array|bool
+     * @throws \Exception
+     */
+    public static function syncWishInfo($condition)
+    {
+        $id = isset($condition['id']) ? $condition['id'] : '';
+        if (empty($id)) {
+            return [];
+        }
+        $skuInfo = OaWishGoodsSku::findAll(['infoId' => $id]);
+        $tran = Yii::$app->db->beginTransaction();
+        try {
+            foreach ($skuInfo as $row) {
+                $sku = OaEbayGoodsSku::findOne(['sid' => $row['sid']]);
+                $property = json_decode($sku['property'], true);
+                foreach ($property['columns'] as &$v) {
+                    if (isset($v['Color'])) $v['Color'] = $row['color'];
+                    if (isset($v['Size'])) $v['Size'] = $row['size'];
+                }
+//                var_dump($property);exit;
+                $sku->property = json_encode($property);
+                if (!$sku->save()) {
+                    throw new \Exception('save sku failed');
+                }
+            }
+            $tran->commit();
+            return ["success to sync sku info"];
+        } catch (\Exception $e) {
+            $tran->rollBack();
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
     /** 保存wish模板
      * @param $condition
      * Date: 2019-04-23 10:32
@@ -902,7 +942,6 @@ class ApiGoodsinfo
         }
         return $attribute;
     }
-
 
     /** 平台信息标记完善
      * @param $condition
@@ -1744,7 +1783,7 @@ class ApiGoodsinfo
     }
 
     /**
-     * @brief 导出joom模板
+     * @brief 导出vova模板
      * @param $ids
      * @param $accounts
      * @return array
@@ -1819,6 +1858,126 @@ class ApiGoodsinfo
                 $row['variants'] = json_encode($var);
                 $out[] = $row;
             }
+        }
+        return $out;
+    }
+
+
+    /**
+     * @brief 导出ebay模板
+     * @param $ids
+     * @param $accounts
+     * @return array
+     */
+    public static function preExportEbayData($id, $type)
+    {
+        $accounts = OaEbaySuffix::find()->asArray()->all();
+        $row = [
+            "applicationData" => '', "autoPay" => '', "bestOfferDetails" => '', "buyerRequirementDetails" => '',
+            "buyerResponsibleForShipping" => '', "buyItNowPrice" => '', "categoryMappingAllowed" => '',
+            "charity" => '', "conditionDescription" => '', "conditionID" => '1000', "country" => '', "crossBorderTrade" => '',
+            "currency" => '', "description" => '', "digitalGoodInfo" => '', "disableBuyerRequirements" => '',
+            "discountPriceInfo" => '', "dispatchTimeMax" => '', "eBayPlus" => '', "extendedSellerContactDetails" => '',
+            "hitCounter" => 'NoHitCounter', "includeRecommendations" => '', "itemCompatibilityList" => '', "itemSpecifics" => '',
+            "listingDetails" => '', "listingDuration" => 'GTC', "listingEnhancement" => '', "listingSubtype2" => '',
+            "listingType" => 'FixedPriceItem', "location" => '', "lotSize" => '', "paymentDetails" => '', "paymentMethods" => 'PayPal',
+            "payPalEmailAddress" => '', "pickupInStoreDetails" => '', "pictureDetails" => '', "postalCode" => '',
+            "primaryCategory" => '', "rivateListing" => '', "productListingDetails" => '', "quantity" => '',
+            "quantityInfo" => '', "quantityRestrictionPerBuyer" => '', "reservePrice" => '', "returnPolicy" => '',
+            "scheduleTime" => '', "secondaryCategory" => '', "seller" => '', "sellerContactDetails" => '',
+            "sellerProfiles" => '', "sellerProvidedTitle" => '', "shippingDetails" => '', "shippingPackageDetails" => '',
+            "shippingServiceCostOverrideList" => '', "shipToLocations" => '', "site" => '', "siteId" => '',
+            "startPrice" => '', "storefront" => '', "subTitle" => '', "taxCategory" => '', "title" => '',
+            "useTaxTable" => '', "uuid" => '', "vatDetails" => '', "vin" => '', "vrm" => '',
+            'sku' => '', 'variations' => '', 'suffix' => ''
+        ];
+        $out = [];
+        if (is_numeric($id)) {
+            $goodsInfo = OaGoodsinfo::findOne(['id' => $id]);
+        } else {
+            $goodsInfo = OaGoodsinfo::findOne(['goodsCode' => $id]);
+            $id = $goodsInfo['id'];
+        }
+        $ebaySku = OaEbayGoodsSku::find()->where(['infoId' => $id])->asArray()->all();
+        $ebayInfo = OaEbayGoods::find()->where(['infoId' => $id])->asArray()->one();
+        $ebayInfo['oaEbayGoodsSku'] = $ebaySku;
+        $keyWords = static::preKeywords($ebayInfo);
+        $price = self::getEbayPrice($ebayInfo);
+
+        foreach ($accounts as $account) {
+            $payPal = self::getEbayPayPal($price, $account);
+            $titlePool = [];
+            $title = '';
+            $len = self::EbayTitleLength;
+            while (true) {
+                $title = static::getTitleName($keyWords, $len);
+                --$len;
+                if (empty($title) || !in_array($title, $titlePool, false)) {
+                    $titlePool[] = $title;
+                    break;
+                }
+            }
+
+            $row['site'] = $ebayInfo['site'];
+            $row['siteId'] = $ebayInfo['site'];
+            $row['suffix'] = $account['ebaySuffix'];
+            $row['primaryCategory']['CategoryID'] = $ebayInfo['listedCate'];
+            $row['secondaryCategory']['CategoryID'] = $ebayInfo['listedSubcate'];
+            $row['quantity'] = !empty($ebayInfo['quantity']) ? $ebayInfo['quantity'] : 5;
+            $row['payPalEmailAddress'] = $payPal;
+            $row['location'] = $ebayInfo['location'];
+            $row['country'] = $ebayInfo['country'];
+            $row['description'] = static::getEbayDescription($ebayInfo['description']);
+
+            //$row['returnPolicy']['ReturnsAccepted'] = '1';
+            $row['returnPolicy']['RefundOptions'] = 'MoneyBack';
+            $row['returnPolicy']['ReturnsWithinOption'] = 'Days_30';
+            $row['returnPolicy']['ShippingCostPaidByOption'] = 'Buyer';
+            $row['returnPolicy']['Description'] = 'We accept return or exchange item within 30 days from the day customer received the original item. If you have any problem please contact us first before leaving Neutral/Negative feedback! the negative feedback can\'\'t resolve the problem .but we can. ^_^ Hope you have a happy shopping experience in our store!';
+            $row['dispatchTimeMax'] = $ebayInfo['prepareDay'];
+            $row['pictureDetails']['GalleryType'] = 'Gallery';
+            $row['pictureDetails']['PictureURL'] = static::getEbayPicture($goodsInfo, $ebayInfo, $account);
+            $row['sku'] = $ebayInfo['sku'] . $account['nameCode'];
+            $row['title'] = $title;
+            $row['subTitle'] = $ebayInfo['subTitle'];
+            $row['buyItNowPrice'] = $price;
+
+            $row['shippingDetails']['ExcludeShipToLocation'] = static::getEbayExcludeLocation($account);
+            $shippingInfo1['ShippingService'] = static::getShippingService($ebayInfo['inShippingMethod1']);
+            $shippingInfo1['ShippingServiceCost'] = $ebayInfo['inFirstCost1'];
+            $shippingInfo1['ShippingServiceAdditionalCost'] = $ebayInfo['inSuccessorCost1'];
+            $shippingInfo1['ShippingServicePriority'] = 1;
+            $shippingInfo2['ShippingService'] = static::getShippingService($ebayInfo['inShippingMethod2']);
+            $shippingInfo2['ShippingServiceCost'] = $ebayInfo['inFirstCost2'];
+            $shippingInfo2['ShippingServiceAdditionalCost'] = $ebayInfo['inSuccessorCost2'];
+            $shippingInfo2['ShippingServicePriority'] = 2;
+            $internationalShippingService1['ShippingService'] = static::getShippingService($ebayInfo['outShippingMethod1']);
+            $internationalShippingService1['ShippingServiceCost'] = $ebayInfo['outFirstCost1'];
+            $internationalShippingService1['ShippingServiceAdditionalCost'] = $ebayInfo['outSuccessorCost1'];
+            $internationalShippingService1['ShippingServicePriority'] = 1;
+            $internationalShippingService1['ShipToLocation'] = static::getShippingService($ebayInfo['outShippingMethod1']) ? 'Worldwide' : '';
+            $internationalShippingService2['ShippingService'] = static::getShippingService($ebayInfo['outShippingMethod2']);
+            $internationalShippingService2['ShippingServiceCost'] = $ebayInfo['outFirstCost2'];
+            $internationalShippingService2['ShippingServiceAdditionalCost'] = $ebayInfo['outSuccessorCost2'];
+            $internationalShippingService2['ShippingServicePriority'] = 2;
+            $internationalShippingService2['ShipToLocation'] = static::getShippingService($ebayInfo['outShippingMethod2']) ? 'Worldwide' : '';
+            $row['shippingDetails']['ShippingServiceOptions'] = [$shippingInfo1, $shippingInfo2];
+            $row['shippingDetails']['InternationalShippingServiceOption'] = [$internationalShippingService1, $internationalShippingService2];
+
+            //$row['UseMobile'] = '1';
+            //$row['IbayTemplate'] = $account['ibayTemplate'];
+            //$row['IbayInformation'] = '1';
+            //$row['IbayOnlineInventoryHold'] = '1';
+            //$row['IBayEffectType'] = '1';
+            //$row['IbayEffectImg'] = static::getEbayPicture($goodsInfo, $ebayInfo, $account);
+            if (count($ebayInfo['oaEbayGoodsSku']) > 1) $goodsInfo['isVar'] = '是'; // 2020-06-02 添加（单平台添加多属性）
+            $row['variations'] = static::getEbayVariation($goodsInfo['isVar'], $ebayInfo, $account['nameCode']);
+            //$row['outofstockcontrol'] = '0';
+            //$row['productListingDetails']['EPID'] = 'Does not apply';
+            $row['productListingDetails']['ISBN'] = 'Does not apply';
+            $row['productListingDetails']['UPC'] = $ebayInfo['UPC'];
+            $row['productListingDetails']['EAN'] = $ebayInfo['EAN'];
+            $out[] = $row;
         }
         return $out;
     }
