@@ -9,6 +9,7 @@ use Yii;
  *
  * @property int $id
  * @property string $name
+ * @property string $nameEn
  * @property string $code
  * @property string $currencyCode
  */
@@ -28,7 +29,7 @@ class OaSiteCountry extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'code', 'currencyCode'], 'string', 'max' => 255],
+            [['name', 'nameEn', 'code', 'currencyCode'], 'string', 'max' => 255],
         ];
     }
 
