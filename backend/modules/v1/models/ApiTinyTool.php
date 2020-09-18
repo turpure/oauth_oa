@@ -1163,14 +1163,13 @@ class ApiTinyTool
         try {
             for ($i = 2; $i <= $highestRow + 1; $i++) {
                 $goodsCode = $sheet->getCell("A" . $i)->getValue() ?: '';
-                $seller1 = $sheet->getCell("A" . $i)->getValue() ?: '';
+                $seller1 = $sheet->getCell("B" . $i)->getValue() ?: '';
                 $seller2 = $sheet->getCell("C" . $i)->getValue() ?: '';
                 $updateDate = date('Y-m-d H:i:s');
                 if(!$goodsCode) break;
                 $sql = "insert into cache_skuSeller(goodsCode,seller1,seller2,updateDate) values (
                '{$goodsCode}', '{$seller1}', '{$seller2}', '{$updateDate}') 
-                ON DUPLICATE KEY UPDATE seller1='{$seller1}',
-               seller2='{$seller2}',updateDate='{$updateDate}'";
+                ON DUPLICATE KEY UPDATE seller1='{$seller1}',seller2='{$seller2}',updateDate='{$updateDate}'";
                 $res = Yii::$app->db->createCommand($sql)->execute();
                 if($res){
                     $errorRes[] = "Success to update '{$goodsCode}' seller1 to '{$seller1}'";
