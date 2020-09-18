@@ -146,11 +146,15 @@ class SchedulerController extends Controller
      */
     public function actionSalesChange()
     {
-        $sql = "EXEC oauth_salesChangeOfTwoDateBlock_backup";
+        $begin = date('Y-m-01', strtotime('-1 day'));
+        $begin = '2020-01-01';
+        $end = date('Y-m-d 23:59:59', strtotime('-1 day'));
+//        var_dump($end);exit;
+        $sql = "EXEC oauth_salesChangeOfTwoDateBlock_backup '{$begin}', '{$end}'";
         try {
             $list = Yii::$app->py_db->createCommand($sql)->queryAll();
 
-            Yii::$app->db->createCommand()->truncateTable('cache_sales_change')->execute();
+            Yii::$app->db->createCommand("delete from cache_sales_change where orderTime between '{$begin}' and '{$end}'")->execute();
             $step = 200;
             $num = ceil(count($list)/$step);
             for ($i = 0; $i < $num; $i++){
@@ -160,7 +164,6 @@ class SchedulerController extends Controller
                     array_slice($list, $i * $step, $step)
                 )->execute();
             }
-
 
             print date('Y-m-d H:i:s') . " INFO:success to update data of sales change!\n";
         } catch (\Exception $why) {
