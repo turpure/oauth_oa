@@ -1154,6 +1154,34 @@ class ApiTinyTool
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
 
+    public static function saveEbaySkuSellerData($file, $extension = 'Xls'){
+        $reader = IOFactory::createReader($extension);
+        $spreadsheet = $reader->load(Yii::$app->basePath . '/web' . $file);
+        $sheet = $spreadsheet->getSheet(0);
+        $highestRow = $sheet->getHighestRow(); // 取得总行数
+        $errorRes = [];
+        try {
+            for ($i = 2; $i <= $highestRow + 1; $i++) {
+                $goodsCode = $sheet->getCell("A" . $i)->getValue() ?: '';
+                $seller1 = $sheet->getCell("A" . $i)->getValue() ?: '';
+                $seller2 = $sheet->getCell("C" . $i)->getValue() ?: '';
+                $updateDate = date('Y-m-d H:i:s');
+                if(!$goodsCode) break;
+                $sql = "insert into cache_skuSeller(goodsCode,seller1,seller2,updateDate) values (
+               '{$goodsCode}', '{$seller1}', '{$seller2}', '{$updateDate}') 
+                ON DUPLICATE KEY UPDATE seller1='{$seller1}',
+               seller2='{$seller2}',updateDate='{$updateDate}'";
+                $res = Yii::$app->db->createCommand($sql)->execute();
+                if($res){
+                    $errorRes[] = "Success to update '{$goodsCode}' seller1 to '{$seller1}'";
+                }else{
+                    $errorRes[] = "Failed to update '{$goodsCode}' seller1 to '{$seller1}'";
+                }
+            }
+        } catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
 
     //=================海外仓，订单修改物流方式=====================
 

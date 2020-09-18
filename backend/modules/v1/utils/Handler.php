@@ -91,6 +91,16 @@ class Handler
         }
     }
 
+    /**
+     * 获取文件名后缀
+     * @param $filename
+     * @return string
+     */
+    public static function get_extension($filename)
+    {
+        $x = explode('.', $filename);
+        return ucfirst(end($x));
+    }
 
     /**
      * 发送邮件

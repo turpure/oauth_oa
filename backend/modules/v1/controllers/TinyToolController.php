@@ -18,6 +18,8 @@ use backend\modules\v1\models\ApiUk;
 use backend\modules\v1\models\ApiUkFic;
 use backend\modules\v1\models\ApiUser;
 use backend\modules\v1\utils\ExportTools;
+use backend\modules\v1\utils\Handler;
+use backend\modules\v1\utils\Helper;
 use Codeception\Template\Api;
 use common\models\User;
 use backend\modules\v1\services\ExpressExpired;
@@ -1217,6 +1219,33 @@ class TinyToolController extends AdminController
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
 
+    }
+
+    /**
+     * Date: 2020-09-18 11:49
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     * @throws \yii\db\Exception
+     */
+    public function actionSkuImport()
+    {
+        $file = $_FILES['file'];
+        if (!$file) {
+            return ['code' => 400, 'message' => 'The file can not be empty!'];
+        }
+        //判断文件后缀
+        $extension = Handler::get_extension($file['name']);
+        if (!in_array($extension, ['Csv', 'Xls', 'Xlsx'])) return ['code' => 400, 'message' => "File format error,please upload files in the format of Csv, Xls, Xlsx"];
+
+        //文件上传
+        $result = Handler::file($file, 'skuSeller');
+        if (!$result) {
+            return ['code' => 400, 'message' => 'File upload failed'];
+        } else {
+            //获取上传excel文件的内容并保存
+            return ApiTinyTool::saveEbaySkuSellerData($result, $extension);
+        }
     }
 
     /** 销售员总库存周转
