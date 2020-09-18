@@ -726,7 +726,11 @@ class ApiGoodsinfo
                     if (array_key_exists('Size', $v)) {
                         $v['Size'] = $row['size'];
                     }
+                    if (array_key_exists('款式3', $v)) {
+                        unset($v['款式3']);
+                    }
                 }
+                $property['columns'] = array_filter($property['columns']);
                 $sku->property = json_encode($property);
                 if (!$sku->save()) {
                     throw new \Exception('save sku failed');
