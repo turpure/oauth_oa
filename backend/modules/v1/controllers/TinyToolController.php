@@ -315,7 +315,7 @@ class TinyToolController extends AdminController
     }
 
     /**
-     * @brief UK 虚拟仓定价器2(所有国家)
+     * @brief 谷仓定价器
      */
     public function actionUkFic2()
     {
@@ -330,97 +330,52 @@ class TinyToolController extends AdminController
         $post = [
             'sku' => $cond['sku'],
             'num' => $cond['num'] ? $cond['num'] : 1,
-            'price' => $cond['price'] ? $cond['price'] : 0,
-            'rate' => $cond['rate'] ? $cond['rate'] : 0,
         ];
 
         $data = [
             'detail' => [],
-            'data' => [],
+            'transport' => [],
         ];
         //获取SKU信息
-        //$sql = "EXEC ibay365_ebay_virtual_store_online_product '{$post['sku']}'";
-        $sql = "SELECT 
-                    r.SKU,r.skuname,r.goodscode,r.Weight,r.CategoryName,r.CreateDate,
-                    CASE WHEN r.costprice<=0 THEN r.goodsPrice ELSE r.costprice END costprice
-                FROM Y_R_tStockingWaring  r
-                LEFT JOIN B_Goods g ON g.goodscode = r.goodscode
-                -- LEFT JOIN B_PackInfo s ON g.packName = s.packName
-                WHERE r.SKU='{$post['sku']}' ";
-        $res = Yii::$app->py_db->createCommand($sql)->queryOne();
+        $res = ApiUk::getDetail($post['sku'], $post['num']);
+//        var_dump($res);exit;
         if (!$res) return $data;
 
-        $post['num'] = $post['num'] ? $post['num'] : 1;
-        $post['rate'] = $post['rate'] ? $post['rate'] : 0;
-
-        $res['num'] = $post['num'];
-
-        $res['costprice'] = $res['costprice'] * $post['num'];
-        $res['Weight'] = $res['Weight'] * $post['num'];
+        //$post['num'] = $post['num'] ? $post['num'] : 1;
         $data['detail'] = $res;
 
+        $weight = array_sum(ArrayHelper::getColumn($res, 'weight'));
+        $height = array_sum(ArrayHelper::getColumn($res, 'height'));
+        $length = max(ArrayHelper::getColumn($res, 'length'));
+        $width = max(ArrayHelper::getColumn($res, 'width'));
+
         //获取物流方式及其报价
-
-        $list = Yii::$app->db->createCommand("SELECT * FROM shipping_countFee ORDER BY country")->queryAll();
+        $list = Yii::$app->db->createCommand("SELECT * FROM shipping_barnFee")->queryAll();
+        $transport = [];
         foreach ($list as $v) {
-            if ($v['weight1'] && $v['wBasic'] && $v['wPrice'] && $v['startWeight'] <= $res['Weight'] && $res['Weight'] < $v['weight1']) {
-                $cost = $v['wBasic'] + $v['wPrice'] * $res['Weight'];
-            } elseif ($v['weight2'] && $v['wBasic1'] && $v['wPrice1'] && $res['Weight'] < $v['weight2']) {
-                $cost = $v['wBasic1'] + $v['wPrice1'] * $res['Weight'];
-            } elseif ($v['weight3'] && $v['wBasic2'] && $v['wPrice2'] && $res['Weight'] < $v['weight3']) {
-                $cost = $v['wBasic2'] + $v['wPrice2'] * $res['Weight'];
-            } else {
-                $cost = 0;
+            if (($v['maxLength'] == 0 || $v['maxLength'] >= $length) &&
+                ($v['maxHeight'] == 0 || $v['maxHeight'] >= $height) &&
+                ($v['maxWidth'] == 0 || $v['maxWidth'] >= $width) &&
+                ($v['longAndWidth'] == 0 || $v['longAndWidth'] >= $width + $length) &&
+                ($v['maxVolume'] == 0 || $v['maxVolume'] >= $width * $height * $length)
+            ) {
+                $item['name'] = $v['shipping'];
+                $item['out'] = $v['deliveryFee'];
+                $item['outRmb'] = round($item['out'] * Yii::$app->params['poundRate'],3);
+                $item['shipping'] = $item['shippingRmb'] = $item['cost'] = $item['costRmb'] = 0;
+                $weightList = json_decode($v['weightFee'], true);
+                foreach ($weightList as $ele) {
+                    if($weight > $ele['min'] && $weight <= $ele['max']){
+                        $item['shipping'] = $ele['value'];
+                        $item['shippingRmb'] = round($ele['value'] * Yii::$app->params['poundRate'],3);
+                        $item['cost'] = $ele['value'] + $item['out'];
+                        $item['costRmb'] = $item['shippingRmb'] + $item['outRmb'];
+                    }
+                }
+                $transport[] = $item;
             }
-
-            $item = [
-                'country' => $v['country'],
-                'transport' => $v['shipping'],
-                'cost' => $cost,
-                'price1' => $post['price'],
-                'eFee1' => 0,
-                'pFee1' => 0,
-                'profit1' => 0,
-                'profitRmb1' => 0,
-                'rate1' => 0,
-                'price2' => 0,
-                'eFee2' => 0,
-                'pFee2' => 0,
-                'profit2' => 0,
-                'profitRmb2' => 0,
-                'rate2' => $post['rate'],
-            ];
-            $param = [
-                'cost' => $cost,
-                'costprice' => $res['costprice'],
-                'bigPriceBasic' => $v['bigPriceBasic'],
-                'smallPriceBasic' => $v['smallPriceBasic'],
-                'bigPriceRate' => $v['bigPriceRate'],
-                'smallPriceRate' => $v['smallPriceRate'],
-                'ebayRate' => $v['ebayRate'],
-            ];
-            //根据售价获取利润率
-            if ($post['price']) {
-                $param['price'] = $post['price'];
-                $rate = ApiUkFic::getRate($param);
-                $item['eFee1'] = $rate['eFee'];
-                $item['pFee1'] = $rate['pFee'];
-                $item['profit1'] = $rate['profit'];
-                $item['profitRmb1'] = $rate['profitRmb'];
-                $item['rate1'] = $rate['rate'];
-            }
-            //根据利润率获取售价
-            $param['rate'] = $post['rate'];
-            $price = ApiUkFic::getPrice($param);
-            $item['price2'] = $price['price'];
-            $item['eFee2'] = $price['eFee'];
-            $item['pFee2'] = $price['pFee'];
-            $item['profit2'] = $price['profit'];
-            $item['profitRmb2'] = $price['profitRmb'];
-            //print_r($item);exit;
-            $data['data'][] = $item;
         }
-        //print_r($data);exit;
+        $data['transport'] = $transport;
         return $data;
     }
 
@@ -1390,8 +1345,8 @@ class TinyToolController extends AdminController
             $condition = Yii::$app->request->post('condition');
             $data = ApiTinyTool::getEbayAdFee($condition);
             $name = 'EbayAdFee';
-            $title = ['账号简称', '商品编码', '广告费率', '广告费(￥)','广告费(原币种)', '交易时间', '描述', 'ItemId',
-                '成交价(原币种)','物流费(原币种)','总成交价(￥)', '物流名称'];
+            $title = ['账号简称', '商品编码', '广告费率', '广告费(￥)', '广告费(原币种)', '交易时间', '描述', 'ItemId',
+                '成交价(原币种)', '物流费(原币种)', '总成交价(￥)', '物流名称'];
             ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
         } catch (Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
