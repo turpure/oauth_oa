@@ -147,7 +147,7 @@ class SchedulerController extends Controller
     public function actionSalesChange()
     {
         $begin = date('Y-m-01', strtotime('-1 day'));
-        $begin = '2020-01-01';
+        //$begin = '2020-01-01';
         $end = date('Y-m-d 23:59:59', strtotime('-1 day'));
 //        var_dump($end);exit;
         $sql = "EXEC oauth_salesChangeOfTwoDateBlock_backup '{$begin}', '{$end}'";
