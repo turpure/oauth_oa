@@ -719,18 +719,27 @@ class ApiGoodsinfo
             foreach ($skuInfo as $row) {
                 $sku = OaEbayGoodsSku::findOne(['sid' => $row['sid']]);
                 $property = json_decode($sku['property'], true);
-                foreach ($property['columns'] as &$v) {
-                    if (array_key_exists('Color', $v)) {
-                        $v['Color'] = $row['color'];
+                if(isset($property['columns']) && $property['columns']){
+                    foreach ($property['columns'] as &$v) {
+                        if (array_key_exists('Color', $v)) {
+                            $v['Color'] = $row['color'];
+                        }
+                        if (array_key_exists('Size', $v)) {
+                            $v['Size'] = $row['size'];
+                        }
+                        if (array_key_exists('款式3', $v)) {
+                            unset($v['款式3']);
+                        }
                     }
-                    if (array_key_exists('Size', $v)) {
-                        $v['Size'] = $row['size'];
-                    }
-                    if (array_key_exists('款式3', $v)) {
-                        unset($v['款式3']);
-                    }
+                    $property['columns'] = array_filter($property['columns']);
+                }else{
+                    $property['columns'] = [
+                        ['Color' => $row['color']],
+                        ['Size' => $row['size']],
+                        ['UPC' => 'Does not apply'],
+                    ];
+                    $property['pictureKey'] = 'Color';
                 }
-                $property['columns'] = array_filter($property['columns']);
                 $sku->property = json_encode($property);
                 if (!$sku->save()) {
                     throw new \Exception('save sku failed');
