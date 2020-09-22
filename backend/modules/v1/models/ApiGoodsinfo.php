@@ -707,7 +707,7 @@ class ApiGoodsinfo
      * @return array|bool
      * @throws \Exception
      */
-    public static function  syncWishInfo($condition)
+    public static function syncWishInfo($condition)
     {
         $id = isset($condition['id']) ? $condition['id'] : '';
         if (empty($id)) {
@@ -719,7 +719,7 @@ class ApiGoodsinfo
             foreach ($skuInfo as $row) {
                 $sku = OaEbayGoodsSku::findOne(['sid' => $row['sid']]);
                 $property = json_decode($sku['property'], true);
-                if(isset($property['columns']) && $property['columns']){
+                if (isset($property['columns']) && $property['columns']) {
                     foreach ($property['columns'] as &$v) {
                         if (array_key_exists('Color', $v)) {
                             $v['Color'] = $row['color'];
@@ -732,7 +732,7 @@ class ApiGoodsinfo
                         }
                     }
                     $property['columns'] = array_filter($property['columns']);
-                }else{
+                } else {
                     $property['columns'] = [
                         ['Color' => $row['color']],
                         ['Size' => $row['size']],
@@ -3493,23 +3493,30 @@ class ApiGoodsinfo
 
     public static function getPlatExportCondition($plat = '', $depart = '')
     {
-        $sql = "SELECT	CASE WHEN SUBSTR(store,1,5) = 'Joom0' THEN 'Joom'
-					WHEN platform = 'Joom' THEN SUBSTR(store,1,5) ELSE store END AS suffix,s.platform ,
-                MAX(CASE WHEN ifnull(pd.department,'')<>'' THEN IFNULL(pd.department,'其他') ELSE IFNULL(d.department,'其他') END) AS depart
+        $sql = "SELECT * FROM (
+                    SELECT 	CASE WHEN SUBSTR(store,1,5) = 'Joom0' THEN 'Joom'
+					    WHEN platform = 'Joom' THEN SUBSTR(store,1,5) ELSE store END AS suffix,s.platform ,
+                        MAX(CASE WHEN ifnull(pd.department,'')<>'' THEN IFNULL(pd.department,'其他') ELSE IFNULL(d.department,'其他') END) AS depart
+                    FROM `auth_store` s 
+                    LEFT JOIN `auth_store_child` sc ON s.id=sc.store_id
+                    LEFT JOIN `user` u ON u.id=sc.user_id
+                    LEFT JOIN `auth_department_child` dc ON u.id=dc.user_id
+                    LEFT JOIN `auth_department` d ON d.id=dc.department_id
+                    LEFT JOIN `auth_department` pd ON pd.id=d.parent
+                    WHERE s.platform = 'Joom'
+                    GROUP BY CASE WHEN SUBSTR(store,1,5) = 'Joom0' THEN 'Joom'
+		 		        WHEN platform = 'Joom' THEN SUBSTR(store,1,5) ELSE store END,s.platform 
+                ) aa WHERE suffix in (SELECT joomName FROM proCenter.oa_joomSuffix)
+                UNION ALL
+                SELECT 	store AS suffix,s.platform ,
+                        CASE WHEN ifnull(pd.department,'')<>'' THEN IFNULL(pd.department,'其他') ELSE IFNULL(d.department,'其他') END AS depart
                 FROM `auth_store` s 
                 LEFT JOIN `auth_store_child` sc ON s.id=sc.store_id
                 LEFT JOIN `user` u ON u.id=sc.user_id
                 LEFT JOIN `auth_department_child` dc ON u.id=dc.user_id
                 LEFT JOIN `auth_department` d ON d.id=dc.department_id
                 LEFT JOIN `auth_department` pd ON pd.id=d.parent
-                WHERE s.platform NOT IN ('Amazon')";
-
-        if ($plat) $sql .= " AND s.platform='{$plat}'";
-        if ($depart) $sql .= " AND (ifnull(pd.department,'')<>'' AND IFNULL(pd.department,'')='{$depart}' OR IFNULL(d.department,'')='{$depart}')";
-        $sql .= " GROUP BY CASE WHEN SUBSTR(store,1,5) = 'Joom0' THEN 'Joom'
-				WHEN platform = 'Joom' THEN SUBSTR(store,1,5) ELSE store END,s.platform 
-                ORDER BY CASE WHEN SUBSTR(store,1,5) = 'Joom0' THEN 'Joom'
-				WHEN platform = 'Joom' THEN SUBSTR(store,1,5) ELSE store END";
+                WHERE s.platform NOT in  ('Joom', 'Amazon') ";
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
 
