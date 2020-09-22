@@ -2395,7 +2395,7 @@ class ApiGoodsinfo
             'Option2 Value' => '', 'Option3 Name' => '', 'Option3 Value' => '', 'Variant SKU' => '',
             'Variant Grams' => '', 'Variant Inventory Tracker' => 'shopify', 'Variant Inventory Qty' => '',
             'Variant Inventory Policy' => 'continue', 'Variant Fulfillment Service' => 'manual', 'Variant Price' => '',
-            'Variant Compare At Price' => '', 'Variant Requires Shipping' => 'FALSE', 'Variant Taxable' => 'FALSE',
+            'Variant Compare At Price' => '', 'Variant Requires Shipping' => 'TRUE', 'Variant Taxable' => 'FALSE',
             'Variant Barcode' => '', 'Image Src' => '', 'Image Position' => '', 'Image Alt Text' => '',
             'Gift Card' => 'FALSE', 'SEO Title' => '', 'SEO Description' => '',
             'Google Shopping / Google Product Category' => '', 'Google Shopping / Gender' => '',
