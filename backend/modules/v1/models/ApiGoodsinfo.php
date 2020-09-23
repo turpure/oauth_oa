@@ -731,7 +731,7 @@ class ApiGoodsinfo
                             unset($v['款式3']);
                         }
                     }
-                    $property['columns'] = array_filter($property['columns']);
+                    $property['columns'] = array_values(array_filter($property['columns']));
                 } else {
                     $property['columns'] = [
                         ['Color' => $row['color']],
