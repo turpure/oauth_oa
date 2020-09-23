@@ -358,7 +358,7 @@ class TinyToolController extends AdminController
                     price = (CASE WHEN w.costprice<=0 THEN w.goodsPrice ELSE w.costprice END)
                     FROM Y_R_tStockingWaring(nolock) w WHERE storeName='谷仓UK' 
                 ) AS aa
-                LEFT JOIN UK_Storehouse_WeightAndSize(nolock) k ON aa.sku=k.sku
+                LEFT JOIN UK_guCang_weightAndSize(nolock) k ON aa.sku=k.sku
                 WHERE  aa.sku='{$newSku}'";
         $res = Yii::$app->py_db->createCommand($sql)->queryOne();
         if (!$res) return $data;
