@@ -68,27 +68,11 @@ class ApiReport
             $list = $con->createCommand($sql)->bindValues($params)->queryAll();
             //获取现有开发以及部门
             $userList = self::getAllDeveloper();
-            $rateArr = Yii::$app->py_db->createCommand("select * from Y_Ratemanagement")->queryOne();
             $result = [];
             foreach ($list as $value) {
                 $item = $value;
-                foreach ($userList as $u) {
-                    if ($value['salernameZero'] === $u['username']) {
-//                        var_dump($u['departId']);exit;
-                        if ($u['departId'] == 1) {   //  一部
-                            $rate = $rateArr['devRate1'];
-                        } elseif ($u['departId'] == 4) {  //五部
-                            $rate = $rateArr['devRate5'];
-                        } elseif ($u['departId'] == 40) {  //七部
-                            $rate = $rateArr['devRate7'];
-                        } else {
-                            $rate = $rateArr['devRate'];
-                        }
-                        break;//跳出内层循环
-                    } else {
-                        $rate = $rateArr['devRate'];
-                    }
-                }
+                $rate = self::getDeveloperRate($userList, $value['salernameZero']);
+
                 //print_r($rate);exit;
                 //重新计算各时间段销售额（￥）、pp交易费（￥）、毛利润、毛利率
                 //0-6月
@@ -144,27 +128,11 @@ class ApiReport
             $list = $con->createCommand($sql)->bindValues($params)->queryAll();
             //获取现有开发以及部门
             $userList = self::getAllDeveloper();
-            $rateArr = Yii::$app->py_db->createCommand("select * from Y_Ratemanagement")->queryOne();
             $result = [];
             foreach ($list as $value) {
                 $item = $value;
-                foreach ($userList as $u) {
-                    if ($value['salerName'] === $u['username']) {
-//                        var_dump($u['departId']);exit;
-                        if ($u['departId'] == 1) {   //  一部
-                            $rate = $rateArr['devRate1'];
-                        } elseif ($u['departId'] == 4) {  //五部
-                            $rate = $rateArr['devRate5'];
-                        } elseif ($u['departId'] == 40) {  //七部
-                            $rate = $rateArr['devRate7'];
-                        } else {
-                            $rate = $rateArr['devRate'];
-                        }
-                        break;//跳出内层循环
-                    } else {
-                        $rate = $rateArr['devRate'];
-                    }
-                }
+                $rate = self::getDeveloperRate($userList, $value['salerName']);
+
                 //print_r($rate);exit;
                 //重新计算各时间段销售额（￥）、pp交易费（￥）、毛利润、毛利率
 
@@ -205,24 +173,11 @@ class ApiReport
             $userList = self::getAllDeveloper();
             $list = $con->createCommand($sql)->bindValues($params)->queryAll();
             $purchaser = array_unique(ArrayHelper::getColumn($list, 'purchaser'));//获取采购员数组并去重
-            $rateArr = Yii::$app->py_db->createCommand("select * from Y_Ratemanagement")->queryOne();
             $result = $data = [];
             foreach ($list as $value) {
                 $item = $value;
-                foreach ($userList as $u) {
-                    if ($value['salerName'] === $u['username']) {
-                        if ($u['departId'] == 1) { //一部
-                            $rate = $rateArr['devRate1'];
-                        } elseif ($u['departId'] == 4) { //五部
-                            $rate = $rateArr['devRate5'];
-                        } else {
-                            $rate = $rateArr['devRate'];
-                        }
-                        break;//跳出内层循环
-                    } else {
-                        $rate = $rateArr['devRate'];
-                    }
-                }
+                $rate = self::getDeveloperRate($userList, $value['salerName']);
+
                 //重新计算各时间段销售额（￥）、pp交易费（￥）
                 $item['salemoneyrmbzn'] *= $rate;
                 $item['ppebayzn'] *= $rate;
@@ -261,6 +216,36 @@ class ApiReport
 
     }
 
+    /**  获取开发汇率
+     * getDeveloperRate
+     * @param $userList
+     * @param $username
+     * Date: 2020-09-12 8:52
+     * Author: henry
+     * @return mixed
+     */
+    public static function getDeveloperRate($userList, $username){
+        $rateArr = Yii::$app->py_db->createCommand("select * from Y_Ratemanagement")->queryOne();
+        $rate = 0;
+        foreach ($userList as $u) {
+            if ($username === $u['username']) {
+                if ($u['departId'] == 1) {   //一部
+                    $rate = $rateArr['devRate1'];
+                } elseif ($u['departId'] == 4) {   //五部
+                    $rate = $rateArr['devRate5'];
+                } elseif ($u['departId'] == 40) { //七部
+                    $rate = $rateArr['devRate7'];
+                } else {
+                    $rate = $rateArr['devRate'];
+                }
+                break;//跳出内层循环
+            } else {
+                $rate = $rateArr['devRate'];
+            }
+        }
+        return $rate;
+    }
+
     /**
      * @brief Possess profit report
      * @params $condition
@@ -281,25 +266,12 @@ class ApiReport
             //print_r($con->createCommand($sql)->bindValues($params)->getRawSql());exit;
             $list = $con->createCommand($sql)->bindValues($params)->queryAll();
             $possess = array_unique(ArrayHelper::getColumn($list, 'possessman1Zero'));//获取美工数组并去重
-            $rateArr = Yii::$app->py_db->createCommand("select * from Y_Ratemanagement")->queryOne();
             $result = $data = [];
             //return $con->createCommand($sql)->bindValues($params)->queryAll();
             foreach ($list as $value) {
                 $item = $value;
-                foreach ($userList as $u) {
-                    if ($value['salerNameZero'] === $u['username']) {
-                        if ($u['departId'] == 1) {   //一部
-                            $rate = $rateArr['devRate1'];
-                        } elseif ($u['departId'] == 4) {   //五部
-                            $rate = $rateArr['devRate5'];
-                        } else {
-                            $rate = $rateArr['devRate'];
-                        }
-                        break;//跳出内层循环
-                    } else {
-                        $rate = $rateArr['devRate'];
-                    }
-                }
+                $rate = self::getDeveloperRate($userList, $value['salerNameZero']);
+
                 //重新计算各时间段销售额（￥）、pp交易费（￥）
                 //0-6月
                 $item['salemoneyrmbznZero'] *= $rate;
@@ -1106,7 +1078,8 @@ class ApiReport
                     'developer', 'introducer', 'goodsCode', 'goodsName','devDate', 'goodsStatus',
                     'sold','amt','profit','rate','ebaySold','ebayProfit',
                     'wishSold','wishProfit','smtSold','smtProfit',
-                    'joomSold','joomProfit','amazonSold','amazonProfit'
+                    'joomSold','joomProfit','amazonSold','amazonProfit',
+                    'vovaSold','vovaProfit','lazadaSold','lazadaProfit'
                 ]
             ],
             'pagination' => [

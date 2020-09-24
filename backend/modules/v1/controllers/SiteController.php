@@ -10,6 +10,7 @@ namespace backend\modules\v1\controllers;
 
 use backend\modules\v1\utils\Helper;
 use Yii;
+use yii\data\ArrayDataProvider;
 use yii\helpers\ArrayHelper;
 use yii\filters\VerbFilter;
 
@@ -73,30 +74,30 @@ class SiteController extends AdminController
      */
     public function actionIndex()
     {
-        $condition = Yii::$app->request->get();
         $username = Yii::$app->user->identity->username;
-        if(isset($condition['role']) && $condition['role']){
-            if($condition['role'] == 'depart'){
-                $sql = "SELECT username,target,bonus,amt,rate,dateRate,updateTime 
-                FROM site_targetAll 
-                WHERE role='部门' AND display<>1 ORDER BY rate DESC";
-            }else{
-                $role = $condition['role'] == 'dev'?'开发':'销售';
-                $sql = "SELECT u.avatar,st.*,CASE WHEN amt-target>0 AND role='销售' THEN floor((amt-target)/2000)*100 ELSE 0 END AS rxtraBonus 
-                FROM site_targetAll st
-                LEFT JOIN `user` u ON st.username=u.username
-                WHERE role='{$role}' AND display<>1 ORDER BY rate DESC";
-            }
-
-        }else{
-            $sql = "SELECT u.avatar,st.*,CASE WHEN amt-target>0 AND role='销售' THEN floor((amt-target)/2000)*100 ELSE 0 END AS rxtraBonus 
-                FROM site_targetAll st
-                LEFT JOIN `user` u ON st.username=u.username
-                WHERE role IN ('销售','开发') AND display<>1 ORDER BY st.username='{$username}' DESC,rate DESC";
-        }
-
+        $role = Yii::$app->request->get('role','销售');
+        $search = Yii::$app->request->get('search','');
+        $sql = "SELECT u.avatar,st.*,CASE WHEN amt-target>0 AND role='销售' THEN floor((amt-target)/2000)*100
+                WHEN role='开发' AND amt-target>0 THEN floor((amt-target)/5000)*100
+                ELSE 0 END AS rxtraBonus FROM site_targetAll st 
+                LEFT JOIN `user` u ON st.username=u.username WHERE display<>1 ";
+        if($role) $sql .= " AND role='{$role}' ";
+        if($search) $sql .= " AND ( st.username like '%{$search}%' OR depart like '%{$search}%') ";
+        $sql .= " ORDER BY st.username='{$username}' DESC, `order` ASC";
         $query = \Yii::$app->db->createCommand($sql)->queryAll();
-        return $query;
+        $data = new ArrayDataProvider([
+            'allModels' => $query,
+            'sort' => [
+                'attributes' => [
+                    'username', 'depart', 'role', 'target', 'bonus','vacationDays',
+                    'amt','rate','dateRate','order','rxtraBonus'
+                ],
+            ],
+            'pagination' => [
+                'pageSize' => 200,
+            ],
+        ]);
+        return $data;
     }
 
 
@@ -111,7 +112,9 @@ class SiteController extends AdminController
 
         $username = Yii::$app->user->identity->username;
         $sql = "SELECT st.username,u.avatar,st.bonus,st.vacationDays,
-                CASE WHEN role='销售' AND amt-target>0 THEN floor((amt-target)/2000)*100 ELSE 0 END AS rxtraBonus
+                CASE WHEN role='销售' AND amt-target>0 THEN floor((amt-target)/2000)*100 
+                     WHEN role='开发' AND amt-target>0 THEN floor((amt-target)/5000)*100 
+                    ELSE 0 END AS rxtraBonus
                 FROM site_targetAll st
                 LEFT JOIN `user` u ON st.username=u.username
                 WHERE display<>1 AND rate>=100
@@ -123,9 +126,11 @@ class SiteController extends AdminController
 
         $vacationDaysUsedNum = Yii::$app->db->createCommand("SELECT sum(vacationDays) AS vacationDays FROM site_targetAll WHERE role<>'部门' AND display<>1 AND rate>=100")->queryOne();
         $vacationDaysAllNum = Yii::$app->db->createCommand("SELECT sum(vacationDays) AS vacationDays FROM site_targetAll WHERE role<>'部门' AND display<>1")->queryOne();
+        $dateRate = Yii::$app->db->createCommand("SELECT dateRate FROM site_targetAll limit 1")->queryScalar();
 
         return [
             'list' => $query,
+            'dateRate' => $dateRate,
             'bonusAllNum' => $bonusAllNum['bonus'],
             'bonusUsedNum' => $bonusUsedNum['bonus'],
             'bonusUnUsedNum' => $bonusAllNum['bonus'] - $bonusUsedNum['bonus'],

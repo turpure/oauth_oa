@@ -1154,6 +1154,33 @@ class ApiTinyTool
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
 
+    public static function saveEbaySkuSellerData($file, $extension = 'Xls'){
+        $reader = IOFactory::createReader($extension);
+        $spreadsheet = $reader->load(Yii::$app->basePath . '/web' . $file);
+        $sheet = $spreadsheet->getSheet(0);
+        $highestRow = $sheet->getHighestRow(); // 取得总行数
+        $errorRes = [];
+        try {
+            for ($i = 2; $i <= $highestRow + 1; $i++) {
+                $goodsCode = $sheet->getCell("A" . $i)->getValue() ?: '';
+                $seller1 = $sheet->getCell("B" . $i)->getValue() ?: '';
+                $seller2 = $sheet->getCell("C" . $i)->getValue() ?: '';
+                $updateDate = date('Y-m-d H:i:s');
+                if(!$goodsCode) break;
+                $sql = "insert into cache_skuSeller(goodsCode,seller1,seller2,updateDate) values (
+               '{$goodsCode}', '{$seller1}', '{$seller2}', '{$updateDate}') 
+                ON DUPLICATE KEY UPDATE seller1='{$seller1}',seller2='{$seller2}',updateDate='{$updateDate}'";
+                $res = Yii::$app->db->createCommand($sql)->execute();
+                if($res){
+                    $errorRes[] = "Success to update '{$goodsCode}' seller1 to '{$seller1}'";
+                }else{
+                    $errorRes[] = "Failed to update '{$goodsCode}' seller1 to '{$seller1}'";
+                }
+            }
+        } catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
 
     //=================海外仓，订单修改物流方式=====================
 
@@ -1165,6 +1192,7 @@ class ApiTinyTool
      */
     public static function modifyOrderLogisticsWay()
     {
+        $username = Yii::$app->user->identity->username;
         $doc = Yii::$app->db->createCommand('select * from cache_order_zip_code')->queryAll();
         $id = Yii::$app->py_db->createCommand("select nid from B_LogisticWay WHERE name LIKE 'Royal Mail - Tracked 48 Parcel%'")->queryScalar();
 
@@ -1194,6 +1222,12 @@ class ApiTinyTool
                 if (!$res) {
                     throw new Exception('Failed to update logics way of order ' . $v['nid']);
                 }
+                $logs = $username . '  ' . date('Y-m-d H:i:s') . ' 手动更改物流方式为 Royal Mail - Tracked 48 Parcel';
+                Yii::$app->py_db->createCommand()->insert('P_TradeLogs', [
+                    'TradeNID' => $v['nid'],
+                    'Operator' => $username,
+                    'Logs' => $logs
+                ])->execute();
             }
             $transaction->commit();
         } catch (Exception $e) {
@@ -1247,17 +1281,19 @@ class ApiTinyTool
     public static function getEbayAdFee($condition){
         $sku = isset($condition['sku']) ? $condition['sku'] : '';
         $suffix = isset($condition['suffix']) ? $condition['suffix'] : '';
+        $itemId= isset($condition['item_id']) ? $condition['item_id'] : '';
         $begin = isset($condition['dateRange'][0]) ? $condition['dateRange'][0] : '';
         $end = isset($condition['dateRange'][1]) ? ($condition['dateRange'][1] . ' 23:59:59') : '';
         $sql = "select suffix,sku,ad_rate,ad_fee*ad_code_rate as ad_fee,CONCAT(ad_fee,'(',ad_code,')') as ad_fee_original, 
                 fee_time,description, item_id, CONCAT(transaction_price,'(',transaction_code,')') as transaction_price, 
                 CONCAT(shipping_fee,'(',transaction_code,')') as shipping_fee,
                 transaction_code_rate*(transaction_price + shipping_fee) as transaction_price_total,shipping_name
-                from cache_ebayAdFee where fee_time between '{$begin}' and '{$end}'
-                 AND sku like 'UK%'
-                ";
+                from cache_ebayAdFee where sku like 'UK%' ";
+
+        if($begin && $end) $sql .= " AND fee_time between '{$begin}' and '{$end}'";
         if($sku) $sql .= " and sku like '%{$sku}%'";
         if($suffix) $sql .= " and suffix like '%{$suffix}%'";
+        if($itemId) $sql .= " and item_id = '{$itemId}'";
         $data = Yii::$app->db->createCommand($sql)->queryAll();
         return $data;
     }

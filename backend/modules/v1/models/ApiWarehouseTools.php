@@ -11,6 +11,7 @@ use backend\models\ShopElf\BPerson;
 use backend\models\TaskPick;
 use backend\models\TaskSort;
 use backend\models\TaskWarehouse;
+use backend\modules\v1\utils\ExportTools;
 use yii\data\ArrayDataProvider;
 use yii\db\Expression;
 use yii\helpers\ArrayHelper;
@@ -192,6 +193,23 @@ class ApiWarehouseTools
             ],
         ]);
         return $provider;
+    }
+
+    /**
+     * @brief 入库扫描记录下载
+     * @param $condition
+     * @return ActiveDataProvider
+     */
+    public static function warehouseLogExport($condition)
+    {
+        $fieldsFilter = ['like' =>['logisticsNo', 'user', 'sku'], 'equal' => ['number']];
+        $timeFilter = ['updatedTime'];
+        $query = TaskWarehouse::find();
+        $query = Helper::generateFilter($query,$fieldsFilter,$condition);
+        $query = Helper::timeFilter($query,$timeFilter,$condition);
+        $data = $query->orderBy('id DESC')->asArray()->all();
+        $name = 'warehouseLog';
+        ExportTools::toExcelOrCsv($name, $data, 'Xls');
     }
 
 

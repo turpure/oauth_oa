@@ -562,12 +562,12 @@ class ApiGoodsinfo
                         'id' => '', 'sku' => '', 'title' => '', 'description' => '', 'inventory' => '', 'price' => '', 'msrp' => '',
                         'shipping' => '', 'shippingTime' => '', 'tags' => '', 'mainImage' => '', 'goodsId' => '', 'infoId' => '',
                         'extraImages' => '', 'headKeywords' => '', 'requiredKeywords' => '', 'randomKeywords' => '', 'tailKeywords' => '',
-                        'wishTags' => '', 'stockUp' => '','wishMainImage' => '','wishExtraImages' => ''
+                        'wishTags' => '', 'stockUp' => '', 'wishMainImage' => '', 'wishExtraImages' => '', 'isJoomPublish' => ''
                     ],
                     'skuInfo' => [[
                         'id' => '', 'infoId' => '', 'sid' => '', 'sku' => '', 'color' => '', 'size' => '', 'inventory' => '',
                         'price' => '', 'shipping' => '', 'msrp' => '', 'shippingTime' => '', 'linkUrl' => '', 'goodsSkuId' => '',
-                        'weight' => '', 'joomPrice' => '', 'joomShipping' => '','wishLinkUrl' => ''
+                        'weight' => '', 'joomPrice' => '', 'joomShipping' => '', 'wishLinkUrl' => ''
                     ]]];
                 return $ret;
             }
@@ -698,6 +698,62 @@ class ApiGoodsinfo
             ];
         }
 
+    }
+
+    /** save ebay info
+     * @param $condition
+     * Date: 2019-04-22 16:12
+     * Author: henry
+     * @return array|bool
+     * @throws \Exception
+     */
+    public static function syncWishInfo($condition)
+    {
+        $id = isset($condition['id']) ? $condition['id'] : '';
+        if (empty($id)) {
+            return [];
+        }
+        $skuInfo = OaWishGoodsSku::findAll(['infoId' => $id]);
+        $tran = Yii::$app->db->beginTransaction();
+        try {
+            foreach ($skuInfo as $row) {
+                $sku = OaEbayGoodsSku::findOne(['sid' => $row['sid']]);
+                $property = json_decode($sku['property'], true);
+                if (isset($property['columns']) && $property['columns']) {
+                    foreach ($property['columns'] as &$v) {
+                        if (array_key_exists('Color', $v)) {
+                            $v['Color'] = $row['color'];
+                        }
+                        if (array_key_exists('Size', $v)) {
+                            $v['Size'] = $row['size'];
+                        }
+                        if (array_key_exists('款式3', $v)) {
+                            unset($v['款式3']);
+                        }
+                    }
+                    $property['columns'] = array_values(array_filter($property['columns']));
+                } else {
+                    $property['columns'] = [
+                        ['Color' => $row['color']],
+                        ['Size' => $row['size']],
+                        ['UPC' => 'Does not apply'],
+                    ];
+                    $property['pictureKey'] = 'Color';
+                }
+                $sku->property = json_encode($property);
+                if (!$sku->save()) {
+                    throw new \Exception('save sku failed');
+                }
+            }
+            $tran->commit();
+            return ["success to sync sku info"];
+        } catch (\Exception $e) {
+            $tran->rollBack();
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
     }
 
     /** 保存wish模板
@@ -903,7 +959,6 @@ class ApiGoodsinfo
         return $attribute;
     }
 
-
     /** 平台信息标记完善
      * @param $condition
      * Date: 2019-05-17 13:16
@@ -1007,10 +1062,10 @@ class ApiGoodsinfo
             $ret = Yii::$app->pro_db->createCommand($sql, [':suffix' => $at])->queryOne();
             $at = $ret['accountName'];
             $postfix = $ret['postfix'];
-            $at .=  "'s Shop ";
+            $at .= "'s Shop ";
             foreach ($rows as $row) {
-                $row['长描述'] = '"<p>Welcome to ' . $at . ' <br> <br></p>' . substr($row['长描述'],1) ;
-                $row['关联SKU'] .= $postfix ;
+                $row['长描述'] = '"<p>Welcome to ' . $at . ' <br> <br></p>' . substr($row['长描述'], 1);
+                $row['关联SKU'] .= $postfix;
                 $row_data[] = $row;
             }
         }
@@ -1028,12 +1083,12 @@ class ApiGoodsinfo
     {
         $payFeeFixedRate = 0.04;
         $siteInfo = [
-            'MY' => ['site' => '马来西亚', 'exchange' => '1.575', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' =>4.13],
-            'PH' => ['site' => '菲律宾', 'exchange' => '0.125', 'payFeeRate' => 0.02 + $payFeeFixedRate,'lowPrice' => 91],
-            'ID' => ['site' => '印尼', 'exchange' => '0.000454', 'payFeeRate' => 0.02 + $payFeeFixedRate,'lowPrice' => 17500],
-            'TH' => ['site' => '泰国', 'exchange' => '0.2', 'payFeeRate' => 0.02 + $payFeeFixedRate,'lowPrice' => 20],
-            'SG' => ['site' => '新加坡', 'exchange' => '4.8', 'payFeeRate' => 0.02 + $payFeeFixedRate,'lowPrice' => 4],
-            'VN' => ['site' => '越南', 'exchange' => '0.0003', 'payFeeRate' => 0.02 + $payFeeFixedRate,'lowPrice' => 23300],
+            'MY' => ['site' => '马来西亚', 'exchange' => '1.575', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 4.13],
+            'PH' => ['site' => '菲律宾', 'exchange' => '0.125', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 91],
+            'ID' => ['site' => '印尼', 'exchange' => '0.000454', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 17500],
+            'TH' => ['site' => '泰国', 'exchange' => '0.2', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 20],
+            'SG' => ['site' => '新加坡', 'exchange' => '4.8', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 4],
+            'VN' => ['site' => '越南', 'exchange' => '0.0003', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 23300],
         ];
         $ids = implode(',', $ids);
         $sql = "select og.createDate as '开发日期',cate as '一级类目',subCate as '二级类目', goodsCode as '商品编码', goodsStatus as '商品状态'," .
@@ -1054,7 +1109,7 @@ class ApiGoodsinfo
             "'' as '附加图10'," .
             "'' as '附加图11'," .
             "'' as '附加图12'," .
-            " owg.headKeywords as '头部关键词', owg.requiredKeywords as '必须关键词', ".
+            " owg.headKeywords as '头部关键词', owg.requiredKeywords as '必须关键词', " .
             "owg.randomKeywords '随机关键词', owg.tailKeywords '尾部关键词'," .
             "hopeCost '成本价',ows.weight '重量',packName '包装规格',ogi.description '描述'," .
             "'' as 'VN原价'," .
@@ -1105,7 +1160,6 @@ class ApiGoodsinfo
             $ele['重量'] = max(round($ele['重量'] / 1000, 2), 0.02);
 
             # 附件图处理
-
             $extraImages = explode("\n",$ele['附加图']);
 
             $ele['附加图'] = $extraImages[0] ?? '' ;
@@ -1131,7 +1185,7 @@ class ApiGoodsinfo
 
             # SKu 信息
             $ele['成本价'] = $skuCostPrice[$ele['SKU']]['CostPrice'];
-            $ele['重量'] = round($skuCostPrice[$ele['SKU']]['Weight'],2);
+            $ele['重量'] = round($skuCostPrice[$ele['SKU']]['Weight'], 2);
             # 售价信息
             $ele['MY售价'] = static::getGoodsSalePrice($ele, $siteInfo['MY'], $packageInfo, $expressInfo);
             $ele['MY原价'] = round($ele['MY售价'] * 1.8, 2);
@@ -1147,7 +1201,7 @@ class ApiGoodsinfo
             $ele['SG原价'] = round($ele['SG售价'] * 1.8, 2);
 
             # 删除多余的信息
-            unset($ele['头部关键词'],$ele['必须关键词'],$ele['随机关键词'],$ele['尾部关键词']);
+            unset($ele['头部关键词'], $ele['必须关键词'], $ele['随机关键词'], $ele['尾部关键词']);
             $out[] = $ele;
         }
         $ret['data'] = $out;
@@ -1270,7 +1324,12 @@ class ApiGoodsinfo
         $transactionFeeRate = $siteInfo['payFeeRate'];
         $totalFee = $expressFee + $costPrice + $packageFee;
         $salePrice = $totalFee / (1 - $profitRate - $transactionFeeRate);
-        return max($siteInfo['lowPrice'],round($salePrice / $siteInfo['exchange'], 2));
+        if ($plat == 'lazada') {
+            $price = max($siteInfo['lowPrice'], round($salePrice / $siteInfo['exchange'], 2));
+        } else {
+            $price = round($salePrice / $siteInfo['exchange'], 2);
+        }
+        return $price;
     }
 
 
@@ -1517,7 +1576,7 @@ class ApiGoodsinfo
             $row['msrp'] = $variantInfo['msrp'];
             $row['shipping'] = $variantInfo['shipping'];
             $row['shipping_time'] = '7-21';
-            $row['main_image'] = static::getNewWishMainImage( $wishInfo['wishMainImage'],$goodsInfo['goodsCode'], $account['mainImg']);
+            $row['main_image'] = static::getNewWishMainImage($wishInfo['wishMainImage'], $goodsInfo['goodsCode'], $account['mainImg']);
             $row['extra_images'] = $wishInfo['wishExtraImages'];
             $row['variants'] = $variantInfo['variant'];
             $row['landing_page_url'] = $wishInfo['wishMainImage'];
@@ -1658,7 +1717,7 @@ class ApiGoodsinfo
             $row['msrp'] = $variantInfo['msrp'];
             $row['shipping'] = $variantInfo['shipping'];
             $row['shipping_time'] = '7-21';
-            $row['main_image'] = static::getNewWishMainImage($wishInfo['wishMainImage'],$goodsInfo['goodsCode'], $account['mainImg']);
+            $row['main_image'] = static::getNewWishMainImage($wishInfo['wishMainImage'], $goodsInfo['goodsCode'], $account['mainImg']);
             $row['extra_images'] = $wishInfo['wishExtraImages'];
             $row['variants'] = $variantInfo['variant'];
             $row['landing_page_url'] = $wishInfo['wishMainImage'];
@@ -1710,7 +1769,7 @@ class ApiGoodsinfo
                 $row['description'] = $joomInfo['description'];
                 $row['tags'] = $joomInfo['wishTags'];
                 $row['product_main_image'] = $imageInfo['mainImage'];
-                $row['selleruserid'] = $account['joomName'];
+                $row['selleruserid'] = $account['joomSuffix'] ? $account['joomSuffix'] : $account['joomName'];
                 $row['extra_images'] = implode('|', array_filter($imageInfo['extraImages']));
                 $row['dangerous_kind'] = static::getJoomDangerousKind($goodsInfo);
                 $var = [];
@@ -1740,7 +1799,7 @@ class ApiGoodsinfo
     }
 
     /**
-     * @brief 导出joom模板
+     * @brief 导出vova模板
      * @param $ids
      * @param $accounts
      * @return array
@@ -1799,7 +1858,7 @@ class ApiGoodsinfo
                     $variationRow = [
                         'sku_image' => '', 'goods_sku' => '', 'storage' => 10000, 'market_price' => '',
                         'shop_price' => '', 'shipping_fee' => '', 'shipping_weight' => '',
-                        'style_array' => [ 'size' => '', 'color' => '', 'style_quantity' => '']
+                        'style_array' => ['size' => '', 'color' => '', 'style_quantity' => '']
                     ];
                     $variationRow['goods_sku'] = $sku['sku'] . $postfix;
                     $variationRow['color'] = $sku['color'];
@@ -1815,6 +1874,126 @@ class ApiGoodsinfo
                 $row['variants'] = json_encode($var);
                 $out[] = $row;
             }
+        }
+        return $out;
+    }
+
+
+    /**
+     * @brief 导出ebay模板
+     * @param $ids
+     * @param $accounts
+     * @return array
+     */
+    public static function preExportEbayData($id, $type)
+    {
+        $accounts = OaEbaySuffix::find()->asArray()->all();
+        $row = [
+            "ApplicationData" => '', "AutoPay" => '', "BestOfferDetails" => '', "BuyerRequirementDetails" => '',
+            "BuyerResponsibleForShipping" => '', "BuyItNowPrice" => '', "CategoryMappingAllowed" => '',
+            "Charity" => '', "ConditionDescription" => '', "ConditionID" => '1000', "Country" => '', "CrossBorderTrade" => '',
+            "Currency" => '', "Description" => '', "DigitalGoodInfo" => '', "DisableBuyerRequirements" => '',
+            "DiscountPriceInfo" => '', "DispatchTimeMax" => '', "EBayPlus" => '', "ExtendedSellerContactDetails" => '',
+            "HitCounter" => 'NoHitCounter', "IncludeRecommendations" => '', "ItemCompatibilityList" => '', "ItemSpecifics" => '',
+            "ListingDetails" => '', "ListingDuration" => 'GTC', "ListingEnhancement" => '', "ListingSubtype2" => '',
+            "ListingType" => 'FixedPriceItem', "Location" => '', "LotSize" => '', "PaymentDetails" => '', "PaymentMethods" => 'PayPal',
+            "PayPalEmailAddress" => '', "PickupInStoreDetails" => '', "PictureDetails" => '', "PostalCode" => '',
+            "PrimaryCategory" => '', "PrivateListing" => '', "ProductListingDetails" => '', "Quantity" => '',
+            "QuantityInfo" => '', "QuantityRestrictionPerBuyer" => '', "ReservePrice" => '', "ReturnPolicy" => '',
+            "ScheduleTime" => '', "SecondaryCategory" => '', "Seller" => '', "SellerContactDetails" => '',
+            "SellerProfiles" => '', "SellerProvidedTitle" => '', "ShippingDetails" => '', "ShippingPackageDetails" => '',
+            "ShippingServiceCostOverrideList" => '', "ShipToLocations" => '', "Site" => '', "SiteId" => '',
+            "StartPrice" => '', "Storefront" => '', "SubTitle" => '', "TaxCategory" => '', "Title" => '',
+            "UseTaxTable" => '', "UUID" => '', "VatDetails" => '', "VIN" => '', "VRM" => '',
+            'SKU' => '', 'Variations' => '', 'Suffix' => ''
+        ];
+        $out = [];
+        if (is_numeric($id)) {
+            $goodsInfo = OaGoodsinfo::findOne(['id' => $id]);
+        } else {
+            $goodsInfo = OaGoodsinfo::findOne(['goodsCode' => $id]);
+            $id = $goodsInfo['id'];
+        }
+        $ebaySku = OaEbayGoodsSku::find()->where(['infoId' => $id])->asArray()->all();
+        $ebayInfo = OaEbayGoods::find()->where(['infoId' => $id])->asArray()->one();
+        $ebayInfo['oaEbayGoodsSku'] = $ebaySku;
+        $keyWords = static::preKeywords($ebayInfo);
+        $price = self::getEbayPrice($ebayInfo);
+
+        foreach ($accounts as $account) {
+            $payPal = self::getEbayPayPal($price, $account);
+            $titlePool = [];
+            $title = '';
+            $len = self::EbayTitleLength;
+            while (true) {
+                $title = static::getTitleName($keyWords, $len);
+                --$len;
+                if (empty($title) || !in_array($title, $titlePool, false)) {
+                    $titlePool[] = $title;
+                    break;
+                }
+            }
+
+            $row['SiteId'] = $ebayInfo['site'];
+            $row['Site'] = OaSiteCountry::findOne(['code' => $ebayInfo['site']])['nameEn'];
+            $row['Suffix'] = $account['ebaySuffix'];
+            $row['PrimaryCategory']['CategoryID'] = $ebayInfo['listedCate'];
+            $row['SecondaryCategory']['CategoryID'] = $ebayInfo['listedSubcate'];
+            $row['Quantity'] = !empty($ebayInfo['quantity']) ? $ebayInfo['quantity'] : 5;
+            $row['PayPalEmailAddress'] = $payPal;
+            $row['Location'] = $ebayInfo['location'];
+            $row['Country'] = $ebayInfo['country'];
+            $row['Description'] = static::getEbayDescription($ebayInfo['description']);
+
+            //$row['returnPolicy']['ReturnsAccepted'] = '1';
+            $row['ReturnPolicy']['RefundOptions'] = 'MoneyBack';
+            $row['ReturnPolicy']['ReturnsWithinOption'] = 'Days_30';
+            $row['ReturnPolicy']['ShippingCostPaidByOption'] = 'Buyer';
+            $row['ReturnPolicy']['Description'] = 'We accept return or exchange item within 30 days from the day customer received the original item. If you have any problem please contact us first before leaving Neutral/Negative feedback! the negative feedback can\'\'t resolve the problem .but we can. ^_^ Hope you have a happy shopping experience in our store!';
+            $row['DispatchTimeMax'] = $ebayInfo['prepareDay'];
+            $row['PictureDetails']['GalleryType'] = 'Gallery';
+            $row['PictureDetails']['PictureURL'] = explode("\n", static::getEbayPicture($goodsInfo, $ebayInfo, $account));
+            $row['SKU'] = $ebayInfo['sku'] . $account['nameCode'];
+            $row['Title'] = $title;
+            $row['SubTitle'] = $ebayInfo['subTitle'];
+            $row['BuyItNowPrice'] = $price;
+
+            $row['ShippingDetails']['ExcludeShipToLocation'] = static::getEbayExcludeLocation($account);
+            $shippingInfo1['ShippingService'] = static::getShippingService($ebayInfo['inShippingMethod1']);
+            $shippingInfo1['ShippingServiceCost'] = $ebayInfo['inFirstCost1'];
+            $shippingInfo1['ShippingServiceAdditionalCost'] = $ebayInfo['inSuccessorCost1'];
+            $shippingInfo1['ShippingServicePriority'] = 1;
+            $shippingInfo2['ShippingService'] = static::getShippingService($ebayInfo['inShippingMethod2']);
+            $shippingInfo2['ShippingServiceCost'] = $ebayInfo['inFirstCost2'];
+            $shippingInfo2['ShippingServiceAdditionalCost'] = $ebayInfo['inSuccessorCost2'];
+            $shippingInfo2['ShippingServicePriority'] = 2;
+            $internationalShippingService1['ShippingService'] = static::getShippingService($ebayInfo['outShippingMethod1']);
+            $internationalShippingService1['ShippingServiceCost'] = $ebayInfo['outFirstCost1'];
+            $internationalShippingService1['ShippingServiceAdditionalCost'] = $ebayInfo['outSuccessorCost1'];
+            $internationalShippingService1['ShippingServicePriority'] = 1;
+            $internationalShippingService1['ShipToLocation'] = static::getShippingService($ebayInfo['outShippingMethod1']) ? 'Worldwide' : '';
+            $internationalShippingService2['ShippingService'] = static::getShippingService($ebayInfo['outShippingMethod2']);
+            $internationalShippingService2['ShippingServiceCost'] = $ebayInfo['outFirstCost2'];
+            $internationalShippingService2['ShippingServiceAdditionalCost'] = $ebayInfo['outSuccessorCost2'];
+            $internationalShippingService2['ShippingServicePriority'] = 2;
+            $internationalShippingService2['ShipToLocation'] = static::getShippingService($ebayInfo['outShippingMethod2']) ? 'Worldwide' : '';
+            $row['ShippingDetails']['ShippingServiceOptions'] = [$shippingInfo1, $shippingInfo2];
+            $row['ShippingDetails']['InternationalShippingServiceOption'] = [$internationalShippingService1, $internationalShippingService2];
+
+            //$row['UseMobile'] = '1';
+            //$row['IbayTemplate'] = $account['ibayTemplate'];
+            //$row['IbayInformation'] = '1';
+            //$row['IbayOnlineInventoryHold'] = '1';
+            //$row['IBayEffectType'] = '1';
+            //$row['IbayEffectImg'] = static::getEbayPicture($goodsInfo, $ebayInfo, $account);
+            if (count($ebayInfo['oaEbayGoodsSku']) > 1) $goodsInfo['isVar'] = '是'; // 2020-06-02 添加（单平台添加多属性）
+            $row['Variations'] = json_decode(static::getEbayVariation($goodsInfo['isVar'], $ebayInfo, $account['nameCode']), true);
+            //$row['outofstockcontrol'] = '0';
+            //$row['productListingDetails']['EPID'] = 'Does not apply';
+            $row['ProductListingDetails']['ISBN'] = 'Does not apply';
+            $row['ProductListingDetails']['UPC'] = $ebayInfo['UPC'];
+            $row['ProductListingDetails']['EAN'] = $ebayInfo['EAN'];
+            $out[] = $row;
         }
         return $out;
     }
@@ -2669,7 +2848,7 @@ class ApiGoodsinfo
      * @return string
      * @throws \Exception
      */
-    private static function getNewWishMainImage($wishMainImage,$goodsCode, $mainImage)
+    private static function getNewWishMainImage($wishMainImage, $goodsCode, $mainImage)
     {
         try {
             $base = explode('_', $wishMainImage);
@@ -2677,11 +2856,9 @@ class ApiGoodsinfo
             if (strpos($prefix, '.jpg') !== false) {
                 return $prefix;
             }
-            $suffix =  '_' .$mainImage . '_.jpg';
+            $suffix = '_' . $mainImage . '_.jpg';
             return $prefix . $suffix;
-        }
-
-        catch (\Exception  $why) {
+        } catch (\Exception  $why) {
             throw new Exception('please check wish main image address!');
         }
 
@@ -3316,26 +3493,30 @@ class ApiGoodsinfo
 
     public static function getPlatExportCondition($plat = '', $depart = '')
     {
-        if($plat == 'Joom') {
-            $sql = "SELECT  joomName as suffix,'Joom' AS platform, joomSuffix AS depart FROM proCenter.oa_joomSuffix WHERE 1=1";
-            if ($depart) $sql .= " AND joomSuffix='{$depart}'";
-        }else{
-            $sql = "SELECT s.store AS suffix,s.platform ,
-                CASE WHEN ifnull(pd.department,'')<>'' THEN IFNULL(pd.department,'其他') ELSE IFNULL(d.department,'其他') END AS depart
+        $sql = "SELECT * FROM (
+                    SELECT 	CASE WHEN SUBSTR(store,1,5) = 'Joom0' THEN 'Joom'
+					    WHEN platform = 'Joom' THEN SUBSTR(store,1,5) ELSE store END AS suffix,s.platform ,
+                        MAX(CASE WHEN ifnull(pd.department,'')<>'' THEN IFNULL(pd.department,'其他') ELSE IFNULL(d.department,'其他') END) AS depart
+                    FROM `auth_store` s 
+                    LEFT JOIN `auth_store_child` sc ON s.id=sc.store_id
+                    LEFT JOIN `user` u ON u.id=sc.user_id
+                    LEFT JOIN `auth_department_child` dc ON u.id=dc.user_id
+                    LEFT JOIN `auth_department` d ON d.id=dc.department_id
+                    LEFT JOIN `auth_department` pd ON pd.id=d.parent
+                    WHERE s.platform = 'Joom'
+                    GROUP BY CASE WHEN SUBSTR(store,1,5) = 'Joom0' THEN 'Joom'
+		 		        WHEN platform = 'Joom' THEN SUBSTR(store,1,5) ELSE store END,s.platform 
+                ) aa WHERE suffix in (SELECT joomName FROM proCenter.oa_joomSuffix)
+                UNION ALL
+                SELECT 	store AS suffix,s.platform ,
+                        CASE WHEN ifnull(pd.department,'')<>'' THEN IFNULL(pd.department,'其他') ELSE IFNULL(d.department,'其他') END AS depart
                 FROM `auth_store` s 
                 LEFT JOIN `auth_store_child` sc ON s.id=sc.store_id
                 LEFT JOIN `user` u ON u.id=sc.user_id
                 LEFT JOIN `auth_department_child` dc ON u.id=dc.user_id
                 LEFT JOIN `auth_department` d ON d.id=dc.department_id
                 LEFT JOIN `auth_department` pd ON pd.id=d.parent
-                WHERE s.platform NOT IN ('Amazon','Joom')";
-            if($plat) $sql .= " AND s.platform='{$plat}'";
-            if($depart) $sql .= " AND (ifnull(pd.department,'')<>'' AND IFNULL(pd.department,'')='{$depart}' OR IFNULL(d.department,'')='{$depart}')";
-            if(!$plat){
-                $sql .= "UNION SELECT  joomName as suffix,'Joom' AS platform, joomSuffix AS depart FROM proCenter.oa_joomSuffix WHERE 1=1";
-                if($depart) $sql .= " AND joomSuffix='{$depart}'";
-            }
-        }
+                WHERE s.platform NOT in  ('Joom', 'Amazon') ";
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
 

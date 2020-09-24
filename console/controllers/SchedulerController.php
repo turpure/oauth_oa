@@ -90,16 +90,12 @@ class SchedulerController extends Controller
      */
     public function actionSite()
     {
-        $beginDate = '2019-09-01';//date('Y-m-d', strtotime('-30 days'));
-        //$endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
-        $endDate = '2019-12-31';//昨天时间
+        $beginDate = '2020-09-01';//date('Y-m-d', strtotime('-30 days'));
+        $endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
+        //$endDate = '2020-12-31';//昨天时间
         $dateRate = round(((strtotime($endDate) - strtotime($beginDate))/24/3600 + 1)*100/122, 2);
         //print_r($dateRate);exit;
         try {
-            //更新销售和部门目标完成度
-            $exchangeRate = ApiUkFic::getRateUkOrUs('USD');//美元汇率
-            $sql = "CALL oauth_siteTargetAll($exchangeRate)";
-            Yii::$app->db->createCommand($sql)->execute();
 
             //获取开发备份数据
             $month =  Yii::$app->db->createCommand("SELECT max(month) month FROM site_targetAllBackupData WHERE role='开发'")->queryScalar();
@@ -107,16 +103,19 @@ class SchedulerController extends Controller
                 $beginDate = '2019-'.($month+1).'-01';
             }
             //更新开发目标完成度
+            $seller = Yii::$app->db->createCommand("SELECT distinct username FROM site_targetAll WHERE role='开发'")->queryAll();
             $condition = [
                 'dateFlag' => 1,
                 'beginDate' => $beginDate,
                 'endDate' => $endDate,
-                'seller' => '胡小红,廖露露,常金彩,刘珊珊,王漫漫,陈微微,杨笑天,李永恒,崔明宽,张崇,史新慈,邹雅丽,杨晶媛',
+                'seller' => implode(',', ArrayHelper::getColumn($seller,'username')),
             ];
             $devList = ApiReport::getDevelopReport($condition);
             foreach ($devList as $value){
-                $target =  Yii::$app->db->createCommand("SELECT IFNULL(target,0) AS target FROM site_targetAll WHERE username='{$value['salernameZero']} '")->queryScalar();
-                $lastProfit =  Yii::$app->db->createCommand("SELECT sum(profitZn) AS profitZn FROM site_targetAllBackupData WHERE username='{$value['salernameZero']} ' GROUP BY username")->queryScalar();
+                $targetSql = "SELECT IFNULL(target,0) AS target FROM site_targetAll WHERE role='开发' and username='{$value['salernameZero']}'";
+                $target =  Yii::$app->db->createCommand($targetSql)->queryScalar();
+                $backupSql =  "SELECT sum(profitZn) AS profitZn FROM site_targetAllBackupData WHERE role='开发' and username='{$value['salernameZero']}' GROUP BY username";
+                $lastProfit =  Yii::$app->db->createCommand($backupSql)->queryScalar();
                 Yii::$app->db->createCommand()->update(
                     'site_targetAll',
                     [
@@ -129,10 +128,10 @@ class SchedulerController extends Controller
                 )->execute();
             }
 
-
-
-
-
+            //更新销售和部门目标完成度
+            $exchangeRate = ApiUkFic::getRateUkOrUs('USD');//美元汇率
+            $sql = "CALL oauth_siteTargetAll($exchangeRate)";
+            Yii::$app->db->createCommand($sql)->execute();
 
             print date('Y-m-d H:i:s') . " INFO:success to get data of target completion!\n";
         } catch (\Exception $why) {
@@ -147,11 +146,15 @@ class SchedulerController extends Controller
      */
     public function actionSalesChange()
     {
-        $sql = "EXEC oauth_salesChangeOfTwoDateBlock_backup";
+        $begin = date('Y-m-01', strtotime('-1 day'));
+        //$begin = '2020-01-01';
+        $end = date('Y-m-d 23:59:59', strtotime('-1 day'));
+//        var_dump($end);exit;
+        $sql = "EXEC oauth_salesChangeOfTwoDateBlock_backup '{$begin}', '{$end}'";
         try {
             $list = Yii::$app->py_db->createCommand($sql)->queryAll();
 
-            Yii::$app->db->createCommand()->truncateTable('cache_sales_change')->execute();
+            Yii::$app->db->createCommand("delete from cache_sales_change where orderTime between '{$begin}' and '{$end}'")->execute();
             $step = 200;
             $num = ceil(count($list)/$step);
             for ($i = 0; $i < $num; $i++){
@@ -161,7 +164,6 @@ class SchedulerController extends Controller
                     array_slice($list, $i * $step, $step)
                 )->execute();
             }
-
 
             print date('Y-m-d H:i:s') . " INFO:success to update data of sales change!\n";
         } catch (\Exception $why) {
@@ -876,6 +878,7 @@ class SchedulerController extends Controller
         $this->actionProfit();
         $this->actionSalesRanking();
         $this->actionSalesAmt();
+        $this->actionSite();
 //        $this->actionWarehouseIntegral();
     }
 

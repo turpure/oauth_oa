@@ -18,6 +18,8 @@ use backend\modules\v1\models\ApiUk;
 use backend\modules\v1\models\ApiUkFic;
 use backend\modules\v1\models\ApiUser;
 use backend\modules\v1\utils\ExportTools;
+use backend\modules\v1\utils\Handler;
+use backend\modules\v1\utils\Helper;
 use Codeception\Template\Api;
 use common\models\User;
 use backend\modules\v1\services\ExpressExpired;
@@ -270,7 +272,8 @@ class TinyToolController extends AdminController
 
             $rate4 = ApiUkFic::getRate($param4);
             $rate4['transport'] = $name4;
-            $data['rate'] = [$rate, $rate2, $rate3, $rate4];
+            //$data['rate'] = [$rate, $rate2, $rate3, $rate4];
+            $data['rate'] = [$rate2];
         }
         //根据利润率获取售价
         $param1['rate'] = $param2['rate'] = $param3['rate'] = $param4['rate'] = $post['rate'];
@@ -286,32 +289,33 @@ class TinyToolController extends AdminController
         $price4 = ApiUkFic::getPrice($param4);
         $price4['transport'] = $name4;
 
-        $data['price'] = [$price, $price2, $price3, $price4];
+        //$data['price'] = [$price, $price2, $price3, $price4];
+        $data['price'] = [$price2];
         //print_r($data['price']);exit;
         $data['transport'] = [
-            [
+            /*[
                 'name' => $name,
                 'cost' => round($cost, 2),
-            ],
+            ],*/
             [
                 'name' => $name2,
                 'cost' => round($cost2, 2),
             ],
-            [
+            /*[
                 'name' => $name3,
                 'cost' => round($cost3, 2),
             ],
             [
                 'name' => $name4,
                 'cost' => round($cost4, 2),
-            ]
+            ]*/
         ];
         //print_r($data);exit;
         return $data;
     }
 
     /**
-     * @brief UK 虚拟仓定价器2(所有国家)
+     * @brief 谷仓定价器
      */
     public function actionUkFic2()
     {
@@ -328,95 +332,80 @@ class TinyToolController extends AdminController
             'num' => $cond['num'] ? $cond['num'] : 1,
             'price' => $cond['price'] ? $cond['price'] : 0,
             'rate' => $cond['rate'] ? $cond['rate'] : 0,
+            'shippingPrice' => isset($cond['shippingPrice']) && $cond['shippingPrice'] ? $cond['shippingPrice'] : 0,
+            'adRate' => isset($cond['adRate']) && $cond['adRate'] ? $cond['adRate'] : 0,
         ];
 
         $data = [
             'detail' => [],
-            'data' => [],
+            'rate' => [],
+            'price' => [],
+            'transport' => [],
         ];
         //获取SKU信息
-        //$sql = "EXEC ibay365_ebay_virtual_store_online_product '{$post['sku']}'";
-        $sql = "SELECT 
-                    r.SKU,r.skuname,r.goodscode,r.Weight,r.CategoryName,r.CreateDate,
-                    CASE WHEN r.costprice<=0 THEN r.goodsPrice ELSE r.costprice END costprice
-                FROM Y_R_tStockingWaring  r
-                LEFT JOIN B_Goods g ON g.goodscode = r.goodscode
-                -- LEFT JOIN B_PackInfo s ON g.packName = s.packName
-                WHERE r.SKU='{$post['sku']}' ";
+        if (strpos($post['sku'], '*') !== false) {
+            $newSku = substr($post['sku'], 0, strpos($post['sku'], '*'));
+            $skuNum = substr($post['sku'], strpos($post['sku'], '*') + 1, count($post['sku']));
+        } else {
+            $newSku = $post['sku'];
+            $skuNum = 1;
+        }
+        $sql = "SELECT aa.SKU,aa.skuname,aa.goodscode,aa.CategoryName,aa.CreateDate,aa.price * " . $skuNum * $post['num'] . " as price,
+                           k.weight*1000*" . $skuNum * $post['num'] . " AS weight,
+                          k.length,k.width,k.height*" . $skuNum * $post['num'] . " as height ," . $skuNum * $post['num'] . " AS num
+                FROM (    
+                    SELECT w.SKU,w.skuname,w.goodscode,w.CategoryName,w.CreateDate,
+                    price = (CASE WHEN w.costprice<=0 THEN w.goodsPrice ELSE w.costprice END)
+                    FROM Y_R_tStockingWaring(nolock) w WHERE storeName='谷仓UK' 
+                ) AS aa
+                LEFT JOIN UK_guCang_weightAndSize(nolock) k ON aa.sku=k.sku
+                WHERE  aa.sku='{$newSku}'";
         $res = Yii::$app->py_db->createCommand($sql)->queryOne();
         if (!$res) return $data;
-
-        $post['num'] = $post['num'] ? $post['num'] : 1;
-        $post['rate'] = $post['rate'] ? $post['rate'] : 0;
-
-        $res['num'] = $post['num'];
-
-        $res['costprice'] = $res['costprice'] * $post['num'];
-        $res['Weight'] = $res['Weight'] * $post['num'];
+//        var_dump($res);exit;
         $data['detail'] = $res;
 
+        $weight = $res['weight'];
+        $height = $res['height'];
+        $length = $res['length'];
+        $width = $res['width'];
+
+        //var_dump($weight);exit;
         //获取物流方式及其报价
-
-        $list = Yii::$app->db->createCommand("SELECT * FROM shipping_countFee ORDER BY country")->queryAll();
+        $list = Yii::$app->db->createCommand("SELECT * FROM shipping_barnFee")->queryAll();
         foreach ($list as $v) {
-            if ($v['weight1'] && $v['wBasic'] && $v['wPrice'] && $v['startWeight'] <= $res['Weight'] && $res['Weight'] < $v['weight1']) {
-                $cost = $v['wBasic'] + $v['wPrice'] * $res['Weight'];
-            } elseif ($v['weight2'] && $v['wBasic1'] && $v['wPrice1'] && $res['Weight'] < $v['weight2']) {
-                $cost = $v['wBasic1'] + $v['wPrice1'] * $res['Weight'];
-            } elseif ($v['weight3'] && $v['wBasic2'] && $v['wPrice2'] && $res['Weight'] < $v['weight3']) {
-                $cost = $v['wBasic2'] + $v['wPrice2'] * $res['Weight'];
-            } else {
-                $cost = 0;
+            if (($v['maxLength'] == 0 || $v['maxLength'] >= $length) &&
+                ($v['maxHeight'] == 0 || $v['maxHeight'] >= $height) &&
+                ($v['maxWidth'] == 0 || $v['maxWidth'] >= $width) &&
+                ($v['longAndWidth'] == 0 || $v['longAndWidth'] >= $width + $length) &&
+                ($v['maxVolume'] == 0 || $v['maxVolume'] >= $width * $height * $length)
+            ) {
+                $item['name'] = $v['shipping'];
+                $item['out'] = $v['deliveryFee'];
+                $item['outRmb'] = round($item['out'] * Yii::$app->params['poundRate'],3);
+                $item['cost'] = $item['costRmb'] = 0;
+                $weightList = json_decode($v['weightFee'], true);
+                foreach ($weightList as $ele) {
+                    if($weight > $ele['min'] && $weight <= $ele['max']){
+                        $item['cost'] = $ele['value'];
+                        $item['costRmb'] = round($ele['value'] * Yii::$app->params['poundRate'],3);
+                        //$item['cost'] = $ele['value'] + $item['out'];
+                        //$item['costRmb'] = $item['shippingRmb'] + $item['outRmb'];
+                    }
+                }
+                $data['transport'][] = $item;
+                //根据售价获取毛利率
+                if ($post['price']) {
+                    $rateItem = ApiUk::getRate($post['price'], $item['cost'], $item['out'], $res['price'], $post['adRate'], $post['shippingPrice']);
+                    $rateItem['name'] = $v['shipping'];
+                    $data['rate'][] = $rateItem;
+                }
+                //根据利润率获取售价
+                $priceItem = ApiUk::getPrice($post['rate'], $item['cost'], $item['out'], $res['price']);
+                $priceItem['name'] = $v['shipping'];
+                $data['price'][] = $priceItem;
             }
-
-            $item = [
-                'country' => $v['country'],
-                'transport' => $v['shipping'],
-                'cost' => $cost,
-                'price1' => $post['price'],
-                'eFee1' => 0,
-                'pFee1' => 0,
-                'profit1' => 0,
-                'profitRmb1' => 0,
-                'rate1' => 0,
-                'price2' => 0,
-                'eFee2' => 0,
-                'pFee2' => 0,
-                'profit2' => 0,
-                'profitRmb2' => 0,
-                'rate2' => $post['rate'],
-            ];
-            $param = [
-                'cost' => $cost,
-                'costprice' => $res['costprice'],
-                'bigPriceBasic' => $v['bigPriceBasic'],
-                'smallPriceBasic' => $v['smallPriceBasic'],
-                'bigPriceRate' => $v['bigPriceRate'],
-                'smallPriceRate' => $v['smallPriceRate'],
-                'ebayRate' => $v['ebayRate'],
-            ];
-            //根据售价获取利润率
-            if ($post['price']) {
-                $param['price'] = $post['price'];
-                $rate = ApiUkFic::getRate($param);
-                $item['eFee1'] = $rate['eFee'];
-                $item['pFee1'] = $rate['pFee'];
-                $item['profit1'] = $rate['profit'];
-                $item['profitRmb1'] = $rate['profitRmb'];
-                $item['rate1'] = $rate['rate'];
-            }
-            //根据利润率获取售价
-            $param['rate'] = $post['rate'];
-            $price = ApiUkFic::getPrice($param);
-            $item['price2'] = $price['price'];
-            $item['eFee2'] = $price['eFee'];
-            $item['pFee2'] = $price['pFee'];
-            $item['profit2'] = $price['profit'];
-            $item['profitRmb2'] = $price['profitRmb'];
-            //print_r($item);exit;
-            $data['data'][] = $item;
         }
-        //print_r($data);exit;
         return $data;
     }
 
@@ -435,6 +424,7 @@ class TinyToolController extends AdminController
             ];
         }
         $post = [
+            'storeName' => $cond['storeName'],
             'sku' => $cond['sku'],
             'num' => isset($cond['num']) && $cond['num'] ? $cond['num'] : 1,
             'price' => isset($cond['price']) && $cond['price'] ? $cond['price'] : 0,
@@ -449,7 +439,7 @@ class TinyToolController extends AdminController
             'transport' => [],
         ];
         //获取SKU信息
-        $res = ApiUk::getDetail($post['sku'], $post['num']);
+        $res = ApiUk::getDetail($post['sku'], $post['num'], $post['storeName']);
         //print_r($res);exit;
         if (!$res) return $data;
 
@@ -1217,6 +1207,33 @@ class TinyToolController extends AdminController
 
     }
 
+    /**
+     * Date: 2020-09-18 11:49
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     * @throws \yii\db\Exception
+     */
+    public function actionSkuImport()
+    {
+        $file = $_FILES['file'];
+        if (!$file) {
+            return ['code' => 400, 'message' => 'The file can not be empty!'];
+        }
+        //判断文件后缀
+        $extension = Handler::get_extension($file['name']);
+        if (!in_array($extension, ['Csv', 'Xls', 'Xlsx'])) return ['code' => 400, 'message' => "File format error,please upload files in the format of Csv, Xls, Xlsx"];
+
+        //文件上传
+        $result = Handler::file($file, 'skuSeller');
+        if (!$result) {
+            return ['code' => 400, 'message' => 'File upload failed'];
+        } else {
+            //获取上传excel文件的内容并保存
+            return ApiTinyTool::saveEbaySkuSellerData($result, $extension);
+        }
+    }
+
     /** 销售员总库存周转
      * Date: 2020-07-14 15:02
      * Author: henry
@@ -1359,8 +1376,8 @@ class TinyToolController extends AdminController
             $condition = Yii::$app->request->post('condition');
             $data = ApiTinyTool::getEbayAdFee($condition);
             $name = 'EbayAdFee';
-            $title = ['账号简称', '商品编码', '广告费率', '广告费(￥)','广告费(原币种)', '交易时间', '描述', 'ItemId',
-                '成交价(原币种)','物流费(原币种)','总成交价(￥)', '物流名称'];
+            $title = ['账号简称', '商品编码', '广告费率', '广告费(￥)', '广告费(原币种)', '交易时间', '描述', 'ItemId',
+                '成交价(原币种)', '物流费(原币种)', '总成交价(￥)', '物流名称'];
             ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
         } catch (Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];

@@ -72,6 +72,7 @@ class TestController extends Controller
 
 
     public function actionTest(){
+        print 111111;
         $sql = "";
     }
 
