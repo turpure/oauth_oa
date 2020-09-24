@@ -1107,7 +1107,7 @@ class ApiGoodsinfo
             # 附件图处理
 
             $extraImages = explode("\n",$ele['附加图']);
-            unset($ele['附件图']);
+            $ele['附加图'] = $extraImages[0] ?? '' ;
             $ele['附加图1'] = $extraImages[1] ?? '' ;
             $ele['附加图2'] = $extraImages[2] ?? '' ;
             $ele['附加图3'] = $extraImages[3] ?? '' ;
