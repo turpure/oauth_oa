@@ -424,6 +424,7 @@ class TinyToolController extends AdminController
             ];
         }
         $post = [
+            'storeName' => $cond['storeName'],
             'sku' => $cond['sku'],
             'num' => isset($cond['num']) && $cond['num'] ? $cond['num'] : 1,
             'price' => isset($cond['price']) && $cond['price'] ? $cond['price'] : 0,
@@ -438,7 +439,7 @@ class TinyToolController extends AdminController
             'transport' => [],
         ];
         //获取SKU信息
-        $res = ApiUk::getDetail($post['sku'], $post['num']);
+        $res = ApiUk::getDetail($post['sku'], $post['num'], $post['storeName']);
         //print_r($res);exit;
         if (!$res) return $data;
 
