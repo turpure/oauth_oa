@@ -75,52 +75,113 @@ class ApiAu
     {
         //获取出库费用
         if ($weight <= Yii::$app->params['w_au_out_1']) {
-            $data['out'] = Yii::$app->params['w_au_out_fee_1'];
+            $out = Yii::$app->params['w_au_out_fee_1'];
         } else if ($weight <= Yii::$app->params['w_au_out_2']) {
-            $data['out'] = Yii::$app->params['w_au_out_fee_2'];
+            $out = Yii::$app->params['w_au_out_fee_2'];
         } else if ($weight <= Yii::$app->params['w_au_out_3']) {
-            $data['out'] = Yii::$app->params['w_au_out_fee_3'];
+            $out = Yii::$app->params['w_au_out_fee_3'];
         } else if ($weight <= Yii::$app->params['w_au_out_4']) {
-            $data['out'] = Yii::$app->params['w_au_out_fee_4'];
+            $out = Yii::$app->params['w_au_out_fee_4'];
         } else {
-            $data['out'] = ceil($weight - Yii::$app->params['w_au_out_4']) * Yii::$app->params['w_au_out_fee_5'];
+            $out = ceil($weight - Yii::$app->params['w_au_out_4']) * Yii::$app->params['w_au_out_fee_5'];
         }
+        $outRmb = $out * Yii::$app->params['auRate'];
 
         //获取运费,超重、超长、超宽、超高取快递方式2 否则取快递方式 1
-        if ($weight > Yii::$app->params['w_au_tran_1_3'] || $length > Yii::$app->params['len_au_tran'] ||
-            $width > Yii::$app->params['wid_au_tran'] || $height > Yii::$app->params['hei_au_tran']) {
-            $data['name'] = Yii::$app->params['transport_au2'];
-            //获取方式2的运费
-            if ($weight <= Yii::$app->params['w_au_tran_2_1']) { //<=500
-                $data['cost'] = Yii::$app->params['w_au_tran_fee_2_1'];
-            } else if ($weight <= Yii::$app->params['w_au_tran_2_2']) {  //<=1000
-                $data['cost'] = Yii::$app->params['w_au_tran_fee_2_2'];
-            } else if ($weight <= Yii::$app->params['w_au_tran_2_3']) { //<=2000
-                $data['cost'] = Yii::$app->params['w_au_tran_fee_2_3'];
-            } else if ($weight <= Yii::$app->params['w_au_tran_2_4']) {//<=3000
-                $data['cost'] = Yii::$app->params['w_au_tran_fee_2_4'];
-            } else if ($weight <= Yii::$app->params['w_au_tran_2_5']) {//<=4000
-                $data['cost'] = Yii::$app->params['w_au_tran_fee_2_5'];
-            } else if ($weight <= Yii::$app->params['w_au_tran_2_6']) {//<=5000
-                $data['cost'] = Yii::$app->params['w_au_tran_fee_2_6'];
-            } else {//>5000
-                $wei = ceil($weight * 1.0 / 1000);
-                $data['cost'] = Yii::$app->params['w_au_tran_fee_base'] + $wei * Yii::$app->params['w_au_tran_fee_per'];
-            }
-        } else {
-            $data['name'] = Yii::$app->params['transport_au1'];
+        $data0 = [];
+        if ($weight <= Yii::$app->params['w_au_tran_1_3'] && $length <= Yii::$app->params['len_au_tran'] &&
+            $width <= Yii::$app->params['wid_au_tran'] && $height <= Yii::$app->params['hei_au_tran']) {
+            $data0['name'] = Yii::$app->params['transport_au1'];
             //获取方式1的运费
             if ($weight <= Yii::$app->params['w_au_tran_1_1']) {
-                $data['cost'] = Yii::$app->params['w_au_tran_fee_1_1'];
+                $data0['cost'] = Yii::$app->params['w_au_tran_fee_1_1'];
             } else if ($weight <= Yii::$app->params['w_au_tran_1_2']) {
-                $data['cost'] = Yii::$app->params['w_au_tran_fee_1_2'];
+                $data0['cost'] = Yii::$app->params['w_au_tran_fee_1_2'];
             } else {
-                $data['cost'] = Yii::$app->params['w_au_tran_fee_1_3'];
+                $data0['cost'] = Yii::$app->params['w_au_tran_fee_1_3'];
             }
+            $data0['out'] = $out;
+            $data0['outRmb'] = $outRmb;
+            $data0['costRmb'] = $data0['cost'] * Yii::$app->params['auRate'];
         }
-        $data['costRmb'] = $data['cost'] * Yii::$app->params['auRate'];
-        $data['outRmb'] = $data['out'] * Yii::$app->params['auRate'];
-        return $data;
+
+        //获取方式2的运费
+        $data1['name'] = Yii::$app->params['transport_au2'];
+        if ($weight <= Yii::$app->params['w_au_tran_2_1']) { //<=500
+            $data1['cost'] = Yii::$app->params['w_au_tran_fee_2_1'];
+        } else if ($weight <= Yii::$app->params['w_au_tran_2_2']) {  //<=1000
+            $data1['cost'] = Yii::$app->params['w_au_tran_fee_2_2'];
+        } else if ($weight <= Yii::$app->params['w_au_tran_2_3']) { //<=2000
+            $data1['cost'] = Yii::$app->params['w_au_tran_fee_2_3'];
+        } else if ($weight <= Yii::$app->params['w_au_tran_2_4']) {//<=3000
+            $data1['cost'] = Yii::$app->params['w_au_tran_fee_2_4'];
+        } else if ($weight <= Yii::$app->params['w_au_tran_2_5']) {//<=4000
+            $data1['cost'] = Yii::$app->params['w_au_tran_fee_2_5'];
+        } else if ($weight <= Yii::$app->params['w_au_tran_2_6']) {//<=5000
+            $data1['cost'] = Yii::$app->params['w_au_tran_fee_2_6'];
+        } else {//>5000
+            $wei = ceil($weight * 1.0 / 1000);
+            $data1['cost'] = Yii::$app->params['w_au_tran_fee_base'] + $wei * Yii::$app->params['w_au_tran_fee_per'];
+        }
+
+        //获取方式3的运费
+        $data2['name'] = Yii::$app->params['transport_au3'];
+        if ($weight <= Yii::$app->params['w_au_tran_3_1']) { //<=500
+            $data2['cost'] = Yii::$app->params['w_au_tran_fee_3_1'];
+        } else if ($weight <= Yii::$app->params['w_au_tran_3_2']) {  //<=1000
+            $data2['cost'] = Yii::$app->params['w_au_tran_fee_3_2'];
+        } else if ($weight <= Yii::$app->params['w_au_tran_3_3']) { //<=2000
+            $data2['cost'] = Yii::$app->params['w_au_tran_fee_3_3'];
+        } else if ($weight <= Yii::$app->params['w_au_tran_3_4']) {//<=3000
+            $data2['cost'] = Yii::$app->params['w_au_tran_fee_3_4'];
+        } else if ($weight <= Yii::$app->params['w_au_tran_3_5']) {//<=4000
+            $data2['cost'] = Yii::$app->params['w_au_tran_fee_3_5'];
+        } else if ($weight <= Yii::$app->params['w_au_tran_3_6']) {//<=5000
+            $data2['cost'] = Yii::$app->params['w_au_tran_fee_3_6'];
+        } else if ($weight <= Yii::$app->params['w_au_tran_3_7']) {//<=7000
+            $data2['cost'] = Yii::$app->params['w_au_tran_fee_3_7'];
+        } else if ($weight <= Yii::$app->params['w_au_tran_3_8']) {//<=10000
+            $data2['cost'] = Yii::$app->params['w_au_tran_fee_3_8'];
+        } else if ($weight <= Yii::$app->params['w_au_tran_3_9']) {//<=15000
+            $data2['cost'] = Yii::$app->params['w_au_tran_fee_3_9'];
+        } else {//>15000
+            $data2['cost'] = Yii::$app->params['w_au_tran_fee_3_10'];
+        }
+
+        //获取方式4的运费
+        $data3['name'] = Yii::$app->params['transport_au4'];
+        if ($weight <= Yii::$app->params['w_au_tran_4_1']) { //<=500
+            $data3['cost'] = Yii::$app->params['w_au_tran_fee_4_1'];
+        } else if ($weight <= Yii::$app->params['w_au_tran_4_2']) {  //<=1000
+            $data3['cost'] = Yii::$app->params['w_au_tran_fee_4_2'];
+        } else if ($weight <= Yii::$app->params['w_au_tran_4_3']) { //<=2000
+            $data3['cost'] = Yii::$app->params['w_au_tran_fee_4_3'];
+        } else if ($weight <= Yii::$app->params['w_au_tran_4_4']) {//<=3000
+            $data3['cost'] = Yii::$app->params['w_au_tran_fee_4_4'];
+        } else if ($weight <= Yii::$app->params['w_au_tran_4_5']) {//<=4000
+            $data3['cost'] = Yii::$app->params['w_au_tran_fee_4_5'];
+        } else if ($weight <= Yii::$app->params['w_au_tran_4_6']) {//<=5000
+            $data3['cost'] = Yii::$app->params['w_au_tran_fee_4_6'];
+        } else if ($weight <= Yii::$app->params['w_au_tran_4_7']) {//<=7000
+            $data3['cost'] = Yii::$app->params['w_au_tran_fee_4_7'];
+        } else if ($weight <= Yii::$app->params['w_au_tran_4_8']) {//<=10000
+            $data3['cost'] = Yii::$app->params['w_au_tran_fee_4_8'];
+        } else if ($weight <= Yii::$app->params['w_au_tran_4_9']) {//<=15000
+            $data3['cost'] = Yii::$app->params['w_au_tran_fee_4_9'];
+        } else {//>15000
+            $data3['cost'] = Yii::$app->params['w_au_tran_fee_4_10'];
+        }
+
+        $data1['out'] = $data2['out'] = $data3['out'] = $out;
+        $data1['outRmb'] = $data2['outRmb'] = $data2['outRmb'] = $outRmb;
+
+        $data1['costRmb'] = $data1['cost'] * Yii::$app->params['auRate'];
+        $data2['costRmb'] = $data1['cost'] * Yii::$app->params['auRate'];
+        $data3['costRmb'] = $data1['cost'] * Yii::$app->params['auRate'];
+
+        $res = $data0 ? [$data0, $data1, $data2, $data3] : [$data1, $data2, $data3];
+
+        return $res;
     }
 
 

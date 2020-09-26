@@ -498,7 +498,6 @@ class TinyToolController extends AdminController
             'transport' => [],
         ];
         //获取SKU信息
-        //获取SKU信息
         $res = ApiAu::getDetail($post['sku'], $post['num']);
         if (!$res) return $data;
 
@@ -515,13 +514,19 @@ class TinyToolController extends AdminController
 
         //获取运费和出库费
         $data['transport'] = ApiAu::getTransport($res['weight'], $res['length'], $res['width'], $res['height']);
-
-        //根据售价获取利润率
-        if ($post['price']) {
-            $data['rate'] = ApiAu::getRate($post['price'], $data['transport']['cost'], $data['transport']['out'], $res['price']);
+//        var_dump($data['transport']);exit;
+        foreach ($data['transport'] as $v) {
+            //根据售价获取利润率
+            if ($post['price']) {
+                $rateItem = ApiAu::getRate($post['price'], $v['cost'], $v['out'], $res['price']);
+                $rateItem['name'] = $v['name'];
+                $data['rate'][] = $rateItem;
+            }
+            //根据利润率获取售价
+            $priceItem = ApiAu::getPrice($post['rate'], $v['cost'], $v['out'], $res['price']);
+            $priceItem['name'] = $v['name'];
+            $data['price'][] = $priceItem;
         }
-        //根据利润率获取售价
-        $data['price'] = ApiAu::getPrice($post['rate'], $data['transport']['cost'], $data['transport']['out'], $res['price']);
 
         //print_r($data);exit;
         return $data;
