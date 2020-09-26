@@ -1160,21 +1160,21 @@ class ApiGoodsinfo
             $ele['重量'] = max(round($ele['重量'] / 1000, 2), 0.02);
 
             # 附件图处理
+            $extraImages = explode("\n",$ele['附加图']);
 
-            $extraImages = explode("\n", $ele['附加图']);
-            unset($ele['附件图']);
-            $ele['附加图1'] = $extraImages[1] ?? '';
-            $ele['附加图2'] = $extraImages[2] ?? '';
-            $ele['附加图3'] = $extraImages[3] ?? '';
-            $ele['附加图4'] = $extraImages[4] ?? '';
-            $ele['附加图5'] = $extraImages[5] ?? '';
-            $ele['附加图6'] = $extraImages[6] ?? '';
-            $ele['附加图7'] = $extraImages[7] ?? '';
-            $ele['附加图8'] = $extraImages[8] ?? '';
-            $ele['附加图9'] = $extraImages[9] ?? '';
-            $ele['附加图10'] = $extraImages[10] ?? '';
-            $ele['附加图11'] = $extraImages[11] ?? '';
-            $ele['附加图12'] = $extraImages[12] ?? '';
+            $ele['附加图'] = $extraImages[0] ?? '' ;
+            $ele['附加图1'] = $extraImages[1] ?? '' ;
+            $ele['附加图2'] = $extraImages[2] ?? '' ;
+            $ele['附加图3'] = $extraImages[3] ?? '' ;
+            $ele['附加图4'] = $extraImages[4] ?? '' ;
+            $ele['附加图5'] = $extraImages[5] ?? '' ;
+            $ele['附加图6'] = $extraImages[6] ?? '' ;
+            $ele['附加图7'] = $extraImages[7] ?? '' ;
+            $ele['附加图8'] = $extraImages[8] ?? '' ;
+            $ele['附加图9'] = $extraImages[9] ?? '' ;
+            $ele['附加图10'] = $extraImages[10] ?? '' ;
+            $ele['附加图11'] = $extraImages[11] ?? '' ;
+            $ele['附加图12'] = $extraImages[12] ?? '' ;
 
             # Package
             $ele['Package'] = '1 X ' . json_decode($ele['必须关键词'])[0];
