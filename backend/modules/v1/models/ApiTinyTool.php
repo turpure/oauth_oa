@@ -1199,7 +1199,13 @@ class ApiTinyTool
         $sql = "SELECT m.nid,totalWeight FROM P_Trade (nolock) m
                 LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
                 LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
-                WHERE FilterFlag IN (5,6) AND e.name LIKE '%万邑通%' AND l.name LIKE 'Hermes%' ";
+                WHERE FilterFlag IN (5,6) AND e.name LIKE '%万邑通%' AND l.name LIKE 'Hermes%' 
+                union all 
+                SELECT m.nid,totalWeight FROM P_TradeUn (nolock) m
+                LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
+                LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
+                WHERE FilterFlag = 1 AND e.name LIKE '%万邑通%' AND l.name LIKE 'Hermes%' 
+                ";
 
         foreach ($doc as $k => $ele) {
             if ($k == 0) {
