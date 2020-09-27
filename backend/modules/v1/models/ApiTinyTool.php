@@ -1205,7 +1205,8 @@ class ApiTinyTool
                 SELECT m.nid,totalWeight,'stock' as type FROM P_TradeUn (nolock) m
                 LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
                 LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
-                WHERE FilterFlag = 1 AND e.name LIKE '%万邑通%' AND l.name LIKE 'UKMA-Hermes%' 
+                WHERE FilterFlag = 1 AND e.name LIKE '%万邑通%' 
+                AND l.name IN ('UKMA-Hermes - UK Standard 48', 'UKMA-Hermes - Standard 48 Claim') 
                 --  and m.nid=22928338
                 ";
 
