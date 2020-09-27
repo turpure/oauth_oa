@@ -1206,7 +1206,7 @@ class ApiTinyTool
                 LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
                 LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
                 WHERE FilterFlag = 1 AND e.name LIKE '%万邑通%' AND l.name LIKE 'UKMA-Hermes%' 
-                and m.nid=22928338
+                --  and m.nid=22928338
                 ";
 
         foreach ($doc as $k => $ele) {
