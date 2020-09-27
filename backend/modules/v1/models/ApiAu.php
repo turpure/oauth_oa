@@ -173,11 +173,11 @@ class ApiAu
         }
 
         $data1['out'] = $data2['out'] = $data3['out'] = $out;
-        $data1['outRmb'] = $data2['outRmb'] = $data2['outRmb'] = $outRmb;
+        $data1['outRmb'] = $data2['outRmb'] = $data3['outRmb'] = $outRmb;
 
         $data1['costRmb'] = $data1['cost'] * Yii::$app->params['auRate'];
-        $data2['costRmb'] = $data1['cost'] * Yii::$app->params['auRate'];
-        $data3['costRmb'] = $data1['cost'] * Yii::$app->params['auRate'];
+        $data2['costRmb'] = $data2['cost'] * Yii::$app->params['auRate'];
+        $data3['costRmb'] = $data3['cost'] * Yii::$app->params['auRate'];
 
         $res = $data0 ? [$data0, $data1, $data2, $data3] : [$data1, $data2, $data3];
 
