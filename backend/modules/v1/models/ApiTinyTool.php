@@ -1201,7 +1201,7 @@ class ApiTinyTool
         $sql = "SELECT m.nid,totalWeight,'normal' as type FROM P_Trade (nolock) m
                 LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
                 LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
-                WHERE FilterFlag IN (5,6) AND e.name LIKE '%万邑通%' AND l.name LIKE 'Hermes%' 
+                WHERE FilterFlag IN (5,6) AND e.name LIKE '%万邑通%' AND l.name LIKE 'UKLE-Hermes%' 
                 ";
         //过滤偏远地区
         foreach ($doc as $k => $ele) {
