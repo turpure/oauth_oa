@@ -1197,19 +1197,13 @@ class ApiTinyTool
         $id = Yii::$app->py_db->createCommand("select nid from B_LogisticWay WHERE name LIKE 'Royal Mail - Tracked 48 Parcel%'")->queryScalar();
         $maId = Yii::$app->py_db->createCommand("select nid from B_LogisticWay WHERE name LIKE 'UKMA-Royal Mail - Tracked 48 Parcel%'")->queryScalar();
 
+        //正常单 偏远地区修改物流方式
         $sql = "SELECT m.nid,totalWeight,'normal' as type FROM P_Trade (nolock) m
                 LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
                 LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
                 WHERE FilterFlag IN (5,6) AND e.name LIKE '%万邑通%' AND l.name LIKE 'Hermes%' 
-                union all 
-                SELECT m.nid,totalWeight,'stock' as type FROM P_TradeUn (nolock) m
-                LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
-                LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
-                WHERE FilterFlag = 1 AND e.name LIKE '%万邑通%' 
-                AND l.name IN ('UKMA-Hermes - UK Standard 48', 'UKMA-Hermes - Standard 48 Claim') 
-                --  and m.nid=22928338
                 ";
-
+        //过滤偏远地区
         foreach ($doc as $k => $ele) {
             if ($k == 0) {
                 $sql .= " AND (SHIPTOZIP LIKE '{$ele['zipCode']}%'";
@@ -1220,6 +1214,26 @@ class ApiTinyTool
                 $sql .= ")";
             }
         }
+        //缺货单 偏远地区修改物流方式
+        $sql .= " union all 
+                SELECT m.nid,totalWeight,'stock' as type FROM P_TradeUn (nolock) m
+                LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
+                LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
+                WHERE FilterFlag = 1 AND e.name LIKE '%万邑通%' 
+                AND l.name IN ('UKMA-Hermes - UK Standard 48', 'UKMA-Hermes - Standard 48 Claim') 
+                ";
+        //过滤偏远地区
+        foreach ($doc as $k => $ele) {
+            if ($k == 0) {
+                $sql .= " AND (SHIPTOZIP LIKE '{$ele['zipCode']}%'";
+            } else {
+                $sql .= " OR SHIPTOZIP LIKE '{$ele['zipCode']}%'";
+            }
+            if ($k == count($doc) - 1) {
+                $sql .= ")";
+            }
+        }
+        //var_dump($sql);exit;
         $transaction = BGoods::getDb()->beginTransaction();
         try {
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
