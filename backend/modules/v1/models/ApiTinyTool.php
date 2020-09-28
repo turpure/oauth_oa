@@ -1194,11 +1194,11 @@ class ApiTinyTool
     {
         $username = Yii::$app->user->identity->username;
         $doc = Yii::$app->db->createCommand('select * from cache_order_zip_code')->queryAll();
-        $id = Yii::$app->py_db->createCommand("select nid from B_LogisticWay WHERE name LIKE 'Royal Mail - Tracked 48 Parcel%'")->queryScalar();
+        $id = Yii::$app->py_db->createCommand("select nid from B_LogisticWay WHERE name LIKE 'UKLE-Royal Mail - Tracked 48 Parcel%'")->queryScalar();
         $maId = Yii::$app->py_db->createCommand("select nid from B_LogisticWay WHERE name LIKE 'UKMA-Royal Mail - Tracked 48 Parcel%'")->queryScalar();
 
         //正常单 偏远地区修改物流方式
-        $sql = "SELECT m.nid,totalWeight,'normal' as type FROM P_Trade (nolock) m
+        $sql = "SELECT m.nid,totalWeight,l.name,'normal' as type FROM P_Trade (nolock) m
                 LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
                 LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
                 WHERE FilterFlag IN (5,6) AND e.name LIKE '%万邑通%' AND l.name LIKE 'UKLE-Hermes%' 
@@ -1216,7 +1216,7 @@ class ApiTinyTool
         }
         //缺货单 偏远地区修改物流方式
         $sql .= " union all 
-                SELECT m.nid,totalWeight,'stock' as type FROM P_TradeUn (nolock) m
+                SELECT m.nid,totalWeight,l.name,'stock' as type FROM P_TradeUn (nolock) m
                 LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
                 LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
                 WHERE FilterFlag = 1 AND e.name LIKE '%万邑通%' 
@@ -1238,21 +1238,23 @@ class ApiTinyTool
         try {
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             foreach ($data as $v) {
-                $shipFee = self::getOrderShipFee($v, $id);
                 if($v['type'] == 'normal'){
                     $table = 'p_trade';
                     $logicsWayNID = $id;
-                    $logicsWay = 'Royal Mail - Tracked 48 Parcel';
+                    $logicsWay = 'UKLE-Royal Mail - Tracked 48 Parcel';
+                    $shipFee = self::getOrderShipFee($v, $id);
                 }else{
                     $table = 'p_tradeUn';
                     $logicsWayNID = $maId;
                     $logicsWay = 'UKMA-Royal Mail - Tracked 48 Parcel';
+                    $shipFee = self::getOrderShipFee($v, $maId);
                 }
                 $res = Yii::$app->py_db->createCommand()->update($table, ['logicsWayNID' => $logicsWayNID,'ExpressFare' => $shipFee], ['NID' => $v['nid']])->execute();
                 if (!$res) {
                     throw new Exception('Failed to update logics way of order ' . $v['nid']);
                 }
-                $logs = $username . '  ' . date('Y-m-d H:i:s') . ' 手动更改物流方式为 ' . $logicsWay;
+                $logs = $username . '  ' . date('Y-m-d H:i:s') . ' 物流方式 ' . $v['name'] . ' 手动更改为 ' . $logicsWay;
+                var_dump($v['nid']);
                 Yii::$app->py_db->createCommand()->insert('P_TradeLogs', [
                     'TradeNID' => $v['nid'],
                     'Operator' => $username,
