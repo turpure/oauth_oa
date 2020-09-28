@@ -1254,7 +1254,6 @@ class ApiTinyTool
                     throw new Exception('Failed to update logics way of order ' . $v['nid']);
                 }
                 $logs = $username . '  ' . date('Y-m-d H:i:s') . ' 物流方式 ' . $v['name'] . ' 手动更改为 ' . $logicsWay;
-                var_dump($v['nid']);
                 Yii::$app->py_db->createCommand()->insert('P_TradeLogs', [
                     'TradeNID' => $v['nid'],
                     'Operator' => $username,
