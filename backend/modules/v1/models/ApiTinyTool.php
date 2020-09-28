@@ -1198,10 +1198,13 @@ class ApiTinyTool
         $maId = Yii::$app->py_db->createCommand("select nid from B_LogisticWay WHERE name LIKE 'UKMA-Royal Mail - Tracked 48 Parcel%'")->queryScalar();
 
         //正常单 偏远地区修改物流方式
-        $sql = "SELECT m.nid,totalWeight,l.name,'normal' as type FROM P_Trade (nolock) m
+        $sql = "SELECT m.nid,totalWeight,l.name,'normal' AS type ,SUBSTRING(l.name,1,4) AS method
+                FROM P_Trade (nolock) m
                 LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
                 LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
-                WHERE FilterFlag IN (5,6) AND e.name LIKE '%万邑通%' AND l.name LIKE 'UKLE-Hermes%' 
+                WHERE FilterFlag IN (5,6) AND e.name LIKE '%万邑通%' AND 
+                l.name IN ('UKMA-Hermes - UK Standard 48', 'UKMA-Hermes - Standard 48 Claim',
+                        'UKLE-Hermes - UK Standard 48', 'UKLE-Hermes - Standard 48 Claim') -- and m.nid=22937671 
                 ";
         //过滤偏远地区
         foreach ($doc as $k => $ele) {
@@ -1216,11 +1219,13 @@ class ApiTinyTool
         }
         //缺货单 偏远地区修改物流方式
         $sql .= " union all 
-                SELECT m.nid,totalWeight,l.name,'stock' as type FROM P_TradeUn (nolock) m
+                SELECT m.nid,totalWeight,l.name,'stock' as type,SUBSTRING(l.name,1,4) AS method 
+                FROM P_TradeUn (nolock) m
                 LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
                 LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
                 WHERE FilterFlag = 1 AND e.name LIKE '%万邑通%' 
-                AND l.name IN ('UKMA-Hermes - UK Standard 48', 'UKMA-Hermes - Standard 48 Claim') 
+                AND l.name IN ('UKMA-Hermes - UK Standard 48', 'UKMA-Hermes - Standard 48 Claim', 
+                        'UKLE-Hermes - UK Standard 48', 'UKLE-Hermes - Standard 48 Claim')
                 ";
         //过滤偏远地区
         foreach ($doc as $k => $ele) {
@@ -1234,17 +1239,17 @@ class ApiTinyTool
             }
         }
         //var_dump($sql);exit;
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        //var_dump($data);exit;
         $transaction = BGoods::getDb()->beginTransaction();
         try {
-            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             foreach ($data as $v) {
-                if($v['type'] == 'normal'){
-                    $table = 'p_trade';
+                $table = $v['type'] == 'normal' ? 'p_trade' : 'p_tradeUn';
+                if($v['method'] == 'UKLE'){
                     $logicsWayNID = $id;
                     $logicsWay = 'UKLE-Royal Mail - Tracked 48 Parcel';
                     $shipFee = self::getOrderShipFee($v, $id);
                 }else{
-                    $table = 'p_tradeUn';
                     $logicsWayNID = $maId;
                     $logicsWay = 'UKMA-Royal Mail - Tracked 48 Parcel';
                     $shipFee = self::getOrderShipFee($v, $maId);
