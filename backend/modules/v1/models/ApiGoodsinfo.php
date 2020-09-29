@@ -1121,9 +1121,9 @@ class ApiGoodsinfo
             "'' as 'SG售价'," .
             "'' as 'MY售价'," .
             "'' as 'ID售价'," .
-            "'' as 'PH售价'" .
+            "'' as 'PH售价'," .
             "'' as 'TH售价'," .
-            "'' as 'VN售价'," .
+            "'' as 'VN售价'" .
             'from oa_goods as og LEFT JOIN oa_goodsinfo as ogi on og.nid= ogi.goodsId ' .
             'LEFT JOIN oa_goodssku as ogs on ogs.infoId = ogi.id ' .
             'LEFT JOIN oa_wishGoods as owg on owg.infoId = ogi.id ' .
