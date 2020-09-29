@@ -1112,18 +1112,18 @@ class ApiGoodsinfo
             " owg.headKeywords as '头部关键词', owg.requiredKeywords as '必须关键词', " .
             "owg.randomKeywords '随机关键词', owg.tailKeywords '尾部关键词'," .
             "hopeCost '成本价',ows.weight '重量',packName '包装规格',ogi.description '描述'," .
-            "'' as 'VN原价'," .
-            "'' as 'VN售价'," .
-            "'' as 'ID原价'," .
-            "'' as 'ID售价'," .
             "'' as 'SG原价'," .
-            "'' as 'SG售价'," .
             "'' as 'MY原价'," .
-            "'' as 'MY售价'," .
-            "'' as 'TH原价'," .
-            "'' as 'TH售价'," .
+            "'' as 'ID原价'," .
             "'' as 'PH原价'," .
-            "'' as 'PH售价'" .
+            "'' as 'TH原价'," .
+            "'' as 'VN原价'," .
+            "'' as 'SG售价'," .
+            "'' as 'MY售价'," .
+            "'' as 'ID售价'," .
+            "'' as 'PH售价'," .
+            "'' as 'TH售价'," .
+            "'' as 'VN售价'" .
             'from oa_goods as og LEFT JOIN oa_goodsinfo as ogi on og.nid= ogi.goodsId ' .
             'LEFT JOIN oa_goodssku as ogs on ogs.infoId = ogi.id ' .
             'LEFT JOIN oa_wishGoods as owg on owg.infoId = ogi.id ' .
