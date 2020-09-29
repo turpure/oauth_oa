@@ -441,7 +441,7 @@ class TinyToolController extends AdminController
         //获取SKU信息
         $res = ApiUk::getDetail($post['sku'], $post['num'], $post['storeName']);
         //print_r($res);exit;
-        if (!$res) return $data;
+        if (!$res || !$res[0]) return $data;
 
 
         $data['detail'] = $res;
