@@ -1568,7 +1568,14 @@ class ApiGoodsinfo
             }
             if (count($wishSku) > 1) $goodsInfo['isVar'] = '是'; // 2020-06-02 添加（单平台添加多属性）
             $variantInfo = static::getWishVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
-            $row['sku'] = $wishInfo['sku'] . $account['suffix'];
+
+            if ($goodsInfo['isVar'] === '是') {
+                $row['sku'] = $wishInfo['sku'] . $account['suffix'];
+            }
+
+            else {
+                $row['sku'] = $wishSku[0]['sku'] . $account['suffix'];
+            }
             $row['selleruserid'] = $account['ibaySuffix'];
             $row['name'] = $title;
             $row['inventory'] = $wishInfo['inventory'];
@@ -2445,7 +2452,6 @@ class ApiGoodsinfo
             $row['Bold'] = '';
             $row['PrivateListing'] = '';
             $row['HitCounter'] = 'NoHitCounter';
-            $row['sku'] = $ebayInfo['sku'] . $ebayAccount['nameCode'];
             $row['PictureURL'] = static::getEbayPicture($goodsInfo, $ebayInfo, $account);
             $row['Title'] = $title;
             $row['SubTitle'] = $ebayInfo['subTitle'];
@@ -2500,8 +2506,15 @@ class ApiGoodsinfo
             $row['IBayEffectType'] = '1';
             $row['IbayEffectImg'] = static::getEbayPicture($goodsInfo, $ebayInfo, $account);
             $row['IbayCrossSelling'] = '';
-            //var_dump($ebayInfo);exit;
             if (count($ebayInfo['oaEbayGoodsSku']) > 1) $goodsInfo['isVar'] = '是'; // 2020-06-02 添加（单平台添加多属性）
+
+            if ($goodsInfo['isVar'] === '是') {
+                $row['sku'] = $ebayInfo['sku'] . $ebayAccount['nameCode'];
+            }
+
+            else {
+                $row['sku'] = $ebayInfo['oaEbayGoodsSku'][0]['sku'] . $ebayAccount['nameCode'];
+            }
             $row['Variation'] = static::getEbayVariation($goodsInfo['isVar'], $ebayInfo, $ebayAccount['nameCode']);
             $row['outofstockcontrol'] = '0';
             $row['EPID'] = 'Does not apply';
@@ -2933,7 +2946,6 @@ class ApiGoodsinfo
             }
             $variant = json_encode($variation);
             $ret = [];
-//            var_dump($variant);exit;
             if ($isVar === '是') {
                 $ret['variant'] = $variant;
 
