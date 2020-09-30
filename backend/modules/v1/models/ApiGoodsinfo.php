@@ -2799,19 +2799,20 @@ class ApiGoodsinfo
             if (strpos($goodsInfo['completeStatus'], 'aliexpress') === false) {
                 return [
                     'code' => 400,
-                    'msg' => '商品 ' . $goodsInfo['goodsCode'] . " 没有完善Aliexpress模板，加入导出队列失败! \n"
+                    'message' => '商品 ' . $goodsInfo['goodsCode'] . " 没有完善Aliexpress模板，加入导出队列失败! \n"
                 ];
             }
         }
-
         foreach ($ids as $id) {
+            $goodsInfo = OaGoodsinfo::findOne(['id' => $id]);
             $model = OaSmtGoods::findOne(['infoId' => $id]);
+//            var_dump($model);exit;
             foreach ($suffixList as $suffix) {
                 $sql = "select * from proCenter.oa_smtImportToIbayLog where ibaySuffix=:suffix and sku=:sku and status1=0 and status2=0";
-                $logQ = Yii::$app->db->createCommand($sql)->bindValues([':suffix' => $suffix, ':sku' => $model['sku']])->queryOne();
+                $logQ = Yii::$app->db->createCommand($sql)->bindValues([':suffix' => $suffix, ':sku' => $goodsInfo['goodsCode']])->queryOne();
                 $list = [
                     'ibaySuffix' => $suffix,
-                    'sku' => $model['sku'],
+                    'sku' => $goodsInfo['goodsCode'],
                     'creator' => $username,
                     'createDate' => date('Y-m-d H:i:s')
                 ];
@@ -2820,7 +2821,7 @@ class ApiGoodsinfo
                 } else {
                     Yii::$app->db->createCommand()->update('proCenter.oa_smtImportToIbayLog',
                         ['creator' => $username, 'createDate' => date('Y-m-d H:i:s')],
-                        ['ibaySuffix' => $suffix, 'sku' => $model['sku'], 'status1' => 0, 'status2' => 0])->execute();
+                        ['ibaySuffix' => $suffix, 'sku' => $goodsInfo['goodsCode'], 'status1' => 0, 'status2' => 0])->execute();
                 }
             }
         }
