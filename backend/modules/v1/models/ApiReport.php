@@ -843,7 +843,7 @@ class ApiReport
         $sql = '';
 
         //按订单汇总退款
-        if ($condition['type'] === 'order') {
+        if ($condition['type'] === 'wishOrder') {
             $sql = "SELECT rd.*,u.username AS salesman 
                 FROM (
                     SELECT MAX(refMonth) AS refMonth, MAX(dateDelta) as dateDelta, MAX(suffix) AS suffix,MAX(goodsName) AS goodsName,MAX(goodsCode) AS goodsCode,
@@ -862,24 +862,6 @@ class ApiReport
                 $sql .= ' AND suffix IN (' . $condition['suffix'] . ') ';
             }
             $sql .= ' ORDER BY refund DESC,goodsSku ASC;';
-        }
-
-        //按SKU汇总退款
-        if ($condition['type'] === 'goods') {
-            $sql = 'SELECT rd.*,' . "u.username AS salesman 
-                FROM (
-                    SELECT suffix,goodsName,goodsCode,goodsSku,count(id) as times 
-                    FROM `cache_refund_details_wish` 
-                    WHERE refundTime between '{$condition['beginDate']}' AND DATE_ADD('{$condition['endDate']}', INTERVAL 1 DAY)
-                    GROUP BY suffix,goodsName,goodsCode,goodsSKu
-                ) rd 
-                LEFT JOIN auth_store s ON s.store=rd.suffix
-                LEFT JOIN auth_store_child sc ON sc.store_id=s.id
-                LEFT JOIN user u ON sc.user_id=u.id WHERE u.status=10 ";
-            if ($condition['suffix']) {
-                $sql .= 'AND suffix IN (' . $condition['suffix'] . ') ';
-            }
-            $sql .= 'ORDER BY times DESC,goodsSku ASC';
         }
 
         $con = Yii::$app->db;

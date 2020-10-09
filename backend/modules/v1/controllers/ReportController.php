@@ -763,6 +763,16 @@ class ReportController extends AdminController
                     'orderCountry', 'platform', 'expressWay'];
                 $data = $this->actionRefund()['provider']->getModels();
                 break;
+            case 'wishOrder':
+                $fileName = 'wishRefundOrderData';
+                $title = ['退款月份', '账号简称', '销售员', '商品名称', '商品编码', 'SKU',
+                    '交易单号', '店铺单号', '合并单号', '仓库', '退款金额(原始币种)', '货币符号', '退款时间', '交易时间',
+                    '国家', '平台', '物流方式',];
+                $headers = ['refMonth', 'suffix', 'salesman', 'goodsName', 'goodsCode', 'goodsSku',
+                    'tradeId', 'orderId', 'mergeBillId', 'storeName', 'refund', 'currencyCode', 'refundTime', 'orderTime',
+                    'orderCountry', 'platform', 'expressWay'];
+                $data = $this->actionWishRefund()['provider']->getModels();
+                break;
             case 'goods'://退款产品明细下载
                 $fileName = 'refundGoodsData';
                 $title = ['账号简称', '销售员', '商品名称', '商品编码', 'SKU', '退款次数'];
