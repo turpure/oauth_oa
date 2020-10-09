@@ -869,7 +869,7 @@ class ApiReport
             $sql = 'SELECT rd.*,' . "u.username AS salesman 
                 FROM (
                     SELECT suffix,goodsName,goodsCode,goodsSku,count(id) as times 
-                    FROM `cache_refund_details` 
+                    FROM `cache_refund_details_wish` 
                     WHERE refundTime between '{$condition['beginDate']}' AND DATE_ADD('{$condition['endDate']}', INTERVAL 1 DAY)
                     GROUP BY suffix,goodsName,goodsCode,goodsSKu
                 ) rd 
