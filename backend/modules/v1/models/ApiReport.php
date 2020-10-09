@@ -844,7 +844,7 @@ class ApiReport
 
         //按订单汇总退款
         if ($condition['type'] === 'order') {
-            $sql = 'SELECT rd.*,refund*' . $rate . " AS refundZn,u.username AS salesman 
+            $sql = "SELECT rd.*,u.username AS salesman 
                 FROM (
                     SELECT MAX(refMonth) AS refMonth, MAX(dateDelta) as dateDelta, MAX(suffix) AS suffix,MAX(goodsName) AS goodsName,MAX(goodsCode) AS goodsCode,
 				    MAX(goodsSku) AS goodsSku, MAX(tradeId) AS tradeId,orderId,mergeBillId,MAX(storeName) AS storeName,
