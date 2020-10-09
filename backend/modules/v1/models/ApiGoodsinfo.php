@@ -1520,7 +1520,7 @@ class ApiGoodsinfo
         $images = explode("\n", $images);
         $imagesLinks = '';
         foreach ($images as $ig) {
-            $imagesLinks .= '<p><img src=" ' . $ig . '" /></p>';
+            $imagesLinks .= '<p><img src="'.'"' . $ig . '"' . '"'. '/></p>';
         }
 
         $description = '"<p>&nbsp' . $description . '</p>' . $imagesLinks . '"';
