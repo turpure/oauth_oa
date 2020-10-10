@@ -1387,6 +1387,7 @@ class ApiGoodsinfo
             }
         }
 
+        $i = max($i, 0);
         $bestExpress = $expressInfo[$i];
 
         $expressFee = $bestExpress['BeginMoneyGoods'] + ceil(($totalWeight - $bestExpress['BeginWeight']) / $bestExpress['AddWeight']) * $bestExpress['AddMoney'];
