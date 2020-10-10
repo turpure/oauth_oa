@@ -1091,7 +1091,7 @@ class ApiGoodsinfo
             'VN' => ['site' => '越南', 'exchange' => '0.0003', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 23300],
         ];
         $ids = implode(',', $ids);
-        $sql = "selecta og.createDate as '开发日期',cate as '一级类目',subCate as '二级类目', goodsCode as '商品编码', goodsStatus as '商品状态'," .
+        $sql = "select og.createDate as '开发日期',cate as '一级类目',subCate as '二级类目', goodsCode as '商品编码', goodsStatus as '商品状态'," .
             "goodsName as '商品名称'," .
             "ogs.sku as 'SKU'," .
             "(select sku from oa_goodssku  where infoId= ogs.infoId limit 1) as '关联SKU', " .
