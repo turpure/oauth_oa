@@ -347,60 +347,58 @@ class ApiSettings
     }
 
 
-	 public static function saveIntegralData($file, $fileName, $fileSize){
-		$reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+    public static function saveIntegralData($file, $fileName, $fileSize)
+    {
+        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
         //$reader->setLoadSheetsOnly(["Sheet 1"]);
         $spreadsheet = $reader->load(Yii::$app->basePath . $file);
         $sheet = $spreadsheet->getSheet(0);
         $highestRow = $sheet->getHighestRow(); // 取得总行数
-		$errorUser = '';
+        $errorUser = '';
         try {
             for ($i = 2; $i <= $highestRow; $i++) {
-				$data['name'] = $sheet->getCell("A" . $i)->getValue();
-				$data['month'] = $sheet->getCell("B" . $i)->getValue();
-				$data['group'] = $sheet->getCell("C" . $i)->getValue();
-				$data['job'] = $sheet->getCell("D" . $i)->getValue();
-				$data['team'] = $sheet->getCell("E" . $i)->getValue();
-                $data['all_days'] = $sheet->getCell("F" . $i)->getValue()?:0;
-                $data['labeling_days'] = $sheet->getCell("G" . $i)->getValue()?:0;
-                $data['sorting_days'] = $sheet->getCell("H" . $i)->getValue()?:0;
-                $data['inbound_sorting_days'] = $sheet->getCell("I" . $i)->getValue()?:0;
-                $data['other_integral'] = $sheet->getCell("J" . $i)->getValue()?:0;
-                $data['deduction_integral'] = $sheet->getCell("K" . $i)->getValue()?:0;
-				//print_r($data['name']);exit;
-				if (!$data['name']) break;//取到数据为空时跳出循环
-				//设置贴标出勤天数时，必须设置所属贴标小组
-				if ( $data['labeling_days'] && !$data['team']) {
-					return [
-						'code' => 400,
-						'message' => 'Attribute team cannot be empty when attribute labeling_days have value'
-					];
-				}
+                $data['name'] = $sheet->getCell("A" . $i)->getValue();
+                $data['month'] = $sheet->getCell("B" . $i)->getValue();
+                $data['group'] = $sheet->getCell("C" . $i)->getValue();
+                $data['job'] = $sheet->getCell("D" . $i)->getValue();
+                $data['team'] = $sheet->getCell("E" . $i)->getValue();
+                $data['all_days'] = $sheet->getCell("F" . $i)->getValue() ?: 0;
+                $data['labeling_days'] = $sheet->getCell("G" . $i)->getValue() ?: 0;
+                $data['sorting_days'] = $sheet->getCell("H" . $i)->getValue() ?: 0;
+                $data['inbound_sorting_days'] = $sheet->getCell("I" . $i)->getValue() ?: 0;
+                $data['other_integral'] = $sheet->getCell("J" . $i)->getValue() ?: 0;
+                $data['deduction_integral'] = $sheet->getCell("K" . $i)->getValue() ?: 0;
+                //print_r($data['name']);exit;
+                if (!$data['name']) break;//取到数据为空时跳出循环
+                //设置贴标出勤天数时，必须设置所属贴标小组
+                if ($data['labeling_days'] && !$data['team']) {
+                    return [
+                        'code' => 400,
+                        'message' => 'Attribute team cannot be empty when attribute labeling_days have value'
+                    ];
+                }
 
-				$user_sql = "select * from warehouse_user_info WHERE name='{$data['name']}'";
-				$user = Yii::$app->db->createCommand($user_sql)->queryOne();
-				$sql_select = "select * from warehouse_intergral_other_data_every_month WHERE name='{$data['name']}' AND `month`='{$data['month']}'";
-				$res = Yii::$app->db->createCommand($sql_select)->queryOne();
+                //$user_sql = "select * from warehouse_user_info WHERE name='{$data['name']}'";
+                //$user = Yii::$app->db->createCommand($user_sql)->queryOne();
+                $sql_select = "select * from warehouse_intergral_other_data_every_month WHERE name='{$data['name']}' AND `month`='{$data['month']}'";
+                $res = Yii::$app->db->createCommand($sql_select)->queryOne();
                 $date = date('Y-m-d H:i:s');
-				if(!$user){
-					$errorUser .= ','.$data['name'];
-				}else {
-					if(!$res) {//插入
-						$sql = "INSERT INTO warehouse_intergral_other_data_every_month 
+
+                if (!$res) {//插入
+                    $sql = "INSERT INTO warehouse_intergral_other_data_every_month 
                                 (name,`month`,`group`,job,team,all_days,labeling_days,sorting_days,inbound_sorting_days,other_integral,deduction_integral,update_time) 
 							VALUES('$data[name]','$data[month]','$data[group]','$data[job]','$data[team]','$data[all_days]','$data[labeling_days]',
 							'$data[sorting_days]','$data[inbound_sorting_days]','$data[other_integral]','$data[deduction_integral]','$date')";
-					} else {
-						$sql = "UPDATE warehouse_intergral_other_data_every_month 
+                } else {
+                    $sql = "UPDATE warehouse_intergral_other_data_every_month 
 							SET `group`='$data[group]',job='$data[job]',team='$data[team]',all_days='$data[all_days]',labeling_days='$data[labeling_days]',
 							    sorting_days='$data[sorting_days]',inbound_sorting_days='$data[inbound_sorting_days]',other_integral='$data[other_integral]',
 								deduction_integral='$data[deduction_integral]',update_time='$date' 
 							WHERE name='$data[name]' AND `month`='$data[month]'";
-					}
-					Yii::$app->db->createCommand($sql)->execute();
+                }
+                Yii::$app->db->createCommand($sql)->execute();
 
-				}
-			}
+            }
 
             //插入日志
             $data = [
@@ -413,21 +411,19 @@ class ApiSettings
 
             Yii::$app->db->createCommand()->insert('warehouse_intergral_import_log', $data)->execute();
 
-			if($errorUser){
-				return "User '{$errorUser}' can not be find!";
-			}
+            if ($errorUser) {
+                return "User '{$errorUser}' can not be find!";
+            }
 
-			return true;
-		}catch (\Exception $e) {
-			return [
-				'code' => 400,
-				'message' => $e->getMessage()
-			];
+            return true;
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
         }
 
-	 }
-
-
+    }
 
 
 }
