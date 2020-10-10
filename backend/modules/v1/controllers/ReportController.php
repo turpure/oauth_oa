@@ -455,6 +455,40 @@ class ReportController extends AdminController
         return ApiReport::getRefundDetails($condition);
     }
 
+
+    /**
+     * suffix wish refund details
+     * @return array|ArrayDataProvider
+     * @throws \yii\db\Exception
+     */
+    public function actionWishRefund()
+    {
+        try {
+            $request = Yii::$app->request->post();
+            $cond = $request['condition'];
+            $params = [
+                'platform' => isset($cond['plat']) ? $cond['plat'] : [],
+                'username' => isset($cond['member']) ? $cond['member'] : [],
+                'store' => isset($cond['account']) ? $cond['account'] : []
+            ];
+            $paramsFilter = Handler::paramsHandler($params);
+            $condition = [
+                'type' => $cond['type'],
+                'beginDate' => $cond['dateRange'][0],
+                'endDate' => $cond['dateRange'][1],
+                'suffix' => "'" . implode("','", $paramsFilter['store']) . "'",
+                'page' => isset($cond['page']) ? $cond['page'] : 1,
+                'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 10,
+            ];
+            return ApiReport::getWishRefundDetails($condition);
+        }
+
+        catch (\Exception  $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+
+    }
+
     /**
      * @brief 退款账号分析
      */
@@ -728,6 +762,16 @@ class ReportController extends AdminController
                     'tradeId', 'orderId', 'mergeBillId', 'storeName', 'refund', 'refundZn', 'refundTime', 'orderTime',
                     'orderCountry', 'platform', 'expressWay'];
                 $data = $this->actionRefund()['provider']->getModels();
+                break;
+            case 'wishOrder':
+                $fileName = 'wishRefundOrderData';
+                $title = ['退款月份', '账号简称', '销售员', '商品名称', '商品编码', 'SKU',
+                    '交易单号', '店铺单号', '合并单号', '仓库', '退款金额(原始币种)', '货币符号', '退款时间', '交易时间',
+                    '国家', '平台', '物流方式',];
+                $headers = ['refMonth', 'suffix', 'salesman', 'goodsName', 'goodsCode', 'goodsSku',
+                    'tradeId', 'orderId', 'mergeBillId', 'storeName', 'refund', 'currencyCode', 'refundTime', 'orderTime',
+                    'orderCountry', 'platform', 'expressWay'];
+                $data = $this->actionWishRefund()['provider']->getModels();
                 break;
             case 'goods'://退款产品明细下载
                 $fileName = 'refundGoodsData';
