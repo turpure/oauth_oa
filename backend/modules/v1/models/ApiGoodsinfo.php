@@ -1091,11 +1091,11 @@ class ApiGoodsinfo
             'VN' => ['site' => '越南', 'exchange' => '0.0003', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 23300],
         ];
         $ids = implode(',', $ids);
-        $sql = "select og.createDate as '开发日期',cate as '一级类目',subCate as '二级类目', goodsCode as '商品编码', goodsStatus as '商品状态'," .
+        $sql = "selecta og.createDate as '开发日期',cate as '一级类目',subCate as '二级类目', goodsCode as '商品编码', goodsStatus as '商品状态'," .
             "goodsName as '商品名称'," .
             "ogs.sku as 'SKU'," .
             "(select sku from oa_goodssku  where infoId= ogs.infoId limit 1) as '关联SKU', " .
-            "ows.color '属性1', ows.size as '属性2', ogs.property3 as '属性3', mainImage as '商品主图', ogs.linkUrl as '属性主图'," .
+            "ows.color '属性1', case when ows.size is not null then CONCAT('Int ',  ows.size) else ows.size end as '属性2', ogs.property3 as '属性3', mainImage as '商品主图', ogs.linkUrl as '属性主图'," .
             "owg.extraImages as '附加图'," .
             "'' as '附加图1'," .
             "'' as '附加图2'," .
@@ -1187,18 +1187,18 @@ class ApiGoodsinfo
             $ele['成本价'] = $skuCostPrice[$ele['SKU']]['CostPrice'];
             $ele['重量'] = round($skuCostPrice[$ele['SKU']]['Weight'], 2);
             # 售价信息
-            $ele['MY售价'] = static::getGoodsSalePrice($ele, $siteInfo['MY'], $packageInfo, $expressInfo);
-            $ele['MY原价'] = round($ele['MY售价'] * 1.8, 2);
-            $ele['PH售价'] = static::getGoodsSalePrice($ele, $siteInfo['PH'], $packageInfo, $expressInfo);
-            $ele['PH原价'] = round($ele['PH售价'] * 1.8, 2);
+            $ele['MY售价'] = round(static::getGoodsSalePrice($ele, $siteInfo['MY'], $packageInfo, $expressInfo),1);
+            $ele['MY原价'] = round($ele['MY售价'] * 1.8, 1);
+            $ele['PH售价'] = ceil(static::getGoodsSalePrice($ele, $siteInfo['PH'], $packageInfo, $expressInfo));
+            $ele['PH原价'] = ceil(round($ele['PH售价'] * 1.8, 2));
             $ele['ID售价'] = floor(static::getGoodsSalePrice($ele, $siteInfo['ID'], $packageInfo, $expressInfo));
             $ele['ID原价'] = floor($ele['ID售价'] * 1.8);
-            $ele['TH售价'] = static::getGoodsSalePrice($ele, $siteInfo['TH'], $packageInfo, $expressInfo);
-            $ele['TH原价'] = round($ele['TH售价'] * 1.8, 2);
+            $ele['TH售价'] = ceil(static::getGoodsSalePrice($ele, $siteInfo['TH'], $packageInfo, $expressInfo));
+            $ele['TH原价'] = ceil(round($ele['TH售价'] * 1.8, 2));
             $ele['VN售价'] = floor(static::getGoodsSalePrice($ele, $siteInfo['VN'], $packageInfo, $expressInfo));
             $ele['VN原价'] = floor($ele['VN售价'] * 1.8);
-            $ele['SG售价'] = static::getGoodsSalePrice($ele, $siteInfo['SG'], $packageInfo, $expressInfo);
-            $ele['SG原价'] = round($ele['SG售价'] * 1.8, 2);
+            $ele['SG售价'] = round(static::getGoodsSalePrice($ele, $siteInfo['SG'], $packageInfo, $expressInfo),1);
+            $ele['SG原价'] = round($ele['SG售价'] * 1.8, 1);
 
             # 删除多余的信息
             unset($ele['头部关键词'], $ele['必须关键词'], $ele['随机关键词'], $ele['尾部关键词']);
