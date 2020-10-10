@@ -1095,7 +1095,7 @@ class ApiGoodsinfo
             "goodsName as '商品名称'," .
             "ogs.sku as 'SKU'," .
             "(select sku from oa_goodssku  where infoId= ogs.infoId limit 1) as '关联SKU', " .
-            "ows.color '属性1', case when ows.size is not null then CONCAT('Int ',  ows.size) else ows.size end as '属性2', ogs.property3 as '属性3', mainImage as '商品主图', ogs.linkUrl as '属性主图'," .
+            "ows.color '属性1', case when ows.size is not null then CONCAT('Int:',  ows.size) else ows.size end as '属性2', ogs.property3 as '属性3', mainImage as '商品主图', ogs.linkUrl as '属性主图'," .
             "owg.extraImages as '附加图'," .
             "'' as '附加图1'," .
             "'' as '附加图2'," .
