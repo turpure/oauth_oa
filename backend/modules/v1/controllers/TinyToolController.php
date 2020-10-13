@@ -362,7 +362,6 @@ class TinyToolController extends AdminController
                 WHERE  aa.sku='{$newSku}'";
         $res = Yii::$app->py_db->createCommand($sql)->queryOne();
         if (!$res) return $data;
-//        var_dump($res);exit;
         $data['detail'] = $res;
 
         $weight = $res['weight'];

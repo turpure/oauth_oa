@@ -1943,6 +1943,7 @@ class ApiGoodsinfo
 
             $row['SiteId'] = $ebayInfo['site'];
             $row['Site'] = OaSiteCountry::findOne(['code' => $ebayInfo['site']])['nameEn'];
+            $row['Currency'] = OaSiteCountry::findOne(['code' => $ebayInfo['site']])['currencyCode'];
             $row['Suffix'] = $account['ebaySuffix'];
             $row['PrimaryCategory']['CategoryID'] = $ebayInfo['listedCate'];
             $row['SecondaryCategory']['CategoryID'] = $ebayInfo['listedSubcate'];
@@ -2426,6 +2427,7 @@ class ApiGoodsinfo
             }
 
             $row['Site'] = $ebayInfo['site'];
+            $row['Currency'] = OaSiteCountry::findOne(['code' => $ebayInfo['site']])['currencyCode'];
             $row['Selleruserid'] = $ebayAccount['ebayName'];
             $row['ListingType'] = 'FixedPriceItem';
             $row['Category1'] = $ebayInfo['listedCate'];
@@ -2523,7 +2525,6 @@ class ApiGoodsinfo
             $row['EAN'] = $ebayInfo['EAN'];
             $row['SecondOffer'] = '';
             $row['Immediately'] = '';
-            $row['Currency'] = '';
             $row['LinkedPayPalAccount'] = '';
             $row['MBPVCount'] = '';
             $row['MBPVPeriod'] = '';
