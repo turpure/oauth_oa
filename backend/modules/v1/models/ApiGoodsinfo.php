@@ -1083,11 +1083,11 @@ class ApiGoodsinfo
     {
         $payFeeFixedRate = 0.04;
         $siteInfo = [
-            'MY' => ['site' => '马来西亚', 'exchange' => '1.575', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 4.13],
-            'PH' => ['site' => '菲律宾', 'exchange' => '0.125', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 91],
-            'ID' => ['site' => '印尼', 'exchange' => '0.000454', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 17500],
-            'TH' => ['site' => '泰国', 'exchange' => '0.2', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 20],
-            'SG' => ['site' => '新加坡', 'exchange' => '4.8', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 4],
+            'MY' => ['site' => '马来西亚', 'exchange' => '1.6187', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 4.13],
+            'PH' => ['site' => '菲律宾', 'exchange' => '0.1384', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 91],
+            'ID' => ['site' => '印尼', 'exchange' => '0.0004561', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 17500],
+            'TH' => ['site' => '泰国', 'exchange' => '0.2161', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 20],
+            'SG' => ['site' => '新加坡', 'exchange' => '4.9481', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 4],
             'VN' => ['site' => '越南', 'exchange' => '0.0003', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 23300],
         ];
         $ids = implode(',', $ids);
@@ -1387,6 +1387,7 @@ class ApiGoodsinfo
             }
         }
 
+        $i = max($i, 0);
         $bestExpress = $expressInfo[$i];
 
         $expressFee = $bestExpress['BeginMoneyGoods'] + ceil(($totalWeight - $bestExpress['BeginWeight']) / $bestExpress['AddWeight']) * $bestExpress['AddMoney'];
