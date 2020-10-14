@@ -2506,7 +2506,6 @@ class ApiGoodsinfo
                     $row['Specifics' . ($j + 1)] = json_encode($specifics);
                 }
             }
-            var_dump($row);exit;
             $out[] = $row;
         }
         $ret['data'] = $out;
