@@ -1123,7 +1123,8 @@ class ApiTinyTool
      * @return array
      * @throws Exception
      */
-    public static function getSkuStockDetail($condition){
+    public static function getSkuStockDetail($condition)
+    {
         $goodsCode = ArrayHelper::getValue($condition, 'goodsCode');
         $seller = ArrayHelper::getValue($condition, 'seller');
         $username = Yii::$app->user->identity->username;
@@ -1154,7 +1155,8 @@ class ApiTinyTool
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
 
-    public static function saveEbaySkuSellerData($file, $extension = 'Xls'){
+    public static function saveEbaySkuSellerData($file, $extension = 'Xls')
+    {
         $reader = IOFactory::createReader($extension);
         $spreadsheet = $reader->load(Yii::$app->basePath . '/web' . $file);
         $sheet = $spreadsheet->getSheet(0);
@@ -1166,15 +1168,21 @@ class ApiTinyTool
                 $seller1 = $sheet->getCell("B" . $i)->getValue() ?: '';
                 $seller2 = $sheet->getCell("C" . $i)->getValue() ?: '';
                 $updateDate = date('Y-m-d H:i:s');
-                if(!$goodsCode) break;
-                $sql = "insert into cache_skuSeller(goodsCode,seller1,seller2,updateDate) values (
-               '{$goodsCode}', '{$seller1}', '{$seller2}', '{$updateDate}') 
-                ON DUPLICATE KEY UPDATE seller1='{$seller1}',seller2='{$seller2}',updateDate='{$updateDate}'";
-                $res = Yii::$app->db->createCommand($sql)->execute();
-                if($res){
-                    $errorRes[] = "Success to update '{$goodsCode}' seller1 to '{$seller1}'";
-                }else{
-                    $errorRes[] = "Failed to update '{$goodsCode}' seller1 to '{$seller1}'";
+                if (!$goodsCode) break;
+                $codeRet = Yii::$app->db->createCommand("SELECT DISTINCT goodsCode FROM `cache_goods`;")->queryAll();
+                $userRet = Yii::$app->db->createCommand("SELECT DISTINCT username FROM `user` WHERE `status`=10;")->queryAll();
+                if (!$codeRet || !$userRet) {
+                    $errorRes[] = "Failed to save info " . $goodsCode . " | " . $seller1 . " cause of goodsCode or seller1 is not incorrect!";
+                } else {
+                    $sql = "insert into cache_skuSeller(goodsCode,seller1,seller2,updateDate) values (
+                            '{$goodsCode}', '{$seller1}', '{$seller2}', '{$updateDate}') 
+                            ON DUPLICATE KEY UPDATE seller1='{$seller1}',seller2='{$seller2}',updateDate='{$updateDate}'";
+                    $res = Yii::$app->db->createCommand($sql)->execute();
+                    if ($res) {
+                        $errorRes[] = "Success to update '{$goodsCode}' seller1 to '{$seller1}'";
+                    } else {
+                        $errorRes[] = "Failed to update '{$goodsCode}' seller1 to '{$seller1}'";
+                    }
                 }
             }
         } catch (\Exception $why) {
@@ -1245,16 +1253,16 @@ class ApiTinyTool
         try {
             foreach ($data as $v) {
                 $table = $v['type'] == 'normal' ? 'p_trade' : 'p_tradeUn';
-                if($v['method'] == 'UKLE'){
+                if ($v['method'] == 'UKLE') {
                     $logicsWayNID = $id;
                     $logicsWay = 'UKLE-Royal Mail - Tracked 48 Parcel';
                     $shipFee = self::getOrderShipFee($v, $id);
-                }else{
+                } else {
                     $logicsWayNID = $maId;
                     $logicsWay = 'UKMA-Royal Mail - Tracked 48 Parcel';
                     $shipFee = self::getOrderShipFee($v, $maId);
                 }
-                $res = Yii::$app->py_db->createCommand()->update($table, ['logicsWayNID' => $logicsWayNID,'ExpressFare' => $shipFee], ['NID' => $v['nid']])->execute();
+                $res = Yii::$app->py_db->createCommand()->update($table, ['logicsWayNID' => $logicsWayNID, 'ExpressFare' => $shipFee], ['NID' => $v['nid']])->execute();
                 if (!$res) {
                     throw new Exception('Failed to update logics way of order ' . $v['nid']);
                 }
@@ -1314,10 +1322,11 @@ class ApiTinyTool
      * @return array
      * @throws Exception
      */
-    public static function getEbayAdFee($condition){
+    public static function getEbayAdFee($condition)
+    {
         $sku = isset($condition['sku']) ? $condition['sku'] : '';
         $suffix = isset($condition['suffix']) ? $condition['suffix'] : '';
-        $itemId= isset($condition['item_id']) ? $condition['item_id'] : '';
+        $itemId = isset($condition['item_id']) ? $condition['item_id'] : '';
         $begin = isset($condition['dateRange'][0]) ? $condition['dateRange'][0] : '';
         $end = isset($condition['dateRange'][1]) ? ($condition['dateRange'][1] . ' 23:59:59') : '';
         $sql = "select suffix,sku,ad_rate,ad_fee*ad_code_rate as ad_fee,CONCAT(ad_fee,'(',ad_code,')') as ad_fee_original, 
@@ -1326,10 +1335,10 @@ class ApiTinyTool
                 transaction_code_rate*(transaction_price + shipping_fee) as transaction_price_total,shipping_name
                 from cache_ebayAdFee where sku like 'UK%' ";
 
-        if($begin && $end) $sql .= " AND fee_time between '{$begin}' and '{$end}'";
-        if($sku) $sql .= " and sku like '%{$sku}%'";
-        if($suffix) $sql .= " and suffix like '%{$suffix}%'";
-        if($itemId) $sql .= " and item_id = '{$itemId}'";
+        if ($begin && $end) $sql .= " AND fee_time between '{$begin}' and '{$end}'";
+        if ($sku) $sql .= " and sku like '%{$sku}%'";
+        if ($suffix) $sql .= " and suffix like '%{$suffix}%'";
+        if ($itemId) $sql .= " and item_id = '{$itemId}'";
         $data = Yii::$app->db->createCommand($sql)->queryAll();
         return $data;
     }
