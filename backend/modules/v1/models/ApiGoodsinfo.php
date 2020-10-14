@@ -1988,7 +1988,14 @@ class ApiGoodsinfo
             $internationalShippingService2['ShipToLocation'] = static::getShippingService($ebayInfo['outShippingMethod2']) ? 'Worldwide' : '';
             $row['ShippingDetails']['ShippingServiceOptions'] = [$shippingInfo1, $shippingInfo2];
             $row['ShippingDetails']['InternationalShippingServiceOption'] = [$internationalShippingService1, $internationalShippingService2];
-
+            $ItemSpecifics = json_decode($ebayInfo['specifics'], true);
+            if($ItemSpecifics && isset($ItemSpecifics['specifics'])){
+                foreach ($ItemSpecifics['specifics'] as $v){
+                    foreach ($v as $k => $value){
+                        $row['ItemSpecifics']['NameValueList'][] = ['Name' => $k, 'Value' => $value];
+                    }
+                }
+            }
             //$row['UseMobile'] = '1';
             //$row['IbayTemplate'] = $account['ibayTemplate'];
             //$row['IbayInformation'] = '1';
@@ -2372,47 +2379,47 @@ class ApiGoodsinfo
         }
         $ret = ['name' => 'ebay-' . $goodsInfo['goodsCode']];
         $out = [];
-        $row = [
-            'Site' => '', 'Selleruserid' => '', 'ListingType' => '', 'Category1' => '', 'Category2' => '',
-            'Condition' => '', 'ConditionBewrite' => '', 'Quantity' => '', 'LotSize' => '', 'Duration' => '',
-            'ReservePrice' => '', 'BestOffer' => '', 'BestOfferAutoAcceptPrice' => '', 'BestOfferAutoRefusedPrice' => '',
-            'AcceptPayment' => '', 'PayPalEmailAddress' => '', 'Location' => '', 'LocationCountry' => '',
-            'ReturnsAccepted' => '', 'RefundOptions' => '', 'ReturnsWithin' => '', 'ReturnPolicyShippingCostPaidBy' => '',
-            'ReturnPolicyDescription' => '', 'GalleryType' => '', 'Bold' => '', 'PrivateListing' => '',
-            'HitCounter' => '', 'sku' => '', 'PictureURL' => '', 'Title' => '', 'SubTitle' => '', 'IbayCategory' => '',
-            'StartPrice' => '', 'BuyItNowPrice' => '', 'UseMobile' => '', 'ShippingService1' => '',
-            'ShippingServiceCost1' => '', 'ShippingServiceAdditionalCost1' => '', 'ShippingService2' => '',
-            'ShippingServiceCost2' => '', 'ShippingServiceAdditionalCost2' => '', 'ShippingService3' => '',
-            'ShippingServiceCost3' => '', 'ShippingServiceAdditionalCost3' => '', 'ShippingService4' => '',
-            'ShippingServiceCost4' => '', 'ShippingServiceAdditionalCost4' => '', 'InternationalShippingService1' => '',
-            'InternationalShippingServiceCost1' => '', 'InternationalShippingServiceAdditionalCost1' => '',
-            'InternationalShipToLocation1' => '', 'InternationalShippingService2' => '', 'InternationalShippingServiceCost2' => '',
-            'InternationalShippingServiceAdditionalCost2' => '', 'InternationalShipToLocation2' => '',
-            'InternationalShippingService3' => '', 'InternationalShippingServiceCost3' => '',
-            'InternationalShippingServiceAdditionalCost3' => '', 'InternationalShipToLocation3' => '',
-            'InternationalShippingService4' => '', 'InternationalShippingServiceCost4' => '',
-            'InternationalShippingServiceAdditionalCost4' => '', 'InternationalShipToLocation4' => '',
-            'InternationalShippingService5' => '', 'InternationalShippingServiceCost5' => '',
-            'InternationalShippingServiceAdditionalCost5' => '', 'InternationalShipToLocation5' => '',
-            'DispatchTimeMax' => '', 'ExcludeShipToLocation' => '', 'StoreCategory1' => '',
-            'StoreCategory2' => '', 'IbayTemplate' => '', 'IbayInformation' => '',
-            'IbayComment' => '', 'Description' => '', 'Language' => '', 'IbayOnlineInventoryHold' => '',
-            'IbayRelistSold' => '', 'IbayRelistUnsold' => '', 'IBayEffectType' => '', 'IbayEffectImg' => '',
-            'IbayCrossSelling' => '', 'Variation' => '', 'outofstockcontrol' => '', 'EPID' => '',
-            'ISBN' => '', 'UPC' => '', 'EAN' => '', 'SecondOffer' => '', 'Immediately' => '', 'Currency' => '',
-            'LinkedPayPalAccount' => '', 'MBPVCount' => '', 'MBPVPeriod' => '', 'MUISICount' => '',
-            'MUISIPeriod' => '', 'MaximumItemCount' => '', 'MinimumFeedbackScore' => '', 'Specifics1' => '',
-            'Specifics2' => '', 'Specifics3' => '', 'Specifics4' => '', 'Specifics5' => '', 'Specifics6' => '',
-            'Specifics7' => '', 'Specifics8' => '', 'Specifics9' => '', 'Specifics10' => '', 'Specifics11' => '',
-            'Specifics12' => '', 'Specifics13' => '', 'Specifics14' => '', 'Specifics15' => '',
-            'Specifics16' => '', 'Specifics17' => '', 'Specifics18' => '', 'Specifics19' => '',
-            'Specifics20' => '', 'Specifics21' => '', 'Specifics22' => '', 'Specifics23' => '',
-            'Specifics24' => '', 'Specifics25' => '', 'Specifics26' => '', 'Specifics27' => '',
-            'Specifics28' => '', 'Specifics29' => '', 'Specifics30' => '',
-        ];
         $price = self::getEbayPrice($ebayInfo);
         $keyWords = static::preKeywords($ebayInfo);
         foreach ($accounts as $account) {
+            $row = [
+                'Site' => '', 'Selleruserid' => '', 'ListingType' => '', 'Category1' => '', 'Category2' => '',
+                'Condition' => '', 'ConditionBewrite' => '', 'Quantity' => '', 'LotSize' => '', 'Duration' => '',
+                'ReservePrice' => '', 'BestOffer' => '', 'BestOfferAutoAcceptPrice' => '', 'BestOfferAutoRefusedPrice' => '',
+                'AcceptPayment' => '', 'PayPalEmailAddress' => '', 'Location' => '', 'LocationCountry' => '',
+                'ReturnsAccepted' => '', 'RefundOptions' => '', 'ReturnsWithin' => '', 'ReturnPolicyShippingCostPaidBy' => '',
+                'ReturnPolicyDescription' => '', 'GalleryType' => '', 'Bold' => '', 'PrivateListing' => '',
+                'HitCounter' => '', 'sku' => '', 'PictureURL' => '', 'Title' => '', 'SubTitle' => '', 'IbayCategory' => '',
+                'StartPrice' => '', 'BuyItNowPrice' => '', 'UseMobile' => '', 'ShippingService1' => '',
+                'ShippingServiceCost1' => '', 'ShippingServiceAdditionalCost1' => '', 'ShippingService2' => '',
+                'ShippingServiceCost2' => '', 'ShippingServiceAdditionalCost2' => '', 'ShippingService3' => '',
+                'ShippingServiceCost3' => '', 'ShippingServiceAdditionalCost3' => '', 'ShippingService4' => '',
+                'ShippingServiceCost4' => '', 'ShippingServiceAdditionalCost4' => '', 'InternationalShippingService1' => '',
+                'InternationalShippingServiceCost1' => '', 'InternationalShippingServiceAdditionalCost1' => '',
+                'InternationalShipToLocation1' => '', 'InternationalShippingService2' => '', 'InternationalShippingServiceCost2' => '',
+                'InternationalShippingServiceAdditionalCost2' => '', 'InternationalShipToLocation2' => '',
+                'InternationalShippingService3' => '', 'InternationalShippingServiceCost3' => '',
+                'InternationalShippingServiceAdditionalCost3' => '', 'InternationalShipToLocation3' => '',
+                'InternationalShippingService4' => '', 'InternationalShippingServiceCost4' => '',
+                'InternationalShippingServiceAdditionalCost4' => '', 'InternationalShipToLocation4' => '',
+                'InternationalShippingService5' => '', 'InternationalShippingServiceCost5' => '',
+                'InternationalShippingServiceAdditionalCost5' => '', 'InternationalShipToLocation5' => '',
+                'DispatchTimeMax' => '', 'ExcludeShipToLocation' => '', 'StoreCategory1' => '',
+                'StoreCategory2' => '', 'IbayTemplate' => '', 'IbayInformation' => '',
+                'IbayComment' => '', 'Description' => '', 'Language' => '', 'IbayOnlineInventoryHold' => '',
+                'IbayRelistSold' => '', 'IbayRelistUnsold' => '', 'IBayEffectType' => '', 'IbayEffectImg' => '',
+                'IbayCrossSelling' => '', 'Variation' => '', 'outofstockcontrol' => '', 'EPID' => '',
+                'ISBN' => '', 'UPC' => '', 'EAN' => '', 'SecondOffer' => '', 'Immediately' => '', 'Currency' => '',
+                'LinkedPayPalAccount' => '', 'MBPVCount' => '', 'MBPVPeriod' => '', 'MUISICount' => '',
+                'MUISIPeriod' => '', 'MaximumItemCount' => '', 'MinimumFeedbackScore' => '', 'Specifics1' => '',
+                'Specifics2' => '', 'Specifics3' => '', 'Specifics4' => '', 'Specifics5' => '', 'Specifics6' => '',
+                'Specifics7' => '', 'Specifics8' => '', 'Specifics9' => '', 'Specifics10' => '', 'Specifics11' => '',
+                'Specifics12' => '', 'Specifics13' => '', 'Specifics14' => '', 'Specifics15' => '',
+                'Specifics16' => '', 'Specifics17' => '', 'Specifics18' => '', 'Specifics19' => '',
+                'Specifics20' => '', 'Specifics21' => '', 'Specifics22' => '', 'Specifics23' => '',
+                'Specifics24' => '', 'Specifics25' => '', 'Specifics26' => '', 'Specifics27' => '',
+                'Specifics28' => '', 'Specifics29' => '', 'Specifics30' => '',
+            ];
             $ebayAccount = OaEbaySuffix::find()->where(['ebaySuffix' => $account])->asArray()->one();
             $payPal = self::getEbayPayPal($price, $ebayAccount);
             $titlePool = [];
@@ -2434,14 +2441,8 @@ class ApiGoodsinfo
             $row['Category1'] = $ebayInfo['listedCate'];
             $row['Category2'] = $ebayInfo['listedSubcate'];
             $row['Condition'] = '1000';
-            $row['ConditionBewrite'] = '';
             $row['Quantity'] = !empty($ebayInfo['quantity']) ? $ebayInfo['quantity'] : 5;
-            $row['LotSize'] = '';
             $row['Duration'] = 'GTC';
-            $row['ReservePrice'] = '';
-            $row['BestOffer'] = '';
-            $row['BestOfferAutoAcceptPrice'] = '';
-            $row['BestOfferAutoRefusedPrice'] = '';
             $row['AcceptPayment'] = 'PayPal';
             $row['PayPalEmailAddress'] = $payPal;
             $row['Location'] = $ebayInfo['location'];
@@ -2452,14 +2453,10 @@ class ApiGoodsinfo
             $row['ReturnPolicyShippingCostPaidBy'] = 'Buyer';
             $row['ReturnPolicyDescription'] = 'We accept return or exchange item within 30 days from the day customer received the original item. If you have any problem please contact us first before leaving Neutral/Negative feedback! the negative feedback can\'\'t resolve the problem .but we can. ^_^ Hope you have a happy shopping experience in our store!';
             $row['GalleryType'] = 'Gallery';
-            $row['Bold'] = '';
-            $row['PrivateListing'] = '';
             $row['HitCounter'] = 'NoHitCounter';
             $row['PictureURL'] = static::getEbayPicture($goodsInfo, $ebayInfo, $account);
             $row['Title'] = $title;
             $row['SubTitle'] = $ebayInfo['subTitle'];
-            $row['IbayCategory'] = '';
-            $row['StartPrice'] = '';
             $row['BuyItNowPrice'] = $price;
             $row['UseMobile'] = '1';
             $row['ShippingService1'] = static::getShippingService($ebayInfo['inShippingMethod1']);
@@ -2468,12 +2465,6 @@ class ApiGoodsinfo
             $row['ShippingService2'] = static::getShippingService($ebayInfo['inShippingMethod2']);
             $row['ShippingServiceCost2'] = $ebayInfo['inFirstCost2'];
             $row['ShippingServiceAdditionalCost2'] = $ebayInfo['inSuccessorCost2'];
-            $row['ShippingService3'] = '';
-            $row['ShippingServiceCost3'] = '';
-            $row['ShippingServiceAdditionalCost3'] = '';
-            $row['ShippingService4'] = '';
-            $row['ShippingServiceCost4'] = '';
-            $row['ShippingServiceAdditionalCost4'] = '';
             $row['InternationalShippingService1'] = static::getShippingService($ebayInfo['outShippingMethod1']);
             $row['InternationalShippingServiceCost1'] = $ebayInfo['outFirstCost1'];
             $row['InternationalShippingServiceAdditionalCost1'] = $ebayInfo['outSuccessorCost1'];
@@ -2482,33 +2473,14 @@ class ApiGoodsinfo
             $row['InternationalShippingServiceCost2'] = $ebayInfo['outFirstCost2'];
             $row['InternationalShippingServiceAdditionalCost2'] = $ebayInfo['outSuccessorCost2'];
             $row['InternationalShipToLocation2'] = static::getShippingService($ebayInfo['outShippingMethod2']) ? 'Worldwide' : '';
-            $row['InternationalShippingService3'] = '';
-            $row['InternationalShippingServiceCost3'] = '';
-            $row['InternationalShippingServiceAdditionalCost3'] = '';
-            $row['InternationalShipToLocation3'] = '';
-            $row['InternationalShippingService4'] = '';
-            $row['InternationalShippingServiceCost4'] = '';
-            $row['InternationalShippingServiceAdditionalCost4'] = '';
-            $row['InternationalShipToLocation4'] = '';
-            $row['InternationalShippingService5'] = '';
-            $row['InternationalShippingServiceCost5'] = '';
-            $row['InternationalShippingServiceAdditionalCost5'] = '';
-            $row['InternationalShipToLocation5'] = '';
             $row['DispatchTimeMax'] = $ebayInfo['prepareDay'];
             $row['ExcludeShipToLocation'] = static::getEbayExcludeLocation($ebayAccount);
-            $row['StoreCategory1'] = '';
-            $row['StoreCategory2'] = '';
             $row['IbayTemplate'] = $ebayAccount['ibayTemplate'];
             $row['IbayInformation'] = '1';
-            $row['IbayComment'] = '';
             $row['Description'] = static::getEbayDescription($ebayInfo['description']);
-            $row['Language'] = '';
             $row['IbayOnlineInventoryHold'] = '1';
-            $row['IbayRelistSold'] = '';
-            $row['IbayRelistUnsold'] = '';
             $row['IBayEffectType'] = '1';
             $row['IbayEffectImg'] = static::getEbayPicture($goodsInfo, $ebayInfo, $account);
-            $row['IbayCrossSelling'] = '';
             if (count($ebayInfo['oaEbayGoodsSku']) > 1) $goodsInfo['isVar'] = '是'; // 2020-06-02 添加（单平台添加多属性）
 
             if ($goodsInfo['isVar'] === '是') {
@@ -2524,45 +2496,17 @@ class ApiGoodsinfo
             $row['ISBN'] = 'Does not apply';
             $row['UPC'] = $ebayInfo['UPC'];
             $row['EAN'] = $ebayInfo['EAN'];
-            $row['SecondOffer'] = '';
-            $row['Immediately'] = '';
-            $row['LinkedPayPalAccount'] = '';
-            $row['MBPVCount'] = '';
-            $row['MBPVPeriod'] = '';
-            $row['MUISICount'] = '';
-            $row['MUISIPeriod'] = '';
-            $row['MaximumItemCount'] = '';
-            $row['MinimumFeedbackScore'] = '';
-            $row['Specifics1'] = '';
-            $row['Specifics2'] = '';
-            $row['Specifics3'] = '';
-            $row['Specifics4'] = '';
-            $row['Specifics5'] = '';
-            $row['Specifics6'] = '';
-            $row['Specifics7'] = '';
-            $row['Specifics8'] = '';
-            $row['Specifics9'] = '';
-            $row['Specifics10'] = '';
-            $row['Specifics11'] = '';
-            $row['Specifics12'] = '';
-            $row['Specifics13'] = '';
-            $row['Specifics14'] = '';
-            $row['Specifics15'] = '';
-            $row['Specifics16'] = '';
-            $row['Specifics17'] = '';
-            $row['Specifics18'] = '';
-            $row['Specifics19'] = '';
-            $row['Specifics20'] = '';
-            $row['Specifics21'] = '';
-            $row['Specifics22'] = '';
-            $row['Specifics23'] = '';
-            $row['Specifics24'] = '';
-            $row['Specifics25'] = '';
-            $row['Specifics26'] = '';
-            $row['Specifics27'] = '';
-            $row['Specifics28'] = '';
-            $row['Specifics29'] = '';
-            $row['Specifics30'] = '';
+            $ItemSpecifics = json_decode($ebayInfo['specifics'], true);
+            if($ItemSpecifics && isset($ItemSpecifics['specifics'])){
+                foreach ($ItemSpecifics['specifics'] as $j => $v){
+                    $specifics = [];
+                    foreach ($v as $k => $value){
+                        $specifics = ['Name' => $k, 'Value' => $value];
+                    }
+                    $row['Specifics' . ($j + 1)] = json_encode($specifics);
+                }
+            }
+            var_dump($row);exit;
             $out[] = $row;
         }
         $ret['data'] = $out;
