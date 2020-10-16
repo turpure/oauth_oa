@@ -1990,9 +1990,9 @@ class ApiGoodsinfo
             $row['ShippingDetails']['InternationalShippingServiceOption'] = [$internationalShippingService1, $internationalShippingService2];
             $ItemSpecifics = json_decode($ebayInfo['specifics'], true);
             if($ItemSpecifics && isset($ItemSpecifics['specifics'])){
-                foreach ($ItemSpecifics['specifics'] as $v){
+                foreach ($ItemSpecifics['specifics'] as $i => $v){
                     foreach ($v as $k => $value){
-                        $row['ItemSpecifics']['NameValueList'][] = ['Name' => $k, 'Value' => $value];
+                        $row['ItemSpecifics']['NameValueList'][$i] = ['Name' => $k, 'Value' => $value];
                     }
                 }
             }
