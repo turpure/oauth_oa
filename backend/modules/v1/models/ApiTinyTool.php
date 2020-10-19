@@ -1169,8 +1169,8 @@ class ApiTinyTool
                 $seller2 = $sheet->getCell("C" . $i)->getValue() ?: '';
                 $updateDate = date('Y-m-d H:i:s');
                 if (!$goodsCode) break;
-                $codeRet = Yii::$app->db->createCommand("SELECT DISTINCT goodsCode FROM `cache_goods`;")->queryAll();
-                $userRet = Yii::$app->db->createCommand("SELECT DISTINCT username FROM `user` WHERE `status`=10;")->queryAll();
+                $codeRet = Yii::$app->db->createCommand("SELECT DISTINCT goodsCode FROM `cache_goods` WHERE goodsCode='{$goodsCode}'")->queryAll();
+                $userRet = Yii::$app->db->createCommand("SELECT DISTINCT username FROM `user` WHERE `status`=10 AND username='{$seller1}';")->queryAll();
                 if (!$codeRet || !$userRet) {
                     $errorRes[] = "Failed to save info " . $goodsCode . " | " . $seller1 . " cause of goodsCode or seller1 is not incorrect!";
                 } else {
@@ -1178,13 +1178,13 @@ class ApiTinyTool
                             '{$goodsCode}', '{$seller1}', '{$seller2}', '{$updateDate}') 
                             ON DUPLICATE KEY UPDATE seller1='{$seller1}',seller2='{$seller2}',updateDate='{$updateDate}'";
                     $res = Yii::$app->db->createCommand($sql)->execute();
-                    if ($res) {
-                        $errorRes[] = "Success to update '{$goodsCode}' seller1 to '{$seller1}'";
-                    } else {
+                    if (!$res) {
+//                        $errorRes[] = "Success to update '{$goodsCode}' seller1 to '{$seller1}'";
                         $errorRes[] = "Failed to update '{$goodsCode}' seller1 to '{$seller1}'";
                     }
                 }
             }
+            return $errorRes;
         } catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
