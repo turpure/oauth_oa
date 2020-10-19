@@ -1161,7 +1161,7 @@ class ApiTinyTool
         $spreadsheet = $reader->load(Yii::$app->basePath . '/web' . $file);
         $sheet = $spreadsheet->getSheet(0);
         $highestRow = $sheet->getHighestRow(); // 取得总行数
-        $errorRes = [];
+        $errorRes = '';
         try {
             for ($i = 2; $i <= $highestRow + 1; $i++) {
                 $goodsCode = $sheet->getCell("A" . $i)->getValue() ?: '';
@@ -1172,7 +1172,7 @@ class ApiTinyTool
                 $codeRet = Yii::$app->db->createCommand("SELECT DISTINCT goodsCode FROM `cache_goods` WHERE goodsCode='{$goodsCode}'")->queryAll();
                 $userRet = Yii::$app->db->createCommand("SELECT DISTINCT username FROM `user` WHERE `status`=10 AND username='{$seller1}';")->queryAll();
                 if (!$codeRet || !$userRet) {
-                    $errorRes[] = "Failed to save info " . $goodsCode . " | " . $seller1 . " cause of goodsCode or seller1 is not incorrect!";
+                    $errorRes = "Failed to save info " . $goodsCode . " | " . $seller1 . " cause of goodsCode or seller1 is not incorrect!\n";
                 } else {
                     $sql = "insert into cache_skuSeller(goodsCode,seller1,seller2,updateDate) values (
                             '{$goodsCode}', '{$seller1}', '{$seller2}', '{$updateDate}') 
@@ -1180,7 +1180,7 @@ class ApiTinyTool
                     $res = Yii::$app->db->createCommand($sql)->execute();
                     if (!$res) {
 //                        $errorRes[] = "Success to update '{$goodsCode}' seller1 to '{$seller1}'";
-                        $errorRes[] = "Failed to update '{$goodsCode}' seller1 to '{$seller1}'";
+                        $errorRes[] = "Failed to update '{$goodsCode}' seller1 to '{$seller1}'\n";
                     }
                 }
             }
