@@ -395,12 +395,12 @@ class TinyToolController extends AdminController
                 $data['transport'][] = $item;
                 //根据售价获取毛利率
                 if ($post['price']) {
-                    $rateItem = ApiUk::getRate($post['price'], $item['cost'], $item['out'], $res['price'], $post['adRate'], $post['shippingPrice']);
+                    $rateItem = ApiUk::getRate($post['price'], $item['costRmb'], $item['outRmb'], $res['price'], $post['adRate'], $post['shippingPrice']);
                     $rateItem['name'] = $v['shipping'];
                     $data['rate'][] = $rateItem;
                 }
                 //根据利润率获取售价
-                $priceItem = ApiUk::getPrice($post['rate'], $item['cost'], $item['out'], $res['price']);
+                $priceItem = ApiUk::getPrice($post['rate'], $item['costRmb'], $item['outRmb'], $res['price']);
                 $priceItem['name'] = $v['shipping'];
                 $data['price'][] = $priceItem;
             }
