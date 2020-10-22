@@ -69,6 +69,7 @@ class ApiGoodsinfo
     const smtTitleLength = 128;
     const lazadaTitleLength = 255;
     const shopeeTitleLength = 120;
+    const fyndiqTitleLength = 64;
 
     /**
      * @brief 属性信息列表
@@ -2014,6 +2015,56 @@ class ApiGoodsinfo
         return $out;
     }
 
+
+    /**
+     * @brief 导出Fyndiq模板
+     * @param $id
+     * @param $accounts
+     * @return array
+     */
+    public static function preExportFyndiqData($id, $type)
+    {
+        $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
+        $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
+        $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
+        $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
+        $fyndiqAccounts = Yii::$app->db->createCommand("SELECT * FROM `oa_fyndiqSuffix` WHERE isIbay=1;")->queryAll();
+        $keyWords = static::preKeywords($wishInfo);
+        $row = [
+            'sku', "parent_sku" => '', "title" => '', "description" => '', "categories" => '' , "variations" => '',
+            'variational_properties' => '', 'properties' => '', "brand" => '', "gtin" => '', 'suffix' => '', 'quantity' => 0,
+            'price' => '', 'original_price' => '', 'shipping_time' => '', 'main_image' => '', 'images' => '',
+
+        ];
+        $out = [];
+
+        foreach ($fyndiqAccounts as $account) {
+            $titlePool = [];
+            $title = '';
+            $len = self::fyndiqTitleLength;
+            while (true) {
+                $title = static::getTitleName($keyWords, $len);
+                --$len;
+                if (empty($title) || !in_array($title, $titlePool, false)) {
+                    $titlePool[] = $title;
+                    break;
+                }
+            }
+            $row['parent_sku'] = $wishInfo['sku'];
+            $row['title'] = $title;
+            $row['description'] = $wishInfo['description'];
+            $row['categories'] = [];
+            $row['suffix'] = $account['suffix'];
+
+            $row['Quantity'] = !empty($ebayInfo['quantity']) ? $ebayInfo['quantity'] : 5;
+            if (count($ebayInfo['oaEbayGoodsSku']) > 1) $goodsInfo['isVar'] = '是'; // 2020-06-02 添加（单平台添加多属性）
+            $variantInfo = static::getFyndiqVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
+            $row['Variations'] = json_decode(static::getEbayVariation($goodsInfo['isVar'], $ebayInfo, $account['nameCode']), true);
+            $out[] = $row;
+        }
+        return $out;
+    }
+
     /**
      * @brief 导出joom模板
      * @param $ids
@@ -2869,6 +2920,125 @@ class ApiGoodsinfo
                 $sku['price'] -= 0.01;
 
                 $var['sku'] = $sku['sku'] . $account['suffix'];
+                $var['color'] = $sku['color'];
+                $var['size'] = $sku['size'];
+                $var['inventory'] = $sku['inventory'];
+                $var['price'] = $sku['price'];
+                $var['shipping'] = $sku['shipping'];
+                $var['msrp'] = ceil($sku['msrp']);
+                $var['shipping_time'] = $sku['shippingTime'];
+                $var['main_image'] = $sku['wishLinkUrl'];
+
+                //美元账号
+                if ($account['localCurrency'] === 'USD') {
+                    $var['localized_currency_code'] = 'USD';
+                    $var['localized_price'] = (string)$sku['price'];
+                } // 人民币账号
+                else {
+                    $var['localized_currency_code'] = 'CNY';
+                    $var['localized_price'] = floor((string)$sku['price'] * self::UsdExchange * 100) / 100;
+                }
+                $variation[] = $var;
+            }
+            $variant = json_encode($variation);
+            $ret = [];
+            if ($isVar === '是') {
+                $ret['variant'] = $variant;
+
+                # price -0.01
+                $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1;
+                $ret['price'] -= 0.01;
+                $ret['shipping'] = $shipping;
+
+                $ret['msrp'] = $maxMsrp;
+
+                //美元账号
+                if ($account['localCurrency'] === 'USD') {
+                    $ret['local_price'] = $ret['price'];
+                    $ret['local_shippingfee'] = $shipping;
+                    $ret['local_currency'] = 'USD';
+                } //人民币账号
+                else {
+                    $ret['local_price'] = floor($ret['price'] * self::UsdExchange * 100) / 100;
+                    $ret['local_shippingfee'] = floor($shipping * self::UsdExchange * 100) / 100;
+                    $ret['local_currency'] = 'CNY';
+                }
+            } else {
+                $ret['variant'] = '';
+
+                #price -0.01
+                $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1;
+                $ret['price'] -= 0.01;
+                $ret['shipping'] = $shipping;
+
+                $ret['msrp'] = $maxMsrp;
+
+                //美元账号
+                if ($account['localCurrency'] === 'USD') {
+                    $ret['local_price'] = $ret['price'];
+                    $ret['local_shippingfee'] = $shipping;
+                    $ret['local_currency'] = 'USD';
+                } // 人民币账号
+                else {
+                    $ret['local_price'] = floor($ret['price'] * self::UsdExchange * 100) / 100;
+                    $ret['local_shippingfee'] = floor($shipping * self::UsdExchange * 100) / 100;
+                    $ret['local_currency'] = 'CNY';
+                }
+
+            }
+            return $ret;
+        } catch (\Exception $why) {
+            return ['variant' => '', 'price' => '', 'shipping' => '',
+                'msrp' => '', 'local_price' => '', 'local_shippingfee' => '', 'local_currency' => ''];
+        }
+
+    }
+
+
+    /**
+     * @brief 整合Fyndiq变体信息
+     * @param $isVar
+     * @param $wishInfo
+     * @param $wishSku
+     * @param $account
+     * @return array
+     */
+    private static function getFyndiqVariantInfo($isVar, $wishInfo, $wishSku, $account)
+    {
+        try {
+            $price = ArrayHelper::getColumn($wishSku, 'price');
+            $shippingPrice = ArrayHelper::getColumn($wishSku, 'shipping');
+            $msrp = ArrayHelper::getColumn($wishSku, 'msrp');
+            $len = count($price);
+            $totalPrice = [];
+            for ($i = 0; $i < $len; $i++) {
+                $totalPrice[] = ceil($price[$i] + $shippingPrice[$i]);
+            }
+
+            //获取最大最小价格
+            $maxPrice = max($totalPrice);
+            $minPrice = min($totalPrice);
+            $maxMsrp = ceil(max($msrp));
+
+            //根据总价计算运费
+            if ($minPrice <= 3) {
+                $shipping = 1;
+            } else {
+                $shipping = ceil($minPrice * $account['rate']);
+            }
+
+            //打包变体
+            $variation = [];
+            foreach ($wishSku as $sku) {
+                //价格判断
+                $totalPrice = ceil($sku['price'] + $sku['shipping']);
+                $sku['shipping'] = $shipping;
+
+                // price - 0.01
+                $sku['price'] = $totalPrice - $shipping < 1 ? 1 : ceil($totalPrice - $shipping);
+                $sku['price'] -= 0.01;
+
+                $var['sku'] = $sku['sku'];
                 $var['color'] = $sku['color'];
                 $var['size'] = $sku['size'];
                 $var['inventory'] = $sku['inventory'];

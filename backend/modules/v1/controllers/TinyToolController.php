@@ -456,12 +456,12 @@ class TinyToolController extends AdminController
         foreach ($data['transport'] as $v) {
             //根据售价获取利润率
             if ($post['price']) {
-                $rateItem = ApiUk::getRate($post['price'], $v['cost'], $v['out'], $res['price'], $post['adRate'], $post['shippingPrice']);
+                $rateItem = ApiUk::getRate($post['price'], $v['costRmb'], $v['outRmb'], $res['price'], $post['adRate'], $post['shippingPrice']);
                 $rateItem['name'] = $v['name'];
                 $data['rate'][] = $rateItem;
             }
             //根据利润率获取售价
-            $priceItem = ApiUk::getPrice($post['rate'], $v['cost'], $v['out'], $res['price']);
+            $priceItem = ApiUk::getPrice($post['rate'], $v['costRmb'], $v['outRmb'], $res['price']);
             $priceItem['name'] = $v['name'];
             $data['price'][] = $priceItem;
         }

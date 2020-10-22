@@ -33,12 +33,16 @@ class ApiUk
                     $newSku = $v;
                     $skuNum = 1;
                 }
+//                var_dump($newSku);exit;
+                $priceSql = "SELECT max(costprice) FROM Y_R_tStockingWaring WHERE sku='{$newSku}' and costprice > 0 and storeName like '万邑通UK%'";
+                $price = Yii::$app->py_db->createCommand($priceSql)->queryScalar();
+//                var_dump($price);exit;
                 $sql = "SELECT aa.SKU,aa.skuname,aa.goodscode,aa.CategoryName,aa.CreateDate,aa.price * " . $skuNum * $num . " as price,
                            k.weight*1000*" . $skuNum * $num . " AS weight,
                           k.length,k.width,k.height*" . $skuNum * $num . " as height ," . $skuNum * $num . " AS num
                 FROM (    
                     SELECT w.SKU,w.skuname,w.goodscode,w.CategoryName,w.CreateDate,
-                    price = (CASE WHEN w.costprice<=0 THEN w.goodsPrice ELSE w.costprice END)
+                    price = (CASE WHEN w.costprice > 0 THEN w.costprice WHEN " . $price . " > 0 THEN " . $price . " ELSE w.goodsPrice END)
                     FROM Y_R_tStockingWaring(nolock) w WHERE (SKU LIKE 'UK-%' OR SKU IN ('EX-A132901','EX-A132902','EX-A132903','EX-A132904','EX-A148301','EX-A157101','EX-A115101','EX-A068401','EX-A137601','EX-A137602','EX-A137603','EX-A137606','EX-A137701_M','EX-A137701_S','EX-A137702_M','EX-A137702_S','EX-A137703_M','EX-A137703_S','EX-A139401','EX-A139402','EX-A139501','EX-A139502','EX-A139504','EX-A139505','EX-A139506','EX-A139507','EX-A140702','EX-A140704','EX-A140706','EX-A140801','EX-A140802','EX-A140901_12W','EX-A140901_24W','EX-A140902_12W','EX-A140902_24W','EX-A140902_36W','EX-A122901','EX-A122902','EX-A122903','EX-A122904','EX-A122905')
                     ) AND storeName='{$storeName}' 
                 UNION ALL 
@@ -189,7 +193,7 @@ class ApiUk
         }
 
         //计算毛利
-        $profit = $price - $data['pFee'] - $data['eFee'] - $cost - $out - $costprice / $ukRate - ($price  - $shippingPrice) * $adRate / 100;
+        $profit = $price - $data['pFee'] - $data['eFee'] - ($cost + $out + $costprice) / $ukRate - ($price  - $shippingPrice) * $adRate / 100;
         $data['profit'] = round($profit, 2);
         $data['eFee'] = round($data['eFee'], 2);
         $data['pFee'] = round($data['pFee'], 2);
@@ -218,20 +222,20 @@ class ApiUk
 
 
         //获取售价  使用小额paypal参数计算 和8美元比较，小于8则正确，否则使用大额参数再次计算获取售价
-        $price = ($cost + $out + $costprice / $ukRate + Yii::$app->params['spBasic_uk']) / (1 - $rate / 100 - Yii::$app->params['eRate_uk'] - Yii::$app->params['spRate_uk']);
+        $price = (($cost + $out + $costprice) / $ukRate + Yii::$app->params['spBasic_uk']) / (1 - $rate / 100 - Yii::$app->params['eRate_uk'] - Yii::$app->params['spRate_uk']);
 
         //获取paypal交易费
         if ($price < 8 * $usRate / $ukRate) {
             $pFee = $price * Yii::$app->params['spRate_uk'] + Yii::$app->params['spBasic_uk'];
         } else {
-            $price = ($cost + $out + $costprice / $ukRate + Yii::$app->params['bpBasic_uk']) / (1 - $rate / 100 - Yii::$app->params['eRate_uk'] - Yii::$app->params['bpRate_uk']);
+            $price = (($cost + $out + $costprice) / $ukRate + Yii::$app->params['bpBasic_uk']) / (1 - $rate / 100 - Yii::$app->params['eRate_uk'] - Yii::$app->params['bpRate_uk']);
             $pFee = $price * Yii::$app->params['bpRate_uk'] + Yii::$app->params['bpBasic_uk'];
         }
         //eBay交易费
         $eFee = $price * Yii::$app->params['eRate_uk'];
 
         //计算毛利
-        $profit = $price - $eFee - $pFee - $cost - $out - $costprice / $ukRate;
+        $profit = $price - $eFee - $pFee - ($cost + $out + $costprice) / $ukRate;
         $data['price'] = round($price, 2);
         $data['eFee'] = round($eFee, 2);
         $data['pFee'] = round($pFee, 2);
