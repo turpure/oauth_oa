@@ -2033,8 +2033,7 @@ class ApiGoodsinfo
         $row = [
             'sku' => '', "parent_sku" => '', "title" => '', "description" => '', "categories" => '' , "variations" => '',
             'variational_properties' => '', 'properties' => '', "brand" => '', "gtin" => '', 'suffix' => '', 'quantity' => 0,
-            'price' => '', 'original_price' => '', 'shipping_time' => '', 'main_image' => '', 'images' => '',
-
+            'price' => '', 'original_price' => '', 'shipping_time' => '', 'main_image' => '', 'images' => '', 'markets' => ['SE']
         ];
         $out = [];
 
@@ -2055,7 +2054,7 @@ class ApiGoodsinfo
             $row['description'] = $wishInfo['description'];
             $row['categories'] = [];
             $row['suffix'] = $account['suffix'];
-            $row['quantity'] = !empty($wishInfo['inventory']) ? $wishInfo['inventory'] : 5;
+            $row['quantity'] = !empty($wishInfo['inventory']) ? ((int)$wishInfo['inventory']) : 5;
             $variantInfo = static::getFyndiqVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
             $row['variations'] = $variantInfo['variant'];
             $out[] = $row;
@@ -3035,7 +3034,7 @@ class ApiGoodsinfo
                 $sku['price'] -= 0.01;
 
                 $var['sku'] = $sku['sku'];
-                $var['quantity'] = $sku['inventory'];
+                $var['quantity'] = (int)$sku['inventory'];
                 $var['properties'] = [];
                 $var['variational_properties'] = [];
                 if($sku['color']){
@@ -3054,25 +3053,25 @@ class ApiGoodsinfo
                     ];
                     $var['variational_properties'][] = 'size';
                 }
-                $var['price'] = [
+                $var['price'] = [[
                     'market' => 'SE',
                     'value' => [
                         'amount' => $sku['price'] * 6 , // 瑞典克朗价格
                         'currency' => 'SEK',
                     ]
-                ];
-                $var['original_price'] = [
+                ]];
+                $var['original_price'] = [[
                     'market' => 'SE',
                     'value' => [
                         'amount' => ceil($sku['msrp']) * 6 , // 瑞典克朗价格
                         'currency' => 'SEK',
                     ]
-                ];
+                ]];
                 $shipping_time = explode('-', $sku['shippingTime']);
                 $var['shipping_time'] = [[
                     "market" => "SE",
-                    "min" => isset($shipping_time[0]) ? $shipping_time[0] : 7,
-                    "max" => isset($shipping_time[1]) ? $shipping_time[1] : 30,
+                    "min" => isset($shipping_time[0]) ? ((int)$shipping_time[0]) : 7,
+                    "max" => isset($shipping_time[1]) ? ((int)$shipping_time[1]) : 30,
                 ]];
                 $var['main_image'] = $sku['wishLinkUrl'];
 //                var_dump($wishInfo['extraImages']);
