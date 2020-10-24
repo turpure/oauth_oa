@@ -790,6 +790,12 @@ class OaGoodsinfoController extends AdminController
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
+    /**
+     * 导出平台模板
+     * Date: 2020-08-14 12:01
+     * Author: henry
+     * @return array|bool
+     */
     public function actionExportTemplate()
     {
         try {
@@ -838,6 +844,10 @@ class OaGoodsinfoController extends AdminController
             }elseif ($plat == 'eBay'){
                 $type = 'Xls';
                 $ret = ApiGoodsinfo::preExportEbay($infoId, $accounts);
+            }elseif($plat == 'Fyndiq'){
+                $type = 'Xls';
+                $ret = ApiGoodsinfo::preExportFyndiq($infoId, $accounts);
+                //var_dump($ret['data']);exit;
             }
             ExportTools::toExcelOrCsv($ret['name'], $ret['data'], $type);
         } catch (\Exception  $why) {

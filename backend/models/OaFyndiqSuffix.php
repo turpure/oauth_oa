@@ -5,7 +5,7 @@ namespace backend\models;
 use Yii;
 
 /**
- * This is the model class for table "proCenter.oa_wishSuffix".
+ * This is the model class for table "proCenter.oa_fyndiqSuffix".
  *
  * @property int $id
  * @property string $ibaySuffix
@@ -17,14 +17,14 @@ use Yii;
  * @property string $parentCategory
  * @property int $isIbay
  */
-class OaWishSuffix extends \yii\db\ActiveRecord
+class OaFyndiqSuffix extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return 'proCenter.oa_wishSuffix';
+        return 'proCenter.oa_fyndiqSuffix';
     }
 
     /**

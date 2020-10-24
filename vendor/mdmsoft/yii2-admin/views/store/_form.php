@@ -32,6 +32,7 @@ use \mdm\admin\models\Position;
                     'Shopify' => 'Shopify',
                     'Mercado' => 'Mercado',
                     '1688' => '1688',
+                    'Fyndiq' => 'Fyndiq',
                 ],
                 'options' => ['placeholder' => '--请选择销售平台--'],
                 'pluginOptions' => [

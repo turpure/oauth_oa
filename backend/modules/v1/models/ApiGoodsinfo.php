@@ -20,6 +20,7 @@ namespace backend\modules\v1\models;
 
 use backend\models\OaEbayGoods;
 use backend\models\OaEbayGoodsSku;
+use backend\models\OaFyndiqSuffix;
 use backend\models\OaGoods;
 use backend\models\OaGoods1688;
 use backend\models\OaGoodsinfo;
@@ -2015,9 +2016,54 @@ class ApiGoodsinfo
         return $out;
     }
 
+    /**
+     * @brief 导出Fyndiq模板预处理
+     * @param $id
+     * @param $accounts
+     * @return array
+     */
+    public static function preExportFyndiq($id, $accounts)
+    {
+        $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
+        $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
+        $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
+        $fyndiqAccounts = OaFyndiqSuffix::find()->andFilterWhere(['suffix' => $accounts])->asArray()->all();
+        $keyWords = static::preKeywords($wishInfo);
+        $row = [
+            'sku' => '', "parent_sku" => '', "title" => '', "description" => '', "categories" => '' , "variations" => '',
+            'variational_properties' => '', 'properties' => '', "brand" => '', "gtin" => '', 'suffix' => '', 'quantity' => 0,
+            'price' => '', 'original_price' => '', 'shipping_time' => '', 'main_image' => '', 'images' => '', 'markets' => ['SE']
+        ];
+        $ret = ['name' => 'fyndiq-' . $goodsInfo['goodsCode']];
+        $out = [];
+        foreach ($fyndiqAccounts as $account) {
+            $titlePool = [];
+            $title = '';
+            $len = self::fyndiqTitleLength;
+            while (true) {
+                $title = static::getTitleName($keyWords, $len);
+                --$len;
+                if (empty($title) || !in_array($title, $titlePool, false)) {
+                    $titlePool[] = $title;
+                    break;
+                }
+            }
+            $row['parent_sku'] = $wishInfo['sku'];
+            $row['title'] = $title;
+            $row['description'] = $wishInfo['description'];
+            $row['markets'] = json_encode(['SE']);
+            $row['suffix'] = $account['suffix'];
+            $row['quantity'] = !empty($wishInfo['inventory']) ? ((int)$wishInfo['inventory']) : 5;
+            $variantInfo = static::getFyndiqVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
+            $row['variations'] = $variantInfo['variant'];
+            $out[] = $row;
+        }
+        $ret['data'] = $out;
+        return $ret;
+    }
 
     /**
-     * @brief 导出Fyndiq模板
+     * @brief 导出Fyndiq模板数据
      * @param $id
      * @param $accounts
      * @return array
