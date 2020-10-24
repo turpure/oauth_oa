@@ -3077,8 +3077,7 @@ class ApiGoodsinfo
                 $var['main_image'] = $sku['wishLinkUrl'];
 //                var_dump($wishInfo['extraImages']);
                 $images = explode("\n", $wishInfo['extraImages']);
-                $var['images'] = array_slice($images, 10);
-
+                $var['images'] = array_slice($images, 0, 10);
                 $variation[] = $var;
             }
             $variant = json_encode($variation);
@@ -3103,7 +3102,6 @@ class ApiGoodsinfo
             ];
             return $ret;
         } catch (\Exception $why) {
-            var_dump($why->getMessage());exit;
             return ['variant' => '', 'price' => '', 'original_price' => ''];
         }
 
