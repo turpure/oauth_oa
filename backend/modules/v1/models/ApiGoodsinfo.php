@@ -3071,7 +3071,7 @@ class ApiGoodsinfo
                 $var['shipping_time'] = [[
                     "market" => "SE",
                     "min" => isset($shipping_time[0]) ? ((int)$shipping_time[0]) : 7,
-                    "max" => isset($shipping_time[1]) ? ((int)$shipping_time[1]) : 30,
+                    "max" => isset($shipping_time[1]) < 13 ? ((int)$shipping_time[1]) : 12,
                 ]];
                 $var['main_image'] = $sku['wishLinkUrl'];
 //                var_dump($wishInfo['extraImages']);
