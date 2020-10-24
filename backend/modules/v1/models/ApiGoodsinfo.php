@@ -2028,10 +2028,10 @@ class ApiGoodsinfo
         $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
         $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
         $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
-        $fyndiqAccounts = Yii::$app->db->createCommand("SELECT * FROM `oa_fyndiqSuffix` WHERE isIbay=1;")->queryAll();
+        $fyndiqAccounts = Yii::$app->db->createCommand("SELECT * FROM proCenter.`oa_fyndiqSuffix` WHERE isIbay=1;")->queryAll();
         $keyWords = static::preKeywords($wishInfo);
         $row = [
-            'sku', "parent_sku" => '', "title" => '', "description" => '', "categories" => '' , "variations" => '',
+            'sku' => '', "parent_sku" => '', "title" => '', "description" => '', "categories" => '' , "variations" => '',
             'variational_properties' => '', 'properties' => '', "brand" => '', "gtin" => '', 'suffix' => '', 'quantity' => 0,
             'price' => '', 'original_price' => '', 'shipping_time' => '', 'main_image' => '', 'images' => '',
 
@@ -2055,11 +2055,9 @@ class ApiGoodsinfo
             $row['description'] = $wishInfo['description'];
             $row['categories'] = [];
             $row['suffix'] = $account['suffix'];
-
-            $row['Quantity'] = !empty($ebayInfo['quantity']) ? $ebayInfo['quantity'] : 5;
-            if (count($ebayInfo['oaEbayGoodsSku']) > 1) $goodsInfo['isVar'] = '是'; // 2020-06-02 添加（单平台添加多属性）
+            $row['quantity'] = !empty($wishInfo['inventory']) ? $wishInfo['inventory'] : 5;
             $variantInfo = static::getFyndiqVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
-            $row['Variations'] = json_decode(static::getEbayVariation($goodsInfo['isVar'], $ebayInfo, $account['nameCode']), true);
+            $row['variations'] = $variantInfo['variant'];
             $out[] = $row;
         }
         return $out;
@@ -3014,7 +3012,6 @@ class ApiGoodsinfo
             for ($i = 0; $i < $len; $i++) {
                 $totalPrice[] = ceil($price[$i] + $shippingPrice[$i]);
             }
-
             //获取最大最小价格
             $maxPrice = max($totalPrice);
             $minPrice = min($totalPrice);
@@ -3030,85 +3027,84 @@ class ApiGoodsinfo
             //打包变体
             $variation = [];
             foreach ($wishSku as $sku) {
+//                var_dump($sku);exit;
                 //价格判断
                 $totalPrice = ceil($sku['price'] + $sku['shipping']);
                 $sku['shipping'] = $shipping;
-
-                // price - 0.01
                 $sku['price'] = $totalPrice - $shipping < 1 ? 1 : ceil($totalPrice - $shipping);
                 $sku['price'] -= 0.01;
 
                 $var['sku'] = $sku['sku'];
-                $var['color'] = $sku['color'];
-                $var['size'] = $sku['size'];
-                $var['inventory'] = $sku['inventory'];
-                $var['price'] = $sku['price'];
-                $var['shipping'] = $sku['shipping'];
-                $var['msrp'] = ceil($sku['msrp']);
-                $var['shipping_time'] = $sku['shippingTime'];
-                $var['main_image'] = $sku['wishLinkUrl'];
-
-                //美元账号
-                if ($account['localCurrency'] === 'USD') {
-                    $var['localized_currency_code'] = 'USD';
-                    $var['localized_price'] = (string)$sku['price'];
-                } // 人民币账号
-                else {
-                    $var['localized_currency_code'] = 'CNY';
-                    $var['localized_price'] = floor((string)$sku['price'] * self::UsdExchange * 100) / 100;
+                $var['quantity'] = $sku['inventory'];
+                $var['properties'] = [];
+                $var['variational_properties'] = [];
+                if($sku['color']){
+                    $var['properties'][] = [
+                        "name" => "color", //Free text
+                        "value" => $sku['color'],
+                        "language" => "en-US"
+                    ];
+                    $var['variational_properties'][] = 'color';
                 }
+                if($sku['size']){
+                    $var['properties'][] = [
+                        "name" => "size", //Free text
+                        "value" => $sku['size'],
+                        "language" => "en-US"
+                    ];
+                    $var['variational_properties'][] = 'size';
+                }
+                $var['price'] = [
+                    'market' => 'SE',
+                    'value' => [
+                        'amount' => $sku['price'] * 6 , // 瑞典克朗价格
+                        'currency' => 'SEK',
+                    ]
+                ];
+                $var['original_price'] = [
+                    'market' => 'SE',
+                    'value' => [
+                        'amount' => ceil($sku['msrp']) * 6 , // 瑞典克朗价格
+                        'currency' => 'SEK',
+                    ]
+                ];
+                $shipping_time = explode('-', $sku['shippingTime']);
+                $var['shipping_time'] = [[
+                    "market" => "SE",
+                    "min" => isset($shipping_time[0]) ? $shipping_time[0] : 7,
+                    "max" => isset($shipping_time[1]) ? $shipping_time[1] : 30,
+                ]];
+                $var['main_image'] = $sku['wishLinkUrl'];
+//                var_dump($wishInfo['extraImages']);
+                $images = explode("\n", $wishInfo['extraImages']);
+                $var['images'] = array_slice($images, 10);
+
                 $variation[] = $var;
             }
             $variant = json_encode($variation);
             $ret = [];
-            if ($isVar === '是') {
-                $ret['variant'] = $variant;
-
-                # price -0.01
-                $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1;
-                $ret['price'] -= 0.01;
-                $ret['shipping'] = $shipping;
-
-                $ret['msrp'] = $maxMsrp;
-
-                //美元账号
-                if ($account['localCurrency'] === 'USD') {
-                    $ret['local_price'] = $ret['price'];
-                    $ret['local_shippingfee'] = $shipping;
-                    $ret['local_currency'] = 'USD';
-                } //人民币账号
-                else {
-                    $ret['local_price'] = floor($ret['price'] * self::UsdExchange * 100) / 100;
-                    $ret['local_shippingfee'] = floor($shipping * self::UsdExchange * 100) / 100;
-                    $ret['local_currency'] = 'CNY';
-                }
-            } else {
-                $ret['variant'] = '';
-
-                #price -0.01
-                $ret['price'] = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1;
-                $ret['price'] -= 0.01;
-                $ret['shipping'] = $shipping;
-
-                $ret['msrp'] = $maxMsrp;
-
-                //美元账号
-                if ($account['localCurrency'] === 'USD') {
-                    $ret['local_price'] = $ret['price'];
-                    $ret['local_shippingfee'] = $shipping;
-                    $ret['local_currency'] = 'USD';
-                } // 人民币账号
-                else {
-                    $ret['local_price'] = floor($ret['price'] * self::UsdExchange * 100) / 100;
-                    $ret['local_shippingfee'] = floor($shipping * self::UsdExchange * 100) / 100;
-                    $ret['local_currency'] = 'CNY';
-                }
-
-            }
+            //$ret['variant'] = $isVar === '是' ? $variant : '';
+            $ret['variant'] = $variant;
+            $finalPrice = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1;
+            $finalPrice -= 0.01;
+            $ret['price'] = [
+                'market' => 'SE',
+                'value' => [
+                    'amount' => $finalPrice * 6 , // 瑞典克朗价格
+                    'currency' => 'SEK',
+                ]
+            ];
+            $ret['original_price'] = [
+                'market' => 'SE',
+                'value' => [
+                    'amount' => $maxMsrp * 6 , // 瑞典克朗价格
+                    'currency' => 'SEK',
+                ]
+            ];
             return $ret;
         } catch (\Exception $why) {
-            return ['variant' => '', 'price' => '', 'shipping' => '',
-                'msrp' => '', 'local_price' => '', 'local_shippingfee' => '', 'local_currency' => ''];
+            var_dump($why->getMessage());exit;
+            return ['variant' => '', 'price' => '', 'original_price' => ''];
         }
 
     }
