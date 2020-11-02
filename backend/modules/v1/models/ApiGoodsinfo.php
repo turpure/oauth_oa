@@ -2102,6 +2102,7 @@ class ApiGoodsinfo
             $row['suffix'] = $account['suffix'];
             $row['quantity'] = !empty($wishInfo['inventory']) ? ((int)$wishInfo['inventory']) : 5;
             $variantInfo = static::getFyndiqVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
+            var_dump($variantInfo);exit;
             $row['variations'] = $variantInfo['variant'];
             $out[] = $row;
         }
@@ -3071,6 +3072,7 @@ class ApiGoodsinfo
 
             //打包变体
             $variation = [];
+
             foreach ($wishSku as $sku) {
 //                var_dump($sku);exit;
                 //价格判断
@@ -3120,11 +3122,10 @@ class ApiGoodsinfo
                     "max" => isset($shipping_time[1]) < 13 ? ((int)$shipping_time[1]) : 12,
                 ]];
                 $var['main_image'] = $sku['wishLinkUrl'];
-//                var_dump($wishInfo['extraImages']);
-                $key = array_search($sku['wishLinkUrl'], $wishInfo['extraImages']);
-                if($key !== false) array_splice($wishInfo['extraImages'], $key, 1);
-                $images = explode("\n", $wishInfo['extraImages']);
-                $var['images'] = array_slice($images, 0, 10);
+                $extraImages = explode("\n", $wishInfo['extraImages']);
+                $key = array_search($sku['wishLinkUrl'], $extraImages);
+                if($key !== false) array_splice($extraImages, $key, 1);
+                $var['images'] = array_slice($extraImages, 0, 10);
                 $variation[] = $var;
             }
             $variant = json_encode($variation);
@@ -3149,6 +3150,7 @@ class ApiGoodsinfo
             ];
             return $ret;
         } catch (\Exception $why) {
+            var_dump($why->getMessage());exit;
             return ['variant' => '', 'price' => '', 'original_price' => ''];
         }
 
