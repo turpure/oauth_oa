@@ -3150,7 +3150,7 @@ class ApiGoodsinfo
             ];
             return $ret;
         } catch (\Exception $why) {
-            var_dump($why->getMessage());exit;
+//            var_dump($why->getMessage());exit;
             return ['variant' => '', 'price' => '', 'original_price' => ''];
         }
 
