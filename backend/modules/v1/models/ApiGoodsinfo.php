@@ -3121,6 +3121,8 @@ class ApiGoodsinfo
                 ]];
                 $var['main_image'] = $sku['wishLinkUrl'];
 //                var_dump($wishInfo['extraImages']);
+                $key = array_search($sku['wishLinkUrl'], $wishInfo['extraImages']);
+                if($key !== false) array_splice($wishInfo['extraImages'], $key, 1);
                 $images = explode("\n", $wishInfo['extraImages']);
                 $var['images'] = array_slice($images, 0, 10);
                 $variation[] = $var;

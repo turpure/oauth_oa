@@ -136,7 +136,7 @@ class DbManager extends \yii\rbac\DbManager
             $children[$row['name']] = $this->populateItem($row);
         }
 
-        return $children;
+          return $children;
     }
 
     /**
