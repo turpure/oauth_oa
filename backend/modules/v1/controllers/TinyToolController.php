@@ -1403,7 +1403,8 @@ class TinyToolController extends AdminController
             $dataProvider = new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
-                    'attributes' => ['sku', 'item_id', 'ad_fee', 'transaction_price'],
+                    'attributes' => ['sku', 'goodsCode', 'usenum', 'costmoney', 'dayNum', 'hopeUseNum',
+                        'sellCount1', 'sellCount2', 'sellCount3'],
                 ],
                 'pagination' => [
                     'pageSize' => $pageSize,

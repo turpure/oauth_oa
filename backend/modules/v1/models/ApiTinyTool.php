@@ -1346,32 +1346,35 @@ class ApiTinyTool
     /**
      * 海外仓库存预警
      * @param $condition
-     * Date: 2020-08-21 10:14
+     * Date: 2020-11-05 10:14
      * Author: henry
      * @return array
      * @throws Exception
      */
     public static function getStockWarningData($condition)
     {
-        $sku = isset($condition['sku']) ? $condition['sku'] : '';
-        $suffix = isset($condition['suffix']) ? $condition['suffix'] : '';
-        $itemId = isset($condition['item_id']) ? $condition['item_id'] : '';
-        $begin = isset($condition['dateRange'][0]) ? $condition['dateRange'][0] : '';
-        $end = isset($condition['dateRange'][1]) ? ($condition['dateRange'][1] . ' 23:59:59') : '';
-        $sql = "select suffix,sku,ad_rate,ad_fee*ad_code_rate as ad_fee,CONCAT(ad_fee,'(',ad_code,')') as ad_fee_original, 
-                fee_time,description, item_id, CONCAT(transaction_price,'(',transaction_code,')') as transaction_price, 
-                CONCAT(shipping_fee,'(',transaction_code,')') as shipping_fee,
-                transaction_code_rate*(transaction_price + shipping_fee) as transaction_price_total,shipping_name
-                from cache_ebayAdFee where sku like 'UK%' ";
+        $sku = isset($condition['sku']) ? $condition['sku'] : null;
+        $sku = str_replace(',', "','", $sku);
+        $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
+        $status = isset($condition['status']) ? $condition['status'] : '';
+        $sql = "SELECT g.possessMan2,ss.* FROM (
+	                SELECT goodsCode,SKU,SKUName,unit,property1,property2,goodsstatus,categoryName,weight,
+	                salerName,defStoreName,createDate,costprice = stuff((
+					    SELECT ',' + CAST(costprice AS VARCHAR) + '(' + storeName + ')' FROM Y_R_tStockingWaring a
+					    WHERE a.SKU=s.SKU FOR xml path('') ),1,1,''),
+	                SUM(usenum) AS usenum,SUM(costmoney) AS costmoney,SUM(DayNum) AS dayNum,
+	                SUM(hopeUseNum) AS hopeUseNum,SUM(SellCount1) AS sellCount1,SUM(SellCount2) AS sellCount2,
+	                SUM(SellCount3) AS sellCount3 FROM [dbo].[Y_R_tStockingWaring] s
+	            WHERE storeName IN ('万邑通UK','万邑通UK-MA仓','谷仓UK') ";
+        if ($sku) $sql .= " AND SKU IN ('{$sku}') ";
+        if ($goodsCode) $sql .= " AND goodsCode LIKE '{$goodsCode}%' ";
+        if ($status) $sql .= " AND goodsstatus = '{$status}' ";
+        $sql .= "GROUP BY goodsCode,SKU,SKUName,unit,property1,property2,goodsstatus,CategoryName,Weight,	
+	            SalerName,DefStoreName,CreateDate ) ss LEFT JOIN B_Goods g ON ss.GoodsCode=g.GoodsCode ";
 
-        if ($begin && $end) $sql .= " AND fee_time between '{$begin}' and '{$end}'";
-        if ($sku) $sql .= " and sku like '%{$sku}%'";
-        if ($suffix) $sql .= " and suffix like '%{$suffix}%'";
-        if ($itemId) $sql .= " and item_id = '{$itemId}'";
-        $data = Yii::$app->db->createCommand($sql)->queryAll();
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         return $data;
     }
-
 
 
 }
