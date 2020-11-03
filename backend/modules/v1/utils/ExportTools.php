@@ -62,6 +62,9 @@ class ExportTools
         header('Cache-Control: max-age=0');
         header('Access-Control-Expose-Headers: Content-Disposition');
         $writer = IOFactory::createWriter($sheet, $type);
+        if((strtolower($type) === 'csv')) {
+            $writer->setUseBOM(true);
+        }
         $writer->save('php://output');
         exit;
     }
