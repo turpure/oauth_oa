@@ -1343,5 +1343,35 @@ class ApiTinyTool
         return $data;
     }
 
+    /**
+     * 海外仓库存预警
+     * @param $condition
+     * Date: 2020-08-21 10:14
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
+    public static function getStockWarningData($condition)
+    {
+        $sku = isset($condition['sku']) ? $condition['sku'] : '';
+        $suffix = isset($condition['suffix']) ? $condition['suffix'] : '';
+        $itemId = isset($condition['item_id']) ? $condition['item_id'] : '';
+        $begin = isset($condition['dateRange'][0]) ? $condition['dateRange'][0] : '';
+        $end = isset($condition['dateRange'][1]) ? ($condition['dateRange'][1] . ' 23:59:59') : '';
+        $sql = "select suffix,sku,ad_rate,ad_fee*ad_code_rate as ad_fee,CONCAT(ad_fee,'(',ad_code,')') as ad_fee_original, 
+                fee_time,description, item_id, CONCAT(transaction_price,'(',transaction_code,')') as transaction_price, 
+                CONCAT(shipping_fee,'(',transaction_code,')') as shipping_fee,
+                transaction_code_rate*(transaction_price + shipping_fee) as transaction_price_total,shipping_name
+                from cache_ebayAdFee where sku like 'UK%' ";
+
+        if ($begin && $end) $sql .= " AND fee_time between '{$begin}' and '{$end}'";
+        if ($sku) $sql .= " and sku like '%{$sku}%'";
+        if ($suffix) $sql .= " and suffix like '%{$suffix}%'";
+        if ($itemId) $sql .= " and item_id = '{$itemId}'";
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
+        return $data;
+    }
+
+
 
 }

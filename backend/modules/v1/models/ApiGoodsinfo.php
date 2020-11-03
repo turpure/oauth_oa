@@ -155,7 +155,7 @@ class ApiGoodsinfo
             if (strpos($userRole, '销售') === false) {
                 if (strpos($userRole, '采购') !== false) {
                     $query->andWhere(['or', ['in', 'g.introducer', $userList], ['in', 'gi.purchaser', $userList]]);
-                } else {
+                } else if(strpos($userRole, '美工') !== false || strpos($userRole, '开发') !== false) {
                     $query->andWhere(['or', ['in', 'gi.developer', $userList], ['in', 'possessMan1', $userList]]);
                 }
             } else {
@@ -1140,10 +1140,9 @@ class ApiGoodsinfo
         $products = Yii::$app->pro_db->createCommand($sql)->queryAll();
         $ret = ['name' => 'lazada-template'];
         $out = [];
-
+//        var_dump($products);exit;
         // 每个产品生成标题
         $goodsInfo = static::getLazadaTitle($products);
-
         // 每个产品从普源获取成本价等信息
 
         $skuCostPrice = static::getGoodsCostPrice($products);
@@ -1479,6 +1478,7 @@ class ApiGoodsinfo
         $tag = '';
         $requiredKeywords = json_decode($requiredKeywords);
         $i = 0;
+        $requiredKeywords = $requiredKeywords ? : [];
         foreach ($requiredKeywords as $kw) {
             if (!empty($kw)) {
                 $tag .= '<li>' . $kw . '</li>';

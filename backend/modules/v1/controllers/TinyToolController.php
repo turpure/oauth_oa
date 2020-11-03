@@ -1388,5 +1388,32 @@ class TinyToolController extends AdminController
         }
     }
 
+    /**
+     * 海外仓 UK 库存预警
+     * Date: 2020-08-21 10:19
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionStockWarning()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition');
+            $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
+            $data = ApiTinyTool::getStockWarningData($condition);
+            $dataProvider = new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => ['sku', 'item_id', 'ad_fee', 'transaction_price'],
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+            return $dataProvider;
+        } catch (Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+
 
 }
