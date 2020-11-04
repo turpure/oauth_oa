@@ -33,6 +33,7 @@ use backend\modules\v1\utils\ExportTools;
 use yii\data\ActiveDataProvider;
 use Yii;
 use yii\helpers\ArrayHelper;
+use yii\mongodb\Query;
 
 
 class OaGoodsinfoController extends AdminController
@@ -1105,6 +1106,22 @@ class OaGoodsinfoController extends AdminController
         }
     }
 
+    /**
+     * Fyndiq 产品类目
+     * Date: 2020-11-04 16:12
+     * Author: henry
+     * @return array|\yii\db\ActiveRecord[]
+     */
+    public function actionFyndiqCategory()
+    {
+        try {
+            return (new Query())->select (['id', 'name', 'children'])
+                ->from ( ['operation', 'fyndiq_category'])->all();
+            return ApiGoodsinfo::getVovaAccounts();
+        } catch (\Exception  $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
 
 
 
