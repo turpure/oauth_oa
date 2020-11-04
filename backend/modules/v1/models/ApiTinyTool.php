@@ -1357,7 +1357,7 @@ class ApiTinyTool
         $sku = str_replace(',', "','", $sku);
         $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
         $status = isset($condition['status']) ? $condition['status'] : '';
-        $sql = "SELECT g.possessMan2,ss.* FROM (
+        $sql = "SELECT 'UK海外仓' as storeName,g.possessMan2,ss.* FROM (
 	                SELECT goodsCode,SKU,SKUName,unit,property1,property2,goodsstatus,categoryName,weight,
 	                salerName,defStoreName,createDate,costprice = stuff((
 					    SELECT ',' + CAST(costprice AS VARCHAR) + '(' + storeName + ')' FROM Y_R_tStockingWaring a

@@ -1417,4 +1417,28 @@ class TinyToolController extends AdminController
     }
 
 
+    /**
+     * 海外仓 UK 库存预警, 表格下载
+     * Date: 2020-11-04 14:07
+     * Author: henry
+     * @return array
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionStockWarningExport()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition');
+            $data = ApiTinyTool::getStockWarningData($condition);
+            $name = 'stock-warning';
+            $title = ['仓库','责任归属人2','商品编码','SKU','SKU名称','规格','属性1','属性2','商品状态','类目','重量','业绩归属人1',
+                '默认发货仓库', '创建时间','平均单价','可用数量','库存金额','平均日销量','预计可用数量',
+                '5天销量','10天销量','20天销量',''];
+            ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
+        } catch (Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+
+
 }
