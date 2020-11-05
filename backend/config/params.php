@@ -175,16 +175,58 @@ return [
     'w_au_tran_2_4' => 3000,//重量分界线（g）
     'w_au_tran_2_5' => 4000,//重量分界线（g）
     'w_au_tran_2_6' => 5000,//重量分界线（g）
-    'w_au_tran_fee_2_1' => 7.0,//物流费用（<=500g，单位：AU $）
-    'w_au_tran_fee_2_2' => 7.44,//物流费用（<=1kg，单位：AU $）
-    'w_au_tran_fee_2_3' => 7.79,//物流费用（<=2kg，单位：AU $）
-    'w_au_tran_fee_2_4' => 8.07,//物流费用（<=3kg，单位：AU $）
-    'w_au_tran_fee_2_5' => 9.13,//物流费用（<=4kg，单位：AU $）
-    'w_au_tran_fee_2_6' => 9.55,//物流费用（<=5kg，单位：AU $）
-    'w_au_tran_fee_base' => 10.95,//基本物流费用（>5kg，单位：AU $）
-    'w_au_tran_fee_per' => 0.6,//超过5千克，每千克物流费用（>5kg，单位：AU $）
+    'w_au_tran_fee_2_1' => 6.97,//物流费用（<=500g，单位：AU $）
+    'w_au_tran_fee_2_2' => 7.99,//物流费用（<=1kg，单位：AU $）
+    'w_au_tran_fee_2_3' => 8.38,//物流费用（<=2kg，单位：AU $）
+    'w_au_tran_fee_2_4' => 8.62,//物流费用（<=3kg，单位：AU $）
+    'w_au_tran_fee_2_5' => 11.07,//物流费用（<=4kg，单位：AU $）
+    'w_au_tran_fee_2_6' => 12.18,//物流费用（<=5kg，单位：AU $）
+    'w_au_tran_fee_base' => 12.01,//基本物流费用（>5kg，单位：AU $）
+    'w_au_tran_fee_per' => 1.35,//超过5千克，每千克物流费用（>5kg，单位：AU $）
 
+    //AU Post - Parcel Post Parcel物流费参数
+    'transport_au3' => 'AU Post - Parcel Post eParcel',//物流名称
+    'w_au_tran_3_1' => 500,//重量分界线（g）
+    'w_au_tran_3_2' => 1000,//重量分界线（g）
+    'w_au_tran_3_3' => 2000,//重量分界线（g）
+    'w_au_tran_3_4' => 3000,//重量分界线（g）
+    'w_au_tran_3_5' => 4000,//重量分界线（g）
+    'w_au_tran_3_6' => 5000,//重量分界线（g）
+    'w_au_tran_3_7' => 7000,//重量分界线（g）
+    'w_au_tran_3_8' => 10000,//重量分界线（g）
+    'w_au_tran_3_9' => 15000,//重量分界线（g）
+    'w_au_tran_fee_3_1' => 8.67,//物流费用（<=500g，单位：AU $）
+    'w_au_tran_fee_3_2' => 10.18,//物流费用（<=1kg，单位：AU $）
+    'w_au_tran_fee_3_3' => 11.23,//物流费用（<=2kg，单位：AU $）
+    'w_au_tran_fee_3_4' => 12.26,//物流费用（<=3kg，单位：AU $）
+    'w_au_tran_fee_3_5' => 13.32,//物流费用（<=4kg，单位：AU $）
+    'w_au_tran_fee_3_6' => 14.37,//物流费用（<=5kg，单位：AU $）
+    'w_au_tran_fee_3_7' => 18.06,//物流费用（<=7kg，单位：AU $）
+    'w_au_tran_fee_3_8' => 21.02,//物流费用（<=10kg，单位：AU $）
+    'w_au_tran_fee_3_9' => 26.25,//物流费用（<=15kg，单位：AU $）
+    'w_au_tran_fee_3_10' => 34.42,//物流费用（<=22kg，单位：AU $）
 
+    //AU Post - Express Post Parcel物流费参数
+    'transport_au4' => 'AU Post - Express Post eParcel',//物流名称
+    'w_au_tran_4_1' => 500,//重量分界线（g）
+    'w_au_tran_4_2' => 1000,//重量分界线（g）
+    'w_au_tran_4_3' => 2000,//重量分界线（g）
+    'w_au_tran_4_4' => 3000,//重量分界线（g）
+    'w_au_tran_4_5' => 4000,//重量分界线（g）
+    'w_au_tran_4_6' => 5000,//重量分界线（g）
+    'w_au_tran_4_7' => 7000,//重量分界线（g）
+    'w_au_tran_4_8' => 10000,//重量分界线（g）
+    'w_au_tran_4_9' => 15000,//重量分界线（g）
+    'w_au_tran_fee_4_1' => 11.45,//物流费用（<=500g，单位：AU $）
+    'w_au_tran_fee_4_2' => 11.99,//物流费用（<=1kg，单位：AU $）
+    'w_au_tran_fee_4_3' => 12.47,//物流费用（<=2kg，单位：AU $）
+    'w_au_tran_fee_4_4' => 12.96,//物流费用（<=3kg，单位：AU $）
+    'w_au_tran_fee_4_5' => 13.41,//物流费用（<=4kg，单位：AU $）
+    'w_au_tran_fee_4_6' => 13.89,//物流费用（<=5kg，单位：AU $）
+    'w_au_tran_fee_4_7' => 14.85,//物流费用（<=7kg，单位：AU $）
+    'w_au_tran_fee_4_8' => 16.27,//物流费用（<=10kg，单位：AU $）
+    'w_au_tran_fee_4_9' => 18.64,//物流费用（<=15kg，单位：AU $）
+    'w_au_tran_fee_4_10' => 22,//物流费用（<=22kg，单位：AU $）
 
 
 

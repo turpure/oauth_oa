@@ -256,7 +256,7 @@ class DataCenterController extends AdminController
                         CASE WHEN IFNULL(aveCostmoney,0)=0 AND IFNULL(totalCostmoney,0)<>0 THEN 10000 
                               ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
                 FROM(
-                        SELECT storeName,
+                        SELECT CASE WHEN SUBSTR(storeName,1,5)='万邑通UK' THEN '万邑通UK' ELSE storeName END storeName,
                         SUM(useNum) AS useNum,
                         SUM(costmoney) costmoney,
                         SUM(notInStore) notInStore,
@@ -264,14 +264,14 @@ class DataCenterController extends AdminController
                         SUM(hopeUseNum) hopeUseNum,
                         SUM(totalCostmoney) totalCostmoney
                         FROM `cache_stockWaringTmpData`
-                        GROUP BY storeName
+                        GROUP BY CASE WHEN SUBSTR(storeName,1,5)='万邑通UK' THEN '万邑通UK' ELSE storeName END
                 ) aa LEFT JOIN 
                 (
-                        SELECT storeName,
+                        SELECT CASE WHEN SUBSTR(storeName,1,5)='万邑通UK' THEN '万邑通UK' ELSE storeName END storeName,
                         SUM(costMoney) AS 30DayCostmoney,
                         ROUND(SUM(costMoney)/30,4) AS aveCostmoney
                         FROM `cache_30DayOrderTmpData`
-                        GROUP BY storeName
+                        GROUP BY CASE WHEN SUBSTR(storeName,1,5)='万邑通UK' THEN '万邑通UK' ELSE storeName END
                 ) bb ON aa.storeName=bb.storeName
                 ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
         try{

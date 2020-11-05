@@ -33,6 +33,7 @@ use backend\modules\v1\utils\ExportTools;
 use yii\data\ActiveDataProvider;
 use Yii;
 use yii\helpers\ArrayHelper;
+use yii\mongodb\Query;
 
 
 class OaGoodsinfoController extends AdminController
@@ -790,6 +791,12 @@ class OaGoodsinfoController extends AdminController
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
+    /**
+     * 导出平台模板
+     * Date: 2020-08-14 12:01
+     * Author: henry
+     * @return array|bool
+     */
     public function actionExportTemplate()
     {
         try {
@@ -838,6 +845,10 @@ class OaGoodsinfoController extends AdminController
             }elseif ($plat == 'eBay'){
                 $type = 'Xls';
                 $ret = ApiGoodsinfo::preExportEbay($infoId, $accounts);
+            }elseif($plat == 'Fyndiq'){
+                $type = 'Xls';
+                $ret = ApiGoodsinfo::preExportFyndiq($infoId, $accounts);
+                //var_dump($ret['data']);exit;
             }
             ExportTools::toExcelOrCsv($ret['name'], $ret['data'], $type);
         } catch (\Exception  $why) {
@@ -949,6 +960,29 @@ class OaGoodsinfoController extends AdminController
 
     }
 
+    /**
+     * @brief 导出fyndiq模板数据
+     * @throws \Exception
+     */
+    public function actionPlatExportFyndiqData()
+    {
+        try {
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            $infoId = $condition['id'];
+            $type = isset($condition['type']) ? $condition['type'] : '';
+            $ret = ApiGoodsinfo::preExportFyndiqData($infoId, $type);
+            return $ret;
+        } catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+
+    }
+
+
 
     /**
      * @brief 上架JOOM产品
@@ -1020,15 +1054,17 @@ class OaGoodsinfoController extends AdminController
             $request = Yii::$app->request;
             $condition = $request->post()['condition'];
             $infoId = $condition['id'];
-            $data = json_encode($this->actionPlatEbayData()['data']);
+            $query = $this->actionPlatEbayData();
 
+            $data = isset($query['data']) ? json_encode($query['data']) : '';
 
             //日志
             $logData['infoId'] = $infoId;
-
+//            var_dump($data);exit;
             //post到iBay接口
             $api = 'http://139.196.109.214/index.php/api/ImportEbayMuban/auth/youran';
             $ret = Helper::request($api, $data)[1];
+//            var_dump($ret);exit;
             if (isset($ret['ack']) && $ret['ack'] === 'success') {
                 $logData['result'] = 'success';
                 $templates = array_values($ret['importebaymubanResponse']);
@@ -1070,6 +1106,22 @@ class OaGoodsinfoController extends AdminController
         }
     }
 
+    /**
+     * Fyndiq 产品类目
+     * Date: 2020-11-04 16:12
+     * Author: henry
+     * @return array|\yii\db\ActiveRecord[]
+     */
+    public function actionFyndiqCategory()
+    {
+        try {
+            return (new Query())->select (['id', 'name', 'children'])
+                ->from ( ['operation', 'fyndiq_category'])->all();
+            return ApiGoodsinfo::getVovaAccounts();
+        } catch (\Exception  $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
 
 
 

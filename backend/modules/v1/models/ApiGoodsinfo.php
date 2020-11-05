@@ -20,6 +20,7 @@ namespace backend\modules\v1\models;
 
 use backend\models\OaEbayGoods;
 use backend\models\OaEbayGoodsSku;
+use backend\models\OaFyndiqSuffix;
 use backend\models\OaGoods;
 use backend\models\OaGoods1688;
 use backend\models\OaGoodsinfo;
@@ -69,6 +70,7 @@ class ApiGoodsinfo
     const smtTitleLength = 128;
     const lazadaTitleLength = 255;
     const shopeeTitleLength = 120;
+    const fyndiqTitleLength = 64;
 
     /**
      * @brief 属性信息列表
@@ -153,7 +155,7 @@ class ApiGoodsinfo
             if (strpos($userRole, '销售') === false) {
                 if (strpos($userRole, '采购') !== false) {
                     $query->andWhere(['or', ['in', 'g.introducer', $userList], ['in', 'gi.purchaser', $userList]]);
-                } else {
+                } else if(strpos($userRole, '美工') !== false || strpos($userRole, '开发') !== false) {
                     $query->andWhere(['or', ['in', 'gi.developer', $userList], ['in', 'possessMan1', $userList]]);
                 }
             } else {
@@ -1138,10 +1140,9 @@ class ApiGoodsinfo
         $products = Yii::$app->pro_db->createCommand($sql)->queryAll();
         $ret = ['name' => 'lazada-template'];
         $out = [];
-
+//        var_dump($products);exit;
         // 每个产品生成标题
         $goodsInfo = static::getLazadaTitle($products);
-
         // 每个产品从普源获取成本价等信息
 
         $skuCostPrice = static::getGoodsCostPrice($products);
@@ -1477,6 +1478,7 @@ class ApiGoodsinfo
         $tag = '';
         $requiredKeywords = json_decode($requiredKeywords);
         $i = 0;
+        $requiredKeywords = $requiredKeywords ? : [];
         foreach ($requiredKeywords as $kw) {
             if (!empty($kw)) {
                 $tag .= '<li>' . $kw . '</li>';
@@ -1944,6 +1946,7 @@ class ApiGoodsinfo
 
             $row['SiteId'] = $ebayInfo['site'];
             $row['Site'] = OaSiteCountry::findOne(['code' => $ebayInfo['site']])['nameEn'];
+            $row['Currency'] = OaSiteCountry::findOne(['code' => $ebayInfo['site']])['currencyCode'];
             $row['Suffix'] = $account['ebaySuffix'];
             $row['PrimaryCategory']['CategoryID'] = $ebayInfo['listedCate'];
             $row['SecondaryCategory']['CategoryID'] = $ebayInfo['listedSubcate'];
@@ -1987,7 +1990,14 @@ class ApiGoodsinfo
             $internationalShippingService2['ShipToLocation'] = static::getShippingService($ebayInfo['outShippingMethod2']) ? 'Worldwide' : '';
             $row['ShippingDetails']['ShippingServiceOptions'] = [$shippingInfo1, $shippingInfo2];
             $row['ShippingDetails']['InternationalShippingServiceOption'] = [$internationalShippingService1, $internationalShippingService2];
-
+            $ItemSpecifics = json_decode($ebayInfo['specifics'], true);
+            if($ItemSpecifics && isset($ItemSpecifics['specifics'])){
+                foreach ($ItemSpecifics['specifics'] as $i => $v){
+                    foreach ($v as $k => $value){
+                        $row['ItemSpecifics']['NameValueList'][$i] = ['Name' => $k, 'Value' => $value];
+                    }
+                }
+            }
             //$row['UseMobile'] = '1';
             //$row['IbayTemplate'] = $account['ibayTemplate'];
             //$row['IbayInformation'] = '1';
@@ -2001,6 +2011,98 @@ class ApiGoodsinfo
             $row['ProductListingDetails']['ISBN'] = 'Does not apply';
             $row['ProductListingDetails']['UPC'] = $ebayInfo['UPC'];
             $row['ProductListingDetails']['EAN'] = $ebayInfo['EAN'];
+            $out[] = $row;
+        }
+        return $out;
+    }
+
+    /**
+     * @brief 导出Fyndiq模板预处理
+     * @param $id
+     * @param $accounts
+     * @return array
+     */
+    public static function preExportFyndiq($id, $accounts)
+    {
+        $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
+        $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
+        $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
+        $fyndiqAccounts = OaFyndiqSuffix::find()->andFilterWhere(['suffix' => $accounts])->asArray()->all();
+        $keyWords = static::preKeywords($wishInfo);
+        $row = [
+            'sku' => '', "parent_sku" => '', "title" => '', "description" => '', "categories" => '' , "variations" => '',
+            'variational_properties' => '', 'properties' => '', "brand" => '', "gtin" => '', 'suffix' => '', 'quantity' => 0,
+            'price' => '', 'original_price' => '', 'shipping_time' => '', 'main_image' => '', 'images' => '', 'markets' => ['SE']
+        ];
+        $ret = ['name' => 'fyndiq-' . $goodsInfo['goodsCode']];
+        $out = [];
+        foreach ($fyndiqAccounts as $account) {
+            $titlePool = [];
+            $title = '';
+            $len = self::fyndiqTitleLength;
+            while (true) {
+                $title = static::getTitleName($keyWords, $len);
+                --$len;
+                if (empty($title) || !in_array($title, $titlePool, false)) {
+                    $titlePool[] = $title;
+                    break;
+                }
+            }
+            $row['parent_sku'] = $wishInfo['sku'];
+            $row['title'] = $title;
+            $row['description'] = $wishInfo['description'];
+            $row['markets'] = json_encode(['SE']);
+            $row['suffix'] = $account['suffix'];
+            $row['quantity'] = !empty($wishInfo['inventory']) ? ((int)$wishInfo['inventory']) : 5;
+            $variantInfo = static::getFyndiqVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
+            $row['variations'] = $variantInfo['variant'];
+            $out[] = $row;
+        }
+        $ret['data'] = $out;
+        return $ret;
+    }
+
+    /**
+     * @brief 导出Fyndiq模板数据
+     * @param $id
+     * @param $accounts
+     * @return array
+     */
+    public static function preExportFyndiqData($id, $type)
+    {
+        $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
+        $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
+        $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
+        $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
+        $fyndiqAccounts = Yii::$app->db->createCommand("SELECT * FROM proCenter.`oa_fyndiqSuffix` WHERE isIbay=1;")->queryAll();
+        $keyWords = static::preKeywords($wishInfo);
+        $row = [
+            'sku' => '', "parent_sku" => '', "title" => '', "description" => '', "categories" => '' , "variations" => '',
+            'variational_properties' => '', 'properties' => '', "brand" => '', "gtin" => '', 'suffix' => '', 'quantity' => 0,
+            'price' => '', 'original_price' => '', 'shipping_time' => '', 'main_image' => '', 'images' => '', 'markets' => ['SE']
+        ];
+        $out = [];
+
+        foreach ($fyndiqAccounts as $account) {
+            $titlePool = [];
+            $title = '';
+            $len = self::fyndiqTitleLength;
+            while (true) {
+                $title = static::getTitleName($keyWords, $len);
+                --$len;
+                if (empty($title) || !in_array($title, $titlePool, false)) {
+                    $titlePool[] = $title;
+                    break;
+                }
+            }
+            $row['parent_sku'] = $wishInfo['sku'];
+            $row['title'] = $title;
+            $row['description'] = $wishInfo['description'];
+            $row['categories'] = [];
+            $row['suffix'] = $account['suffix'];
+            $row['quantity'] = !empty($wishInfo['inventory']) ? ((int)$wishInfo['inventory']) : 5;
+            $variantInfo = static::getFyndiqVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
+            $row['variations'] = $variantInfo['variant'];
             $out[] = $row;
         }
         return $out;
@@ -2371,47 +2473,47 @@ class ApiGoodsinfo
         }
         $ret = ['name' => 'ebay-' . $goodsInfo['goodsCode']];
         $out = [];
-        $row = [
-            'Site' => '', 'Selleruserid' => '', 'ListingType' => '', 'Category1' => '', 'Category2' => '',
-            'Condition' => '', 'ConditionBewrite' => '', 'Quantity' => '', 'LotSize' => '', 'Duration' => '',
-            'ReservePrice' => '', 'BestOffer' => '', 'BestOfferAutoAcceptPrice' => '', 'BestOfferAutoRefusedPrice' => '',
-            'AcceptPayment' => '', 'PayPalEmailAddress' => '', 'Location' => '', 'LocationCountry' => '',
-            'ReturnsAccepted' => '', 'RefundOptions' => '', 'ReturnsWithin' => '', 'ReturnPolicyShippingCostPaidBy' => '',
-            'ReturnPolicyDescription' => '', 'GalleryType' => '', 'Bold' => '', 'PrivateListing' => '',
-            'HitCounter' => '', 'sku' => '', 'PictureURL' => '', 'Title' => '', 'SubTitle' => '', 'IbayCategory' => '',
-            'StartPrice' => '', 'BuyItNowPrice' => '', 'UseMobile' => '', 'ShippingService1' => '',
-            'ShippingServiceCost1' => '', 'ShippingServiceAdditionalCost1' => '', 'ShippingService2' => '',
-            'ShippingServiceCost2' => '', 'ShippingServiceAdditionalCost2' => '', 'ShippingService3' => '',
-            'ShippingServiceCost3' => '', 'ShippingServiceAdditionalCost3' => '', 'ShippingService4' => '',
-            'ShippingServiceCost4' => '', 'ShippingServiceAdditionalCost4' => '', 'InternationalShippingService1' => '',
-            'InternationalShippingServiceCost1' => '', 'InternationalShippingServiceAdditionalCost1' => '',
-            'InternationalShipToLocation1' => '', 'InternationalShippingService2' => '', 'InternationalShippingServiceCost2' => '',
-            'InternationalShippingServiceAdditionalCost2' => '', 'InternationalShipToLocation2' => '',
-            'InternationalShippingService3' => '', 'InternationalShippingServiceCost3' => '',
-            'InternationalShippingServiceAdditionalCost3' => '', 'InternationalShipToLocation3' => '',
-            'InternationalShippingService4' => '', 'InternationalShippingServiceCost4' => '',
-            'InternationalShippingServiceAdditionalCost4' => '', 'InternationalShipToLocation4' => '',
-            'InternationalShippingService5' => '', 'InternationalShippingServiceCost5' => '',
-            'InternationalShippingServiceAdditionalCost5' => '', 'InternationalShipToLocation5' => '',
-            'DispatchTimeMax' => '', 'ExcludeShipToLocation' => '', 'StoreCategory1' => '',
-            'StoreCategory2' => '', 'IbayTemplate' => '', 'IbayInformation' => '',
-            'IbayComment' => '', 'Description' => '', 'Language' => '', 'IbayOnlineInventoryHold' => '',
-            'IbayRelistSold' => '', 'IbayRelistUnsold' => '', 'IBayEffectType' => '', 'IbayEffectImg' => '',
-            'IbayCrossSelling' => '', 'Variation' => '', 'outofstockcontrol' => '', 'EPID' => '',
-            'ISBN' => '', 'UPC' => '', 'EAN' => '', 'SecondOffer' => '', 'Immediately' => '', 'Currency' => '',
-            'LinkedPayPalAccount' => '', 'MBPVCount' => '', 'MBPVPeriod' => '', 'MUISICount' => '',
-            'MUISIPeriod' => '', 'MaximumItemCount' => '', 'MinimumFeedbackScore' => '', 'Specifics1' => '',
-            'Specifics2' => '', 'Specifics3' => '', 'Specifics4' => '', 'Specifics5' => '', 'Specifics6' => '',
-            'Specifics7' => '', 'Specifics8' => '', 'Specifics9' => '', 'Specifics10' => '', 'Specifics11' => '',
-            'Specifics12' => '', 'Specifics13' => '', 'Specifics14' => '', 'Specifics15' => '',
-            'Specifics16' => '', 'Specifics17' => '', 'Specifics18' => '', 'Specifics19' => '',
-            'Specifics20' => '', 'Specifics21' => '', 'Specifics22' => '', 'Specifics23' => '',
-            'Specifics24' => '', 'Specifics25' => '', 'Specifics26' => '', 'Specifics27' => '',
-            'Specifics28' => '', 'Specifics29' => '', 'Specifics30' => '',
-        ];
         $price = self::getEbayPrice($ebayInfo);
         $keyWords = static::preKeywords($ebayInfo);
         foreach ($accounts as $account) {
+            $row = [
+                'Site' => '', 'Selleruserid' => '', 'ListingType' => '', 'Category1' => '', 'Category2' => '',
+                'Condition' => '', 'ConditionBewrite' => '', 'Quantity' => '', 'LotSize' => '', 'Duration' => '',
+                'ReservePrice' => '', 'BestOffer' => '', 'BestOfferAutoAcceptPrice' => '', 'BestOfferAutoRefusedPrice' => '',
+                'AcceptPayment' => '', 'PayPalEmailAddress' => '', 'Location' => '', 'LocationCountry' => '',
+                'ReturnsAccepted' => '', 'RefundOptions' => '', 'ReturnsWithin' => '', 'ReturnPolicyShippingCostPaidBy' => '',
+                'ReturnPolicyDescription' => '', 'GalleryType' => '', 'Bold' => '', 'PrivateListing' => '',
+                'HitCounter' => '', 'sku' => '', 'PictureURL' => '', 'Title' => '', 'SubTitle' => '', 'IbayCategory' => '',
+                'StartPrice' => '', 'BuyItNowPrice' => '', 'UseMobile' => '', 'ShippingService1' => '',
+                'ShippingServiceCost1' => '', 'ShippingServiceAdditionalCost1' => '', 'ShippingService2' => '',
+                'ShippingServiceCost2' => '', 'ShippingServiceAdditionalCost2' => '', 'ShippingService3' => '',
+                'ShippingServiceCost3' => '', 'ShippingServiceAdditionalCost3' => '', 'ShippingService4' => '',
+                'ShippingServiceCost4' => '', 'ShippingServiceAdditionalCost4' => '', 'InternationalShippingService1' => '',
+                'InternationalShippingServiceCost1' => '', 'InternationalShippingServiceAdditionalCost1' => '',
+                'InternationalShipToLocation1' => '', 'InternationalShippingService2' => '', 'InternationalShippingServiceCost2' => '',
+                'InternationalShippingServiceAdditionalCost2' => '', 'InternationalShipToLocation2' => '',
+                'InternationalShippingService3' => '', 'InternationalShippingServiceCost3' => '',
+                'InternationalShippingServiceAdditionalCost3' => '', 'InternationalShipToLocation3' => '',
+                'InternationalShippingService4' => '', 'InternationalShippingServiceCost4' => '',
+                'InternationalShippingServiceAdditionalCost4' => '', 'InternationalShipToLocation4' => '',
+                'InternationalShippingService5' => '', 'InternationalShippingServiceCost5' => '',
+                'InternationalShippingServiceAdditionalCost5' => '', 'InternationalShipToLocation5' => '',
+                'DispatchTimeMax' => '', 'ExcludeShipToLocation' => '', 'StoreCategory1' => '',
+                'StoreCategory2' => '', 'IbayTemplate' => '', 'IbayInformation' => '',
+                'IbayComment' => '', 'Description' => '', 'Language' => '', 'IbayOnlineInventoryHold' => '',
+                'IbayRelistSold' => '', 'IbayRelistUnsold' => '', 'IBayEffectType' => '', 'IbayEffectImg' => '',
+                'IbayCrossSelling' => '', 'Variation' => '', 'outofstockcontrol' => '', 'EPID' => '',
+                'ISBN' => '', 'UPC' => '', 'EAN' => '', 'SecondOffer' => '', 'Immediately' => '', 'Currency' => '',
+                'LinkedPayPalAccount' => '', 'MBPVCount' => '', 'MBPVPeriod' => '', 'MUISICount' => '',
+                'MUISIPeriod' => '', 'MaximumItemCount' => '', 'MinimumFeedbackScore' => '', 'Specifics1' => '',
+                'Specifics2' => '', 'Specifics3' => '', 'Specifics4' => '', 'Specifics5' => '', 'Specifics6' => '',
+                'Specifics7' => '', 'Specifics8' => '', 'Specifics9' => '', 'Specifics10' => '', 'Specifics11' => '',
+                'Specifics12' => '', 'Specifics13' => '', 'Specifics14' => '', 'Specifics15' => '',
+                'Specifics16' => '', 'Specifics17' => '', 'Specifics18' => '', 'Specifics19' => '',
+                'Specifics20' => '', 'Specifics21' => '', 'Specifics22' => '', 'Specifics23' => '',
+                'Specifics24' => '', 'Specifics25' => '', 'Specifics26' => '', 'Specifics27' => '',
+                'Specifics28' => '', 'Specifics29' => '', 'Specifics30' => '',
+            ];
             $ebayAccount = OaEbaySuffix::find()->where(['ebaySuffix' => $account])->asArray()->one();
             $payPal = self::getEbayPayPal($price, $ebayAccount);
             $titlePool = [];
@@ -2427,19 +2529,14 @@ class ApiGoodsinfo
             }
 
             $row['Site'] = $ebayInfo['site'];
+            $row['Currency'] = OaSiteCountry::findOne(['code' => $ebayInfo['site']])['currencyCode'];
             $row['Selleruserid'] = $ebayAccount['ebayName'];
             $row['ListingType'] = 'FixedPriceItem';
             $row['Category1'] = $ebayInfo['listedCate'];
             $row['Category2'] = $ebayInfo['listedSubcate'];
             $row['Condition'] = '1000';
-            $row['ConditionBewrite'] = '';
             $row['Quantity'] = !empty($ebayInfo['quantity']) ? $ebayInfo['quantity'] : 5;
-            $row['LotSize'] = '';
             $row['Duration'] = 'GTC';
-            $row['ReservePrice'] = '';
-            $row['BestOffer'] = '';
-            $row['BestOfferAutoAcceptPrice'] = '';
-            $row['BestOfferAutoRefusedPrice'] = '';
             $row['AcceptPayment'] = 'PayPal';
             $row['PayPalEmailAddress'] = $payPal;
             $row['Location'] = $ebayInfo['location'];
@@ -2450,14 +2547,10 @@ class ApiGoodsinfo
             $row['ReturnPolicyShippingCostPaidBy'] = 'Buyer';
             $row['ReturnPolicyDescription'] = 'We accept return or exchange item within 30 days from the day customer received the original item. If you have any problem please contact us first before leaving Neutral/Negative feedback! the negative feedback can\'\'t resolve the problem .but we can. ^_^ Hope you have a happy shopping experience in our store!';
             $row['GalleryType'] = 'Gallery';
-            $row['Bold'] = '';
-            $row['PrivateListing'] = '';
             $row['HitCounter'] = 'NoHitCounter';
             $row['PictureURL'] = static::getEbayPicture($goodsInfo, $ebayInfo, $account);
             $row['Title'] = $title;
             $row['SubTitle'] = $ebayInfo['subTitle'];
-            $row['IbayCategory'] = '';
-            $row['StartPrice'] = '';
             $row['BuyItNowPrice'] = $price;
             $row['UseMobile'] = '1';
             $row['ShippingService1'] = static::getShippingService($ebayInfo['inShippingMethod1']);
@@ -2466,12 +2559,6 @@ class ApiGoodsinfo
             $row['ShippingService2'] = static::getShippingService($ebayInfo['inShippingMethod2']);
             $row['ShippingServiceCost2'] = $ebayInfo['inFirstCost2'];
             $row['ShippingServiceAdditionalCost2'] = $ebayInfo['inSuccessorCost2'];
-            $row['ShippingService3'] = '';
-            $row['ShippingServiceCost3'] = '';
-            $row['ShippingServiceAdditionalCost3'] = '';
-            $row['ShippingService4'] = '';
-            $row['ShippingServiceCost4'] = '';
-            $row['ShippingServiceAdditionalCost4'] = '';
             $row['InternationalShippingService1'] = static::getShippingService($ebayInfo['outShippingMethod1']);
             $row['InternationalShippingServiceCost1'] = $ebayInfo['outFirstCost1'];
             $row['InternationalShippingServiceAdditionalCost1'] = $ebayInfo['outSuccessorCost1'];
@@ -2480,33 +2567,14 @@ class ApiGoodsinfo
             $row['InternationalShippingServiceCost2'] = $ebayInfo['outFirstCost2'];
             $row['InternationalShippingServiceAdditionalCost2'] = $ebayInfo['outSuccessorCost2'];
             $row['InternationalShipToLocation2'] = static::getShippingService($ebayInfo['outShippingMethod2']) ? 'Worldwide' : '';
-            $row['InternationalShippingService3'] = '';
-            $row['InternationalShippingServiceCost3'] = '';
-            $row['InternationalShippingServiceAdditionalCost3'] = '';
-            $row['InternationalShipToLocation3'] = '';
-            $row['InternationalShippingService4'] = '';
-            $row['InternationalShippingServiceCost4'] = '';
-            $row['InternationalShippingServiceAdditionalCost4'] = '';
-            $row['InternationalShipToLocation4'] = '';
-            $row['InternationalShippingService5'] = '';
-            $row['InternationalShippingServiceCost5'] = '';
-            $row['InternationalShippingServiceAdditionalCost5'] = '';
-            $row['InternationalShipToLocation5'] = '';
             $row['DispatchTimeMax'] = $ebayInfo['prepareDay'];
             $row['ExcludeShipToLocation'] = static::getEbayExcludeLocation($ebayAccount);
-            $row['StoreCategory1'] = '';
-            $row['StoreCategory2'] = '';
             $row['IbayTemplate'] = $ebayAccount['ibayTemplate'];
             $row['IbayInformation'] = '1';
-            $row['IbayComment'] = '';
             $row['Description'] = static::getEbayDescription($ebayInfo['description']);
-            $row['Language'] = '';
             $row['IbayOnlineInventoryHold'] = '1';
-            $row['IbayRelistSold'] = '';
-            $row['IbayRelistUnsold'] = '';
             $row['IBayEffectType'] = '1';
             $row['IbayEffectImg'] = static::getEbayPicture($goodsInfo, $ebayInfo, $account);
-            $row['IbayCrossSelling'] = '';
             if (count($ebayInfo['oaEbayGoodsSku']) > 1) $goodsInfo['isVar'] = '是'; // 2020-06-02 添加（单平台添加多属性）
 
             if ($goodsInfo['isVar'] === '是') {
@@ -2522,46 +2590,16 @@ class ApiGoodsinfo
             $row['ISBN'] = 'Does not apply';
             $row['UPC'] = $ebayInfo['UPC'];
             $row['EAN'] = $ebayInfo['EAN'];
-            $row['SecondOffer'] = '';
-            $row['Immediately'] = '';
-            $row['Currency'] = '';
-            $row['LinkedPayPalAccount'] = '';
-            $row['MBPVCount'] = '';
-            $row['MBPVPeriod'] = '';
-            $row['MUISICount'] = '';
-            $row['MUISIPeriod'] = '';
-            $row['MaximumItemCount'] = '';
-            $row['MinimumFeedbackScore'] = '';
-            $row['Specifics1'] = '';
-            $row['Specifics2'] = '';
-            $row['Specifics3'] = '';
-            $row['Specifics4'] = '';
-            $row['Specifics5'] = '';
-            $row['Specifics6'] = '';
-            $row['Specifics7'] = '';
-            $row['Specifics8'] = '';
-            $row['Specifics9'] = '';
-            $row['Specifics10'] = '';
-            $row['Specifics11'] = '';
-            $row['Specifics12'] = '';
-            $row['Specifics13'] = '';
-            $row['Specifics14'] = '';
-            $row['Specifics15'] = '';
-            $row['Specifics16'] = '';
-            $row['Specifics17'] = '';
-            $row['Specifics18'] = '';
-            $row['Specifics19'] = '';
-            $row['Specifics20'] = '';
-            $row['Specifics21'] = '';
-            $row['Specifics22'] = '';
-            $row['Specifics23'] = '';
-            $row['Specifics24'] = '';
-            $row['Specifics25'] = '';
-            $row['Specifics26'] = '';
-            $row['Specifics27'] = '';
-            $row['Specifics28'] = '';
-            $row['Specifics29'] = '';
-            $row['Specifics30'] = '';
+            $ItemSpecifics = json_decode($ebayInfo['specifics'], true);
+            if($ItemSpecifics && isset($ItemSpecifics['specifics'])){
+                foreach ($ItemSpecifics['specifics'] as $j => $v){
+                    $specifics = [];
+                    foreach ($v as $k => $value){
+                        $specifics = ['Name' => $k, 'Value' => $value];
+                    }
+                    $row['Specifics' . ($j + 1)] = json_encode($specifics);
+                }
+            }
             $out[] = $row;
         }
         $ret['data'] = $out;
@@ -2813,19 +2851,20 @@ class ApiGoodsinfo
             if (strpos($goodsInfo['completeStatus'], 'aliexpress') === false) {
                 return [
                     'code' => 400,
-                    'msg' => '商品 ' . $goodsInfo['goodsCode'] . " 没有完善Aliexpress模板，加入导出队列失败! \n"
+                    'message' => '商品 ' . $goodsInfo['goodsCode'] . " 没有完善Aliexpress模板，加入导出队列失败! \n"
                 ];
             }
         }
-
         foreach ($ids as $id) {
+            $goodsInfo = OaGoodsinfo::findOne(['id' => $id]);
             $model = OaSmtGoods::findOne(['infoId' => $id]);
+//            var_dump($model);exit;
             foreach ($suffixList as $suffix) {
                 $sql = "select * from proCenter.oa_smtImportToIbayLog where ibaySuffix=:suffix and sku=:sku and status1=0 and status2=0";
-                $logQ = Yii::$app->db->createCommand($sql)->bindValues([':suffix' => $suffix, ':sku' => $model['sku']])->queryOne();
+                $logQ = Yii::$app->db->createCommand($sql)->bindValues([':suffix' => $suffix, ':sku' => $goodsInfo['goodsCode']])->queryOne();
                 $list = [
                     'ibaySuffix' => $suffix,
-                    'sku' => $model['sku'],
+                    'sku' => $goodsInfo['goodsCode'],
                     'creator' => $username,
                     'createDate' => date('Y-m-d H:i:s')
                 ];
@@ -2834,7 +2873,7 @@ class ApiGoodsinfo
                 } else {
                     Yii::$app->db->createCommand()->update('proCenter.oa_smtImportToIbayLog',
                         ['creator' => $username, 'createDate' => date('Y-m-d H:i:s')],
-                        ['ibaySuffix' => $suffix, 'sku' => $model['sku'], 'status1' => 0, 'status2' => 0])->execute();
+                        ['ibaySuffix' => $suffix, 'sku' => $goodsInfo['goodsCode'], 'status1' => 0, 'status2' => 0])->execute();
                 }
             }
         }
@@ -2994,6 +3033,124 @@ class ApiGoodsinfo
         } catch (\Exception $why) {
             return ['variant' => '', 'price' => '', 'shipping' => '',
                 'msrp' => '', 'local_price' => '', 'local_shippingfee' => '', 'local_currency' => ''];
+        }
+
+    }
+
+
+    /**
+     * @brief 整合Fyndiq变体信息
+     * @param $isVar
+     * @param $wishInfo
+     * @param $wishSku
+     * @param $account
+     * @return array
+     */
+    private static function getFyndiqVariantInfo($isVar, $wishInfo, $wishSku, $account)
+    {
+        try {
+            $price = ArrayHelper::getColumn($wishSku, 'price');
+            $shippingPrice = ArrayHelper::getColumn($wishSku, 'shipping');
+            $msrp = ArrayHelper::getColumn($wishSku, 'msrp');
+            $len = count($price);
+            $totalPrice = [];
+            for ($i = 0; $i < $len; $i++) {
+                $totalPrice[] = ceil($price[$i] + $shippingPrice[$i]);
+            }
+            //获取最大最小价格
+            $maxPrice = max($totalPrice);
+            $minPrice = min($totalPrice);
+            $maxMsrp = ceil(max($msrp));
+
+            //根据总价计算运费
+            if ($minPrice <= 3) {
+                $shipping = 1;
+            } else {
+                $shipping = ceil($minPrice * $account['rate']);
+            }
+
+            //打包变体
+            $variation = [];
+
+            foreach ($wishSku as $sku) {
+//                var_dump($sku);exit;
+                //价格判断
+                $totalPrice = ceil($sku['price'] + $sku['shipping']);
+                $sku['shipping'] = $shipping;
+                $sku['price'] = $totalPrice - $shipping < 1 ? 1 : ceil($totalPrice - $shipping);
+                $sku['price'] -= 0.01;
+
+                $var['sku'] = $sku['sku'];
+                $var['quantity'] = (int)$sku['inventory'];
+                $var['properties'] = [];
+                $var['variational_properties'] = [];
+                if($sku['color']){
+                    $var['properties'][] = [
+                        "name" => "color", //Free text
+                        "value" => $sku['color'],
+                        "language" => "en-US"
+                    ];
+                    $var['variational_properties'][] = 'color';
+                }
+                if($sku['size']){
+                    $var['properties'][] = [
+                        "name" => "size", //Free text
+                        "value" => $sku['size'],
+                        "language" => "en-US"
+                    ];
+                    $var['variational_properties'][] = 'size';
+                }
+                $var['price'] = [[
+                    'market' => 'SE',
+                    'value' => [
+                        'amount' => $sku['price'] * 6 , // 瑞典克朗价格
+                        'currency' => 'SEK',
+                    ]
+                ]];
+                $var['original_price'] = [[
+                    'market' => 'SE',
+                    'value' => [
+                        'amount' => ceil($sku['msrp']) * 6 , // 瑞典克朗价格
+                        'currency' => 'SEK',
+                    ]
+                ]];
+                $shipping_time = explode('-', $sku['shippingTime']);
+                $var['shipping_time'] = [[
+                    "market" => "SE",
+                    "min" => isset($shipping_time[0]) ? ((int)$shipping_time[0]) : 7,
+                    "max" => isset($shipping_time[1]) < 13 ? ((int)$shipping_time[1]) : 12,
+                ]];
+                $var['main_image'] = $sku['wishLinkUrl'];
+                $extraImages = explode("\n", $wishInfo['extraImages']);
+                $key = array_search($sku['wishLinkUrl'], $extraImages);
+                if($key !== false) array_splice($extraImages, $key, 1);
+                $var['images'] = array_slice($extraImages, 0, 10);
+                $variation[] = $var;
+            }
+            $variant = json_encode($variation);
+            $ret = [];
+            //$ret['variant'] = $isVar === '是' ? $variant : '';
+            $ret['variant'] = $variant;
+            $finalPrice = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1;
+            $finalPrice -= 0.01;
+            $ret['price'] = [
+                'market' => 'SE',
+                'value' => [
+                    'amount' => $finalPrice * 6 , // 瑞典克朗价格
+                    'currency' => 'SEK',
+                ]
+            ];
+            $ret['original_price'] = [
+                'market' => 'SE',
+                'value' => [
+                    'amount' => $maxMsrp * 6 , // 瑞典克朗价格
+                    'currency' => 'SEK',
+                ]
+            ];
+            return $ret;
+        } catch (\Exception $why) {
+//            var_dump($why->getMessage());exit;
+            return ['variant' => '', 'price' => '', 'original_price' => ''];
         }
 
     }

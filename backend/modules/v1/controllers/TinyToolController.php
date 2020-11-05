@@ -362,7 +362,6 @@ class TinyToolController extends AdminController
                 WHERE  aa.sku='{$newSku}'";
         $res = Yii::$app->py_db->createCommand($sql)->queryOne();
         if (!$res) return $data;
-//        var_dump($res);exit;
         $data['detail'] = $res;
 
         $weight = $res['weight'];
@@ -396,12 +395,12 @@ class TinyToolController extends AdminController
                 $data['transport'][] = $item;
                 //根据售价获取毛利率
                 if ($post['price']) {
-                    $rateItem = ApiUk::getRate($post['price'], $item['cost'], $item['out'], $res['price'], $post['adRate'], $post['shippingPrice']);
+                    $rateItem = ApiUk::getRate($post['price'], $item['costRmb'], $item['outRmb'], $res['price'], $post['adRate'], $post['shippingPrice']);
                     $rateItem['name'] = $v['shipping'];
                     $data['rate'][] = $rateItem;
                 }
                 //根据利润率获取售价
-                $priceItem = ApiUk::getPrice($post['rate'], $item['cost'], $item['out'], $res['price']);
+                $priceItem = ApiUk::getPrice($post['rate'], $item['costRmb'], $item['outRmb'], $res['price']);
                 $priceItem['name'] = $v['shipping'];
                 $data['price'][] = $priceItem;
             }
@@ -441,7 +440,7 @@ class TinyToolController extends AdminController
         //获取SKU信息
         $res = ApiUk::getDetail($post['sku'], $post['num'], $post['storeName']);
         //print_r($res);exit;
-        if (!$res) return $data;
+        if (!$res || !$res[0]) return $data;
 
 
         $data['detail'] = $res;
@@ -457,12 +456,12 @@ class TinyToolController extends AdminController
         foreach ($data['transport'] as $v) {
             //根据售价获取利润率
             if ($post['price']) {
-                $rateItem = ApiUk::getRate($post['price'], $v['cost'], $v['out'], $res['price'], $post['adRate'], $post['shippingPrice']);
+                $rateItem = ApiUk::getRate($post['price'], $v['costRmb'], $v['outRmb'], $res['price'], $post['adRate'], $post['shippingPrice']);
                 $rateItem['name'] = $v['name'];
                 $data['rate'][] = $rateItem;
             }
             //根据利润率获取售价
-            $priceItem = ApiUk::getPrice($post['rate'], $v['cost'], $v['out'], $res['price']);
+            $priceItem = ApiUk::getPrice($post['rate'], $v['costRmb'], $v['outRmb'], $res['price']);
             $priceItem['name'] = $v['name'];
             $data['price'][] = $priceItem;
         }
@@ -498,7 +497,6 @@ class TinyToolController extends AdminController
             'transport' => [],
         ];
         //获取SKU信息
-        //获取SKU信息
         $res = ApiAu::getDetail($post['sku'], $post['num']);
         if (!$res) return $data;
 
@@ -515,13 +513,19 @@ class TinyToolController extends AdminController
 
         //获取运费和出库费
         $data['transport'] = ApiAu::getTransport($res['weight'], $res['length'], $res['width'], $res['height']);
-
-        //根据售价获取利润率
-        if ($post['price']) {
-            $data['rate'] = ApiAu::getRate($post['price'], $data['transport']['cost'], $data['transport']['out'], $res['price']);
+//        var_dump($data['transport']);exit;
+        foreach ($data['transport'] as $v) {
+            //根据售价获取利润率
+            if ($post['price']) {
+                $rateItem = ApiAu::getRate($post['price'], $v['cost'], $v['out'], $res['price']);
+                $rateItem['name'] = $v['name'];
+                $data['rate'][] = $rateItem;
+            }
+            //根据利润率获取售价
+            $priceItem = ApiAu::getPrice($post['rate'], $v['cost'], $v['out'], $res['price']);
+            $priceItem['name'] = $v['name'];
+            $data['price'][] = $priceItem;
         }
-        //根据利润率获取售价
-        $data['price'] = ApiAu::getPrice($post['rate'], $data['transport']['cost'], $data['transport']['out'], $res['price']);
 
         //print_r($data);exit;
         return $data;
@@ -1207,7 +1211,7 @@ class TinyToolController extends AdminController
 
     }
 
-    /**
+    /** 批量修改产品销售员
      * Date: 2020-09-18 11:49
      * Author: henry
      * @throws \PhpOffice\PhpSpreadsheet\Exception
@@ -1249,15 +1253,15 @@ class TinyToolController extends AdminController
                         SELECT IFNULL(u.seller1,'无人') seller1,c.sku,useNum,c.costMoney,
                         IFNULL(thirtySellCount,0) 30DaySellCount,IFNULL(co.costMoney,0) 30DayCostMoney
                         FROM `cache_stockWaringTmpData` c
-                        LEFT JOIN `cache_30DayOrderTmpData` co ON co.sku=c.sku
-                        INNER JOIN `cache_skuSeller` u ON u.goodsCode=c.goodsCode WHERE c.storeName='万邑通UK'
-                    UNION
-                        SELECT IFNULL(u.seller1,'无人') seller1,IFNULL(co.sku,'') sku,IFNULL(useNum,0) useNum,
-                        IFNULL(c.costMoney,0) costMoney,IFNULL(thirtySellCount,0) 30DaySellCount,
-                        IFNULL(co.costMoney,0) 30DayCostMoney
-                        FROM `cache_30DayOrderTmpData` co
-                        INNER JOIN `cache_skuSeller` u ON u.goodsCode=SUBSTR(co.sku,1,LENGTH(u.goodsCode))
-						LEFT JOIN `cache_stockWaringTmpData` c ON co.sku=c.sku WHERE c.sku IS NULL
+                        LEFT JOIN `cache_30DayOrderTmpData` co ON co.sku=c.sku AND co.storeName=c.storeName
+                        INNER JOIN `cache_skuSeller` u ON u.goodsCode=c.goodsCode WHERE c.storeName IN ('万邑通UK','万邑通UK-MA仓','谷仓UK')
+--                    UNION
+--                        SELECT IFNULL(u.seller1,'无人') seller1,IFNULL(co.sku,'') sku,IFNULL(useNum,0) useNum,
+--                        IFNULL(c.costMoney,0) costMoney,IFNULL(thirtySellCount,0) 30DaySellCount,
+--                        IFNULL(co.costMoney,0) 30DayCostMoney
+--                        FROM `cache_30DayOrderTmpData` co
+--                        INNER JOIN `cache_skuSeller` u ON u.goodsCode=SUBSTR(co.sku,1,LENGTH(u.goodsCode))
+--						LEFT JOIN `cache_stockWaringTmpData` c ON co.sku=c.sku WHERE c.sku IS NULL
                 ) aa GROUP BY seller1;";
         try {
             return Yii::$app->db->createCommand($sql)->queryAll();
@@ -1378,6 +1382,58 @@ class TinyToolController extends AdminController
             $name = 'EbayAdFee';
             $title = ['账号简称', '商品编码', '广告费率', '广告费(￥)', '广告费(原币种)', '交易时间', '描述', 'ItemId',
                 '成交价(原币种)', '物流费(原币种)', '总成交价(￥)', '物流名称'];
+            ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
+        } catch (Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+
+    /**
+     * 海外仓 UK 库存预警
+     * Date: 2020-08-21 10:19
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionStockWarning()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition');
+            $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
+            $data = ApiTinyTool::getStockWarningData($condition);
+            $dataProvider = new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => ['sku', 'goodsCode', 'usenum', 'costmoney', 'dayNum', 'hopeUseNum',
+                        'sellCount1', 'sellCount2', 'sellCount3'],
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+            return $dataProvider;
+        } catch (Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+
+
+    /**
+     * 海外仓 UK 库存预警, 表格下载
+     * Date: 2020-11-04 14:07
+     * Author: henry
+     * @return array
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionStockWarningExport()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition');
+            $data = ApiTinyTool::getStockWarningData($condition);
+            $name = 'stock-warning';
+            $title = ['仓库','责任归属人2','商品编码','SKU','SKU名称','规格','属性1','属性2','商品状态','类目','重量','业绩归属人1',
+                '默认发货仓库', '创建时间','平均单价','可用数量','库存金额','平均日销量','预计可用数量',
+                '5天销量','10天销量','20天销量',''];
             ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
         } catch (Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];

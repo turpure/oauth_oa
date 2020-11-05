@@ -1123,7 +1123,8 @@ class ApiTinyTool
      * @return array
      * @throws Exception
      */
-    public static function getSkuStockDetail($condition){
+    public static function getSkuStockDetail($condition)
+    {
         $goodsCode = ArrayHelper::getValue($condition, 'goodsCode');
         $seller = ArrayHelper::getValue($condition, 'seller');
         $username = Yii::$app->user->identity->username;
@@ -1144,7 +1145,7 @@ class ApiTinyTool
 				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
 				LEFT JOIN auth_department d ON d.id=dc.department_id
 				LEFT JOIN auth_department p ON p.id=d.parent
-				WHERE seller1 IN ('{$userList}') AND c.storeName='万邑通UK'";
+				WHERE seller1 IN ('{$userList}') AND c.storeName IN ('万邑通UK', '万邑通UK-MA仓', '谷仓UK')";
         if ($goodsCode) {
             $sql .= " AND c.goodsCode LIKE '%{$goodsCode}%'";
         }
@@ -1154,29 +1155,36 @@ class ApiTinyTool
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
 
-    public static function saveEbaySkuSellerData($file, $extension = 'Xls'){
+    public static function saveEbaySkuSellerData($file, $extension = 'Xls')
+    {
         $reader = IOFactory::createReader($extension);
         $spreadsheet = $reader->load(Yii::$app->basePath . '/web' . $file);
         $sheet = $spreadsheet->getSheet(0);
         $highestRow = $sheet->getHighestRow(); // 取得总行数
-        $errorRes = [];
+        $errorRes = '';
         try {
             for ($i = 2; $i <= $highestRow + 1; $i++) {
                 $goodsCode = $sheet->getCell("A" . $i)->getValue() ?: '';
                 $seller1 = $sheet->getCell("B" . $i)->getValue() ?: '';
                 $seller2 = $sheet->getCell("C" . $i)->getValue() ?: '';
                 $updateDate = date('Y-m-d H:i:s');
-                if(!$goodsCode) break;
-                $sql = "insert into cache_skuSeller(goodsCode,seller1,seller2,updateDate) values (
-               '{$goodsCode}', '{$seller1}', '{$seller2}', '{$updateDate}') 
-                ON DUPLICATE KEY UPDATE seller1='{$seller1}',seller2='{$seller2}',updateDate='{$updateDate}'";
-                $res = Yii::$app->db->createCommand($sql)->execute();
-                if($res){
-                    $errorRes[] = "Success to update '{$goodsCode}' seller1 to '{$seller1}'";
-                }else{
-                    $errorRes[] = "Failed to update '{$goodsCode}' seller1 to '{$seller1}'";
+                if (!$goodsCode) break;
+                $codeRet = Yii::$app->db->createCommand("SELECT DISTINCT goodsCode FROM `cache_goods` WHERE goodsCode='{$goodsCode}'")->queryAll();
+                $userRet = Yii::$app->db->createCommand("SELECT DISTINCT username FROM `user` WHERE `status`=10 AND username='{$seller1}';")->queryAll();
+                if (!$codeRet || !$userRet) {
+                    $errorRes .= "Failed to save info " . $goodsCode . " | " . $seller1 . " cause of goodsCode or seller1 is not incorrect!<br>";
+                } else {
+                    $sql = "insert into cache_skuSeller(goodsCode,seller1,seller2,updateDate) values (
+                            '{$goodsCode}', '{$seller1}', '{$seller2}', '{$updateDate}') 
+                            ON DUPLICATE KEY UPDATE seller1='{$seller1}',seller2='{$seller2}',updateDate='{$updateDate}'";
+                    $res = Yii::$app->db->createCommand($sql)->execute();
+                    if (!$res) {
+//                        $errorRes[] = "Success to update '{$goodsCode}' seller1 to '{$seller1}'";
+                        $errorRes .= "Failed to update '{$goodsCode}' seller1 to '{$seller1}'<br>";
+                    }
                 }
             }
+            return $errorRes;
         } catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
@@ -1194,13 +1202,19 @@ class ApiTinyTool
     {
         $username = Yii::$app->user->identity->username;
         $doc = Yii::$app->db->createCommand('select * from cache_order_zip_code')->queryAll();
-        $id = Yii::$app->py_db->createCommand("select nid from B_LogisticWay WHERE name LIKE 'Royal Mail - Tracked 48 Parcel%'")->queryScalar();
+        $id = Yii::$app->py_db->createCommand("select nid from B_LogisticWay WHERE name LIKE 'UKLE-Royal Mail - Tracked 48 Parcel%'")->queryScalar();
+        $maId = Yii::$app->py_db->createCommand("select nid from B_LogisticWay WHERE name LIKE 'UKMA-Royal Mail - Tracked 48 Parcel%'")->queryScalar();
 
-        $sql = "SELECT m.nid,totalWeight FROM P_Trade (nolock) m
+        //正常单 偏远地区修改物流方式
+        $sql = "SELECT m.nid,totalWeight,l.name,'normal' AS type ,SUBSTRING(l.name,1,4) AS method
+                FROM P_Trade (nolock) m
                 LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
                 LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
-                WHERE FilterFlag IN (5,6) AND e.name LIKE '%万邑通%' AND l.name LIKE 'Hermes%' ";
-
+                WHERE FilterFlag IN (5,6) AND e.name LIKE '%万邑通%' AND 
+                l.name IN ('UKMA-Hermes - UK Standard 48', 'UKMA-Hermes - Standard 48 Claim',
+                        'UKLE-Hermes - UK Standard 48', 'UKLE-Hermes - Standard 48 Claim') -- and m.nid=22937671 
+                ";
+        //过滤偏远地区
         foreach ($doc as $k => $ele) {
             if ($k == 0) {
                 $sql .= " AND (SHIPTOZIP LIKE '{$ele['zipCode']}%'";
@@ -1211,18 +1225,48 @@ class ApiTinyTool
                 $sql .= ")";
             }
         }
+        //缺货单 偏远地区修改物流方式
+        $sql .= " union all 
+                SELECT m.nid,totalWeight,l.name,'stock' as type,SUBSTRING(l.name,1,4) AS method 
+                FROM P_TradeUn (nolock) m
+                LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
+                LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
+                WHERE FilterFlag = 1 AND e.name LIKE '%万邑通%' 
+                AND l.name IN ('UKMA-Hermes - UK Standard 48', 'UKMA-Hermes - Standard 48 Claim', 
+                        'UKLE-Hermes - UK Standard 48', 'UKLE-Hermes - Standard 48 Claim')
+                ";
+        //过滤偏远地区
+        foreach ($doc as $k => $ele) {
+            if ($k == 0) {
+                $sql .= " AND (SHIPTOZIP LIKE '{$ele['zipCode']}%'";
+            } else {
+                $sql .= " OR SHIPTOZIP LIKE '{$ele['zipCode']}%'";
+            }
+            if ($k == count($doc) - 1) {
+                $sql .= ")";
+            }
+        }
+        //var_dump($sql);exit;
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        //var_dump($data);exit;
         $transaction = BGoods::getDb()->beginTransaction();
         try {
-            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-//            var_dump(count($data));exit;
             foreach ($data as $v) {
-                $shipFee = self::getOrderShipFee($v, $id);
-//                var_dump($shipFee);exit;
-                $res = Yii::$app->py_db->createCommand()->update('p_trade', ['logicsWayNID' => $id,'ExpressFare' => $shipFee], ['NID' => $v['nid']])->execute();
+                $table = $v['type'] == 'normal' ? 'p_trade' : 'p_tradeUn';
+                if ($v['method'] == 'UKLE') {
+                    $logicsWayNID = $id;
+                    $logicsWay = 'UKLE-Royal Mail - Tracked 48 Parcel';
+                    $shipFee = self::getOrderShipFee($v, $id);
+                } else {
+                    $logicsWayNID = $maId;
+                    $logicsWay = 'UKMA-Royal Mail - Tracked 48 Parcel';
+                    $shipFee = self::getOrderShipFee($v, $maId);
+                }
+                $res = Yii::$app->py_db->createCommand()->update($table, ['logicsWayNID' => $logicsWayNID, 'ExpressFare' => $shipFee], ['NID' => $v['nid']])->execute();
                 if (!$res) {
                     throw new Exception('Failed to update logics way of order ' . $v['nid']);
                 }
-                $logs = $username . '  ' . date('Y-m-d H:i:s') . ' 手动更改物流方式为 Royal Mail - Tracked 48 Parcel';
+                $logs = $username . '  ' . date('Y-m-d H:i:s') . ' 物流方式 ' . $v['name'] . ' 手动更改为 ' . $logicsWay;
                 Yii::$app->py_db->createCommand()->insert('P_TradeLogs', [
                     'TradeNID' => $v['nid'],
                     'Operator' => $username,
@@ -1278,10 +1322,11 @@ class ApiTinyTool
      * @return array
      * @throws Exception
      */
-    public static function getEbayAdFee($condition){
+    public static function getEbayAdFee($condition)
+    {
         $sku = isset($condition['sku']) ? $condition['sku'] : '';
         $suffix = isset($condition['suffix']) ? $condition['suffix'] : '';
-        $itemId= isset($condition['item_id']) ? $condition['item_id'] : '';
+        $itemId = isset($condition['item_id']) ? $condition['item_id'] : '';
         $begin = isset($condition['dateRange'][0]) ? $condition['dateRange'][0] : '';
         $end = isset($condition['dateRange'][1]) ? ($condition['dateRange'][1] . ' 23:59:59') : '';
         $sql = "select suffix,sku,ad_rate,ad_fee*ad_code_rate as ad_fee,CONCAT(ad_fee,'(',ad_code,')') as ad_fee_original, 
@@ -1290,11 +1335,44 @@ class ApiTinyTool
                 transaction_code_rate*(transaction_price + shipping_fee) as transaction_price_total,shipping_name
                 from cache_ebayAdFee where sku like 'UK%' ";
 
-        if($begin && $end) $sql .= " AND fee_time between '{$begin}' and '{$end}'";
-        if($sku) $sql .= " and sku like '%{$sku}%'";
-        if($suffix) $sql .= " and suffix like '%{$suffix}%'";
-        if($itemId) $sql .= " and item_id = '{$itemId}'";
+        if ($begin && $end) $sql .= " AND fee_time between '{$begin}' and '{$end}'";
+        if ($sku) $sql .= " and sku like '%{$sku}%'";
+        if ($suffix) $sql .= " and suffix like '%{$suffix}%'";
+        if ($itemId) $sql .= " and item_id = '{$itemId}'";
         $data = Yii::$app->db->createCommand($sql)->queryAll();
+        return $data;
+    }
+
+    /**
+     * 海外仓库存预警
+     * @param $condition
+     * Date: 2020-11-05 10:14
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
+    public static function getStockWarningData($condition)
+    {
+        $sku = isset($condition['sku']) ? $condition['sku'] : null;
+        $sku = str_replace(',', "','", $sku);
+        $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
+        $status = isset($condition['status']) ? $condition['status'] : '';
+        $sql = "SELECT 'UK海外仓' as storeName,g.possessMan2,ss.* FROM (
+	                SELECT goodsCode,SKU,SKUName,unit,property1,property2,goodsstatus,categoryName,weight,
+	                salerName,defStoreName,createDate,costprice = stuff((
+					    SELECT ',' + CAST(costprice AS VARCHAR) + '(' + storeName + ')' FROM Y_R_tStockingWaring a
+					    WHERE a.SKU=s.SKU FOR xml path('') ),1,1,''),
+	                SUM(usenum) AS usenum,SUM(costmoney) AS costmoney,SUM(DayNum) AS dayNum,
+	                SUM(hopeUseNum) AS hopeUseNum,SUM(SellCount1) AS sellCount1,SUM(SellCount2) AS sellCount2,
+	                SUM(SellCount3) AS sellCount3 FROM [dbo].[Y_R_tStockingWaring] s
+	            WHERE storeName IN ('万邑通UK','万邑通UK-MA仓','谷仓UK') ";
+        if ($sku) $sql .= " AND SKU IN ('{$sku}') ";
+        if ($goodsCode) $sql .= " AND goodsCode LIKE '{$goodsCode}%' ";
+        if ($status) $sql .= " AND goodsstatus = '{$status}' ";
+        $sql .= "GROUP BY goodsCode,SKU,SKUName,unit,property1,property2,goodsstatus,CategoryName,Weight,	
+	            SalerName,DefStoreName,CreateDate ) ss LEFT JOIN B_Goods g ON ss.GoodsCode=g.GoodsCode ";
+
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         return $data;
     }
 

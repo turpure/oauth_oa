@@ -220,9 +220,12 @@ class ConScheduler
         if(!$endDate) $endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
         //$beginDate = '2020-07-01';
         //$endDate = '2020-07-31';
-        //var_dump($num);exit;
-
-        $userQuery = Yii::$app->db->createCommand('SELECT * FROM warehouse_user_info')->queryAll();
+        $beginMonth = substr($beginDate,0,7);
+//        var_dump($beginMonth);exit;
+        $userQuery = Yii::$app->db->createCommand("SELECT * FROM warehouse_intergral_other_data_every_month WHERE `month`='{$beginMonth}'")->queryAll();
+        if(!$userQuery){
+            $userQuery = Yii::$app->db->createCommand('SELECT * FROM warehouse_user_info')->queryAll();
+        }
         $user = ArrayHelper::getColumn($userQuery,'name');
         $userPara = implode(',', $user);
         $dataQuery = Yii::$app->py_db->createCommand("EXEC oauth_siteWarehouseIntegral '{$beginDate}','{$endDate}','$userPara'")->queryAll();
