@@ -2627,7 +2627,7 @@ class ApiGoodsinfo
             'Option2 Value' => '', 'Option3 Name' => '', 'Option3 Value' => '', 'Variant SKU' => '',
             'Variant Grams' => '', 'Variant Inventory Tracker' => 'shopify', 'Variant Inventory Qty' => '',
             'Variant Inventory Policy' => 'continue', 'Variant Fulfillment Service' => 'manual', 'Variant Price' => '',
-            'Variant Compare At Price' => '', 'Variant Requires Shipping' => 'TRUE', 'Variant Taxable' => 'FALSE',
+            'Variant Requires Shipping' => 'TRUE', 'Variant Taxable' => 'FALSE',
             'Variant Barcode' => '', 'Image Src' => '', 'Image Position' => '', 'Image Alt Text' => '',
             'Gift Card' => 'FALSE', 'SEO Title' => '', 'SEO Description' => '',
             'Google Shopping / Google Product Category' => '', 'Google Shopping / Gender' => '',
@@ -2673,7 +2673,7 @@ class ApiGoodsinfo
                 $row['Title'] = $position > 1 ? '' : $title;
                 $row['Body (HTML)'] = $position > 1 ? '' : str_replace("\n", '<br>', $wishInfo['description']);
                 $row['Vendor'] = $position > 1 ? '' : $account['account'];
-                $row['Tags'] = $position > 1 ? '' : static::getShopifyTag($account['tags'], $title);
+                $row['Tags'] = $position > 1 ? '' : static::getShopifyTag($account['tags'], $wishSku);
                 $row['Published'] = $position > 1 ? '' : 'True';
                 $row['Option1 Name'] = !empty($option1Name) ? $option1Name : $option2Name;
                 $row['Option2 Name'] = $option2Name;
@@ -2682,8 +2682,7 @@ class ApiGoodsinfo
                 $row['Variant SKU'] = $sku['sku'];
                 $row['Variant Grams'] = $sku['weight'];
                 $row['Variant Inventory Qty'] = $sku['inventory'];
-                $row['Variant Price'] = $sku['price'] + 3;
-                $row['Variant Compare At Price'] = ceil(($sku['price'] + 3) * 3);
+                $row['Variant Price'] = $sku['price'];
                 $row['Variant Image'] = $sku['linkUrl'];
                 $row['Image Src'] = $position <= $imagesCount ? $imageSrc[$position - 1] : '';
                 $row['Image Position'] = $position <= $imagesCount ? $position : '';
@@ -3627,18 +3626,21 @@ class ApiGoodsinfo
     /**
      * @brief shopify Tags
      * @param $tags
-     * @param $title
+     * @param $skus
      * @return string
      */
-    private static function getShopifyTag($tags, $title)
+    private static function getShopifyTag($tags, $skus)
     {
-        $out = [];
-        $tags = explode(',', $tags);
-        foreach ($tags as $tg) {
-            if (stripos($title, $tg) !== false) {
-                $out[] = $tg;
-            }
+        $optionValue1 = [];
+        $optionValue2 = [];
+        foreach ($skus as $ele) {
+            $optionValue1[] = $ele['color'];
+            $optionValue2[] = $ele['size'];
         }
+        $optionValue1 = array_unique(array_filter($optionValue1));
+        $optionValue2 = array_unique(array_filter($optionValue2));
+
+        $out = array_merge($optionValue1, $optionValue2);
         return implode(', ', $out);
     }
 
