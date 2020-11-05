@@ -2778,6 +2778,7 @@ class ApiGoodsinfo
                 foreach ($wishSku as $sku) {
                     $row = $rowTemplate;
                     $row['Parent SKU'] = $wishInfo['sku'] . $postfix;
+                    $row['Vova Category ID'] = $wishInfo['vovaCategoryId'];
                     $row['SKU'] = $sku['sku'] . $postfix;
                     $row['Goods Name'] = $title;
                     $row['Quantity'] = 100000;
