@@ -2627,7 +2627,7 @@ class ApiGoodsinfo
             'Option2 Value' => '', 'Option3 Name' => '', 'Option3 Value' => '', 'Variant SKU' => '',
             'Variant Grams' => '', 'Variant Inventory Tracker' => 'shopify', 'Variant Inventory Qty' => '',
             'Variant Inventory Policy' => 'continue', 'Variant Fulfillment Service' => 'manual', 'Variant Price' => '',
-            'Variant Requires Shipping' => 'TRUE', 'Variant Taxable' => 'FALSE',
+            'Variant Compare At Price' => '', 'Variant Requires Shipping' => 'TRUE', 'Variant Taxable' => 'FALSE',
             'Variant Barcode' => '', 'Image Src' => '', 'Image Position' => '', 'Image Alt Text' => '',
             'Gift Card' => 'FALSE', 'SEO Title' => '', 'SEO Description' => '',
             'Google Shopping / Google Product Category' => '', 'Google Shopping / Gender' => '',
@@ -2682,7 +2682,8 @@ class ApiGoodsinfo
                 $row['Variant SKU'] = $sku['sku'];
                 $row['Variant Grams'] = $sku['weight'];
                 $row['Variant Inventory Qty'] = $sku['inventory'];
-                $row['Variant Price'] = $sku['price'];
+                $row['Variant Price'] = $sku['price'] + 3;
+//                $row['Variant Compare At Price'] = (($sku['price'] + 3) * 3);
                 $row['Variant Image'] = $sku['linkUrl'];
                 $row['Image Src'] = $position <= $imagesCount ? $imageSrc[$position - 1] : '';
                 $row['Image Position'] = $position <= $imagesCount ? $position : '';
@@ -3641,7 +3642,7 @@ class ApiGoodsinfo
         $optionValue2 = array_unique(array_filter($optionValue2));
 
         $out = array_merge($optionValue1, $optionValue2);
-        return implode(', ', $out);
+        return implode(',', $out);
     }
 
     /**
