@@ -51,4 +51,22 @@ class TestController extends AdminController
         }
     }
 
+
+    /**
+     *导入paypal的证书信息
+     */
+    public function actionPaypalTools() {
+       $config = [[]];
+        $con = Yii::$app->py_db;
+        $query = 'insert into Y_PayPalToken(accountName, username,signature,createdTime) values (:accountName,:username,:signature,:createdTime)';
+        foreach ($config as $ele) {
+            $con->createCommand($query,[
+                ':accountName' => $ele['acct1.UserName'],
+                ':username' => $ele['acct1.Password'],
+                ':signature' => $ele['acct1.Signature'],
+                ':createdTime' => date('Y-m-d H:i:s'),
+            ])->execute();
+        }
+    }
+
 }
