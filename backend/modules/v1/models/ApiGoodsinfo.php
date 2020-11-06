@@ -564,7 +564,8 @@ class ApiGoodsinfo
                         'id' => '', 'sku' => '', 'title' => '', 'description' => '', 'inventory' => '', 'price' => '', 'msrp' => '',
                         'shipping' => '', 'shippingTime' => '', 'tags' => '', 'mainImage' => '', 'goodsId' => '', 'infoId' => '',
                         'extraImages' => '', 'headKeywords' => '', 'requiredKeywords' => '', 'randomKeywords' => '', 'tailKeywords' => '',
-                        'wishTags' => '', 'stockUp' => '', 'wishMainImage' => '', 'wishExtraImages' => '', 'isJoomPublish' => ''
+                        'wishTags' => '', 'stockUp' => '', 'wishMainImage' => '', 'wishExtraImages' => '', 'isJoomPublish' => '',
+                        'vovaCategoryId' => '','lazadaCategoryIdMY' => '','lazadaCategoryIdPH' => '','lazadaCategoryIdTH' => '','lazadaCategoryIdSG' => '','lazadaCategoryIdID' => '','lazadaCategoryIdVN' => '',
                     ],
                     'skuInfo' => [[
                         'id' => '', 'infoId' => '', 'sid' => '', 'sku' => '', 'color' => '', 'size' => '', 'inventory' => '',
@@ -1093,7 +1094,14 @@ class ApiGoodsinfo
             'VN' => ['site' => '越南', 'exchange' => '0.0003', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 23300],
         ];
         $ids = implode(',', $ids);
-        $sql = "select og.createDate as '开发日期',cate as '一级类目',subCate as '二级类目', goodsCode as '商品编码', goodsStatus as '商品状态'," .
+        $sql = "select og.createDate as '开发日期',cate as '一级类目',subCate as '二级类目',
+        owg.lazadaCategoryIdMY as 'MY类目',
+        owg.lazadaCategoryIdPH as 'PH类目',
+        owg.lazadaCategoryIdTH as 'TH类目',
+        owg.lazadaCategoryIdSG as 'SG类目',
+        owg.lazadaCategoryIdID as 'ID类目',
+        owg.lazadaCategoryIdVN as 'VN类目',
+         goodsCode as '商品编码', goodsStatus as '商品状态'," .
             "goodsName as '商品名称'," .
             "ogs.sku as 'SKU'," .
             "(select sku from oa_goodssku  where infoId= ogs.infoId limit 1) as '关联SKU', " .
@@ -2674,7 +2682,7 @@ class ApiGoodsinfo
                 $row['Title'] = $position > 1 ? '' : $title;
                 $row['Body (HTML)'] = $position > 1 ? '' : str_replace("\n", '<br>', $wishInfo['description']);
                 $row['Vendor'] = $position > 1 ? '' : $account['account'];
-                $row['Tags'] = $position > 1 ? '' : static::getShopifyTag($account['tags'], $title);
+                $row['Tags'] = $position > 1 ? '' : static::getShopifyTag($account['tags'], $wishSku);
                 $row['Published'] = $position > 1 ? '' : 'True';
                 $row['Option1 Name'] = !empty($option1Name) ? $option1Name : $option2Name;
                 $row['Option2 Name'] = $option2Name;
@@ -2684,7 +2692,7 @@ class ApiGoodsinfo
                 $row['Variant Grams'] = $sku['weight'];
                 $row['Variant Inventory Qty'] = $sku['inventory'];
                 $row['Variant Price'] = $sku['price'] + 3;
-                $row['Variant Compare At Price'] = ceil(($sku['price'] + 3) * 3);
+//                $row['Variant Compare At Price'] = (($sku['price'] + 3) * 3);
                 $row['Variant Image'] = $sku['linkUrl'];
                 $row['Image Src'] = $position <= $imagesCount ? $imageSrc[$position - 1] : '';
                 $row['Image Position'] = $position <= $imagesCount ? $position : '';
@@ -2779,6 +2787,7 @@ class ApiGoodsinfo
                 foreach ($wishSku as $sku) {
                     $row = $rowTemplate;
                     $row['Parent SKU'] = $wishInfo['sku'] . $postfix;
+                    $row['Vova Category ID'] = $wishInfo['vovaCategoryId'];
                     $row['SKU'] = $sku['sku'] . $postfix;
                     $row['Goods Name'] = $title;
                     $row['Quantity'] = 100000;
@@ -3627,19 +3636,22 @@ class ApiGoodsinfo
     /**
      * @brief shopify Tags
      * @param $tags
-     * @param $title
+     * @param $skus
      * @return string
      */
-    private static function getShopifyTag($tags, $title)
+    private static function getShopifyTag($tags, $skus)
     {
-        $out = [];
-        $tags = explode(',', $tags);
-        foreach ($tags as $tg) {
-            if (stripos($title, $tg) !== false) {
-                $out[] = $tg;
-            }
+        $optionValue1 = [];
+        $optionValue2 = [];
+        foreach ($skus as $ele) {
+            $optionValue1[] = $ele['color'];
+            $optionValue2[] = $ele['size'];
         }
-        return implode(', ', $out);
+        $optionValue1 = array_unique(array_filter($optionValue1));
+        $optionValue2 = array_unique(array_filter($optionValue2));
+
+        $out = array_merge($optionValue1, $optionValue2);
+        return implode(',', $out);
     }
 
     /**
