@@ -1431,9 +1431,11 @@ class TinyToolController extends AdminController
             $condition = Yii::$app->request->post('condition');
             $data = ApiTinyTool::getStockWarningData($condition);
             $name = 'stock-warning';
-            $title = ['仓库','责任归属人2','商品编码','SKU','SKU名称','规格','属性1','属性2','商品状态','类目','重量','业绩归属人1',
-                '默认发货仓库', '创建时间','平均单价','可用数量','库存金额','平均日销量','预计可用数量',
-                '5天销量','10天销量','20天销量',''];
+            $title = ['仓库','商品编码','SKU','SKU名称','规格','商品状态','类目','重量','业绩归属人1',
+                '默认发货仓库', '创建时间','平均日销量','库存金额', '5天销量','10天销量','20天销量',
+                '万邑通UK平均单价','万邑通UK-MA平均单价','谷仓UK平均单价',
+                '万邑通UK可用数量','万邑通UK-MA可用数量','谷仓UK可用数量','金皖399可用数量','金皖399在途数量',
+                '责任归属人2','周转天数','预计可用数量'];
             ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
         } catch (Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];

@@ -38,6 +38,7 @@ class ApiReport
             ':exchangeRate' => $condition['exchangeRate']
         ];
         try {
+            //var_dump($con->createCommand($sql)->bindValues($sqlParams)->getRawSql());exit;
             return $con->createCommand($sql)->bindValues($sqlParams)->queryAll();
         } catch (\Exception $why) {
             return [$why];

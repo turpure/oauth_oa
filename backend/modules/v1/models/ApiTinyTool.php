@@ -1353,25 +1353,12 @@ class ApiTinyTool
      */
     public static function getStockWarningData($condition)
     {
-        $sku = isset($condition['sku']) ? $condition['sku'] : null;
-        $sku = str_replace(',', "','", $sku);
+        $sku = isset($condition['sku']) ? $condition['sku'] : '';
         $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
         $status = isset($condition['status']) ? $condition['status'] : '';
-        $sql = "SELECT 'UK海外仓' as storeName,g.possessMan2,ss.* FROM (
-	                SELECT goodsCode,SKU,SKUName,unit,property1,property2,goodsstatus,categoryName,weight,
-	                salerName,defStoreName,createDate,costprice = stuff((
-					    SELECT ',' + CAST(costprice AS VARCHAR) + '(' + storeName + ')' FROM Y_R_tStockingWaring a
-					    WHERE a.SKU=s.SKU FOR xml path('') ),1,1,''),
-	                SUM(usenum) AS usenum,SUM(costmoney) AS costmoney,SUM(DayNum) AS dayNum,
-	                SUM(hopeUseNum) AS hopeUseNum,SUM(SellCount1) AS sellCount1,SUM(SellCount2) AS sellCount2,
-	                SUM(SellCount3) AS sellCount3 FROM [dbo].[Y_R_tStockingWaring] s
-	            WHERE storeName IN ('万邑通UK','万邑通UK-MA仓','谷仓UK') ";
-        if ($sku) $sql .= " AND SKU IN ('{$sku}') ";
-        if ($goodsCode) $sql .= " AND goodsCode LIKE '{$goodsCode}%' ";
-        if ($status) $sql .= " AND goodsstatus = '{$status}' ";
-        $sql .= "GROUP BY goodsCode,SKU,SKUName,unit,property1,property2,goodsstatus,CategoryName,Weight,	
-	            SalerName,DefStoreName,CreateDate ) ss LEFT JOIN B_Goods g ON ss.GoodsCode=g.GoodsCode ";
-
+        $salerName = isset($condition['salerName']) ? $condition['salerName'] : '';
+        $possessMan = isset($condition['possessMan']) ? $condition['possessMan'] : '';
+        $sql = "EXEC Y_R_UK_StockingWaring '{$goodsCode}','{$sku}','{$status}','{$salerName}','{$possessMan}'";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         return $data;
     }

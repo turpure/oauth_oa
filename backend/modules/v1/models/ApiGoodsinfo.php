@@ -2051,6 +2051,7 @@ class ApiGoodsinfo
             $row['parent_sku'] = $wishInfo['sku'];
             $row['title'] = $title;
             $row['description'] = $wishInfo['description'];
+            $row['categories'] = [$wishInfo['fyndiqCategoryId']];
             $row['markets'] = json_encode(['SE']);
             $row['suffix'] = $account['suffix'];
             $row['quantity'] = !empty($wishInfo['inventory']) ? ((int)$wishInfo['inventory']) : 5;
@@ -2098,7 +2099,7 @@ class ApiGoodsinfo
             $row['parent_sku'] = $wishInfo['sku'];
             $row['title'] = $title;
             $row['description'] = $wishInfo['description'];
-            $row['categories'] = [];
+            $row['categories'] = [$wishInfo['fyndiqCategoryId']];
             $row['suffix'] = $account['suffix'];
             $row['quantity'] = !empty($wishInfo['inventory']) ? ((int)$wishInfo['inventory']) : 5;
             $variantInfo = static::getFyndiqVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);

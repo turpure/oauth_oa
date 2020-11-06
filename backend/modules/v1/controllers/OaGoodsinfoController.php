@@ -1117,7 +1117,6 @@ class OaGoodsinfoController extends AdminController
         try {
             return (new Query())->select (['id', 'name', 'children'])
                 ->from ( ['operation', 'fyndiq_category'])->all();
-            return ApiGoodsinfo::getVovaAccounts();
         } catch (\Exception  $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
