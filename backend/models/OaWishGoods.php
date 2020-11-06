@@ -32,6 +32,12 @@ use Yii;
  * @property string $isJoomPublish
  * @property string $fyndiqCategoryId
  * @property string $vovaCategoryId
+ * @property string $lazadaCategoryIdMY
+ * @property string $lazadaCategoryIdPH
+ * @property string $lazadaCategoryIdTH
+ * @property string $lazadaCategoryIdSG
+ * @property string $lazadaCategoryIdID
+ * @property string $lazadaCategoryIdVN
  */
 class OaWishGoods extends \yii\db\ActiveRecord
 {
@@ -50,7 +56,10 @@ class OaWishGoods extends \yii\db\ActiveRecord
     {
         return [
             [['description', 'extraImages','wishExtraImages','stockUp', 'isJoomPublish'], 'string'],
-            [['inventory', 'goodsId', 'infoId', 'fyndiqCategoryId','vovaCategoryId'], 'integer'],
+            [['inventory', 'goodsId', 'infoId', 'fyndiqCategoryId','vovaCategoryId',
+                'lazadaCategoryIdMY', 'lazadaCategoryIdPH', 'lazadaCategoryIdTH',
+                'lazadaCategoryIdSG', 'lazadaCategoryIdID', 'lazadaCategoryIdVN',
+                ], 'integer'],
             [['price', 'msrp', 'shipping'], 'number'],
             [['sku'], 'string', 'max' => 50],
             [['title', 'mainImage', 'wishMainImage'], 'string', 'max' => 2000],

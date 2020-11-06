@@ -564,7 +564,8 @@ class ApiGoodsinfo
                         'id' => '', 'sku' => '', 'title' => '', 'description' => '', 'inventory' => '', 'price' => '', 'msrp' => '',
                         'shipping' => '', 'shippingTime' => '', 'tags' => '', 'mainImage' => '', 'goodsId' => '', 'infoId' => '',
                         'extraImages' => '', 'headKeywords' => '', 'requiredKeywords' => '', 'randomKeywords' => '', 'tailKeywords' => '',
-                        'wishTags' => '', 'stockUp' => '', 'wishMainImage' => '', 'wishExtraImages' => '', 'isJoomPublish' => '','vovaCategoryId' => ''
+                        'wishTags' => '', 'stockUp' => '', 'wishMainImage' => '', 'wishExtraImages' => '', 'isJoomPublish' => '',
+                        'vovaCategoryId' => '','lazadaCategoryIdMY' => '','lazadaCategoryIdPH' => '','lazadaCategoryIdTH' => '','lazadaCategoryIdSG' => '','lazadaCategoryIdID' => '','lazadaCategoryIdVN' => '',
                     ],
                     'skuInfo' => [[
                         'id' => '', 'infoId' => '', 'sid' => '', 'sku' => '', 'color' => '', 'size' => '', 'inventory' => '',
