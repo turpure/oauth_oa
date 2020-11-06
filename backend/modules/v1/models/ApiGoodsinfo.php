@@ -1095,12 +1095,12 @@ class ApiGoodsinfo
         ];
         $ids = implode(',', $ids);
         $sql = "select og.createDate as '开发日期',cate as '一级类目',subCate as '二级类目',
-        'owg.lazadaCategoryIdMY' as 'MY类目',
-        'owg.lazadaCategoryIdPH' as 'PH类目',
-        'owg.lazadaCategoryIdTH' as 'TH类目',
-        'owg.lazadaCategoryIdSG' as 'SG类目',
-        'owg.lazadaCategoryIdID' as 'ID类目',
-        'owg.lazadaCategoryIdVN' as 'VN类目',
+        owg.lazadaCategoryIdMY as 'MY类目',
+        owg.lazadaCategoryIdPH as 'PH类目',
+        owg.lazadaCategoryIdTH as 'TH类目',
+        owg.lazadaCategoryIdSG as 'SG类目',
+        owg.lazadaCategoryIdID as 'ID类目',
+        owg.lazadaCategoryIdVN as 'VN类目',
          goodsCode as '商品编码', goodsStatus as '商品状态'," .
             "goodsName as '商品名称'," .
             "ogs.sku as 'SKU'," .
