@@ -2033,6 +2033,9 @@ class ApiGoodsinfo
     public static function preExportFyndiq($id, $accounts)
     {
         $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
+        if(!$wishInfo['fyndiqCategoryId']) {
+            return ['code' => 400, 'message' => 'The fyndiq category id can not be empty,please fill it!'];
+        }
         $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
         $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
         $fyndiqAccounts = OaFyndiqSuffix::find()->andFilterWhere(['suffix' => $accounts])->asArray()->all();
