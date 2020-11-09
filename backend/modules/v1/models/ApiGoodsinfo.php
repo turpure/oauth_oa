@@ -2085,7 +2085,6 @@ class ApiGoodsinfo
         $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
         $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
         $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
-        $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
         $fyndiqAccounts = Yii::$app->db->createCommand("SELECT * FROM proCenter.`oa_fyndiqSuffix` WHERE isIbay=1;")->queryAll();
         $keyWords = static::preKeywords($wishInfo);
         $row = [
@@ -2136,6 +2135,11 @@ class ApiGoodsinfo
             $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
             $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
             $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
+            if(!$wishInfo['fyndiqCategoryId']) {
+                $error = ['sku' => $goodsInfo['goodsCode'], 'description' => 'The fyndiq category id can not be empty, please fill it!'];
+                $out = array_merge($out, $error);
+                break;
+            }
             $fyndiqAccounts = OaFyndiqSuffix::findAll(['suffix' => $accounts]);
             $keyWords = static::preKeywords($wishInfo);
             foreach ($fyndiqAccounts as $account) {
