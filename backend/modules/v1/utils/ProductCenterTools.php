@@ -457,10 +457,15 @@ class ProductCenterTools
     private static function _stockImport($stock)
     {
         foreach ($stock as $stk) {
-            $currentStock = KCCurrentStock::findOne(['GoodsID' => $stk['GoodsID'], 'GoodsSKUID' => $stk['GoodsSKUID']]);
+            $currentStock = KCCurrentStock::findOne(['StoreID' => $stk['StoreID'], 'GoodsSKUID' => $stk['GoodsSKUID']]);
             if ($currentStock === null) {
                 $currentStock = new KCCurrentStock();
                 $currentStock->setAttributes($stk);
+                if (!$currentStock->save()) {
+                    throw new \Exception('fail to import stock');
+                }
+            }elseif ($currentStock['GoodsID'] != $stk['GoodsID']){
+                $currentStock->GoodsID = $stk['GoodsID'];
                 if (!$currentStock->save()) {
                     throw new \Exception('fail to import stock');
                 }
