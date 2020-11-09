@@ -256,7 +256,8 @@ class Helper
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        return json_decode($response, true);
+//        return json_decode($response, true);
+        return [$httpCode, json_decode($response, true)];
     }
 
 

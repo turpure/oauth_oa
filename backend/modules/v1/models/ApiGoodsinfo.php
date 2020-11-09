@@ -2193,10 +2193,14 @@ class ApiGoodsinfo
         }
         $header = ["Authorization: Basic " . $token];
         $res = Helper::post($url, json_encode($data), $header);
-        if($res['description'] != 'Accepted'){
-            $error  = $res['errors'];
+//        var_dump($res);exit;
+//        return $res;
+        if($res[0] > 500){
+            $error = $res[1];
+        }elseif($res[0] > 400){
+            $error  = $res[1]['errors'];
         }else{
-            $error = $res['responses'];
+            $error = $res[1]['responses'];
         }
         return $error;
     }
