@@ -722,7 +722,7 @@ class OaGoodsinfoController extends AdminController
             $infoId = $condition['id'];
             $accounts = $condition['account'];
             $ret = ApiGoodsinfo::preExportVova($infoId, $accounts);
-            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
+            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Xls');
         } catch (\Exception  $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
