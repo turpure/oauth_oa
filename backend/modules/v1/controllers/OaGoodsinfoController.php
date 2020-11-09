@@ -985,6 +985,29 @@ class OaGoodsinfoController extends AdminController
 
 
     /**
+     * @brief 上架Fyndiq产品
+     * Date: 2020-1-09 9:00
+     * Author: henry
+     * @return array|bool
+     */
+    public function actionPlatFyndiqToBackstage()
+    {
+        try {
+
+            $request = Yii::$app->request;
+            $condition = $request->post()['condition'];
+            $ids = $condition['ids'];
+            $account = $condition['account'];
+            $res = ApiGoodsinfo::uploadToFyndiqBackstage($ids, $account);
+            return $res;
+        } catch (\Exception $why) {
+            return ['code' => 400, 'message' => $why->getMessage()];
+        }
+    }
+
+
+
+    /**
      * @brief 上架JOOM产品
      * Date: 2020-08-06 9:00
      * Author: henry

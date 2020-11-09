@@ -8,8 +8,8 @@ use Yii;
  * This is the model class for table "proCenter.oa_fyndiqSuffix".
  *
  * @property int $id
- * @property string $ibaySuffix
- * @property string $shortName
+ * @property string $suffixId
+ * @property string $token
  * @property string $suffix
  * @property string $localCurrency
  * @property string $rate
@@ -35,7 +35,7 @@ class OaFyndiqSuffix extends \yii\db\ActiveRecord
         return [
             [['rate'], 'number'],
             [['isIbay'], 'safe'],
-            [['ibaySuffix', 'shortName','localCurrency', 'suffix', 'mainImg', 'parentCategory'], 'string', 'max' => 255],
+            [['token', 'suffixId','localCurrency', 'suffix', 'mainImg', 'parentCategory'], 'string', 'max' => 255],
         ];
     }
 
@@ -46,8 +46,8 @@ class OaFyndiqSuffix extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'ibaySuffix' => 'Ibay Suffix',
-            'shortName' => 'Short Name',
+            'suffixId' => 'Suffix Id',
+            'token' => 'Token',
             'localCurrency' => 'Local Currency',
             'suffix' => 'Suffix',
             'rate' => 'Rate',

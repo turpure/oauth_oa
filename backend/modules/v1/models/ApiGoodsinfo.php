@@ -2120,6 +2120,89 @@ class ApiGoodsinfo
         return $out;
     }
 
+    /** Fyndiq 上架产品
+     * @param $ids
+     * @param $accounts
+     * Date: 2020-11-10 17:07
+     * Author: henry
+     * @return array|bool
+     * @throws Exception
+     */
+    public static function uploadToFyndiqBackstage($ids, $accounts)
+    {
+        if(!is_array($ids)) $ids = [$ids];
+        $out = [];
+        foreach ($ids as $id) {
+            $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
+            $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
+            $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
+            $fyndiqAccounts = OaFyndiqSuffix::findAll(['suffix' => $accounts]);
+            $keyWords = static::preKeywords($wishInfo);
+            foreach ($fyndiqAccounts as $account) {
+                // 根据关键词 计算 标题
+                $titlePool = [];
+                $title = '';
+                $len = self::fyndiqTitleLength;
+                while (true) {
+                    $title = static::getTitleName($keyWords, $len);
+                    --$len;
+                    if (empty($title) || !in_array($title, $titlePool, false)) {
+                        $titlePool[] = $title;
+                        break;
+                    }
+                }
+                $row['parent_sku'] = $wishInfo['sku'];
+                $row['title'] = [["language" => "en-US", "value" => $title,]];
+                $row['description'] = [["language" => "en-US", "value" => $wishInfo['description']]];
+                $row['categories'] = [$wishInfo['fyndiqCategoryId']];
+                $row['suffix'] = $account['suffix'];
+                $row['quantity'] = !empty($wishInfo['inventory']) ? ((int)$wishInfo['inventory']) : 5;
+                $variantInfo = static::getFyndiqVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
+                $row['variations'] = $variantInfo['variant'];
+                $row['markets'] = ['SE'];
+//                return $row;
+                $res = self::uploadFyndiqProducts($account, $row);
+//                var_dump($res);exit;
+                $out = array_merge($out, $res);
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * 上传Fyndiq模板
+     * Date: 2020-11-07 16:39
+     * Author: henry
+     * @return array
+     */
+    public static function uploadFyndiqProducts($account, $row){
+//        $url = 'https://merchants-api.sandbox.fyndiq.se/api/v1/articles/bulk'; //测试地址
+        $url = 'https://merchants-api.fyndiq.se/api/v1/articles/bulk';
+        $token = base64_encode($account['suffixId'] . ':' . $account['token']);
+        $data = [];
+        foreach ($row['variations'] as $sku){
+                $item = $sku;
+                $item['parent_sku'] = $row['parent_sku'];
+            $item['title'] = $row['title'];
+            $item['description'] = $row['description'];
+            $item['categories'] = $row['categories'];
+            $item['markets'] = $row['markets'];
+//            $item['status'] = 'paused';
+            $item['status'] = 'for sale';
+            $data[] = $item;
+        }
+        $header = ["Authorization: Basic " . $token];
+        $res = Helper::post($url, json_encode($data), $header);
+        if($res['description'] != 'Accepted'){
+            $error  = $res['errors'];
+        }else{
+            $error = $res['responses'];
+        }
+        return $error;
+    }
+
+
+
     /**
      * @brief 导出joom模板
      * @param $ids
@@ -3127,12 +3210,7 @@ class ApiGoodsinfo
                         'currency' => 'SEK',
                     ]
                 ]];
-                $shipping_time = explode('-', $sku['shippingTime']);
-                $var['shipping_time'] = [[
-                    "market" => "SE",
-                    "min" => isset($shipping_time[0]) ? ((int)$shipping_time[0]) : 7,
-                    "max" => isset($shipping_time[1]) < 13 ? ((int)$shipping_time[1]) : 12,
-                ]];
+                $var['shipping_time'] = [["market" => "SE", "min" => 9, "max" => 12]];
                 $var['main_image'] = $sku['wishLinkUrl'];
                 $extraImages = explode("\n", $wishInfo['extraImages']);
                 $key = array_search($sku['wishLinkUrl'], $extraImages);
@@ -3140,10 +3218,9 @@ class ApiGoodsinfo
                 $var['images'] = array_slice($extraImages, 0, 10);
                 $variation[] = $var;
             }
-            $variant = json_encode($variation);
             $ret = [];
             //$ret['variant'] = $isVar === '是' ? $variant : '';
-            $ret['variant'] = $variant;
+            $ret['variant'] = $variation;
             $finalPrice = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1;
             $finalPrice -= 0.01;
             $ret['price'] = [
