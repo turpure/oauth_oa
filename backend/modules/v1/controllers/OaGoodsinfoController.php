@@ -839,6 +839,7 @@ class OaGoodsinfoController extends AdminController
             }elseif ($plat == 'Shopify'){
                 $ret = ApiGoodsinfo::preExportShopify($infoId, $accounts);
             }elseif ($plat == 'VOVA'){
+                $type = 'Xls';
                 $ret = ApiGoodsinfo::preExportVova($infoId, $accounts);
             }elseif ($plat == 'Mymall'){
                 $ret = ApiGoodsinfo::preExportMyMall($infoId, $accounts);
