@@ -3179,14 +3179,14 @@ class ApiGoodsinfo
                 $var['price'] = [[
                     'market' => 'SE',
                     'value' => [
-                        'amount' => $sku['fyndiqPrice'],
+                        'amount' => (float)$sku['fyndiqPrice'],
                         'currency' => 'SEK',
                     ]
                 ]];
                 $var['original_price'] = [[
                     'market' => 'SE',
                     'value' => [
-                        'amount' => $sku['fyndiqMsrp'] ,
+                        'amount' => (float)$sku['fyndiqMsrp'] ,
                         'currency' => 'SEK',
                     ]
                 ]];
