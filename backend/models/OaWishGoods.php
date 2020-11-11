@@ -30,6 +30,7 @@ use Yii;
  * @property string $wishTags
  * @property string $stockUp
  * @property string $isJoomPublish
+ * @property string $fyndiqTitle
  * @property integer $fyndiqCategoryId
  * @property integer $vovaCategoryId
  * @property integer $lazadaCategoryIdMY
@@ -62,7 +63,7 @@ class OaWishGoods extends \yii\db\ActiveRecord
                 ], 'integer'],
             [['price', 'msrp', 'shipping'], 'number'],
             [['sku'], 'string', 'max' => 50],
-            [['title', 'mainImage', 'wishMainImage'], 'string', 'max' => 2000],
+            [['title', 'mainImage', 'wishMainImage', 'fyndiqTitle'], 'string', 'max' => 2000],
             [['shippingTime', 'headKeywords', 'tailKeywords'], 'string', 'max' => 200],
             [['tags', 'wishTags'], 'string', 'max' => 500],
             [['requiredKeywords', 'randomKeywords'], 'string', 'max' => 300],

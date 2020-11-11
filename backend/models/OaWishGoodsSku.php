@@ -42,7 +42,7 @@ class OaWishGoodsSku extends \yii\db\ActiveRecord
     {
         return [
             [['infoId', 'sid', 'inventory', 'goodsSkuId'], 'integer'],
-            [['price', 'shipping', 'msrp', 'weight', 'joomPrice', 'joomShipping'], 'number'],
+            [['price', 'shipping', 'msrp', 'weight', 'joomPrice', 'joomShipping', 'fyndiqPrice', 'fyndiqMsrp'], 'number'],
             [['sku', 'color', 'size'], 'string', 'max' => 200],
             [['shippingTime'], 'string', 'max' => 60],
             [['linkUrl', 'wishLinkUrl'], 'string', 'max' => 500],

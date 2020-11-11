@@ -2060,14 +2060,14 @@ class ApiGoodsinfo
                 }
             }
             $row['parent_sku'] = $wishInfo['sku'];
-            $row['title'] = $title;
+            $row['title'] = $wishInfo['fyndiqTitle'] ?: $title;
             $row['description'] = $wishInfo['description'];
             $row['categories'] = [$wishInfo['fyndiqCategoryId']];
             $row['markets'] = json_encode(['SE']);
             $row['suffix'] = $account['suffix'];
             $row['quantity'] = !empty($wishInfo['inventory']) ? ((int)$wishInfo['inventory']) : 5;
             $variantInfo = static::getFyndiqVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
-            $row['variations'] = $variantInfo['variant'];
+            $row['variations'] = $variantInfo;
             $out[] = $row;
         }
         $ret['data'] = $out;
@@ -2113,7 +2113,7 @@ class ApiGoodsinfo
             $row['suffix'] = $account['suffix'];
             $row['quantity'] = !empty($wishInfo['inventory']) ? ((int)$wishInfo['inventory']) : 5;
             $variantInfo = static::getFyndiqVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
-            $row['variations'] = $variantInfo['variant'];
+            $row['variations'] = $variantInfo;
             $out[] = $row;
         }
         return $out;
@@ -2162,7 +2162,7 @@ class ApiGoodsinfo
                 $row['suffix'] = $account['suffix'];
                 $row['quantity'] = !empty($wishInfo['inventory']) ? ((int)$wishInfo['inventory']) : 5;
                 $variantInfo = static::getFyndiqVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
-                $row['variations'] = $variantInfo['variant'];
+                $row['variations'] = $variantInfo;
                 $row['markets'] = ['SE'];
 //                return $row;
                 $res = self::uploadFyndiqProducts($account, $row);
@@ -3153,37 +3153,9 @@ class ApiGoodsinfo
     private static function getFyndiqVariantInfo($isVar, $wishInfo, $wishSku, $account)
     {
         try {
-            $price = ArrayHelper::getColumn($wishSku, 'price');
-            $shippingPrice = ArrayHelper::getColumn($wishSku, 'shipping');
-            $msrp = ArrayHelper::getColumn($wishSku, 'msrp');
-            $len = count($price);
-            $totalPrice = [];
-            for ($i = 0; $i < $len; $i++) {
-                $totalPrice[] = ceil($price[$i] + $shippingPrice[$i]);
-            }
-            //获取最大最小价格
-            $maxPrice = max($totalPrice);
-            $minPrice = min($totalPrice);
-            $maxMsrp = ceil(max($msrp));
-
-            //根据总价计算运费
-            if ($minPrice <= 3) {
-                $shipping = 1;
-            } else {
-                $shipping = ceil($minPrice * $account['rate']);
-            }
-
             //打包变体
             $variation = [];
-
             foreach ($wishSku as $sku) {
-//                var_dump($sku);exit;
-                //价格判断
-                $totalPrice = ceil($sku['price'] + $sku['shipping']);
-                $sku['shipping'] = $shipping;
-                $sku['price'] = $totalPrice - $shipping < 1 ? 1 : ceil($totalPrice - $shipping);
-                $sku['price'] -= 0.01;
-
                 $var['sku'] = $sku['sku'];
                 $var['quantity'] = (int)$sku['inventory'];
                 $var['properties'] = [];
@@ -3207,45 +3179,26 @@ class ApiGoodsinfo
                 $var['price'] = [[
                     'market' => 'SE',
                     'value' => [
-                        'amount' => $sku['price'] * 6 , // 瑞典克朗价格
+                        'amount' => $sku['fyndiqPrice'],
                         'currency' => 'SEK',
                     ]
                 ]];
                 $var['original_price'] = [[
                     'market' => 'SE',
                     'value' => [
-                        'amount' => ceil($sku['msrp']) * 6 , // 瑞典克朗价格
+                        'amount' => $sku['fyndiqMsrp'] ,
                         'currency' => 'SEK',
                     ]
                 ]];
                 $var['shipping_time'] = [["market" => "SE", "min" => 9, "max" => 12]];
-                $var['main_image'] = $sku['wishLinkUrl'];
+                $var['main_image'] = $sku['linkUrl'];
                 $extraImages = explode("\n", $wishInfo['extraImages']);
-                $key = array_search($sku['wishLinkUrl'], $extraImages);
+                $key = array_search($sku['linkUrl'], $extraImages);
                 if($key !== false) array_splice($extraImages, $key, 1);
                 $var['images'] = array_slice($extraImages, 0, 10);
                 $variation[] = $var;
             }
-            $ret = [];
-            //$ret['variant'] = $isVar === '是' ? $variant : '';
-            $ret['variant'] = $variation;
-            $finalPrice = $maxPrice - $shipping > 0 ? ceil($maxPrice - $shipping) : 1;
-            $finalPrice -= 0.01;
-            $ret['price'] = [
-                'market' => 'SE',
-                'value' => [
-                    'amount' => $finalPrice * 6 , // 瑞典克朗价格
-                    'currency' => 'SEK',
-                ]
-            ];
-            $ret['original_price'] = [
-                'market' => 'SE',
-                'value' => [
-                    'amount' => $maxMsrp * 6 , // 瑞典克朗价格
-                    'currency' => 'SEK',
-                ]
-            ];
-            return $ret;
+            return $variation;
         } catch (\Exception $why) {
 //            var_dump($why->getMessage());exit;
             return ['variant' => '', 'price' => '', 'original_price' => ''];
