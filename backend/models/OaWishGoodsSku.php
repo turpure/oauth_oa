@@ -24,6 +24,8 @@ use Yii;
  * @property double $weight
  * @property string $joomPrice
  * @property string $joomShipping
+ * @property string $fyndiqPrice
+ * @property string $fyndiqMsrp
  */
 class OaWishGoodsSku extends \yii\db\ActiveRecord
 {

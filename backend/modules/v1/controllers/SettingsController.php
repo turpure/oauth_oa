@@ -404,13 +404,12 @@ class SettingsController extends AdminController
 
 		//文件上传
 		$result = ApiSettings::file($file, 'warehouseIntegralData');
-        $fileName = $file['name'];
         $fileSize = $file['size'];
 		if (!$result) {
 			return ['code' => 400, 'message' => 'File upload failed'];
 		}else{
 			//获取上传excel文件的内容并保存
-			return ApiSettings::saveIntegralData($result, $fileName, $fileSize);
+			return ApiSettings::saveIntegralData($result);
 		}
 	}
 
@@ -428,6 +427,33 @@ class SettingsController extends AdminController
         ];
     }
 
+    /**
+     * 上传excel批量修改SKU标题类目价格信息
+     * Date: 2020-11-12 11:55
+     * Author: henry
+     * @return array
+     */
+    public function actionImportProductsInfo(){
+        $file = $_FILES['file'];
+
+        if (!$file) {
+            return ['code' => 400, 'message' => 'The file can not be empty!'];
+        }
+        //判断文件后缀
+        $extension = strtolower(ApiSettings::get_extension($file['name']));
+        if(!in_array($extension, ['.xlsx', '.xls'])) return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' or 'xls' format"];
+
+        //文件上传
+        $result = ApiSettings::file($file, 'productInfo');
+        $fileName = $file['name'];
+        $fileSize = $file['size'];
+        if (!$result) {
+            return ['code' => 400, 'message' => 'File upload failed'];
+        }else{
+            //获取上传excel文件的内容并保存
+            return ApiSettings::saveProductData($result, $extension);
+        }
+    }
 
 
 

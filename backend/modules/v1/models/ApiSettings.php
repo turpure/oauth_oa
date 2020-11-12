@@ -8,6 +8,8 @@
 
 namespace backend\modules\v1\models;
 
+use backend\models\OaWishGoods;
+use backend\models\OaWishGoodsSku;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Yii;
 
@@ -423,6 +425,53 @@ class ApiSettings
             ];
         }
 
+    }
+
+    public static function saveProductData($file, $extension){
+        if($extension = '.xls'){
+            $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+        }else{
+            $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        }
+        $spreadsheet = $reader->load(Yii::$app->basePath . $file);
+        $sheet = $spreadsheet->getSheet(0);
+        $highestRow = $sheet->getHighestRow(); // 取得总行数
+        $erors = [];
+        try {
+            for ($i = 2; $i <= $highestRow; $i++) {
+                $sku = $sheet->getCell("A" . $i)->getValue();
+                $fyndiqTitle = $sheet->getCell("B" . $i)->getValue();
+                $fyndiqCategory = $sheet->getCell("C" . $i)->getValue();
+                $fyndiqPrice = $sheet->getCell("D" . $i)->getValue();
+                $fyndiqMsrp = $sheet->getCell("E" . $i)->getValue();
+//                var_dump((string)$fyndiqTitle);exit;
+                if (!$sku) break;//取到数据为空时跳出循环
+                $skuQuery = OaWishGoodsSku::findOne(['sku' => $sku]);
+                $skuQuery->fyndiqPrice = (float)$fyndiqPrice;
+                $skuQuery->fyndiqMsrp = (float)$fyndiqMsrp;
+                if(!$skuQuery->save()){
+                    $erors[] = 'Failed to save price info of SKU ' . $sku;
+                }
+                $query = OaWishGoods::findOne(['infoId' => $skuQuery->infoId]);
+                $query->fyndiqCategoryId = (int)$fyndiqCategory;
+                $query->fyndiqTitle = (string)$fyndiqTitle;
+                if(!$query->save()){
+//                    var_dump($query->getErrors());exit;
+                    $erors[] = 'Failed to save title or category info of SKU ' . $sku;
+                }
+            }
+            return $erors;
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
     }
 
 

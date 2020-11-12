@@ -23,6 +23,7 @@ use backend\models\OaGoodsinfo;
 use backend\models\OaJoomSuffix;
 use backend\models\OaSiteCountry;
 use backend\models\OaSmtGoodsSku;
+use backend\models\OaWishGoods;
 use backend\models\OaWishGoodsSku;
 use backend\modules\v1\models\ApiGoodsinfo;
 use backend\modules\v1\utils\Helper;
@@ -983,8 +984,6 @@ class OaGoodsinfoController extends AdminController
 
     }
 
-
-
     /**
      * @brief 上架Fyndiq产品
      * Date: 2020-1-09 9:00
@@ -1006,6 +1005,32 @@ class OaGoodsinfoController extends AdminController
         }
     }
 
+    /**
+     * 导出产品信息
+     * Date: 2020-11-12 11:07
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionExportProductsInfo(){
+        $ids = Yii::$app->request->post('condition', []);
+        $data = [];
+        foreach ($ids as $id){
+            $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
+            $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
+            foreach ($wishSku as $sku){
+                $item['sku'] = $sku['sku'];
+                $item['fyndiqTitle'] = $wishInfo['fyndiqTitle'];
+                $item['fyndiqCategory'] = $wishInfo['fyndiqCategoryId'];
+                $item['fyndiqPrice'] = $sku['fyndiqPrice'];
+                $item['fyndiqMsrp'] = $sku['fyndiqMsrp'];
+                $data[] = $item;
+            }
+        }
+        $name = 'ProductsInfo';
+        $title = ['sku', 'fyndiqTitle', 'fyndiqCategory', 'fyndiqPrice', 'fyndiqMsrp'];
+        ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
+    }
 
 
     /**
