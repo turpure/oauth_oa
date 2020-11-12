@@ -2671,7 +2671,9 @@ class ApiGoodsinfo
             if (strpos($sizeImage, '00_.jpg') === false) {
                 array_splice($imageSrc, 0, 0, $sizeImage);
             }
-            $imagesCount = count($imageSrc);
+
+            $images = array_merge([$wishInfo['mainImage']],$imageSrc);
+            $imagesCount = count($images);
             $position = 1;
             foreach ($wishSku as $sku) {
                 $option1Name = static::getShopifyOptionName($position, $sku, 'Color');
@@ -2690,10 +2692,10 @@ class ApiGoodsinfo
                 $row['Variant SKU'] = $sku['sku'];
                 $row['Variant Grams'] = $sku['weight'];
                 $row['Variant Inventory Qty'] = $sku['inventory'];
-                $row['Variant Price'] = $sku['price'] + 3;
+                $row['Variant Price'] = $sku['price'];
 //                $row['Variant Compare At Price'] = (($sku['price'] + 3) * 3);
                 $row['Variant Image'] = $sku['linkUrl'];
-                $row['Image Src'] = $position <= $imagesCount ? $imageSrc[$position - 1] : '';
+                $row['Image Src'] = $position <= $imagesCount ? $images[$position - 1] : '';
                 $row['Image Position'] = $position <= $imagesCount ? $position : '';
                 $out[] = $row;
                 $position++;
