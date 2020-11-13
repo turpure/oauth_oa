@@ -2763,14 +2763,22 @@ class ApiGoodsinfo
                 }
             }
             $imageSrc = explode("\n", $wishInfo['extraImages']);
-            $sizeImage = array_shift($imageSrc);
-            if (strpos($sizeImage, '00_.jpg') !== false) {
-                array_splice($imageSrc, 1, 0, $sizeImage);
-            }
-            if (strpos($sizeImage, '00_.jpg') === false) {
-                array_splice($imageSrc, 0, 0, $sizeImage);
-            }
-            $imagesCount = count($imageSrc);
+
+//            # 去取第一张图片
+//            $sizeImage = array_shift($imageSrc);
+
+            # 主图放到一个位置
+            $images = array_merge([$wishInfo['mainImage']],$imageSrc);
+
+//            # 尺寸图放到第二个位置
+//            if (strpos($sizeImage, '00_.jpg') !== false) {
+//                array_splice($images, 1, 0, $sizeImage);
+//            }
+//            if (strpos($sizeImage, '00_.jpg') === false) {
+//                array_splice($images, 0, 0, $sizeImage);
+//            }
+
+            $imagesCount = count($images);
             $position = 1;
             foreach ($wishSku as $sku) {
                 $option1Name = static::getShopifyOptionName($position, $sku, 'Color');
@@ -2789,10 +2797,10 @@ class ApiGoodsinfo
                 $row['Variant SKU'] = $sku['sku'];
                 $row['Variant Grams'] = $sku['weight'];
                 $row['Variant Inventory Qty'] = $sku['inventory'];
-                $row['Variant Price'] = $sku['price'] + 3;
+                $row['Variant Price'] = $sku['price'];
 //                $row['Variant Compare At Price'] = (($sku['price'] + 3) * 3);
                 $row['Variant Image'] = $sku['linkUrl'];
-                $row['Image Src'] = $position <= $imagesCount ? $imageSrc[$position - 1] : '';
+                $row['Image Src'] = $position <= $imagesCount ? $images[$position - 1] : '';
                 $row['Image Position'] = $position <= $imagesCount ? $position : '';
                 $out[] = $row;
                 $position++;
@@ -2805,7 +2813,7 @@ class ApiGoodsinfo
                     $row[$key] = '';
                 }
                 while ($position <= $imagesCount) {
-                    $row['Image Src'] = $imageSrc[$position - 1];
+                    $row['Image Src'] = $images[$position - 1];
                     $out[] = $row;
                     $position++;
                 }
