@@ -2140,15 +2140,27 @@ class ApiGoodsinfo
                 $out = array_merge($out, $error);
                 break;
             }
-            if(!$wishInfo['fyndiqTitle']) {
+            /*if(!$wishInfo['fyndiqTitle']) {
                 $error = [['sku' => $goodsInfo['goodsCode'], 'description' => 'The fyndiq title can not be empty, please fill it!']];
                 $out = array_merge($out, $error);
                 break;
-            }
+            }*/
             $fyndiqAccounts = OaFyndiqSuffix::findAll(['suffix' => $accounts]);
+            $keyWords = static::preKeywords($wishInfo);
             foreach ($fyndiqAccounts as $account) {
+                $titlePool = [];
+                $title = '';
+                $len = self::fyndiqTitleLength;
+                while (true) {
+                    $title = static::getTitleName($keyWords, $len);
+                    --$len;
+                    if (empty($title) || !in_array($title, $titlePool, false)) {
+                        $titlePool[] = $title;
+                        break;
+                    }
+                }
                 $row['parent_sku'] = $wishInfo['sku'];
-                $row['title'] = [["language" => "en-US", "value" => $wishInfo['fyndiqTitle']]];
+                $row['title'] = [["language" => "en-US", "value" => $wishInfo['fyndiqTitle'] ? : $title]];
                 $row['description'] = [["language" => "en-US", "value" => $wishInfo['description']]];
                 $row['categories'] = [$wishInfo['fyndiqCategoryId']];
                 $row['suffix'] = $account['suffix'];
