@@ -2160,7 +2160,8 @@ class ApiGoodsinfo
                     }
                 }
                 $row['parent_sku'] = $wishInfo['sku'];
-                $row['title'] = [["language" => "en-US", "value" => $wishInfo['fyndiqTitle'] ? : $title]];
+//                $row['title'] = [["language" => "en-US", "value" => $wishInfo['fyndiqTitle']]];
+                $row['title'] = [["language" => "en-US", "value" => $title]];
                 $row['description'] = [["language" => "en-US", "value" => $wishInfo['description']]];
                 $row['categories'] = [$wishInfo['fyndiqCategoryId']];
                 $row['suffix'] = $account['suffix'];
