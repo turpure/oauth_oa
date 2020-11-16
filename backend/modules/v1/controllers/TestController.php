@@ -18,6 +18,7 @@ namespace backend\modules\v1\controllers;
 
 
 use backend\models\ShopElf\BGoods;
+use backend\modules\v1\utils\ExportTools;
 use Yii;
 use yii\db\Exception;
 
@@ -50,6 +51,29 @@ class TestController extends AdminController
             return ['code' => 400, 'message'=>$why->getMessage()];
         }
     }
+
+    public  function actionTest1(){
+        try {
+            $data = Yii::$app->request->post('categories',[]);
+            foreach($data as $k => &$v)
+            {
+                if($v['parent_id']) {
+                    foreach ($data as $val){
+                        if($v['parent_id'] == $val['id']){
+                            $v['name'] = $val['name'] . ' , ' . $v['name'];
+                        }
+                    }
+                }
+            }
+            ExportTools::toExcelOrCsv('fyndiqCategory', $data, 'Xls', ['ID','paren_id','name']);
+//            return $data;
+
+        } catch (\Exception $why) {
+            return ['code' => 400, 'message'=>$why->getMessage()];
+        }
+    }
+
+
 
 
     /**

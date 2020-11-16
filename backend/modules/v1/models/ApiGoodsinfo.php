@@ -2171,6 +2171,25 @@ class ApiGoodsinfo
                 $row['markets'] = ['SE'];
 //                return $row;
                 $res = self::uploadFyndiqProducts($account, $row);
+                foreach ($res as &$v){
+                    if($v['status_code'] >= 400 && $v['status_code'] < 500){
+                        foreach ($v['errors'] as $k => &$val){
+                            $str = '';
+                            if(is_array($val)){
+                                foreach ($val as $value){
+                                    foreach ($value as $v1){
+                                        foreach ($v1 as $v2){
+                                            foreach ($v2 as $v3){
+                                                $str = implode(', ', $v3);
+                                            }
+                                        }
+                                    }
+                                }
+                                $val = $str;
+                            }
+                        }
+                    }
+                }
 //                var_dump($res);exit;
                 $out = array_merge($out, $res);
             }

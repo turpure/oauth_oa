@@ -444,19 +444,19 @@ class ApiSettings
                 $fyndiqCategory = $sheet->getCell("C" . $i)->getValue();
                 $fyndiqPrice = $sheet->getCell("D" . $i)->getValue();
                 $fyndiqMsrp = $sheet->getCell("E" . $i)->getValue();
-//                var_dump((string)$fyndiqTitle);exit;
+//                var_dump((int)$fyndiqCategory);exit;
                 if (!$sku) break;//取到数据为空时跳出循环
                 $skuQuery = OaWishGoodsSku::findOne(['sku' => $sku]);
                 $skuQuery->fyndiqPrice = (float)$fyndiqPrice;
                 $skuQuery->fyndiqMsrp = (float)$fyndiqMsrp;
                 if(!$skuQuery->save()){
                     $erors[] = 'Failed to save price info of SKU ' . $sku;
+                    break;
                 }
                 $query = OaWishGoods::findOne(['infoId' => $skuQuery->infoId]);
-                $query->fyndiqCategoryId = (int)$fyndiqCategory;
-                $query->fyndiqTitle = (string)$fyndiqTitle;
+                if ((int)$fyndiqCategory) $query->fyndiqCategoryId = (int)$fyndiqCategory;
+                if ((string)$fyndiqTitle) $query->fyndiqTitle = (string)$fyndiqTitle;
                 if(!$query->save()){
-//                    var_dump($query->getErrors());exit;
                     $erors[] = 'Failed to save title or category info of SKU ' . $sku;
                 }
             }
