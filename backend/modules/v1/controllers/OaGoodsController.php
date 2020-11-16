@@ -468,7 +468,7 @@ class OaGoodsController extends AdminController
                       LEFT JOIN proCenter.oa_goodsinfo as ogs on og.nid = ogs.goodsid
                       where ifnull(og.stockUp,'否')='否' and og.developer=:developer 
                       and substring(createDate,1,7) = substring(NOW(),1,7)
-                      and og.mineId is null AND checkStatus<>'未通过'";
+                      and og.mineId is null AND checkStatus not in ('未通过','已作废')";
         $numberHave = "select ifnull(stockNumThisMonth,0) as haveStock  from proCenter.oa_stockGoodsNum 
                       where isStock= 'nonstock'
                       and substring(createDate,1,7) = substring(NOW(),1,7)
