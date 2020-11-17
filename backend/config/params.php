@@ -45,7 +45,7 @@ return [
     //英伦速递Hermes  物流费参数
     'transport5' => '欧速通-英伦速递Hermes',//物流名称
     'weight5' => 2000,//重量分界线（g）2000
-    'price4' => 0.059,//单价（￥/g）
+    'price4' => 0.063,//单价（￥/g）
     'len' => 120, //cm
     'hei_wei' => 220, //cm
 
