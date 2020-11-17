@@ -56,13 +56,14 @@ class ApiReport
     {
         $sql = "EXEC P_DevNetprofit_advanced @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate," .
             "@Sku='',@SalerName=:seller,@SalerName2='',@chanel='',@SaleType='',@SalerAliasName='',@DevDate=''," .
-            "@DevDateEnd='',@Purchaser=0,@SupplierName=0,@possessMan1=0,@possessMan2=0";
+            "@DevDateEnd='',@Purchaser=0,@SupplierName=0,@possessMan1=0,@possessMan2=0,@flag=:flag";
         $con = Yii::$app->py_db;
         $params = [
             ':dateFlag' => $condition['dateFlag'],
             ':beginDate' => $condition['beginDate'],
             ':endDate' => $condition['endDate'],
             ':seller' => $condition['seller'],
+            ':flag' => isset($condition['flag']) && $condition['flag'] ? $condition['flag'] : 0,
         ];
         try {
             //return $con->createCommand($sql)->bindValues($params)->queryAll();

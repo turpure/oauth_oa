@@ -2172,7 +2172,7 @@ class ApiGoodsinfo
 //                return $row;
                 $res = self::uploadFyndiqProducts($account, $row);
                 foreach ($res as &$v){
-                    if($v['status_code'] >= 400 && $v['status_code'] < 500){
+                    if(isset($v['status_code']) && $v['status_code'] >= 400 && $v['status_code'] < 500){
                         foreach ($v['errors'] as $k => &$val){
                             $str = '';
                             if(is_array($val)){

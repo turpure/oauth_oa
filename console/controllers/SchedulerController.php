@@ -109,6 +109,7 @@ class SchedulerController extends Controller
                 'beginDate' => $beginDate,
                 'endDate' => $endDate,
                 'seller' => implode(',', ArrayHelper::getColumn($seller,'username')),
+                'flag' => 1
             ];
             $devList = ApiReport::getDevelopReport($condition);
             foreach ($devList as $value){
