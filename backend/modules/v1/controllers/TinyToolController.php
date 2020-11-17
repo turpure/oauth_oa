@@ -218,10 +218,11 @@ class TinyToolController extends AdminController
 
         //欧速通-英伦速邮
         $name = Yii::$app->params['transport1'];
-        if ($res['Weight'] < Yii::$app->params['weight']) {
-            $cost = Yii::$app->params['swBasic'] + Yii::$app->params['swPrice'] * $res['Weight'];
-        } else {
-            $cost = $cost = Yii::$app->params['bwBasic'] + Yii::$app->params['bwPrice'] * $res['Weight'];
+        if ($res['Weight'] <= Yii::$app->params['weight']) {
+            $cost = Yii::$app->params['swPrice'] * $res['Weight'];
+        } else // if($res['Weight'] < Yii::$app->params['weight1'])
+        {
+            $cost = Yii::$app->params['bwPrice'] * $res['Weight'];
         }
 
         //CNE-全球优先
@@ -232,18 +233,19 @@ class TinyToolController extends AdminController
         //欧速通-英伦速邮追踪
         $name3 = Yii::$app->params['transport3'];
         if ($res['Weight'] < Yii::$app->params['weight3']) {
-            $cost3 = Yii::$app->params['wBasic2'] + Yii::$app->params['price2'] * $res['Weight'];
+            $cost3 = Yii::$app->params['price2'] * $res['Weight'];
         } else {
-            $cost3 = Yii::$app->params['wBasic2'] + Yii::$app->params['price3'] * $res['Weight'];
+            $cost3 = Yii::$app->params['price3'] * $res['Weight'];
         }
 
-        //英伦速邮挂号
+        //欧速通-英伦速递Hermes
         $name4 = Yii::$app->params['transport5'];
-        if ($res['Weight'] < Yii::$app->params['weight5']) {
+        $cost4 = Yii::$app->params['price4'] * $res['Weight'];
+        /*if ($res['Weight'] < Yii::$app->params['weight5']) {
             $cost4 = Yii::$app->params['swBasic5'] + Yii::$app->params['swPrice5'] * $res['Weight'];
         } else {
             $cost4 = Yii::$app->params['bwBasic5'] + Yii::$app->params['bwPrice5'] * $res['Weight'];
-        }
+        }*/
 
         $param1 = $param2 = $param3 = $param4 = [
             'costprice' => $res['costprice'],
@@ -272,8 +274,8 @@ class TinyToolController extends AdminController
 
             $rate4 = ApiUkFic::getRate($param4);
             $rate4['transport'] = $name4;
-            //$data['rate'] = [$rate, $rate2, $rate3, $rate4];
-            $data['rate'] = [$rate2];
+            $data['rate'] = [$rate, $rate2, $rate3, $rate4];
+//            $data['rate'] = [$rate2];
         }
         //根据利润率获取售价
         $param1['rate'] = $param2['rate'] = $param3['rate'] = $param4['rate'] = $post['rate'];
@@ -289,26 +291,26 @@ class TinyToolController extends AdminController
         $price4 = ApiUkFic::getPrice($param4);
         $price4['transport'] = $name4;
 
-        //$data['price'] = [$price, $price2, $price3, $price4];
-        $data['price'] = [$price2];
+        $data['price'] = [$price, $price2, $price3, $price4];
+//        $data['price'] = [$price2];
         //print_r($data['price']);exit;
         $data['transport'] = [
-            /*[
+            [
                 'name' => $name,
                 'cost' => round($cost, 2),
-            ],*/
+            ],
             [
                 'name' => $name2,
                 'cost' => round($cost2, 2),
             ],
-            /*[
+            [
                 'name' => $name3,
                 'cost' => round($cost3, 2),
             ],
             [
                 'name' => $name4,
                 'cost' => round($cost4, 2),
-            ]*/
+            ]
         ];
         //print_r($data);exit;
         return $data;
