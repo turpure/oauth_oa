@@ -219,10 +219,10 @@ class TinyToolController extends AdminController
         //欧速通-英伦速邮
         $name = Yii::$app->params['transport1'];
         if ($res['Weight'] <= Yii::$app->params['weight']) {
-            $cost = Yii::$app->params['swPrice'] * $res['Weight'];
+            $cost = Yii::$app->params['swBasic'] + Yii::$app->params['swPrice'] * $res['Weight'];
         } else // if($res['Weight'] < Yii::$app->params['weight1'])
         {
-            $cost = Yii::$app->params['bwPrice'] * $res['Weight'];
+            $cost = Yii::$app->params['bwBasic'] + Yii::$app->params['bwPrice'] * $res['Weight'];
         }
 
         //CNE-全球优先
@@ -233,14 +233,14 @@ class TinyToolController extends AdminController
         //欧速通-英伦速邮追踪
         $name3 = Yii::$app->params['transport3'];
         if ($res['Weight'] < Yii::$app->params['weight3']) {
-            $cost3 = Yii::$app->params['price2'] * $res['Weight'];
+            $cost3 = Yii::$app->params['basic3'] + Yii::$app->params['price2'] * $res['Weight'];
         } else {
-            $cost3 = Yii::$app->params['price3'] * $res['Weight'];
+            $cost3 = Yii::$app->params['basic3'] + Yii::$app->params['price3'] * $res['Weight'];
         }
 
         //欧速通-英伦速递Hermes
         $name4 = Yii::$app->params['transport5'];
-        $cost4 = Yii::$app->params['price4'] * $res['Weight'];
+        $cost4 = Yii::$app->params['basic5'] + Yii::$app->params['price4'] * $res['Weight'];
         /*if ($res['Weight'] < Yii::$app->params['weight5']) {
             $cost4 = Yii::$app->params['swBasic5'] + Yii::$app->params['swPrice5'] * $res['Weight'];
         } else {
