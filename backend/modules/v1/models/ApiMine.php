@@ -550,7 +550,7 @@ class ApiMine
                 $ret[] = $row;
             }
         }
-        ExportTools::toExcelOrCsv('test-vova',$ret,'Csv');
+        ExportTools::toExcelOrCsv('test-vova', $ret);
     }
 
     /**
