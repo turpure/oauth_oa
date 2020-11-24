@@ -443,7 +443,6 @@ class ApiMine
         foreach ($id as $mid) {
             $condition = ['id' => $mid];
             $info = static::getMineInfo($condition);
-            var_dump(count($info));
             $basicInfo = $info['basicInfo'];
             $images = $info['images'];
             $variations = $info['detailsInfo'];
@@ -483,7 +482,6 @@ class ApiMine
                 $ret[] = $row;
             }
         }
-        var_dump($ret);exit;
         ExportTools::toExcelOrCsv('test-joom',$ret,'Csv');
     }
 
