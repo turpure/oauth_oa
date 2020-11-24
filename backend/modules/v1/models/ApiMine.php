@@ -439,9 +439,11 @@ class ApiMine
             $id = [$id];
         }
         $ret = [];
+//        var_dump(123);exit;
         foreach ($id as $mid) {
             $condition = ['id' => $mid];
             $info = static::getMineInfo($condition);
+            var_dump(count($info));
             $basicInfo = $info['basicInfo'];
             $images = $info['images'];
             $variations = $info['detailsInfo'];
@@ -477,9 +479,11 @@ class ApiMine
                     'Declared Value' => static::getJoomDeclaredValue($var['price']),
                     'Store id' => $basicInfo['storeId']
                 ];
+//                var_dump(1);
                 $ret[] = $row;
             }
         }
+        var_dump($ret);exit;
         ExportTools::toExcelOrCsv('test-joom',$ret,'Csv');
     }
 

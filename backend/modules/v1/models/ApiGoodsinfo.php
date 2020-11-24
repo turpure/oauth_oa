@@ -2138,7 +2138,7 @@ class ApiGoodsinfo
             if(!$wishInfo['fyndiqCategoryId']) {
                 $error = [['sku' => $goodsInfo['goodsCode'], 'description' => 'The fyndiq category id can not be empty, please fill it!']];
                 $out = array_merge($out, $error);
-                break;
+                continue;
             }
             /*if(!$wishInfo['fyndiqTitle']) {
                 $error = [['sku' => $goodsInfo['goodsCode'], 'description' => 'The fyndiq title can not be empty, please fill it!']];
