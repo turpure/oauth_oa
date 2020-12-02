@@ -1113,7 +1113,8 @@ class OaGoodsinfoController extends AdminController
             //post到iBay接口
             $api = 'http://139.196.109.214/index.php/api/ImportEbayMuban/auth/youran';
             $ret = Helper::request($api, $data)[1];
-//            var_dump($ret);exit;
+//            return $ret;
+            //var_dump($ret);exit;
             if (isset($ret['ack']) && $ret['ack'] === 'success') {
                 $logData['result'] = 'success';
                 $templates = array_values($ret['importebaymubanResponse']);

@@ -2805,7 +2805,8 @@ class ApiGoodsinfo
                 $option2Name = static::getShopifyOptionName($position, $sku, 'Size');
                 $row = $rowTemplate;
                 $row['Handle'] = str_replace(' ', '-', $title);
-                $row['Title'] = $position > 1 ? '' : $title;
+//                $row['Title'] = $position > 1 ? '' : $title;   //2020-12-02
+                $row['Title'] = $title;
                 $row['Body (HTML)'] = $position > 1 ? '' : str_replace("\n", '<br>', $wishInfo['description']);
                 $row['Vendor'] = $position > 1 ? '' : $account['account'];
                 $row['Tags'] = $position > 1 ? '' : static::getShopifyTag($account['tags'], $wishSku);
@@ -2833,6 +2834,8 @@ class ApiGoodsinfo
                     $row[$key] = '';
                 }
                 while ($position <= $imagesCount) {
+                    $row['Handle'] = str_replace(' ', '-', $title);
+                    $row['Title'] = $title;
                     $row['Image Src'] = $images[$position - 1];
                     $out[] = $row;
                     $position++;
