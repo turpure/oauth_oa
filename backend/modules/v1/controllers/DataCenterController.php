@@ -563,4 +563,43 @@ class DataCenterController extends AdminController
     }
 
 
+    public function actionPpBalance(){
+        $request = Yii::$app->request;
+        if(!$request->isPost){
+            return [];
+        }
+        $cond = $request->post('condition');
+        $beginTime = isset($cond['dateRange'][0]) ? $cond['dateRange'][0] : '';
+        $endTime = isset($cond['dateRange'][1]) ? $cond['dateRange'][1] : '';
+        $email = isset($cond['email']) ? $cond['email'] : '';
+        $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
+        $sql = "SELECT DownTime,PayPalEamil,TotalRMB,USD,AUD,CAD,EUR,GBP,Memo FROM Y_PayPalBalance WHERE 1=1 ";
+        if($beginTime && $endTime) $sql .= " AND convert(varchar(10),DownTime,121) between '{$beginTime}' and '{$endTime}'";
+        if($email) $sql .= " AND PayPalEamil LIKE '%{$email}%'";
+        try{
+            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+            $provider = new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => [
+                        'DownTime','PayPalEamil','TotalRMB', 'USD', 'AUD', 'CAD', 'EUR','GBP'
+                    ],
+                    'defaultOrder' => [
+                        'PayPalEamil' => SORT_ASC,
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+            return $provider;
+        }catch (\Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+
 }
