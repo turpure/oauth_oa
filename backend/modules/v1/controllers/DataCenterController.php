@@ -631,8 +631,8 @@ class DataCenterController extends AdminController
         if($accountName) $sql .= " AND accountName LIKE '%{$accountName}%'";
         if($paypalStatus) $sql .= " AND paypalStatus LIKE '%{$paypalStatus}%'";
         if($memo) $sql .= " AND memo LIKE '%{$memo}%'";
-        if($isUrUsed || $isUrUsed === 0) $sql .= " AND isUrUsed = {$isUrUsed}";
-        if($isPyUsed || $isPyUsed === 0) $sql .= " AND isPyUsed = {$isPyUsed}";
+        if($isUrUsed || $isUrUsed === "0") $sql .= " AND isUrUsed = '{$isUrUsed}'";
+        if($isPyUsed || $isPyUsed === "0") $sql .= " AND isPyUsed = '{$isPyUsed}'";
         try{
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             $provider = new ArrayDataProvider([
