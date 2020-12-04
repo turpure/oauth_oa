@@ -2171,6 +2171,7 @@ class ApiGoodsinfo
                 $row['markets'] = ['SE'];
 //                return $row;
                 $res = self::uploadFyndiqProducts($account, $row);
+//                return $res;
                 foreach ($res as &$v){
                     if(isset($v['status_code']) && $v['status_code'] >= 400 && $v['status_code'] < 500){
                         foreach ($v['errors'] as $k => &$val){
@@ -2180,7 +2181,15 @@ class ApiGoodsinfo
                                     foreach ($value as $v1){
                                         foreach ($v1 as $v2){
                                             foreach ($v2 as $v3){
-                                                $str = implode(', ', $v3);
+//                                                var_dump($v3);exit;
+                                                if(is_array($v3)){
+                                                    foreach ($v3 as $v4){
+//                                                        var_dump($v4);exit;
+                                                        $str = implode(', ', array_values($v4));
+                                                    }
+                                                }else{
+                                                    $str = implode(', ', $v3);
+                                                }
                                             }
                                         }
                                     }
