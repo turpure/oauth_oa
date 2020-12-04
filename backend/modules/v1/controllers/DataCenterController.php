@@ -8,6 +8,8 @@
 namespace backend\modules\v1\controllers;
 
 
+use backend\models\ShopElf\YPayPalStatus;
+use backend\models\ShopElf\YPayPalStatusLogs;
 use backend\modules\v1\models\ApiDataCenter;
 use backend\modules\v1\utils\Handler;
 use yii\data\ActiveDataProvider;
@@ -15,6 +17,7 @@ use yii\data\ArrayDataProvider;
 use yii\db\Query;
 use Yii;
 use yii\helpers\ArrayHelper;
+use yii\swiftmailer\Message;
 
 class DataCenterController extends AdminController
 {
@@ -562,7 +565,12 @@ class DataCenterController extends AdminController
         }
     }
 
-
+    /** pp余额
+     * actionPpBalance
+     * Date: 2020-12-04 13:12
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
     public function actionPpBalance(){
         $request = Yii::$app->request;
         if(!$request->isPost){
@@ -600,6 +608,117 @@ class DataCenterController extends AdminController
             ];
         }
     }
+
+    /** pp状态
+     * actionPpBalance
+     * Date: 2020-12-04 13:12
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionPpStatus(){
+        $request = Yii::$app->request;
+        if(!$request->isPost){
+            return [];
+        }
+        $cond = $request->post('condition');
+        $accountName = isset($cond['accountName']) ? $cond['accountName'] : '';
+        $isUrUsed = isset($cond['isUrUsed']) ? $cond['isUrUsed'] : null;
+        $isPyUsed = isset($cond['isPyUsed']) ? $cond['isPyUsed'] : null;
+        $paypalStatus = isset($cond['paypalStatus']) ? $cond['paypalStatus'] : null;
+        $memo  = isset($cond['memo ']) ? $cond['memo '] : null;
+        $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
+        $sql = "SELECT nid,accountName,isUrUsed,isPyUsed,paypalStatus,memo,createdTime,updatedTime FROM Y_PayPalStatus WHERE 1=1 ";
+        if($accountName) $sql .= " AND accountName LIKE '%{$accountName}%'";
+        if($paypalStatus) $sql .= " AND paypalStatus LIKE '%{$paypalStatus}%'";
+        if($memo) $sql .= " AND memo LIKE '%{$memo}%'";
+        if($isUrUsed || $isUrUsed === 0) $sql .= " AND isUrUsed = {$isUrUsed}";
+        if($isPyUsed || $isPyUsed === 0) $sql .= " AND isPyUsed = {$isPyUsed}";
+        try{
+            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+            $provider = new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => [
+                        'accountName','isUrUsed','isPyUsed', 'paypalStatus'
+                    ],
+                    'defaultOrder' => [
+                        'accountName' => SORT_ASC,
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+            return $provider;
+        }catch (\Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /** pp状态修改
+     * Date: 2020-12-04 13:12
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionPpStatusUpdate(){
+        $request = Yii::$app->request;
+        if(!$request->isPost){
+            return [];
+        }
+        $cond = $request->post('condition');
+        $accountName = isset($cond['accountName']) ? $cond['accountName'] : '';
+
+        $query = YPayPalStatus::findOne(['accountName' => $accountName]);
+        if(!$query) {
+            $query = new YPayPalStatus();
+        }
+
+        $query->setAttributes($cond);
+        $changedAttr = $query->getDirtyAttributes();
+//        var_dump($oldAttr);exit;
+        $res = $query->save();
+//        var_dump($query->isNewRecord);exit;
+        if(!$res){
+            return ['code' => 400, 'message' => 'Failed to save payPal info!'];
+        }else{
+            if(!$query->isNewRecord){
+                $content = 'PayPal账号状态信息更新：';
+                foreach ($changedAttr as $k => $v){
+                    $content .= $k.'->'.$v.',';
+                }
+            }else{
+                $content = '创建PayPal账号状态信息！';
+            }
+            if($changedAttr){
+                $log = new YPayPalStatusLogs();
+                $log->paypalNid = $query->nid;
+                $log->opertor = Yii::$app->user->identity->username;
+                $log->content = $content;
+                $log->save();
+            }
+            return true;
+        }
+    }
+
+    /** pp状态修改日志
+     * Date: 2020-12-04 13:12
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionPpStatusUpdateLog(){
+        $request = Yii::$app->request;
+        if(!$request->isPost){
+            return [];
+        }
+        $cond = $request->post('condition');
+        $paypalNid = isset($cond['paypalNid']) ? $cond['paypalNid'] : null;
+        $query = YPayPalStatusLogs::findAll(['paypalNid' => $paypalNid]);
+        return $query;
+    }
+
 
 
 }
