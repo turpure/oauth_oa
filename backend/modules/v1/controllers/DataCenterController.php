@@ -11,6 +11,7 @@ namespace backend\modules\v1\controllers;
 use backend\models\ShopElf\YPayPalStatus;
 use backend\models\ShopElf\YPayPalStatusLogs;
 use backend\modules\v1\models\ApiDataCenter;
+use backend\modules\v1\utils\ExportTools;
 use backend\modules\v1\utils\Handler;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
@@ -580,17 +581,22 @@ class DataCenterController extends AdminController
         $beginTime = isset($cond['dateRange'][0]) ? $cond['dateRange'][0] : '';
         $endTime = isset($cond['dateRange'][1]) ? $cond['dateRange'][1] : '';
         $email = isset($cond['email']) ? $cond['email'] : '';
+        $paypalStatus = isset($cond['paypalStatus']) ? $cond['paypalStatus'] : '';
         $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
-        $sql = "SELECT DownTime,PayPalEamil,TotalRMB,USD,AUD,CAD,EUR,GBP,Memo FROM Y_PayPalBalance WHERE 1=1 ";
+        $sql = "SELECT DownTime,PayPalEamil,TotalRMB,USD,AUD,CAD,EUR,GBP,b.Memo,
+                isnull(s.paypalStatus,'使用中') as paypalStatus FROM Y_PayPalBalance b
+                LEFT JOIN Y_PayPalStatus s ON b.PayPalEamil=s.accountName 
+                WHERE 1=1 ";
         if($beginTime && $endTime) $sql .= " AND convert(varchar(10),DownTime,121) between '{$beginTime}' and '{$endTime}'";
         if($email) $sql .= " AND PayPalEamil LIKE '%{$email}%'";
+        if($paypalStatus) $sql .= " AND isnull(s.paypalStatus,'使用中') LIKE '%{$paypalStatus}%'";
         try{
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
                     'attributes' => [
-                        'DownTime','PayPalEamil','TotalRMB', 'USD', 'AUD', 'CAD', 'EUR','GBP'
+                        'DownTime','PayPalEamil','TotalRMB', 'USD', 'AUD', 'CAD', 'EUR','GBP','paypalStatus'
                     ],
                     'defaultOrder' => [
                         'PayPalEamil' => SORT_ASC,
@@ -608,6 +614,34 @@ class DataCenterController extends AdminController
             ];
         }
     }
+
+    /** pp余额
+     * actionPpBalance
+     * Date: 2020-12-04 13:12
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionPpBalanceExport(){
+        $request = Yii::$app->request;
+        if(!$request->isPost){
+            return [];
+        }
+        $cond = $request->post('condition');
+        $beginTime = isset($cond['dateRange'][0]) ? $cond['dateRange'][0] : '';
+        $endTime = isset($cond['dateRange'][1]) ? $cond['dateRange'][1] : '';
+        $email = isset($cond['email']) ? $cond['email'] : '';
+        $paypalStatus = isset($cond['paypalStatus']) ? $cond['paypalStatus'] : '';
+        $sql = "SELECT DownTime,PayPalEamil,TotalRMB,USD,AUD,CAD,EUR,GBP,b.Memo,
+                isnull(s.paypalStatus,'使用中') as paypalStatus FROM Y_PayPalBalance b
+                LEFT JOIN Y_PayPalStatus s ON b.PayPalEamil=s.accountName
+                WHERE 1=1 ";
+        if($beginTime && $endTime) $sql .= " AND convert(varchar(10),DownTime,121) between '{$beginTime}' and '{$endTime}'";
+        if($email) $sql .= " AND PayPalEamil LIKE '%{$email}%'";
+        if($paypalStatus) $sql .= " AND isnull(s.paypalStatus,'使用中') LIKE '%{$paypalStatus}%'";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        ExportTools::toExcelOrCsv('payPalBalance', $data, 'Xls');
+    }
+
 
     /** pp状态
      * actionPpBalance
