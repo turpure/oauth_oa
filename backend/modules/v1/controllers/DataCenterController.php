@@ -581,15 +581,19 @@ class DataCenterController extends AdminController
         $beginTime = isset($cond['dateRange'][0]) ? $cond['dateRange'][0] : '';
         $endTime = isset($cond['dateRange'][1]) ? $cond['dateRange'][1] : '';
         $email = isset($cond['email']) ? $cond['email'] : '';
+        $memo = isset($cond['memo']) ? $cond['memo'] : '';
+        $batchId = isset($cond['BatchId']) ? $cond['BatchId'] : '';
         $paypalStatus = isset($cond['paypalStatus']) ? $cond['paypalStatus'] : '';
         $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
-        $sql = "SELECT DownTime,PayPalEamil,TotalRMB,USD,AUD,CAD,EUR,GBP,b.Memo,
+        $sql = "SELECT DownTime,PayPalEamil,TotalRMB,USD,AUD,CAD,EUR,GBP,s.memo,
                 isnull(s.paypalStatus,'使用中') as paypalStatus FROM Y_PayPalBalance b
                 LEFT JOIN Y_PayPalStatus s ON b.PayPalEamil=s.accountName 
                 WHERE 1=1 ";
         if($beginTime && $endTime) $sql .= " AND convert(varchar(10),DownTime,121) between '{$beginTime}' and '{$endTime}'";
         if($email) $sql .= " AND PayPalEamil LIKE '%{$email}%'";
         if($paypalStatus) $sql .= " AND isnull(s.paypalStatus,'使用中') LIKE '%{$paypalStatus}%'";
+        if($memo) $sql .= " AND isnull(s.memo,'') LIKE '%{$memo}%'";
+        if($batchId) $sql .= " AND BatchId = {$memo}";
         try{
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             $provider = new ArrayDataProvider([
@@ -631,13 +635,17 @@ class DataCenterController extends AdminController
         $endTime = isset($cond['dateRange'][1]) ? $cond['dateRange'][1] : '';
         $email = isset($cond['email']) ? $cond['email'] : '';
         $paypalStatus = isset($cond['paypalStatus']) ? $cond['paypalStatus'] : '';
-        $sql = "SELECT DownTime,PayPalEamil,TotalRMB,USD,AUD,CAD,EUR,GBP,b.Memo,
+        $memo = isset($cond['memo']) ? $cond['memo'] : '';
+        $batchId = isset($cond['BatchId']) ? $cond['BatchId'] : '';
+        $sql = "SELECT DownTime,PayPalEamil,TotalRMB,USD,AUD,CAD,EUR,GBP,s.memo,
                 isnull(s.paypalStatus,'使用中') as paypalStatus FROM Y_PayPalBalance b
                 LEFT JOIN Y_PayPalStatus s ON b.PayPalEamil=s.accountName
                 WHERE 1=1 ";
         if($beginTime && $endTime) $sql .= " AND convert(varchar(10),DownTime,121) between '{$beginTime}' and '{$endTime}'";
         if($email) $sql .= " AND PayPalEamil LIKE '%{$email}%'";
         if($paypalStatus) $sql .= " AND isnull(s.paypalStatus,'使用中') LIKE '%{$paypalStatus}%'";
+        if($memo) $sql .= " AND isnull(s.memo,'') LIKE '%{$memo}%'";
+        if($batchId) $sql .= " AND BatchId = {$memo}";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         ExportTools::toExcelOrCsv('payPalBalance', $data, 'Xls');
     }
