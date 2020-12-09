@@ -931,6 +931,21 @@ class ReportController extends AdminController
         return ApiReport::getHistorySalesProfit($condition);
     }
 
+    /** 销售历史利润 导出
+     * actionHistorySalesProfitExport
+     * Date: 2020-12-09 14:51
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionHistorySalesProfitExport()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiReport::exportHistorySalesProfit($condition);
+    }
+
+
+
     /**
      * @brief 历史利润走势
      * @return array

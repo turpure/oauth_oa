@@ -2041,9 +2041,10 @@ class ApiGoodsinfo
         $fyndiqAccounts = OaFyndiqSuffix::find()->andFilterWhere(['suffix' => $accounts])->asArray()->all();
         $keyWords = static::preKeywords($wishInfo);
         $row = [
-            'sku' => '', "parent_sku" => '', "title" => '', "description" => '', "categories" => '' , "variations" => '',
-            'variational_properties' => '', 'properties' => '', "brand" => '', "gtin" => '', 'suffix' => '', 'quantity' => 0,
-            'price' => '', 'original_price' => '', 'shipping_time' => '', 'main_image' => '', 'images' => '', 'markets' => ['SE']
+            'mubnaid' => '', "sku" => '', 'selleruserid' => '', "title" => '', 'inventory' => 10000, 'price' => '',
+            'original_price' => '', 'shipping' => '', 'shipping_time' => '' , 'main_image' => '', 'extra_images' => '',
+            'tags' => '', "description" => '', "categories" => '' , "variations" => '',  "brand" => '', "gtin" => '',
+            'size' => '', 'color' => 0, 'content' => ''
         ];
         $ret = ['name' => 'fyndiq-' . $goodsInfo['goodsCode']];
         $out = [];
@@ -2059,7 +2060,7 @@ class ApiGoodsinfo
                     break;
                 }
             }
-            $row['parent_sku'] = $wishInfo['sku'];
+            $row['sku'] = $wishInfo['sku'];
             $row['title'] = $wishInfo['fyndiqTitle'] ?: $title;
             $row['description'] = $wishInfo['description'];
             $row['categories'] = [$wishInfo['fyndiqCategoryId']];
@@ -3201,9 +3202,9 @@ class ApiGoodsinfo
             $variation = [];
             foreach ($wishSku as $sku) {
                 $var['sku'] = $sku['sku'];
-                $var['quantity'] = (int)$sku['inventory'];
-                $var['properties'] = [];
-                $var['variational_properties'] = [];
+                $var['inventory'] = (int)$sku['inventory'];
+//                $var['properties'] = [];
+//                $var['variational_properties'] = [];
                 if($sku['color']){
                     $var['properties'][] = [
                         "name" => "color", //Free text
@@ -3224,7 +3225,6 @@ class ApiGoodsinfo
                     'market' => 'SE',
                     'value' => [
                         'amount' => (float)$sku['fyndiqPrice'],
-                        'currency' => 'SEK',
                     ]
                 ]];
                 $var['original_price'] = [[

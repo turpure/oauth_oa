@@ -850,6 +850,7 @@ class OaGoodsinfoController extends AdminController
             }elseif($plat == 'Fyndiq'){
                 $type = 'Xls';
                 $ret = ApiGoodsinfo::preExportFyndiq($infoId, $accounts);
+                //return $ret;
                 //var_dump($ret['data']);exit;
             }
             ExportTools::toExcelOrCsv($ret['name'], $ret['data'], $type);

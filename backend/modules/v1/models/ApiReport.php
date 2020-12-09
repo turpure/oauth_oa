@@ -7,6 +7,7 @@
 
 namespace backend\modules\v1\models;
 
+use backend\modules\v1\utils\ExportTools;
 use Yii;
 use yii\data\ArrayDataProvider;
 use yii\data\SqlDataProvider;
@@ -1278,6 +1279,67 @@ class ApiReport
 
         }
         return $out;
+    }
+
+    /** 导出历史利润汇总表
+     * exportHistorySalesProfit
+     * @param $condition
+     * Date: 2020-12-09 14:51
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public static function exportHistorySalesProfit($condition)
+    {
+        $plat = isset($condition['plat']) ? $condition['plat'] : [];
+        $salesMan = isset($condition['member']) ? $condition['member'] : [];
+        list($beginDate, $endDate) = $condition['dateRange'];
+
+        $userList = (new yii\db\Query())->select("username,plat,hireDate,departmentTotal")
+            ->from('cache_historySalesProfit')
+            ->andFilterWhere(['in','username',$salesMan])
+            ->andFilterWhere(['between','monthName',$beginDate, $endDate])
+            ->andFilterWhere(['in','plat', $plat])
+            ->orderBy('username asc')->distinct()->all();
+
+        $monthList = static::getMonth($beginDate, $endDate);
+        $out = [];
+        foreach ($userList as $value){
+            $depart = (new yii\db\Query())->select('department')
+                ->from('cache_historySalesProfit')
+                ->andWhere(['username' => $value['username']])
+                ->orderBy('monthName DESC')->one();
+            $item['人员'] = $value['username'];
+            $item['部门'] = isset($depart['department']) ? $depart['department'] : '';
+            $item['销售平台'] = $value['plat'];
+            $item['入职日期'] = $value['hireDate'];
+            // 每月毛利
+            foreach ($monthList as $v){
+                $userData = (new yii\db\Query())->select('profit')
+                    ->from('cache_historySalesProfit')
+                    ->andWhere(['username' => $value['username'], 'monthName' => $v])->one();
+                if($userData){
+                    $item['利润-'.$v] = $userData['profit'];
+                }else{
+                    $item['利润-'.$v] = 0;
+                }
+            }
+
+            // 每月排名
+            foreach ($monthList as $v){
+                $userData = (new yii\db\Query())->select('rank')
+                    ->from('cache_historySalesProfit')
+                    ->andWhere(['username' => $value['username'], 'monthName' => $v])->one();
+                if($userData){
+                    $item['排名-'.$v] = $userData['rank'].'/'.$value['departmentTotal'];
+                }else{
+                    $item['排名-'.$v] = $value['departmentTotal'].'/'.$value['departmentTotal'];
+                }
+            }
+            $out[] = $item;
+        }
+        ExportTools::toExcelOrCsv('HistorySalesProfit', $out, 'Xls');
+
     }
 
     /**
