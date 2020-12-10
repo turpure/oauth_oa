@@ -2189,6 +2189,7 @@ class ApiGoodsinfo
                 $row['suffix'] = $account['suffix'];
                 $row['quantity'] = !empty($wishInfo['inventory']) ? ((int)$wishInfo['inventory']) : 5;
                 $variantInfo = static::getFyndiqVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
+                return $variantInfo;
                 $row['variations'] = $variantInfo;
                 $row['markets'] = ['SE'];
 //                return $row;
@@ -3203,8 +3204,8 @@ class ApiGoodsinfo
             foreach ($wishSku as $sku) {
                 $var['sku'] = $sku['sku'];
                 $var['quantity'] = (int)$sku['inventory'];
-//                $var['properties'] = [];
-//                $var['variational_properties'] = [];
+                $var['properties'] = [];
+                $var['variational_properties'] = [];
                 if($sku['color']){
                     $var['properties'][] = [
                         "name" => "color", //Free text
