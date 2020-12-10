@@ -2158,7 +2158,7 @@ class ApiGoodsinfo
             $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
             $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
             if(!$wishInfo['fyndiqCategoryId']) {
-                $error = [['sku' => $goodsInfo['goodsCode'], 'description' => 'The fyndiq category id can not be empty, please fill it!']];
+                $error = [['sku' => $goodsInfo['goodsCode'], 'description' => 'The fyndiq category id can not be empty, please fill it!'],'errors' => ''];
                 $out = array_merge($out, $error);
                 continue;
             }
