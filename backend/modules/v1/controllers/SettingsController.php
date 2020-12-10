@@ -404,12 +404,13 @@ class SettingsController extends AdminController
 
 		//文件上传
 		$result = ApiSettings::file($file, 'warehouseIntegralData');
+        $fileName = $file['name'];
         $fileSize = $file['size'];
 		if (!$result) {
 			return ['code' => 400, 'message' => 'File upload failed'];
 		}else{
 			//获取上传excel文件的内容并保存
-			return ApiSettings::saveIntegralData($result);
+			return ApiSettings::saveIntegralData($result, $fileName, $fileSize);
 		}
 	}
 

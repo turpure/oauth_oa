@@ -142,10 +142,14 @@ class TestController extends AdminController
                 $params = [
                     //'id' => $v['id'],
                     //'product_id' => $v['product_id'],
-                    //'sku' => $v['sku'],
+                    'sku' => $v['sku'],
                     //'parent_sku' => $v['parent_sku'],
                     //'quantity' => $v['quantity'],
-                    //'status' => $v['status'],
+                    'status' => $v['status'],
+                    'main_image' => $v['main_image'],
+                    'markets' => $v['markets'],
+                    'description' => $v['description'],
+                    'shipping_time' => $v['shipping_time'],
                     'fyndiq_status' => 'new',
                 ];
                 $result = Helper::post($url, json_encode($params), $header, 'PUT');

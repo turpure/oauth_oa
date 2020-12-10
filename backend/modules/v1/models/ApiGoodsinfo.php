@@ -2033,16 +2033,16 @@ class ApiGoodsinfo
     public static function preExportFyndiq($id, $accounts)
     {
         $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
-        if(!$wishInfo['fyndiqCategoryId']) {
-            return ['code' => 400, 'message' => 'The fyndiq category id can not be empty,please fill it!'];
-        }
+//        if(!$wishInfo['fyndiqCategoryId']) {
+//            return ['code' => 400, 'message' => 'The fyndiq category id can not be empty,please fill it!'];
+//        }
         $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
         $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
         $fyndiqAccounts = OaFyndiqSuffix::find()->andFilterWhere(['suffix' => $accounts])->asArray()->all();
         $keyWords = static::preKeywords($wishInfo);
         $row = [
             'mubnaid' => '', "sku" => '', 'selleruserid' => '', "title" => '', 'inventory' => 10000, 'price' => '',
-            'original_price' => '', 'shipping' => '', 'shipping_time' => '' , 'main_image' => '', 'extra_images' => '',
+            'original_price' => '', 'shipping' => 0, 'shipping_time' => '' , 'main_image' => '', 'extra_images' => '',
             'tags' => '', "description" => '', "categories" => '' , "variations" => '',  "brand" => '', "gtin" => '',
             'size' => '', 'color' => 0, 'content' => ''
         ];
@@ -2061,14 +2061,35 @@ class ApiGoodsinfo
                 }
             }
             $row['sku'] = $wishInfo['sku'];
+            $row['selleruserid'] = $account['selleruserid'];
             $row['title'] = $wishInfo['fyndiqTitle'] ?: $title;
             $row['description'] = $wishInfo['description'];
-            $row['categories'] = [$wishInfo['fyndiqCategoryId']];
-            $row['markets'] = json_encode(['SE']);
-            $row['suffix'] = $account['suffix'];
-            $row['quantity'] = !empty($wishInfo['inventory']) ? ((int)$wishInfo['inventory']) : 5;
-            $variantInfo = static::getFyndiqVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
-            $row['variations'] = $variantInfo;
+            //$row['categories'] = [$wishInfo['fyndiqCategoryId']];
+            $row['shipping_time'] = '9-12';
+            $row['inventory'] = !empty($wishInfo['inventory']) ? ((int)$wishInfo['inventory']) : 5;
+            $row['shipping_time'] = '9-12';
+            $row['main_image'] = $wishInfo['mainImage'];
+
+            $extraImages = explode("\n", $wishInfo['extraImages']);
+            //$key = array_search($wishInfo['mainImage'], $extraImages);
+            //if($key !== false) array_splice($extraImages, $key, 1);
+            $var['images'] = array_slice($extraImages, 0, 10);
+            $row['extra_images'] = implode("\n", $extraImages);
+            //$variantInfo = static::getFyndiqVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
+            $variantInfo = [];
+            foreach ($wishSku as $sku) {
+                $ele['sku'] = $sku['sku'];
+                $ele['inventory'] = (int)$sku['inventory'];
+                $ele['color'] = $sku['color'];
+                $ele['size'] = $sku['size'];
+                $ele['price'] = $sku['fyndiqPrice'];
+                $ele['original_price'] = $sku['fyndiqMsrp'];
+                $ele['shipping_price'] = 0;
+                $ele['shipping_time'] = "9-12";
+                $ele['main_image'] = $sku['linkUrl'];
+                $variantInfo[] = $ele;
+            }
+            $row['variations'] = json_encode($variantInfo);
             $out[] = $row;
         }
         $ret['data'] = $out;
