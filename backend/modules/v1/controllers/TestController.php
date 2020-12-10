@@ -112,7 +112,6 @@ class TestController extends AdminController
         $account = OaFyndiqSuffix::findOne(['suffix' => 'Fyndiq-01']);
         $token = base64_encode($account['suffixId'] . ':' . $account['token']);
         $header = ["Content-Type: application/json", "Authorization: Basic " . $token];
-        //var_dump($header);exit;
 
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -132,19 +131,15 @@ class TestController extends AdminController
         curl_close($curl);
         $res =  json_decode($response,true);
 //            return $res;
-        //var_dump(count($res));exit;
         $data = [];
         $i = 0;
         foreach ($res as $v){
             if($v['fyndiq_status'] == 'blocked') {
                 var_dump($v['sku']);
                 $i += 1;
-                /*$url = "https://merchants-api.fyndiq.se/api/v1/articles/".$v['id'];
+                $url = "https://merchants-api.fyndiq.se/api/v1/articles/".$v['id'];
                 $params = [
-                    //'id' => $v['id'],
-                    //'product_id' => $v['product_id'],
                     'sku' => $v['sku'],
-                    //'parent_sku' => $v['parent_sku'],
                     'categories' => $v['categories'],
                     'status' => $v['status'],
                     'main_image' => $v['main_image'],
@@ -152,20 +147,16 @@ class TestController extends AdminController
                     'title' => $v['title'],
                     'description' => $v['description'],
                     'shipping_time' => $v['shipping_time'],
-                    //'fyndiq_status' => 'new',
                 ];
                 $result = Helper::post($url, json_encode($params), $header, 'PUT');
                 $data[] = [
                     'sku' => $v['sku'],
                     'res' => $result
-                ];*/
-//                return $result;
-//                var_dump($result);exit;
+                ];
             }
         }
-            return $i;
+//            return $i;
             return $data;
-       // ExportTools::toExcelOrCsv('fyndiq', $data, 'Xls');
 
 
     }
