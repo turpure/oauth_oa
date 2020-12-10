@@ -590,8 +590,8 @@ class DataCenterController extends AdminController
         $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
         $usRate = (float)ApiUkFic::getRateUkOrUs('USD');
         //var_dump($usRate);exit;
-        $sql = "
-                SELECT DownTime,PayPalEamil,TotalRMB,USD,AUD,CAD,EUR,GBP,s.memo,
+        $sql = "SELECT * FROM (
+                SELECT DownTime,PayPalEamil,TotalRMB,USD,AUD,CAD,EUR,GBP,s.memo,BatchId,
                 isnull(s.paypalStatus,'使用中') as paypalStatus ,
                 CASE WHEN charindex('英国',s.memo) > 0 and GBP >= 400 THEN '是' 
                      WHEN charindex('超级浏览器',s.memo) > 0 and GBP >= 400 THEN '是' 
@@ -599,14 +599,14 @@ class DataCenterController extends AdminController
                      WHEN ISNULL(s.memo,'') = '' and TotalRMB/{$usRate} >= 2700 THEN '是' 
                 ELSE '否' END  AS isWithdraw
                 FROM Y_PayPalBalance b
-                LEFT JOIN Y_PayPalStatus s ON b.PayPalEamil=s.accountName 
+                LEFT JOIN Y_PayPalStatus s ON b.PayPalEamil=s.accountName ) a
                 WHERE 1=1 ";
         if($beginTime && $endTime) $sql .= " AND convert(varchar(10),DownTime,121) between '{$beginTime}' and '{$endTime}'";
         if($email) $sql .= " AND PayPalEamil LIKE '%{$email}%'";
-        if($paypalStatus) $sql .= " AND isnull(s.paypalStatus,'使用中') LIKE '%{$paypalStatus}%'";
-        if($memo) $sql .= " AND isnull(s.memo,'') LIKE '%{$memo}%'";
+        if($paypalStatus) $sql .= " AND isnull(paypalStatus,'使用中') LIKE '%{$paypalStatus}%'";
+        if($memo) $sql .= " AND isnull(memo,'') LIKE '%{$memo}%'";
         if($batchId) $sql .= " AND BatchId = {$memo}";
-        //if($isWithdraw) $sql .= " AND BatchId = {$memo}";
+        if($isWithdraw) $sql .= " AND isWithdraw = '{$isWithdraw}'";
         try{
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             $provider = new ArrayDataProvider([

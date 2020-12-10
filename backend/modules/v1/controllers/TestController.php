@@ -134,10 +134,12 @@ class TestController extends AdminController
 //            return $res;
         //var_dump(count($res));exit;
         $data = [];
+        $i = 0;
         foreach ($res as $v){
             if($v['fyndiq_status'] == 'blocked') {
-                var_dump($v['sku']);exit;
-                $url = "https://merchants-api.fyndiq.se/api/v1/articles/".$v['id'];
+                var_dump($v['sku']);
+                $i += 1;
+                /*$url = "https://merchants-api.fyndiq.se/api/v1/articles/".$v['id'];
                 $params = [
                     //'id' => $v['id'],
                     //'product_id' => $v['product_id'],
@@ -156,11 +158,12 @@ class TestController extends AdminController
                 $data[] = [
                     'sku' => $v['sku'],
                     'res' => $result
-                ];
+                ];*/
 //                return $result;
 //                var_dump($result);exit;
             }
         }
+            return $i;
             return $data;
        // ExportTools::toExcelOrCsv('fyndiq', $data, 'Xls');
 
