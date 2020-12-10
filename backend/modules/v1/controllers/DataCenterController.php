@@ -700,6 +700,35 @@ class DataCenterController extends AdminController
         }
     }
 
+    /** pp状态
+     * actionPpBalance
+     * Date: 2020-12-04 13:12
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionPpStatusExport(){
+        $request = Yii::$app->request;
+        if(!$request->isPost){
+            return [];
+        }
+        $cond = $request->post('condition');
+        $accountName = isset($cond['accountName']) ? $cond['accountName'] : '';
+        $isUrUsed = isset($cond['isUrUsed']) ? $cond['isUrUsed'] : null;
+        $isPyUsed = isset($cond['isPyUsed']) ? $cond['isPyUsed'] : null;
+        $paypalStatus = isset($cond['paypalStatus']) ? $cond['paypalStatus'] : null;
+        $memo  = isset($cond['memo ']) ? $cond['memo '] : null;
+        $sql = "SELECT nid,accountName,isUrUsed,isPyUsed,paypalStatus,memo,createdTime,updatedTime FROM Y_PayPalStatus WHERE 1=1 ";
+        if($accountName) $sql .= " AND accountName LIKE '%{$accountName}%'";
+        if($paypalStatus) $sql .= " AND paypalStatus LIKE '%{$paypalStatus}%'";
+        if($memo) $sql .= " AND memo LIKE '%{$memo}%'";
+        if($isUrUsed || $isUrUsed === "0") $sql .= " AND isUrUsed = '{$isUrUsed}'";
+        if($isPyUsed || $isPyUsed === "0") $sql .= " AND isPyUsed = '{$isPyUsed}'";
+
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        ExportTools::toExcelOrCsv('payPalStatus', $data, 'Xls');
+
+    }
+
     /** pp状态修改
      * Date: 2020-12-04 13:12
      * Author: henry
