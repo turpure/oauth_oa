@@ -112,6 +112,7 @@ class TestController extends AdminController
         $account = OaFyndiqSuffix::findOne(['suffix' => 'Fyndiq-01']);
         $token = base64_encode($account['suffixId'] . ':' . $account['token']);
         $header = ["Content-Type: application/json", "Authorization: Basic " . $token];
+        //var_dump($header);exit;
 
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -150,7 +151,7 @@ class TestController extends AdminController
                     'markets' => $v['markets'],
                     'description' => $v['description'],
                     'shipping_time' => $v['shipping_time'],
-                    'fyndiq_status' => 'new',
+                    //'fyndiq_status' => 'new',
                 ];
                 $result = Helper::post($url, json_encode($params), $header, 'PUT');
                 return $result;

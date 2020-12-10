@@ -586,7 +586,9 @@ class DataCenterController extends AdminController
         $paypalStatus = isset($cond['paypalStatus']) ? $cond['paypalStatus'] : '';
         $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
         $sql = "SELECT DownTime,PayPalEamil,TotalRMB,USD,AUD,CAD,EUR,GBP,s.memo,
-                isnull(s.paypalStatus,'使用中') as paypalStatus FROM Y_PayPalBalance b
+                isnull(s.paypalStatus,'使用中') as paypalStatus ,
+                -- CASE WHEN s.memo
+                FROM Y_PayPalBalance b
                 LEFT JOIN Y_PayPalStatus s ON b.PayPalEamil=s.accountName 
                 WHERE 1=1 ";
         if($beginTime && $endTime) $sql .= " AND convert(varchar(10),DownTime,121) between '{$beginTime}' and '{$endTime}'";

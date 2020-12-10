@@ -2193,35 +2193,14 @@ class ApiGoodsinfo
                 $row['markets'] = ['SE'];
 //                return $row;
                 $res = self::uploadFyndiqProducts($account, $row);
-//                return $res;
+                //return $res;
                 foreach ($res as &$v){
                     if(isset($v['status_code']) && $v['status_code'] >= 400 && $v['status_code'] < 500){
-                        foreach ($v['errors'] as $k => &$val){
-                            $str = '';
-                            if(is_array($val)){
-                                foreach ($val as $value){
-                                    foreach ($value as $v1){
-                                        foreach ($v1 as $v2){
-                                            foreach ($v2 as $v3){
-//                                                var_dump($v3);exit;
-                                                if(is_array($v3)){
-                                                    foreach ($v3 as $v4){
-//                                                        var_dump($v4);exit;
-                                                        $str = implode(', ', array_values($v4));
-                                                    }
-                                                }else{
-                                                    $str = implode(', ', $v3);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                $val = $str;
-                            }
-                        }
+                        $v['errors'] = json_encode($v['errors']);
+                    }else{
+                        $v['errors'] = '';
                     }
                 }
-//                var_dump($res);exit;
                 $out = array_merge($out, $res);
             }
         }
@@ -3223,7 +3202,7 @@ class ApiGoodsinfo
             $variation = [];
             foreach ($wishSku as $sku) {
                 $var['sku'] = $sku['sku'];
-                $var['inventory'] = (int)$sku['inventory'];
+                $var['quantity'] = (int)$sku['inventory'];
 //                $var['properties'] = [];
 //                $var['variational_properties'] = [];
                 if($sku['color']){
@@ -3246,6 +3225,7 @@ class ApiGoodsinfo
                     'market' => 'SE',
                     'value' => [
                         'amount' => (float)$sku['fyndiqPrice'],
+                        //'currency' => 'SEK',
                     ]
                 ]];
                 $var['original_price'] = [[
