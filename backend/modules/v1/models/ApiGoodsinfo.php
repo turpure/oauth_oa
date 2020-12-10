@@ -2189,7 +2189,7 @@ class ApiGoodsinfo
                 $row['suffix'] = $account['suffix'];
                 $row['quantity'] = !empty($wishInfo['inventory']) ? ((int)$wishInfo['inventory']) : 5;
                 $variantInfo = static::getFyndiqVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
-                return $variantInfo;
+//                return $variantInfo;
                 $row['variations'] = $variantInfo;
                 $row['markets'] = ['SE'];
 //                return $row;
