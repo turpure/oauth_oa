@@ -651,6 +651,7 @@ class DataCenterController extends AdminController
         $memo = isset($cond['memo']) ? $cond['memo'] : '';
         $batchId = isset($cond['BatchId']) ? $cond['BatchId'] : '';
         $isWithdraw = isset($cond['isWithdraw']) ? $cond['isWithdraw'] : '';
+        $usRate = (float)ApiUkFic::getRateUkOrUs('USD');
         $sql = "SELECT * FROM (
                 SELECT DownTime,PayPalEamil,TotalRMB,USD,AUD,CAD,EUR,GBP,s.memo,BatchId,
                 isnull(s.paypalStatus,'使用中') as paypalStatus ,
