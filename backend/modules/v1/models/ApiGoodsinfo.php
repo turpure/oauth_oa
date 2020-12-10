@@ -3289,6 +3289,7 @@ class ApiGoodsinfo
         $random_str1 = [array_shift($random)]; //从摇匀的词库里不放回抽一个
         $random_arr = \array_slice($random, 0, 4);//从剩余的词库里抽四个
         $real_len = \strlen(implode(' ', array_merge($random_str1, $random_arr)));
+        //var_dump($random_str1);exit;
         for ($i = 0; $i < 4; $i++) {
             if ($real_len <= $available_len) {
                 break;
@@ -3296,8 +3297,15 @@ class ApiGoodsinfo
             array_shift($random_arr); //去掉一个随机词
             $real_len = \strlen(implode(' ', array_merge($random_str1, $random_arr)));
         }
+
         shuffle($need);
-        $ret = array_merge($head, $random_str1, $need, $random_arr, $tail);
+        //判断 随机关键词总长度和可用长度大小
+        if($real_len > $available_len){
+            $ret = array_merge($head, $need, $tail);
+        }else{
+            $ret = array_merge($head, $random_str1, $need, $random_arr, $tail);
+        }
+
         $ret = array_map(function ($ele) {
             return trim($ele);
         }, $ret);
