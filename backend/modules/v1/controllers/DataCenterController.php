@@ -11,6 +11,8 @@ namespace backend\modules\v1\controllers;
 use backend\models\ShopElf\YPayPalStatus;
 use backend\models\ShopElf\YPayPalStatusLogs;
 use backend\modules\v1\models\ApiDataCenter;
+use backend\modules\v1\models\ApiUk;
+use backend\modules\v1\models\ApiUkFic;
 use backend\modules\v1\utils\ExportTools;
 use backend\modules\v1\utils\Handler;
 use yii\data\ActiveDataProvider;
@@ -583,11 +585,19 @@ class DataCenterController extends AdminController
         $email = isset($cond['email']) ? $cond['email'] : '';
         $memo = isset($cond['memo']) ? $cond['memo'] : '';
         $batchId = isset($cond['BatchId']) ? $cond['BatchId'] : '';
+        $isWithdraw = isset($cond['isWithdraw']) ? $cond['isWithdraw'] : '';
         $paypalStatus = isset($cond['paypalStatus']) ? $cond['paypalStatus'] : '';
         $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
-        $sql = "SELECT DownTime,PayPalEamil,TotalRMB,USD,AUD,CAD,EUR,GBP,s.memo,
+        $usRate = (float)ApiUkFic::getRateUkOrUs('USD');
+        //var_dump($usRate);exit;
+        $sql = "
+                SELECT DownTime,PayPalEamil,TotalRMB,USD,AUD,CAD,EUR,GBP,s.memo,
                 isnull(s.paypalStatus,'使用中') as paypalStatus ,
-                -- CASE WHEN s.memo
+                CASE WHEN charindex('英国',s.memo) > 0 and GBP >= 400 THEN '是' 
+                     WHEN charindex('超级浏览器',s.memo) > 0 and GBP >= 400 THEN '是' 
+                     WHEN charindex('集中付款',s.memo) > 0 and TotalRMB/{$usRate} >= 2200 THEN '是' 
+                     WHEN ISNULL(s.memo,'') = '' and TotalRMB/{$usRate} >= 2700 THEN '是' 
+                ELSE '否' END  AS isWithdraw
                 FROM Y_PayPalBalance b
                 LEFT JOIN Y_PayPalStatus s ON b.PayPalEamil=s.accountName 
                 WHERE 1=1 ";
@@ -596,6 +606,7 @@ class DataCenterController extends AdminController
         if($paypalStatus) $sql .= " AND isnull(s.paypalStatus,'使用中') LIKE '%{$paypalStatus}%'";
         if($memo) $sql .= " AND isnull(s.memo,'') LIKE '%{$memo}%'";
         if($batchId) $sql .= " AND BatchId = {$memo}";
+        //if($isWithdraw) $sql .= " AND BatchId = {$memo}";
         try{
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             $provider = new ArrayDataProvider([

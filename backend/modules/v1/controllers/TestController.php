@@ -136,29 +136,32 @@ class TestController extends AdminController
         $data = [];
         foreach ($res as $v){
             if($v['fyndiq_status'] == 'blocked') {
-                $url = "https://merchants-api.sandbox.fyndiq.se/api/v1/articles/".$v['id'];
-                //unset($v['id']);
-                var_dump($v['sku']);
-                var_dump($url);
+                var_dump($v['sku']);exit;
+                $url = "https://merchants-api.fyndiq.se/api/v1/articles/".$v['id'];
                 $params = [
                     //'id' => $v['id'],
                     //'product_id' => $v['product_id'],
                     'sku' => $v['sku'],
                     //'parent_sku' => $v['parent_sku'],
-                    //'quantity' => $v['quantity'],
+                    'categories' => $v['categories'],
                     'status' => $v['status'],
                     'main_image' => $v['main_image'],
                     'markets' => $v['markets'],
+                    'title' => $v['title'],
                     'description' => $v['description'],
                     'shipping_time' => $v['shipping_time'],
                     //'fyndiq_status' => 'new',
                 ];
                 $result = Helper::post($url, json_encode($params), $header, 'PUT');
-                return $result;
-                var_dump($result);exit;
+                $data[] = [
+                    'sku' => $v['sku'],
+                    'res' => $result
+                ];
+//                return $result;
+//                var_dump($result);exit;
             }
         }
-//            return $data;
+            return $data;
        // ExportTools::toExcelOrCsv('fyndiq', $data, 'Xls');
 
 
