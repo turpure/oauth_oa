@@ -886,7 +886,7 @@ class ApiReport
                     $totalRefundZn += $row['refund'];
                 }
             }
-            return ['provider' => $provider, 'extra' => ['totalRefundZn' => $totalRefundZn, 'totalRefundUs' => $totalRefundUs]];
+            return ['provider' => $provider, 'extra' => ['totalRefundZn' => round($totalRefundZn,2), 'totalRefundUs' => round($totalRefundUs,2)]];
         } catch (\Exception $why) {
             return [
                 'code' => 400,
