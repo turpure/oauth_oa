@@ -24,7 +24,7 @@ class ApiUk
     {
         $arr = explode(',', $sku);
         $data = [];
-        try {
+        //try {
             foreach ($arr as $v) {
                 if (strpos($v, '*') !== false) {
                     $newSku = substr($v, 0, strpos($v, '*'));
@@ -36,7 +36,10 @@ class ApiUk
 //                var_dump($newSku);exit;
                 $priceSql = "SELECT max(costprice) FROM Y_R_tStockingWaring WHERE sku='{$newSku}' and costprice > 0 and storeName like '万邑通UK%'";
                 $price = Yii::$app->py_db->createCommand($priceSql)->queryScalar();
-//                var_dump($price);exit;
+                if(!$price){
+                    $priceSql = "SELECT max(goodsPrice) FROM Y_R_tStockingWaring WHERE sku='{$newSku}'";
+                    $price = Yii::$app->py_db->createCommand($priceSql)->queryScalar();
+                }
                 $sql = "SELECT aa.SKU,aa.skuname,aa.goodscode,aa.CategoryName,aa.CreateDate,aa.price * " . $skuNum * $num . " as price,
                            k.weight*1000*" . $skuNum * $num . " AS weight,
                           k.length,k.width,k.height*" . $skuNum * $num . " as height ," . $skuNum * $num . " AS num
@@ -57,9 +60,9 @@ class ApiUk
                 $data[] = $res;
             }
             return $data;
-        } catch (Exception $e) {
+        /*} catch (Exception $e) {
             return [];
-        }
+        }*/
     }
 
     /**
