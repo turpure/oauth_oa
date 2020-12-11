@@ -876,8 +876,16 @@ class ApiReport
                     'pageSize' => $condition['pageSize'],
                 ],
             ]);
-            $totalRefundZn = round(array_sum(ArrayHelper::getColumn($data, 'refundZn')),2);
-            $totalRefundUs = round(array_sum(ArrayHelper::getColumn($data, 'refund')),2);
+            $totalRefundZn = 0;
+            $totalRefundUs = 0;
+            foreach ($data as $row) {
+                if($row['currencyCode'] == 'USD') {
+                    $totalRefundUs += $row['refund'];
+                }
+                if($row['currencyCode'] == 'CNY') {
+                    $totalRefundZn += $row['refund'];
+                }
+            }
             return ['provider' => $provider, 'extra' => ['totalRefundZn' => $totalRefundZn, 'totalRefundUs' => $totalRefundUs]];
         } catch (\Exception $why) {
             return [
