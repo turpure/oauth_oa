@@ -10,6 +10,7 @@ namespace backend\modules\v1\controllers;
 
 use backend\models\ShopElf\YPayPalStatus;
 use backend\models\ShopElf\YPayPalStatusLogs;
+use backend\models\ShopElf\YPayPalTransactions;
 use backend\modules\v1\models\ApiDataCenter;
 use backend\modules\v1\models\ApiUk;
 use backend\modules\v1\models\ApiUkFic;
@@ -144,7 +145,7 @@ class DataCenterController extends AdminController
             'store' => $cond['account']
         ];
         $params = Handler::paramsFilter($queryParams);
-        if(!$params['store']) return [];
+        if (!$params['store']) return [];
         //print_r($params);exit;
         $condition = [
             'store' => $params['store'] ? implode(',', $params['store']) : '',
@@ -280,9 +281,9 @@ class DataCenterController extends AdminController
                         GROUP BY CASE WHEN SUBSTR(storeName,1,5)='万邑通UK' THEN '万邑通UK' ELSE storeName END
                 ) bb ON aa.storeName=bb.storeName
                 ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
-        try{
+        try {
             return Yii::$app->db->createCommand($sql)->queryAll();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),
@@ -295,9 +296,10 @@ class DataCenterController extends AdminController
      * Author: henry
      * @return array
      */
-    public function actionStockStatusDetail(){
+    public function actionStockStatusDetail()
+    {
         $request = Yii::$app->request;
-        if(!$request->isPost){
+        if (!$request->isPost) {
             return [];
         }
         $cond = $request->post('condition');
@@ -315,8 +317,8 @@ class DataCenterController extends AdminController
                         SUM(totalCostmoney) totalCostmoney
                         FROM `cache_stockWaringTmpData`
                         WHERE 1=1 ";
-        if(isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
-        $sql .=                " GROUP BY storeName,IFNULL(goodsStatus,'无状态')
+        if (isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
+        $sql .= " GROUP BY storeName,IFNULL(goodsStatus,'无状态')
                 ) aa LEFT JOIN 
                 (
                         SELECT storeName,IFNULL(goodsStatus,'无状态') goodsStatus,
@@ -324,14 +326,14 @@ class DataCenterController extends AdminController
                         ROUND(SUM(costMoney)/30,4) AS aveCostmoney
                         FROM `cache_30DayOrderTmpData`
                         WHERE 1=1 ";
-        if(isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
-        $sql .=                " GROUP BY storeName,IFNULL(goodsStatus,'无状态')
+        if (isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
+        $sql .= " GROUP BY storeName,IFNULL(goodsStatus,'无状态')
                 ) bb ON aa.storeName=bb.storeName AND IFNULL(aa.goodsStatus,'无状态')=IFNULL(bb.goodsStatus,'无状态')
                 ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
-        try{
+        try {
             $data = Yii::$app->db->createCommand($sql)->queryAll();
             return $data;
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),
@@ -344,9 +346,10 @@ class DataCenterController extends AdminController
      * Author: henry
      * @return array
      */
-    public function actionStockDeveloperDetail(){
+    public function actionStockDeveloperDetail()
+    {
         $request = Yii::$app->request;
-        if(!$request->isPost){
+        if (!$request->isPost) {
             return [];
         }
         $cond = $request->post('condition');
@@ -364,8 +367,8 @@ class DataCenterController extends AdminController
                         SUM(totalCostmoney) totalCostmoney
                         FROM `cache_stockWaringTmpData`
                         WHERE 1=1 ";
-        if(isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
-        $sql .=                " GROUP BY storeName,CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END
+        if (isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
+        $sql .= " GROUP BY storeName,CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END
                 ) aa LEFT JOIN 
                 (
                         SELECT storeName,
@@ -374,13 +377,13 @@ class DataCenterController extends AdminController
                         ROUND(SUM(costMoney)/30,4) AS aveCostmoney
                         FROM `cache_30DayOrderTmpData`
                         WHERE 1=1 ";
-        if(isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
-        $sql .=                " GROUP BY storeName,CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END
+        if (isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
+        $sql .= " GROUP BY storeName,CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END
                 ) bb ON aa.storeName=bb.storeName AND IFNULL(aa.salerName,'无人')=IFNULL(bb.salerName,'无人')
                 ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
-        try{
+        try {
             return Yii::$app->db->createCommand($sql)->queryAll();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),
@@ -393,9 +396,10 @@ class DataCenterController extends AdminController
      * Author: henry
      * @return array
      */
-    public function actionStockDepartDetail(){
+    public function actionStockDepartDetail()
+    {
         $request = Yii::$app->request;
-        if(!$request->isPost){
+        if (!$request->isPost) {
             return [];
         }
         $sql = "SELECT IFNULL(aa.depart,'无部门') AS depart,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
@@ -430,9 +434,9 @@ class DataCenterController extends AdminController
                         GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END
                 ) bb ON IFNULL(aa.depart,'无部门')=IFNULL(bb.depart,'无部门')
                 ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
-        try{
+        try {
             return Yii::$app->db->createCommand($sql)->queryAll();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),
@@ -446,9 +450,10 @@ class DataCenterController extends AdminController
      * Author: henry
      * @return array
      */
-    public function actionStockDepartStatusDetail(){
+    public function actionStockDepartStatusDetail()
+    {
         $request = Yii::$app->request;
-        if(!$request->isPost){
+        if (!$request->isPost) {
             return [];
         }
         $cond = $request->post('condition');
@@ -472,10 +477,10 @@ class DataCenterController extends AdminController
 					  	LEFT JOIN auth_department d ON d.id=dc.department_id
 						LEFT JOIN auth_department p ON p.id=d.parent
                         WHERE 1=1 ";
-        if(isset($cond['depart']) && $cond['depart'])
+        if (isset($cond['depart']) && $cond['depart'])
             $sql .= " AND (IFNULL(d.department,'无部门') LIKE '%{$cond['depart']}%' AND IFNULL(p.department,'无部门') LIKE '%{$cond['depart']}%')";
 
-        $sql .=   " GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END,IFNULL(goodsStatus,'无状态')
+        $sql .= " GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END,IFNULL(goodsStatus,'无状态')
                 ) aa LEFT JOIN 
                 (
                         SELECT 
@@ -489,15 +494,15 @@ class DataCenterController extends AdminController
 					  	LEFT JOIN auth_department d ON d.id=dc.department_id
 						LEFT JOIN auth_department p ON p.id=d.parent
                         WHERE 1=1 ";
-        if(isset($cond['storeName']) && $cond['storeName'])
+        if (isset($cond['storeName']) && $cond['storeName'])
             $sql .= " AND (IFNULL(d.department,'无部门') LIKE '%{$cond['depart']}%' AND IFNULL(p.department,'无部门') LIKE '%{$cond['depart']}%')";
-        $sql .=  " GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END,IFNULL(goodsStatus,'无状态')
+        $sql .= " GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END,IFNULL(goodsStatus,'无状态')
                 ) bb ON aa.depart=bb.depart AND IFNULL(aa.goodsStatus,'无状态')=IFNULL(bb.goodsStatus,'无状态')
                 ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
-        try{
+        try {
             $data = Yii::$app->db->createCommand($sql)->queryAll();
             return $data;
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),
@@ -510,9 +515,10 @@ class DataCenterController extends AdminController
      * Author: henry
      * @return array
      */
-    public function actionStockDepartDeveloperDetail(){
+    public function actionStockDepartDeveloperDetail()
+    {
         $request = Yii::$app->request;
-        if(!$request->isPost){
+        if (!$request->isPost) {
             return [];
         }
         $cond = $request->post('condition');
@@ -535,9 +541,9 @@ class DataCenterController extends AdminController
 					  	LEFT JOIN auth_department d ON d.id=dc.department_id
 						LEFT JOIN auth_department p ON p.id=d.parent
                         WHERE 1=1 ";
-        if(isset($cond['depart']) && $cond['depart'])
+        if (isset($cond['depart']) && $cond['depart'])
             $sql .= " AND (IFNULL(d.department,'无部门') LIKE '%{$cond['depart']}%' AND IFNULL(p.department,'无部门') LIKE '%{$cond['depart']}%')";
-        $sql .=  " GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END,
+        $sql .= " GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END,
                             CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END
                 ) aa LEFT JOIN 
                 (
@@ -552,15 +558,15 @@ class DataCenterController extends AdminController
 					  	LEFT JOIN auth_department d ON d.id=dc.department_id
 						LEFT JOIN auth_department p ON p.id=d.parent
                         WHERE 1=1 ";
-        if(isset($cond['depart']) && $cond['depart'])
+        if (isset($cond['depart']) && $cond['depart'])
             $sql .= " AND (IFNULL(d.department,'无部门') LIKE '%{$cond['depart']}%' AND IFNULL(p.department,'无部门') LIKE '%{$cond['depart']}%')";
-        $sql .=    " GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END,
+        $sql .= " GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END,
                               CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END
                 ) bb ON aa.depart=bb.depart AND IFNULL(aa.salerName,'无人')=IFNULL(bb.salerName,'无人')
                 ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
-        try{
+        try {
             return Yii::$app->db->createCommand($sql)->queryAll();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),
@@ -568,15 +574,18 @@ class DataCenterController extends AdminController
         }
     }
 
+    ################################payPal######################################
+
     /** pp余额
      * actionPpBalance
      * Date: 2020-12-04 13:12
      * Author: henry
      * @return array|ArrayDataProvider
      */
-    public function actionPpBalance(){
+    public function actionPpBalance()
+    {
         $request = Yii::$app->request;
-        if(!$request->isPost){
+        if (!$request->isPost) {
             return [];
         }
         $cond = $request->post('condition');
@@ -596,24 +605,24 @@ class DataCenterController extends AdminController
                 CASE WHEN charindex('英国',s.memo) > 0 and GBP >= 400 THEN '是' 
                      WHEN charindex('超级浏览器',s.memo) > 0 and GBP >= 400 THEN '是' 
                      WHEN charindex('集中付款',s.memo) > 0 and TotalRMB/{$usRate} >= 2200 THEN '是' 
-                     WHEN ISNULL(s.memo,'') = '' and TotalRMB/{$usRate} >= 2700 THEN '是' 
+                     WHEN charindex('英国',s.memo) = 0 and charindex('超级浏览器',s.memo) = 0 and charindex('集中付款',s.memo) = 0 and TotalRMB/{$usRate} >= 2700 THEN '是' 
                 ELSE '否' END  AS isWithdraw
                 FROM Y_PayPalBalance b
                 LEFT JOIN Y_PayPalStatus s ON b.PayPalEamil=s.accountName ) a
                 WHERE 1=1 ";
-        if($beginTime && $endTime) $sql .= " AND convert(varchar(10),DownTime,121) between '{$beginTime}' and '{$endTime}'";
-        if($email) $sql .= " AND PayPalEamil LIKE '%{$email}%'";
-        if($paypalStatus) $sql .= " AND isnull(paypalStatus,'使用中') LIKE '%{$paypalStatus}%'";
-        if($memo) $sql .= " AND isnull(memo,'') LIKE '%{$memo}%'";
-        if($batchId) $sql .= " AND BatchId = {$batchId}";
-        if($isWithdraw) $sql .= " AND isWithdraw = '{$isWithdraw}'";
-        try{
+        if ($beginTime && $endTime) $sql .= " AND convert(varchar(10),DownTime,121) between '{$beginTime}' and '{$endTime}'";
+        if ($email) $sql .= " AND PayPalEamil LIKE '%{$email}%'";
+        if ($paypalStatus) $sql .= " AND isnull(paypalStatus,'使用中') LIKE '%{$paypalStatus}%'";
+        if ($memo) $sql .= " AND isnull(memo,'') LIKE '%{$memo}%'";
+        if ($batchId) $sql .= " AND BatchId = {$batchId}";
+        if ($isWithdraw) $sql .= " AND isWithdraw = '{$isWithdraw}'";
+        try {
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
                     'attributes' => [
-                        'DownTime','PayPalEamil','TotalRMB', 'USD', 'AUD', 'CAD', 'EUR','GBP','paypalStatus'
+                        'DownTime', 'PayPalEamil', 'TotalRMB', 'USD', 'AUD', 'CAD', 'EUR', 'GBP', 'paypalStatus'
                     ],
                     'defaultOrder' => [
                         'PayPalEamil' => SORT_ASC,
@@ -624,7 +633,7 @@ class DataCenterController extends AdminController
                 ],
             ]);
             return $provider;
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),
@@ -638,9 +647,10 @@ class DataCenterController extends AdminController
      * Author: henry
      * @return array|ArrayDataProvider
      */
-    public function actionPpBalanceExport(){
+    public function actionPpBalanceExport()
+    {
         $request = Yii::$app->request;
-        if(!$request->isPost){
+        if (!$request->isPost) {
             return [];
         }
         $cond = $request->post('condition');
@@ -658,17 +668,17 @@ class DataCenterController extends AdminController
                 CASE WHEN charindex('英国',s.memo) > 0 and GBP >= 400 THEN '是' 
                      WHEN charindex('超级浏览器',s.memo) > 0 and GBP >= 400 THEN '是' 
                      WHEN charindex('集中付款',s.memo) > 0 and TotalRMB/{$usRate} >= 2200 THEN '是' 
-                     WHEN ISNULL(s.memo,'') = '' and TotalRMB/{$usRate} >= 2700 THEN '是' 
+                     WHEN charindex('英国',s.memo) = 0 and charindex('超级浏览器',s.memo) = 0 and charindex('集中付款',s.memo) = 0 and TotalRMB/{$usRate} >= 2700 THEN '是' 
                 ELSE '否' END  AS isWithdraw
                 FROM Y_PayPalBalance b
                 LEFT JOIN Y_PayPalStatus s ON b.PayPalEamil=s.accountName ) a
                 WHERE 1=1 ";
-        if($beginTime && $endTime) $sql .= " AND convert(varchar(10),DownTime,121) between '{$beginTime}' and '{$endTime}'";
-        if($email) $sql .= " AND PayPalEamil LIKE '%{$email}%'";
-        if($paypalStatus) $sql .= " AND isnull(s.paypalStatus,'使用中') LIKE '%{$paypalStatus}%'";
-        if($memo) $sql .= " AND isnull(s.memo,'') LIKE '%{$memo}%'";
-        if($batchId) $sql .= " AND BatchId = {$batchId}";
-        if($isWithdraw) $sql .= " AND isWithdraw = '{$isWithdraw}'";
+        if ($beginTime && $endTime) $sql .= " AND convert(varchar(10),DownTime,121) between '{$beginTime}' and '{$endTime}'";
+        if ($email) $sql .= " AND PayPalEamil LIKE '%{$email}%'";
+        if ($paypalStatus) $sql .= " AND isnull(s.paypalStatus,'使用中') LIKE '%{$paypalStatus}%'";
+        if ($memo) $sql .= " AND isnull(s.memo,'') LIKE '%{$memo}%'";
+        if ($batchId) $sql .= " AND BatchId = {$batchId}";
+        if ($isWithdraw) $sql .= " AND isWithdraw = '{$isWithdraw}'";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         ExportTools::toExcelOrCsv('payPalBalance', $data, 'Xls');
     }
@@ -680,9 +690,10 @@ class DataCenterController extends AdminController
      * Author: henry
      * @return array|ArrayDataProvider
      */
-    public function actionPpStatus(){
+    public function actionPpStatus()
+    {
         $request = Yii::$app->request;
-        if(!$request->isPost){
+        if (!$request->isPost) {
             return [];
         }
         $cond = $request->post('condition');
@@ -690,21 +701,21 @@ class DataCenterController extends AdminController
         $isUrUsed = isset($cond['isUrUsed']) ? $cond['isUrUsed'] : null;
         $isPyUsed = isset($cond['isPyUsed']) ? $cond['isPyUsed'] : null;
         $paypalStatus = isset($cond['paypalStatus']) ? $cond['paypalStatus'] : null;
-        $memo  = isset($cond['memo ']) ? $cond['memo '] : null;
+        $memo = isset($cond['memo ']) ? $cond['memo '] : null;
         $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
         $sql = "SELECT nid,accountName,isUrUsed,isPyUsed,paypalStatus,memo,createdTime,updatedTime FROM Y_PayPalStatus WHERE 1=1 ";
-        if($accountName) $sql .= " AND accountName LIKE '%{$accountName}%'";
-        if($paypalStatus) $sql .= " AND paypalStatus LIKE '%{$paypalStatus}%'";
-        if($memo) $sql .= " AND memo LIKE '%{$memo}%'";
-        if($isUrUsed || $isUrUsed === "0") $sql .= " AND isUrUsed = '{$isUrUsed}'";
-        if($isPyUsed || $isPyUsed === "0") $sql .= " AND isPyUsed = '{$isPyUsed}'";
-        try{
+        if ($accountName) $sql .= " AND accountName LIKE '%{$accountName}%'";
+        if ($paypalStatus) $sql .= " AND paypalStatus LIKE '%{$paypalStatus}%'";
+        if ($memo) $sql .= " AND memo LIKE '%{$memo}%'";
+        if ($isUrUsed || $isUrUsed === "0") $sql .= " AND isUrUsed = '{$isUrUsed}'";
+        if ($isPyUsed || $isPyUsed === "0") $sql .= " AND isPyUsed = '{$isPyUsed}'";
+        try {
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
                     'attributes' => [
-                        'accountName','isUrUsed','isPyUsed', 'paypalStatus'
+                        'accountName', 'isUrUsed', 'isPyUsed', 'paypalStatus'
                     ],
                     'defaultOrder' => [
                         'accountName' => SORT_ASC,
@@ -715,7 +726,7 @@ class DataCenterController extends AdminController
                 ],
             ]);
             return $provider;
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),
@@ -729,9 +740,10 @@ class DataCenterController extends AdminController
      * Author: henry
      * @return array|ArrayDataProvider
      */
-    public function actionPpStatusExport(){
+    public function actionPpStatusExport()
+    {
         $request = Yii::$app->request;
-        if(!$request->isPost){
+        if (!$request->isPost) {
             return [];
         }
         $cond = $request->post('condition');
@@ -739,13 +751,13 @@ class DataCenterController extends AdminController
         $isUrUsed = isset($cond['isUrUsed']) ? $cond['isUrUsed'] : null;
         $isPyUsed = isset($cond['isPyUsed']) ? $cond['isPyUsed'] : null;
         $paypalStatus = isset($cond['paypalStatus']) ? $cond['paypalStatus'] : null;
-        $memo  = isset($cond['memo ']) ? $cond['memo '] : null;
+        $memo = isset($cond['memo ']) ? $cond['memo '] : null;
         $sql = "SELECT nid,accountName,isUrUsed,isPyUsed,paypalStatus,memo,createdTime,updatedTime FROM Y_PayPalStatus WHERE 1=1 ";
-        if($accountName) $sql .= " AND accountName LIKE '%{$accountName}%'";
-        if($paypalStatus) $sql .= " AND paypalStatus LIKE '%{$paypalStatus}%'";
-        if($memo) $sql .= " AND memo LIKE '%{$memo}%'";
-        if($isUrUsed || $isUrUsed === "0") $sql .= " AND isUrUsed = '{$isUrUsed}'";
-        if($isPyUsed || $isPyUsed === "0") $sql .= " AND isPyUsed = '{$isPyUsed}'";
+        if ($accountName) $sql .= " AND accountName LIKE '%{$accountName}%'";
+        if ($paypalStatus) $sql .= " AND paypalStatus LIKE '%{$paypalStatus}%'";
+        if ($memo) $sql .= " AND memo LIKE '%{$memo}%'";
+        if ($isUrUsed || $isUrUsed === "0") $sql .= " AND isUrUsed = '{$isUrUsed}'";
+        if ($isPyUsed || $isPyUsed === "0") $sql .= " AND isPyUsed = '{$isPyUsed}'";
 
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         ExportTools::toExcelOrCsv('payPalStatus', $data, 'Xls');
@@ -757,16 +769,17 @@ class DataCenterController extends AdminController
      * Author: henry
      * @return array|ArrayDataProvider
      */
-    public function actionPpStatusUpdate(){
+    public function actionPpStatusUpdate()
+    {
         $request = Yii::$app->request;
-        if(!$request->isPost){
+        if (!$request->isPost) {
             return [];
         }
         $cond = $request->post('condition');
         $accountName = isset($cond['accountName']) ? $cond['accountName'] : '';
 
         $query = YPayPalStatus::findOne(['accountName' => $accountName]);
-        if(!$query) {
+        if (!$query) {
             $query = new YPayPalStatus();
         }
 
@@ -775,18 +788,18 @@ class DataCenterController extends AdminController
 //        var_dump($oldAttr);exit;
         $res = $query->save();
 //        var_dump($query->isNewRecord);exit;
-        if(!$res){
+        if (!$res) {
             return ['code' => 400, 'message' => 'Failed to save payPal info!'];
-        }else{
-            if(!$query->isNewRecord){
+        } else {
+            if (!$query->isNewRecord) {
                 $content = 'PayPal账号状态信息更新：';
-                foreach ($changedAttr as $k => $v){
-                    $content .= $k.'->'.$v.',';
+                foreach ($changedAttr as $k => $v) {
+                    $content .= $k . '->' . $v . ',';
                 }
-            }else{
+            } else {
                 $content = '创建PayPal账号状态信息！';
             }
-            if($changedAttr){
+            if ($changedAttr) {
                 $log = new YPayPalStatusLogs();
                 $log->paypalNid = $query->nid;
                 $log->opertor = Yii::$app->user->identity->username;
@@ -802,9 +815,10 @@ class DataCenterController extends AdminController
      * Author: henry
      * @return array|ArrayDataProvider
      */
-    public function actionPpStatusUpdateLog(){
+    public function actionPpStatusUpdateLog()
+    {
         $request = Yii::$app->request;
-        if(!$request->isPost){
+        if (!$request->isPost) {
             return [];
         }
         $cond = $request->post('condition');
@@ -813,6 +827,93 @@ class DataCenterController extends AdminController
         return $query;
     }
 
+    /** pp状态
+     * actionPpBalance
+     * Date: 2020-12-04 13:12
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionPpTransactions()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $cond = $request->post('condition');
+        $accountName = isset($cond['paypal_account']) ? $cond['paypal_account'] : '';
+        $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
+
+        try {
+            $data = YPayPalTransactions::find()->select('paypal_account')
+                ->andFilterWhere(['like', 'paypal_account', $accountName])
+                ->orderBy('paypal_account')->distinct()->all();
+            $provider = new ArrayDataProvider([
+                'allModels' => $data,
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+            return $provider;
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /** pp状态
+     * actionPpBalance
+     * Date: 2020-12-04 13:12
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionPpTransactionsExport()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $cond = $request->post('condition');
+        $accountName = isset($cond['paypal_account']) ? $cond['paypal_account'] : [];
+        $beginDate = isset($cond['dateRange'][0]) ? $cond['dateRange'][0] : '';
+        $endDate = isset($cond['dateRange'][1]) ? $cond['dateRange'][1] : '';
+
+        try {
+            foreach ($accountName as $account) {
+
+                $sql = "SELECT transaction_date as DateTime,transaction_type_description as Name,
+                    transaction_type as type, transaction_status as Status, currecny_code as Currency,
+                    transaction_amount as Gross, transaction_fee as Fee, transaction_net_amount as Net,
+                    payer_email as FromEmailAddress,paypal_account as ToEmailAddress FROM [dbo].[y_paypalTransactions] WHERE 1=1 ";
+                if($accountName) $sql .= " AND paypal_account LIKE '%{$account}%'";
+                if($beginDate && $endDate) $sql .= " AND convert(varchar(10),transaction_date,121) between '{$beginDate}' and '{$endDate}'";
+                $sql .= " AND (transaction_type_description LIKE 'ebay%' 
+                    OR transaction_type IN ('Express Checkout Payment', 'Tax collected by partner', 'General Payment', 
+                          'Pre-approved Payment Bill User Payment', 'Third Party Recoupment', 'Mass Pay Payment')  
+                          AND  ISNULL(transaction_amount,0) < 0 
+                    OR transaction_type IN ('General Currency Conversion', 'User Initiated Currency Conversion',
+                           'Conversion to Cover Negative Balance')   
+                ) ORDER BY paypal_account";
+                $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+
+                ExportTools::saveToExcelOrCsv('payPalTransaction-'.$account, $data, 'Xls');
+//                $file = ExportTools::saveToExcel('payPalTransaction-'.$account, $data, 'Xls');
+
+
+
+
+                return $data;
+            }
+
+
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
 
 
 }
