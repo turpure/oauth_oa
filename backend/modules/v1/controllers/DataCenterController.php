@@ -10,6 +10,7 @@ namespace backend\modules\v1\controllers;
 
 use backend\models\ShopElf\YPayPalStatus;
 use backend\models\ShopElf\YPayPalStatusLogs;
+use backend\models\ShopElf\YPayPalToken;
 use backend\models\ShopElf\YPayPalTransactions;
 use backend\modules\v1\models\ApiDataCenter;
 use backend\modules\v1\models\ApiUk;
@@ -905,8 +906,6 @@ class DataCenterController extends AdminController
 
                 return $data;
             }
-
-
         } catch (\Exception $e) {
             return [
                 'code' => 400,
@@ -915,5 +914,80 @@ class DataCenterController extends AdminController
         }
     }
 
+
+
+    public function actionPpToken(){
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $cond = $request->post('condition');
+        $accountName = isset($cond['accountName']) ? $cond['accountName'] : '';
+        $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
+
+        try {
+            $data = YPayPalToken::find()
+                ->andFilterWhere(['like', 'accountName', $accountName])
+                ->orderBy('accountName')->all();
+            $provider = new ArrayDataProvider([
+                'allModels' => $data,
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+            return $provider;
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /** pp状态修改
+     * Date: 2020-12-04 13:12
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionPpTokenUpdate()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $cond = $request->post('condition');
+        $accountName = isset($cond['accountName']) ? $cond['accountName'] : '';
+
+        $query = YPayPalToken::findOne(['accountName' => $accountName]);
+        if (!$query) {
+            $query = new YPayPalToken();
+        }
+
+        $query->setAttributes($cond);
+        $changedAttr = $query->getDirtyAttributes();
+//        var_dump($oldAttr);exit;
+        $res = $query->save();
+//        var_dump($query->isNewRecord);exit;
+        if (!$res) {
+            return ['code' => 400, 'message' => 'Failed to save payPal info!'];
+        } else {
+            if (!$query->isNewRecord) {
+                $content = 'PayPal账号状态信息更新：';
+                foreach ($changedAttr as $k => $v) {
+                    $content .= $k . '->' . $v . ',';
+                }
+            } else {
+                $content = '创建PayPal账号状态信息！';
+            }
+            if ($changedAttr) {
+                $log = new YPayPalStatusLogs();
+                $log->paypalNid = $query->nid;
+                $log->opertor = Yii::$app->user->identity->username;
+                $log->content = $content;
+                $log->save();
+            }
+            return true;
+        }
+    }
 
 }
