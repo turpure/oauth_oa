@@ -919,8 +919,9 @@ class DataCenterController extends AdminController
             header('Content-disposition: attachment; filename=' . iconv('utf-8','gbk//ignore',$filename)); // 文件名
             header("Content-Type: application/zip"); // zip格式的
             header("Content-Transfer-Encoding: binary"); //
-
-            @readfile($filename);//输出文件;
+            ob_clean();
+            flush();
+            readfile($filename);//输出文件;
             unlink($filename); //删除压缩包临时文件
         } catch (\Exception $e) {
             return [
