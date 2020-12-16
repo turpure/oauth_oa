@@ -71,7 +71,7 @@ class ExportTools
         exit;
     }
 
-    /**
+    /**   PhpSpreadsheet 保存xls文件
      * @param $fileName
      * @param $data
      * @param $type
@@ -110,39 +110,41 @@ class ExportTools
             }
         }
 
-        //set header
-        //header('pragma:public');
-        //header('Access-Control-Allow-Origin: *');
-        //header('Content-Type: application/vnd.ms-excel');
-        //header('Content-Disposition: attachment;filename="'.$fileName.'.'.$type.'"');
-        //header('Cache-Control: max-age=0');
-        //header('Access-Control-Expose-Headers: Content-Disposition');
-        //$writer = IOFactory::createWriter($sheet, $type);
-
-        $writer = new Xls($sheet);
-        //$writer->save('1.xlsx');
-//        $writer->save('php://output');
-
-        $writer->save('C:\Users\Administrator\Downloads'.$fileName);
-       exit;
+        $filename = $fileName . '.' . $type;
+        $filename = iconv("UTF-8","GBK//IGNORE", $filename);
+        $writer = IOFactory::createWriter($sheet, $type);
+        $writer->save($filename);
+        return $filename;
     }
 
-    public static function saveToExcel($fileName,$data, $type='Xls',$title=[]){
-        //$file_name = mt_rand(9000, 10000) . iconv('utf-8', 'GBK',$file['name']);
-        $savePath = '/uploads/zip/' . date("Ymd", time());
-        $model_path = Yii::$app->basePath . '/uploads/zip';
-        $path = Yii::$app->basePath . $savePath . '/';
-        if (!file_exists($model_path)) mkdir($model_path, 0777);
-        if (!file_exists($path)) mkdir($path, 0777);
-        //$targetFile = str_replace('//', '/', $path) . $file_name;
-        //if (!move_uploaded_file($file['tmp_name'], $targetFile)) return false;
 
+    /** PHP 原生方法保存CSV
+     * @param $fileName
+     * @param $data
+     * @param array $title
+     * Date: 2020-12-16 15:55
+     * Author: henry
+     */
+    public static function saveToCsv($fileName, $data, $title = []){
+        //生成临时文件
+        $filename = $fileName . '.csv';
+        $filename = iconv("UTF-8","GBK//IGNORE", $filename);
+        $fp = fopen($filename, 'w');
+        //Windows下使用BOM来标记文本文件的编码方式,否则输出的数据乱码
+        fwrite($fp,chr(0xEF).chr(0xBB).chr(0xBF));
 
-        $elsFile = $path . $fileName . '.xls';
-        $file = fopen($elsFile, 'w');
-        fwrite($file, $data);
-        fclose($file);
-        return  $elsFile;
+        if(!$title){
+            foreach ($data[0] as $k => $val){
+                $title[] = $k;
+            }
+        }
+        // 将数据通过fputcsv写到文件句柄
+        fputcsv($fp, $title);
+        foreach($data as $value) {
+            fputcsv($fp, $value);
+        }
+        fclose($fp);  //每生成一个文件关闭
+        return $filename;
     }
 
 

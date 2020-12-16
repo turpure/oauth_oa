@@ -879,10 +879,10 @@ class DataCenterController extends AdminController
         $accountName = isset($cond['paypal_account']) ? $cond['paypal_account'] : [];
         $beginDate = isset($cond['dateRange'][0]) ? $cond['dateRange'][0] : '';
         $endDate = isset($cond['dateRange'][1]) ? $cond['dateRange'][1] : '';
-
+        $title = ['DateTime','Name','Type','Status','Currency','Gross','Fee','Net','FromEmailAddress','ToEmailAddress'];
         try {
+            $fileNameArr = [];
             foreach ($accountName as $account) {
-
                 $sql = "SELECT transaction_date as DateTime,transaction_type_description as Name,
                     transaction_type as type, transaction_status as Status, currecny_code as Currency,
                     transaction_amount as Gross, transaction_fee as Fee, transaction_net_amount as Net,
@@ -898,14 +898,30 @@ class DataCenterController extends AdminController
                 ) ORDER BY paypal_account";
                 $data = Yii::$app->py_db->createCommand($sql)->queryAll();
 
-                ExportTools::saveToExcelOrCsv('payPalTransaction-'.$account, $data, 'Xls');
-//                $file = ExportTools::saveToExcel('payPalTransaction-'.$account, $data, 'Xls');
-
-
-
-
-                return $data;
+                $fileNameArr[] = ExportTools::saveToExcelOrCsv('payPalTransaction-'.$account, $data, 'Xls', $title);
+//                $fileNameArr[] = ExportTools::saveToCsv('payPalTransaction-'.$account, $data, $title);
             }
+//            var_dump($fileNameArr);exit;
+            //进行多个文件压缩
+            $zip = new \ZipArchive();
+            $filename = str_replace('-','',$beginDate) . '--' . str_replace('-','',$endDate) . "payPal.zip";
+            $zip->open($filename, \ZipArchive::CREATE);   //打开压缩包
+            foreach ($fileNameArr as $file) {
+                $zip->addFromString($file,file_get_contents($file)); //向压缩包中添加文件
+            }
+            $zip->close();  //关闭压缩包
+            foreach ($fileNameArr as $file) {
+                unlink($file); //删除csv临时文件
+            }
+            //输出压缩文件提供下载
+            header("Cache-Control: max-age=0");
+            header("Content-Description: File Transfer");
+            header('Content-disposition: attachment; filename=' . iconv('utf-8','gbk//ignore',$filename)); // 文件名
+            header("Content-Type: application/zip"); // zip格式的
+            header("Content-Transfer-Encoding: binary"); //
+
+            @readfile($filename);//输出文件;
+            unlink($filename); //删除压缩包临时文件
         } catch (\Exception $e) {
             return [
                 'code' => 400,

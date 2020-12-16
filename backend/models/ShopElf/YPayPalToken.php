@@ -55,7 +55,7 @@ class YPayPalToken extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['isUsed','usedBalance'], 'integral'],
+            [['isUsed','usedBalance'], 'integer'],
             [['accountName', 'username','signature','createdTime'], 'string'],
         ];
     }
