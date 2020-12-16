@@ -82,7 +82,6 @@ class ExportTools
     public static function saveToExcelOrCsv($fileName,$data, $type='Xls',$title=[])
     {
         $fileName = iconv('utf-8', 'gb2312', $fileName);
-        $fileName .= date('-YmdHis');
         $sheet = new Spreadsheet();
         $workSheet = $sheet->getActiveSheet();
         $cellName = $data ? array_keys($data[0]) : [];

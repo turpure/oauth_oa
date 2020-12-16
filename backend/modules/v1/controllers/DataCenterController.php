@@ -879,6 +879,7 @@ class DataCenterController extends AdminController
         $accountName = isset($cond['paypal_account']) ? $cond['paypal_account'] : [];
         $beginDate = isset($cond['dateRange'][0]) ? $cond['dateRange'][0] : '';
         $endDate = isset($cond['dateRange'][1]) ? $cond['dateRange'][1] : '';
+        $fileNameDateSuffix = str_replace('-','',$beginDate) . '--' . str_replace('-','',$endDate);
         $title = ['DateTime','Name','Type','Status','Currency','Gross','Fee','Net','FromEmailAddress','ToEmailAddress'];
         try {
             $fileNameArr = [];
@@ -897,14 +898,13 @@ class DataCenterController extends AdminController
                            'Conversion to Cover Negative Balance')   
                 ) ORDER BY paypal_account";
                 $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-
-                $fileNameArr[] = ExportTools::saveToExcelOrCsv('payPalTransaction-'.$account, $data, 'Xls', $title);
+                $name = 'payPalTransaction-' . $account . '-' . $fileNameDateSuffix;
+                $fileNameArr[] = ExportTools::saveToExcelOrCsv($name, $data, 'Xls', $title);
 //                $fileNameArr[] = ExportTools::saveToCsv('payPalTransaction-'.$account, $data, $title);
             }
-//            var_dump($fileNameArr);exit;
             //进行多个文件压缩
             $zip = new \ZipArchive();
-            $filename = str_replace('-','',$beginDate) . '--' . str_replace('-','',$endDate) . "payPal.zip";
+            $filename = $fileNameDateSuffix . "payPal.zip";
             $zip->open($filename, \ZipArchive::CREATE);   //打开压缩包
             foreach ($fileNameArr as $file) {
                 $zip->addFromString($file,file_get_contents($file)); //向压缩包中添加文件
