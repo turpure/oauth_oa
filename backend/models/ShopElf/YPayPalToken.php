@@ -7,7 +7,6 @@ use yii\behaviors\TimestampBehavior;
 
 /**
  * This is the model class for table "Y_PayPalToken".
- *
  * @property int $id
  * @property string $accountName
  * @property string $username
@@ -55,8 +54,8 @@ class YPayPalToken extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['isUsed','usedBalance'], 'integer'],
-            [['accountName', 'username','signature','createdTime'], 'string'],
+            [['id','isUsed','usedBalance'], 'integer'],
+            [['accountName', 'username','signature','tokenType','createdTime'], 'string'],
         ];
     }
 

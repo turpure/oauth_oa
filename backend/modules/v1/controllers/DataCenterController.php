@@ -982,32 +982,12 @@ class DataCenterController extends AdminController
         if (!$query) {
             $query = new YPayPalToken();
         }
-
         $query->setAttributes($cond);
-        $changedAttr = $query->getDirtyAttributes();
-//        var_dump($oldAttr);exit;
         $res = $query->save();
-//        var_dump($query->isNewRecord);exit;
         if (!$res) {
             return ['code' => 400, 'message' => 'Failed to save payPal info!'];
-        } else {
-            if (!$query->isNewRecord) {
-                $content = 'PayPal账号状态信息更新：';
-                foreach ($changedAttr as $k => $v) {
-                    $content .= $k . '->' . $v . ',';
-                }
-            } else {
-                $content = '创建PayPal账号状态信息！';
-            }
-            if ($changedAttr) {
-                $log = new YPayPalStatusLogs();
-                $log->paypalNid = $query->nid;
-                $log->opertor = Yii::$app->user->identity->username;
-                $log->content = $content;
-                $log->save();
-            }
-            return true;
         }
+        return true;
     }
 
 }
