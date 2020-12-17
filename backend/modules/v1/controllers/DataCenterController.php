@@ -841,13 +841,16 @@ class DataCenterController extends AdminController
             return [];
         }
         $cond = $request->post('condition');
-        $accountName = isset($cond['paypal_account']) ? $cond['paypal_account'] : '';
+        $accountName = isset($cond['paypal_account']) ? $cond['paypal_account'] : null;
         $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
-
+        $accountNameArr = explode(',',$accountName);
         try {
-            $data = YPayPalTransactions::find()->select('paypal_account')
-                ->andFilterWhere(['like', 'paypal_account', $accountName])
-                ->orderBy('paypal_account')->distinct()->all();
+            $query = YPayPalTransactions::find()->select('paypal_account');
+            if($accountName){
+                $accountNameArr = explode(',',$accountName);
+                $query->andFilterWhere(['paypal_account' => $accountNameArr]);
+            }
+             $data = $query->orderBy('paypal_account')->distinct()->all();
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'pagination' => [
@@ -884,19 +887,19 @@ class DataCenterController extends AdminController
         try {
             $fileNameArr = [];
             foreach ($accountName as $account) {
-                $sql = "SELECT transaction_date as DateTime,transaction_type_description as Name,
-                    transaction_type as type, transaction_status as Status, currecny_code as Currency,
+                $sql = "SELECT transaction_date as DateTime,payer_full_name as Name,
+                    transaction_type_description as type, transaction_status_description as Status, currecny_code as Currency,
                     transaction_amount as Gross, transaction_fee as Fee, transaction_net_amount as Net,
                     payer_email as FromEmailAddress,paypal_account as ToEmailAddress FROM [dbo].[y_paypalTransactions] WHERE 1=1 ";
                 if($accountName) $sql .= " AND paypal_account LIKE '%{$account}%'";
                 if($beginDate && $endDate) $sql .= " AND convert(varchar(10),transaction_date,121) between '{$beginDate}' and '{$endDate}'";
-                $sql .= " AND (transaction_type_description LIKE 'ebay%' 
-                    OR transaction_type IN ('Express Checkout Payment', 'Tax collected by partner', 'General Payment', 
-                          'Pre-approved Payment Bill User Payment', 'Third Party Recoupment', 'Mass Pay Payment')  
-                          AND  ISNULL(transaction_amount,0) < 0 
-                    OR transaction_type IN ('General Currency Conversion', 'User Initiated Currency Conversion',
-                           'Conversion to Cover Negative Balance')   
-                ) ORDER BY paypal_account";
+                /*$sql .= " AND (payer_full_name LIKE 'ebay%'
+                    OR transaction_type_description IN ('Express Checkout Payment', 'Tax collected by partner', 'General Payment',
+                          'Pre-approved Payment Bill User Payment', 'Third Party Recoupment', 'Mass Pay Payment')
+                          AND  ISNULL(transaction_amount,0) < 0
+                    OR transaction_type_description IN ('General Currency Conversion', 'User Initiated Currency Conversion',
+                           'Conversion to Cover Negative Balance')
+                ) ORDER BY paypal_account";*/
                 $data = Yii::$app->py_db->createCommand($sql)->queryAll();
                 $name = 'payPalTransaction-' . $account . '-' . $fileNameDateSuffix;
                 $fileNameArr[] = ExportTools::saveToExcelOrCsv($name, $data, 'Xls', $title);
