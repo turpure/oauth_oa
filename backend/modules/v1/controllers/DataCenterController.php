@@ -944,11 +944,18 @@ class DataCenterController extends AdminController
         $cond = $request->post('condition');
         $accountName = isset($cond['accountName']) ? $cond['accountName'] : '';
         $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
-
+        $isUsed = isset($cond['isUrUsed']) ? $cond['isUrUsed'] : null;
+        $isUsedBalance = isset($cond['isUsedBalance']) ? $cond['isUsedBalance'] : null;
+        $isUsedRefund = isset($cond['isUsedRefund']) ? $cond['isUsedRefund'] : null;
+        $isUsedTransaction = isset($cond['isUsedTransaction']) ? $cond['isUsedTransaction'] : null;
         try {
-            $data = YPayPalToken::find()
-                ->andFilterWhere(['like', 'accountName', $accountName])
-                ->orderBy('accountName')->all();
+
+            $query = YPayPalToken::find()->andFilterWhere(['like', 'accountName', $accountName]);
+            if ($isUsed || $isUsed === "0") $query->andWhere(['accountName' => $isUsed]);
+            if ($isUsedBalance || $isUsedBalance === "0") $query->andWhere(['isUsedBalance' => $isUsedBalance]);
+            if ($isUsedRefund || $isUsedRefund === "0") $query->andWhere(['isUsedRefund' => $isUsedRefund]);
+            if ($isUsedTransaction || $isUsedTransaction === "0") $query->andWhere(['isUsedTransaction' => $isUsedTransaction]);
+            $data = $query->orderBy('accountName')->all();
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'pagination' => [

@@ -12,9 +12,10 @@ use yii\behaviors\TimestampBehavior;
  * @property string $username
  * @property string $signature
  * @property string $createdTime
- * @property string $tokenType
  * @property int $isUsed
- * @property int $usedBalance
+ * @property int $isUsedBalance
+ * @property int $isUsedRefund
+ * @property int $isUsedTransaction
  */
 class YPayPalToken extends \yii\db\ActiveRecord
 {
@@ -54,8 +55,8 @@ class YPayPalToken extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['id','isUsed','usedBalance'], 'integer'],
-            [['accountName', 'username','signature','tokenType','createdTime'], 'string'],
+            [['isUsed','isUsedBalance','isUsedRefund','isUsedTransaction'], 'integer'],
+            [['accountName', 'username','signature','createdTime'], 'string'],
         ];
     }
 
