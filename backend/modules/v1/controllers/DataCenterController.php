@@ -944,14 +944,14 @@ class DataCenterController extends AdminController
         $cond = $request->post('condition');
         $accountName = isset($cond['accountName']) ? $cond['accountName'] : '';
         $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
-        $isUsed = isset($cond['isUrUsed']) ? $cond['isUrUsed'] : null;
+        $isUsed = isset($cond['isUsed']) ? $cond['isUsed'] : null;
         $isUsedBalance = isset($cond['isUsedBalance']) ? $cond['isUsedBalance'] : null;
         $isUsedRefund = isset($cond['isUsedRefund']) ? $cond['isUsedRefund'] : null;
         $isUsedTransaction = isset($cond['isUsedTransaction']) ? $cond['isUsedTransaction'] : null;
         try {
 
             $query = YPayPalToken::find()->andFilterWhere(['like', 'accountName', $accountName]);
-            if ($isUsed || $isUsed === "0") $query->andWhere(['accountName' => $isUsed]);
+            if ($isUsed || $isUsed === "0") $query->andWhere(['isUsed' => $isUsed]);
             if ($isUsedBalance || $isUsedBalance === "0") $query->andWhere(['isUsedBalance' => $isUsedBalance]);
             if ($isUsedRefund || $isUsedRefund === "0") $query->andWhere(['isUsedRefund' => $isUsedRefund]);
             if ($isUsedTransaction || $isUsedTransaction === "0") $query->andWhere(['isUsedTransaction' => $isUsedTransaction]);
@@ -971,7 +971,7 @@ class DataCenterController extends AdminController
         }
     }
 
-    /** pp状态修改
+    /** pp  TOKEN 修改
      * Date: 2020-12-04 13:12
      * Author: henry
      * @return array|ArrayDataProvider
