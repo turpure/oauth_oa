@@ -883,11 +883,11 @@ class DataCenterController extends AdminController
         $beginDate = isset($cond['dateRange'][0]) ? $cond['dateRange'][0] : '';
         $endDate = isset($cond['dateRange'][1]) ? $cond['dateRange'][1] : '';
         $fileNameDateSuffix = str_replace('-','',$beginDate) . '--' . str_replace('-','',$endDate);
-        $title = ['DateTime','Name','Type','Status','Currency','Gross','Fee','Net','FromEmailAddress','ToEmailAddress'];
+        $title = ['DateTime','TransactionID','Name','Type','Status','Currency','Gross','Fee','Net','FromEmailAddress','ToEmailAddress'];
         try {
             $fileNameArr = [];
             foreach ($accountName as $account) {
-                $sql = "SELECT transaction_date as DateTime,payer_full_name as Name,
+                $sql = "SELECT transaction_date as DateTime,transaction_id as TransactionID,payer_full_name as Name,
                     transaction_type_description as type, transaction_status_description as Status, currecny_code as Currency,
                     transaction_amount as Gross, transaction_fee as Fee, transaction_net_amount as Net,
                     payer_email as FromEmailAddress,paypal_account as ToEmailAddress FROM [dbo].[y_paypalTransactions] WHERE 1=1 ";

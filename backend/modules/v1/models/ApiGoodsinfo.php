@@ -1607,8 +1607,11 @@ class ApiGoodsinfo
                 $out[] = $row;
             }
         }
-
-        $ret['name'] = 'wish-' . $goodsInfo['goodsCode'];
+        if(count($ids) == 1){
+            $ret['name'] = 'wish-' . $goodsInfo['goodsCode'];
+        }else{
+            $ret['name'] = 'wish-batch';
+        }
         $ret['data'] = $out;
         return $ret;
     }
