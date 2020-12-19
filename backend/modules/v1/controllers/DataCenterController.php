@@ -935,7 +935,12 @@ class DataCenterController extends AdminController
     }
 
 
-
+    /**
+     * actionPpToken
+     * Date: 2020-12-19 9:03
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
     public function actionPpToken(){
         $request = Yii::$app->request;
         if (!$request->isPost) {
@@ -963,6 +968,48 @@ class DataCenterController extends AdminController
                 ],
             ]);
             return $provider;
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * actionPpTokenExport
+     * Date: 2020-12-19 9:05
+     * Author: henry
+     * @return array
+     */
+    public function actionPpTokenExport(){
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $cond = $request->post('condition');
+        $accountName = isset($cond['accountName']) ? $cond['accountName'] : '';
+        $isUsed = isset($cond['isUsed']) ? $cond['isUsed'] : null;
+        $isUsedBalance = isset($cond['isUsedBalance']) ? $cond['isUsedBalance'] : null;
+        $isUsedRefund = isset($cond['isUsedRefund']) ? $cond['isUsedRefund'] : null;
+        $isUsedTransaction = isset($cond['isUsedTransaction']) ? $cond['isUsedTransaction'] : null;
+        try {
+
+            $query = YPayPalToken::find()
+                ->select("accountName,username,signature,
+                (CASE WHEN isUsed = 1 THEN '是' ELSE '否' END) as isUsed,
+                (CASE WHEN isUsedBalance = 1 THEN '是' ELSE '否' END) as isUsedBalance,
+                (CASE WHEN isUsedRefund = 1 THEN '是' ELSE '否' END) as isUsedRefund,
+                (CASE WHEN isUsedTransaction = 1 THEN '是' ELSE '否' END) as isUsedTransaction,
+                createdTime")
+                ->andFilterWhere(['like', 'accountName', $accountName]);
+            if ($isUsed || $isUsed === "0") $query->andWhere(['isUsed' => $isUsed]);
+            if ($isUsedBalance || $isUsedBalance === "0") $query->andWhere(['isUsedBalance' => $isUsedBalance]);
+            if ($isUsedRefund || $isUsedRefund === "0") $query->andWhere(['isUsedRefund' => $isUsedRefund]);
+            if ($isUsedTransaction || $isUsedTransaction === "0") $query->andWhere(['isUsedTransaction' => $isUsedTransaction]);
+            $data = $query->orderBy('accountName')->asArray()->all();
+            $title = ['payPal账号','用户名','签名','是否启用','是否获取余额','是否获取退款','是否获取交易明细','时间'];
+            ExportTools::toExcelOrCsv('payPalToken', $data, 'Xls', $title);
         } catch (\Exception $e) {
             return [
                 'code' => 400,
