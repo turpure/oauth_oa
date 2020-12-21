@@ -843,7 +843,6 @@ class DataCenterController extends AdminController
         $cond = $request->post('condition');
         $accountName = isset($cond['paypal_account']) ? $cond['paypal_account'] : null;
         $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
-        $accountNameArr = explode(',',$accountName);
         try {
             $query = YPayPalTransactions::find()->select('paypal_account');
             if($accountName){
@@ -934,6 +933,74 @@ class DataCenterController extends AdminController
         }
     }
 
+    /** pp状态
+     * actionPpBalance
+     * Date: 2020-12-04 13:12
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionPpTransactionsPartExport()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $cond = $request->post('condition');
+        $accountName = isset($cond['paypal_account']) ? $cond['paypal_account'] : [];
+        $beginDate = isset($cond['dateRange'][0]) ? $cond['dateRange'][0] : '';
+        $endDate = isset($cond['dateRange'][1]) ? $cond['dateRange'][1] : '';
+        $fileNameDateSuffix = str_replace('-','',$beginDate) . '--' . str_replace('-','',$endDate);
+        $title = ['DateTime','TransactionID','Name','Type','Status','Currency','Gross','Fee','Net','FromEmailAddress','ToEmailAddress'];
+        try {
+            $fileNameArr = [];
+            foreach ($accountName as $account) {
+                $sql = "SELECT transaction_date as DateTime,transaction_id as TransactionID,payer_full_name as Name,
+                    transaction_type_description as type, transaction_status_description as Status, currecny_code as Currency,
+                    transaction_amount as Gross, transaction_fee as Fee, transaction_net_amount as Net,
+                    payer_email as FromEmailAddress,paypal_account as ToEmailAddress FROM [dbo].[y_paypalTransactions] WHERE 1=1 ";
+                if($accountName) $sql .= " AND paypal_account LIKE '%{$account}%'";
+                if($beginDate && $endDate) $sql .= " AND convert(varchar(10),transaction_date,121) between '{$beginDate}' and '{$endDate}'";
+                $sql .= " AND (payer_full_name LIKE 'ebay%'
+                    OR ISNULL(transaction_type_description,'') IN ('PayPal Checkout APIs.', '', 
+                          'General: received payment of a type not belonging to the other T00nn categories.', 
+                          'Pre-approved payment (BillUser API). Either sent or received.', 'Mass Pay Payment')
+                          AND  ISNULL(transaction_amount,0) < 0
+                    OR transaction_type_description IN ('General Currency Conversion', 'User Initiated Currency Conversion',
+                           'Conversion to Cover Negative Balance')
+                ) ORDER BY paypal_account";
+                $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+                $name = 'payPalTransaction-' . $account . '-' . $fileNameDateSuffix;
+                $fileNameArr[] = ExportTools::saveToExcelOrCsv($name, $data, 'Xls', $title);
+//                $fileNameArr[] = ExportTools::saveToCsv('payPalTransaction-'.$account, $data, $title);
+            }
+            //进行多个文件压缩
+            $zip = new \ZipArchive();
+            $filename = $fileNameDateSuffix . "payPal.zip";
+            $zip->open($filename, \ZipArchive::CREATE);   //打开压缩包
+            foreach ($fileNameArr as $file) {
+                $zip->addFromString($file,file_get_contents($file)); //向压缩包中添加文件
+            }
+            $zip->close();  //关闭压缩包
+            foreach ($fileNameArr as $file) {
+                unlink($file); //删除csv临时文件
+            }
+            //输出压缩文件提供下载
+            header("Cache-Control: max-age=0");
+            header("Content-Description: File Transfer");
+            header('Content-disposition: attachment; filename=' . iconv('utf-8','gbk//ignore',$filename)); // 文件名
+            header("Content-Type: application/zip"); // zip格式的
+            header("Content-Transfer-Encoding: binary"); //
+            ob_clean();
+            flush();
+            readfile($filename);//输出文件;
+            unlink($filename); //删除压缩包临时文件
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
 
     /**
      * actionPpToken
