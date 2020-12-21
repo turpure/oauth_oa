@@ -1552,7 +1552,7 @@ class ApiGoodsinfo
             $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
             $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
             $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
-            $wishAccounts = OaWishSuffix::find()->where(['like', 'parentCategory', $goods['cate']])
+            $wishAccounts = OaWishSuffix::find()->andFilterWhere(['like', 'parentCategory', $goods['cate']])
                 ->orWhere(["IFNULL(parentCategory,'')" => ''])
                 ->andWhere(['isIbay' => 1])
                 ->andFilterWhere(['shortName' => $suffix])
