@@ -11,6 +11,7 @@ namespace backend\modules\v1\controllers;
 use backend\models\ShopElf\YPayPalStatus;
 use backend\models\ShopElf\YPayPalStatusLogs;
 use backend\models\ShopElf\YPayPalToken;
+use backend\models\ShopElf\YPayPalTokenLogs;
 use backend\models\ShopElf\YPayPalTransactions;
 use backend\modules\v1\models\ApiDataCenter;
 use backend\modules\v1\models\ApiUk;
@@ -1104,11 +1105,50 @@ class DataCenterController extends AdminController
             $query = new YPayPalToken();
         }
         $query->setAttributes($cond);
+        $changedAttr = $query->getDirtyAttributes();
         $res = $query->save();
         if (!$res) {
             return ['code' => 400, 'message' => 'Failed to save payPal info!'];
+        }else{
+            if (!$query->isNewRecord) {
+                $content = 'PayPal token信息更新：';
+                foreach ($changedAttr as $k => $v) {
+                    if($v == 1){
+                        $str = '是';
+                    }else{
+                        $str = '否';
+                    }
+                    $content .= $k . '->' . $str . ',';
+                }
+            } else {
+                $content = '创建PayPal token信息！';
+            }
+            if ($changedAttr) {
+                $log = new YPayPalTokenLogs();
+                $log->tokenId = $query->id;
+                $log->opertor = Yii::$app->user->identity->username;
+                $log->content = $content;
+                $ss = $log->save();
+            }
+            return true;
         }
-        return true;
+    }
+
+    /** pp状态修改日志
+     * Date: 2020-12-04 13:12
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionPpTokenUpdateLog()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $cond = $request->post('condition');
+        $tokenId = isset($cond['tokenId']) ? $cond['tokenId'] : null;
+        $query = YPayPalTokenLogs::findAll(['tokenId' => $tokenId]);
+        return $query;
     }
 
 }

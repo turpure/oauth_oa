@@ -9,19 +9,19 @@ use yii\behaviors\TimestampBehavior;
  * This is the model class for table "y_PayPalStatusLogs".
  *
  * @property int $nid
- * @property int $paypalNid
+ * @property int $tokenId
  * @property string $opertor
  * @property string $content
  * @property string $createdTime
  */
-class YPayPalStatusLogs extends \yii\db\ActiveRecord
+class YPayPalTokenLogs extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return 'y_PayPalStatusLogs';
+        return 'y_PayPalTokenLogs';
     }
 
     /**
@@ -51,7 +51,7 @@ class YPayPalStatusLogs extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['paypalNid'], 'integer'],
+            [['tokenId'], 'integer'],
             [['opertor', 'content'], 'string'],
         ];
     }
