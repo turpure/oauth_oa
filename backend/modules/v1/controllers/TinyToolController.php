@@ -1180,6 +1180,15 @@ class TinyToolController extends AdminController
             $data = ApiTinyTool::getSkuStockDetail($condition);
             return new ArrayDataProvider([
                 'allModels' => $data,
+                'sort' => [
+                    'attributes' => [
+                        'airNum','costPrice','costmoney','createDate','fourteenSellCount','oceanNum','sevenSellCount',
+                        'sku','thirtySellCount','threeSellCount','turnoverDays','useNum','weight'
+                    ],
+                    'defaultOrder' => [
+                        'sku' => SORT_ASC,
+                    ],
+                ],
                 'pagination' => [
                     'pageSize' => $pageSize ? $pageSize : 20
                 ]

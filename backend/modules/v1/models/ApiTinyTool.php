@@ -1160,6 +1160,7 @@ class ApiTinyTool
             $sql .= " AND ss.seller1 LIKE '%{$seller}%'";
         }
         return Yii::$app->db->createCommand($sql)->queryAll();
+
     }
 
     public static function saveEbaySkuSellerData($file, $extension = 'Xls')
