@@ -7,8 +7,10 @@
 
 namespace backend\modules\v1\utils;
 
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
 use Yii;
 
@@ -98,13 +100,6 @@ class ExportTools
         else {
             foreach ($cellName as $index => $value) {
                 $workSheet->setCellValueByColumnAndRow($index + 1, 1, $value);
-                if($value > 1000000){
-//                    $workSheet->setCellValueExplicit()
-                    $value = html_entity_decode("&iuml;&raquo;&iquest;" . $value);
-                    $workSheet->setCellValueByColumnAndRow($index + 1, 1, $value);
-                }else{
-                    $workSheet->setCellValueByColumnAndRow($index + 1, 1, $value);
-                }
                 $workSheet->getStyleByColumnAndRow($index + 1, 1)->getFont()->setBold(true);
                 $workSheet->getColumnDimensionByColumn($index + 1)->setAutoSize(count($value));
             }
@@ -113,6 +108,14 @@ class ExportTools
         foreach ($data as $key => $row) {
             for ($index=0; $index<$len;$index++) {
                 $workSheet->setCellValueByColumnAndRow($index + 1, $key + 2,  $row[$cellName[$index]]);
+                if($row[$cellName[$index]] > 1000000){
+//                    $value = html_entity_decode("&iuml;&raquo;&iquest;" . $value);
+//                    $workSheet->setCellValueByColumnAndRow($index + 1, 1, $value);
+                    $columnAndRowNum = strtoupper(chr(65 + $index)) . ($key + 2);
+//                    var_dump($columnAndRowNum);exit;
+                    $workSheet->getStyle($columnAndRowNum)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_TEXT);
+                    $workSheet->setCellValueExplicit($columnAndRowNum, $row[$cellName[$index]], DataType::TYPE_STRING);
+                }
             }
         }
 

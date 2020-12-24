@@ -717,7 +717,7 @@ class DataCenterController extends AdminController
                 'allModels' => $data,
                 'sort' => [
                     'attributes' => [
-                        'accountName', 'isUrUsed', 'isPyUsed', 'paypalStatus'
+                        'accountName', 'isUrUsed', 'isPyUsed', 'paypalStatus', 'createdTime', 'updatedTime'
                     ],
                     'defaultOrder' => [
                         'accountName' => SORT_ASC,
