@@ -98,6 +98,13 @@ class ExportTools
         else {
             foreach ($cellName as $index => $value) {
                 $workSheet->setCellValueByColumnAndRow($index + 1, 1, $value);
+                if($value > 1000000){
+//                    $workSheet->setCellValueExplicit()
+                    $value = html_entity_decode("&iuml;&raquo;&iquest;" . $value);
+                    $workSheet->setCellValueByColumnAndRow($index + 1, 1, $value);
+                }else{
+                    $workSheet->setCellValueByColumnAndRow($index + 1, 1, $value);
+                }
                 $workSheet->getStyleByColumnAndRow($index + 1, 1)->getFont()->setBold(true);
                 $workSheet->getColumnDimensionByColumn($index + 1)->setAutoSize(count($value));
             }
