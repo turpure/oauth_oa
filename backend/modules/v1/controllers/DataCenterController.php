@@ -757,11 +757,14 @@ class DataCenterController extends AdminController
         $isPyUsed = isset($cond['isPyUsed']) ? $cond['isPyUsed'] : null;
         $paypalStatus = isset($cond['paypalStatus']) ? $cond['paypalStatus'] : null;
         $memo = isset($cond['memo ']) ? $cond['memo '] : null;
-        $sql = "SELECT nid,accountName,isUrUsed,isPyUsed,paypalStatus,memo,createdTime,updatedTime FROM Y_PayPalStatus WHERE 1=1 ";
-        if ($accountName) $sql .= " AND accountName LIKE '%{$accountName}%'";
+        $sql = "SELECT nid,ps.accountName,ISNULL(isUsed,0) as isUrUsed,isPyUsed,paypalStatus,memo,ps.createdTime,updatedTime 
+                FROM Y_PayPalStatus ps
+                LEFT JOIN Y_PayPalToken pt ON ps.accountName=pt.accountName
+                WHERE 1=1 ";
+        if ($accountName) $sql .= " AND ps.accountName LIKE '%{$accountName}%'";
         if ($paypalStatus) $sql .= " AND paypalStatus LIKE '%{$paypalStatus}%'";
         if ($memo) $sql .= " AND memo LIKE '%{$memo}%'";
-        if ($isUrUsed || $isUrUsed === "0") $sql .= " AND isUrUsed = '{$isUrUsed}'";
+        if ($isUrUsed || $isUrUsed === "0") $sql .= " AND isUsed = '{$isUrUsed}'";
         if ($isPyUsed || $isPyUsed === "0") $sql .= " AND isPyUsed = '{$isPyUsed}'";
 
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
@@ -1031,7 +1034,7 @@ class DataCenterController extends AdminController
             if ($isUsedBalance || $isUsedBalance === "0") $query->andWhere(['isUsedBalance' => $isUsedBalance]);
             if ($isUsedRefund || $isUsedRefund === "0") $query->andWhere(['isUsedRefund' => $isUsedRefund]);
             if ($isUsedTransaction || $isUsedTransaction === "0") $query->andWhere(['isUsedTransaction' => $isUsedTransaction]);
-            $data = $query->orderBy('accountName')->all();
+            $data = $query->orderBy('id desc')->all();
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'pagination' => [
