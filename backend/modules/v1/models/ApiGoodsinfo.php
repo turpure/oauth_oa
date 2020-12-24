@@ -270,13 +270,16 @@ class ApiGoodsinfo
             return [];
         }
         $oaGoods = OaGoods::find()
-            ->select('nid,cate,subCate,salePrice,vendor1,vendor2,vendor3,origin1,origin2,origin3')
+            ->select('nid,cate,subCate,salePrice,hopeWeight,hopeCost,vendor1,vendor2,vendor3,origin1,origin2,origin3')
             ->where(['nid' => $goodsInfo->goodsId])->one();
         if ($oaGoods === null) {
             $oaGoods = [
                 'nid' => $goodsInfo->goodsId,
                 'cate' => '',
                 'subCate' => '',
+                'salePrice' => '',
+                'hopeWeight' => '',
+                'hopeCost' => '',
                 'vendor1' => '',
                 'vendor2' => '',
                 'vendor3' => '',

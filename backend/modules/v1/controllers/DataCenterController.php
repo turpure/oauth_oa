@@ -886,8 +886,7 @@ class DataCenterController extends AdminController
         try {
             $query = YPayPalTransactions::find()->select('paypal_account');
             if($accountName){
-                $accountNameArr = explode(',',$accountName);
-                $query->andFilterWhere(['paypal_account' => $accountNameArr]);
+                $query->andFilterWhere(['paypal_account' => $accountName]);
             }
              $data = $query->orderBy('paypal_account')->distinct()->all();
             $provider = new ArrayDataProvider([
@@ -1001,13 +1000,13 @@ class DataCenterController extends AdminController
                     payer_email as FromEmailAddress,paypal_account as ToEmailAddress FROM [dbo].[y_paypalTransactions] WHERE 1=1 ";
                 if($accountName) $sql .= " AND paypal_account LIKE '%{$account}%'";
                 if($beginDate && $endDate) $sql .= " AND convert(varchar(10),transaction_date,121) between '{$beginDate}' and '{$endDate}'";
-                $sql .= " AND (payer_full_name LIKE 'ebay%'
+                $sql .= " AND (payer_full_name LIKE 'ebay%' AND ISNULL(transaction_amount,0) < 0 
                     OR ISNULL(transaction_type_description,'') IN ('PayPal Checkout APIs.', '', 
                           'General: received payment of a type not belonging to the other T00nn categories.', 
-                          'Pre-approved payment (BillUser API). Either sent or received.', 'Mass Pay Payment')
+                          'Pre-approved payment (BillUser API). Either sent or received.', 'MassPay payment.')
                           AND  ISNULL(transaction_amount,0) < 0
-                    OR transaction_type_description IN ('General Currency Conversion', 'User Initiated Currency Conversion',
-                           'Conversion to Cover Negative Balance')
+                    OR transaction_type_description IN ('General currency conversion.', 'User-initiated currency conversion.',
+                           'Currency conversion required to cover negative balance.')
                 ) ORDER BY transaction_date";
                 $data = Yii::$app->py_db->createCommand($sql)->queryAll();
                 $name = 'payPalTransaction-' . $account . '-' . $fileNameDateSuffix;
