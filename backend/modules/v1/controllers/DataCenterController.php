@@ -705,7 +705,9 @@ class DataCenterController extends AdminController
         $paypalStatus = isset($cond['paypalStatus']) ? $cond['paypalStatus'] : null;
         $memo = isset($cond['memo ']) ? $cond['memo '] : null;
         $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
-        $sql = "SELECT nid,ps.accountName,ISNULL(isUsed,0) as isUrUsed,isPyUsed,paypalStatus,memo,ps.createdTime,updatedTime 
+        $sql = "SELECT nid,ps.accountName,
+                CASE WHEN ISNULL(isUsed,0)=1 AND ISNULL(isUsedBalance,0)=1 THEN 1 ELSE 0 END AS isUrUsed,
+                isPyUsed,paypalStatus,memo,ps.createdTime,updatedTime 
                 FROM Y_PayPalStatus ps
                 LEFT JOIN Y_PayPalToken pt ON ps.accountName=pt.accountName
                 WHERE 1=1 ";
@@ -757,7 +759,9 @@ class DataCenterController extends AdminController
         $isPyUsed = isset($cond['isPyUsed']) ? $cond['isPyUsed'] : null;
         $paypalStatus = isset($cond['paypalStatus']) ? $cond['paypalStatus'] : null;
         $memo = isset($cond['memo ']) ? $cond['memo '] : null;
-        $sql = "SELECT nid,ps.accountName,ISNULL(isUsed,0) as isUrUsed,isPyUsed,paypalStatus,memo,ps.createdTime,updatedTime 
+        $sql = "SELECT nid,ps.accountName,
+                CASE WHEN ISNULL(isUsed,0)=1 AND ISNULL(isUsedBalance,0)=1 THEN 1 ELSE 0 END AS isUrUsed,
+                isPyUsed,paypalStatus,memo,ps.createdTime,updatedTime 
                 FROM Y_PayPalStatus ps
                 LEFT JOIN Y_PayPalToken pt ON ps.accountName=pt.accountName
                 WHERE 1=1 ";
@@ -799,6 +803,35 @@ class DataCenterController extends AdminController
         if (!$res) {
             return ['code' => 400, 'message' => 'Failed to save payPal info!'];
         } else {
+            //更新 TOKEN 信息
+            $token = YPayPalToken::findOne(['accountName' => $query->accountName]);
+            if($token){
+                $token->isUsedBalance = $query->isUrUsed;
+                if($query->isUrUsed == '1'){
+                    $token->isUsed = 1;
+                }
+                $tokenChangedAttr = $token->getDirtyAttributes();
+                $token->save();
+                // 添加 TOKEN 修改日志
+                $content = 'PayPal token信息更新：';
+                foreach ($tokenChangedAttr as $k => $v) {
+                    if($v == 1){
+                        $str = '是';
+                    }else{
+                        $str = '否';
+                    }
+                    $content .= $k . '->' . $str . ',';
+                }
+                if ($tokenChangedAttr) {
+                    $tokenLog = new YPayPalTokenLogs();
+                    $tokenLog->tokenId = $token->id;
+                    $tokenLog->opertor = Yii::$app->user->identity->username;
+                    $tokenLog->content = $content;
+                    $ss = $tokenLog->save();
+                }
+            }
+
+            // 添加 状态日志
             if (!$query->isNewRecord) {
                 $content = 'PayPal账号状态信息更新：';
                 foreach ($changedAttr as $k => $v) {
@@ -906,6 +939,7 @@ class DataCenterController extends AdminController
                     OR transaction_type_description IN ('General Currency Conversion', 'User Initiated Currency Conversion',
                            'Conversion to Cover Negative Balance')
                 ) ORDER BY paypal_account";*/
+                $sql .= ' ORDER BY transaction_date ';
                 $data = Yii::$app->py_db->createCommand($sql)->queryAll();
                 $name = 'payPalTransaction-' . $account . '-' . $fileNameDateSuffix;
                 $fileNameArr[] = ExportTools::saveToExcelOrCsv($name, $data, 'Xls', $title);
@@ -974,7 +1008,7 @@ class DataCenterController extends AdminController
                           AND  ISNULL(transaction_amount,0) < 0
                     OR transaction_type_description IN ('General Currency Conversion', 'User Initiated Currency Conversion',
                            'Conversion to Cover Negative Balance')
-                ) ORDER BY paypal_account";
+                ) ORDER BY transaction_date";
                 $data = Yii::$app->py_db->createCommand($sql)->queryAll();
                 $name = 'payPalTransaction-' . $account . '-' . $fileNameDateSuffix;
                 $fileNameArr[] = ExportTools::saveToExcelOrCsv($name, $data, 'Xls', $title);
