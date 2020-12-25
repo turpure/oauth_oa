@@ -966,6 +966,20 @@ class DataCenterController extends AdminController
             readfile($filename);//输出文件;
             unlink($filename); //删除压缩包临时文件
         } catch (\Exception $e) {
+            $dir = Yii::$app->basePath.'/web/';
+            if($handle = opendir($dir)) {
+                while(false !== ($file = readdir($handle))) {
+                    if(strripos(strtolower($file),'.xls') !== false ||
+                        strripos(strtolower($file),'.xlsx') !== false ||
+                        strripos(strtolower($file),'.csv') !== false ||
+                        strripos(strtolower($file),'.zip') !== false
+                    ){
+                        //按名称过滤
+                        @unlink($file);
+                    }
+                }
+                $res = closedir($handle);
+            }
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),
@@ -1035,6 +1049,20 @@ class DataCenterController extends AdminController
             readfile($filename);//输出文件;
             unlink($filename); //删除压缩包临时文件
         } catch (\Exception $e) {
+            $dir = Yii::$app->basePath.'/web/';
+            if($handle = opendir($dir)) {
+                while(false !== ($file = readdir($handle))) {
+                    if(strripos(strtolower($file),'.xls') !== false ||
+                        strripos(strtolower($file),'.xlsx') !== false ||
+                        strripos(strtolower($file),'.csv') !== false ||
+                        strripos(strtolower($file),'.zip') !== false
+                    ){
+                        //按名称过滤
+                        @unlink($file);
+                    }
+                }
+                $res = closedir($handle);
+            }
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),

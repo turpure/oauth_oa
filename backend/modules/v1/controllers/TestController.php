@@ -55,53 +55,23 @@ class TestController extends AdminController
     }
 
     public  function actionTest1(){
-
-        $account = OaFyndiqSuffix::findOne(['suffix' => 'Fyndiq-01']);
-        $url = 'https://merchants-api.fyndiq.se/api/v1/articles?limit=1000';
-        $token = base64_encode($account['suffixId'] . ':' . $account['token']);
-
-        $header = ["Content-Type: application/json", "Authorization: Basic " . $token];
-        //$res = Helper::post($url, json_encode($data), $header);
-
-        $curl = curl_init();
-
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://merchants-api.fyndiq.se/api/v1/articles?limit=1000",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => "",
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "GET",
-            CURLOPT_HTTPHEADER => $header,
-        ));
-        curl_setopt ( $curl, CURLOPT_SSL_VERIFYPEER, false );
-        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
-
-        $response = curl_exec($curl);
-
-        curl_close($curl);
-
-        $res =  json_decode($response,true);
-//            return $res;
-        //var_dump(count($res));exit;
-        $data = [];
-        foreach ($res as $v){
-            if($v['fyndiq_status'] == 'blocked') {
-                $data[] = [
-                    'id' => $v['id'],
-                    'product_id' => $v['product_id'],
-                    'sku' => $v['sku'],
-                    'parent_sku' => $v['parent_sku'],
-                    'quantity' => $v['quantity'],
-                    'status' => $v['status'],
-                    'fyndiq_status' => $v['fyndiq_status'],
-                ];
+        $dir = Yii::$app->basePath.'/web/';
+        //$file = 'index.php';
+        if($handle = opendir($dir)) {
+            while(false !== ($file = readdir($handle))) {
+                if(strripos(strtolower($file),'.xls') !== false ||
+                    strripos(strtolower($file),'.xlsx') !== false ||
+                    strripos(strtolower($file),'.csv') !== false ||
+                    strripos(strtolower($file),'.zip') !== false
+                ){
+                    //按名称过滤
+                    @unlink($file);
+                }
             }
+            $res = closedir($handle);
         }
-//            return $data;
-        ExportTools::toExcelOrCsv('fyndiq', $data, 'Xls');
+        var_dump($dir);exit;
+
 
 
     }
