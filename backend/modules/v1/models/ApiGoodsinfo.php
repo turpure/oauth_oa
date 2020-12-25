@@ -270,13 +270,16 @@ class ApiGoodsinfo
             return [];
         }
         $oaGoods = OaGoods::find()
-            ->select('nid,cate,subCate,salePrice,vendor1,vendor2,vendor3,origin1,origin2,origin3')
+            ->select('nid,cate,subCate,salePrice,hopeWeight,hopeCost,vendor1,vendor2,vendor3,origin1,origin2,origin3')
             ->where(['nid' => $goodsInfo->goodsId])->one();
         if ($oaGoods === null) {
             $oaGoods = [
                 'nid' => $goodsInfo->goodsId,
                 'cate' => '',
                 'subCate' => '',
+                'salePrice' => '',
+                'hopeWeight' => '',
+                'hopeCost' => '',
                 'vendor1' => '',
                 'vendor2' => '',
                 'vendor3' => '',
@@ -1544,68 +1547,73 @@ class ApiGoodsinfo
      * @return array
      * @throws \Exception
      */
-    public static function preExportWish($id, $suffix = [])
+    public static function preExportWish($ids, $suffix = [])
     {
-        $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
-        $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
-        $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
-        $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
-        $wishAccounts = OaWishSuffix::find()->where(['like', 'parentCategory', $goods['cate']])
-            ->orWhere(["IFNULL(parentCategory,'')" => ''])
-            ->andWhere(['isIbay' => 1])
-            ->andFilterWhere(['shortName' => $suffix])
-            ->asArray()->all();
-        $keyWords = static::preKeywords($wishInfo);
-
-        $row = [
-            'sku' => '', 'selleruserid' => '', 'name' => '', 'inventory' => '', 'price' => '', 'msrp' => '',
-            'shipping' => '', 'shipping_time' => '', 'main_image' => '', 'extra_images' => '', 'variants' => '',
-            'landing_page_url' => '', 'tags' => '', 'description' => '', 'brand' => '', 'upc' => '', 'local_price' => '',
-            'local_shippingfee' => '', 'local_currency' => ''
-        ];
-        $ret = ['name' => 'wish-' . $goodsInfo['goodsCode']];
         $out = [];
-        foreach ($wishAccounts as $account) {
-            $titlePool = [];
-            $title = '';
-            $len = self::WishTitleLength;
-            while (true) {
-                $title = static::getTitleName($keyWords, $len);
-                --$len;
-                if (empty($title) || !in_array($title, $titlePool, false)) {
-                    $titlePool[] = $title;
-                    break;
+        foreach ($ids as $id){
+            $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
+            $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
+            $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
+            $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
+            $wishAccounts = OaWishSuffix::find()->andFilterWhere(['like', 'parentCategory', $goods['cate']])
+                ->orWhere(["IFNULL(parentCategory,'')" => ''])
+                ->andWhere(['isIbay' => 1])
+                ->andFilterWhere(['shortName' => $suffix])
+                ->asArray()->all();
+            $keyWords = static::preKeywords($wishInfo);
+            $row = [
+                'sku' => '', 'selleruserid' => '', 'name' => '', 'inventory' => '', 'price' => '', 'msrp' => '',
+                'shipping' => '', 'shipping_time' => '', 'main_image' => '', 'extra_images' => '', 'variants' => '',
+                'landing_page_url' => '', 'tags' => '', 'description' => '', 'brand' => '', 'upc' => '', 'local_price' => '',
+                'local_shippingfee' => '', 'local_currency' => ''
+            ];
+            foreach ($wishAccounts as $account) {
+                $titlePool = [];
+                $title = '';
+                $len = self::WishTitleLength;
+                while (true) {
+                    $title = static::getTitleName($keyWords, $len);
+                    --$len;
+                    if (empty($title) || !in_array($title, $titlePool, false)) {
+                        $titlePool[] = $title;
+                        break;
+                    }
                 }
-            }
-            if (count($wishSku) > 1) $goodsInfo['isVar'] = '是'; // 2020-06-02 添加（单平台添加多属性）
-            $variantInfo = static::getWishVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
+                if (count($wishSku) > 1) $goodsInfo['isVar'] = '是'; // 2020-06-02 添加（单平台添加多属性）
+                $variantInfo = static::getWishVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
 
-            if ($goodsInfo['isVar'] === '是') {
-                $row['sku'] = $wishInfo['sku'] . $account['suffix'];
-            }
+                if ($goodsInfo['isVar'] === '是') {
+                    $row['sku'] = $wishInfo['sku'] . $account['suffix'];
+                }
 
-            else {
-                $row['sku'] = $wishSku[0]['sku'] . $account['suffix'];
+                else {
+                    $row['sku'] = $wishSku[0]['sku'] . $account['suffix'];
+                }
+                $row['selleruserid'] = $account['ibaySuffix'];
+                $row['name'] = $title;
+                $row['inventory'] = $wishInfo['inventory'];
+                $row['price'] = $variantInfo['price'];
+                $row['msrp'] = $variantInfo['msrp'];
+                $row['shipping'] = $variantInfo['shipping'];
+                $row['shipping_time'] = '7-21';
+                $row['main_image'] = static::getNewWishMainImage($wishInfo['wishMainImage'], $goodsInfo['goodsCode'], $account['mainImg']);
+                $row['extra_images'] = $wishInfo['wishExtraImages'];
+                $row['variants'] = $variantInfo['variant'];
+                $row['landing_page_url'] = $wishInfo['wishMainImage'];
+                $row['tags'] = $wishInfo['wishTags'];
+                $row['description'] = $wishInfo['description'];
+                $row['brand'] = '';
+                $row['upc'] = '';
+                $row['local_price'] = $variantInfo['local_price'];
+                $row['local_shippingfee'] = $variantInfo['local_shippingfee'];
+                $row['local_currency'] = $variantInfo['local_currency'];
+                $out[] = $row;
             }
-            $row['selleruserid'] = $account['ibaySuffix'];
-            $row['name'] = $title;
-            $row['inventory'] = $wishInfo['inventory'];
-            $row['price'] = $variantInfo['price'];
-            $row['msrp'] = $variantInfo['msrp'];
-            $row['shipping'] = $variantInfo['shipping'];
-            $row['shipping_time'] = '7-21';
-            $row['main_image'] = static::getNewWishMainImage($wishInfo['wishMainImage'], $goodsInfo['goodsCode'], $account['mainImg']);
-            $row['extra_images'] = $wishInfo['wishExtraImages'];
-            $row['variants'] = $variantInfo['variant'];
-            $row['landing_page_url'] = $wishInfo['wishMainImage'];
-            $row['tags'] = $wishInfo['wishTags'];
-            $row['description'] = $wishInfo['description'];
-            $row['brand'] = '';
-            $row['upc'] = '';
-            $row['local_price'] = $variantInfo['local_price'];
-            $row['local_shippingfee'] = $variantInfo['local_shippingfee'];
-            $row['local_currency'] = $variantInfo['local_currency'];
-            $out[] = $row;
+        }
+        if(count($ids) == 1){
+            $ret['name'] = 'wish-' . $goodsInfo['goodsCode'];
+        }else{
+            $ret['name'] = 'wish-batch';
         }
         $ret['data'] = $out;
         return $ret;

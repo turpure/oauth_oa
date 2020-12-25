@@ -657,8 +657,9 @@ class OaGoodsinfoController extends AdminController
                 return [];
             }
             $condition = $request->post()['condition'];
-            $infoId = $condition['id'];
-            $ret = ApiGoodsinfo::preExportWish($infoId);
+            $ids = $condition['id'];
+            $accounts = $condition['account'];
+            $ret = ApiGoodsinfo::preExportWish($ids, $accounts);
             ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Xls');
         } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];

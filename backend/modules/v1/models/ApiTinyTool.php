@@ -1131,7 +1131,8 @@ class ApiTinyTool
         $userArr = ApiUser::getUserList($username);
         $userList = implode("','", $userArr);
 
-        $sql = "SELECT c.goodsCode,c.sku,skuName,c.storeName,c.goodsStatus,c.salerName,createDate,costPrice,c.costmoney,useNum,hopeUseNum,weight,
+        $sql = "SELECT c.goodsCode,c.sku,skuName,c.storeName,c.goodsStatus,c.salerName,createDate,costPrice,
+                c.costmoney,useNum,oceanNum,airNum,weight,
                 ss.seller1,ss.seller2,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart ,
                 IFNULL(ca.threeSellCount,0) AS threeSellCount, IFNULL(ca.sevenSellCount,0) AS sevenSellCount, 
                 IFNULL(ca.fourteenSellCount,0) AS fourteenSellCount, IFNULL(ca.thirtySellCount,0) AS thirtySellCount,
@@ -1140,6 +1141,12 @@ class ApiTinyTool
          END  AS turnoverDays
                 FROM `cache_skuSeller` ss
                 INNER JOIN cache_stockWaringTmpData c ON ss.goodsCode=c.goodsCode
+                LEFT JOIN (
+					SELECT sku,storeName,SUM(num) oceanNum FROM cache_wyt_ukma_sku_not_in_store_num WHERE shipType='海运散货' GROUP BY sku,storeName
+				) cwu ON cwu.sku=c.sku AND cwu.storeName=c.storeName
+                LEFT JOIN (
+					SELECT sku,storeName,SUM(num) airNum FROM cache_wyt_ukma_sku_not_in_store_num WHERE shipType='空运-普货' GROUP BY sku,storeName
+				) cw ON cw.sku=c.sku AND cw.storeName=c.storeName
                 LEFT JOIN cache_30DayOrderTmpData ca ON ca.sku=c.sku AND ca.storeName=c.storeName
                 LEFT JOIN `user` u ON u.username=ss.seller1
 				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
@@ -1153,6 +1160,7 @@ class ApiTinyTool
             $sql .= " AND ss.seller1 LIKE '%{$seller}%'";
         }
         return Yii::$app->db->createCommand($sql)->queryAll();
+
     }
 
     public static function saveEbaySkuSellerData($file, $extension = 'Xls')
