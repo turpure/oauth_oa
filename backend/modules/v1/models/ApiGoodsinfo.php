@@ -2803,19 +2803,10 @@ class ApiGoodsinfo
             }
             $imageSrc = explode("\n", $wishInfo['extraImages']);
 
-//            # 去取第一张图片
-//            $sizeImage = array_shift($imageSrc);
 
             # 主图放到一个位置
             $images = array_merge([$wishInfo['mainImage']],$imageSrc);
 
-//            # 尺寸图放到第二个位置
-//            if (strpos($sizeImage, '00_.jpg') !== false) {
-//                array_splice($images, 1, 0, $sizeImage);
-//            }
-//            if (strpos($sizeImage, '00_.jpg') === false) {
-//                array_splice($images, 0, 0, $sizeImage);
-//            }
 
             $imagesCount = count($images);
             $position = 1;
@@ -2824,21 +2815,19 @@ class ApiGoodsinfo
                 $option2Name = static::getShopifyOptionName($position, $sku, 'Size');
                 $row = $rowTemplate;
                 $row['Handle'] = str_replace(' ', '-', $title);
-//                $row['Title'] = $position > 1 ? '' : $title;   //2020-12-02
                 $row['Title'] = $title;
                 $row['Body (HTML)'] = $position > 1 ? '' : str_replace("\n", '<br>', $wishInfo['description']);
                 $row['Vendor'] = $position > 1 ? '' : $account['account'];
                 $row['Tags'] = $position > 1 ? '' : static::getShopifyTag($account['tags'], $wishSku);
                 $row['Published'] = $position > 1 ? '' : 'True';
                 $row['Option1 Name'] = !empty($option1Name) ? $option1Name : $option2Name;
-                $row['Option2 Name'] = $option2Name;
+                $row['Option2 Name'] = $row['Option1 Name'] === $option2Name ? '' : $option2Name;
                 $row['Option1 Value'] = !empty($sku['color']) ? $sku['color'] : $sku['size'];
                 $row['Option2 Value'] = empty($sku['color']) && !empty($sku['size']) ? '' : $sku['size'];
                 $row['Variant SKU'] = $sku['sku'];
                 $row['Variant Grams'] = $sku['weight'];
                 $row['Variant Inventory Qty'] = $sku['inventory'];
                 $row['Variant Price'] = $sku['price'];
-//                $row['Variant Compare At Price'] = (($sku['price'] + 3) * 3);
                 $row['Variant Image'] = $sku['linkUrl'];
                 $row['Image Src'] = $position <= $imagesCount ? $images[$position - 1] : '';
                 $row['Image Position'] = $position <= $imagesCount ? $position : '';
