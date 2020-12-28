@@ -489,21 +489,21 @@ class SiteController extends AdminController
             $depart = isset($condition['depart']) ? $condition['depart'] : '';
             if(empty($depart)) {
                 $sql = "SELECT depart,SUM(lastAmt) AS lastAmt,SUM(amt) AS amt,
-                     CASE WHEN SUM(lastAmt)=0 THEN 0 ELSE SUM(amt)/SUM(lastAmt) END AS rate,
+                     CASE WHEN SUM(lastAmt)=0 THEN 0 ELSE SUM(amt)/SUM(lastAmt) END AS rate,SUM(amtDiff) as amtDiff,
                      MAX(dateRate) AS dateRate,MAX(updateTime) as updateTime
                 FROM site_sales_amt
                 WHERE  role = '销售'
                 GROUP BY depart
-                ORDER BY rate DESC";
+                ORDER BY SUM(amtDiff) DESC";
             }
             else {
                 $sql = "SELECT depart,SUM(lastAmt) AS lastAmt,SUM(amt) AS amt,
-                     CASE WHEN SUM(lastAmt)=0 THEN 0 ELSE SUM(amt)/SUM(lastAmt) END AS rate,
+                     CASE WHEN SUM(lastAmt)=0 THEN 0 ELSE SUM(amt)/SUM(lastAmt) END AS rate,SUM(amtDiff) as amtDiff,
                      MAX(dateRate) AS dateRate,MAX(updateTime) as updateTime
                 FROM site_sales_amt
                 WHERE  role = '销售' and depart = '{$depart}'
                 GROUP BY depart
-                ORDER BY rate DESC";
+                ORDER BY SUM(amtDiff) DESC";
             }
             $query = \Yii::$app->db->createCommand($sql)->queryAll();
             return $query;
