@@ -335,7 +335,7 @@ class OaGoodsinfoController extends AdminController
                 //->leftJoin('proCenter.oa_goodssku s', 's.id=goodsSkuId')
                 ->where(['offerId' => $val['offerId'],'infoId' => $infoId])->asArray()->all();
             $val['vendor'] = $val['vendor'].'商品ID:'.$val['offerId'];
-            $val['value'] = array_merge([["offerId" => '无', "specId" => '无', 'style' => '无']],$goods);
+            $val['value'] = $goods ? : [["offerId" => '无', "specId" => '无', 'style' => '无']];
         }
         return $goods1688;
     }
