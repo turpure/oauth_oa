@@ -276,7 +276,7 @@ class SchedulerController extends Controller
             $developers = Yii::$app->db->createCommand($sql)->queryAll();
 
             // 按销售表的排序重新组合现有开发人员表
-            $tmpDevelopers = ArrayHelper::getColumn($devList,'username');
+            $tmpDevelopers = ArrayHelper::getColumn($developers,'username');
             $tmpDevList = ArrayHelper::getColumn($devList,'username');
 
             $resDevList = array_unique(array_merge(array_intersect($tmpDevList, $tmpDevelopers), $tmpDevelopers));
