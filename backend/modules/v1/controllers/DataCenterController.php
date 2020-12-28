@@ -265,7 +265,13 @@ class DataCenterController extends AdminController
                         CASE WHEN IFNULL(aveCostmoney,0)=0 AND IFNULL(totalCostmoney,0)<>0 THEN 10000 
                               ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
                 FROM(
-                        SELECT CASE WHEN SUBSTR(storeName,1,5)='万邑通UK' THEN '万邑通UK' ELSE storeName END storeName,
+                        SELECT CASE WHEN storeName='万邑通UK' THEN '万邑通UK' 
+														WHEN storeName='万邑通UK-MA仓' THEN '万邑通UK' 
+														WHEN storeName='金皖399' THEN '金皖399' 
+														WHEN storeName='谷仓UK中转' THEN '金皖399' 
+														WHEN storeName='万邑通UK-MA空运中转' THEN '金皖399' 
+														WHEN storeName='万邑通UK-MA海运中转' THEN '金皖399' 
+														ELSE storeName END storeName,
                         SUM(useNum) AS useNum,
                         SUM(costmoney) costmoney,
                         SUM(notInStore) notInStore,
@@ -273,14 +279,32 @@ class DataCenterController extends AdminController
                         SUM(hopeUseNum) hopeUseNum,
                         SUM(totalCostmoney) totalCostmoney
                         FROM `cache_stockWaringTmpData`
-                        GROUP BY CASE WHEN SUBSTR(storeName,1,5)='万邑通UK' THEN '万邑通UK' ELSE storeName END
+                        GROUP BY CASE WHEN storeName='万邑通UK' THEN '万邑通UK' 
+														WHEN storeName='万邑通UK-MA仓' THEN '万邑通UK' 
+														WHEN storeName='金皖399' THEN '金皖399' 
+														WHEN storeName='谷仓UK中转' THEN '金皖399' 
+														WHEN storeName='万邑通UK-MA空运中转' THEN '金皖399' 
+														WHEN storeName='万邑通UK-MA海运中转' THEN '金皖399' 
+														ELSE storeName END 
                 ) aa LEFT JOIN 
                 (
-                        SELECT CASE WHEN SUBSTR(storeName,1,5)='万邑通UK' THEN '万邑通UK' ELSE storeName END storeName,
+                        SELECT CASE WHEN storeName='万邑通UK' THEN '万邑通UK' 
+														WHEN storeName='万邑通UK-MA仓' THEN '万邑通UK' 
+														WHEN storeName='金皖399' THEN '金皖399' 
+														WHEN storeName='谷仓UK中转' THEN '金皖399' 
+														WHEN storeName='万邑通UK-MA空运中转' THEN '金皖399' 
+														WHEN storeName='万邑通UK-MA海运中转' THEN '金皖399' 
+														ELSE storeName END storeName,
                         SUM(costMoney) AS 30DayCostmoney,
                         ROUND(SUM(costMoney)/30,4) AS aveCostmoney
                         FROM `cache_30DayOrderTmpData`
-                        GROUP BY CASE WHEN SUBSTR(storeName,1,5)='万邑通UK' THEN '万邑通UK' ELSE storeName END
+                        GROUP BY CASE WHEN storeName='万邑通UK' THEN '万邑通UK' 
+														WHEN storeName='万邑通UK-MA仓' THEN '万邑通UK' 
+														WHEN storeName='金皖399' THEN '金皖399' 
+														WHEN storeName='谷仓UK中转' THEN '金皖399' 
+														WHEN storeName='万邑通UK-MA空运中转' THEN '金皖399' 
+														WHEN storeName='万邑通UK-MA海运中转' THEN '金皖399' 
+														ELSE storeName END 
                 ) bb ON aa.storeName=bb.storeName
                 ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
         try {
