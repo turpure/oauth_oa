@@ -256,15 +256,16 @@ class SchedulerController extends Controller
         try {
             //获取普源美元汇率
             $usRate = ApiUkFic::getRateUkOrUs('USD');
-            //插入销售销售额数据(存储过程插入)
-            Yii::$app->db->createCommand("CALL oauth_site_amt('{$lastBeginDate}','{$lastEndDate}','{$beginDate}','{$endDate}','{$usRate}');")->execute();
+            //清空最终数据表
+            Yii::$app->db->createCommand("TRUNCATE TABLE site_sales_amt;")->execute();
+
 
             //获取开发人员销售额
             $devSql = "EXEC oauth_siteDeveloperAmt";
             $devList = Yii::$app->py_db->createCommand($devSql)->queryAll();
 
             //获取现有开发人员及部门
-            $sql = "SELECT u.username,
+            $sql = "SELECT u.username,u.avatar as img,
                         IFNULL(p.department, d.department) as depart 
                     FROM `user` u 
                     LEFT JOIN auth_assignment ass ON ass.user_id=u.id
@@ -273,20 +274,37 @@ class SchedulerController extends Controller
                     LEFT JOIN auth_department p ON p.id=d.parent
                     WHERE u.`status`=10 AND ass.item_name='产品开发';";
             $developers = Yii::$app->db->createCommand($sql)->queryAll();
+
+            // 按销售表的排序重新组合现有开发人员表
+            $tmpDevelopers = ArrayHelper::getColumn($devList,'username');
+            $tmpDevList = ArrayHelper::getColumn($devList,'username');
+
+            $resDevList = array_unique(array_merge(array_intersect($tmpDevList, $tmpDevelopers), $tmpDevelopers));
+
             $data = [];
-            foreach ($developers as $k => $val){
-                $data[$k]['username'] = $val['username'];
-                $data[$k]['depart'] = $val['depart'];
+            foreach ($resDevList as $k => $val){
+                $data[$k]['username'] = $val;
+                $data[$k]['img'] = '';
+                $data[$k]['depart'] = '';
                 $data[$k]['role'] = '开发';
                 $data[$k]['lastAmt'] = 0;
                 $data[$k]['amt'] = 0;
+                $data[$k]['amtDiff'] = 0;
                 $data[$k]['rate'] = 0;
                 $data[$k]['dateRate'] = 0;
                 $data[$k]['updateTime'] = $endDate;
+                foreach ($developers as $v){
+                    if($val == $v['username']){
+                        $data[$k]['img'] = $v['img'];
+                        $data[$k]['depart'] = $v['depart'];
+                        continue;
+                    }
+                }
                 foreach ($devList as $v){
-                    if($val['username'] == $v['username']){
+                    if($val == $v['username']){
                         $data[$k]['lastAmt'] = $v['lastAmt'];
                         $data[$k]['amt'] = $v['amt'];
+                        $data[$k]['amtDiff'] = $v['amt'] - $v['lastAmt'];
                         $data[$k]['rate'] = $v['rate'];
                         $data[$k]['dateRate'] = $v['dateRate'];
                         continue;
@@ -299,8 +317,11 @@ class SchedulerController extends Controller
             //var_dump($data);exit;
             //插入开发销售数据
             Yii::$app->db->createCommand()->batchInsert('site_sales_amt',
-                ['username', 'depart', 'role', 'lastAmt', 'amt', 'rate', 'dateRate', 'updateTime'],
+                ['username', 'img', 'depart', 'role', 'lastAmt', 'amt', 'amtDiff', 'rate', 'dateRate', 'updateTime'],
                 $data)->execute();
+
+            //插入销售销售额数据(存储过程插入) 并排名
+            Yii::$app->db->createCommand("CALL oauth_site_amt('{$lastBeginDate}','{$lastEndDate}','{$beginDate}','{$endDate}','{$usRate}');")->execute();
 
             print date('Y-m-d H:i:s') . " INFO:success to update data of amt changes!\n";
         } catch (\Exception $why) {

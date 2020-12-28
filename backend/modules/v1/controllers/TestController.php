@@ -55,23 +55,14 @@ class TestController extends AdminController
     }
 
     public  function actionTest1(){
-        $dir = Yii::$app->basePath.'/web/';
-        //$file = 'index.php';
-        if($handle = opendir($dir)) {
-            while(false !== ($file = readdir($handle))) {
-                if(strripos(strtolower($file),'.xls') !== false ||
-                    strripos(strtolower($file),'.xlsx') !== false ||
-                    strripos(strtolower($file),'.csv') !== false ||
-                    strripos(strtolower($file),'.zip') !== false
-                ){
-                    //按名称过滤
-                    @unlink($file);
-                }
-            }
-            $res = closedir($handle);
-        }
-        var_dump($dir);exit;
+        $arr1 = ['A','B','C','D','E','F','G','H','I','G','K'];
+        $arr2 = ['A','a','C','b','E','v','G','t','I','l','K'];
+//        $arr = array_unique(array_merge($arr1, $arr2));
+        $arr3 = array_intersect($arr1, $arr2);
+        $arr = array_unique(array_merge(array_intersect($arr1, $arr2), $arr2));
 
+//        var_dump($arr);exit;
+            return $arr;
 
 
     }
