@@ -474,16 +474,6 @@ class SiteController extends AdminController
      */
     public function actionDepartAmt()
     {
-        $sql = "SELECT depart,SUM(lastAmt) AS lastAmt,SUM(amt) AS amt, SUM(amtDiff) as amtDiff
-                     CASE WHEN SUM(lastAmt)=0 THEN 0 ELSE SUM(amt)/SUM(lastAmt) END AS rate,
-                     MAX(dateRate) AS dateRate,MAX(updateTime) as updateTime
-                FROM site_sales_amt
-                WHERE  role = '销售'
-                GROUP BY depart
-                ORDER BY SUM(amtDiff) DESC";
-//        $query = \Yii::$app->db->createCommand($sql)->queryAll();
-//        return $query;
-
         try {
             $condition = Yii::$app->request->post()['condition'];
             $depart = isset($condition['depart']) ? $condition['depart'] : '';
