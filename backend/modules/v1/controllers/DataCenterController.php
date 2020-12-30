@@ -738,9 +738,16 @@ class DataCenterController extends AdminController
         if ($accountName) $sql .= " AND ps.accountName LIKE '%{$accountName}%'";
         if ($paypalStatus) $sql .= " AND paypalStatus LIKE '%{$paypalStatus}%'";
         if ($memo) $sql .= " AND memo LIKE '%{$memo}%'";
-        if ($isUrUsed || $isUrUsed === "0") $sql .= " AND isUsed = '{$isUrUsed}'";
         if ($isPyUsed || $isPyUsed === "0") $sql .= " AND isPyUsed = '{$isPyUsed}'";
+        if ($isUrUsed){
+            $sql .= " AND ISNULL(isUsed,0) = 1 AND ISNULL(isUsedBalance,0) = 1 ";
+        }
+        if ($isUrUsed === '0'){
+            $sql .= " AND (ISNULL(isUsed,0) = 0 OR ISNULL(isUsedBalance,0) = 0) ";
+        }
         try {
+            //$data = Yii::$app->py_db->createCommand($sql)->getRawSql();
+            //var_dump($data);exit;
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
@@ -792,8 +799,13 @@ class DataCenterController extends AdminController
         if ($accountName) $sql .= " AND ps.accountName LIKE '%{$accountName}%'";
         if ($paypalStatus) $sql .= " AND paypalStatus LIKE '%{$paypalStatus}%'";
         if ($memo) $sql .= " AND memo LIKE '%{$memo}%'";
-        if ($isUrUsed || $isUrUsed === "0") $sql .= " AND isUsed = '{$isUrUsed}'";
         if ($isPyUsed || $isPyUsed === "0") $sql .= " AND isPyUsed = '{$isPyUsed}'";
+        if ($isUrUsed){
+            $sql .= " AND ISNULL(isUsed,0) = 1 AND ISNULL(isUsedBalance,0) = 1 ";
+        }
+        if ($isUrUsed === '0'){
+            $sql .= " AND (ISNULL(isUsed,0) = 0 OR ISNULL(isUsedBalance,0) = 0) ";
+        }
 
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         ExportTools::toExcelOrCsv('payPalStatus', $data, 'Xls');
