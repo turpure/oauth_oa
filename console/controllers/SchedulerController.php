@@ -91,8 +91,8 @@ class SchedulerController extends Controller
     public function actionSite()
     {
         $beginDate = '2020-09-01';//date('Y-m-d', strtotime('-30 days'));
-        $endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
-        //$endDate = '2020-12-31';//昨天时间
+        //$endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
+        $endDate = '2020-12-31';//昨天时间
         $dateRate = round(((strtotime($endDate) - strtotime($beginDate))/24/3600 + 1)*100/122, 2);
         //print_r($dateRate);exit;
         try {

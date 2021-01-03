@@ -55,14 +55,23 @@ class TestController extends AdminController
     }
 
     public  function actionTest1(){
-        $arr1 = ['A','B','C','D','E','F','G','H','I','G','K'];
-        $arr2 = ['A','a','C','b','E','v','G','t','I','l','K'];
-//        $arr = array_unique(array_merge($arr1, $arr2));
-        $arr3 = array_intersect($arr1, $arr2);
-        $arr = array_unique(array_merge(array_intersect($arr1, $arr2), $arr2));
+        $sql = 'SELECT title,"template",pic,selleruserid AS suffix,folderid AS siteId FROM "public"."ebay_user_template"';
+        $arr = Yii::$app->ibay->createCommand($sql)->queryAll();
+
+        //$list = (new \yii\mongodb\Query())->from('ebay_user_desc_template')
+            //->andFilterWhere(['marketplace' => $marketplace])
+            //->andFilterWhere(['productType' => $type])
+            //->andFilterWhere(['dispatchDate' => ['$regex' => date('Y-m-d')]])
+            //->all();
+
+        $collection = Yii::$app->mongodb2->getCollection ( 'ebay_user_desc_template' );
+        foreach ($arr as $v){
+            $collection->insert ( $v);
+        }
+//        var_dump($res);
 
 //        var_dump($arr);exit;
-            return $arr;
+           // return $list;
 
 
     }
