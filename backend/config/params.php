@@ -57,9 +57,9 @@ return [
 //====================================================================
 
     //UK真仓计算参数
-    'eRate_uk' => 0.1, //eBay交易费率
-    'bpRate_uk' => 0.032, //paypal大额交易费率
-    'spRate_uk' => 0.06, //paypal小额交易费率
+    'eRate_uk' => 0.12, //eBay交易费率
+    'bpRate_uk' => 0.0384, //paypal大额交易费率
+    'spRate_uk' => 0.072, //paypal小额交易费率
     'bpBasic_uk' => 0.2, //paypal大额交易基准值（英镑）
     'spBasic_uk' => 0.05, //paypal小额交易基准值（英镑）
 
