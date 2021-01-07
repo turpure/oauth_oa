@@ -732,6 +732,46 @@ class ApiGoodsinfo
      * @return array|bool
      * @throws \Exception
      */
+    public static function saveShopifyInfo($condition)
+    {
+        $goodsInfo = $condition['basicInfo'];
+        $skuInfo = $condition['skuInfo'];
+        $goods = OaShopifyGoods::findOne(['id' => $goodsInfo['id']]);
+        $goods->setAttributes($goodsInfo);
+        $tran = Yii::$app->db->beginTransaction();
+        try {
+            foreach ($skuInfo as $row) {
+                $sku = OaShopifyGoodsSku::findOne(['id' => $row['id']]);
+                if ($sku === null) {
+                    $sku = new OaShopifyGoodsSku();
+                }
+                $sku->setAttributes($row);
+                if (!$sku->save()) {
+                    throw new \Exception('save shopify sku failed');
+                }
+            }
+            if (!$goods->save()) {
+                throw new \Exception('save shopify goods failed');
+            }
+            $tran->commit();
+            return ["success to save {$goodsInfo['sku']}"];
+        } catch (\Exception $e) {
+            $tran->rollBack();
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+
+    }
+
+    /** save ebay info
+     * @param $condition
+     * Date: 2019-04-22 16:12
+     * Author: henry
+     * @return array|bool
+     * @throws \Exception
+     */
     public static function syncWishInfo($condition)
     {
         $id = isset($condition['id']) ? $condition['id'] : '';
@@ -1040,6 +1080,9 @@ class ApiGoodsinfo
         }
         if ($plat === 'aliexpress') {
             static::saveSmtInfo($condition);
+        }
+        if ($plat === 'shopify') {
+            static::saveShopifyInfo($condition);
         }
         $platCondition = ['id' => $condition['id'], 'plat' => [$plat]];
         static::finishPlat($platCondition);

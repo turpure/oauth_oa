@@ -21,6 +21,8 @@ use backend\models\OaEbayGoodsSku;
 use backend\models\OaGoods1688;
 use backend\models\OaGoodsinfo;
 use backend\models\OaJoomSuffix;
+use backend\models\OaShopifyGoodsSku;
+use backend\models\OaShopifyTagsDetail;
 use backend\models\OaSiteCountry;
 use backend\models\OaSmtGoodsSku;
 use backend\models\OaWishGoods;
@@ -552,6 +554,32 @@ class OaGoodsinfoController extends AdminController
     }
 
     /**
+     * @brief 保存shopify模板信息
+     * @return array
+     * @throws \Exception
+     */
+    public function actionSaveShopifyInfo()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        return ApiGoodsinfo::saveShopifyInfo($condition);
+    }
+
+    public function actionShopifyTagsList()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        $name = isset($condition['name']) && $condition['name'] ? $condition['name'] : 'Length';
+        return OaShopifyTagsDetail::findAll(['name' => $name]);
+    }
+
+    /**
      * @brief EBAY模板同步WISH模板SKU信息
      * @return array
      * @throws \Exception
@@ -616,7 +644,7 @@ class OaGoodsinfoController extends AdminController
      */
     public function actionPlatCompletedPlat()
     {
-        return ['未设置', 'aliexpress', 'joom', 'wish', 'ebay'];
+        return ['未设置', 'aliexpress', 'joom', 'wish', 'ebay', 'shopify'];
     }
 
     public function actionPlatForbidPlat()
@@ -1217,6 +1245,8 @@ class OaGoodsinfoController extends AdminController
             OaEbayGoodsSku::deleteAll(['id' => $skuId]);
         } elseif ($condition['plat'] == 'aliexpress') {
             OaSmtGoodsSku::deleteAll(['id' => $skuId]);
+        }elseif ($condition['plat'] == 'shopify') {
+            OaShopifyGoodsSku::deleteAll(['id' => $skuId]);
         }
         return true;
     }
