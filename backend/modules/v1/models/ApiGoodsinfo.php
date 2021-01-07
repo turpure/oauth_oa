@@ -28,6 +28,8 @@ use backend\models\OaGoodsSku;
 use backend\models\OaGoodsSku1688;
 use backend\models\OaMyMallSuffix;
 use backend\models\OaPaypal;
+use backend\models\OaShopifyGoods;
+use backend\models\OaShopifyGoodsSku;
 use backend\models\OaSmtGoods;
 use backend\models\OaSmtGoodsSku;
 use backend\models\OaWishGoods;
@@ -618,6 +620,23 @@ class ApiGoodsinfo
             }
             foreach ($goodsSku as $sku) {
                 $sku['property'] = json_decode($sku['property']);
+            }
+        } elseif ($plat === 'shopify') {
+            $goods = OaShopifyGoods::findOne(['infoId' => $infoId]);
+            $goodsSku = OaShopifyGoodsSku::findAll(['infoId' => $infoId]);
+            if (!$goods && !$goodsSku) {
+                $ret = [
+                    'basicInfo' => [
+                        'infoId' => '', 'title' => '', 'description' => '', 'tags' => '', 'sku' => '',
+                        'goodsId' => '', 'mainImage' => '', 'extraImages' => '',
+                        'style' => '', 'length' => '', 'sleeveLength' => '', 'neckline' => '',
+                    ],
+                    'skuInfo' => [[
+                        'id' => '', 'infoId' => '', 'sid' => '', 'sku' => '', 'color' => '', 'size' => '',
+                        'inventory' => '', 'price' => '', 'msrp' => '', 'linkUrl' => '', 'weight' => '','goodsSkuId' => ''
+                    ]]
+                ];
+                return $ret;
             }
         } elseif ($plat === 'aliexpress') {
             $goods = OaSmtGoods::findOne(['infoId' => $infoId]);

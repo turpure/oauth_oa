@@ -14,6 +14,8 @@ use backend\models\OaGoodsSku;
 use backend\models\OaEbayGoods;
 use backend\models\OaEbayGoodsSku;
 use backend\models\OaGoodsSku1688;
+use backend\models\OaShopifyGoods;
+use backend\models\OaShopifyGoodsSku;
 use backend\models\OaSmtGoods;
 use backend\models\OaSmtGoodsSku;
 use backend\models\OaWishGoods;
@@ -174,14 +176,17 @@ class ProductCenterTools
         static::_goodsInfoToWishGoods($goodsInfo);
         //oa-goodsInfo to oa-ebay-goods
         static::_goodsInfoToEbayGoods($goodsInfo);
-
+        //oa-goodsInfo to oa-smt-goods
         static::_goodsInfoToSmtGoods($goodsInfo);
+        //oa-goodsInfo to oa-shopify-goods
+        static::_goodsInfoToShopifyGoods($goodsInfo);
 
         // oa-goodsSku to oa-wish-goodsSku
         static::_goodsInfoToWishGoodsSku($goodsSku);
-
+        // oa-goodsSku to oa-smt-goodsSku
         static::_goodsInfoToSmtGoodsSku($goodsSku);
-
+        // oa-goodsSku to oa-shopify-goodsSku
+        static::_goodsInfoToShopifyGoodsSku($goodsSku);
         //oa-goodsSku to oa-ebay-goodsSku
         $res = static::_goodsSkuToEbayGoodsSku($goodsSku);
         return $res;
@@ -652,9 +657,12 @@ class ProductCenterTools
     }
 
     /**
-     * @brief import goodsInfo to wishGoods
+     * import goodsInfo to wishGoods
      * @param $goodsInfo
+     * Date: 2021-01-06 17:18
+     * Author: henry
      * @return bool
+     * @throws Exception
      */
     private static function _goodsInfoToWishGoods($goodsInfo)
     {
@@ -691,8 +699,6 @@ class ProductCenterTools
         }
         return true;
     }
-
-
     /**
      * @brief import goodsSku into wishGoodsSKu
      * @param $goodsSku
@@ -746,6 +752,14 @@ class ProductCenterTools
         return true;
     }
 
+    /**
+     * _goodsInfoToSmtGoods
+     * @param $goodsInfo
+     * Date: 2021-01-06 17:19
+     * Author: henry
+     * @return bool
+     * @throws Exception
+     */
     private static function _goodsInfoToSmtGoods($goodsInfo)
     {
         $maxSkuWeight = OaGoodsSku::find()->where(['infoId' => $goodsInfo['id']])->max('weight');
@@ -782,6 +796,15 @@ class ProductCenterTools
         return true;
     }
 
+    /**
+     * _goodsInfoToSmtGoodsSku
+     * @param $goodsSku
+     * Date: 2021-01-06 17:19
+     * Author: henry
+     * @return bool
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
     private static function _goodsInfoToSmtGoodsSku($goodsSku)
     {
         //删除OaWishGoodsSku中已存在且$goodsSku中不存在的错误SKU信息
@@ -821,6 +844,89 @@ class ProductCenterTools
             }
             $smtGoodsSku->setAttributes($smtGoodsSkuAttributes);
             if (!$smtGoodsSku->save()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * _goodsInfoToShopifyGoods
+     * @param $goodsInfo
+     * Date: 2021-01-06 17:19
+     * Author: henry
+     * @return bool
+     * @throws Exception
+     */
+    private static function _goodsInfoToShopifyGoods($goodsInfo)
+    {
+        $smtGoodsAttributes = [
+            'infoId' => $goodsInfo['id'],
+            'sku' => $goodsInfo['isVar'] == '是' ? $goodsInfo['goodsCode'] : ($goodsInfo['goodsCode'] . '01'),
+            'title' => '',
+            'description' => $goodsInfo['description'],
+            'tags' => $goodsInfo['wishTags'],
+            'mainImage' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_0_.jpg',
+            'goodsId' => $goodsInfo['bgoodsId'],
+            'extraImages' => static::_generateImages($goodsInfo['goodsCode']),
+        ];
+        $shopifyGoods = OaShopifyGoods::findOne(['infoId' => $goodsInfo['id']]);
+        if ($shopifyGoods === null) {
+            $shopifyGoods = new OaShopifyGoods();
+        }
+        $shopifyGoods->setAttributes($smtGoodsAttributes);
+        if (!$shopifyGoods->save()) {
+            throw new Exception('failed save info to oa_shopifyGoods!');
+        }
+        return true;
+    }
+
+    /**
+     * _goodsInfoToShopifyGoodsSku
+     * @param $goodsSku
+     * Date: 2021-01-06 17:19
+     * Author: henry
+     * @return bool
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
+    private static function _goodsInfoToShopifyGoodsSku($goodsSku)
+    {
+        //删除OaShopifyGoodsSku中已存在且$goodsSku中不存在的错误SKU信息
+        $skuArrNew = ArrayHelper::getColumn($goodsSku, 'sku');
+        $skuList = OaShopifyGoodsSku::findAll(['infoId' => $goodsSku[0]['infoId']]);
+        $skuArrOld = ArrayHelper::getColumn($skuList, 'sku');
+        $skuDiff = array_diff($skuArrOld, $skuArrNew);
+        if ($skuDiff) {
+            foreach ($skuList as $item) {
+                foreach ($skuDiff as $v) {
+                    if ($item['sku'] == $v) {
+                        $item->delete();
+                        //print_r($item);exit;
+                    }
+                }
+            }
+        }
+        foreach ($goodsSku as $sku) {
+            $shopifyGoodsSkuAttributes = [
+                'infoId' => $sku['infoId'],
+                'sid' => $sku['id'],
+                'sku' => $sku['sku'],
+                'color' => $sku['property1'],
+                'size' => $sku['property2'],
+                'inventory' => 10000,
+                'price' => $sku['retailPrice'],
+                'msrp' => $sku['retailPrice'] * 6,
+                'linkUrl' => $sku['linkUrl'],
+                'goodsSkuId' => $sku['goodsSkuId'],
+                'weight' => $sku['weight'],
+            ];
+            $shopifyGoodsSku = OaShopifyGoodsSku::findOne(['sku' => $sku['sku']]);
+            if ($shopifyGoodsSku === null) {
+                $shopifyGoodsSku = new OaShopifyGoodsSku();
+            }
+            $shopifyGoodsSku->setAttributes($shopifyGoodsSkuAttributes);
+            if (!$shopifyGoodsSku->save()) {
                 return false;
             }
         }
@@ -899,7 +1005,6 @@ class ProductCenterTools
         }
         return true;
     }
-
     /**
      * @brief import goodsSku into ebayGoodsSKu
      * @param $goodsSku

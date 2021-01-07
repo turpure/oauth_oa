@@ -55,7 +55,7 @@ class TestController extends AdminController
     }
 
     public  function actionTest1(){
-        $sql = 'SELECT title,"template",pic,selleruserid AS suffix,folderid AS siteId FROM "public"."ebay_user_template"';
+        $sql = 'SELECT id,title,"template",pic,selleruserid AS shortName,folderid AS siteId FROM "public"."ebay_user_template"';
         $arr = Yii::$app->ibay->createCommand($sql)->queryAll();
 
         //$list = (new \yii\mongodb\Query())->from('ebay_user_desc_template')
@@ -65,8 +65,17 @@ class TestController extends AdminController
             //->all();
 
         $collection = Yii::$app->mongodb2->getCollection ( 'ebay_user_desc_template' );
+        //$arr = $collection->find();
         foreach ($arr as $v){
-            $collection->insert ( $v);
+//            var_dump($v);exit;
+            $sql = "SELECT TOP 1 NoteName FROM [dbo].[S_PalSyncInfo] where EbayUserID='{$v['shortname']}';";
+            $query = Yii::$app->py_db->createCommand($sql)->queryOne();
+            $v['suffix'] = $query ? $query['NoteName'] : '';
+            $v['creator'] = 'admin';
+//            var_dump($v);exit;
+//            $collection->update(['_id' => $v['_id']], ['shortName' => $shortName]);
+            //var_dump($query);exit;
+            $collection->insert($v);
         }
 //        var_dump($res);
 
