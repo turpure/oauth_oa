@@ -568,6 +568,29 @@ class OaGoodsinfoController extends AdminController
         return ApiGoodsinfo::saveShopifyInfo($condition);
     }
 
+    /**
+     * @brief 添加shopify 属性值
+     * @return boolean | array
+     * @throws \Exception
+     */
+    public function actionSaveShopifyTagValue()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        $query = OaShopifyTagsDetail::findOne(['name' => $condition['name'], 'value' => $condition['value']]);
+        if($query){
+            return ['code' => 400, 'message' => '该属性值已存在'];
+        }
+        $model = new OaShopifyTagsDetail();
+        $model->setAttributes($condition);
+        $model->flag = 'add';
+        $model->creator = Yii::$app->user->identity->username;
+        return $model->save();
+    }
+
     public function actionShopifyTagsList()
     {
         $request = Yii::$app->request;
