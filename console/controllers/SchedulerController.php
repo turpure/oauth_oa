@@ -90,7 +90,7 @@ class SchedulerController extends Controller
      */
     public function actionSite()
     {
-        $beginDate = '2020-09-01';//date('Y-m-d', strtotime('-30 days'));
+        $beginDate = '2020-12-01';//date('Y-m-d', strtotime('-30 days'));
         //$endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
         $endDate = '2020-12-31';//昨天时间
         $dateRate = round(((strtotime($endDate) - strtotime($beginDate))/24/3600 + 1)*100/122, 2);
@@ -98,10 +98,16 @@ class SchedulerController extends Controller
         try {
 
             //获取开发备份数据
-            $month =  Yii::$app->db->createCommand("SELECT max(month) month FROM site_targetAllBackupData WHERE role='开发'")->queryScalar();
+            /*$month =  Yii::$app->db->createCommand("SELECT max(month) month FROM site_targetAllBackupData WHERE role='开发'")->queryScalar();
             if($month){
-                $beginDate = '2019-'.($month+1).'-01';
-            }
+                $thisYear = date('Y',strtotime($month));
+                $thisMonth = date('m',strtotime($month));
+                if($thisMonth == 12){
+                    $beginDate = ($thisYear + 1) . '-' . '01-01';
+                }else{
+                    $beginDate = $thisYear . '-' . ($thisMonth + 1) . '-' .'01';
+                }
+            }*/
             //更新开发目标完成度
             $seller = Yii::$app->db->createCommand("SELECT distinct username FROM site_targetAll WHERE role='开发'")->queryAll();
             $condition = [

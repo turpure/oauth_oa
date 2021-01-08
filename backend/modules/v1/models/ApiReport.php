@@ -555,7 +555,6 @@ class ApiReport
             ':goodsName' => $condition['goodsName'],
         ];
         $key = Yii::$app->db->createCommand($sql)->bindValues($params)->getRawSql();
-        var_dump($key);exit;
         //获取缓存
         $res = Yii::$app->cache->get($key);
 //        if($res){

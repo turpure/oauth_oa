@@ -55,6 +55,22 @@ class TestController extends AdminController
     }
 
     public  function actionTest1(){
+        $month = '2020-11';
+        $thisYear = date('Y',strtotime($month));
+        $thisMonth = date('m',strtotime($month));
+        if($thisMonth == 12){
+            $beginDate = $thisYear + 1 . '-' . '01-01';
+        }else{
+            $beginDate = $thisYear . '-' . ($thisMonth + 1) . '-' .'01';
+        }
+        var_dump($beginDate);exit;
+
+        $beginDate = $month.'-01';
+
+
+
+
+
         $sql = 'SELECT id,title,"template",pic,selleruserid AS shortName,folderid AS siteId FROM "public"."ebay_user_template"';
         $arr = Yii::$app->ibay->createCommand($sql)->queryAll();
 
