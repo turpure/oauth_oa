@@ -737,6 +737,18 @@ class ApiGoodsinfo
         $goodsInfo = $condition['basicInfo'];
         $skuInfo = $condition['skuInfo'];
         $goods = OaShopifyGoods::findOne(['id' => $goodsInfo['id']]);
+        if(is_array($goodsInfo['length'])){
+            $goodsInfo['length'] = implode(',', $goodsInfo['length']);
+        }
+        if(is_array($goodsInfo['style'])){
+            $goodsInfo['style'] = implode(',', $goodsInfo['style']);
+        }
+        if(is_array($goodsInfo['sleeveLength'])){
+            $goodsInfo['sleeveLength'] = implode(',', $goodsInfo['sleeveLength']);
+        }
+        if(is_array($goodsInfo['neckline'])){
+            $goodsInfo['neckline'] = implode(',', $goodsInfo['neckline']);
+        }
         $goods->setAttributes($goodsInfo);
         $tran = Yii::$app->db->beginTransaction();
         try {

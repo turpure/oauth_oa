@@ -172,6 +172,47 @@ class PurchaseToolController extends AdminController
 
     }
 
+    public function actionDeleteSkuSuppliers(){
+        $condition = Yii::$app->request->post('condition', []);
+        $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
+        $companyName = isset($condition['companyName']) ? $condition['companyName'] : '';
+        if (!$goodsCode) {
+            return [
+                'code' => 400,
+                'message' => 'goodsCode can not be empty!'
+            ];
+        }
+        $goods = BGoods::findOne(['GoodsCode' => $goodsCode]);
+        if (!$goods) {
+            return [
+                'code' => 400,
+                'message' => "Product $goodsCode can not be found!"
+            ];
+        }
+        try {
+            $sql = "DELETE FROM B_GoodsSKUWith1688 WHERE  GoodsSKUID IN (
+		                SELECT gs.nid FROM B_GoodsSKU gs LEFT JOIN B_Goods g ON gs.GoodsID=g.nid 
+		                WHERE GoodsCode='{$goodsCode}' 
+		            ) ";
+            if($companyName) $sql .= " AND companyName='{$companyName}'";
+            $res = Yii::$app->py_db->createCommand($sql)->execute();
+            if (!$res) {
+                throw new Exception('Failed to save supplier info!');
+            }
+            return true;
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
     public function actionSaveSkuSuppliers()
     {
         $condition = Yii::$app->request->post('condition', []);
