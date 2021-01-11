@@ -190,9 +190,9 @@ class ApiUk
         $newPrice = $price * $ukRate / $usRate;//英镑转化成美元
         //获取paypal交易费
         if ($newPrice > 8) {
-            $data['pFee'] = $price * Yii::$app->params['bpRate_uk'] + Yii::$app->params['bpBasic_uk'];
+            $data['pFee'] = $data['price'] * Yii::$app->params['bpRate_uk'] + Yii::$app->params['bpBasic_uk'];
         } else {
-            $data['pFee'] = $price * Yii::$app->params['spRate_uk'] + Yii::$app->params['spBasic_uk'];
+            $data['pFee'] = $data['price'] * Yii::$app->params['spRate_uk'] + Yii::$app->params['spBasic_uk'];
         }
 
         //计算毛利
@@ -225,14 +225,16 @@ class ApiUk
 
 
         //获取售价  使用小额paypal参数计算 和8美元比较，小于8则正确，否则使用大额参数再次计算获取售价
-        $price = (($cost + $out + $costprice) / $ukRate + Yii::$app->params['spBasic_uk']) / (1 - $rate / 100 - Yii::$app->params['eRate_uk'] - Yii::$app->params['spRate_uk']);
+        $price = (($cost + $out + $costprice) / $ukRate + Yii::$app->params['spBasic_uk']) /
+            (1 - $rate / 100 - Yii::$app->params['eRate_uk'] - (1 + Yii::$app->params['rate']) * Yii::$app->params['spRate_uk']);
 
         //获取paypal交易费
         if ($price < 8 * $usRate / $ukRate) {
-            $pFee = $price * Yii::$app->params['spRate_uk'] + Yii::$app->params['spBasic_uk'];
+            $pFee = $price * Yii::$app->params['spRate_uk'] * (1 + Yii::$app->params['rate']) + Yii::$app->params['spBasic_uk'];
         } else {
-            $price = (($cost + $out + $costprice) / $ukRate + Yii::$app->params['bpBasic_uk']) / (1 - $rate / 100 - Yii::$app->params['eRate_uk'] - Yii::$app->params['bpRate_uk']);
-            $pFee = $price * Yii::$app->params['bpRate_uk'] + Yii::$app->params['bpBasic_uk'];
+            $price = (($cost + $out + $costprice) / $ukRate + Yii::$app->params['bpBasic_uk']) /
+                (1 - $rate / 100 - Yii::$app->params['eRate_uk'] - (1 + Yii::$app->params['rate']) * Yii::$app->params['bpRate_uk']);
+            $pFee = $price * Yii::$app->params['bpRate_uk'] * (1 + Yii::$app->params['rate']) + Yii::$app->params['bpBasic_uk'];
         }
         //eBay交易费
         $eFee = $price * Yii::$app->params['eRate_uk'];

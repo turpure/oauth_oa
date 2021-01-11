@@ -40,9 +40,9 @@ class ApiUkFic{
         $newPrice = $param['price'] * $ukRate / $usRate;//英镑转化成美元
         //获取paypal交易费
         if($newPrice > 8){
-            $data['pFee'] = round($param['price'] * $param['bigPriceRate'] + $param['bigPriceBasic'],2);
+            $data['pFee'] = round($data['price'] * $param['bigPriceRate'] + $param['bigPriceBasic'],2);
         }else{
-            $data['pFee'] = round($param['price'] * $param['smallPriceRate'] + $param['smallPriceBasic'],2);
+            $data['pFee'] = round($data['price'] * $param['smallPriceRate'] + $param['smallPriceBasic'],2);
         }
 
         //计算毛利
@@ -71,15 +71,17 @@ class ApiUkFic{
 
 
         //获取售价  使用小额paypal参数计算 和8美元比较，小于8则正确，否则使用大额参数再次计算获取售价
-        $price = ($params['cost']/$ukRate + $params['costprice']/$ukRate + $params['smallPriceBasic']) / (1 - $params['rate']/100 - $params['ebayRate'] - $params['smallPriceRate']);
+        $price = ($params['cost']/$ukRate + $params['costprice']/$ukRate + $params['smallPriceBasic']) /
+            (1 - $params['rate']/100 - $params['ebayRate'] - (1 + Yii::$app->params['rate']) * $params['smallPriceRate']);
 
         //获取paypal交易费
         if($price < 8 * $usRate / $ukRate){
-            $data['price'] = $price;
-            $data['pFee'] = $price * $params['smallPriceRate'] + $params['smallPriceBasic'];
+            $data['price'] = $price * (1 + Yii::$app->params['rate']);
+            $data['pFee'] = $price * $params['smallPriceRate'] * (1 + Yii::$app->params['rate'])  + $params['smallPriceBasic'];
         }else{
-            $data['price'] = ($params['cost']/$ukRate + $params['costprice']/$ukRate + $params['bigPriceBasic'])/(1 - $params['rate']/100 - $params['ebayRate'] - $params['bigPriceRate']);
-            $data['pFee'] = $data['price'] * $params['bigPriceRate'] + $params['bigPriceBasic'];
+            $data['price'] = ($params['cost']/$ukRate + $params['costprice']/$ukRate + $params['bigPriceBasic']) /
+                (1 - $params['rate']/100 - $params['ebayRate'] - (1 + Yii::$app->params['rate']) * $params['bigPriceRate']);
+            $data['pFee'] = $data['price'] * $params['bigPriceRate'] * (1 + Yii::$app->params['rate'])  + $params['bigPriceBasic'];
             //print_r($data['price']);exit;
         }
         //eBay交易费

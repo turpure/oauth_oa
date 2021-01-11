@@ -1050,7 +1050,7 @@ class DataCenterController extends AdminController
                     payer_email as FromEmailAddress,paypal_account as ToEmailAddress FROM [dbo].[y_paypalTransactions] WHERE 1=1 ";
                 if($accountName) $sql .= " AND paypal_account LIKE '%{$account}%'";
                 if($beginDate && $endDate) $sql .= " AND convert(varchar(10),transaction_date,121) between '{$beginDate}' and '{$endDate}'";
-                $sql .= " AND (payer_full_name LIKE 'ebay%' AND payer_full_name <> 'ebay' AND ISNULL(transaction_amount,0) < 0 
+                $sql .= " AND (payer_full_name LIKE 'ebay%' AND payer_full_name NOT LIKE 'ebay-shop%' AND payer_full_name <> 'ebay' AND ISNULL(transaction_amount,0) < 0 
                     OR ISNULL(transaction_type_description,'') IN ('PayPal Checkout APIs.', '', 
                           'General: received payment of a type not belonging to the other T00nn categories.', 
                           'Pre-approved payment (BillUser API). Either sent or received.', 'MassPay payment.')
