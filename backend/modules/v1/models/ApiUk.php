@@ -180,8 +180,8 @@ class ApiUk
      */
     public static function getRate($price, $cost, $out, $costprice, $adRate, $shippingPrice)
     {
-        $price = $price + $shippingPrice;
         $data['price'] = $price;
+        $price = ($price + $shippingPrice)/(1 + Yii::$app->params['rate']);
         //eBay交易费
         $data['eFee'] = $price * Yii::$app->params['eRate_uk'];
         //获取汇率
@@ -239,7 +239,7 @@ class ApiUk
 
         //计算毛利
         $profit = $price - $eFee - $pFee - ($cost + $out + $costprice) / $ukRate;
-        $data['price'] = round($price, 2);
+        $data['price'] = round($price * (1 + Yii::$app->params['rate']), 2);
         $data['eFee'] = round($eFee, 2);
         $data['pFee'] = round($pFee, 2);
         $data['profit'] = round($profit, 2);
