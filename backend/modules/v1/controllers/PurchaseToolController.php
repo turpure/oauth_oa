@@ -155,16 +155,19 @@ class PurchaseToolController extends AdminController
             $userInfo = $provider->getModels();
             $suppliers = Yii::$app->py_db->createCommand($goodsSql)->queryAll();
             foreach ($userInfo as &$v) {
-                $companySql = "SELECT DISTINCT offerid,companyName FROM B_Goods1688 WHERE goodsId = :goodsId";
+                /*$companySql = "SELECT DISTINCT offerid,companyName FROM B_Goods1688 WHERE goodsId = :goodsId";
                 $res = Yii::$app->py_db->createCommand($companySql)->bindValues([':goodsId' => $v['goodsId']])->queryAll();
-//                var_dump($res);exit;
                 foreach ($res as &$value){
                     $skuSql = "SELECT DISTINCT specId,style FROM B_Goods1688 WHERE companyName = '{$value['companyName']}'";
                     $styleInfo = Yii::$app->py_db->createCommand($skuSql)->queryAll();
                     $value['style'] = $styleInfo;
                 }
-
                 $v['values'] = $res ? $res : [['offerid' => '','companyName' => '无', 'style' => []]];
+                */
+                $companySql = "SELECT DISTINCT offerid,companyName FROM B_GoodsSKUWith1688 WHERE nid = :nid";
+                $res = Yii::$app->py_db->createCommand($companySql)->bindValues([':nid' => $v['nid']])->queryAll();
+                $res = ArrayHelper::getColumn($res, 'companyName');
+                $v['values'] = $res ? $res : ['无'];
             }
             return [
                 'skuInfo' => $userInfo,
@@ -242,7 +245,7 @@ class PurchaseToolController extends AdminController
                     if (!$res1 || !$res2) {
                         throw new Exception('Failed to update supplier info!');
                     }
-                }else{
+                }/*else{
                     $sql = "select distinct supplierLoginId from B_Goods1688 where offerid='{$info['offerid']}'";
                     $supplier = $res = Yii::$app->py_db->createCommand($sql)->queryAll();
                     $res = Yii::$app->py_db->createCommand()->insert('B_GoodsSKUWith1688',
@@ -252,7 +255,7 @@ class PurchaseToolController extends AdminController
                     if (!$res) {
                         throw new Exception('Failed to save supplier info!');
                     }
-                }
+                }*/
             }
             $transaction->commit();
             return true;
