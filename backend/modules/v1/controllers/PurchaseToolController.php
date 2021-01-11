@@ -131,14 +131,14 @@ class PurchaseToolController extends AdminController
                     'message' => 'goodsCode can not be empty!'
                 ];
             }
-            $sql = "SELECT gs.nid,gs.SKU,SKUName,gs.property1,gs.property2,gs.property3,ISNULL(sw.companyName,'无') as companyName,g16.style FROM B_GoodsSKU gs
-					LEFT JOIN B_GoodsSKUWith1688 sw ON gs.NID=sw.GoodsSKUID  AND sw.isDefault=1
-					LEFT JOIN B_Goods1688 g16 ON g16.GoodsID=gs.GoodsID and g16.specId=sw.specId  AND g16.offerid=sw.offerid 
-					WHERE gs.sku LIKE  '%{$goodsCode}%'  ";
+            $sql = "SELECT gs.nid,gs.goodsId,gs.SKU,SKUName,gs.property1,gs.property2,gs.property3,
+                            ISNULL(sw.companyName,'无') as companyName,g16.style FROM B_GoodsSKU gs
+					 LEFT JOIN B_GoodsSKUWith1688 sw ON gs.NID=sw.GoodsSKUID  AND sw.isDefault=1
+					 LEFT JOIN B_Goods1688 g16 ON g16.GoodsID=gs.GoodsID and g16.specId=sw.specId  AND g16.offerid=sw.offerid 
+					WHERE gs.sku LIKE '%{$goodsCode}%'  ";
 //            $goodsSql = "SELECT DISTINCT companyName FROM B_Goods1688 sw LEFT JOIN B_Goods g ON sw.GoodsID=g.NID WHERE g.GoodsCode LIKE :goodsCode ";
-            $goodsSql = "SELECT DISTINCT sw.companyName FROM B_GoodsSKUWith1688 sw
-                    LEFT JOIN B_GoodsSKU gs ON gs.NID=sw.GoodsSKUID 
-                    LEFT JOIN B_Goods g ON gs.GoodsID=g.NID WHERE g.GoodsCode LIKE '%{$goodsCode}%' ";
+            $goodsSql = "SELECT DISTINCT sw.companyName FROM B_Goods1688 sw
+                    LEFT JOIN B_Goods g ON sw.GoodsID=g.NID WHERE ISNULL(companyName,'')<>'' AND g.GoodsCode LIKE '%{$goodsCode}%' ";
 
             $provider = new SqlDataProvider([
                 'sql' => $sql,
@@ -155,9 +155,15 @@ class PurchaseToolController extends AdminController
             $userInfo = $provider->getModels();
             $suppliers = Yii::$app->py_db->createCommand($goodsSql)->queryAll();
             foreach ($userInfo as &$v) {
-                $skuSql = "SELECT DISTINCT companyName FROM B_GoodsSKUWith1688 WHERE GoodsSKUID = :nid";
-                $res = Yii::$app->py_db->createCommand($skuSql)->bindValues([':nid' => $v['nid']])->queryAll();
-                $v['values'] = array_merge(['无'], ArrayHelper::getColumn($res, 'companyName'));
+                $companySql = "SELECT DISTINCT offerid,companyName FROM B_Goods1688 WHERE goodsId = :goodsId";
+                $res = Yii::$app->py_db->createCommand($companySql)->bindValues([':goodsId' => $v['goodsId']])->queryAll();
+//                var_dump($res);exit;
+                foreach ($res as &$value){
+                    $skuSql = "SELECT DISTINCT specId,style FROM B_Goods1688 WHERE companyName = '{$value['companyName']}'";
+                    $styleInfo = Yii::$app->py_db->createCommand($skuSql)->queryAll();
+                    $value['style'] = $styleInfo;
+                }
+                $v['values'] = array_merge([['offerid' => '','companyName' => '无', 'style' => []]], $res);
             }
             return [
                 'skuInfo' => $userInfo,
@@ -233,6 +239,16 @@ class PurchaseToolController extends AdminController
                         ['GoodsSKUID' => $info['nid'], 'companyName' => $info['companyName']])
                         ->execute();
                     if (!$res1 || !$res2) {
+                        throw new Exception('Failed to update supplier info!');
+                    }
+                }else{
+                    $sql = "select distinct supplierLoginId from B_Goods1688 where offerid='{$info['offerid']}'";
+                    $supplier = $res = Yii::$app->py_db->createCommand($sql)->queryAll();
+                    $res = Yii::$app->py_db->createCommand()->insert('B_GoodsSKUWith1688',
+                        ['GoodsSKUID' => $info['nid'], 'offerid' => $info['offerid'], 'specId' => $info['specId'],
+                            'supplierLoginId' => $supplier['supplierLoginId'], 'companyName' => $info['companyName'], 'isDefault' => 1])
+                        ->execute();
+                    if (!$res) {
                         throw new Exception('Failed to save supplier info!');
                     }
                 }
