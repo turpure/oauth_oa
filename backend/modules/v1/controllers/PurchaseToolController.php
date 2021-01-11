@@ -163,7 +163,8 @@ class PurchaseToolController extends AdminController
                     $styleInfo = Yii::$app->py_db->createCommand($skuSql)->queryAll();
                     $value['style'] = $styleInfo;
                 }
-                $v['values'] = array_merge([['offerid' => '','companyName' => '无', 'style' => []]], $res);
+
+                $v['values'] = $res ? $res : [['offerid' => '','companyName' => '无', 'style' => []]];
             }
             return [
                 'skuInfo' => $userInfo,
