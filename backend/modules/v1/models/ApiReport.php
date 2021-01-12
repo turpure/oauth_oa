@@ -771,11 +771,13 @@ class ApiReport
     {
         //美元汇率
         $rate = ApiUkFic::getRateUkOrUs('USD');
+        $exchangeRate = ApiSettings::getExchangeRate();
+        $wishSalerRate = $exchangeRate['wishSalerRate'];
         $sql = '';
 
         //按订单汇总退款
         if ($condition['type'] === 'order') {
-            $sql = 'SELECT rd.*,refund*' . $rate . " AS refundZn,u.username AS salesman 
+            $sql = 'SELECT rd.*,refund* (case when s.platform='."'Wish'". ' and ows.localCurrency='. "'CNY'".' then '. $wishSalerRate .' else '. $rate ." end)   AS refundZn,u.username AS salesman 
                 FROM (
                     SELECT MAX(refMonth) AS refMonth, MAX(dateDelta) as dateDelta, MAX(suffix) AS suffix,MAX(goodsName) AS goodsName,MAX(goodsCode) AS goodsCode,
 				    MAX(goodsSku) AS goodsSku, MAX(tradeId) AS tradeId,orderId,mergeBillId,MAX(storeName) AS storeName,
@@ -786,11 +788,12 @@ class ApiReport
                           AND IFNULL(platform,'')<>'' 
                     GROUP BY refundId,OrderId,mergeBillId,refund,refundTime
                 ) rd 
+                left join  proCenter.oa_wishSuffix as ows on ows.shortName =  rd.suffix
                 LEFT JOIN auth_store s ON s.store=rd.suffix
                 LEFT JOIN auth_store_child sc ON sc.store_id=s.id
                 LEFT JOIN user u ON sc.user_id=u.id WHERE u.status=10 ";
             if ($condition['suffix']) {
-                $sql .= ' AND suffix IN (' . $condition['suffix'] . ') ';
+                $sql .= ' AND rd.suffix IN (' . $condition['suffix'] . ') ';
             }
             $sql .= ' ORDER BY refund DESC,goodsSku ASC;';
         }
