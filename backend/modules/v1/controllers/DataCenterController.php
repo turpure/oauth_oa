@@ -265,7 +265,13 @@ class DataCenterController extends AdminController
                         CASE WHEN IFNULL(aveCostmoney,0)=0 AND IFNULL(totalCostmoney,0)<>0 THEN 10000 
                               ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
                 FROM(
-                        SELECT CASE WHEN SUBSTR(storeName,1,5)='万邑通UK' THEN '万邑通UK' ELSE storeName END storeName,
+                        SELECT CASE WHEN storeName='万邑通UK' THEN '万邑通UK' 
+														WHEN storeName='万邑通UK-MA仓' THEN '万邑通UK' 
+														WHEN storeName='金皖399' THEN '金皖399' 
+														WHEN storeName='谷仓UK中转' THEN '金皖399' 
+														WHEN storeName='万邑通UK-MA空运中转' THEN '金皖399' 
+														WHEN storeName='万邑通UK-MA海运中转' THEN '金皖399' 
+														ELSE storeName END storeName,
                         SUM(useNum) AS useNum,
                         SUM(costmoney) costmoney,
                         SUM(notInStore) notInStore,
@@ -273,14 +279,32 @@ class DataCenterController extends AdminController
                         SUM(hopeUseNum) hopeUseNum,
                         SUM(totalCostmoney) totalCostmoney
                         FROM `cache_stockWaringTmpData`
-                        GROUP BY CASE WHEN SUBSTR(storeName,1,5)='万邑通UK' THEN '万邑通UK' ELSE storeName END
+                        GROUP BY CASE WHEN storeName='万邑通UK' THEN '万邑通UK' 
+														WHEN storeName='万邑通UK-MA仓' THEN '万邑通UK' 
+														WHEN storeName='金皖399' THEN '金皖399' 
+														WHEN storeName='谷仓UK中转' THEN '金皖399' 
+														WHEN storeName='万邑通UK-MA空运中转' THEN '金皖399' 
+														WHEN storeName='万邑通UK-MA海运中转' THEN '金皖399' 
+														ELSE storeName END 
                 ) aa LEFT JOIN 
                 (
-                        SELECT CASE WHEN SUBSTR(storeName,1,5)='万邑通UK' THEN '万邑通UK' ELSE storeName END storeName,
+                        SELECT CASE WHEN storeName='万邑通UK' THEN '万邑通UK' 
+														WHEN storeName='万邑通UK-MA仓' THEN '万邑通UK' 
+														WHEN storeName='金皖399' THEN '金皖399' 
+														WHEN storeName='谷仓UK中转' THEN '金皖399' 
+														WHEN storeName='万邑通UK-MA空运中转' THEN '金皖399' 
+														WHEN storeName='万邑通UK-MA海运中转' THEN '金皖399' 
+														ELSE storeName END storeName,
                         SUM(costMoney) AS 30DayCostmoney,
                         ROUND(SUM(costMoney)/30,4) AS aveCostmoney
                         FROM `cache_30DayOrderTmpData`
-                        GROUP BY CASE WHEN SUBSTR(storeName,1,5)='万邑通UK' THEN '万邑通UK' ELSE storeName END
+                        GROUP BY CASE WHEN storeName='万邑通UK' THEN '万邑通UK' 
+														WHEN storeName='万邑通UK-MA仓' THEN '万邑通UK' 
+														WHEN storeName='金皖399' THEN '金皖399' 
+														WHEN storeName='谷仓UK中转' THEN '金皖399' 
+														WHEN storeName='万邑通UK-MA空运中转' THEN '金皖399' 
+														WHEN storeName='万邑通UK-MA海运中转' THEN '金皖399' 
+														ELSE storeName END 
                 ) bb ON aa.storeName=bb.storeName
                 ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
         try {
@@ -714,9 +738,16 @@ class DataCenterController extends AdminController
         if ($accountName) $sql .= " AND ps.accountName LIKE '%{$accountName}%'";
         if ($paypalStatus) $sql .= " AND paypalStatus LIKE '%{$paypalStatus}%'";
         if ($memo) $sql .= " AND memo LIKE '%{$memo}%'";
-        if ($isUrUsed || $isUrUsed === "0") $sql .= " AND isUsed = '{$isUrUsed}'";
         if ($isPyUsed || $isPyUsed === "0") $sql .= " AND isPyUsed = '{$isPyUsed}'";
+        if ($isUrUsed){
+            $sql .= " AND ISNULL(isUsed,0) = 1 AND ISNULL(isUsedBalance,0) = 1 ";
+        }
+        if ($isUrUsed === '0'){
+            $sql .= " AND (ISNULL(isUsed,0) = 0 OR ISNULL(isUsedBalance,0) = 0) ";
+        }
         try {
+            //$data = Yii::$app->py_db->createCommand($sql)->getRawSql();
+            //var_dump($data);exit;
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
@@ -768,8 +799,13 @@ class DataCenterController extends AdminController
         if ($accountName) $sql .= " AND ps.accountName LIKE '%{$accountName}%'";
         if ($paypalStatus) $sql .= " AND paypalStatus LIKE '%{$paypalStatus}%'";
         if ($memo) $sql .= " AND memo LIKE '%{$memo}%'";
-        if ($isUrUsed || $isUrUsed === "0") $sql .= " AND isUsed = '{$isUrUsed}'";
         if ($isPyUsed || $isPyUsed === "0") $sql .= " AND isPyUsed = '{$isPyUsed}'";
+        if ($isUrUsed){
+            $sql .= " AND ISNULL(isUsed,0) = 1 AND ISNULL(isUsedBalance,0) = 1 ";
+        }
+        if ($isUrUsed === '0'){
+            $sql .= " AND (ISNULL(isUsed,0) = 0 OR ISNULL(isUsedBalance,0) = 0) ";
+        }
 
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         ExportTools::toExcelOrCsv('payPalStatus', $data, 'Xls');
@@ -966,6 +1002,20 @@ class DataCenterController extends AdminController
             readfile($filename);//输出文件;
             unlink($filename); //删除压缩包临时文件
         } catch (\Exception $e) {
+            $dir = Yii::$app->basePath.'/web/';
+            if($handle = opendir($dir)) {
+                while(false !== ($file = readdir($handle))) {
+                    if(strripos(strtolower($file),'.xls') !== false ||
+                        strripos(strtolower($file),'.xlsx') !== false ||
+                        strripos(strtolower($file),'.csv') !== false ||
+                        strripos(strtolower($file),'.zip') !== false
+                    ){
+                        //按名称过滤
+                        @unlink($file);
+                    }
+                }
+                $res = closedir($handle);
+            }
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),
@@ -1000,7 +1050,7 @@ class DataCenterController extends AdminController
                     payer_email as FromEmailAddress,paypal_account as ToEmailAddress FROM [dbo].[y_paypalTransactions] WHERE 1=1 ";
                 if($accountName) $sql .= " AND paypal_account LIKE '%{$account}%'";
                 if($beginDate && $endDate) $sql .= " AND convert(varchar(10),transaction_date,121) between '{$beginDate}' and '{$endDate}'";
-                $sql .= " AND (payer_full_name LIKE 'ebay%' AND payer_full_name <> 'ebay' AND ISNULL(transaction_amount,0) < 0 
+                $sql .= " AND (payer_full_name LIKE 'ebay%' AND payer_full_name NOT LIKE 'ebay-shop%' AND payer_full_name <> 'ebay' AND ISNULL(transaction_amount,0) < 0 
                     OR ISNULL(transaction_type_description,'') IN ('PayPal Checkout APIs.', '', 
                           'General: received payment of a type not belonging to the other T00nn categories.', 
                           'Pre-approved payment (BillUser API). Either sent or received.', 'MassPay payment.')
@@ -1035,6 +1085,20 @@ class DataCenterController extends AdminController
             readfile($filename);//输出文件;
             unlink($filename); //删除压缩包临时文件
         } catch (\Exception $e) {
+            $dir = Yii::$app->basePath.'/web/';
+            if($handle = opendir($dir)) {
+                while(false !== ($file = readdir($handle))) {
+                    if(strripos(strtolower($file),'.xls') !== false ||
+                        strripos(strtolower($file),'.xlsx') !== false ||
+                        strripos(strtolower($file),'.csv') !== false ||
+                        strripos(strtolower($file),'.zip') !== false
+                    ){
+                        //按名称过滤
+                        @unlink($file);
+                    }
+                }
+                $res = closedir($handle);
+            }
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),

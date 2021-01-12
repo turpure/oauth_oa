@@ -1213,7 +1213,7 @@ class TinyToolController extends AdminController
             $data = ApiTinyTool::getSkuStockDetail($condition);
             $name = 'ProductInventoryTurnoverDetails';
             $title = ['商品编码', 'SKU', '商品名称', '仓库', '商品状态', '开发员', '普源创建时间', '平均单价', '成本', '可用库存',
-                '预计可用库存', '重量', '销售1', '销售2', '部门', '3天销量', '7天销量', '14天销量', '30天销量', '周转天数'
+                '海运在途数量','空运在途数量', '重量', '销售1', '销售2', '部门', '3天销量', '7天销量', '14天销量', '30天销量', '周转天数'
             ];
             ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
         } catch (\Exception $why) {

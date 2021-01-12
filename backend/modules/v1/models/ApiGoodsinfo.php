@@ -28,6 +28,8 @@ use backend\models\OaGoodsSku;
 use backend\models\OaGoodsSku1688;
 use backend\models\OaMyMallSuffix;
 use backend\models\OaPaypal;
+use backend\models\OaShopifyGoods;
+use backend\models\OaShopifyGoodsSku;
 use backend\models\OaSmtGoods;
 use backend\models\OaSmtGoodsSku;
 use backend\models\OaWishGoods;
@@ -619,6 +621,23 @@ class ApiGoodsinfo
             foreach ($goodsSku as $sku) {
                 $sku['property'] = json_decode($sku['property']);
             }
+        } elseif ($plat === 'shopify') {
+            $goods = OaShopifyGoods::findOne(['infoId' => $infoId]);
+            $goodsSku = OaShopifyGoodsSku::findAll(['infoId' => $infoId]);
+            if (!$goods && !$goodsSku) {
+                $ret = [
+                    'basicInfo' => [
+                        'infoId' => '', 'title' => '', 'description' => '', 'tags' => '', 'sku' => '',
+                        'goodsId' => '', 'mainImage' => '', 'extraImages' => '',
+                        'style' => '', 'length' => '', 'sleeveLength' => '', 'neckline' => '',
+                    ],
+                    'skuInfo' => [[
+                        'id' => '', 'infoId' => '', 'sid' => '', 'sku' => '', 'color' => '', 'size' => '',
+                        'inventory' => '', 'price' => '', 'msrp' => '', 'linkUrl' => '', 'weight' => '','goodsSkuId' => ''
+                    ]]
+                ];
+                return $ret;
+            }
         } elseif ($plat === 'aliexpress') {
             $goods = OaSmtGoods::findOne(['infoId' => $infoId]);
             $goodsSku = OaSmtGoodsSku::findAll(['infoId' => $infoId]);
@@ -693,6 +712,58 @@ class ApiGoodsinfo
             }
             if (!$goods->save()) {
                 throw new \Exception('save goods failed');
+            }
+            $tran->commit();
+            return ["success to save {$goodsInfo['sku']}"];
+        } catch (\Exception $e) {
+            $tran->rollBack();
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+
+    }
+
+    /** save ebay info
+     * @param $condition
+     * Date: 2019-04-22 16:12
+     * Author: henry
+     * @return array|bool
+     * @throws \Exception
+     */
+    public static function saveShopifyInfo($condition)
+    {
+        $goodsInfo = $condition['basicInfo'];
+        $skuInfo = $condition['skuInfo'];
+        $goods = OaShopifyGoods::findOne(['id' => $goodsInfo['id']]);
+        if(is_array($goodsInfo['length'])){
+            $goodsInfo['length'] = implode(',', $goodsInfo['length']);
+        }
+        if(is_array($goodsInfo['style'])){
+            $goodsInfo['style'] = implode(',', $goodsInfo['style']);
+        }
+        if(is_array($goodsInfo['sleeveLength'])){
+            $goodsInfo['sleeveLength'] = implode(',', $goodsInfo['sleeveLength']);
+        }
+        if(is_array($goodsInfo['neckline'])){
+            $goodsInfo['neckline'] = implode(',', $goodsInfo['neckline']);
+        }
+        $goods->setAttributes($goodsInfo);
+        $tran = Yii::$app->db->beginTransaction();
+        try {
+            foreach ($skuInfo as $row) {
+                $sku = OaShopifyGoodsSku::findOne(['id' => $row['id']]);
+                if ($sku === null) {
+                    $sku = new OaShopifyGoodsSku();
+                }
+                $sku->setAttributes($row);
+                if (!$sku->save()) {
+                    throw new \Exception('save shopify sku failed');
+                }
+            }
+            if (!$goods->save()) {
+                throw new \Exception('save shopify goods failed');
             }
             $tran->commit();
             return ["success to save {$goodsInfo['sku']}"];
@@ -1021,6 +1092,9 @@ class ApiGoodsinfo
         }
         if ($plat === 'aliexpress') {
             static::saveSmtInfo($condition);
+        }
+        if ($plat === 'shopify') {
+            static::saveShopifyInfo($condition);
         }
         $platCondition = ['id' => $condition['id'], 'plat' => [$plat]];
         static::finishPlat($platCondition);

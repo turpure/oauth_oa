@@ -248,7 +248,7 @@ class SiteController extends AdminController
             if($depart) {
                 $sql .= " AND depart = '{$depart}' ";
             }
-            $sql .= " ORDER BY Rate DESC";
+            $sql .= " ORDER BY profitDiff DESC";
             $query = \Yii::$app->db->createCommand($sql)->queryAll();
             return $query;
         }
@@ -274,12 +274,12 @@ class SiteController extends AdminController
             if(empty($depart)) {
                 $sql = "SELECT * FROM site_profit 
                 WHERE depart LIKE '%郑州%' AND role = '销售' AND IFNULL(display,0)=0
-                ORDER BY Rate DESC";
+                ORDER BY profitDiff DESC";
             }
             else {
                 $sql = "SELECT * FROM site_profit 
                 WHERE depart = '{$depart}' AND role = '销售'
-                ORDER BY Rate DESC";
+                ORDER BY profitDiff DESC";
             }
             $query = \Yii::$app->db->createCommand($sql)->queryAll();
             return $query;
@@ -303,12 +303,12 @@ class SiteController extends AdminController
             if(empty($depart)) {
                 $sql = "SELECT * FROM site_profit 
                 WHERE  role = '开发' AND ifnull(display,0)=0
-                ORDER BY Rate DESC";
+                ORDER BY profitDiff DESC";
             }
             else {
                 $sql = "SELECT * FROM site_profit 
                 WHERE depart = '{$depart}' AND role = '开发'
-                ORDER BY Rate DESC";
+                ORDER BY profitDiff DESC";
             }
             $query = \Yii::$app->db->createCommand($sql)->queryAll();
             return $query;
@@ -331,7 +331,7 @@ class SiteController extends AdminController
             $condition = Yii::$app->request->post()['condition'];
             $depart = isset($condition['depart']) ? $condition['depart'] : '';
             if(empty($depart)) {
-                $sql = "SELECT depart,SUM(lastProfit) AS lastProfit,SUM(profit) AS profit,
+                $sql = "SELECT depart,SUM(lastProfit) AS lastProfit,SUM(profit) AS profit,SUM(profitDiff) AS profitDiff,
                      CASE WHEN SUM(lastProfit)=0 THEN 0 
                           WHEN SUM(lastProfit)<0 THEN 1
                           ELSE SUM(profit)/SUM(lastProfit) END AS rate,
@@ -339,10 +339,10 @@ class SiteController extends AdminController
                 FROM site_profit 
                 WHERE  role = '销售'
                 GROUP BY depart
-                ORDER BY rate DESC";
+                ORDER BY SUM(profitDiff) DESC";
             }
             else {
-                $sql = "SELECT depart,SUM(lastProfit) AS lastProfit,SUM(profit) AS profit,
+                $sql = "SELECT depart,SUM(lastProfit) AS lastProfit,SUM(profit) AS profit,SUM(profitDiff) AS profitDiff,
                      CASE WHEN SUM(lastProfit)=0 THEN 0 
                           WHEN SUM(lastProfit)<0 THEN 1
                           ELSE SUM(profit)/SUM(lastProfit) END AS rate,
@@ -350,7 +350,7 @@ class SiteController extends AdminController
                 FROM site_profit 
                 WHERE  role = '销售' and depart = '{$depart}'
                 GROUP BY depart
-                ORDER BY rate DESC";
+                ORDER BY SUM(profitDiff) DESC";
             }
             $query = \Yii::$app->db->createCommand($sql)->queryAll();
             return $query;
@@ -397,7 +397,7 @@ class SiteController extends AdminController
             if($depart) {
                 $sql .= "AND depart = '{$depart}' ";
             }
-            $sql .= " ORDER BY Rate DESC";
+            $sql .= " ORDER BY amtDiff DESC";
             $query = \Yii::$app->db->createCommand($sql)->queryAll();
             return $query;
         }
@@ -426,7 +426,7 @@ class SiteController extends AdminController
             else {
                 $sql = "SELECT * FROM site_sales_amt
                 WHERE depart = '{$depart}' AND role = '销售'
-                ORDER BY Rate DESC";
+                ORDER BY amtDiff DESC";
             }
             $query = \Yii::$app->db->createCommand($sql)->queryAll();
             return $query;
@@ -450,12 +450,12 @@ class SiteController extends AdminController
             if(empty($depart)) {
                 $sql = "SELECT * FROM site_sales_amt 
                 WHERE  role = '开发' AND ifnull(display,0)=0  AND (lastAmt<>0 OR amt <> 0)
-                ORDER BY Rate DESC";
+                ORDER BY amtDiff DESC";
             }
             else {
                 $sql = "SELECT * FROM site_sales_amt
                 WHERE depart = '{$depart}' AND role = '开发'
-                ORDER BY Rate DESC";
+                ORDER BY amtDiff DESC";
             }
             $query = \Yii::$app->db->createCommand($sql)->queryAll();
             return $query;
@@ -474,36 +474,26 @@ class SiteController extends AdminController
      */
     public function actionDepartAmt()
     {
-        $sql = "SELECT depart,SUM(lastAmt) AS lastAmt,SUM(amt) AS amt,
-                     CASE WHEN SUM(lastAmt)=0 THEN 0 ELSE SUM(amt)/SUM(lastAmt) END AS rate,
-                     MAX(dateRate) AS dateRate,MAX(updateTime) as updateTime
-                FROM site_sales_amt
-                WHERE  role = '销售'
-                GROUP BY depart
-                ORDER BY rate DESC";
-//        $query = \Yii::$app->db->createCommand($sql)->queryAll();
-//        return $query;
-
         try {
             $condition = Yii::$app->request->post()['condition'];
             $depart = isset($condition['depart']) ? $condition['depart'] : '';
             if(empty($depart)) {
                 $sql = "SELECT depart,SUM(lastAmt) AS lastAmt,SUM(amt) AS amt,
-                     CASE WHEN SUM(lastAmt)=0 THEN 0 ELSE SUM(amt)/SUM(lastAmt) END AS rate,
+                     CASE WHEN SUM(lastAmt)=0 THEN 0 ELSE SUM(amt)/SUM(lastAmt) END AS rate,SUM(amtDiff) as amtDiff,
                      MAX(dateRate) AS dateRate,MAX(updateTime) as updateTime
                 FROM site_sales_amt
                 WHERE  role = '销售'
                 GROUP BY depart
-                ORDER BY rate DESC";
+                ORDER BY SUM(amtDiff) DESC";
             }
             else {
                 $sql = "SELECT depart,SUM(lastAmt) AS lastAmt,SUM(amt) AS amt,
-                     CASE WHEN SUM(lastAmt)=0 THEN 0 ELSE SUM(amt)/SUM(lastAmt) END AS rate,
+                     CASE WHEN SUM(lastAmt)=0 THEN 0 ELSE SUM(amt)/SUM(lastAmt) END AS rate,SUM(amtDiff) as amtDiff,
                      MAX(dateRate) AS dateRate,MAX(updateTime) as updateTime
                 FROM site_sales_amt
                 WHERE  role = '销售' and depart = '{$depart}'
                 GROUP BY depart
-                ORDER BY rate DESC";
+                ORDER BY SUM(amtDiff) DESC";
             }
             $query = \Yii::$app->db->createCommand($sql)->queryAll();
             return $query;

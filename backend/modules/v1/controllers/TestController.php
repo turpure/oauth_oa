@@ -55,53 +55,48 @@ class TestController extends AdminController
     }
 
     public  function actionTest1(){
-
-        $account = OaFyndiqSuffix::findOne(['suffix' => 'Fyndiq-01']);
-        $url = 'https://merchants-api.fyndiq.se/api/v1/articles?limit=1000';
-        $token = base64_encode($account['suffixId'] . ':' . $account['token']);
-
-        $header = ["Content-Type: application/json", "Authorization: Basic " . $token];
-        //$res = Helper::post($url, json_encode($data), $header);
-
-        $curl = curl_init();
-
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://merchants-api.fyndiq.se/api/v1/articles?limit=1000",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => "",
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "GET",
-            CURLOPT_HTTPHEADER => $header,
-        ));
-        curl_setopt ( $curl, CURLOPT_SSL_VERIFYPEER, false );
-        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
-
-        $response = curl_exec($curl);
-
-        curl_close($curl);
-
-        $res =  json_decode($response,true);
-//            return $res;
-        //var_dump(count($res));exit;
-        $data = [];
-        foreach ($res as $v){
-            if($v['fyndiq_status'] == 'blocked') {
-                $data[] = [
-                    'id' => $v['id'],
-                    'product_id' => $v['product_id'],
-                    'sku' => $v['sku'],
-                    'parent_sku' => $v['parent_sku'],
-                    'quantity' => $v['quantity'],
-                    'status' => $v['status'],
-                    'fyndiq_status' => $v['fyndiq_status'],
-                ];
-            }
+        $month = '2020-11';
+        $thisYear = date('Y',strtotime($month));
+        $thisMonth = date('m',strtotime($month));
+        if($thisMonth == 12){
+            $beginDate = $thisYear + 1 . '-' . '01-01';
+        }else{
+            $beginDate = $thisYear . '-' . ($thisMonth + 1) . '-' .'01';
         }
-//            return $data;
-        ExportTools::toExcelOrCsv('fyndiq', $data, 'Xls');
+        var_dump($beginDate);exit;
+
+        $beginDate = $month.'-01';
+
+
+
+
+
+        $sql = 'SELECT id,title,"template",pic,selleruserid AS shortName,folderid AS siteId FROM "public"."ebay_user_template"';
+        $arr = Yii::$app->ibay->createCommand($sql)->queryAll();
+
+        //$list = (new \yii\mongodb\Query())->from('ebay_user_desc_template')
+            //->andFilterWhere(['marketplace' => $marketplace])
+            //->andFilterWhere(['productType' => $type])
+            //->andFilterWhere(['dispatchDate' => ['$regex' => date('Y-m-d')]])
+            //->all();
+
+        $collection = Yii::$app->mongodb2->getCollection ( 'ebay_user_desc_template' );
+        //$arr = $collection->find();
+        foreach ($arr as $v){
+//            var_dump($v);exit;
+            $sql = "SELECT TOP 1 NoteName FROM [dbo].[S_PalSyncInfo] where EbayUserID='{$v['shortname']}';";
+            $query = Yii::$app->py_db->createCommand($sql)->queryOne();
+            $v['suffix'] = $query ? $query['NoteName'] : '';
+            $v['creator'] = 'admin';
+//            var_dump($v);exit;
+//            $collection->update(['_id' => $v['_id']], ['shortName' => $shortName]);
+            //var_dump($query);exit;
+            $collection->insert($v);
+        }
+//        var_dump($res);
+
+//        var_dump($arr);exit;
+           // return $list;
 
 
     }

@@ -21,6 +21,8 @@ use backend\models\OaEbayGoodsSku;
 use backend\models\OaGoods1688;
 use backend\models\OaGoodsinfo;
 use backend\models\OaJoomSuffix;
+use backend\models\OaShopifyGoodsSku;
+use backend\models\OaShopifyTagsDetail;
 use backend\models\OaSiteCountry;
 use backend\models\OaSmtGoodsSku;
 use backend\models\OaWishGoods;
@@ -335,7 +337,7 @@ class OaGoodsinfoController extends AdminController
                 //->leftJoin('proCenter.oa_goodssku s', 's.id=goodsSkuId')
                 ->where(['offerId' => $val['offerId'],'infoId' => $infoId])->asArray()->all();
             $val['vendor'] = $val['vendor'].'商品ID:'.$val['offerId'];
-            $val['value'] = array_merge([["offerId" => '无', "specId" => '无', 'style' => '无']],$goods);
+            $val['value'] = $goods ? : [["offerId" => '无', "specId" => '无', 'style' => '无']];
         }
         return $goods1688;
     }
@@ -552,6 +554,55 @@ class OaGoodsinfoController extends AdminController
     }
 
     /**
+     * @brief 保存shopify模板信息
+     * @return array
+     * @throws \Exception
+     */
+    public function actionSaveShopifyInfo()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        return ApiGoodsinfo::saveShopifyInfo($condition);
+    }
+
+    /**
+     * @brief 添加shopify 属性值
+     * @return boolean | array
+     * @throws \Exception
+     */
+    public function actionSaveShopifyTagValue()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        $query = OaShopifyTagsDetail::findOne(['name' => $condition['name'], 'value' => $condition['value']]);
+        if($query){
+            return ['code' => 400, 'message' => '该属性值已存在'];
+        }
+        $model = new OaShopifyTagsDetail();
+        $model->setAttributes($condition);
+        $model->flag = 'add';
+        $model->creator = Yii::$app->user->identity->username;
+        return $model->save();
+    }
+
+    public function actionShopifyTagsList()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        $name = isset($condition['name']) && $condition['name'] ? $condition['name'] : 'Length';
+        return OaShopifyTagsDetail::findAll(['name' => $name]);
+    }
+
+    /**
      * @brief EBAY模板同步WISH模板SKU信息
      * @return array
      * @throws \Exception
@@ -616,7 +667,7 @@ class OaGoodsinfoController extends AdminController
      */
     public function actionPlatCompletedPlat()
     {
-        return ['未设置', 'aliexpress', 'joom', 'wish', 'ebay'];
+        return ['未设置', 'aliexpress', 'joom', 'wish', 'ebay', 'shopify'];
     }
 
     public function actionPlatForbidPlat()
@@ -1217,6 +1268,8 @@ class OaGoodsinfoController extends AdminController
             OaEbayGoodsSku::deleteAll(['id' => $skuId]);
         } elseif ($condition['plat'] == 'aliexpress') {
             OaSmtGoodsSku::deleteAll(['id' => $skuId]);
+        }elseif ($condition['plat'] == 'shopify') {
+            OaShopifyGoodsSku::deleteAll(['id' => $skuId]);
         }
         return true;
     }

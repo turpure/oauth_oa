@@ -12,9 +12,13 @@ return [
     'poundRate' => 8.767, //英镑
     'auRate' => 4.8,  //澳元
 
-
+    'rate' => 0.2, //ebay 税率 2020-01-11
 
     //UK虚拟仓计算参数
+    //'eRate' => 0.12, //eBay交易费率
+    //'bpRate' => 0.0384, //paypal大额交易费率
+    //'spRate' => 0.072, //paypal小额交易费率
+
     'eRate' => 0.1, //eBay交易费率
     'bpRate' => 0.032, //paypal大额交易费率
     'spRate' => 0.06, //paypal小额交易费率
