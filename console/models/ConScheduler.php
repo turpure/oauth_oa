@@ -56,7 +56,8 @@ class ConScheduler
             'queryType' => $paramsFilter['queryType'],
             'store' => implode(',', $paramsFilter['store']),
             'warehouse' => '',
-            'exchangeRate' => $exchangeRate['salerRate']
+            'exchangeRate' => $exchangeRate['salerRate'],
+            'wishExchangeRate' => $exchangeRate['wishSalerRate']
         ];
         $profit = ApiReport::getSalesReport($condition);
 

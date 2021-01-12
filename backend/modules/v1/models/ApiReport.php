@@ -36,10 +36,10 @@ class ApiReport
             ':queryType' => $condition['queryType'],
             ':store' => $condition['store'],
             ':warehouse' => $condition['warehouse'],
-            ':exchangeRate' => $condition['exchangeRate']
+            ':exchangeRate' => $condition['exchangeRate'],
+            ':wishExchangeRate' => $condition['wishExchangeRate']
         ];
         try {
-            //var_dump($con->createCommand($sql)->bindValues($sqlParams)->getRawSql());exit;
             return $con->createCommand($sql)->bindValues($sqlParams)->queryAll();
         } catch (\Exception $why) {
             return [$why];

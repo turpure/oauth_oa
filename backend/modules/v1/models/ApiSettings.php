@@ -30,7 +30,7 @@ class ApiSettings
      */
     public static function getExchangeRate()
     {
-        $sql = "SELECT * FROM Y_RateManagement";
+        $sql = "SELECT top 1 * FROM Y_RateManagement";
         return Yii::$app->py_db->createCommand($sql)->queryOne();
     }
 

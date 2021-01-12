@@ -77,7 +77,8 @@ class ReportController extends AdminController
             'queryType' => $paramsFilter['queryType'],
             'store' => implode(',', $paramsFilter['store']),
             'warehouse' => $cond['store'] ? implode(',', $cond['store']) : '',
-            'exchangeRate' => $exchangeRate['salerRate']
+            'exchangeRate' => $exchangeRate['salerRate'],
+            'wishExchangeRate' => $exchangeRate['wishSalerRate'],
         ];
         return ApiReport::getSalesReport($condition);
     }
