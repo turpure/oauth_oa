@@ -31,7 +31,6 @@ class ApiUkFic{
     public static function getRate($param){
         $data['price'] = $param['price'];
 
-        $param['price'] = $param['price'] / (1 + Yii::$app->params['rate']);
         //eBay交易费
         $data['eFee'] = round($param['price'] * $param['ebayRate'],2);
         //获取汇率
@@ -46,12 +45,12 @@ class ApiUkFic{
         }
 
         //计算毛利
-        $profit = $param['price'] - $data['pFee'] - $data['eFee'] - $param['cost']/$ukRate - $param['costprice']/$ukRate;
+        $profit = $data['price'] * (1-Yii::$app->params['rate']) - $data['pFee'] - $data['eFee'] - $param['cost']/$ukRate - $param['costprice']/$ukRate;
         $data['profit'] = round($profit,2);
         $data['profitRmb'] = round($data['profit'] * $ukRate,2);
 
         //计算毛利率
-        $data['rate'] = round($profit / $param['price'] * 100,2);
+        $data['rate'] = round($profit / ($param['price'] * (1-Yii::$app->params['rate'])) * 100,2);
 
         return $data;
     }

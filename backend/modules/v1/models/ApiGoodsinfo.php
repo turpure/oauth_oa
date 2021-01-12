@@ -2836,13 +2836,13 @@ class ApiGoodsinfo
      */
     public static function preExportShopify($id, $accounts)
     {
-        $shopifyInfo = OaShopifyGoods::find()->where(['infoId' => $id])->asArray()->one();
-        $shopifySku = OaShopifyGoodsSku::find()->where(['infoId' => $id])->asArray()->all();
+        $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
+        $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
         $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
 //        $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
-        $keyWords = static::preKeywords($shopifyInfo);
+        $keyWords = static::preKeywords($wishInfo);
         $rowTemplate = [
-            'Handle' => '', 'Title' => $shopifyInfo['title'], 'Body (HTML)' => '', 'Vendor' => '', 'Type' => '', 'Tags' => '',
+            'Handle' => '', 'Title' => '', 'Body (HTML)' => '', 'Vendor' => '', 'Type' => '', 'Tags' => '',
             'Published' => 'TRUE', 'Option1 Name' => '', 'Option1 Value' => '', 'Option2 Name' => '',
             'Option2 Value' => '', 'Option3 Name' => '', 'Option3 Value' => '', 'Variant SKU' => '',
             'Variant Grams' => '', 'Variant Inventory Tracker' => 'shopify', 'Variant Inventory Qty' => '',
@@ -2875,24 +2875,24 @@ class ApiGoodsinfo
                     break;
                 }
             }
-            $imageSrc = explode("\n", $shopifyInfo['extraImages']);
+            $imageSrc = explode("\n", $wishInfo['extraImages']);
 
 
             # 主图放到一个位置
-            $images = array_merge([$shopifyInfo['mainImage']],$imageSrc);
+            $images = array_merge([$wishInfo['mainImage']],$imageSrc);
 
 
             $imagesCount = count($images);
             $position = 1;
-            foreach ($shopifySku as $sku) {
+            foreach ($wishSku as $sku) {
                 $option1Name = static::getShopifyOptionName($position, $sku, 'Color');
                 $option2Name = static::getShopifyOptionName($position, $sku, 'Size');
                 $row = $rowTemplate;
                 $row['Handle'] = str_replace(' ', '-', $title);
                 $row['Title'] = $title;
-                $row['Body (HTML)'] = $position > 1 ? '' : str_replace("\n", '<br>', $shopifyInfo['description']);
+                $row['Body (HTML)'] = $position > 1 ? '' : str_replace("\n", '<br>', $wishInfo['description']);
                 $row['Vendor'] = $position > 1 ? '' : $account['account'];
-                $row['Tags'] = $position > 1 ? '' : static::getShopifyTag($account['tags'], $shopifyInfo);
+                $row['Tags'] = $position > 1 ? '' : static::getShopifyTag($account['tags'], $wishSku);
                 $row['Published'] = $position > 1 ? '' : 'True';
                 $row['Option1 Name'] = !empty($option1Name) ? $option1Name : $option2Name;
                 $row['Option2 Name'] = $row['Option1 Name'] === $option2Name ? '' : $option2Name;

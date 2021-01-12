@@ -180,10 +180,10 @@ class ApiUk
      */
     public static function getRate($price, $cost, $out, $costprice, $adRate, $shippingPrice)
     {
-        $data['price'] = $price;
-        $price = ($price + $shippingPrice)/(1 + Yii::$app->params['rate']);
+        $data['price'] = $price + $shippingPrice;
+
         //eBay交易费
-        $data['eFee'] = $price * Yii::$app->params['eRate_uk'];
+        $data['eFee'] = $data['price'] * Yii::$app->params['eRate_uk'];
         //获取汇率
         $ukRate = ApiUkFic::getRateUkOrUs('GBP');//英镑汇率
         $usRate = ApiUkFic::getRateUkOrUs('USD');//美元汇率
@@ -196,7 +196,7 @@ class ApiUk
         }
 
         //计算毛利
-        $profit = $price - $data['pFee'] - $data['eFee'] - ($cost + $out + $costprice) / $ukRate - ($price  - $shippingPrice) * $adRate / 100;
+        $profit = $price * (1 - Yii::$app->params['rate']) - $data['pFee'] - $data['eFee'] - ($cost + $out + $costprice) / $ukRate - ($price  - $shippingPrice) * $adRate / 100;
         $data['profit'] = round($profit, 2);
         $data['eFee'] = round($data['eFee'], 2);
         $data['pFee'] = round($data['pFee'], 2);
@@ -204,7 +204,9 @@ class ApiUk
 
         //计算毛利率
         $data['adRate'] = $adRate;
-        $data['rate'] = round($profit / $price * 100, 2);
+        $data['adFee'] = ($price  - $shippingPrice) * (1 - Yii::$app->params['rate']) * $adRate;
+        $data['rFee'] = $price * Yii::$app->params['rate'];
+        $data['rate'] = round($profit / ($price * (1 - Yii::$app->params['rate'])) * 100, 2);
 
         return $data;
     }
