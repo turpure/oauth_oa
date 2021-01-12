@@ -44,7 +44,7 @@ class ApiSettings
     {
         $sql = "UPDATE Y_RateManagement SET salerRate='{$condition['salerRate']}',
                 devRate='{$condition['devRate']}',devRate1='{$condition['devRate1']}',
-                wishSalerRate='{$condition['wishSalerRate']}',wishSalerRate='{$condition['wishSalerRate']}',
+                wishSalerRate='{$condition['wishSalerRate']}',wishReceiptRate='{$condition['wishReceiptRate']}',
                             wishReceiptRateTime='{$condition['wishReceiptRateTime']}',
                 devRate5='{$condition['devRate5']}',devRate7='{$condition['devRate7']}'";
         $res = Yii::$app->py_db->createCommand($sql)->execute();
