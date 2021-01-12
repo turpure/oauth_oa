@@ -186,7 +186,8 @@ class TinyToolController extends AdminController
             'sku' => $cond['sku'],
             'num' => $cond['num'] ? $cond['num'] : 1,
             'price' => $cond['price'],
-            'rate' => $cond['rate'],
+            'rate' => isset($cond['rate']) && $cond['rate'] ? $cond['rate'] : 0,
+            'vatRate' => isset($cond['vatRate']) && $cond['vatRate'] ? $cond['vatRate'] : 0,
         ];
 
         $data = [
@@ -254,6 +255,7 @@ class TinyToolController extends AdminController
             'bigPriceRate' => Yii::$app->params['bpRate'],
             'smallPriceRate' => Yii::$app->params['spRate'],
             'ebayRate' => Yii::$app->params['eRate'],
+            'vatRate' => $post['vatRate'],
         ];
         $param1['cost'] = $cost;
         $param2['cost'] = $cost2;
@@ -336,6 +338,7 @@ class TinyToolController extends AdminController
             'rate' => $cond['rate'] ? $cond['rate'] : 0,
             'shippingPrice' => isset($cond['shippingPrice']) && $cond['shippingPrice'] ? $cond['shippingPrice'] : 0,
             'adRate' => isset($cond['adRate']) && $cond['adRate'] ? $cond['adRate'] : 0,
+            'vatRate' => isset($cond['vatRate']) && $cond['vatRate'] ? $cond['vatRate'] : 20,
         ];
 
         $data = [
@@ -395,14 +398,26 @@ class TinyToolController extends AdminController
                     }
                 }
                 $data['transport'][] = $item;
+                $params1 = $params2 = [
+                    'costRmb' => $item['costRmb'],
+                    'outRmb' => $item['outRmb'],
+                    'costPrice' => $res['price'],
+                    'shippingPrice' => $post['shippingPrice'],
+                    'adRate' => $post['adRate'],
+                    'vatRate' => $post['vatRate'],
+                ];
                 //根据售价获取毛利率
                 if ($post['price']) {
-                    $rateItem = ApiUk::getRate($post['price'], $item['costRmb'], $item['outRmb'], $res['price'], $post['adRate'], $post['shippingPrice']);
+                    $params1['price'] = $post['price'];
+                    //$rateItem = ApiUk::getRate($post['price'], $item['costRmb'], $item['outRmb'], $res['price'], $post['adRate'], $post['shippingPrice'], $post['vatRate']);
+                    $rateItem = ApiUk::getRate($params1);
                     $rateItem['name'] = $v['shipping'];
                     $data['rate'][] = $rateItem;
                 }
                 //根据利润率获取售价
-                $priceItem = ApiUk::getPrice($post['rate'], $item['costRmb'], $item['outRmb'], $res['price']);
+                $params2['rate'] = $post['rate'];
+                //$priceItem = ApiUk::getPrice($post['rate'], $item['costRmb'], $item['outRmb'], $res['price']);
+                $priceItem = ApiUk::getPrice($params2);
                 $priceItem['name'] = $v['shipping'];
                 $data['price'][] = $priceItem;
             }
@@ -432,6 +447,7 @@ class TinyToolController extends AdminController
             'shippingPrice' => isset($cond['shippingPrice']) && $cond['shippingPrice'] ? $cond['shippingPrice'] : 0,
             'adRate' => isset($cond['adRate']) && $cond['adRate'] ? $cond['adRate'] : 0,
             'rate' => isset($cond['rate']) && $cond['rate'] ? $cond['rate'] : 0,
+            'vatRate' => isset($cond['vatRate']) && $cond['vatRate'] ? $cond['vatRate'] : 0,
         ];
         $data = [
             'detail' => [],
@@ -456,14 +472,27 @@ class TinyToolController extends AdminController
         $data['transport'] = ApiUk::getTransport($res['weight'], $res['length'], $res['width'], $res['height']);
 
         foreach ($data['transport'] as $v) {
+            $params1 = $params2 = [
+                'costRmb' => $v['costRmb'],
+                'outRmb' => $v['outRmb'],
+                'costPrice' => $res['price'],
+                'shippingPrice' => $post['shippingPrice'],
+                'adRate' => $post['adRate'],
+                'vatRate' => $post['vatRate'],
+            ];
+
             //根据售价获取利润率
             if ($post['price']) {
-                $rateItem = ApiUk::getRate($post['price'], $v['costRmb'], $v['outRmb'], $res['price'], $post['adRate'], $post['shippingPrice']);
+                $params1['price'] = $post['price'];
+                //$rateItem = ApiUk::getRate($post['price'], $v['costRmb'], $v['outRmb'], $res['price'], $post['adRate'], $post['shippingPrice']);
+                $rateItem = ApiUk::getRate($params1);
                 $rateItem['name'] = $v['name'];
                 $data['rate'][] = $rateItem;
             }
             //根据利润率获取售价
-            $priceItem = ApiUk::getPrice($post['rate'], $v['costRmb'], $v['outRmb'], $res['price']);
+            $params2['rate'] = $post['rate'];
+            //$priceItem = ApiUk::getPrice($post['rate'], $v['costRmb'], $v['outRmb'], $res['price']);
+            $priceItem = ApiUk::getPrice($params2);
             $priceItem['name'] = $v['name'];
             $data['price'][] = $priceItem;
         }

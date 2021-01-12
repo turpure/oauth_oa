@@ -45,12 +45,13 @@ class ApiUkFic{
         }
 
         //计算毛利
-        $profit = $data['price'] * (1-Yii::$app->params['rate']) - $data['pFee'] - $data['eFee'] - $param['cost']/$ukRate - $param['costprice']/$ukRate;
+        $profit = $data['price'] * (1-$param['vatRate']/100) - $data['pFee'] - $data['eFee'] - $param['cost']/$ukRate - $param['costprice']/$ukRate;
+        $data['vatFee'] = round($data['price'] * $param['vatRate']/100,2);
         $data['profit'] = round($profit,2);
         $data['profitRmb'] = round($data['profit'] * $ukRate,2);
 
         //计算毛利率
-        $data['rate'] = round($profit / ($param['price'] * (1-Yii::$app->params['rate'])) * 100,2);
+        $data['rate'] = round($profit / ($param['price'] * (1-$param['vatRate']/100)) * 100,2);
 
         return $data;
     }
@@ -71,26 +72,27 @@ class ApiUkFic{
 
         //获取售价  使用小额paypal参数计算 和8美元比较，小于8则正确，否则使用大额参数再次计算获取售价
         $price = ($params['cost']/$ukRate + $params['costprice']/$ukRate + $params['smallPriceBasic']) /
-            (1 - $params['rate']/100 - $params['ebayRate'] - (1 + Yii::$app->params['rate']) * $params['smallPriceRate']);
+            ((1 - $params['rate']/100) * (1 - $params['vatRate']/100) - $params['ebayRate'] - $params['smallPriceRate']);
 
         //获取paypal交易费
         if($price < 8 * $usRate / $ukRate){
-            $data['price'] = $price * (1 + Yii::$app->params['rate']);
-            $data['pFee'] = $price * $params['smallPriceRate'] * (1 + Yii::$app->params['rate'])  + $params['smallPriceBasic'];
+            $data['price'] = $price;
+            $data['pFee'] = $price * $params['smallPriceRate']  + $params['smallPriceBasic'];
         }else{
             $data['price'] = ($params['cost']/$ukRate + $params['costprice']/$ukRate + $params['bigPriceBasic']) /
-                (1 - $params['rate']/100 - $params['ebayRate'] - (1 + Yii::$app->params['rate']) * $params['bigPriceRate']);
-            $data['pFee'] = $data['price'] * $params['bigPriceRate'] * (1 + Yii::$app->params['rate'])  + $params['bigPriceBasic'];
+                ((1 - $params['rate']/100) * (1 - $params['vatRate']/100) - $params['ebayRate'] - $params['bigPriceRate']);
+            $data['pFee'] = $data['price'] * $params['bigPriceRate']  + $params['bigPriceBasic'];
             //print_r($data['price']);exit;
         }
         //eBay交易费
         $data['eFee'] = $data['price'] * $params['ebayRate'];
 
         //计算毛利
-        $profit = $data['price'] - $data['pFee'] - $data['eFee'] - $params['cost']/$ukRate - $params['costprice']/$ukRate;
-        $data['price'] = round($data['price'] * (1 + Yii::$app->params['rate']),2);
+        $profit = $data['price'] * (1 - $params['vatRate']/100) - $data['pFee'] - $data['eFee'] - $params['cost']/$ukRate - $params['costprice']/$ukRate;
+        $data['price'] = round($data['price'],2);
         $data['eFee'] = round($data['eFee'],2);
         $data['pFee'] = round($data['pFee'],2);
+        $data['vatFee'] = round($data['price'] * $params['vatRate']/100,2);
         $data['profit'] = round($profit,2);
         $data['profitRmb'] = round($profit * $ukRate,2);
 

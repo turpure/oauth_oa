@@ -8,8 +8,10 @@
 namespace console\controllers;
 
 use backend\modules\v1\models\ApiReport;
+use backend\modules\v1\models\ApiSettings;
 use backend\modules\v1\models\ApiUk;
 use backend\modules\v1\models\ApiUkFic;
+use backend\modules\v1\utils\Handler;
 use console\models\ConScheduler;
 use yii\console\Controller;
 
@@ -220,8 +222,21 @@ class SchedulerController extends Controller
         $lastEndDate = date('Y-m-t', strtotime(' -1 month -1 day'));
         $beginDate = date('Y-m-01', strtotime('-1 day'));
         $endDate = date('Y-m-d', strtotime('-1 day'));
-		//var_dump($lastBeginDate);exit;
         try {
+            //获取账号信息
+            $params = [
+                'platform' => [],
+                'username' => [],
+                'store' => []
+            ];
+            $paramsFilter = Handler::paramsHandler($params);
+            $store = implode(',', $paramsFilter['store']);
+            //获取ebay 和 wish 销售汇率
+            $exchangeArr = ApiSettings::getExchangeRate();
+            $exchangeRate = $exchangeArr['salerRate'];
+            $wishExchangeRate = $exchangeArr['wishSalerRate'];
+
+//            var_dump($rateArr);exit;
             //获取开发人员上月和本月毛利的初步数据.
             $devSql = "EXEC oauth_siteDeveloperProfit";
             $devData = Yii::$app->py_db->createCommand($devSql)->queryAll();
@@ -237,8 +252,49 @@ class SchedulerController extends Controller
                     'netprofitTwe','netrateTwe','salemoneyrmbtotal','netprofittotal','netratetotal','devRate','devRate1','devRate5','devRate7','type'],
                 $devData)->execute();
 
+
             //插入销售和开发毛利数据(存储过程插入)
-            Yii::$app->db->createCommand("CALL oauth_site_profit(0,'{$lastBeginDate}','{$lastEndDate}','{$beginDate}','{$endDate}');")->execute();
+            //$sql = "CALL oauth_site_profit(0,'{$lastBeginDate}','{$lastEndDate}','{$beginDate}','{$endDate}','{$exchangeRate}','{$wishExchangeRate}','{$store}');";
+            //Yii::$app->db->createCommand($sql)->execute();
+
+            //获取上月毛利
+            Yii::$app->db->createCommand("TRUNCATE TABLE cache_salerProfitTmp")->execute();
+            $sql = 'call report_salesProfit(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse,:exchangeRate, :wishExchangeRate);';
+            $sqlParams = [
+                ':dateType' => 1,
+                ':beginDate' => $lastBeginDate,
+                ':endDate' => $lastEndDate,
+                ':queryType' => 1,
+                ':store' => $store,
+                ':warehouse' => '',
+                ':exchangeRate' => $exchangeRate,
+                ':wishExchangeRate' => $wishExchangeRate
+            ];
+//            $lastProfit = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->getRawSql();
+            $lastProfit = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
+            foreach ($lastProfit as &$v){
+                /*Yii::$app->db->createCommand()->batchInsert('cache_salerProfitTmp',
+                    ['pingtai','department','suffix','salesman','salemoney','salemoneyzn',
+                        'ebayfeeebay','ebayfeeznebay','ppFee','ppFeezn','costmoney','expressFare',
+                        'inpackagemoney','storename','refund','refundrate','diefeeZn','insertionFee',
+                        'saleOpeFeeZn','grossprofit','grossprofitRate'],
+                    $lastProfit)->execute();*/
+                $v = array_merge($v,['month' => 'last']);
+                Yii::$app->db->createCommand()->insert('cache_salerProfitTmp',$v)->execute();
+            }
+
+            //获取本月毛利
+            $sqlParams[':beginDate'] = $beginDate;
+            $sqlParams[':endDate'] = $endDate;
+            $thisProfit = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
+            foreach ($thisProfit as &$v){
+                $v = array_merge($v,['month' => 'this']);
+                Yii::$app->db->createCommand()->insert('cache_salerProfitTmp',$v)->execute();
+            }
+
+            //汇总数据结果
+            $sql = "CALL oauth_site_profit(0,'{$endDate}');";
+            Yii::$app->db->createCommand($sql)->execute();
 
             print date('Y-m-d H:i:s') . " INFO:success to update data of profit changes!\n";
         } catch (\Exception $why) {
@@ -408,8 +464,54 @@ class SchedulerController extends Controller
         $beginDate = date('Y-m-01', strtotime('-1 day'));
         $endDate = date('Y-m-d', strtotime('-1 day'));
         try {
+            //获取账号信息
+            $params = [
+                'platform' => [],
+                'username' => [],
+                'store' => []
+            ];
+            $paramsFilter = Handler::paramsHandler($params);
+            $store = implode(',', $paramsFilter['store']);
+            //var_dump($store);
+            //获取ebay 和 wish 销售汇率
+            $exchangeArr = ApiSettings::getExchangeRate();
+            $exchangeRate = $exchangeArr['salerRate'];
+            $wishExchangeRate = $exchangeArr['wishSalerRate'];
+
+
+            //获取上月毛利数据
+            Yii::$app->db->createCommand("TRUNCATE TABLE cache_salerProfitTmp")->execute();
+            $sql = 'call report_salesProfit(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse,:exchangeRate, :wishExchangeRate);';
+            $sqlParams = [
+                ':dateType' => 1,
+                ':beginDate' => $lastBeginDate,
+                ':endDate' => $lastEndDate,
+                ':queryType' => 1,
+                ':store' => $store,
+                ':warehouse' => '',
+                ':exchangeRate' => $exchangeRate,
+                ':wishExchangeRate' => $wishExchangeRate
+            ];
+            $lastProfit = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
+            foreach ($lastProfit as &$v){
+                $v = array_merge($v,['month' => 'last']);
+                Yii::$app->db->createCommand()->insert('cache_salerProfitTmp',$v)->execute();
+            }
+
+            //获取本月毛利
+            $sqlParams[':beginDate'] = $beginDate;
+            $sqlParams[':endDate'] = $endDate;
+            $thisProfit = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
+            foreach ($thisProfit as &$v){
+                $v = array_merge($v,['month' => 'this']);
+                Yii::$app->db->createCommand()->insert('cache_salerProfitTmp',$v)->execute();
+            }
+
+            //汇总数据结果
+            $sql = "CALL oauth_site_profit(1,'{$endDate}');";
+            Yii::$app->db->createCommand($sql)->execute();
             //插入销售毛利数据(存储过程插入)
-            Yii::$app->db->createCommand("CALL oauth_site_profit(1,'{$lastBeginDate}','{$lastEndDate}','{$beginDate}','{$endDate}');")->execute();
+            //Yii::$app->db->createCommand("CALL oauth_site_profit(1,'{$lastBeginDate}','{$lastEndDate}','{$beginDate}','{$endDate}');")->execute();
             print date('Y-m-d H:i:s') . " INFO:success to update data of sales profit ranking!\n";
         } catch (\Exception $why) {
             print date('Y-m-d H:i:s') . " INFO:fail to update data of sales profit ranking cause of $why \n";
