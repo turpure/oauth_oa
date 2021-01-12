@@ -1528,6 +1528,8 @@ class ProductCenterTools
         $ret = Helper::curlRequest($base_url, [], [],'GET');
 //        var_dump($ret);exit;
         if (isset($ret['productInfo'])) {
+            $supplier = BSupplier::findOne(['supplierLoginId' => $ret['productInfo']['sellerLoginId']]);
+            $companyName = $supplier ? $supplier['SupplierName'] : $ret['productInfo']['sellerLoginId'];
             $skuInfos = isset($ret['productInfo']['skuInfos']) ? $ret['productInfo']['skuInfos'] : [];
             if($skuInfos){
                 foreach ($skuInfos as $sku) {
@@ -1539,7 +1541,7 @@ class ProductCenterTools
                     $item['linkUrl'] = '供应商'.$k;
                     $item['multiStyle'] = 0;
                     $item['supplierLoginId'] = $ret['productInfo']['sellerLoginId'];
-                    $item['companyName'] = $ret['productInfo']['sellerLoginId'];
+                    $item['companyName'] = $companyName;
                     $attributeIDs = ArrayHelper::getColumn($sku['attributes'], 'attributeID');
                     sort($attributeIDs);
                     $styleArr = [];

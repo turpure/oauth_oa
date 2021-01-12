@@ -137,8 +137,10 @@ class PurchaseToolController extends AdminController
 					 LEFT JOIN B_Goods1688 g16 ON g16.GoodsID=gs.GoodsID and g16.specId=sw.specId  AND g16.offerid=sw.offerid 
 					WHERE gs.sku LIKE '%{$goodsCode}%'  ";
 //            $goodsSql = "SELECT DISTINCT companyName FROM B_Goods1688 sw LEFT JOIN B_Goods g ON sw.GoodsID=g.NID WHERE g.GoodsCode LIKE :goodsCode ";
-            $goodsSql = "SELECT DISTINCT sw.companyName FROM B_Goods1688 sw
-                    LEFT JOIN B_Goods g ON sw.GoodsID=g.NID WHERE ISNULL(companyName,'')<>'' AND g.GoodsCode LIKE '%{$goodsCode}%' ";
+            $goodsSql = "SELECT DISTINCT sw.companyName FROM B_GoodsSKUWith1688 sw
+                    LEFT JOIN B_Goodssku gs ON sw.GoodsskuID=gs.NID 
+                    LEFT JOIN B_Goods g ON gs.GoodsID=g.NID 
+                    WHERE ISNULL(companyName,'')<>'' AND g.GoodsCode LIKE '%{$goodsCode}%' ";
 
             $provider = new SqlDataProvider([
                 'sql' => $sql,
@@ -164,7 +166,7 @@ class PurchaseToolController extends AdminController
                 }
                 $v['values'] = $res ? $res : [['offerid' => '','companyName' => '无', 'style' => []]];
                 */
-                $companySql = "SELECT DISTINCT offerid,companyName FROM B_GoodsSKUWith1688 WHERE nid = :nid";
+                $companySql = "SELECT DISTINCT offerid,companyName FROM B_GoodsSKUWith1688 WHERE GoodsSKUID = :nid";
                 $res = Yii::$app->py_db->createCommand($companySql)->bindValues([':nid' => $v['nid']])->queryAll();
                 $res = ArrayHelper::getColumn($res, 'companyName');
                 $v['values'] = $res ? $res : ['无'];
