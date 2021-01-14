@@ -626,7 +626,7 @@ class DataCenterController extends AdminController
         $usRate = (float)ApiUkFic::getRateUkOrUs('USD');
         //var_dump($usRate);exit;
         $sql = "SELECT * FROM (
-                SELECT DownTime,PayPalEamil,TotalRMB,USD,AUD,CAD,EUR,GBP,s.memo,BatchId,
+                SELECT DownTime,PayPalEamil,t.mappingEbayName,TotalRMB,USD,AUD,CAD,EUR,GBP,s.memo,BatchId,
                 isnull(s.paypalStatus,'使用中') as paypalStatus ,
                 CASE WHEN charindex('英国',s.memo) > 0 and GBP >= 400 THEN '是' 
                      WHEN charindex('超级浏览器',s.memo) > 0 and GBP >= 400 THEN '是' 
@@ -634,7 +634,8 @@ class DataCenterController extends AdminController
                      WHEN charindex('英国',s.memo) = 0 and charindex('超级浏览器',s.memo) = 0 and charindex('集中付款',s.memo) = 0 and TotalRMB/{$usRate} >= 2700 THEN '是' 
                 ELSE '否' END  AS isWithdraw
                 FROM Y_PayPalBalance b
-                LEFT JOIN Y_PayPalStatus s ON b.PayPalEamil=s.accountName ) a
+                LEFT JOIN Y_PayPalStatus s ON b.PayPalEamil=s.accountName 
+                LEFT JOIN Y_PayPalToken t ON b.PayPalEamil=t.accountName ) a
                 WHERE 1=1 ";
         if ($beginTime && $endTime) $sql .= " AND convert(varchar(10),DownTime,121) between '{$beginTime}' and '{$endTime}'";
         if ($email) $sql .= " AND PayPalEamil LIKE '%{$email}%'";
@@ -689,7 +690,7 @@ class DataCenterController extends AdminController
         $isWithdraw = isset($cond['isWithdraw']) ? $cond['isWithdraw'] : '';
         $usRate = (float)ApiUkFic::getRateUkOrUs('USD');
         $sql = "SELECT * FROM (
-                SELECT DownTime,PayPalEamil,TotalRMB,USD,AUD,CAD,EUR,GBP,s.memo,BatchId,
+                SELECT DownTime,PayPalEamil,t.mappingEbayName,TotalRMB,USD,AUD,CAD,EUR,GBP,s.memo,BatchId,
                 isnull(s.paypalStatus,'使用中') as paypalStatus ,
                 CASE WHEN charindex('英国',s.memo) > 0 and GBP >= 400 THEN '是' 
                      WHEN charindex('超级浏览器',s.memo) > 0 and GBP >= 400 THEN '是' 
@@ -697,7 +698,8 @@ class DataCenterController extends AdminController
                      WHEN charindex('英国',s.memo) = 0 and charindex('超级浏览器',s.memo) = 0 and charindex('集中付款',s.memo) = 0 and TotalRMB/{$usRate} >= 2700 THEN '是' 
                 ELSE '否' END  AS isWithdraw
                 FROM Y_PayPalBalance b
-                LEFT JOIN Y_PayPalStatus s ON b.PayPalEamil=s.accountName ) a
+                LEFT JOIN Y_PayPalStatus s ON b.PayPalEamil=s.accountName 
+                LEFT JOIN Y_PayPalToken t ON b.PayPalEamil=t.accountName ) a
                 WHERE 1=1 ";
         if ($beginTime && $endTime) $sql .= " AND convert(varchar(10),DownTime,121) between '{$beginTime}' and '{$endTime}'";
         if ($email) $sql .= " AND PayPalEamil LIKE '%{$email}%'";
@@ -920,11 +922,14 @@ class DataCenterController extends AdminController
         $accountName = isset($cond['paypal_account']) ? $cond['paypal_account'] : null;
         $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
         try {
-            $query = YPayPalTransactions::find()->select('paypal_account');
+            $sql = "SELECT DISTINCT paypal_account,t.mappingEbayName
+                FROM Y_PayPalTransactions b
+                LEFT JOIN Y_PayPalToken t ON b.paypal_account=t.accountName 
+                WHERE 1=1 ";
             if($accountName){
-                $query->andFilterWhere(['paypal_account' => $accountName]);
+                $sql .= " AND paypal_account='{$accountName}'";
             }
-             $data = $query->orderBy('paypal_account')->distinct()->all();
+            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'pagination' => [
@@ -957,15 +962,17 @@ class DataCenterController extends AdminController
         $beginDate = isset($cond['dateRange'][0]) ? $cond['dateRange'][0] : '';
         $endDate = isset($cond['dateRange'][1]) ? $cond['dateRange'][1] : '';
         $fileNameDateSuffix = str_replace('-','',$beginDate) . '--' . str_replace('-','',$endDate);
-        $title = ['DateTime','TransactionID','Name','Type','Status','Currency','Gross','Fee','Net','FromEmailAddress','ToEmailAddress'];
+        $title = ['DateTime','TransactionID','Name','Type','Status','Currency','Gross','Fee','Net','FromEmailAddress','ToEmailAddress','EbayName'];
         try {
             $fileNameArr = [];
             foreach ($accountName as $account) {
                 $sql = "SELECT transaction_date as DateTime,transaction_id as TransactionID,payer_full_name as Name,
                     transaction_type_description as type, transaction_status_description as Status, currecny_code as Currency,
                     transaction_amount as Gross, transaction_fee as Fee, transaction_net_amount as Net,
-                    payer_email as FromEmailAddress,paypal_account as ToEmailAddress FROM [dbo].[y_paypalTransactions] WHERE 1=1 ";
-                if($accountName) $sql .= " AND paypal_account LIKE '%{$account}%'";
+                    payer_email as FromEmailAddress,paypal_account as ToEmailAddress ,t.mappingEbayName
+                    FROM [dbo].[y_paypalTransactions] s
+                    LEFT JOIN Y_PayPalToken t ON s.paypal_account=t.accountName 
+                    WHERE paypal_account LIKE '%{$account}%'";
                 if($beginDate && $endDate) $sql .= " AND convert(varchar(10),transaction_date,121) between '{$beginDate}' and '{$endDate}'";
                 /*$sql .= " AND (payer_full_name LIKE 'ebay%'
                     OR transaction_type_description IN ('Express Checkout Payment', 'Tax collected by partner', 'General Payment',
@@ -976,7 +983,13 @@ class DataCenterController extends AdminController
                 ) ORDER BY paypal_account";*/
                 $sql .= ' ORDER BY transaction_date ';
                 $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-                $name = 'payPalTransaction-' . $account . '-' . $fileNameDateSuffix;
+
+                $token = YPayPalToken::findOne(['accountName' => $account]);
+                if($token && $token['mappingEbayName']){
+                    $name = 'payPalTransaction-' . $account . '-' . $token['mappingEbayName'] . '-' . $fileNameDateSuffix;
+                }else{
+                    $name = 'payPalTransaction-' . $account . '-' . $fileNameDateSuffix;
+                }
                 $fileNameArr[] = ExportTools::saveToExcelOrCsv($name, $data, 'Xls', $title);
 //                $fileNameArr[] = ExportTools::saveToCsv('payPalTransaction-'.$account, $data, $title);
             }
@@ -1040,14 +1053,17 @@ class DataCenterController extends AdminController
         $beginDate = isset($cond['dateRange'][0]) ? $cond['dateRange'][0] : '';
         $endDate = isset($cond['dateRange'][1]) ? $cond['dateRange'][1] : '';
         $fileNameDateSuffix = str_replace('-','',$beginDate) . '--' . str_replace('-','',$endDate);
-        $title = ['DateTime','TransactionID','Name','Type','Status','Currency','Gross','Fee','Net','FromEmailAddress','ToEmailAddress'];
+        $title = ['DateTime','TransactionID','Name','Type','Status','Currency','Gross','Fee','Net','FromEmailAddress','ToEmailAddress','EbayName'];
         try {
             $fileNameArr = [];
             foreach ($accountName as $account) {
                 $sql = "SELECT transaction_date as DateTime,transaction_id as TransactionID,payer_full_name as Name,
                     transaction_type_description as type, transaction_status_description as Status, currecny_code as Currency,
                     transaction_amount as Gross, transaction_fee as Fee, transaction_net_amount as Net,
-                    payer_email as FromEmailAddress,paypal_account as ToEmailAddress FROM [dbo].[y_paypalTransactions] WHERE 1=1 ";
+                    payer_email as FromEmailAddress,paypal_account as ToEmailAddress,t.mappingEbayName 
+                    FROM [dbo].[y_paypalTransactions] s 
+                    LEFT JOIN Y_PayPalToken t ON s.paypal_account=t.accountName 
+                    WHERE 1=1 ";
                 if($accountName) $sql .= " AND paypal_account LIKE '%{$account}%'";
                 if($beginDate && $endDate) $sql .= " AND convert(varchar(10),transaction_date,121) between '{$beginDate}' and '{$endDate}'";
                 $sql .= " AND (payer_full_name LIKE 'ebay%' AND payer_full_name NOT LIKE 'ebay-shop%' AND payer_full_name <> 'ebay' AND ISNULL(transaction_amount,0) < 0 
@@ -1059,7 +1075,12 @@ class DataCenterController extends AdminController
                            'Currency conversion required to cover negative balance.')
                 ) ORDER BY transaction_date";
                 $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-                $name = 'payPalTransaction-' . $account . '-' . $fileNameDateSuffix;
+                $token = YPayPalToken::findOne(['accountName' => $account]);
+                if($token && $token['mappingEbayName']){
+                    $name = 'payPalTransaction-' . $account . '-' . $token['mappingEbayName'] . '-' . $fileNameDateSuffix;
+                }else{
+                    $name = 'payPalTransaction-' . $account . '-' . $fileNameDateSuffix;
+                }
                 $fileNameArr[] = ExportTools::saveToExcelOrCsv($name, $data, 'Xls', $title);
 //                $fileNameArr[] = ExportTools::saveToCsv('payPalTransaction-'.$account, $data, $title);
             }
@@ -1167,7 +1188,7 @@ class DataCenterController extends AdminController
         try {
 
             $query = YPayPalToken::find()
-                ->select("accountName,username,signature,
+                ->select("accountName,username,signature,mappingEbayName,
                 (CASE WHEN isUsed = 1 THEN '是' ELSE '否' END) as isUsed,
                 (CASE WHEN isUsedBalance = 1 THEN '是' ELSE '否' END) as isUsedBalance,
                 (CASE WHEN isUsedRefund = 1 THEN '是' ELSE '否' END) as isUsedRefund,
@@ -1179,7 +1200,7 @@ class DataCenterController extends AdminController
             if ($isUsedRefund || $isUsedRefund === "0") $query->andWhere(['isUsedRefund' => $isUsedRefund]);
             if ($isUsedTransaction || $isUsedTransaction === "0") $query->andWhere(['isUsedTransaction' => $isUsedTransaction]);
             $data = $query->orderBy('accountName')->asArray()->all();
-            $title = ['payPal账号','用户名','签名','是否启用','是否获取余额','是否获取退款','是否获取交易明细','时间'];
+            $title = ['payPal账号','用户名','签名','eBay账号','是否启用','是否获取余额','是否获取退款','是否获取交易明细','时间'];
             ExportTools::toExcelOrCsv('payPalToken', $data, 'Xls', $title);
         } catch (\Exception $e) {
             return [

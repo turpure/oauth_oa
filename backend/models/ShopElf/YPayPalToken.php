@@ -16,6 +16,7 @@ use yii\behaviors\TimestampBehavior;
  * @property int $isUsedBalance
  * @property int $isUsedRefund
  * @property int $isUsedTransaction
+ * @property string $mappingEbayName
  */
 class YPayPalToken extends \yii\db\ActiveRecord
 {
@@ -56,7 +57,7 @@ class YPayPalToken extends \yii\db\ActiveRecord
     {
         return [
             [['isUsed','isUsedBalance','isUsedRefund','isUsedTransaction'], 'integer'],
-            [['accountName', 'username','signature','createdTime'], 'string'],
+            [['accountName', 'username','signature','createdTime','mappingEbayName'], 'string'],
         ];
     }
 
