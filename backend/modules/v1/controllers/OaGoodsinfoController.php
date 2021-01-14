@@ -838,7 +838,7 @@ class OaGoodsinfoController extends AdminController
             $condition = $request->post()['condition'];
             $infoId = $condition['id'];
             $accounts = $condition['account'];
-            $ret = ApiGoodsinfo::preExportShopify($infoId, $accounts);
+            $ret = ApiGoodsinfo::preExportShopifyNew($infoId, $accounts);
             ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
         } catch (\Exception  $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];

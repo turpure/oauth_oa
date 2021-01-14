@@ -2834,6 +2834,92 @@ class ApiGoodsinfo
      * @return array
      * @throws \Exception
      */
+    public static function preExportShopifyNew($id, $accounts)
+    {
+        $shopifyInfo = OaShopifyGoods::find()->where(['infoId' => $id])->asArray()->one();
+        $shopifySku = OaShopifyGoodsSku::find()->where(['infoId' => $id])->asArray()->all();
+        $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
+//        $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
+        $rowTemplate = [
+            'Handle' => '', 'Title' => $shopifyInfo['title'], 'Body (HTML)' => '', 'Vendor' => '', 'Type' => '', 'Tags' => '',
+            'Published' => 'TRUE', 'Option1 Name' => '', 'Option1 Value' => '', 'Option2 Name' => '',
+            'Option2 Value' => '', 'Option3 Name' => '', 'Option3 Value' => '', 'Variant SKU' => '',
+            'Variant Grams' => '', 'Variant Inventory Tracker' => 'shopify', 'Variant Inventory Qty' => '',
+            'Variant Inventory Policy' => 'continue', 'Variant Fulfillment Service' => 'manual', 'Variant Price' => '',
+            'Variant Compare At Price' => '', 'Variant Requires Shipping' => 'TRUE', 'Variant Taxable' => 'FALSE',
+            'Variant Barcode' => '', 'Image Src' => '', 'Image Position' => '', 'Image Alt Text' => '',
+            'Gift Card' => 'FALSE', 'SEO Title' => '', 'SEO Description' => '',
+            'Google Shopping / Google Product Category' => '', 'Google Shopping / Gender' => '',
+            'Google Shopping / Age Group' => '', 'Google Shopping / MPN' => '',
+            'Google Shopping / AdWords Grouping' => '', 'Google Shopping / AdWords Labels' => '',
+            'Google Shopping / Condition' => '', 'Google Shopping / Custom Product' => '',
+            'Google Shopping / Custom Label 0' => '', 'Google Shopping / Custom Label 1' => '',
+            'Google Shopping / Custom Label 2' => '', 'Google Shopping / Custom Label 3' => '',
+            'Google Shopping / Custom Label 4' => '', 'Variant Image' => '',
+            'Variant Weight Unit' => 'g', 'Variant Tax Code' => '', 'Cost per item' => '',
+        ];
+        $ret = ['name' => 'shopify-' . $goodsInfo['goodsCode']];
+        $out = [];
+
+        foreach ($accounts as $act) {
+            $account = OaShopify::find()->orFilterWhere(['account' => $act, 'suffix' => $act])->asArray()->one();
+            $imageSrc = explode("\n", $shopifyInfo['extraImages']);
+            # 主图放到一个位置
+            $images = array_merge([$shopifyInfo['mainImage']],$imageSrc);
+            $imagesCount = count($images);
+            $position = 1;
+            foreach ($shopifySku as $sku) {
+                $option1Name = static::getShopifyOptionName($position, $sku, 'Color');
+                $option2Name = static::getShopifyOptionName($position, $sku, 'Size');
+                $row = $rowTemplate;
+                $row['Handle'] = str_replace(' ', '-', $shopifyInfo['title']);
+                $row['Body (HTML)'] = $position > 1 ? '' : str_replace("\n", '<br>', $shopifyInfo['description']);
+                $row['Vendor'] = $position > 1 ? '' : $account['account'];
+                //$row['Tags'] = $position > 1 ? '' : static::getShopifyTag($account['tags'], $shopifySku);
+                $row['Tags'] = $position > 1 ? '' : static::getShopifyTagNew($shopifySku, $shopifyInfo);
+                $row['Published'] = $position > 1 ? '' : 'True';
+                $row['Option1 Name'] = !empty($option1Name) ? $option1Name : $option2Name;
+                $row['Option2 Name'] = $row['Option1 Name'] === $option2Name ? '' : $option2Name;
+                $row['Option1 Value'] = !empty($sku['color']) ? $sku['color'] : $sku['size'];
+                $row['Option2 Value'] = empty($sku['color']) && !empty($sku['size']) ? '' : $sku['size'];
+                $row['Variant SKU'] = $sku['sku'];
+                $row['Variant Grams'] = $sku['weight'];
+                $row['Variant Inventory Qty'] = $sku['inventory'];
+                $row['Variant Price'] = $sku['price'];
+                $row['Variant Image'] = $sku['linkUrl'];
+                $row['Image Src'] = $position <= $imagesCount ? $images[$position - 1] : '';
+                $row['Image Position'] = $position <= $imagesCount ? $position : '';
+                $out[] = $row;
+                $position++;
+            }
+
+            //追加图片
+            if ($imagesCount > $position) {
+                $row = $rowTemplate;
+                foreach ($row as $key => $value) {
+                    $row[$key] = '';
+                }
+                while ($position <= $imagesCount) {
+                    $row['Handle'] = str_replace(' ', '-', $shopifyInfo['title']);
+                    $row['Title'] = $shopifyInfo['title'];
+                    $row['Image Src'] = $images[$position - 1];
+                    $out[] = $row;
+                    $position++;
+                }
+            }
+
+        }
+        $ret['data'] = $out;
+        return $ret;
+    }
+
+    /**
+     * @brief shopfiy模板预处理
+     * @param $id
+     * @param $accounts
+     * @return array
+     * @throws \Exception
+     */
     public static function preExportShopify($id, $accounts)
     {
         $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
@@ -3818,6 +3904,40 @@ class ApiGoodsinfo
 
         $out = array_merge($optionValue1, $optionValue2);
         return implode(',', $out);
+    }
+
+
+    /**
+     * @brief shopify Tags
+     * @param $tags
+     * @param $skus
+     * @return string
+     */
+    private static function getShopifyTagNew($skus, $goodsInfo){
+        $optionValue1 = [];
+        $optionValue2 = [];
+        foreach ($skus as $ele) {
+            $optionValue1[] = $ele['color'];
+            $optionValue2[] = $ele['size'];
+        }
+        $optionValue1 = array_unique(array_filter($optionValue1));
+        $optionValue2 = array_unique(array_filter($optionValue2));
+
+        $outArr = array_merge($optionValue1, $optionValue2);
+        $out = implode(',', $outArr);
+        if($goodsInfo['style']){
+            $out .=  $out ? (',' . $goodsInfo['style']) : $goodsInfo['style'];
+        }
+        if($goodsInfo['length']){
+            $out .=  $out ? (',' . $goodsInfo['length']) : $goodsInfo['length'];
+        }
+        if($goodsInfo['sleeveLength']){
+            $out .=  $out ? (',' . $goodsInfo['sleeveLength']) : $goodsInfo['sleeveLength'];
+        }
+        if($goodsInfo['neckline']){
+            $out .=  $out ? (',' . $goodsInfo['neckline']) : $goodsInfo['neckline'];
+        }
+        return $out;
     }
 
     /**
