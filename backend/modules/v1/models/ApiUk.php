@@ -202,7 +202,8 @@ class ApiUk
         $data['profitRmb'] = round($profit * $ukRate, 2);
 
         //计算毛利率
-        $data['adFee'] = round($params['price'] * (1 - $params['adRate']/100) * $params['adRate'] / 100,2);
+        $data['adRate'] = $params['adRate'];
+        $data['adFee'] = round($params['price'] * (1 - $params['vatRate']/100) * $params['adRate'] / 100,2);
         $data['vatFee'] = round($data['price'] * $params['vatRate'] / 100,2);
         $data['rate'] = round($profit / ($data['price'] * (1 - $params['vatRate']/100)) * 100, 2);
 
@@ -251,7 +252,8 @@ class ApiUk
         $data['profit'] = round($profit, 2);
         $data['profitRmb'] = round($profit * $ukRate, 2);
         $data['rate'] = $params['rate'];
-        $data['adFee'] = round(($price - $params['shippingPrice']) * (1 - $params['adRate']/100) * $params['adRate'] / 100,2);
+        $data['adRate'] = $params['adRate'];
+        $data['adFee'] = round(($price - $params['shippingPrice']) * (1 - $params['vatRate']/100) * $params['adRate'] / 100,2);
         $data['vatFee'] = round($data['price'] * $params['vatRate'] / 100,2);
         return $data;
 
