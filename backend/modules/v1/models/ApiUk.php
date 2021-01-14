@@ -193,8 +193,8 @@ class ApiUk
         }
 
         //计算毛利
-        $profit = $params['price'] * (1 - $params['vatRate']/100 - $params['adRate']/100) - $data['pFee'] - $data['eFee'] -
-            ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate;
+        $profit = $data['price'] * (1 - $params['vatRate']/100 - $params['adRate']/100) - $data['pFee'] - $data['eFee'] -
+            ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate + $params['shippingPrice'] * $params['adRate']/100;
         $data['profit'] = round($profit, 2);
         $data['eFee'] = round($data['eFee'], 2);
         $data['pFee'] = round($data['pFee'], 2);
@@ -222,7 +222,7 @@ class ApiUk
 
         //获取售价  使用小额paypal参数计算 和8美元比较，小于8则正确，否则使用大额参数再次计算获取售价
         $price = ( ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate +
-                Yii::$app->params['spBasic_uk'] + $params['shippingPrice'] * (1 - $params['adRate']/100)
+                Yii::$app->params['spBasic_uk'] - $params['shippingPrice'] * $params['adRate']/100
             ) / ( (1 - $params['rate']/100)*(1 - $params['vatRate']/100) - Yii::$app->params['eRate_uk'] -
                 Yii::$app->params['spRate_uk'] - $params['adRate']/100);
 
@@ -231,7 +231,7 @@ class ApiUk
             $pFee = $price * Yii::$app->params['spRate_uk'] + Yii::$app->params['spBasic_uk'];
         } else {
             $price = (($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate +
-                    Yii::$app->params['bpBasic_uk'] - $params['shippingPrice'] * (1 - $params['adRate']/100)
+                    Yii::$app->params['bpBasic_uk'] - $params['shippingPrice'] * $params['adRate']/100
                 )/ ( (1 - $params['rate']/100)*(1 - $params['vatRate']/100) - Yii::$app->params['eRate_uk'] -
                     Yii::$app->params['bpRate_uk'] - $params['adRate']/100);
             $pFee = $price * Yii::$app->params['bpRate_uk'] + Yii::$app->params['bpBasic_uk'];
@@ -241,8 +241,8 @@ class ApiUk
         $eFee = $price * Yii::$app->params['eRate_uk'];
 
         //计算毛利
-        $profit = ($price - $params['shippingPrice']) * (1 - $params['vatRate']/100 - $params['adRate']/100) - $eFee - $pFee -
-            ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate;
+        $profit = $price * (1 - $params['vatRate']/100 - $params['adRate']/100) - $eFee - $pFee -
+            ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate + $params['shippingPrice'] * $params['adRate']/100;
         $data['price'] = round($price, 2);
         $data['eFee'] = round($eFee, 2);
         $data['pFee'] = round($pFee, 2);

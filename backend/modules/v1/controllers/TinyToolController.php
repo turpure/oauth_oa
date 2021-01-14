@@ -187,7 +187,7 @@ class TinyToolController extends AdminController
             'num' => $cond['num'] ? $cond['num'] : 1,
             'price' => $cond['price'],
             'rate' => isset($cond['rate']) && $cond['rate'] ? $cond['rate'] : 0,
-            'vatRate' => isset($cond['vatRate']) && $cond['vatRate'] ? $cond['vatRate'] : 0,
+            'vatRate' => isset($cond['vatRate']) && $cond['vatRate'] ? $cond['vatRate'] : 20,
         ];
 
         $data = [
@@ -447,7 +447,7 @@ class TinyToolController extends AdminController
             'shippingPrice' => isset($cond['shippingPrice']) && $cond['shippingPrice'] ? $cond['shippingPrice'] : 0,
             'adRate' => isset($cond['adRate']) && $cond['adRate'] ? $cond['adRate'] : 0,
             'rate' => isset($cond['rate']) && $cond['rate'] ? $cond['rate'] : 0,
-            'vatRate' => isset($cond['vatRate']) && $cond['vatRate'] ? $cond['vatRate'] : 0,
+            'vatRate' => isset($cond['vatRate']) && $cond['vatRate'] ? $cond['vatRate'] : 20,
         ];
         $data = [
             'detail' => [],
