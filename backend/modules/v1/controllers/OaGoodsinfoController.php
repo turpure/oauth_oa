@@ -828,7 +828,7 @@ class OaGoodsinfoController extends AdminController
      * @brief 导出Shopify模板
      * @throws \Exception
      */
-    public function actionPlatExportShopify()
+    public function actionPlatExportShopifyNew()
     {
         try {
             $request = Yii::$app->request;
