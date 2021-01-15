@@ -2841,7 +2841,7 @@ class ApiGoodsinfo
         $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
 //        $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
         $rowTemplate = [
-            'Handle' => '', 'Title' => $shopifyInfo['title'], 'Body (HTML)' => '', 'Vendor' => '', 'Type' => '', 'Tags' => '',
+            'Handle' => '', 'Title' => '', 'Body (HTML)' => '', 'Vendor' => '', 'Type' => '', 'Tags' => '',
             'Published' => 'TRUE', 'Option1 Name' => '', 'Option1 Value' => '', 'Option2 Name' => '',
             'Option2 Value' => '', 'Option3 Name' => '', 'Option3 Value' => '', 'Variant SKU' => '',
             'Variant Grams' => '', 'Variant Inventory Tracker' => 'shopify', 'Variant Inventory Qty' => '',
@@ -2873,6 +2873,7 @@ class ApiGoodsinfo
                 $option2Name = static::getShopifyOptionName($position, $sku, 'Size');
                 $row = $rowTemplate;
                 $row['Handle'] = str_replace(' ', '-', $shopifyInfo['title']);
+                $row['Title'] = $position > 1 ? '' : $shopifyInfo['title'];
                 $row['Body (HTML)'] = $position > 1 ? '' : str_replace("\n", '<br>', $shopifyInfo['description']);
                 $row['Vendor'] = $position > 1 ? '' : $account['account'];
                 //$row['Tags'] = $position > 1 ? '' : static::getShopifyTag($account['tags'], $shopifySku);
@@ -2886,6 +2887,7 @@ class ApiGoodsinfo
                 $row['Variant Grams'] = $sku['weight'];
                 $row['Variant Inventory Qty'] = $sku['inventory'];
                 $row['Variant Price'] = $sku['price'];
+                $row['Variant Compare At Price'] = $sku['msrp'];
                 $row['Variant Image'] = $sku['linkUrl'];
                 $row['Image Src'] = $position <= $imagesCount ? $images[$position - 1] : '';
                 $row['Image Position'] = $position <= $imagesCount ? $position : '';
