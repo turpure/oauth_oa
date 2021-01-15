@@ -919,7 +919,8 @@ class DataCenterController extends AdminController
             return [];
         }
         $cond = $request->post('condition');
-        $accountName = isset($cond['paypal_account']) ? $cond['paypal_account'] : null;
+        $accountName = isset($cond['paypal_account']) ? $cond['paypal_account'] : [];
+        $accounts = implode("','", $accountName);
         $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
         try {
             $sql = "SELECT DISTINCT paypal_account,t.mappingEbayName
@@ -927,7 +928,7 @@ class DataCenterController extends AdminController
                 LEFT JOIN Y_PayPalToken t ON b.paypal_account=t.accountName 
                 WHERE 1=1 ";
             if($accountName){
-                $sql .= " AND paypal_account='{$accountName}'";
+                $sql .= " AND paypal_account IN ('{$accounts}')";
             }
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             $provider = new ArrayDataProvider([
