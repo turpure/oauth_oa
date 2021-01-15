@@ -9,6 +9,7 @@ use backend\modules\v1\models\ApiGoods;
 use backend\modules\v1\models\ApiTool;
 use backend\modules\v1\utils\Helper;
 use Yii;
+use yii\web\UploadedFile;
 use backend\models\OaGoods;
 use yii\helpers\ArrayHelper;
 use backend\modules\v1\models\ApiProductsEngine;
@@ -366,38 +367,49 @@ class OaGoodsController extends AdminController
     }
 
 
-    /** 下载模板
-     * Date: 2019-04-01 13:35
-     * Author: henry
+    /**
+     * 产品导入的模板
+     * 包括正向开发和逆向开发
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    public function actionTemplate()
+    public function actionDownloadNewProductTemplate()
     {
-        $fileName = '导入模板';
-        $fileName = 'ImportTemplate';
-        $headers = ['*img', '*cate', '*subCate', 'vendor1', 'vendor2', 'vendor3',
-            '*origin1', 'origin2', 'origin3', '*salePrice', '*hopeWeight', '*hopeRate', '*hopeSale'];
-        $data = [
-            [
-                '*img' => 'https://i.ebayimg.com/images/g/shMAAOSw3GFZoaEY/s-l500.png',
-                '*cate' => '女人世界',
-                '*subCate' => '女鞋',
-                'vendor1' => 'vendor1',
-                'vendor2' => 'vendor2',
-                'vendor3' => 'vendor3',
-                '*origin1' => 'origin1',
-                'origin2' => 'origin2',
-                'origin3' => 'origin3',
-                '*salePrice' => '6',
-                '*hopeWeight' => '6',
-                '*hopeRate' => '6',
-                '*hopeSale' => '6',
-            ]
-        ];
-        ApiTool::exportExcel($fileName, $headers, $data);
+        ApiGoods::generateNewProductTemplate();
     }
 
+
+    /**
+     * 上传产品到正向开发
+     * @return array
+     */
+    public function actionUploadForwardProductTemplate()
+    {
+        try {
+            return ApiGoods::uploadNewProduct('正向认领');
+        }
+        catch(\Exception $why) {
+
+            return ['code'=> $why->getCode(), 'message' => $why->getMessage()];
+        }
+
+    }
+
+    /**
+     * 上传产品到逆向开发
+     * @return array
+     */
+    public function actionUploadBackwardProductTemplate()
+    {
+        try {
+            return ApiGoods::uploadNewProduct('逆向认领');
+        }
+        catch(\Exception $why) {
+
+            return ['code'=> $why->getCode(), 'message' => $why->getMessage()];
+        }
+
+    }
 
 
     /**
