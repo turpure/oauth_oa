@@ -16,6 +16,7 @@ use Yii;
 use backend\models\OaGoods;
 use yii\data\ActiveDataProvider;
 use yii\db\Exception;
+use backend\modules\v1\utils\ExportTools;
 use backend\modules\v1\models\ApiCondition;
 use yii\helpers\ArrayHelper;
 
@@ -79,6 +80,113 @@ class ApiGoods
 
     }
 
+    /**
+     * 生成产品模板
+     */
+    public static function generateNewProductTemplate()
+    {
+        $fileName = 'new-product-template';
+        $titles = [
+            '*图片', '*主类目', '*子类目', '*供应商链接1', '供应商链接2', '供应商链接3', '平台参考链接1', '平台参考链接2',
+            '平台参考链接3', '售价($)', '预估月销量', '预估利润率(%)', '预估重量(g)', '预估成本(￥)', '预估月毛利($)',
+        ];
+
+        $data = [
+            [
+                '*图片' => 'image',
+                '*主类目' => 'zhu',
+                '*子类目' => 'zi',
+                '*供应商链接1' => 'gong1',
+                '供应商链接2' => '2',
+                '供应商链接3' => '3',
+                '平台参考链接1' => '1',
+                '平台参考链接2' => '2',
+                '平台参考链接3' => '3',
+                '售价($)' => '2',
+                '预估月销量' => '2',
+                '预估利润率(%)' => '2',
+                '预估重量(g)' => '2',
+                '预估成本(￥)' => '2',
+                '预估月毛利($)' => '2',
+            ]
+        ];
+
+        ExportTools::toExcelOrCsv($fileName, $data,'Csv' ,$titles);
+    }
+
+
+    /**
+     * 上传产品
+     * @param $devStatus
+     * @throws Exception
+     * @return mixed
+     */
+    public static function uploadNewProduct($devStatus)
+    {
+        $fields = ['img', 'cate', 'subCate', 'vendor1', 'vendor2', 'vendor3',
+            'origin1', 'origin2', 'origin3', 'salePrice','hopeSale',  'hopeRate', 'hopeWeight',
+            'hopeCost','hopeMonthProfit',
+        ];
+        try {
+            if (Yii::$app->request->isPost ) {
+                $tmpName = $_FILES['file']['tmp_name'];
+                $csvAsArray = array_map('str_getcsv', file($tmpName));
+
+                // 删除列名
+                array_shift($csvAsArray);
+                foreach ($csvAsArray as &$row) {
+                    foreach ($row as &$ceil) {
+                        //检测编码方式
+                        $encode = mb_detect_encoding($ceil, array('ASCII','UTF-8','GB2312','GBK','BIG5'));
+                        // 转换编码方式
+                        $ceil =  iconv($encode, 'UTF-8',$ceil);
+                    }
+                    //释放
+                    unset($ceil);
+
+                    //生产新产品
+                    $product = array_combine($fields, $row);
+
+                    //更新状态
+                    $product['devStatus'] = $devStatus;
+
+                    static::saveUploadedNewProduct($product);
+                }
+            }
+            return ['上传产品成功'];
+        }
+
+        catch(\Exception $why) {
+            throw new Exception('上传产品失败');
+        }
+    }
+
+    /**
+     * 保存新产品:包括正向开发和逆向开发
+     * 此处先不校验备货和可用数量
+     * @param $product
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function saveUploadedNewProduct($product)
+    {
+
+        $model = new OaGoods();
+        $user = Yii::$app->user->identity->username;
+        $cateModel = Yii::$app->py_db->createCommand("SELECT Nid,CategoryName FROM B_GoodsCats WHERE CategoryName = :CategoryName")
+            ->bindValues([':CategoryName' => $product['cate']])->queryOne();
+        $model->attributes = $product;
+        $model->catNid = $cateModel && isset($cateModel['Nid']) ? $cateModel['Nid'] : 0;
+        $model->checkStatus = '待提交';
+        $model->developer =  $user;
+        $model->updateDate = $model->createDate = date('Y-m-d H:i:s');
+        $model->devNum = date('Ymd', time()) . strval($model->nid);
+        $ret = $model->save();
+        if (!$ret) {
+            throw new \Exception('Create new product failed!');
+        }
+        return $model;
+    }
 
     /**
      * 获取正向开发列表
