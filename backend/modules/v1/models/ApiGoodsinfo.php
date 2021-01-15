@@ -409,6 +409,7 @@ class ApiGoodsinfo
                 }
                 //保存SKU关联1688信息
                 $specId = isset($skuRow['specId']) ? $skuRow['specId'] : '';
+                $style = isset($skuRow['style']) ? $skuRow['style'] : '';
                 $offerId = isset($skuRow['offerId']) ? $skuRow['offerId'] : '';
                 if ($offerId) {
                     $count = OaGoods1688::find()->andFilterWhere(['infoId' => $infoId, 'offerId' => $offerId])->count();
@@ -418,16 +419,19 @@ class ApiGoodsinfo
                             $goodsSku1688 = new OaGoodsSku1688();
                             $goodsSku1688->goodsSkuId = $skuModel->id;
                         }
-                        if ($specId != '无') {
+                        $goodsSku1688->offerId = $offerId;
+                        $goodsSku1688->specId = $specId;
+                        //if ($specId != '无') {
+                        if ($style != '无') {
                             $goods1688 = OaGoods1688::find()->andFilterWhere(['infoId' => $infoId, 'offerId' => $offerId, 'specId' => $specId])->one();
                             $goodsSku1688->supplierLoginId = $goods1688->supplierLoginId;
                             $goodsSku1688->companyName = $goods1688->companyName;
                         } else {
                             $goodsSku1688->supplierLoginId = '';
                             $goodsSku1688->companyName = '';
+                            $goodsSku1688->specId = '';
                         }
-                        $goodsSku1688->offerId = $offerId;
-                        $goodsSku1688->specId = $specId;
+
                         $goodsSku1688->isDefault = 1;
                         $ss = $goodsSku1688->save();
                         if (!$ss) {
