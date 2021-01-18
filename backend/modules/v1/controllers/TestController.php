@@ -55,7 +55,6 @@ class TestController extends AdminController
     }
 
     public  function actionTest1(){
-        //$password = "Basic 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";
         $apiKey = 'd81d4172b65448ae75956be6628c74eb';
         $password = "5646b121efbf63a9ab0963d15a68f796";
         $url = 'https://' . $apiKey . ':' . $password .'@faroonee.myshopify.com/admin/api/2019-07/products.json';

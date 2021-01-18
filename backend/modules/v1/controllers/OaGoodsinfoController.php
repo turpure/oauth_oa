@@ -1078,7 +1078,7 @@ class OaGoodsinfoController extends AdminController
             $condition = $request->post()['condition'];
             $ids = $condition['ids'];
             $account = $condition['account'];
-            $res = ApiGoodsinfo::uploadToFyndiqBackstage($ids, $account);
+            $res = ApiGoodsinfo::uploadToShopifyBackstage($ids, $account);
             return $res;
         } catch (\Exception $why) {
             return ['code' => 400, 'message' => $why->getMessage()];

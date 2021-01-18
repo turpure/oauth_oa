@@ -2846,36 +2846,20 @@ class ApiGoodsinfo
         $out = [];
         foreach ($ids as $id) {
             $shopifyInfo = OaShopifyGoods::find()->where(['infoId' => $id])->asArray()->one();
-            $wishSku = OaShopifyGoodsSku::find()->where(['infoId' => $id])->asArray()->all();
+            $shopifySku = OaShopifyGoodsSku::find()->where(['infoId' => $id])->asArray()->all();
             $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
             $shopifyAccounts = OaFyndiqSuffix::findAll(['suffix' => $accounts]);
-            $keyWords = static::preKeywords($shopifyInfo);
             foreach ($shopifyAccounts as $account) {
-                $titlePool = [];
-                $title = '';
-                $len = self::fyndiqTitleLength;
-                while (true) {
-                    $title = static::getTitleName($keyWords, $len);
-                    --$len;
-                    if (empty($title) || !in_array($title, $titlePool, false)) {
-                        $titlePool[] = $title;
-                        break;
-                    }
-                }
-                $row['parent_sku'] = $wishInfo['sku'];
-//                $row['title'] = [["language" => "en-US", "value" => $wishInfo['fyndiqTitle']]];
-                $row['title'] = [["language" => "en-US", "value" => $title]];
-                $row['description'] = [["language" => "en-US", "value" => $wishInfo['description']]];
-                $row['categories'] = [$wishInfo['fyndiqCategoryId']];
-                $row['suffix'] = $account['suffix'];
-                $row['quantity'] = !empty($wishInfo['inventory']) ? ((int)$wishInfo['inventory']) : 5;
-                $variantInfo = static::getFyndiqVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
-//                return $variantInfo;
-                $row['variations'] = $variantInfo;
-                $row['markets'] = ['SE'];
-//                return $row;
-                $res = self::uploadFyndiqProducts($account, $row);
-                //return $res;
+
+                $row['title'] = $shopifyInfo['title'];
+                $row['body_html'] = $shopifyInfo['description'];
+                //$row['vendor'] = $shopifyInfo['sku'];
+                //$row['product_type'] = $shopifyInfo['sku'];
+                $row['tags'] = explode(',', self::getShopifyTagNew($shopifySku, $goodsInfo));
+
+                list($variantInfo, $options) = static::getShopifyVariantInfo($goodsInfo['isVar'], $shopifyInfo, $shopifySku, $account);
+                return  [$variantInfo, $options];
+                $res = self::uploadShopifyProducts($account, $row);
                 foreach ($res as &$v){
                     if(isset($v['status_code']) && $v['status_code'] >= 400 && $v['status_code'] < 500){
                         $v['errors'] = json_encode($v['errors']);
@@ -2887,6 +2871,47 @@ class ApiGoodsinfo
             }
         }
         return $out;
+    }
+
+    /**
+     * 上传shopify产品
+     * Date: 2020-11-07 16:39
+     * Author: henry
+     * @return array
+     */
+    public static function uploadShopifyProducts($account, $row, $type = 'Product'){
+        $sql = "SELECT apikey FROM [dbo].[S_ShopifySyncInfo]";
+        $keyQuery = Yii::$app->py_db->createCommand($sql)->queryOne();
+        $apiKey = $keyQuery ? $keyQuery['apikey'] : '';
+        $pwdSql = "SELECT password FROM [dbo].[S_ShopifySyncInfo] WHERE hostname='{$account}'";
+        $pwdQuery = Yii::$app->py_db->createCommand($pwdSql)->queryOne();
+        $url = 'https://' . $apiKey . ':' . $pwdQuery['password'] .'@faroonee.myshopify.com/admin/api/2019-07/products.json';
+
+        $token = base64_encode($account['suffixId'] . ':' . $account['token']);
+        $data = [];
+        foreach ($row['variations'] as $sku){
+            $item = $sku;
+            $item['parent_sku'] = $row['parent_sku'];
+            $item['title'] = $row['title'];
+            $item['description'] = $row['description'];
+            $item['categories'] = $row['categories'];
+            $item['markets'] = $row['markets'];
+//            $item['status'] = 'paused';
+            $item['status'] = 'for sale';
+            $data[] = $item;
+        }
+        $header = ["Authorization: Basic " . $token];
+        $res = Helper::post($url, json_encode($data), $header);
+//        var_dump($res);exit;
+//        return $res;
+        if($res[0] > 500){
+            $error = $res[1];
+        }elseif($res[0] > 400){
+            $error  = $res[1]['errors'];
+        }else{
+            $error = $res[1]['responses'];
+        }
+        return $error;
     }
 
     /**
@@ -2908,7 +2933,7 @@ class ApiGoodsinfo
             'Option2 Value' => '', 'Option3 Name' => '', 'Option3 Value' => '', 'Variant SKU' => '',
             'Variant Grams' => '', 'Variant Inventory Tracker' => 'shopify', 'Variant Inventory Qty' => '',
             'Variant Inventory Policy' => 'continue', 'Variant Fulfillment Service' => 'manual', 'Variant Price' => '',
-            'Variant Compare At Price' => '', 'Variant Requires Shipping' => 'TRUE', 'Variant Taxable' => 'FALSE',
+            'Variant Compare At Price' => '', 'Variant Requires Shipping' => 'TRUE', 'Variant Taxable' => 'TRUE',
             'Variant Barcode' => '', 'Image Src' => '', 'Image Position' => '', 'Image Alt Text' => '',
             'Gift Card' => 'FALSE', 'SEO Title' => '', 'SEO Description' => '',
             'Google Shopping / Google Product Category' => '', 'Google Shopping / Gender' => '',
@@ -2997,7 +3022,7 @@ class ApiGoodsinfo
             'Option2 Value' => '', 'Option3 Name' => '', 'Option3 Value' => '', 'Variant SKU' => '',
             'Variant Grams' => '', 'Variant Inventory Tracker' => 'shopify', 'Variant Inventory Qty' => '',
             'Variant Inventory Policy' => 'continue', 'Variant Fulfillment Service' => 'manual', 'Variant Price' => '',
-            'Variant Compare At Price' => '', 'Variant Requires Shipping' => 'TRUE', 'Variant Taxable' => 'FALSE',
+            'Variant Compare At Price' => '', 'Variant Requires Shipping' => 'TRUE', 'Variant Taxable' => 'TRUE',
             'Variant Barcode' => '', 'Image Src' => '', 'Image Position' => '', 'Image Alt Text' => '',
             'Gift Card' => 'FALSE', 'SEO Title' => '', 'SEO Description' => '',
             'Google Shopping / Google Product Category' => '', 'Google Shopping / Gender' => '',
@@ -3466,6 +3491,62 @@ class ApiGoodsinfo
                 $variation[] = $var;
             }
             return $variation;
+        } catch (\Exception $why) {
+//            var_dump($why->getMessage());exit;
+            return ['variant' => '', 'price' => '', 'original_price' => ''];
+        }
+    }
+
+    /**
+     * @brief 整合Shopify变体信息
+     * @param $isVar
+     * @param $wishInfo
+     * @param $wishSku
+     * @param $account
+     * @return array
+     */
+    private static function getShopifyVariantInfo($isVar, $shopifyInfo, $shopifySku, $account)
+    {
+        try {
+            //打包变体
+            $variation = $value1 = $value2 = [];
+            foreach ($shopifySku as $sku) {
+                $var['sku'] = $sku['sku'];
+                $var['inventory_quantity'] = (int)$sku['inventory'];
+                $var['inventory_policy'] = 'continue';
+                $var['fulfillment_service'] = 'manual';
+                $var['inventory_management'] = 'shopify';
+                $var['requires_shipping'] = true;
+                $var['taxable'] = true;
+
+
+                $var['properties'] = [];
+                $var['variational_properties'] = [];
+                if($sku['color']){
+                    $value1[] = array_merge($value1, [$sku['color']]);
+                }
+                if($sku['size']){
+                    $value2[] = array_merge($value2, [$sku['size']]);
+                }
+                $var['price'] = $sku['price'];
+                //$row['compare_at_price'] = $sku['msrp'];
+                $var['weight'] = $sku['weight'];
+                $var['weight_unit'] = 'g';
+                $var['image'] = $sku['linkUrl'];
+                //$extraImages = explode("\n", $shopifyInfo['extraImages']);
+                //$key = array_search($sku['linkUrl'], $extraImages);
+                //if($key !== false) array_splice($extraImages, $key, 1);
+                //$var['images'] = array_slice($extraImages, 0, 10);
+                $variation[] = $var;
+            }
+            $options = [];
+            if($value1 && $value2){
+                $options = [
+                    ['name' => 'Color', 'values' => array_unique($value1)],
+                    ['name' => 'Size', 'values' => array_unique($value2)],
+                ];
+            }
+            return [$variation, $options];
         } catch (\Exception $why) {
 //            var_dump($why->getMessage());exit;
             return ['variant' => '', 'price' => '', 'original_price' => ''];

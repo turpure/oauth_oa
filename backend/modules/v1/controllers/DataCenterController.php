@@ -630,7 +630,7 @@ class DataCenterController extends AdminController
                 isnull(s.paypalStatus,'使用中') as paypalStatus ,
                 CASE WHEN charindex('英国',s.memo) > 0 and GBP >= 400 THEN '是' 
                      WHEN charindex('超级浏览器',s.memo) > 0 and GBP >= 400 THEN '是' 
-                     WHEN charindex('集中付款',s.memo) > 0 and TotalRMB/{$usRate} >= 2200 THEN '是' 
+                     WHEN charindex('集中付款',s.memo) > 0 and TotalRMB/{$usRate} >= 1600 THEN '是' 
                      WHEN charindex('英国',s.memo) = 0 and charindex('超级浏览器',s.memo) = 0 and charindex('集中付款',s.memo) = 0 and TotalRMB/{$usRate} >= 2700 THEN '是' 
                 ELSE '否' END  AS isWithdraw
                 FROM Y_PayPalBalance b
