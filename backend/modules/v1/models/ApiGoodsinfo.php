@@ -2832,6 +2832,64 @@ class ApiGoodsinfo
 
 
     /**
+     * shopify 上架产品
+     * @param $ids
+     * @param $accounts
+     * Date: 2020-11-10 17:07
+     * Author: henry
+     * @return array|bool
+     * @throws Exception
+     */
+    public static function uploadToShopifyBackstage($ids, $accounts)
+    {
+        if(!is_array($ids)) $ids = [$ids];
+        $out = [];
+        foreach ($ids as $id) {
+            $shopifyInfo = OaShopifyGoods::find()->where(['infoId' => $id])->asArray()->one();
+            $wishSku = OaShopifyGoodsSku::find()->where(['infoId' => $id])->asArray()->all();
+            $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
+            $shopifyAccounts = OaFyndiqSuffix::findAll(['suffix' => $accounts]);
+            $keyWords = static::preKeywords($shopifyInfo);
+            foreach ($shopifyAccounts as $account) {
+                $titlePool = [];
+                $title = '';
+                $len = self::fyndiqTitleLength;
+                while (true) {
+                    $title = static::getTitleName($keyWords, $len);
+                    --$len;
+                    if (empty($title) || !in_array($title, $titlePool, false)) {
+                        $titlePool[] = $title;
+                        break;
+                    }
+                }
+                $row['parent_sku'] = $wishInfo['sku'];
+//                $row['title'] = [["language" => "en-US", "value" => $wishInfo['fyndiqTitle']]];
+                $row['title'] = [["language" => "en-US", "value" => $title]];
+                $row['description'] = [["language" => "en-US", "value" => $wishInfo['description']]];
+                $row['categories'] = [$wishInfo['fyndiqCategoryId']];
+                $row['suffix'] = $account['suffix'];
+                $row['quantity'] = !empty($wishInfo['inventory']) ? ((int)$wishInfo['inventory']) : 5;
+                $variantInfo = static::getFyndiqVariantInfo($goodsInfo['isVar'], $wishInfo, $wishSku, $account);
+//                return $variantInfo;
+                $row['variations'] = $variantInfo;
+                $row['markets'] = ['SE'];
+//                return $row;
+                $res = self::uploadFyndiqProducts($account, $row);
+                //return $res;
+                foreach ($res as &$v){
+                    if(isset($v['status_code']) && $v['status_code'] >= 400 && $v['status_code'] < 500){
+                        $v['errors'] = json_encode($v['errors']);
+                    }else{
+                        $v['errors'] = '';
+                    }
+                }
+                $out = array_merge($out, $res);
+            }
+        }
+        return $out;
+    }
+
+    /**
      * @brief shopfiy模板预处理
      * @param $id
      * @param $accounts

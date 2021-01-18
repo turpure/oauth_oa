@@ -1037,26 +1037,6 @@ class OaGoodsinfoController extends AdminController
 
     }
 
-    /**
-     * @brief 上架Fyndiq产品
-     * Date: 2020-1-09 9:00
-     * Author: henry
-     * @return array|bool
-     */
-    public function actionPlatFyndiqToBackstage()
-    {
-        try {
-
-            $request = Yii::$app->request;
-            $condition = $request->post()['condition'];
-            $ids = $condition['ids'];
-            $account = $condition['account'];
-            $res = ApiGoodsinfo::uploadToFyndiqBackstage($ids, $account);
-            return $res;
-        } catch (\Exception $why) {
-            return ['code' => 400, 'message' => $why->getMessage()];
-        }
-    }
 
     /**
      * 导出产品信息
@@ -1085,6 +1065,46 @@ class OaGoodsinfoController extends AdminController
         ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
     }
 
+    /**
+     * @brief 上架Shopify产品
+     * Date: 2020-1-09 9:00
+     * Author: henry
+     * @return array|bool
+     */
+    public function actionPlatShopifyToBackstage()
+    {
+        try {
+            $request = Yii::$app->request;
+            $condition = $request->post()['condition'];
+            $ids = $condition['ids'];
+            $account = $condition['account'];
+            $res = ApiGoodsinfo::uploadToFyndiqBackstage($ids, $account);
+            return $res;
+        } catch (\Exception $why) {
+            return ['code' => 400, 'message' => $why->getMessage()];
+        }
+    }
+
+    /**
+     * @brief 上架Fyndiq产品
+     * Date: 2020-1-09 9:00
+     * Author: henry
+     * @return array|bool
+     */
+    public function actionPlatFyndiqToBackstage()
+    {
+        try {
+
+            $request = Yii::$app->request;
+            $condition = $request->post()['condition'];
+            $ids = $condition['ids'];
+            $account = $condition['account'];
+            $res = ApiGoodsinfo::uploadToFyndiqBackstage($ids, $account);
+            return $res;
+        } catch (\Exception $why) {
+            return ['code' => 400, 'message' => $why->getMessage()];
+        }
+    }
 
     /**
      * @brief 上架JOOM产品
@@ -1164,7 +1184,8 @@ class OaGoodsinfoController extends AdminController
             $logData['infoId'] = $infoId;
 //            var_dump($data);exit;
             //post到iBay接口
-            $api = 'http://139.196.109.214/index.php/api/ImportEbayMuban/auth/youran';
+//            $api = 'http://139.196.109.214/index.php/api/ImportEbayMuban/auth/youran';
+            $api = 'http://113.31.116.75/index.php/api/ImportEbayMuban/auth/youran';
             $ret = Helper::request($api, $data)[1];
 //            return $ret;
             //var_dump($ret);exit;
@@ -1273,6 +1294,8 @@ class OaGoodsinfoController extends AdminController
         }
         return true;
     }
+
+
 
 
     ########################### smt  plat info ########################################

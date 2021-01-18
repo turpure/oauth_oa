@@ -55,17 +55,26 @@ class TestController extends AdminController
     }
 
     public  function actionTest1(){
-        $month = '2020-11';
-        $thisYear = date('Y',strtotime($month));
-        $thisMonth = date('m',strtotime($month));
-        if($thisMonth == 12){
-            $beginDate = $thisYear + 1 . '-' . '01-01';
-        }else{
-            $beginDate = $thisYear . '-' . ($thisMonth + 1) . '-' .'01';
-        }
-        var_dump($beginDate);exit;
+        //$password = "Basic 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";
+        $apiKey = 'd81d4172b65448ae75956be6628c74eb';
+        $password = "5646b121efbf63a9ab0963d15a68f796";
+        $url = 'https://' . $apiKey . ':' . $password .'@faroonee.myshopify.com/admin/api/2019-07/products.json';
+        //$sql = "SELECT password FROM [dbo].[S_ShopifySyncInfo] WHERE hostname='faroonee'";
+        //$account = Yii::$app->py_db->createCommand($sql)->queryOne();
+        //$header = ['Content-Type' => 'application/json', 'X-Shopify-Access-Token' => $account['password']];
 
-        $beginDate = $month.'-01';
+
+        //$header = ['Content-Type' => 'application/json', 'X-Shopify-Access-Token' => $password];
+        $header = ['Content-Type' => 'application/json'];
+       // var_dump($account);exit;
+        //$res = Helper::curlRequest($url,[],$header,'GET');
+        $res = Helper::post($url,'', $header,'GET');
+
+
+        return $res;
+
+
+
 
 
 
@@ -88,7 +97,7 @@ class TestController extends AdminController
             $query = Yii::$app->py_db->createCommand($sql)->queryOne();
             $v['suffix'] = $query ? $query['NoteName'] : '';
             $v['creator'] = 'admin';
-//            var_dump($v);exit;
+//            var_dump($v);exit;w
 //            $collection->update(['_id' => $v['_id']], ['shortName' => $shortName]);
             //var_dump($query);exit;
             $collection->insert($v);
