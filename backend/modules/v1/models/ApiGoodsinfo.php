@@ -2844,6 +2844,11 @@ class ApiGoodsinfo
         $out = [];
         foreach ($ids as $id) {
             $shopifyInfo = OaShopifyGoods::find()->where(['infoId' => $id])->asArray()->one();
+            if(!$shopifyInfo['title']){
+                $out[] = ['suffix' => '', 'sku' => $shopifyInfo['sku'], 'product_id' => '',
+                    'content' => "The product {$shopifyInfo['sku']} title is empty"];
+                continue;
+            }
             $shopifySku = OaShopifyGoodsSku::find()->where(['infoId' => $id])->asArray()->all();
             $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
             $shopifyAccounts = OaShopify::findAll(['account' => $accounts]);
@@ -3527,7 +3532,7 @@ class ApiGoodsinfo
     {
         try {
             //打包变体
-            $variation = $value1 = $value2 = [];
+            $variation = $skuImages = $value1 = $value2 = [];
             foreach ($shopifySku as $sku) {
                 $var['sku'] = $sku['sku'];
                 $var['inventory_quantity'] = (int)$sku['inventory'];
@@ -3551,6 +3556,7 @@ class ApiGoodsinfo
                 $var['weight_unit'] = 'g';
                 //$var['image'] = $sku['linkUrl'];
                 $variation[] = $var;
+                $skuImages[] = $sku['linkUrl'];
             }
             $options = [];
             if ($value1 && $value2) {
@@ -3561,7 +3567,8 @@ class ApiGoodsinfo
             }
             $images = [['src' => $shopifyInfo['mainImage']]];
             $extraImages = explode("\n", $shopifyInfo['extraImages']);
-            foreach ($extraImages as $k => $v) {
+            $imgArr = array_unique(array_merge($extraImages, $skuImages));
+            foreach ($imgArr as $k => $v) {
                 $images[$k + 1]['src'] = $v;
             }
             return ['variation' => $variation, 'options' => $options, 'images' => $images];
