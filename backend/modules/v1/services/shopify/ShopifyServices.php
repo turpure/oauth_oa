@@ -117,7 +117,7 @@ class ShopifyServices extends AbstractService
             ];
             $aa = Logger::shopifyLog($params);
 //            var_dump($aa);
-            return $out;
+            return $product_id;
         } catch (Exception $e) {
             return $e->getMessage();
         }
@@ -167,17 +167,23 @@ class ShopifyServices extends AbstractService
      * @param $product
      * Date: 2021-01-19 16:13
      * Author: henry
-     * @return array
+     * @return string
      */
-    public function updateImages($product_id)
+    public function updateImages($product_id, $image_id, $variant_ids, $sku)
     {
-        $endpoint = 'products/' . $product_id . '/images.json';
+        $endpoint = 'products/' . $product_id . '/images/' . $image_id . '.json';
         $url = $this->base_uri . $endpoint;
-        $res = Helper::post($url, '', [], 'GET');
-        if($res[0] == 200){
-            return $res[1]['images'];
+        $data = [
+            'image' => [
+                'id' => $image_id,
+                'variant_ids' => $variant_ids
+            ]
+        ];
+        $res = Helper::post($url, json_encode($data), [], 'PUT');
+        if($res[0] >= 400){
+            return json_encode($res[1]);
         }else{
-            return [];
+            return 'success';
         }
     }
 

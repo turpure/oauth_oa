@@ -159,7 +159,7 @@ class ApiGoodsinfo
             if (strpos($userRole, '销售') === false) {
                 if (strpos($userRole, '采购') !== false) {
                     $query->andWhere(['or', ['in', 'g.introducer', $userList], ['in', 'gi.purchaser', $userList]]);
-                } else if(strpos($userRole, '美工') !== false || strpos($userRole, '开发') !== false) {
+                } else if (strpos($userRole, '美工') !== false || strpos($userRole, '开发') !== false) {
                     $query->andWhere(['or', ['in', 'gi.developer', $userList], ['in', 'possessMan1', $userList]]);
                 }
             } else {
@@ -393,7 +393,7 @@ class ApiGoodsinfo
             ];
         }
         $transaction = Yii::$app->db->beginTransaction();
-        //try {
+        try {
             foreach ($skuInfo as $skuRow) {
                 //保存SKU信息
                 $skuId = isset($skuRow['id']) ? $skuRow['id'] : '';
@@ -456,13 +456,13 @@ class ApiGoodsinfo
             }
             $transaction->commit();
             return true;
-//        } catch (\Exception $e) {
-//            $transaction->rollBack();
-//            return [
-//                'code' => 400,
-//                'message' => $e->getMessage()
-//            ];
-//        }
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
 
 
     }
@@ -576,7 +576,7 @@ class ApiGoodsinfo
                         'shipping' => '', 'shippingTime' => '', 'tags' => '', 'mainImage' => '', 'goodsId' => '', 'infoId' => '',
                         'extraImages' => '', 'headKeywords' => '', 'requiredKeywords' => '', 'randomKeywords' => '', 'tailKeywords' => '',
                         'wishTags' => '', 'stockUp' => '', 'wishMainImage' => '', 'wishExtraImages' => '', 'isJoomPublish' => '',
-                        'vovaCategoryId' => '','lazadaCategoryIdMY' => '','lazadaCategoryIdPH' => '','lazadaCategoryIdTH' => '','lazadaCategoryIdSG' => '','lazadaCategoryIdID' => '','lazadaCategoryIdVN' => '',
+                        'vovaCategoryId' => '', 'lazadaCategoryIdMY' => '', 'lazadaCategoryIdPH' => '', 'lazadaCategoryIdTH' => '', 'lazadaCategoryIdSG' => '', 'lazadaCategoryIdID' => '', 'lazadaCategoryIdVN' => '',
                     ],
                     'skuInfo' => [[
                         'id' => '', 'infoId' => '', 'sid' => '', 'sku' => '', 'color' => '', 'size' => '', 'inventory' => '',
@@ -639,7 +639,7 @@ class ApiGoodsinfo
                     ],
                     'skuInfo' => [[
                         'id' => '', 'infoId' => '', 'sid' => '', 'sku' => '', 'color' => '', 'size' => '',
-                        'inventory' => '', 'price' => '', 'msrp' => '', 'linkUrl' => '', 'weight' => '','goodsSkuId' => ''
+                        'inventory' => '', 'price' => '', 'msrp' => '', 'linkUrl' => '', 'weight' => '', 'goodsSkuId' => ''
                     ]]
                 ];
                 return $ret;
@@ -743,16 +743,16 @@ class ApiGoodsinfo
         $goodsInfo = $condition['basicInfo'];
         $skuInfo = $condition['skuInfo'];
         $goods = OaShopifyGoods::findOne(['id' => $goodsInfo['id']]);
-        if(is_array($goodsInfo['length'])){
+        if (is_array($goodsInfo['length'])) {
             $goodsInfo['length'] = implode(',', $goodsInfo['length']);
         }
-        if(is_array($goodsInfo['style'])){
+        if (is_array($goodsInfo['style'])) {
             $goodsInfo['style'] = implode(',', $goodsInfo['style']);
         }
-        if(is_array($goodsInfo['sleeveLength'])){
+        if (is_array($goodsInfo['sleeveLength'])) {
             $goodsInfo['sleeveLength'] = implode(',', $goodsInfo['sleeveLength']);
         }
-        if(is_array($goodsInfo['neckline'])){
+        if (is_array($goodsInfo['neckline'])) {
             $goodsInfo['neckline'] = implode(',', $goodsInfo['neckline']);
         }
         $goods->setAttributes($goodsInfo);
@@ -1252,21 +1252,21 @@ class ApiGoodsinfo
             $ele['重量'] = max(round($ele['重量'] / 1000, 2), 0.02);
 
             # 附件图处理
-            $extraImages = explode("\n",$ele['附加图']);
+            $extraImages = explode("\n", $ele['附加图']);
 
-            $ele['附加图'] = $extraImages[0] ?? '' ;
-            $ele['附加图1'] = $extraImages[1] ?? '' ;
-            $ele['附加图2'] = $extraImages[2] ?? '' ;
-            $ele['附加图3'] = $extraImages[3] ?? '' ;
-            $ele['附加图4'] = $extraImages[4] ?? '' ;
-            $ele['附加图5'] = $extraImages[5] ?? '' ;
-            $ele['附加图6'] = $extraImages[6] ?? '' ;
-            $ele['附加图7'] = $extraImages[7] ?? '' ;
-            $ele['附加图8'] = $extraImages[8] ?? '' ;
-            $ele['附加图9'] = $extraImages[9] ?? '' ;
-            $ele['附加图10'] = $extraImages[10] ?? '' ;
-            $ele['附加图11'] = $extraImages[11] ?? '' ;
-            $ele['附加图12'] = $extraImages[12] ?? '' ;
+            $ele['附加图'] = $extraImages[0] ?? '';
+            $ele['附加图1'] = $extraImages[1] ?? '';
+            $ele['附加图2'] = $extraImages[2] ?? '';
+            $ele['附加图3'] = $extraImages[3] ?? '';
+            $ele['附加图4'] = $extraImages[4] ?? '';
+            $ele['附加图5'] = $extraImages[5] ?? '';
+            $ele['附加图6'] = $extraImages[6] ?? '';
+            $ele['附加图7'] = $extraImages[7] ?? '';
+            $ele['附加图8'] = $extraImages[8] ?? '';
+            $ele['附加图9'] = $extraImages[9] ?? '';
+            $ele['附加图10'] = $extraImages[10] ?? '';
+            $ele['附加图11'] = $extraImages[11] ?? '';
+            $ele['附加图12'] = $extraImages[12] ?? '';
 
             # Package
             $ele['Package'] = '1 X ' . json_decode($ele['必须关键词'])[0];
@@ -1279,7 +1279,7 @@ class ApiGoodsinfo
             $ele['成本价'] = $skuCostPrice[$ele['SKU']]['CostPrice'];
             $ele['重量'] = round($skuCostPrice[$ele['SKU']]['Weight'], 2);
             # 售价信息
-            $ele['MY售价'] = round(static::getGoodsSalePrice($ele, $siteInfo['MY'], $packageInfo, $expressInfo),1);
+            $ele['MY售价'] = round(static::getGoodsSalePrice($ele, $siteInfo['MY'], $packageInfo, $expressInfo), 1);
             $ele['MY原价'] = round($ele['MY售价'] * 1.8, 1);
             $ele['PH售价'] = ceil(static::getGoodsSalePrice($ele, $siteInfo['PH'], $packageInfo, $expressInfo));
             $ele['PH原价'] = ceil(round($ele['PH售价'] * 1.8, 2));
@@ -1289,7 +1289,7 @@ class ApiGoodsinfo
             $ele['TH原价'] = ceil(round($ele['TH售价'] * 1.8, 2));
             $ele['VN售价'] = floor(static::getGoodsSalePrice($ele, $siteInfo['VN'], $packageInfo, $expressInfo));
             $ele['VN原价'] = floor($ele['VN售价'] * 1.8);
-            $ele['SG售价'] = round(static::getGoodsSalePrice($ele, $siteInfo['SG'], $packageInfo, $expressInfo),1);
+            $ele['SG售价'] = round(static::getGoodsSalePrice($ele, $siteInfo['SG'], $packageInfo, $expressInfo), 1);
             $ele['SG原价'] = round($ele['SG售价'] * 1.8, 1);
 
             # 删除多余的信息
@@ -1569,7 +1569,7 @@ class ApiGoodsinfo
         $tag = '';
         $requiredKeywords = json_decode($requiredKeywords);
         $i = 0;
-        $requiredKeywords = $requiredKeywords ? : [];
+        $requiredKeywords = $requiredKeywords ?: [];
         foreach ($requiredKeywords as $kw) {
             if (!empty($kw)) {
                 $tag .= '<li>' . $kw . '</li>';
@@ -1630,7 +1630,7 @@ class ApiGoodsinfo
     public static function preExportWish($ids, $suffix = [])
     {
         $out = [];
-        foreach ($ids as $id){
+        foreach ($ids as $id) {
             $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
             $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
             $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
@@ -1664,9 +1664,7 @@ class ApiGoodsinfo
 
                 if ($goodsInfo['isVar'] === '是') {
                     $row['sku'] = $wishInfo['sku'] . $account['suffix'];
-                }
-
-                else {
+                } else {
                     $row['sku'] = $wishSku[0]['sku'] . $account['suffix'];
                 }
                 $row['selleruserid'] = $account['ibaySuffix'];
@@ -1690,9 +1688,9 @@ class ApiGoodsinfo
                 $out[] = $row;
             }
         }
-        if(count($ids) == 1){
+        if (count($ids) == 1) {
             $ret['name'] = 'wish-' . $goodsInfo['goodsCode'];
-        }else{
+        } else {
             $ret['name'] = 'wish-batch';
         }
         $ret['data'] = $out;
@@ -2087,9 +2085,9 @@ class ApiGoodsinfo
             $row['ShippingDetails']['ShippingServiceOptions'] = [$shippingInfo1, $shippingInfo2];
             $row['ShippingDetails']['InternationalShippingServiceOption'] = [$internationalShippingService1, $internationalShippingService2];
             $ItemSpecifics = json_decode($ebayInfo['specifics'], true);
-            if($ItemSpecifics && isset($ItemSpecifics['specifics'])){
-                foreach ($ItemSpecifics['specifics'] as $i => $v){
-                    foreach ($v as $k => $value){
+            if ($ItemSpecifics && isset($ItemSpecifics['specifics'])) {
+                foreach ($ItemSpecifics['specifics'] as $i => $v) {
+                    foreach ($v as $k => $value) {
                         $row['ItemSpecifics']['NameValueList'][$i] = ['Name' => $k, 'Value' => $value];
                     }
                 }
@@ -2130,8 +2128,8 @@ class ApiGoodsinfo
         $keyWords = static::preKeywords($wishInfo);
         $row = [
             'mubnaid' => '', "sku" => '', 'selleruserid' => '', "title" => '', 'inventory' => 10000, 'price' => '',
-            'original_price' => '', 'shipping' => 0, 'shipping_time' => '' , 'main_image' => '', 'extra_images' => '',
-            'tags' => '', "description" => '', "categories" => '' , "variations" => '',  "brand" => '', "gtin" => '',
+            'original_price' => '', 'shipping' => 0, 'shipping_time' => '', 'main_image' => '', 'extra_images' => '',
+            'tags' => '', "description" => '', "categories" => '', "variations" => '', "brand" => '', "gtin" => '',
             'size' => '', 'color' => 0, 'content' => ''
         ];
         $ret = ['name' => 'fyndiq-' . $goodsInfo['goodsCode']];
@@ -2198,7 +2196,7 @@ class ApiGoodsinfo
         $fyndiqAccounts = Yii::$app->db->createCommand("SELECT * FROM proCenter.`oa_fyndiqSuffix` WHERE isIbay=1;")->queryAll();
         $keyWords = static::preKeywords($wishInfo);
         $row = [
-            'sku' => '', "parent_sku" => '', "title" => '', "description" => '', "categories" => '' , "variations" => '',
+            'sku' => '', "parent_sku" => '', "title" => '', "description" => '', "categories" => '', "variations" => '',
             'variational_properties' => '', 'properties' => '', "brand" => '', "gtin" => '', 'suffix' => '', 'quantity' => 0,
             'price' => '', 'original_price' => '', 'shipping_time' => '', 'main_image' => '', 'images' => '', 'markets' => ['SE']
         ];
@@ -2239,14 +2237,14 @@ class ApiGoodsinfo
      */
     public static function uploadToFyndiqBackstage($ids, $accounts)
     {
-        if(!is_array($ids)) $ids = [$ids];
+        if (!is_array($ids)) $ids = [$ids];
         $out = [];
         foreach ($ids as $id) {
             $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
             $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
             $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
-            if(!$wishInfo['fyndiqCategoryId']) {
-                $error = [['sku' => $goodsInfo['goodsCode'], 'description' => 'The fyndiq category id can not be empty, please fill it!','errors' => '']];
+            if (!$wishInfo['fyndiqCategoryId']) {
+                $error = [['sku' => $goodsInfo['goodsCode'], 'description' => 'The fyndiq category id can not be empty, please fill it!', 'errors' => '']];
                 $out = array_merge($out, $error);
                 continue;
             }
@@ -2283,10 +2281,10 @@ class ApiGoodsinfo
 //                return $row;
                 $res = self::uploadFyndiqProducts($account, $row);
                 //return $res;
-                foreach ($res as &$v){
-                    if(isset($v['status_code']) && $v['status_code'] >= 400 && $v['status_code'] < 500){
+                foreach ($res as &$v) {
+                    if (isset($v['status_code']) && $v['status_code'] >= 400 && $v['status_code'] < 500) {
                         $v['errors'] = json_encode($v['errors']);
-                    }else{
+                    } else {
                         $v['errors'] = '';
                     }
                 }
@@ -2302,14 +2300,15 @@ class ApiGoodsinfo
      * Author: henry
      * @return array
      */
-    public static function uploadFyndiqProducts($account, $row){
+    public static function uploadFyndiqProducts($account, $row)
+    {
 //        $url = 'https://merchants-api.sandbox.fyndiq.se/api/v1/articles/bulk'; //测试地址
         $url = 'https://merchants-api.fyndiq.se/api/v1/articles/bulk';
         $token = base64_encode($account['suffixId'] . ':' . $account['token']);
         $data = [];
-        foreach ($row['variations'] as $sku){
-                $item = $sku;
-                $item['parent_sku'] = $row['parent_sku'];
+        foreach ($row['variations'] as $sku) {
+            $item = $sku;
+            $item['parent_sku'] = $row['parent_sku'];
             $item['title'] = $row['title'];
             $item['description'] = $row['description'];
             $item['categories'] = $row['categories'];
@@ -2322,16 +2321,15 @@ class ApiGoodsinfo
         $res = Helper::post($url, json_encode($data), $header);
 //        var_dump($res);exit;
 //        return $res;
-        if($res[0] > 500){
+        if ($res[0] > 500) {
             $error = $res[1];
-        }elseif($res[0] > 400){
-            $error  = $res[1]['errors'];
-        }else{
+        } elseif ($res[0] > 400) {
+            $error = $res[1]['errors'];
+        } else {
             $error = $res[1]['responses'];
         }
         return $error;
     }
-
 
 
     /**
@@ -2805,9 +2803,7 @@ class ApiGoodsinfo
 
             if ($goodsInfo['isVar'] === '是') {
                 $row['sku'] = $ebayInfo['sku'] . $ebayAccount['nameCode'];
-            }
-
-            else {
+            } else {
                 $row['sku'] = $ebayInfo['oaEbayGoodsSku'][0]['sku'] . $ebayAccount['nameCode'];
             }
             $row['Variation'] = static::getEbayVariation($goodsInfo['isVar'], $ebayInfo, $ebayAccount['nameCode']);
@@ -2817,10 +2813,10 @@ class ApiGoodsinfo
             $row['UPC'] = $ebayInfo['UPC'];
             $row['EAN'] = $ebayInfo['EAN'];
             $ItemSpecifics = json_decode($ebayInfo['specifics'], true);
-            if($ItemSpecifics && isset($ItemSpecifics['specifics'])){
-                foreach ($ItemSpecifics['specifics'] as $j => $v){
+            if ($ItemSpecifics && isset($ItemSpecifics['specifics'])) {
+                foreach ($ItemSpecifics['specifics'] as $j => $v) {
                     $specifics = [];
-                    foreach ($v as $k => $value){
+                    foreach ($v as $k => $value) {
                         $specifics = ['Name' => $k, 'Value' => $value];
                     }
                     $row['Specifics' . ($j + 1)] = json_encode($specifics);
@@ -2844,7 +2840,7 @@ class ApiGoodsinfo
      */
     public static function uploadToShopifyBackstage($ids, $accounts)
     {
-        if(!is_array($ids)) $ids = [$ids];
+        if (!is_array($ids)) $ids = [$ids];
         $out = [];
         foreach ($ids as $id) {
             $shopifyInfo = OaShopifyGoods::find()->where(['infoId' => $id])->asArray()->one();
@@ -2854,13 +2850,14 @@ class ApiGoodsinfo
             foreach ($shopifyAccounts as $account) {
                 //判断该账号是否上架过该产品
                 $log = OaShopifyImportToBackstageLog::find()
-                ->andFilterWhere(['suffix' => $account['account']])
-                ->andFilterWhere(['sku' => $shopifyInfo['sku']])
-                ->andFilterWhere(['type' => 'Product'])
-                ->andWhere(['<>', 'product_id', ''])
-                ->count();
-                /*if($log){
-                    $out[] = ['suffix' => $account['account'], 'sku' => $shopifyInfo['sku'],
+                    ->andFilterWhere(['suffix' => $account['account']])
+                    ->andFilterWhere(['sku' => $shopifyInfo['sku']])
+                    ->andFilterWhere(['type' => 'Product'])
+                    ->andWhere(['<>', 'product_id', ''])
+                    ->count();
+                ///*
+                if ($log) {
+                    $out[] = ['suffix' => $account['account'], 'sku' => $shopifyInfo['sku'], 'product_id' => '',
                         'content' => "The product {$shopifyInfo['sku']} already exists in the shopify store {$account['account']}"];
                     continue;
                 }
@@ -2872,25 +2869,27 @@ class ApiGoodsinfo
                 //$row['product_type'] = $shopifyInfo['sku'];
                 $row['tags'] = explode(',', self::getShopifyTagNew($shopifySku, $shopifyInfo));
                 $variantInfo = static::getShopifyVariantInfo($shopifySku, $shopifyInfo);
-//                var_dump($row);exit;
                 $row['variants'] = $variantInfo['variation'];
-                if($variantInfo['options']){
+                if ($variantInfo['options']) {
                     $row['options'] = $variantInfo['options'];
                 }
                 $row['images'] = $variantInfo['images'];
-                */
+
                 $productPar = ['myshopify_domain' => $account['account']];
                 $services = new ShopifyServices($productPar);
 
-//                var_dump(123);exit;
-                //$res = $services->createProduct($row);
+                $product_id = $services->createProduct($row);
                 //var_dump($res);exit;
                 //上传 SKU图片
-                //if($res){}
-                $response = self::addImgToProductVariants($services, $account['account'], $shopifyInfo['sku'], $shopifySku);
-                return $response;
-                var_dump($response);exit;
-
+                if ($product_id) {
+                    $response = self::addImgToProductVariants($services, $account['account'], $shopifyInfo['sku'], $shopifySku);
+                    $out[] = [
+                        'suffix' => $account['account'],
+                        'sku' => $shopifyInfo['sku'],
+                        'product_id' => $product_id,
+                        'content' => json_encode($response)
+                    ];
+                }
             }
         }
         return $out;
@@ -2902,63 +2901,36 @@ class ApiGoodsinfo
      * Author: henry
      * @return array | mixed
      */
-    public static function addImgToProductVariants(ShopifyServices $services, $account, $sku, $shopifySku){
+    public static function addImgToProductVariants(ShopifyServices $services, $account, $sku, $shopifySku)
+    {
         $log = OaShopifyImportToBackstageLog::findOne(['suffix' => $account, 'sku' => $sku, 'type' => 'product']);
         $product_id = $log ? $log['product_id'] : '';
-        if(!$product_id){
+        if (!$product_id) {
             throw new Exception("Can't find product {$product_id}!");
         }
         $images = $services->getImages($product_id);
         $product = $services->getProduct($product_id);
         $variants = $product ? $product['variants'] : [];
-        //return $variants;
         $out = [];
-        foreach ($images as $img){
+        foreach ($images as $img) {
             $variant_ids = $skuArr = [];
             $imgSuffix = explode('.jpg', explode('_', $img['src'])[1])[0];
-//            return $imgSuffix;
-            foreach ($shopifySku as $v){
+            foreach ($shopifySku as $v) {
                 $skuImgSuffix = explode('_', $v['linkUrl'])[1];
-                if($imgSuffix === $skuImgSuffix) $skuArr[] = $v['sku'];
+                if ($imgSuffix === $skuImgSuffix) $skuArr[] = $v['sku'];
             }
-            foreach ($skuArr as $value){
-                foreach ($variants as $var){
-                    if($var['sku'] == $value){
+            foreach ($skuArr as $value) {
+                foreach ($variants as $var) {
+                    if ($var['sku'] == $value) {
                         $variant_ids[] = $var['id'];
                     }
                 }
             }
-            if($variant_ids){
-                $imgRes = $services->updateImages($product_id);
+            if ($variant_ids) {
+                $imgRes = $services->updateImages($product_id, $img['id'], $variant_ids, $sku);
+                $out[] = ['imgId' => $img['id'], 'skus' => $skuArr, 'content' => $imgRes];
             }
-            $out[] = ['imgId' => $img['id'],'variant_ids' => $variant_ids];
-//            return $variant_ids;
         }
-            return $out;
-        //if($res)
-        var_dump($images);exit;
-
-        //$token = base64_encode($account['suffixId'] . ':' . $account['token']);
-//        $header = ["Authorization: Basic " . $token];
-        $data = ['product' => $row];
-        $res = Helper::post($url, json_encode($data));
-        if($res[0] > 400){
-            $out = false;
-            $content  = json_encode($res[1]['errors']);
-        }else{
-            $out = true;
-            $content = 'success';
-            $product_id = $res[1]['product']['id'];
-        }
-        $params = [
-            'suffix' => $account['account'],
-            'sku' => $sku,
-            'product_id' => $product_id,
-            'creator' => yii::$app->user->identity->username,
-            'type' => $type,
-            'content' => $content
-        ];
-        Logger::shopifyLog($params);
         return $out;
     }
 
@@ -3000,7 +2972,7 @@ class ApiGoodsinfo
             $account = OaShopify::find()->orFilterWhere(['account' => $act, 'suffix' => $act])->asArray()->one();
             $imageSrc = explode("\n", $shopifyInfo['extraImages']);
             # 主图放到一个位置
-            $images = array_merge([$shopifyInfo['mainImage']],$imageSrc);
+            $images = array_merge([$shopifyInfo['mainImage']], $imageSrc);
             $imagesCount = count($images);
             $position = 1;
             foreach ($shopifySku as $sku) {
@@ -3102,7 +3074,7 @@ class ApiGoodsinfo
 
 
             # 主图放到一个位置
-            $images = array_merge([$wishInfo['mainImage']],$imageSrc);
+            $images = array_merge([$wishInfo['mainImage']], $imageSrc);
 
 
             $imagesCount = count($images);
@@ -3500,7 +3472,7 @@ class ApiGoodsinfo
                 $var['quantity'] = (int)$sku['inventory'];
                 $var['properties'] = [];
                 $var['variational_properties'] = [];
-                if($sku['color']){
+                if ($sku['color']) {
                     $var['properties'][] = [
                         "name" => "color", //Free text
                         "value" => $sku['color'],
@@ -3508,7 +3480,7 @@ class ApiGoodsinfo
                     ];
                     $var['variational_properties'][] = 'color';
                 }
-                if($sku['size']){
+                if ($sku['size']) {
                     $var['properties'][] = [
                         "name" => "size", //Free text
                         "value" => $sku['size'],
@@ -3526,7 +3498,7 @@ class ApiGoodsinfo
                 $var['original_price'] = [[
                     'market' => 'SE',
                     'value' => [
-                        'amount' => (float)$sku['fyndiqMsrp'] ,
+                        'amount' => (float)$sku['fyndiqMsrp'],
                         'currency' => 'SEK',
                     ]
                 ]];
@@ -3534,7 +3506,7 @@ class ApiGoodsinfo
                 $var['main_image'] = $sku['linkUrl'];
                 $extraImages = explode("\n", $wishInfo['extraImages']);
                 $key = array_search($sku['linkUrl'], $extraImages);
-                if($key !== false) array_splice($extraImages, $key, 1);
+                if ($key !== false) array_splice($extraImages, $key, 1);
                 $var['images'] = array_slice($extraImages, 0, 10);
                 $variation[] = $var;
             }
@@ -3564,11 +3536,11 @@ class ApiGoodsinfo
                 $var['inventory_management'] = 'shopify';
                 $var['requires_shipping'] = true;
                 $var['taxable'] = true;
-                if($sku['color']){
+                if ($sku['color']) {
                     $var['option1'] = $sku['color'];
                     $value1[] = $sku['color'];
                 }
-                if($sku['size']){
+                if ($sku['size']) {
                     $option = $sku['color'] ? 'option2' : 'option1';
                     $var[$option] = $sku['size'];
                     $value2[] = $sku['size'];
@@ -3581,7 +3553,7 @@ class ApiGoodsinfo
                 $variation[] = $var;
             }
             $options = [];
-            if($value1 && $value2){
+            if ($value1 && $value2) {
                 $options = [
                     ['name' => 'Color', 'values' => array_values(array_unique($value1))],
                     ['name' => 'Size', 'values' => array_values(array_unique($value2))],
@@ -3589,7 +3561,7 @@ class ApiGoodsinfo
             }
             $images = [['src' => $shopifyInfo['mainImage']]];
             $extraImages = explode("\n", $shopifyInfo['extraImages']);
-            foreach ($extraImages as $k => $v){
+            foreach ($extraImages as $k => $v) {
                 $images[$k + 1]['src'] = $v;
             }
             return ['variation' => $variation, 'options' => $options, 'images' => $images];
@@ -3648,9 +3620,9 @@ class ApiGoodsinfo
 
         shuffle($need);
         //判断 随机关键词总长度和可用长度大小
-        if($real_len > $available_len){
+        if ($real_len > $available_len) {
             $ret = array_merge($head, $need, $tail);
-        }else{
+        } else {
             $ret = array_merge($head, $random_str1, $need, $random_arr, $tail);
         }
 
@@ -4104,7 +4076,8 @@ class ApiGoodsinfo
      * @param $skus
      * @return string
      */
-    private static function getShopifyTagNew($skus, $shopifyInfo){
+    private static function getShopifyTagNew($skus, $shopifyInfo)
+    {
         $optionValue1 = [];
         $optionValue2 = [];
         foreach ($skus as $ele) {
@@ -4116,17 +4089,17 @@ class ApiGoodsinfo
 
         $outArr = array_merge($optionValue1, $optionValue2);
         $out = implode(',', $outArr);
-        if($shopifyInfo['style']){
-            $out .=  $out ? (',' . $shopifyInfo['style']) : $shopifyInfo['style'];
+        if ($shopifyInfo['style']) {
+            $out .= $out ? (',' . $shopifyInfo['style']) : $shopifyInfo['style'];
         }
-        if($shopifyInfo['length']){
-            $out .=  $out ? (',' . $shopifyInfo['length']) : $shopifyInfo['length'];
+        if ($shopifyInfo['length']) {
+            $out .= $out ? (',' . $shopifyInfo['length']) : $shopifyInfo['length'];
         }
-        if($shopifyInfo['sleeveLength']){
-            $out .=  $out ? (',' . $shopifyInfo['sleeveLength']) : $shopifyInfo['sleeveLength'];
+        if ($shopifyInfo['sleeveLength']) {
+            $out .= $out ? (',' . $shopifyInfo['sleeveLength']) : $shopifyInfo['sleeveLength'];
         }
-        if($shopifyInfo['neckline']){
-            $out .=  $out ? (',' . $shopifyInfo['neckline']) : $shopifyInfo['neckline'];
+        if ($shopifyInfo['neckline']) {
+            $out .= $out ? (',' . $shopifyInfo['neckline']) : $shopifyInfo['neckline'];
         }
         return $out;
     }
