@@ -622,12 +622,20 @@ class DataCenterController extends AdminController
         $batchId = isset($cond['BatchId']) ? $cond['BatchId'] : '';
         $isWithdraw = isset($cond['isWithdraw']) ? $cond['isWithdraw'] : '';
         $paypalStatus = isset($cond['paypalStatus']) ? $cond['paypalStatus'] : '';
+        $mappingEbayName = isset($cond['mappingEbayName']) ? $cond['mappingEbayName'] : '';
         $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
         $usRate = (float)ApiUkFic::getRateUkOrUs('USD');
         //var_dump($usRate);exit;
         $sql = "SELECT * FROM (
-                SELECT DownTime,PayPalEamil,t.mappingEbayName,TotalRMB,USD,AUD,CAD,EUR,GBP,s.memo,BatchId,
-                isnull(s.paypalStatus,'使用中') as paypalStatus ,
+                SELECT DownTime,PayPalEamil,t.mappingEbayName,
+                -- CASE WHEN TotalRMB='.0000' THEN 0 ELSE CAST(TotalRMB AS NUMERIC(9,2)) END as TotalRMB ,
+                -- CASE WHEN USD='.0000' THEN '0' ELSE CAST(USD AS NUMERIC(9,2)) END as USD ,
+                -- CASE WHEN AUD='.0000' THEN '0' ELSE CAST(AUD AS NUMERIC(9,2)) END as AUD ,
+                -- CASE WHEN CAD='.0000' THEN '0' ELSE CAST(CAD AS NUMERIC(9,2)) END as CAD ,
+                -- CASE WHEN EUR='.0000' THEN '0' ELSE CAST(EUR AS NUMERIC(9,2)) END as EUR ,
+                -- CASE WHEN GBP='.0000' THEN '0' ELSE CAST(GBP AS NUMERIC(9,2)) END as GBP ,
+                TotalRMB,USD,AUD,CAD,EUR,GBP,
+                s.memo,BatchId,isnull(s.paypalStatus,'使用中') as paypalStatus ,
                 CASE WHEN charindex('英国',s.memo) > 0 and GBP >= 400 THEN '是' 
                      WHEN charindex('超级浏览器',s.memo) > 0 and GBP >= 400 THEN '是' 
                      WHEN charindex('集中付款',s.memo) > 0 and TotalRMB/{$usRate} >= 1600 THEN '是' 
@@ -643,6 +651,7 @@ class DataCenterController extends AdminController
         if ($memo) $sql .= " AND isnull(memo,'') LIKE '%{$memo}%'";
         if ($batchId) $sql .= " AND BatchId = {$batchId}";
         if ($isWithdraw) $sql .= " AND isWithdraw = '{$isWithdraw}'";
+        if ($mappingEbayName) $sql .= " AND mappingEbayName like '%{$mappingEbayName}%'";
         try {
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             $provider = new ArrayDataProvider([
