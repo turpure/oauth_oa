@@ -3,6 +3,8 @@
 namespace backend\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
+use yii\db\Expression;
 
 /**
  * This is the model class for table "proCenter.oa_shopifyImportToBackstageLog".
@@ -10,7 +12,7 @@ use Yii;
  * @property int $id
  * @property string $suffix
  * @property string $sku
- * @property int $product_id
+ * @property string $product_id
  * @property string $type
  * @property string $content
  * @property string $creator
@@ -26,16 +28,28 @@ class OaShopifyImportToBackstageLog extends \yii\db\ActiveRecord
         return 'proCenter.oa_shopifyImportToBackstageLog';
     }
 
+    public function behaviors()
+    {
+        return [[
+            /**
+             * TimestampBehavior：
+             */
+            'class' => TimestampBehavior::className(),
+            'createdAtAttribute' => 'createDate',
+            'updatedAtAttribute' => false,
+            'value' => new Expression('NOW()'),
+        ],];
+    }
+
     /**
      * {@inheritdoc}
      */
     public function rules()
     {
         return [
-            [['product_id'], 'integer'],
             [['createdDate'], 'safe'],
             [['content'], 'string'],
-            [['creator', 'type', 'sku', 'suffix'], 'string', 'max' => 100],
+            [['creator', 'type', 'sku', 'suffix', 'product_id'], 'string', 'max' => 100],
         ];
     }
 

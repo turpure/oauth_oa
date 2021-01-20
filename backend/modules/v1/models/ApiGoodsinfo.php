@@ -30,6 +30,7 @@ use backend\models\OaMyMallSuffix;
 use backend\models\OaPaypal;
 use backend\models\OaShopifyGoods;
 use backend\models\OaShopifyGoodsSku;
+use backend\models\OaShopifyImportToBackstageLog;
 use backend\models\OaSmtGoods;
 use backend\models\OaSmtGoodsSku;
 use backend\models\OaWishGoods;
@@ -44,6 +45,7 @@ use backend\models\OaSiteCountry;
 use backend\models\OaShippingService;
 use backend\models\User;
 use backend\modules\v1\services\Logger;
+use backend\modules\v1\services\shopify\ShopifyServices;
 use backend\modules\v1\utils\Helper;
 use mdm\admin\models\Store;
 use yii\data\ActiveDataProvider;
@@ -391,7 +393,7 @@ class ApiGoodsinfo
             ];
         }
         $transaction = Yii::$app->db->beginTransaction();
-        try {
+        //try {
             foreach ($skuInfo as $skuRow) {
                 //保存SKU信息
                 $skuId = isset($skuRow['id']) ? $skuRow['id'] : '';
@@ -424,8 +426,8 @@ class ApiGoodsinfo
                         //if ($specId != '无') {
                         if ($style != '无') {
                             $goods1688 = OaGoods1688::find()->andFilterWhere(['infoId' => $infoId, 'offerId' => $offerId, 'specId' => $specId])->one();
-                            $goodsSku1688->supplierLoginId = $goods1688->supplierLoginId;
-                            $goodsSku1688->companyName = $goods1688->companyName;
+                            $goodsSku1688->supplierLoginId = $goods1688['supplierLoginId'];
+                            $goodsSku1688->companyName = $goods1688['companyName'];
                         } else {
                             $goodsSku1688->supplierLoginId = '';
                             $goodsSku1688->companyName = '';
@@ -454,13 +456,13 @@ class ApiGoodsinfo
             }
             $transaction->commit();
             return true;
-        } catch (\Exception $e) {
-            $transaction->rollBack();
-            return [
-                'code' => 400,
-                'message' => $e->getMessage()
-            ];
-        }
+//        } catch (\Exception $e) {
+//            $transaction->rollBack();
+//            return [
+//                'code' => 400,
+//                'message' => $e->getMessage()
+//            ];
+//        }
 
 
     }
@@ -2848,70 +2850,116 @@ class ApiGoodsinfo
             $shopifyInfo = OaShopifyGoods::find()->where(['infoId' => $id])->asArray()->one();
             $shopifySku = OaShopifyGoodsSku::find()->where(['infoId' => $id])->asArray()->all();
             $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
-            $shopifyAccounts = OaFyndiqSuffix::findAll(['suffix' => $accounts]);
+            $shopifyAccounts = OaShopify::findAll(['account' => $accounts]);
             foreach ($shopifyAccounts as $account) {
-
+                //判断该账号是否上架过该产品
+                $log = OaShopifyImportToBackstageLog::find()
+                ->andFilterWhere(['suffix' => $account['account']])
+                ->andFilterWhere(['sku' => $shopifyInfo['sku']])
+                ->andFilterWhere(['type' => 'Product'])
+                ->andWhere(['<>', 'product_id', ''])
+                ->count();
+                /*if($log){
+                    $out[] = ['suffix' => $account['account'], 'sku' => $shopifyInfo['sku'],
+                        'content' => "The product {$shopifyInfo['sku']} already exists in the shopify store {$account['account']}"];
+                    continue;
+                }
+                // 刊登产品
+                $row['sku'] = $shopifyInfo['sku'];
                 $row['title'] = $shopifyInfo['title'];
                 $row['body_html'] = $shopifyInfo['description'];
                 //$row['vendor'] = $shopifyInfo['sku'];
                 //$row['product_type'] = $shopifyInfo['sku'];
-                $row['tags'] = explode(',', self::getShopifyTagNew($shopifySku, $goodsInfo));
-
-                list($variantInfo, $options) = static::getShopifyVariantInfo($goodsInfo['isVar'], $shopifyInfo, $shopifySku, $account);
-                return  [$variantInfo, $options];
-                $res = self::uploadShopifyProducts($account, $row);
-                foreach ($res as &$v){
-                    if(isset($v['status_code']) && $v['status_code'] >= 400 && $v['status_code'] < 500){
-                        $v['errors'] = json_encode($v['errors']);
-                    }else{
-                        $v['errors'] = '';
-                    }
+                $row['tags'] = explode(',', self::getShopifyTagNew($shopifySku, $shopifyInfo));
+                $variantInfo = static::getShopifyVariantInfo($shopifySku, $shopifyInfo);
+//                var_dump($row);exit;
+                $row['variants'] = $variantInfo['variation'];
+                if($variantInfo['options']){
+                    $row['options'] = $variantInfo['options'];
                 }
-                $out = array_merge($out, $res);
+                $row['images'] = $variantInfo['images'];
+                */
+                $productPar = ['myshopify_domain' => $account['account']];
+                $services = new ShopifyServices($productPar);
+
+//                var_dump(123);exit;
+                //$res = $services->createProduct($row);
+                //var_dump($res);exit;
+                //上传 SKU图片
+                //if($res){}
+                $response = self::addImgToProductVariants($services, $account['account'], $shopifyInfo['sku'], $shopifySku);
+                return $response;
+                var_dump($response);exit;
+
             }
         }
         return $out;
     }
 
     /**
-     * 上传shopify产品
+     * shopify产品SKU 添加 图片
      * Date: 2020-11-07 16:39
      * Author: henry
-     * @return array
+     * @return array | mixed
      */
-    public static function uploadShopifyProducts($account, $row, $type = 'Product'){
-        $sql = "SELECT apikey FROM [dbo].[S_ShopifySyncInfo]";
-        $keyQuery = Yii::$app->py_db->createCommand($sql)->queryOne();
-        $apiKey = $keyQuery ? $keyQuery['apikey'] : '';
-        $pwdSql = "SELECT password FROM [dbo].[S_ShopifySyncInfo] WHERE hostname='{$account}'";
-        $pwdQuery = Yii::$app->py_db->createCommand($pwdSql)->queryOne();
-        $url = 'https://' . $apiKey . ':' . $pwdQuery['password'] .'@faroonee.myshopify.com/admin/api/2019-07/products.json';
+    public static function addImgToProductVariants(ShopifyServices $services, $account, $sku, $shopifySku){
+        $log = OaShopifyImportToBackstageLog::findOne(['suffix' => $account, 'sku' => $sku, 'type' => 'product']);
+        $product_id = $log ? $log['product_id'] : '';
+        if(!$product_id){
+            throw new Exception("Can't find product {$product_id}!");
+        }
+        $images = $services->getImages($product_id);
+        $product = $services->getProduct($product_id);
+        $variants = $product ? $product['variants'] : [];
+        //return $variants;
+        $out = [];
+        foreach ($images as $img){
+            $variant_ids = $skuArr = [];
+            $imgSuffix = explode('.jpg', explode('_', $img['src'])[1])[0];
+//            return $imgSuffix;
+            foreach ($shopifySku as $v){
+                $skuImgSuffix = explode('_', $v['linkUrl'])[1];
+                if($imgSuffix === $skuImgSuffix) $skuArr[] = $v['sku'];
+            }
+            foreach ($skuArr as $value){
+                foreach ($variants as $var){
+                    if($var['sku'] == $value){
+                        $variant_ids[] = $var['id'];
+                    }
+                }
+            }
+            if($variant_ids){
+                $imgRes = $services->updateImages($product_id);
+            }
+            $out[] = ['imgId' => $img['id'],'variant_ids' => $variant_ids];
+//            return $variant_ids;
+        }
+            return $out;
+        //if($res)
+        var_dump($images);exit;
 
-        $token = base64_encode($account['suffixId'] . ':' . $account['token']);
-        $data = [];
-        foreach ($row['variations'] as $sku){
-            $item = $sku;
-            $item['parent_sku'] = $row['parent_sku'];
-            $item['title'] = $row['title'];
-            $item['description'] = $row['description'];
-            $item['categories'] = $row['categories'];
-            $item['markets'] = $row['markets'];
-//            $item['status'] = 'paused';
-            $item['status'] = 'for sale';
-            $data[] = $item;
-        }
-        $header = ["Authorization: Basic " . $token];
-        $res = Helper::post($url, json_encode($data), $header);
-//        var_dump($res);exit;
-//        return $res;
-        if($res[0] > 500){
-            $error = $res[1];
-        }elseif($res[0] > 400){
-            $error  = $res[1]['errors'];
+        //$token = base64_encode($account['suffixId'] . ':' . $account['token']);
+//        $header = ["Authorization: Basic " . $token];
+        $data = ['product' => $row];
+        $res = Helper::post($url, json_encode($data));
+        if($res[0] > 400){
+            $out = false;
+            $content  = json_encode($res[1]['errors']);
         }else{
-            $error = $res[1]['responses'];
+            $out = true;
+            $content = 'success';
+            $product_id = $res[1]['product']['id'];
         }
-        return $error;
+        $params = [
+            'suffix' => $account['account'],
+            'sku' => $sku,
+            'product_id' => $product_id,
+            'creator' => yii::$app->user->identity->username,
+            'type' => $type,
+            'content' => $content
+        ];
+        Logger::shopifyLog($params);
+        return $out;
     }
 
     /**
@@ -3499,13 +3547,11 @@ class ApiGoodsinfo
 
     /**
      * @brief 整合Shopify变体信息
-     * @param $isVar
      * @param $wishInfo
      * @param $wishSku
-     * @param $account
      * @return array
      */
-    private static function getShopifyVariantInfo($isVar, $shopifyInfo, $shopifySku, $account)
+    private static function getShopifyVariantInfo($shopifySku, $shopifyInfo)
     {
         try {
             //打包变体
@@ -3518,38 +3564,38 @@ class ApiGoodsinfo
                 $var['inventory_management'] = 'shopify';
                 $var['requires_shipping'] = true;
                 $var['taxable'] = true;
-
-
-                $var['properties'] = [];
-                $var['variational_properties'] = [];
                 if($sku['color']){
-                    $value1[] = array_merge($value1, [$sku['color']]);
+                    $var['option1'] = $sku['color'];
+                    $value1[] = $sku['color'];
                 }
                 if($sku['size']){
-                    $value2[] = array_merge($value2, [$sku['size']]);
+                    $option = $sku['color'] ? 'option2' : 'option1';
+                    $var[$option] = $sku['size'];
+                    $value2[] = $sku['size'];
                 }
                 $var['price'] = $sku['price'];
                 //$row['compare_at_price'] = $sku['msrp'];
                 $var['weight'] = $sku['weight'];
                 $var['weight_unit'] = 'g';
-                $var['image'] = $sku['linkUrl'];
-                //$extraImages = explode("\n", $shopifyInfo['extraImages']);
-                //$key = array_search($sku['linkUrl'], $extraImages);
-                //if($key !== false) array_splice($extraImages, $key, 1);
-                //$var['images'] = array_slice($extraImages, 0, 10);
+                //$var['image'] = $sku['linkUrl'];
                 $variation[] = $var;
             }
             $options = [];
             if($value1 && $value2){
                 $options = [
-                    ['name' => 'Color', 'values' => array_unique($value1)],
-                    ['name' => 'Size', 'values' => array_unique($value2)],
+                    ['name' => 'Color', 'values' => array_values(array_unique($value1))],
+                    ['name' => 'Size', 'values' => array_values(array_unique($value2))],
                 ];
             }
-            return [$variation, $options];
+            $images = [['src' => $shopifyInfo['mainImage']]];
+            $extraImages = explode("\n", $shopifyInfo['extraImages']);
+            foreach ($extraImages as $k => $v){
+                $images[$k + 1]['src'] = $v;
+            }
+            return ['variation' => $variation, 'options' => $options, 'images' => $images];
         } catch (\Exception $why) {
 //            var_dump($why->getMessage());exit;
-            return ['variant' => '', 'price' => '', 'original_price' => ''];
+            return ['variation' => [], 'options' => [], 'images' => []];
         }
 
     }
@@ -4058,7 +4104,7 @@ class ApiGoodsinfo
      * @param $skus
      * @return string
      */
-    private static function getShopifyTagNew($skus, $goodsInfo){
+    private static function getShopifyTagNew($skus, $shopifyInfo){
         $optionValue1 = [];
         $optionValue2 = [];
         foreach ($skus as $ele) {
@@ -4070,17 +4116,17 @@ class ApiGoodsinfo
 
         $outArr = array_merge($optionValue1, $optionValue2);
         $out = implode(',', $outArr);
-        if($goodsInfo['style']){
-            $out .=  $out ? (',' . $goodsInfo['style']) : $goodsInfo['style'];
+        if($shopifyInfo['style']){
+            $out .=  $out ? (',' . $shopifyInfo['style']) : $shopifyInfo['style'];
         }
-        if($goodsInfo['length']){
-            $out .=  $out ? (',' . $goodsInfo['length']) : $goodsInfo['length'];
+        if($shopifyInfo['length']){
+            $out .=  $out ? (',' . $shopifyInfo['length']) : $shopifyInfo['length'];
         }
-        if($goodsInfo['sleeveLength']){
-            $out .=  $out ? (',' . $goodsInfo['sleeveLength']) : $goodsInfo['sleeveLength'];
+        if($shopifyInfo['sleeveLength']){
+            $out .=  $out ? (',' . $shopifyInfo['sleeveLength']) : $shopifyInfo['sleeveLength'];
         }
-        if($goodsInfo['neckline']){
-            $out .=  $out ? (',' . $goodsInfo['neckline']) : $goodsInfo['neckline'];
+        if($shopifyInfo['neckline']){
+            $out .=  $out ? (',' . $shopifyInfo['neckline']) : $shopifyInfo['neckline'];
         }
         return $out;
     }
