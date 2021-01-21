@@ -2850,7 +2850,6 @@ class ApiGoodsinfo
                 continue;
             }
             $shopifySku = OaShopifyGoodsSku::find()->where(['infoId' => $id])->asArray()->all();
-            $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
             $shopifyAccounts = OaShopify::findAll(['account' => $accounts]);
             foreach ($shopifyAccounts as $account) {
                 //判断该账号是否上架过该产品
@@ -2883,18 +2882,20 @@ class ApiGoodsinfo
                 $productPar = ['myshopify_domain' => $account['account']];
                 $services = new ShopifyServices($productPar);
 
-                $product_id = $services->createProduct($row);
+                $product_info = $services->createProduct($row);
+                $item = [
+                    'suffix' => $account['account'],
+                    'sku' => $shopifyInfo['sku'],
+                    'product_id' => $product_info['product_id'],
+                    'content' => $product_info['message']
+                ];
                 //var_dump($res);exit;
                 //上传 SKU图片
-                if ($product_id) {
+                if ($product_info['product_id']) {
                     $response = self::addImgToProductVariants($services, $account['account'], $shopifyInfo['sku'], $shopifySku);
-                    $out[] = [
-                        'suffix' => $account['account'],
-                        'sku' => $shopifyInfo['sku'],
-                        'product_id' => $product_id,
-                        'content' => json_encode($response)
-                    ];
+                    $item['content'] = json_encode($response);
                 }
+                $out[] = $item;
             }
         }
         return $out;

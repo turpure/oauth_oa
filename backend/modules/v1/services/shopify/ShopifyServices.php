@@ -54,13 +54,14 @@ class ShopifyServices extends AbstractService
      * @param $product
      * Date: 2021-01-19 16:13
      * Author: henry
-     * @return bool
+     * @return array
      */
     public function createProduct($product)
     {
         try {
             $endpoint = 'products.json';
             $url = $this->base_uri . $endpoint;
+//            var_dump($url);exit;
             $res = Helper::post($url, json_encode(['product' => $product]));
             //$res = [201, ['product'=>['id' => 4914039488589]]];
             //var_dump($res);
@@ -82,10 +83,9 @@ class ShopifyServices extends AbstractService
                 'content' => $content
             ];
             $aa = Logger::shopifyLog($params);
-//            var_dump($aa);
-            return $product_id;
+            return ['product_id' => $product_id, 'message' => $content];
         } catch (Exception $e) {
-            return $e->getMessage();
+            return ['product_id' => '', 'message' => $e->getMessage()];
         }
 
     }
