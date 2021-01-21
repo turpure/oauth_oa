@@ -2865,6 +2865,7 @@ class ApiGoodsinfo
                         'content' => "The product {$shopifyInfo['sku']} already exists in the shopify store {$account['account']}"];
                     continue;
                 }
+                //*/
                 // 刊登产品
                 $row['sku'] = $shopifyInfo['sku'];
                 $row['title'] = $shopifyInfo['title'];
@@ -2883,6 +2884,7 @@ class ApiGoodsinfo
                 $services = new ShopifyServices($productPar);
 
                 $product_info = $services->createProduct($row);
+
                 $item = [
                     'suffix' => $account['account'],
                     'sku' => $shopifyInfo['sku'],
@@ -2892,7 +2894,7 @@ class ApiGoodsinfo
                 //var_dump($res);exit;
                 //上传 SKU图片
                 if ($product_info['product_id']) {
-                    $response = self::addImgToProductVariants($services, $account['account'], $shopifyInfo['sku'], $shopifySku);
+                    $response = self::addImgToProductVariants($services, $account['account'], $shopifyInfo['sku'], $shopifySku, $product_info['product_id']);
                     $item['content'] = json_encode($response);
                 }
                 $out[] = $item;
@@ -2907,9 +2909,9 @@ class ApiGoodsinfo
      * Author: henry
      * @return array | mixed
      */
-    public static function addImgToProductVariants(ShopifyServices $services, $account, $sku, $shopifySku)
+    public static function addImgToProductVariants(ShopifyServices $services, $account, $sku, $shopifySku, $product_id)
     {
-        $log = OaShopifyImportToBackstageLog::findOne(['suffix' => $account, 'sku' => $sku, 'type' => 'product']);
+        $log = OaShopifyImportToBackstageLog::findOne(['suffix' => $account, 'sku' => $sku, 'type' => 'product', 'product_id' => $product_id]);
         $product_id = $log ? $log['product_id'] : '';
         if (!$product_id) {
             throw new Exception("Can't find product {$product_id}!");
