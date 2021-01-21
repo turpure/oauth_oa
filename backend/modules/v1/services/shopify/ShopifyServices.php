@@ -15,19 +15,6 @@ use yii\db\Exception;
 
 class ShopifyServices extends AbstractService
 {
-    /**
-     * getApiKey
-     * Date: 2021-01-19 14:15
-     * Author: henry
-     * @return string
-     */
-    public function getApiKey()
-    {
-        $sql = "SELECT apikey FROM [dbo].[S_ShopifySyncInfo]";
-        $keyQuery = \Yii::$app->py_db->createCommand($sql)->queryOne();
-        $apiKey = $keyQuery ? $keyQuery['apikey'] : '';
-        return $apiKey;
-    }
 
     /**
      * getPassword
@@ -37,24 +24,8 @@ class ShopifyServices extends AbstractService
      */
     public function getPassword()
     {
-        $pwdSql = "SELECT password FROM [dbo].[S_ShopifySyncInfo] WHERE hostname='{$this->myshopify_domain}'";
-        $pwdQuery = \Yii::$app->py_db->createCommand($pwdSql)->queryOne();
-        return $pwdQuery['password'];
-    }
-
-    /**
-     * createBasicAuthHeader
-     * @param $apiKey
-     * @param $password
-     * Date: 2021-01-19 14:15
-     * Author: henry
-     * @return string
-     */
-    public function createBasicAuthHeader($apiKey, $password)
-    {
-        $input = "{$apiKey}:{$password}";
-        $input = base64_encode($input);
-        return "Basic {$input}";
+        $pwdSql = "SELECT apikey,password FROM [dbo].[S_ShopifySyncInfo] WHERE hostname='{$this->myshopify_domain}'";
+        return \Yii::$app->py_db->createCommand($pwdSql)->queryOne();
     }
 
     /**
@@ -67,19 +38,14 @@ class ShopifyServices extends AbstractService
      */
     public function init()
     {
+        $token = $this->getPassword();
         $this->base_uri = sprintf(
             "https://%s:%s@%s.myshopify.com/admin/api/%s/",
-            $this->getApiKey(),
-            $this->getPassword(),
+            $token['apikey'],
+            $token['password'],
             $this->myshopify_domain,
             $this->getApiVersion()
         );
-//        $this->headers = array(
-//            'Authorization' => $this->createBasicAuthHeader(
-//                $this->getApiKey(),
-//                $this->getPassword()
-//            )
-//        );
         return $this;
     }
 
