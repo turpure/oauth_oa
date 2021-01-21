@@ -628,13 +628,13 @@ class DataCenterController extends AdminController
         //var_dump($usRate);exit;
         $sql = "SELECT * FROM (
                 SELECT DownTime,PayPalEamil,t.mappingEbayName,
-                -- CASE WHEN TotalRMB='.0000' THEN 0 ELSE CAST(TotalRMB AS NUMERIC(9,2)) END as TotalRMB ,
-                -- CASE WHEN USD='.0000' THEN '0' ELSE CAST(USD AS NUMERIC(9,2)) END as USD ,
-                -- CASE WHEN AUD='.0000' THEN '0' ELSE CAST(AUD AS NUMERIC(9,2)) END as AUD ,
-                -- CASE WHEN CAD='.0000' THEN '0' ELSE CAST(CAD AS NUMERIC(9,2)) END as CAD ,
-                -- CASE WHEN EUR='.0000' THEN '0' ELSE CAST(EUR AS NUMERIC(9,2)) END as EUR ,
-                -- CASE WHEN GBP='.0000' THEN '0' ELSE CAST(GBP AS NUMERIC(9,2)) END as GBP ,
-                TotalRMB,USD,AUD,CAD,EUR,GBP,
+                CAST(TotalRMB AS NUMERIC(9,2)) as TotalRMB ,
+                CAST(USD AS NUMERIC(9,2)) as USD ,
+                CAST(AUD AS NUMERIC(9,2)) as AUD ,
+                CAST(CAD AS NUMERIC(9,2)) as CAD ,
+                CAST(EUR AS NUMERIC(9,2)) as EUR ,
+                CAST(GBP AS NUMERIC(9,2)) as GBP ,
+                -- TotalRMB,USD,AUD,CAD,EUR,GBP,
                 s.memo,BatchId,isnull(s.paypalStatus,'使用中') as paypalStatus ,
                 CASE WHEN charindex('英国',s.memo) > 0 and GBP >= 400 THEN '是' 
                      WHEN charindex('超级浏览器',s.memo) > 0 and GBP >= 400 THEN '是' 
