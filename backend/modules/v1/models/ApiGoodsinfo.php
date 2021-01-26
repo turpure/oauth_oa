@@ -2245,6 +2245,7 @@ class ApiGoodsinfo
         $out = [];
 
         foreach ($shopifyAccounts as $account) {
+            $row['parent_sku'] = $shopifyInfo['sku'];
             $row['title'] = $shopifyInfo['title'];
             $row['body_html'] = $shopifyInfo['description'];
             $row['suffix'] = $account['account'];
