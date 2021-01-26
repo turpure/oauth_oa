@@ -1037,6 +1037,28 @@ class OaGoodsinfoController extends AdminController
 
     }
 
+    /**
+     * @brief 导出Shopify模板数据
+     * @throws \Exception
+     */
+    public function actionPlatExportShopifyData()
+    {
+        try {
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            $infoId = $condition['id'];
+            $type = isset($condition['type']) ? $condition['type'] : '';
+            $ret = ApiGoodsinfo::preExportshopifyData($infoId, $type);
+            return $ret;
+        } catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+
+    }
+
 
     /**
      * 导出产品信息

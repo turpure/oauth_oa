@@ -2227,6 +2227,39 @@ class ApiGoodsinfo
         return $out;
     }
 
+    /**
+     * @brief 导出Shopify模板数据
+     * @param $id
+     * @param $accounts
+     * @return array
+     */
+    public static function preExportShopifyData($id, $type)
+    {
+        $shopifyInfo = OaShopifyGoods::find()->where(['infoId' => $id])->asArray()->one();
+        $shopifySku = OaShopifyGoodsSku::find()->where(['infoId' => $id])->asArray()->all();
+        $shopifyAccounts = Yii::$app->db->createCommand("SELECT * FROM proCenter.`oa_shopify`")->queryAll();
+        $row = [
+            'suffix' => '', "title" => '', "body_html" => '', "vendor" => '', "product_type" => '', 'product_status' => 'active',
+            'variants' => '', "images" => '', "style" => '', 'length' => '', 'sleeve_length' => 0, 'neckline' => ''
+        ];
+        $out = [];
+
+        foreach ($shopifyAccounts as $account) {
+            $row['title'] = $shopifyInfo['title'];
+            $row['body_html'] = $shopifyInfo['description'];
+            $row['suffix'] = $account['account'];
+            $row['style'] = $shopifyInfo['style'];
+            $row['length'] = $shopifyInfo['length'];
+            $row['sleeve_length'] = $shopifyInfo['sleeveLength'];
+            $row['neckline'] = $shopifyInfo['neckline'];
+            $variantInfo = static::getShopifyVariantInfo($shopifySku, $shopifyInfo);
+            $row['variants'] = $variantInfo['variation'];
+            $row['images'] = $variantInfo['images'];
+            $out[] = $row;
+        }
+        return $out;
+    }
+
     /** Fyndiq 上架产品
      * @param $ids
      * @param $accounts
