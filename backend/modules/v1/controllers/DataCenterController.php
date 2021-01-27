@@ -929,6 +929,7 @@ class DataCenterController extends AdminController
         }
         $cond = $request->post('condition');
         $accountName = isset($cond['paypal_account']) ? $cond['paypal_account'] : [];
+        $mappingEbayName = isset($cond['mappingEbayName']) ? $cond['mappingEbayName'] : [];
         $accounts = implode("','", $accountName);
         $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
         try {
@@ -938,6 +939,9 @@ class DataCenterController extends AdminController
                 WHERE 1=1 ";
             if($accountName){
                 $sql .= " AND paypal_account IN ('{$accounts}')";
+            }
+            if($mappingEbayName){
+                $sql .= " AND mappingEbayName LIKE '%{$mappingEbayName}%'";
             }
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             $provider = new ArrayDataProvider([
@@ -1150,6 +1154,7 @@ class DataCenterController extends AdminController
         }
         $cond = $request->post('condition');
         $accountName = isset($cond['accountName']) ? $cond['accountName'] : '';
+        $mappingEbayName = isset($cond['mappingEbayName']) ? $cond['mappingEbayName'] : '';
         $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
         $isUsed = isset($cond['isUsed']) ? $cond['isUsed'] : null;
         $isUsedBalance = isset($cond['isUsedBalance']) ? $cond['isUsedBalance'] : null;
@@ -1157,7 +1162,8 @@ class DataCenterController extends AdminController
         $isUsedTransaction = isset($cond['isUsedTransaction']) ? $cond['isUsedTransaction'] : null;
         try {
 
-            $query = YPayPalToken::find()->andFilterWhere(['like', 'accountName', $accountName]);
+            $query = YPayPalToken::find()->andFilterWhere(['like', 'accountName', $accountName])
+                ->andFilterWhere(['like', 'mappingEbayName', $mappingEbayName]);
             if ($isUsed || $isUsed === "0") $query->andWhere(['isUsed' => $isUsed]);
             if ($isUsedBalance || $isUsedBalance === "0") $query->andWhere(['isUsedBalance' => $isUsedBalance]);
             if ($isUsedRefund || $isUsedRefund === "0") $query->andWhere(['isUsedRefund' => $isUsedRefund]);
