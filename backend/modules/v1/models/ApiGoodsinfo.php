@@ -4182,6 +4182,9 @@ class ApiGoodsinfo
         if ($shopifyInfo['neckline']) {
             $out .= $out ? (',' . $shopifyInfo['neckline']) : $shopifyInfo['neckline'];
         }
+        if ($shopifyInfo['other']) {
+            $out .= $out ? (',' . $shopifyInfo['other']) : $shopifyInfo['other'];
+        }
         return $out;
     }
 
