@@ -755,6 +755,7 @@ class ApiGoodsinfo
         if (is_array($goodsInfo['neckline'])) {
             $goodsInfo['neckline'] = implode(',', $goodsInfo['neckline']);
         }
+        $goodsInfo['other'] = str_replace("\n", ',', $goodsInfo['other']);
         $goods->setAttributes($goodsInfo);
         $tran = Yii::$app->db->beginTransaction();
         try {
