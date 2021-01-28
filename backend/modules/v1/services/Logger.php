@@ -43,12 +43,12 @@ class Logger
     {
         $log = new OaShopifyImportToBackstageLog();
         $log->setAttributes($params);
-        $log->save();
         $res = $log->save();
         if (!$res) {
             throw new Exception('Failed to save log!');
         }
-        return $res;
+        return $log;
     }
+
 
 }

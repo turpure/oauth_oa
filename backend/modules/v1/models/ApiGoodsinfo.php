@@ -2863,7 +2863,8 @@ class ApiGoodsinfo
         return $ret;
     }
 
-    public static function addShopifyQueue($ids, $accounts){
+    public static function addShopifyQueue($ids, $accounts)
+    {
         if (!is_array($ids)) $ids = [$ids];
         $out = [];
         foreach ($ids as $id) {
@@ -2888,10 +2889,12 @@ class ApiGoodsinfo
                     'type' => 'product',
                 ];
                 $aa = Logger::shopifyLog($params);
-                if($aa){
+                if ($aa) {
+//                    $redis = Yii::$app->redis;
+//                    $redis->lpush('shopify_upload', $aa->id);
                     $out[] = ['suffix' => $account['account'], 'sku' => $shopifyInfo['sku'], 'product_id' => '',
                         'content' => "The product info add into queue successfully!"];
-                }else{
+                } else {
                     $out[] = ['suffix' => $account['account'], 'sku' => $shopifyInfo['sku'], 'product_id' => '',
                         'content' => "The product info add into queue failed!"];
                 }
@@ -2913,33 +2916,32 @@ class ApiGoodsinfo
     public static function uploadToShopifyBackstage($ids, $accounts)
     {
         if (!is_array($ids)) $ids = [$ids];
-        $out = [];
         foreach ($ids as $id) {
             $shopifyInfo = OaShopifyGoods::find()->where(['infoId' => $id])->asArray()->one();
-            if(!$shopifyInfo['title']){
-                $out[] = ['suffix' => '', 'sku' => $shopifyInfo['sku'], 'product_id' => '',
-                    'content' => "The product {$shopifyInfo['sku']} title is empty"];
+            if (!$shopifyInfo['title']) {
+                $content = "The product {$shopifyInfo['sku']} title is empty";
+                $logs = OaShopifyImportToBackstageLog::findAll(['sku' => $shopifyInfo['sku']]);
+                foreach ($logs as $log) {
+                    $log->content = $content;
+                    $log->save();
+                }
                 continue;
             }
             $shopifySku = OaShopifyGoodsSku::find()->where(['infoId' => $id])->asArray()->all();
             $shopifyAccounts = OaShopify::findAll(['account' => $accounts]);
             foreach ($shopifyAccounts as $account) {
                 //判断该账号是否上架过该产品
-                $log = OaShopifyImportToBackstageLog::find()
+                $logNum = OaShopifyImportToBackstageLog::find()
                     ->andFilterWhere(['suffix' => $account['account']])
                     ->andFilterWhere(['sku' => $shopifyInfo['sku']])
-                    ->andFilterWhere(['type' => 'Product'])
+//                    ->andFilterWhere(['type' => 'Product'])
                     ->andWhere(['<>', 'product_id', ''])
                     ->count();
-                ///*
-                if ($log) {
-                    $out[] = ['suffix' => $account['account'], 'sku' => $shopifyInfo['sku'], 'product_id' => '',
-                        'content' => "The product {$shopifyInfo['sku']} already exists in the shopify store {$account['account']}"];
+                if ($logNum) {
                     continue;
                 }
-                //*/
                 // 刊登产品
-                $row['sku'] = $shopifyInfo['sku'];
+//                $row['sku'] = $shopifyInfo['sku'];
                 $row['title'] = $shopifyInfo['title'];
                 $row['body_html'] = $shopifyInfo['description'];
                 //$row['vendor'] = $shopifyInfo['sku'];
@@ -2956,23 +2958,22 @@ class ApiGoodsinfo
                 $services = new ShopifyServices($productPar);
 
                 $product_info = $services->createProduct($row);
+                if ($product_info) {
+                    $log = OaShopifyImportToBackstageLog::findOne(['sku' => $product_info['sku'], 'suffix' => $product_info['suffix']]);
+                    $log->product_id = $product_info['product_id'];
+                    $log->content = $product_info['content'];
 
-                $item = [
-                    'suffix' => $account['account'],
-                    'sku' => $shopifyInfo['sku'],
-                    'product_id' => $product_info['product_id'],
-                    'content' => $product_info['message']
-                ];
-                //var_dump($res);exit;
-                //上传 SKU图片
-                if ($product_info['product_id']) {
-                    $response = self::addImgToProductVariants($services, $account['account'], $shopifyInfo['sku'], $shopifySku, $product_info['product_id']);
-                    $item['content'] = json_encode($response);
+                    //var_dump($res);exit;
+                    //上传 SKU图片
+                    if ($product_info['product_id']) {
+                        $response = self::addImgToProductVariants($services, $account['account'], $shopifyInfo['sku'], $shopifySku, $product_info['product_id']);
+                        $log->content = json_encode($response);
+                    }
+                    $log->save();
                 }
-                $out[] = $item;
             }
         }
-        return $out;
+        return true;
     }
 
     /**
@@ -3008,7 +3009,9 @@ class ApiGoodsinfo
             }
             if ($variant_ids) {
                 $imgRes = $services->updateImages($product_id, $img['id'], $variant_ids, $sku);
-                $out[] = ['imgId' => $img['id'], 'skus' => $skuArr, 'content' => $imgRes];
+                if ($imgRes) {
+                    $out[] = ['imgId' => $img['id'], 'skus' => $skuArr, 'content' => $imgRes];
+                }
             }
         }
         return $out;

@@ -50,6 +50,7 @@ class OaShopifyImportToBackstageLog extends \yii\db\ActiveRecord
             [['createdDate'], 'safe'],
             [['content'], 'string'],
             [['creator', 'type', 'sku', 'suffix', 'product_id'], 'string', 'max' => 100],
+            [['product_id'], 'default', 'value' => ''],
         ];
     }
 

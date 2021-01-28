@@ -54,7 +54,7 @@ class ShopifyServices extends AbstractService
      * @param $product
      * Date: 2021-01-19 16:13
      * Author: henry
-     * @return array
+     * @return array | mixed
      */
     public function createProduct($product)
     {
@@ -65,16 +65,15 @@ class ShopifyServices extends AbstractService
             $res = Helper::post($url, json_encode(['product' => $product]));
             //$res = [201, ['product'=>['id' => 4914039488589]]];
             //var_dump($res);
+//            return $res;
             if ($res[0] > 400) {
-                $out = false;
                 $product_id = '';
                 $content = json_encode($res[1]['errors']);
             } else {
-                $out = true;
                 $content = 'success';
                 $product_id = $res[1]['product']['id'];
             }
-            $params = [
+            return  [
                 'suffix' => $this->myshopify_domain,
                 'sku' => $product['sku'],
                 'product_id' => (string) $product_id,
@@ -82,10 +81,8 @@ class ShopifyServices extends AbstractService
                 'type' => 'product',
                 'content' => $content
             ];
-            $aa = Logger::shopifyLog($params);
-            return ['product_id' => $product_id, 'message' => $content];
         } catch (Exception $e) {
-            return ['product_id' => '', 'message' => $e->getMessage()];
+            return false;
         }
 
     }
@@ -149,7 +146,7 @@ class ShopifyServices extends AbstractService
         if($res[0] >= 400){
             return json_encode($res[1]);
         }else{
-            return 'success';
+            return '';
         }
     }
 
