@@ -37,7 +37,7 @@ class Logger
     /**
      * @brief 记录导入shopify的日志
      * @param $logData
-     * @return bool
+     * @return bool | mixed
      */
     public static function shopifyLog($params)
     {

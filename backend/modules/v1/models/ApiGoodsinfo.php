@@ -2862,6 +2862,43 @@ class ApiGoodsinfo
         return $ret;
     }
 
+    public static function addShopifyQueue($ids, $accounts){
+        if (!is_array($ids)) $ids = [$ids];
+        $out = [];
+        foreach ($ids as $id) {
+            $shopifyInfo = OaShopifyGoods::find()->where(['infoId' => $id])->asArray()->one();
+            $shopifyAccounts = OaShopify::findAll(['account' => $accounts]);
+            foreach ($shopifyAccounts as $account) {
+                $log = OaShopifyImportToBackstageLog::find()
+                    ->andFilterWhere(['suffix' => $account['account']])
+                    ->andFilterWhere(['sku' => $shopifyInfo['sku']])
+//                    ->andFilterWhere(['type' => 'Product'])
+//                    ->andWhere(['<>', 'product_id', ''])
+                    ->count();
+                if ($log) {
+                    $out[] = ['suffix' => $account['account'], 'sku' => $shopifyInfo['sku'], 'product_id' => '',
+                        'content' => "The product info already exists in the queue! "];
+                    continue;
+                }
+                $params = [
+                    'suffix' => $account['account'],
+                    'sku' => $shopifyInfo['sku'],
+                    'creator' => \Yii::$app->user->identity->username,
+                    'type' => 'product',
+                ];
+                $aa = Logger::shopifyLog($params);
+                if($aa){
+                    $out[] = ['suffix' => $account['account'], 'sku' => $shopifyInfo['sku'], 'product_id' => '',
+                        'content' => "The product info add into queue successfully!"];
+                }else{
+                    $out[] = ['suffix' => $account['account'], 'sku' => $shopifyInfo['sku'], 'product_id' => '',
+                        'content' => "The product info add into queue failed!"];
+                }
+            }
+        }
+        return $out;
+    }
+
 
     /**
      * shopify 上架产品

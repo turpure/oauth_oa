@@ -36,7 +36,7 @@ class OaShopifyImportToBackstageLog extends \yii\db\ActiveRecord
              */
             'class' => TimestampBehavior::className(),
             'createdAtAttribute' => 'createDate',
-            'updatedAtAttribute' => false,
+            'updatedAtAttribute' => 'updateDate',
             'value' => new Expression('NOW()'),
         ],];
     }

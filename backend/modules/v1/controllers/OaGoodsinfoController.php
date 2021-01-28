@@ -824,26 +824,7 @@ class OaGoodsinfoController extends AdminController
         }
 
     }
-    /**
-     * @brief 导出Shopify模板
-     * @throws \Exception
-     */
-    public function actionPlatExportShopifyNew()
-    {
-        try {
-            $request = Yii::$app->request;
-            if (!$request->isPost) {
-                return [];
-            }
-            $condition = $request->post()['condition'];
-            $infoId = $condition['id'];
-            $accounts = $condition['account'];
-            $ret = ApiGoodsinfo::preExportShopifyNew($infoId, $accounts);
-            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
-        } catch (\Exception  $why) {
-            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
-        }
-    }
+
     /**
      * 导出平台模板
      * Date: 2020-08-14 12:01
@@ -1037,27 +1018,6 @@ class OaGoodsinfoController extends AdminController
 
     }
 
-    /**
-     * @brief 导出Shopify模板数据
-     * @throws \Exception
-     */
-    public function actionPlatExportShopifyData()
-    {
-        try {
-            $request = Yii::$app->request;
-            if (!$request->isPost) {
-                return [];
-            }
-            $condition = $request->post()['condition'];
-            $infoId = $condition['id'];
-            $type = isset($condition['type']) ? $condition['type'] : '';
-            $ret = ApiGoodsinfo::preExportshopifyData($infoId, $type);
-            return $ret;
-        } catch (\Exception $why) {
-            return ['code' => 401, 'message' => $why->getMessage()];
-        }
-
-    }
 
 
     /**
@@ -1087,25 +1047,6 @@ class OaGoodsinfoController extends AdminController
         ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
     }
 
-    /**
-     * @brief 上架Shopify产品
-     * Date: 2020-1-09 9:00
-     * Author: henry
-     * @return array|bool
-     */
-    public function actionPlatShopifyToBackstage()
-    {
-        try {
-            $request = Yii::$app->request;
-            $condition = $request->post()['condition'];
-            $ids = $condition['ids'];
-            $account = $condition['account'];
-            $res = ApiGoodsinfo::uploadToShopifyBackstage($ids, $account);
-            return $res;
-        } catch (\Exception $why) {
-            return ['code' => 400, 'message' => $why->getMessage()];
-        }
-    }
 
     /**
      * @brief 上架Fyndiq产品
@@ -1234,15 +1175,6 @@ class OaGoodsinfoController extends AdminController
         }
     }
 
-    public function actionShopifyAccounts()
-    {
-        try {
-            return ApiGoodsinfo::getShopifyAccounts();
-        } catch (\Exception  $why) {
-            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
-        }
-    }
-
     public function actionVovaAccounts()
     {
         try {
@@ -1267,8 +1199,6 @@ class OaGoodsinfoController extends AdminController
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
-
-
 
     /** 获取需要导出的Joom没账号
      * Date: 2019-04-01 9:22
@@ -1317,7 +1247,80 @@ class OaGoodsinfoController extends AdminController
         return true;
     }
 
+    ########################### SHOPIFY  PLAT INFO ########################################
 
+    /**
+     * @brief 导出Shopify模板
+     * @throws \Exception
+     */
+    public function actionPlatExportShopifyNew()
+    {
+        try {
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            $infoId = $condition['id'];
+            $accounts = $condition['account'];
+            $ret = ApiGoodsinfo::preExportShopifyNew($infoId, $accounts);
+            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Csv');
+        } catch (\Exception  $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
+
+    /**
+     * @brief 导出Shopify模板数据
+     * @throws \Exception
+     */
+    public function actionPlatExportShopifyData()
+    {
+        try {
+            $request = Yii::$app->request;
+            if (!$request->isPost) {
+                return [];
+            }
+            $condition = $request->post()['condition'];
+            $infoId = $condition['id'];
+            $type = isset($condition['type']) ? $condition['type'] : '';
+            $ret = ApiGoodsinfo::preExportshopifyData($infoId, $type);
+            return $ret;
+        } catch (\Exception $why) {
+            return ['code' => 401, 'message' => $why->getMessage()];
+        }
+
+    }
+
+    /**
+     * 上架Shopify产品,添加上架队列
+     * Date: 2021-01-27 18:30
+     * Author: henry
+     * @return array|void
+     */
+    public function actionPlatShopifyToBackstage()
+    {
+        try {
+            $request = Yii::$app->request;
+            $condition = $request->post()['condition'];
+            $ids = $condition['ids'];
+            $account = $condition['account'];
+//            $res = ApiGoodsinfo::uploadToShopifyBackstage($ids, $account);
+            $res = ApiGoodsinfo::addShopifyQueue($ids, $account);
+            return $res;
+        } catch (\Exception $why) {
+            return ['code' => 400, 'message' => $why->getMessage()];
+        }
+    }
+
+    public function actionShopifyAccounts()
+    {
+        try {
+            return ApiGoodsinfo::getShopifyAccounts();
+        } catch (\Exception  $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+    }
 
 
     ########################### smt  plat info ########################################
