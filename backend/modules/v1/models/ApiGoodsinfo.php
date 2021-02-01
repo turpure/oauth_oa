@@ -2943,7 +2943,8 @@ class ApiGoodsinfo
                 // 刊登产品
                 $row['sku'] = $shopifyInfo['sku'];
                 $row['title'] = $shopifyInfo['title'];
-                $row['body_html'] = $shopifyInfo['description'];
+//                $row['body_html'] = $shopifyInfo['description'];
+                $row['body_html'] = str_replace("\n", '<br>', $shopifyInfo['description']);
                 //$row['vendor'] = $shopifyInfo['sku'];
                 //$row['product_type'] = $shopifyInfo['sku'];
                 $row['tags'] = explode(',', self::getShopifyTagNew($shopifySku, $shopifyInfo));

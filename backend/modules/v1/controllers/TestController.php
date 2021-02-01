@@ -55,12 +55,12 @@ class TestController extends AdminController
     }
 
     public  function actionTest1(){
-        $apiKey = 'd81d4172b65448ae75956be6628c74eb';
-        $password = "5646b121efbf63a9ab0963d15a68f796";
-        $url = 'https://' . $apiKey . ':' . $password .'@faroonee.myshopify.com/admin/api/2019-07/products.json';
+        //$apiKey = 'd81d4172b65448ae75956be6628c74eb';
+        //$password = "5646b121efbf63a9ab0963d15a68f796";
         //$sql = "SELECT password FROM [dbo].[S_ShopifySyncInfo] WHERE hostname='faroonee'";
         //$account = Yii::$app->py_db->createCommand($sql)->queryOne();
         //$header = ['Content-Type' => 'application/json', 'X-Shopify-Access-Token' => $account['password']];
+        $url = 'https://' . $apiKey . ':' . $password .'@faroonee.myshopify.com/admin/api/2019-07/products.json';
 
 
         //$header = ['Content-Type' => 'application/json', 'X-Shopify-Access-Token' => $password];
