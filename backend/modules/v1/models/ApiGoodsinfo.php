@@ -2941,7 +2941,7 @@ class ApiGoodsinfo
                     continue;
                 }
                 // 刊登产品
-//                $row['sku'] = $shopifyInfo['sku'];
+                $row['sku'] = $shopifyInfo['sku'];
                 $row['title'] = $shopifyInfo['title'];
                 $row['body_html'] = $shopifyInfo['description'];
                 //$row['vendor'] = $shopifyInfo['sku'];
@@ -2956,14 +2956,12 @@ class ApiGoodsinfo
 
                 $productPar = ['myshopify_domain' => $account['account']];
                 $services = new ShopifyServices($productPar);
-
                 $product_info = $services->createProduct($row);
                 if ($product_info) {
                     $log = OaShopifyImportToBackstageLog::findOne(['sku' => $product_info['sku'], 'suffix' => $product_info['suffix']]);
                     $log->product_id = $product_info['product_id'];
                     $log->content = $product_info['content'];
 
-                    //var_dump($res);exit;
                     //上传 SKU图片
                     if ($product_info['product_id']) {
                         $response = self::addImgToProductVariants($services, $account['account'], $shopifyInfo['sku'], $shopifySku, $product_info['product_id']);
@@ -2984,11 +2982,12 @@ class ApiGoodsinfo
      */
     public static function addImgToProductVariants(ShopifyServices $services, $account, $sku, $shopifySku, $product_id)
     {
-        $log = OaShopifyImportToBackstageLog::findOne(['suffix' => $account, 'sku' => $sku, 'type' => 'product', 'product_id' => $product_id]);
-        $product_id = $log ? $log['product_id'] : '';
-        if (!$product_id) {
-            throw new Exception("Can't find product {$product_id}!");
-        }
+//        $log = OaShopifyImportToBackstageLog::findOne(['suffix' => $account, 'sku' => $sku]);
+//        $log = OaShopifyImportToBackstageLog::findOne(['suffix' => $account, 'sku' => $sku, 'type' => 'product', 'product_id' => $product_id]);
+//        $product_id = $log ? $log['product_id'] : '';
+//        if (!$product_id) {
+//            throw new Exception("Can't find product {$product_id}!");
+//        }
         $images = $services->getImages($product_id);
         $product = $services->getProduct($product_id);
         $variants = $product ? $product['variants'] : [];
