@@ -1239,6 +1239,16 @@ class OaGoodsinfoController extends AdminController
         return $model->save();
     }
 
+    public function actionShopifyCollectionList(){
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        $suffix = isset($condition['suffix']) && $condition['suffix'] ? $condition['suffix'] : 'faroonee';
+        return OaShopifyTagsDetail::findAll(['suffix' => $suffix]);
+    }
+
     public function actionShopifyTagsList()
     {
         $request = Yii::$app->request;
