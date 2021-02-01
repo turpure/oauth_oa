@@ -2965,7 +2965,7 @@ class ApiGoodsinfo
                     //上传 SKU图片
                     if ($product_info['product_id']) {
                         $response = self::addImgToProductVariants($services, $account['account'], $shopifyInfo['sku'], $shopifySku, $product_info['product_id']);
-                        $log->content = json_encode($response);
+                        if($response) $log->content = json_encode($response);
                     }
                     $log->save();
                 }
