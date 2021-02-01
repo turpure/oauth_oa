@@ -19,6 +19,7 @@ namespace backend\modules\v1\controllers;
 
 
 use backend\models\OaShopifyImportToBackstageLog;
+use backend\models\User;
 use backend\modules\v1\models\ApiUser;
 use Yii;
 use yii\data\ArrayDataProvider;
@@ -103,8 +104,12 @@ class LogController extends AdminController
         $createDate = isset($cond['createDate']) ? $cond['createDate'] : [];
         $updateDate = isset($cond['updateDate']) ? $cond['updateDate'] : [];
         $content = isset($cond['content']) ? $cond['content'] : '';
+        $username = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($username);
+//        var_dump($userList);exit;
 
         $query = OaShopifyImportToBackstageLog::find()
+            ->andFilterWhere(['creator' => $userList])
             ->andFilterWhere(['like', 'sku', $sku])
             ->andFilterWhere(['like', 'suffix', $suffix])
             ->andFilterWhere(['like', 'product_id', $product_id])
