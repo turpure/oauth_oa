@@ -21,6 +21,7 @@ use backend\models\OaEbayGoodsSku;
 use backend\models\OaGoods1688;
 use backend\models\OaGoodsinfo;
 use backend\models\OaJoomSuffix;
+use backend\models\OaShopifyCollection;
 use backend\models\OaShopifyGoodsSku;
 use backend\models\OaShopifyTagsDetail;
 use backend\models\OaSiteCountry;
@@ -1246,7 +1247,7 @@ class OaGoodsinfoController extends AdminController
         }
         $condition = $request->post()['condition'];
         $suffix = isset($condition['suffix']) && $condition['suffix'] ? $condition['suffix'] : 'faroonee';
-        return OaShopifyTagsDetail::findAll(['suffix' => $suffix]);
+        return OaShopifyCollection::findAll(['suffix' => $suffix]);
     }
 
     public function actionShopifyTagsList()
