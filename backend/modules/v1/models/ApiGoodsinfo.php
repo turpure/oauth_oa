@@ -29,6 +29,7 @@ use backend\models\OaGoodsSku1688;
 use backend\models\OaMyMallSuffix;
 use backend\models\OaPaypal;
 use backend\models\OaShopifyGoods;
+use backend\models\OaShopifyGoodsCollection;
 use backend\models\OaShopifyGoodsSku;
 use backend\models\OaShopifyImportToBackstageLog;
 use backend\models\OaSmtGoods;
@@ -628,14 +629,18 @@ class ApiGoodsinfo
                 $sku['property'] = json_decode($sku['property']);
             }
         } elseif ($plat === 'shopify') {
-            $goods = OaShopifyGoods::findOne(['infoId' => $infoId]);
+            $goods = OaShopifyGoods::find()->where(['infoId' => $infoId])->asArray()->one();
             $goodsSku = OaShopifyGoodsSku::findAll(['infoId' => $infoId]);
+//            $accounts = ApiGoodsinfo::getShopifyAccounts();
+            $goods['collection'] = OaShopifyGoodsCollection::findAll(['infoId' => $infoId]);
+
             if (!$goods && !$goodsSku) {
                 $ret = [
                     'basicInfo' => [
                         'infoId' => '', 'title' => '', 'description' => '', 'tags' => '', 'sku' => '',
                         'goodsId' => '', 'mainImage' => '', 'extraImages' => '',
                         'style' => '', 'length' => '', 'sleeveLength' => '', 'neckline' => '',
+                        'productType' => '', 'collection' => []
                     ],
                     'skuInfo' => [[
                         'id' => '', 'infoId' => '', 'sid' => '', 'sku' => '', 'color' => '', 'size' => '',

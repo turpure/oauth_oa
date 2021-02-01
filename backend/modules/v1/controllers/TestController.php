@@ -57,54 +57,30 @@ class TestController extends AdminController
     public  function actionTest1(){
         //$apiKey = 'd81d4172b65448ae75956be6628c74eb';
         //$password = "5646b121efbf63a9ab0963d15a68f796";
-        //$sql = "SELECT password FROM [dbo].[S_ShopifySyncInfo] WHERE hostname='faroonee'";
-        //$account = Yii::$app->py_db->createCommand($sql)->queryOne();
+        $sql = "SELECT apikey,password,hostname FROM [dbo].[S_ShopifySyncInfo] --  WHERE hostname='faroonee'";
+        $accounts = Yii::$app->py_db->createCommand($sql)->queryAll();
         //$header = ['Content-Type' => 'application/json', 'X-Shopify-Access-Token' => $account['password']];
-        $url = 'https://' . $apiKey . ':' . $password .'@faroonee.myshopify.com/admin/api/2019-07/products.json';
-
-
-        //$header = ['Content-Type' => 'application/json', 'X-Shopify-Access-Token' => $password];
-        $header = ['Content-Type' => 'application/json'];
-       // var_dump($account);exit;
-        //$res = Helper::curlRequest($url,[],$header,'GET');
-        $res = Helper::post($url,'', $header,'GET');
-
-
-        return $res;
-
-
-
-
-
-
-
-
-        $sql = 'SELECT id,title,"template",pic,selleruserid AS shortName,folderid AS siteId FROM "public"."ebay_user_template"';
-        $arr = Yii::$app->ibay->createCommand($sql)->queryAll();
-
-        //$list = (new \yii\mongodb\Query())->from('ebay_user_desc_template')
-            //->andFilterWhere(['marketplace' => $marketplace])
-            //->andFilterWhere(['productType' => $type])
-            //->andFilterWhere(['dispatchDate' => ['$regex' => date('Y-m-d')]])
-            //->all();
-
-        $collection = Yii::$app->mongodb2->getCollection ( 'ebay_user_desc_template' );
-        //$arr = $collection->find();
-        foreach ($arr as $v){
-//            var_dump($v);exit;
-            $sql = "SELECT TOP 1 NoteName FROM [dbo].[S_PalSyncInfo] where EbayUserID='{$v['shortname']}';";
-            $query = Yii::$app->py_db->createCommand($sql)->queryOne();
-            $v['suffix'] = $query ? $query['NoteName'] : '';
-            $v['creator'] = 'admin';
-//            var_dump($v);exit;w
-//            $collection->update(['_id' => $v['_id']], ['shortName' => $shortName]);
-            //var_dump($query);exit;
-            $collection->insert($v);
+        $out = [];
+        foreach ($accounts as $account){
+            $url = 'https://' . $account['apikey'] . ':' . $account['password'] .'@'. $account['hostname'] . '.myshopify.com/admin/api/2019-07/custom_collections.json';
+            $header = ['Content-Type' => 'application/json'];
+            // var_dump($account);exit;
+            //$res = Helper::curlRequest($url,[],$header,'GET');
+            $res = Helper::post($url,'', $header,'GET');
+            if($res[0] == 200){
+                foreach ($res[1]['custom_collections'] as &$v){
+                    $v['coll_id'] = $v['id'];
+                    $v['suffix'] = $account['hostname'];
+                    unset($v['id']);
+//                    var_dump($v);
+                    $rr = Yii::$app->db->createCommand()->insert('proCenter.oa_shopifyCollection', $v)->execute();
+                    if(!$rr){
+                        $out[] =  $v['coll_id'];
+                    }
+                }
+            }
         }
-//        var_dump($res);
-
-//        var_dump($arr);exit;
-           // return $list;
+        return $out;
 
 
     }

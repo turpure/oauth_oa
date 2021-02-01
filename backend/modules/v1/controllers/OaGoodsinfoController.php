@@ -568,39 +568,6 @@ class OaGoodsinfoController extends AdminController
         return ApiGoodsinfo::saveShopifyInfo($condition);
     }
 
-    /**
-     * @brief 添加shopify 属性值
-     * @return boolean | array
-     * @throws \Exception
-     */
-    public function actionSaveShopifyTagValue()
-    {
-        $request = Yii::$app->request;
-        if (!$request->isPost) {
-            return [];
-        }
-        $condition = $request->post()['condition'];
-        $query = OaShopifyTagsDetail::findOne(['name' => $condition['name'], 'value' => $condition['value']]);
-        if($query){
-            return ['code' => 400, 'message' => '该属性值已存在'];
-        }
-        $model = new OaShopifyTagsDetail();
-        $model->setAttributes($condition);
-        $model->flag = 'add';
-        $model->creator = Yii::$app->user->identity->username;
-        return $model->save();
-    }
-
-    public function actionShopifyTagsList()
-    {
-        $request = Yii::$app->request;
-        if (!$request->isPost) {
-            return [];
-        }
-        $condition = $request->post()['condition'];
-        $name = isset($condition['name']) && $condition['name'] ? $condition['name'] : 'Length';
-        return OaShopifyTagsDetail::findAll(['name' => $name]);
-    }
 
     /**
      * @brief EBAY模板同步WISH模板SKU信息
@@ -1248,6 +1215,40 @@ class OaGoodsinfoController extends AdminController
     }
 
     ########################### SHOPIFY  PLAT INFO ########################################
+
+    /**
+     * @brief 添加shopify 属性值
+     * @return boolean | array
+     * @throws \Exception
+     */
+    public function actionSaveShopifyTagValue()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        $query = OaShopifyTagsDetail::findOne(['name' => $condition['name'], 'value' => $condition['value']]);
+        if($query){
+            return ['code' => 400, 'message' => '该属性值已存在'];
+        }
+        $model = new OaShopifyTagsDetail();
+        $model->setAttributes($condition);
+        $model->flag = 'add';
+        $model->creator = Yii::$app->user->identity->username;
+        return $model->save();
+    }
+
+    public function actionShopifyTagsList()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $condition = $request->post()['condition'];
+        $name = isset($condition['name']) && $condition['name'] ? $condition['name'] : 'Length';
+        return OaShopifyTagsDetail::findAll(['name' => $name]);
+    }
 
     /**
      * @brief 导出Shopify模板

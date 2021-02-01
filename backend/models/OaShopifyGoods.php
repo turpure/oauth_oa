@@ -21,9 +21,11 @@ use Yii;
  * @property string $sleeveLength
  * @property string $neckline
  * @property string $other
+ * @property string $productType
  */
 class OaShopifyGoods extends \yii\db\ActiveRecord
 {
+//    public $collection;
     /**
      * {@inheritdoc}
      */
@@ -43,7 +45,7 @@ class OaShopifyGoods extends \yii\db\ActiveRecord
             [['sku'], 'string', 'max' => 50],
             [['title', 'mainImage'], 'string', 'max' => 2000],
             [['tags'], 'string', 'max' => 500],
-            [['style', 'length', 'sleeveLength', 'neckline', 'other'], 'string', 'max' => 300],
+            [['style', 'length', 'sleeveLength', 'neckline', 'other','productType'], 'string', 'max' => 300],
         ];
     }
 
