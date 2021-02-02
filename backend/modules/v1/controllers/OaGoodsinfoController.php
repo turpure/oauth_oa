@@ -1324,7 +1324,7 @@ class OaGoodsinfoController extends AdminController
             $ids = $condition['ids'];
             $account = $condition['account'];
             $res = ApiGoodsinfo::addShopifyQueue($ids, $account);
-//            $rr = ApiGoodsinfo::uploadToShopifyBackstage($ids, $account);
+            $rr = ApiGoodsinfo::uploadToShopifyBackstage($ids, $account);
 //            var_dump($rr);
             return $res;
         } catch (\Exception $why) {

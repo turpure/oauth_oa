@@ -41,10 +41,14 @@ class Logger
      */
     public static function shopifyLog($params)
     {
-        $log = new OaShopifyImportToBackstageLog();
+        $log = OaShopifyImportToBackstageLog::findOne(['sku' => $params['sku'], 'suffix' => $params['suffix']]);
+        if(!$log){
+            $log = new OaShopifyImportToBackstageLog();
+        }
         $log->setAttributes($params);
         $res = $log->save();
         if (!$res) {
+//            var_dump($log->getErrors());
             throw new Exception('Failed to save log!');
         }
         return $log;

@@ -58,29 +58,27 @@ class ShopifyServices extends AbstractService
      */
     public function createProduct($product)
     {
+        $params = [
+            'suffix' => $this->myshopify_domain,
+            'sku' => $product['sku'],
+            'product_id' => '',
+            'creator' => \Yii::$app->user->identity->username,
+            'type' => 'product',
+            'productStatus' => '',
+            'productContent' => '',
+        ];
         try {
             $endpoint = 'products.json';
             $url = $this->base_uri . $endpoint;
-//            var_dump($url);exit;
             $res = Helper::post($url, json_encode(['product' => $product]));
-            //$res = [201, ['product'=>['id' => 4914039488589]]];
-            //var_dump($res);
-//            return $res;
             if ($res[0] > 400) {
-                $product_id = '';
-                $content = json_encode($res[1]['errors']);
+                $params['productContent'] = json_encode($res[1]['errors']);
             } else {
-                $content = 'success';
-                $product_id = $res[1]['product']['id'];
+                $params['productStatus'] = 'success';
+                $params['product_id'] = (string) $res[1]['product']['id'];
             }
-            return  [
-                'suffix' => $this->myshopify_domain,
-                'sku' => $product['sku'],
-                'product_id' => (string) $product_id,
-                'creator' => \Yii::$app->user->identity->username,
-                'type' => 'product',
-                'content' => $content
-            ];
+            Logger::shopifyLog($params);
+            return true;
         } catch (Exception $e) {
             return false;
         }

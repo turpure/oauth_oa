@@ -634,7 +634,7 @@ class ApiGoodsinfo
 //            $accounts = ApiGoodsinfo::getShopifyAccounts();
             $collection = OaShopifyGoodsCollection::findAll(['infoId' => $infoId]);
             $coll = [];
-            foreach ($collection as $v){
+            foreach ($collection as $v) {
                 $coll[] = [$v['suffix'], $v['coll_id']];
             }
             $goods['collection'] = $coll;
@@ -769,22 +769,22 @@ class ApiGoodsinfo
         $goods->setAttributes($goodsInfo);
         //删除不存在的collection
         $allColl = OaShopifyGoodsCollection::findAll(['infoId' => $goodsInfo['infoId']]);
-        foreach ($allColl as $v){
-            if(!in_array([$v['suffix'], $v['coll_id']], $goodsInfo['collection'])){
+        foreach ($allColl as $v) {
+            if (!in_array([$v['suffix'], $v['coll_id']], $goodsInfo['collection'])) {
                 $v->delete();
             }
         }
         $tran = Yii::$app->db->beginTransaction();
         try {
-            foreach($goodsInfo['collection'] as $v) {
+            foreach ($goodsInfo['collection'] as $v) {
                 $coll = OaShopifyGoodsCollection::findOne(['infoId' => $goodsInfo['infoId'], 'suffix' => $v[0], 'coll_id' => $v[1]]);
-                if(!$coll){
+                if (!$coll) {
                     $coll = new OaShopifyGoodsCollection();
                 }
                 $coll->infoId = $goodsInfo['infoId'];
                 $coll->suffix = $v[0];
                 $coll->coll_id = $v[1];
-                if(!$coll->save()){
+                if (!$coll->save()) {
                     throw new \Exception('save shopify collection failed');
                 }
             }
@@ -2940,7 +2940,6 @@ class ApiGoodsinfo
      * Date: 2020-11-10 17:07
      * Author: henry
      * @return array|bool
-     * @throws Exception
      */
     public static function uploadToShopifyBackstage($ids, $accounts)
     {
@@ -2950,15 +2949,18 @@ class ApiGoodsinfo
             if (!$shopifyInfo['title']) {
                 $content = "The product {$shopifyInfo['sku']} title is empty";
                 $logs = OaShopifyImportToBackstageLog::findAll(['sku' => $shopifyInfo['sku']]);
-                foreach ($logs as $log) {
-                    $log->content = $content;
-                    $log->save();
+                foreach ($logs as $v) {
+                    $v->content = $content;
+                    $v->save();
                 }
                 continue;
             }
             $shopifySku = OaShopifyGoodsSku::find()->where(['infoId' => $id])->asArray()->all();
             $shopifyAccounts = OaShopify::findAll(['account' => $accounts]);
             foreach ($shopifyAccounts as $account) {
+                //初始化上传服务
+                $productPar = ['myshopify_domain' => $account['account']];
+                $services = new ShopifyServices($productPar);
                 //判断该账号是否上架过该产品
                 $logNum = OaShopifyImportToBackstageLog::find()
                     ->andFilterWhere(['suffix' => $account['account']])
@@ -2966,45 +2968,57 @@ class ApiGoodsinfo
 //                    ->andFilterWhere(['type' => 'Product'])
                     ->andWhere(['<>', 'product_id', ''])
                     ->count();
-                if ($logNum) {
+                // 没有上架成功的记录，则刊登该产品
+                if (!$logNum) {
+                    $row['sku'] = $shopifyInfo['sku'];
+                    $row['title'] = $shopifyInfo['title'];
+                    $row['body_html'] = str_replace("\n", '<br>', $shopifyInfo['description']);
+                    //$row['vendor'] = $shopifyInfo['sku'];
+                    $row['product_type'] = $shopifyInfo['productType'];
+                    $row['tags'] = explode(',', self::getShopifyTagNew($shopifySku, $shopifyInfo));
+                    $variantInfo = static::getShopifyVariantInfo($shopifySku, $shopifyInfo);
+                    $row['variants'] = $variantInfo['variation'];
+                    if ($variantInfo['options']) {
+                        $row['options'] = $variantInfo['options'];
+                    }
+                    $row['images'] = $variantInfo['images'];
+                    $product_res = $services->createProduct($row);
+//                    var_dump($product_res);
+                }
+                // 上传图片  和 collection
+                $log = OaShopifyImportToBackstageLog::findOne(['sku' => $shopifyInfo['sku'], 'suffix' => $account['account']]);
+                $product_id = $log ? $log['product_id'] : '';
+//                var_dump($product_id);
+                if (!$product_id) {
+                    $errMessage = "Product is not exists!";
+                    $log->imgContent = $errMessage;
+                    $log->collectionContent = $errMessage;
+                    $log->save();
                     continue;
-                }
-                // 刊登产品
-                $row['sku'] = $shopifyInfo['sku'];
-                $row['title'] = $shopifyInfo['title'];
-//                $row['body_html'] = $shopifyInfo['description'];
-                $row['body_html'] = str_replace("\n", '<br>', $shopifyInfo['description']);
-                //$row['vendor'] = $shopifyInfo['sku'];
-                $row['product_type'] = $shopifyInfo['productType'];
-                $row['tags'] = explode(',', self::getShopifyTagNew($shopifySku, $shopifyInfo));
-                $variantInfo = static::getShopifyVariantInfo($shopifySku, $shopifyInfo);
-                $row['variants'] = $variantInfo['variation'];
-                if ($variantInfo['options']) {
-                    $row['options'] = $variantInfo['options'];
-                }
-                $row['images'] = $variantInfo['images'];
-
-                $productPar = ['myshopify_domain' => $account['account']];
-                $services = new ShopifyServices($productPar);
-                $product_info = $services->createProduct($row);
-                if ($product_info) {
-                    $log = OaShopifyImportToBackstageLog::findOne(['sku' => $product_info['sku'], 'suffix' => $product_info['suffix']]);
-                    $log->product_id = $product_info['product_id'];
-                    $log->content = $product_info['content'];
-
-                    if ($product_info['product_id']) {
-                        //上传 SKU图片
-                        $response = self::addImgToProductVariants($services, $account['account'], $shopifyInfo['sku'], $shopifySku, $product_info['product_id']);
-                        if($response) $log->content .= json_encode($response);
-                        //上传 collection
+                }else{
+                    //上传 SKU图片
+                    if ($log['imgStatus'] != 'success') {
+//                        var_dump(123);exit;
+                        $imgRes = self::addImgToProductVariants($services, $log, $shopifyInfo['sku'], $shopifySku, $log['product_id']);
+//                        var_dump($imgRes);
+                    }
+                    //上传 collection
+                    if ($log['collectionStatus'] != 'success') {
                         $coll = OaShopifyGoodsCollection::findAll(['infoId' => $id, 'suffix' => $account['account']]);
                         $collErr = [];
-                        foreach ($coll as $v){
-                            $collRes = $services->updateCollection($product_info['product_id'], $v['coll_id']);
+                        foreach ($coll as $val) {
+                            $collRes = $services->updateCollection($product_id, $val['coll_id']);
                             if ($collRes) $collErr[] = $collRes;
                         }
-                        if($collErr) $log->content .= json_encode($collErr);
+                        if ($collErr) {
+                            $log->collectionContent = json_encode($collErr);
+                            $log->collectionStatus = '';
+                        } else {
+                            $log->collectionStatus = 'success';
+                            $log->collectionContent = '';
+                        }
                     }
+//                    var_dump(123123);
                     $log->save();
                 }
             }
@@ -3018,14 +3032,9 @@ class ApiGoodsinfo
      * Author: henry
      * @return array | mixed
      */
-    public static function addImgToProductVariants(ShopifyServices $services, $account, $sku, $shopifySku, $product_id)
+    public static function addImgToProductVariants(ShopifyServices $services, $log, $sku, $shopifySku, $product_id)
     {
-//        $log = OaShopifyImportToBackstageLog::findOne(['suffix' => $account, 'sku' => $sku]);
-//        $log = OaShopifyImportToBackstageLog::findOne(['suffix' => $account, 'sku' => $sku, 'type' => 'product', 'product_id' => $product_id]);
-//        $product_id = $log ? $log['product_id'] : '';
-//        if (!$product_id) {
-//            throw new Exception("Can't find product {$product_id}!");
-//        }
+//        var_dump(1111);exit;
         $images = $services->getImages($product_id);
         $product = $services->getProduct($product_id);
         $variants = $product ? $product['variants'] : [];
@@ -3046,12 +3055,23 @@ class ApiGoodsinfo
             }
             if ($variant_ids) {
                 $imgRes = $services->updateImages($product_id, $img['id'], $variant_ids, $sku);
+//                var_dump($imgRes);exit;
                 if ($imgRes) {
                     $out[] = ['imgId' => $img['id'], 'skus' => $skuArr, 'content' => $imgRes];
                 }
             }
         }
-        return $out;
+        if ($out) {
+//            var_dump($out);
+            $log->imgContent = json_encode($out);
+//            $log->save();
+            $log->imgStatus = '';
+            return false;
+        } else {
+            $log->imgContent = '';
+            $log->imgStatus = 'success';
+            return true;
+        }
     }
 
     /**
