@@ -1246,7 +1246,7 @@ class OaGoodsinfoController extends AdminController
         foreach ($suffix as $k => $v){
             $out[$k]['value'] = $v;
             $out[$k]['label'] = $v;
-            $collList = OaShopifyCollection::findAll(['suffix' => $suffix]);
+            $collList = OaShopifyCollection::findAll(['suffix' => $v]);
             foreach ($collList as $val){
                 $item['label'] = $val['title'];
                 $item['value'] = $val['coll_id'];
