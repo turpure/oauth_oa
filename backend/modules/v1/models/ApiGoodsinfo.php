@@ -632,7 +632,12 @@ class ApiGoodsinfo
             $goods = OaShopifyGoods::find()->where(['infoId' => $infoId])->asArray()->one();
             $goodsSku = OaShopifyGoodsSku::findAll(['infoId' => $infoId]);
 //            $accounts = ApiGoodsinfo::getShopifyAccounts();
-            $goods['collection'] = OaShopifyGoodsCollection::findAll(['infoId' => $infoId]);
+            $collection = OaShopifyGoodsCollection::findAll(['infoId' => $infoId]);
+            $coll = [];
+            foreach ($collection as $v){
+                $coll[] = [$v['suffix'], $v['coll_id']];
+            }
+            $goods['collection'] = $coll;
 
             if (!$goods && !$goodsSku) {
                 $ret = [
@@ -762,8 +767,27 @@ class ApiGoodsinfo
         }
         $goodsInfo['other'] = str_replace("\n", ',', $goodsInfo['other']);
         $goods->setAttributes($goodsInfo);
+        //删除不存在的collection
+        $allColl = OaShopifyGoodsCollection::findAll(['infoId' => $goodsInfo['infoId']]);
+        foreach ($allColl as $v){
+            if(!in_array([$v['suffix'], $v['coll_id']], $goodsInfo['collection'])){
+                $v->delete();
+            }
+        }
         $tran = Yii::$app->db->beginTransaction();
         try {
+            foreach($goodsInfo['collection'] as $v) {
+                $coll = OaShopifyGoodsCollection::findOne(['infoId' => $goodsInfo['infoId'], 'suffix' => $v[0], 'coll_id' => $v[1]]);
+                if(!$coll){
+                    $coll = new OaShopifyGoodsCollection();
+                }
+                $coll->infoId = $goodsInfo['infoId'];
+                $coll->suffix = $v[0];
+                $coll->coll_id = $v[1];
+                if(!$coll->save()){
+                    throw new \Exception('save shopify collection failed');
+                }
+            }
             foreach ($skuInfo as $row) {
                 $sku = OaShopifyGoodsSku::findOne(['id' => $row['id']]);
                 if ($sku === null) {
