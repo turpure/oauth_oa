@@ -2908,7 +2908,7 @@ class ApiGoodsinfo
                     ->count();
                 if ($log) {
                     $out[] = ['suffix' => $account['account'], 'sku' => $shopifyInfo['sku'], 'product_id' => '',
-                        'content' => "The product info already exists in the queue! "];
+                        'productContent' => "The product info already exists in the queue! "];
                     continue;
                 }
                 $params = [
@@ -2922,10 +2922,10 @@ class ApiGoodsinfo
 //                    $redis = Yii::$app->redis;
 //                    $redis->lpush('shopify_upload', $aa->id);
                     $out[] = ['suffix' => $account['account'], 'sku' => $shopifyInfo['sku'], 'product_id' => '',
-                        'content' => "The product info add into queue successfully!"];
+                        'productContent' => "The product info add into queue successfully!"];
                 } else {
                     $out[] = ['suffix' => $account['account'], 'sku' => $shopifyInfo['sku'], 'product_id' => '',
-                        'content' => "The product info add into queue failed!"];
+                        'productContent' => "The product info add into queue failed!"];
                 }
             }
         }
@@ -2975,7 +2975,7 @@ class ApiGoodsinfo
 //                $row['body_html'] = $shopifyInfo['description'];
                 $row['body_html'] = str_replace("\n", '<br>', $shopifyInfo['description']);
                 //$row['vendor'] = $shopifyInfo['sku'];
-                //$row['product_type'] = $shopifyInfo['sku'];
+                $row['product_type'] = $shopifyInfo['productType'];
                 $row['tags'] = explode(',', self::getShopifyTagNew($shopifySku, $shopifyInfo));
                 $variantInfo = static::getShopifyVariantInfo($shopifySku, $shopifyInfo);
                 $row['variants'] = $variantInfo['variation'];
@@ -2992,10 +2992,18 @@ class ApiGoodsinfo
                     $log->product_id = $product_info['product_id'];
                     $log->content = $product_info['content'];
 
-                    //上传 SKU图片
                     if ($product_info['product_id']) {
+                        //上传 SKU图片
                         $response = self::addImgToProductVariants($services, $account['account'], $shopifyInfo['sku'], $shopifySku, $product_info['product_id']);
-                        if($response) $log->content = json_encode($response);
+                        if($response) $log->content .= json_encode($response);
+                        //上传 collection
+                        $coll = OaShopifyGoodsCollection::findAll(['infoId' => $id, 'suffix' => $account['account']]);
+                        $collErr = [];
+                        foreach ($coll as $v){
+                            $collRes = $services->updateCollection($product_info['product_id'], $v['coll_id']);
+                            if ($collRes) $collErr[] = $collRes;
+                        }
+                        if($collErr) $log->content .= json_encode($collErr);
                     }
                     $log->save();
                 }

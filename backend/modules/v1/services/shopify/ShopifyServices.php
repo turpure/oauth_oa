@@ -150,5 +150,33 @@ class ShopifyServices extends AbstractService
         }
     }
 
+    /**
+     * Get Images List a Product
+     * @param $product_id
+     * @param $collection_id
+     * @param $sku
+     * Date: 2021-02-02 16:13
+     * Author: henry
+     * @return string
+     */
+    public function updateCollection($product_id, $collection_id)
+    {
+        $endpoint = 'custom_collections/' . $collection_id . '.json';
+        $url = $this->base_uri . $endpoint;
+        $data = [
+            'custom_collection' => [
+                'id' => $collection_id,
+                'collects' => [
+                    ["product_id" =>  $product_id]
+                ]
+            ]
+        ];
+        $res = Helper::post($url, json_encode($data), [], 'PUT');
+        if($res[0] >= 400){
+            return json_encode($res[1]);
+        }else{
+            return '';
+        }
+    }
 
 }

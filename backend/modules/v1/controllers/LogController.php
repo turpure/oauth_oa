@@ -103,7 +103,7 @@ class LogController extends AdminController
         $creator = isset($cond['creator']) ? $cond['creator'] : '';
         $createDate = isset($cond['createDate']) ? $cond['createDate'] : [];
         $updateDate = isset($cond['updateDate']) ? $cond['updateDate'] : [];
-        $content = isset($cond['content']) ? $cond['content'] : '';
+        $productStatus = isset($cond['productStatus']) ? $cond['productStatus'] : '';
         $username = Yii::$app->user->identity->username;
         $userList = ApiUser::getUserList($username);
 //        var_dump($userList);exit;
@@ -116,11 +116,11 @@ class LogController extends AdminController
             ->andFilterWhere(['like', 'creator', $creator]);
 
             //->andFilterWhere(['between', 'updateDate', $updateDate[0], $updateDate[1]]);
-        if ($content == '是') {
-            $query->andFilterWhere(['content' => 'success']);
+        if ($productStatus == '是') {
+            $query->andFilterWhere(['productStatus' => 'success']);
         }
-        if ($content == '否') {
-            $query->andFilterWhere(['<>', 'content', 'success']);
+        if ($productStatus == '否') {
+            $query->andFilterWhere(['<>', 'productStatus', 'success']);
         }
         if($createDate){
             $query->andFilterWhere(['between', 'createDate', $createDate[0], $createDate[1]]);

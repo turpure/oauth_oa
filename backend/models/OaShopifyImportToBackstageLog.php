@@ -14,7 +14,12 @@ use yii\db\Expression;
  * @property string $sku
  * @property string $product_id
  * @property string $type
- * @property string $content
+ * @property string $productStatus
+ * @property string $productContent
+ * @property string $imgStatus
+ * @property string $imgContent
+ * @property string $collectionStatus
+ * @property string $collectionContent
  * @property string $creator
  * @property string $createdDate
  */
@@ -48,8 +53,9 @@ class OaShopifyImportToBackstageLog extends \yii\db\ActiveRecord
     {
         return [
             [['createdDate'], 'safe'],
-            [['content'], 'string'],
-            [['creator', 'type', 'sku', 'suffix', 'product_id'], 'string', 'max' => 100],
+            [['productContent', 'imgContent', 'collectionContent'], 'string'],
+            [['creator', 'type', 'sku', 'suffix', 'product_id',
+                'productStatus', 'imgStatus', 'collectionStatus'], 'string', 'max' => 100],
             [['product_id'], 'default', 'value' => ''],
         ];
     }
