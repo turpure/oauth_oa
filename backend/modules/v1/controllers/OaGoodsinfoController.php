@@ -1241,13 +1241,19 @@ class OaGoodsinfoController extends AdminController
     }
 
     public function actionShopifyCollectionList(){
-        $request = Yii::$app->request;
-        if (!$request->isPost) {
-            return [];
+        $suffix = ApiGoodsinfo::getShopifyAccounts();
+        $out = [];
+        foreach ($suffix as $k => $v){
+            $out[$k]['value'] = $v;
+            $out[$k]['label'] = $v;
+            $collList = OaShopifyCollection::findAll(['suffix' => $suffix]);
+            foreach ($collList as $val){
+                $item['label'] = $val['title'];
+                $item['value'] = $val['coll_id'];
+                $out[$k]['children'][] = $item;
+            }
         }
-        $condition = $request->post()['condition'];
-        $suffix = isset($condition['suffix']) && $condition['suffix'] ? $condition['suffix'] : 'faroonee';
-        return OaShopifyCollection::findAll(['suffix' => $suffix]);
+        return $out;
     }
 
     public function actionShopifyTagsList()
