@@ -1263,7 +1263,6 @@ class OaGoodsinfoController extends AdminController
                         }
                         $coll->setAttributes($v);
                         if (!$coll->save()) {
-                            var_dump($coll->getErrors());exit;
                             $out[] = 'Failed wo sync collection name ' . $v['title'];
                         }
                     }
