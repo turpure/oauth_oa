@@ -36,6 +36,7 @@ use backend\modules\v1\utils\AttributeInfoTools;
 use backend\modules\v1\utils\ExportTools;
 use yii\data\ActiveDataProvider;
 use Yii;
+use yii\db\Exception;
 use yii\helpers\ArrayHelper;
 use yii\mongodb\Query;
 
@@ -1238,6 +1239,40 @@ class OaGoodsinfoController extends AdminController
         $model->flag = 'add';
         $model->creator = Yii::$app->user->identity->username;
         return $model->save();
+    }
+
+
+    public function actionSyncShopifyCollection(){
+        try {
+            $sql = "SELECT apikey,password,hostname FROM [dbo].[S_ShopifySyncInfo] ";
+            $accounts = Yii::$app->py_db->createCommand($sql)->queryAll();
+            //$header = ['Content-Type' => 'application/json', 'X-Shopify-Access-Token' => $account['password']];
+            $out = [];
+            foreach ($accounts as $account) {
+                $url = 'https://' . $account['apikey'] . ':' . $account['password'] . '@' . $account['hostname'] . '.myshopify.com/admin/api/2019-07/custom_collections.json';
+                $header = ['Content-Type' => 'application/json'];
+                $res = Helper::post($url, '', $header, 'GET');
+                if ($res[0] == 200) {
+                    foreach ($res[1]['custom_collections'] as &$v) {
+                        $v['coll_id'] = (string)$v['id'];
+                        $v['suffix'] = $account['hostname'];
+                        unset($v['id']);
+                        $coll = OaShopifyCollection::findOne(['coll_id' => $v['coll_id']]);
+                        if (!$coll) {
+                            $coll = new OaShopifyCollection();
+                        }
+                        $coll->setAttributes($v);
+                        if (!$coll->save()) {
+                            var_dump($coll->getErrors());exit;
+                            $out[] = 'Failed wo sync collection name ' . $v['title'];
+                        }
+                    }
+                }
+            }
+            return $out;
+        }catch (Exception $why){
+            return false;
+        }
     }
 
     public function actionShopifyCollectionList(){
