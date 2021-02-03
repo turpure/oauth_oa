@@ -1244,16 +1244,22 @@ class OaGoodsinfoController extends AdminController
 
     public function actionSyncShopifyCollection(){
         try {
-            $sql = "SELECT apikey,password,hostname FROM [dbo].[S_ShopifySyncInfo] ";
+            $sql = "SELECT apikey,password,hostname FROM [dbo].[S_ShopifySyncInfo] where LocalFlag=0";
             $accounts = Yii::$app->py_db->createCommand($sql)->queryAll();
             //$header = ['Content-Type' => 'application/json', 'X-Shopify-Access-Token' => $account['password']];
-            $out = [];
-            foreach ($accounts as $account) {
+            $out = $err = [];
+            foreach ($accounts as $k => $account) {
+                $out[$k]['value'] = $account['hostname'];
+                $out[$k]['label'] = $account['hostname'];
                 $url = 'https://' . $account['apikey'] . ':' . $account['password'] . '@' . $account['hostname'] . '.myshopify.com/admin/api/2019-07/custom_collections.json';
                 $header = ['Content-Type' => 'application/json'];
                 $res = Helper::post($url, '', $header, 'GET');
                 if ($res[0] == 200) {
                     foreach ($res[1]['custom_collections'] as &$v) {
+                        $item['label'] = $v['title'];
+                        $item['value'] = $v['id'];
+                        $out[$k]['children'][] = $item;
+
                         $v['coll_id'] = (string)$v['id'];
                         $v['suffix'] = $account['hostname'];
                         unset($v['id']);
@@ -1263,12 +1269,19 @@ class OaGoodsinfoController extends AdminController
                         }
                         $coll->setAttributes($v);
                         if (!$coll->save()) {
-                            $out[] = 'Failed wo sync collection name ' . $v['title'];
+                            $err[] = $v['title'];
                         }
                     }
                 }
             }
-            return $out;
+            if($err){
+                return [
+                    'code' => 400,
+                    'message' => 'Failed to sync collection name if ' . implode(',', $err)
+                ];
+            }else{
+                return $out;
+            }
         }catch (Exception $why){
             return false;
         }
