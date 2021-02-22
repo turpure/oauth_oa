@@ -1005,7 +1005,7 @@ class SchedulerController extends Controller
      */
     public function actionUpdateRights()
     {
-        $res = Yii::$app->db->createCommand("EXEC z_update_B_goods_rights")->execute();
+        $res = Yii::$app->py_db->createCommand("EXEC z_update_B_goods_rights")->execute();
         if($res){
             echo date('Y-m-d H:i:s')." Goods rights update successful!\n";
         }else{
