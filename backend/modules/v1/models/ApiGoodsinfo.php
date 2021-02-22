@@ -1435,7 +1435,7 @@ class ApiGoodsinfo
      * @param $allExpressInfo
      * @return float|int
      */
-    public static function getGoodsSalePrice($SKU, $siteInfo, $packageInfo, $allExpressInfo, $profitRate = 0.10, $plat = 'lazada')
+    public static function getGoodsSalePrice($SKU, $siteInfo, $packageInfo, $allExpressInfo, $profitRate = 0.15, $plat = 'lazada')
     {
         $salePrice = 0;
         $expressFee = static::getGoodsExpressFee($SKU, $site = $siteInfo['site'], $packageInfo, $allExpressInfo, $plat);
@@ -3834,10 +3834,25 @@ class ApiGoodsinfo
      * @param $joomInfo
      * @param $account
      * @return array
+     * @throws \Exception
      */
     private static function getJoomImageInfo($joomInfo, $account)
     {
+        # 主图替换
         $mainImage = str_replace('/10023/', '/' . $account['imgCode'] . '/', $joomInfo['mainImage']);
+
+        try {
+            $base = explode('_',$mainImage);
+            $prefix = $base[0];
+            if (strpos($prefix, '.jpg') !== false) {
+                return $prefix;
+            }
+            $suffix = '_' . $account['mainImg'] . '_.jpg';
+            $mainImage = $prefix . $suffix;
+        } catch (\Exception  $why) {
+            throw new Exception('please check  main image address!');
+        }
+
         $extraImages = explode("\n", $joomInfo['extraImages']);
         $extraImages = array_filter($extraImages, function ($ele) {
             return strpos($ele, '-_00_') === false;
