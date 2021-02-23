@@ -267,9 +267,25 @@ class ApiCondition
      */
     public static function getStore()
     {
-        $sql = 'select StoreName from  B_store';
+        $sql = "select StoreName from  B_store ORDER BY CASE WHEN StoreName='义乌仓' THEN 0 ELSE 1 end,StoreName";
         $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
         return ArrayHelper::getColumn($ret,'StoreName');
+    }
+    /**
+     * @brief 获取仓库库位列表
+     * @return array
+     */
+    public static function getLocation()
+    {
+        $cond = Yii::$app->request->post('condition', []);
+        $store = $cond['store'] ?: '义乌仓';
+        $location = $cond['location'];
+
+        $sql = "select locationName from B_StoreLocation sl left join B_store s on s.nid=sl.storeID where StoreName='{$store}' ";
+        if($location) $sql .= " AND locationName like '%{$location}%' ";
+        $sql .= " ORDER BY locationName ";
+        $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
+        return ArrayHelper::getColumn($ret,'locationName');
     }
 
     /**

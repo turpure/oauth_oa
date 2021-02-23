@@ -409,8 +409,75 @@ class ApiWarehouseTools
 
     }
 
+////////////////////////仓位明细/////////////////////////////////////////
 
+    /** 获取仓位明细主表
+     * getPositionDetails
+     * @param $condition
+     * Date: 2021-02-23 16:20
+     * Author: henry
+     * @return mixed
+     */
+    public static function getPositionDetails($condition){
+        $store = $condition['store'] ?: '义乌仓';
 
+        //仓位SKU个数
+        $sNum = $condition['number'][0] ?? 0;
+        $lNum = $condition['number'][1] ?? 0;
 
+        $sql = "SELECT aa.*,ISNULL(bb.stockSkuNum,0) stockSkuNum FROM (			
+                    SELECT StoreName,sl.LocationName,COUNT(gs.sku) AS skuNum
+                    FROM [dbo].[B_StoreLocation](nolock) sl
+                    LEFT JOIN B_Store(nolock) s ON s.NID=sl.StoreID
+                    LEFT JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID
+                    LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID
+                    WHERE s.StoreName='{$store}' GROUP BY sl.LocationName,StoreName 
+                ) aa left JOIN (
+                    SELECT StoreName,sl.LocationName,COUNT(gs.sku) AS stockSkuNum
+                    FROM [dbo].[B_StoreLocation](nolock) sl
+                    LEFT JOIN B_Store(nolock) s ON s.NID=sl.StoreID
+                    LEFT JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID
+                    LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID
+                    WHERE s.StoreName='{$store}' AND cs.Number > 0 GROUP BY sl.LocationName,StoreName
+                ) bb ON aa.LocationName=bb.LocationName WHERE 0=0 ";
+        if($sNum || $sNum === 0) $sql .= " AND aa.skuNum >= '{$sNum}'";
+        if($lNum || $lNum === 0) $sql .= " AND aa.skuNum <= '{$lNum}'";
+        return  Yii::$app->py_db->createCommand($sql)->queryAll();
+
+    }
+
+    /** 获取仓位明细详情表
+     * getPositionDetails
+     * @param $condition
+     * Date: 2021-02-23 16:20
+     * Author: henry
+     * @return mixed
+     */
+    public static function getPositionDetailsView($condition){
+        $store = $condition['store'] ?: '义乌仓';
+
+        //仓位SKU个数
+        $sNum = $condition['number'][0] ?? null;
+        $lNum = $condition['number'][1] ?? null;
+
+        $sql = "SELECT StoreName,sl.LocationName,aa.skuNum,gs.sku,skuName,goodsskustatus,cs.Number,g.devDate
+                FROM [dbo].[B_StoreLocation](nolock) sl
+                LEFT JOIN B_Store(nolock) s ON s.NID=sl.StoreID
+                LEFT JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID
+                LEFT JOIN B_Goods(nolock) g ON g.NID=gs.goodsID
+                LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID        
+                LEFT JOIN(			
+                    SELECT slt.StoreID,slt.LocationName,COUNT(gst.sku) AS skuNum
+                    FROM [dbo].[B_StoreLocation](nolock) slt
+                    LEFT JOIN B_GoodsSKU(nolock) gst ON slt.NID=gst.LocationID
+                    LEFT JOIN KC_CurrentStock(nolock) cst ON gst.NID=cst.GoodsSKUID AND cst.StoreID=slt.StoreID
+                    GROUP BY slt.LocationName,slt.StoreID 
+                ) aa ON aa.LocationName=sl.LocationName AND aa.StoreID=sl.StoreID
+                WHERE s.StoreName='{$store}' ";
+        if($sNum || $sNum === 0) $sql .= " AND isNULL(aa.skuNum,0) >= '{$sNum}'";
+        if($lNum || $lNum === 0) $sql .= " AND isNULL(aa.skuNum,0) <= '{$lNum}'";
+        return  Yii::$app->py_db->createCommand($sql)->queryAll();
+
+    }
 
 }

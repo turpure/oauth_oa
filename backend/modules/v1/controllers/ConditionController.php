@@ -53,6 +53,15 @@ class ConditionController extends AdminController
     }
 
     /**
+     * 获取仓库对应库位列表
+     * @return array
+     */
+    public function actionLocation ()
+    {
+        return ApiCondition::getLocation();
+    }
+
+    /**
      * @param bool $flag  --标识是否取消权限，取消权限的话就拥有所有权限（admin权限）
      * Date: 2019-03-01 10:07
      * Author: henry

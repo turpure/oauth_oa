@@ -11,6 +11,7 @@ namespace backend\modules\v1\controllers;
 use backend\modules\v1\models\ApiWarehouseTools;
 use backend\modules\v1\utils\ExportTools;
 use Yii;
+use yii\data\ArrayDataProvider;
 use yii\db\Exception;
 use yii\helpers\ArrayHelper;
 
@@ -131,12 +132,12 @@ class WarehouseToolsController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiWarehouseTools::getFreightSpaceMatched($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
 
     }
+
     /**
      * 库位匹配扫描人
      * @return array|mixed
@@ -145,13 +146,11 @@ class WarehouseToolsController extends AdminController
     {
         try {
             return ApiWarehouseTools::getFreightMen();
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
 
     }
-
 
 
     /**
@@ -186,42 +185,43 @@ class WarehouseToolsController extends AdminController
     {
         $condition = Yii::$app->request->post()['condition'];
         $condition['pageSize'] = 100000;
-        $title = ['SKU','仓库','库位','操作人','类型','操作时间'];
+        $title = ['SKU', '仓库', '库位', '操作人', '类型', '操作时间'];
         $dataProvider = ApiWarehouseTools::getWareSkuData($condition);
         $data = $dataProvider->getModels();
-        if($data){
+        if ($data) {
             ExportTools::toExcelOrCsv('WareSkuExport', $data, 'Xls', $title);
         }
     }
 
 
-
-    public function actionIntegral(){
+    public function actionIntegral()
+    {
         $month = date('Y-m', strtotime('-1 days'));
         $con = Yii::$app->request->post('condition');
         $month = isset($con['month']) && $con['month'] ? $con['month'] : $month;
         $sql = "SELECT * FROM warehouse_integral_report WHERE month = '{$month}'";
-        if(isset($con['group']) && $con['group']) $sql .= " AND `group`='{$con['group']}'";
-        if(isset($con['job']) && $con['job']) $sql .= " AND job='{$con['job']}'";
-        if(isset($con['team']) && $con['team']) $sql .= " AND team='{$con['team']}'";
-        if(isset($con['name']) && $con['name']) $sql .= " AND name='{$con['name']}'";
+        if (isset($con['group']) && $con['group']) $sql .= " AND `group`='{$con['group']}'";
+        if (isset($con['job']) && $con['job']) $sql .= " AND job='{$con['job']}'";
+        if (isset($con['team']) && $con['team']) $sql .= " AND team='{$con['team']}'";
+        if (isset($con['name']) && $con['name']) $sql .= " AND name='{$con['name']}'";
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
 
-    public function actionQueryInfo(){
-        $type = Yii::$app->request->get('type','job');
-        if(!in_array($type, ['job','name','group'])) {
+    public function actionQueryInfo()
+    {
+        $type = Yii::$app->request->get('type', 'job');
+        if (!in_array($type, ['job', 'name', 'group'])) {
             return [
                 'code' => 400,
                 'message' => 'type is not correct value!',
             ];
         }
-        try{
+        try {
             $sql = "SELECT DISTINCT `{$type}` FROM warehouse_intergral_other_data_every_month 
                     where IFNULL(`{$type}`,'')<>'' ";
             $query = Yii::$app->db->createCommand($sql)->queryAll();
             return ArrayHelper::getColumn($query, $type);
-        }catch (Exception $why){
+        } catch (Exception $why) {
             return [
                 'code' => 400,
                 'message' => $why->getMessage(),
@@ -229,9 +229,211 @@ class WarehouseToolsController extends AdminController
         }
     }
 
+    /////////////////////////////////////仓位总况/////////////////////////////////////////////////////
+
+    /** 仓位总况
+     * actionPositionOverview
+     * Date: 2021-02-23 10:56
+     * Author: henry
+     * @return array
+     */
+    public function actionPositionOverview()
+    {
+        $cond = Yii::$app->request->post('condition', []);
+        $store = $cond['store'] ?: '义乌仓';
+        //获取仓库ID
+        $storeId = Yii::$app->py_db->createCommand("SELECT NID FROM B_Store WHERE StoreName='{$store}'")->queryScalar();
+        //仓位个数
+        $locationSql = "SELECT COUNT(DISTINCT LocationName) AS Number FROM [dbo].[B_StoreLocation](nolock) WHERE StoreID='{$storeId}'";
+        $locationNum = Yii::$app->py_db->createCommand($locationSql)->queryScalar();
+        //有SKU仓位数
+        $skuLocationSql = "SELECT COUNT(DISTINCT LocationName) AS Number FROM [dbo].[B_StoreLocation](nolock) sl
+                        INNER JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID WHERE sl.StoreID='{$storeId}'";
+        $skuLocationNum = Yii::$app->py_db->createCommand($skuLocationSql)->queryScalar();
+        //空仓位数
+        $emptyLocationSql = "SELECT COUNT(DISTINCT LocationName) AS Number FROM [dbo].[B_StoreLocation](nolock) sl
+                        Left JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID 
+                        WHERE sl.StoreID='{$storeId}' AND ISNULL(gs.sku,'')=''";
+        $emptyLocationNum = Yii::$app->py_db->createCommand($emptyLocationSql)->queryScalar();
+        //有库存SKU个数
+        $locationSkuSql = "SELECT COUNT(DISTINCT sku) AS Number FROM [dbo].[B_StoreLocation](nolock) sl
+                        INNER JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID 
+                        LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID
+                        WHERE sl.StoreID='{$storeId}' AND cs.Number > 0 ";
+        $locationSkuNum = Yii::$app->py_db->createCommand($locationSkuSql)->queryScalar();
+
+        $locationData = [
+            'locationNum' => $locationNum,
+            'skuLocationNum' => $skuLocationNum,
+            'emptyLocationNum' => $emptyLocationNum,
+            'locationSkuNum' => $locationSkuNum,
+            'skuLocationRate' => (string)round($locationSkuNum / ($locationNum ?: 1), 2),
+        ];
+
+        $sql = "SELECT skuNum, COUNT(LocationName) AS locationNum FROM(
+                SELECT sl.LocationName,COUNT(DISTINCT gs.SKU) AS skuNum
+                FROM [dbo].[B_StoreLocation](nolock) sl
+                INNER JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID
+                LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID
+                WHERE sl.StoreID='{$storeId}' AND cs.Number > 0 GROUP BY sl.LocationName) s
+                GROUP BY skuNum ORDER BY skuNum DESC";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $dataProvider = new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['locationNum', 'skuNum'],
+                'defaultOrder' => [
+                    'skuNum' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => 100,
+            ],
+        ]);
+
+        return ['locationData' => $locationData, 'skuData' => $dataProvider->getModels()];
+    }
 
 
+    /** 仓位总况 明细导出
+     * actionPositionOverviewExport
+     * Date: 2021-02-23 13:33
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionPositionOverviewDetailExport()
+    {
+        $cond = Yii::$app->request->post('condition', []);
+        $store = $cond['store'] ?: '义乌仓';
+        //获取仓库ID
+        $storeId = Yii::$app->py_db->createCommand("SELECT NID FROM B_Store WHERE StoreName='{$store}'")->queryScalar();
 
+        $sql = "SELECT sl.LocationName, gs.SKU,
+                LocationSkuNum = (
+                    SELECT COUNT(DISTINCT gst.SKU) FROM [dbo].[B_StoreLocation](nolock) slt
+                    INNER JOIN B_GoodsSKU(nolock) gst ON slt.NID=gst.LocationID
+                    LEFT JOIN KC_CurrentStock(nolock) cst ON gst.NID=cst.GoodsSKUID AND cst.StoreID=slt.StoreID
+                    WHERE slt.StoreID='{$storeId}' AND cst.Number > 0 AND slt.LocationName=sl.LocationName
+                    GROUP BY slt.LocationName)
+                FROM [dbo].[B_StoreLocation](nolock) sl
+                INNER JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID
+                LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID
+                WHERE sl.StoreID='{$storeId}' AND cs.Number > 0";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $dataProvider = new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['locationNum', 'SKU', 'LocationSkuNum'],
+                'defaultOrder' => [
+                    'LocationSkuNum' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => 100,
+            ],
+        ]);
+        $title = ['仓位', '有库存SKU', '含有库存SKU个数'];
+        ExportTools::toExcelOrCsv('positionOverviewDetail', $dataProvider->getModels(), 'Xls', $title);
+
+    }
+
+
+    /////////////////////////////////////仓位明细/////////////////////////////////////////////////////
+
+    /** 仓位明细
+     * actionPositionDetail
+     * Date: 2021-02-23 13:33
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionPositionDetail()
+    {
+        $cond = Yii::$app->request->post('condition', []);
+        $page = \Yii::$app->request->get('page', 1);;
+        $pageSize = $condition['pageSize'] ?? 20;
+        $data = ApiWarehouseTools::getPositionDetails($cond);
+        return new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['skuNum', 'stockSkuNum'],
+                'defaultOrder' => [
+                    'skuNum' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'page' => $page - 1,
+                'pageSize' => $pageSize,
+            ],
+        ]);
+    }
+
+    /** 仓位明细-- 主表导出
+     * actionPositionDetail
+     * Date: 2021-02-23 13:33
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionPositionDetailExport(){
+        $cond = Yii::$app->request->post('condition', []);
+        $data = ApiWarehouseTools::getPositionDetails($cond);
+        $title = ['仓库', '仓位', 'SKU个数', '有库存SKU个数'];
+        ExportTools::toExcelOrCsv('positionDetail', $data, 'Xls', $title);
+
+    }
+
+    /** 仓位明细-- 查看明细
+     * actionPositionDetail
+     * Date: 2021-02-23 13:33
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionPositionDetailView()
+    {
+        $cond = Yii::$app->request->post('condition', []);
+        $store = $cond['store'] ?: '义乌仓';
+        $location = $cond['location'];
+
+        $sql = "SELECT gs.sku,skuName,goodsskustatus,cs.number,g.devDate
+                FROM [dbo].[B_StoreLocation](nolock) sl
+                LEFT JOIN B_Store(nolock) s ON s.NID=sl.StoreID
+                LEFT JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID
+                LEFT JOIN B_Goods(nolock) g ON g.NID=gs.goodsID
+                LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID 
+                WHERE s.StoreName='{$store}' AND sl.LocationName='{$location}'";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        return  new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['sku', 'skuName','goodsskustatus','number','devDate'],
+                'defaultOrder' => [
+                    'devDate' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => 1000,
+            ],
+        ]);
+
+    }
+    /** 仓位明细-- 明细导出
+     * actionPositionDetail
+     * Date: 2021-02-23 13:33
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionPositionDetailViewExport()
+    {
+        $cond = Yii::$app->request->post('condition', []);
+        $data = ApiWarehouseTools::getPositionDetailsView($cond);
+        $title = ['仓库', '仓位', 'SKU个数', 'SKU','SKU名称','SKU状态','库存数量','开发日期'];
+        ExportTools::toExcelOrCsv('positionDetail', $data, 'xls', $title);
+
+    }
 
 
 
