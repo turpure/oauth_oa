@@ -413,7 +413,7 @@ class WarehouseToolsController extends AdminController
                 ]
             ],
             'pagination' => [
-                'pageSize' => 1000,
+                'pageSize' => 10000,
             ],
         ]);
 
