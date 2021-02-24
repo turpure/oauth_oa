@@ -480,4 +480,87 @@ class ApiWarehouseTools
 
     }
 
+    /** 仓位查询
+     * getPositionDetails
+     * @param $condition
+     * Date: 2021-02-23 16:20
+     * Author: henry
+     * @return mixed
+     */
+    public static function getPositionSearchData($condition){
+        $store = $condition['store'] ?: '义乌仓';
+        $location = $condition['location'];
+        $sql = "SELECT StoreName,sl.LocationName,gs.sku,skuName,goodsSkuStatus,cs.Number,g.devDate
+                FROM [dbo].[B_StoreLocation](nolock) sl
+                LEFT JOIN B_Store(nolock) s ON s.NID=sl.StoreID
+                LEFT JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID
+                LEFT JOIN B_Goods(nolock) g ON g.NID=gs.goodsID
+                LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID  
+                WHERE s.StoreName='{$store}' AND sl.LocationName='{$location}'";
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
+    }
+
+    /** 无库存SKU查询
+     * getPositionDetails
+     * @param $condition
+     * Date: 2021-02-23 16:20
+     * Author: henry
+     * @return mixed
+     */
+    public static function getPositionManageData($condition){
+        $store = $condition['store'] ?: '义乌仓';
+        $status = $condition['status'];
+        if(!is_array($status)) $status = [$status];
+        $status = implode("','", $status);
+        $sql = "SELECT StoreName,sl.LocationName,gs.sku,skuName,goodsSkuStatus,cs.Number,g.devDate,
+                        sl.NID,sl.storeID,gs.NID as goodsSkuNid
+                FROM [dbo].[B_StoreLocation](nolock) sl
+                LEFT JOIN B_Store(nolock) s ON s.NID=sl.StoreID
+                LEFT JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID
+                LEFT JOIN B_Goods(nolock) g ON g.NID=gs.goodsID
+                LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID  
+                WHERE s.StoreName='{$store}' AND goodsSkuStatus IN ('{$status}') AND ISNULL(cs.Number,0)=0 
+                -- ORDER BY devDate
+                ";
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
+    }
+
+    public static function positionSkuDelete($condition){
+        $data = self::getPositionManageData($condition);
+        $msg = [];
+        foreach ($data as $v){
+            $tran = Yii::$app->py_db->beginTransaction();
+            try {
+
+
+                $params = [
+                    'USERID' => Yii::$app->user->identity->username,
+                    'MODName' => '仓库货位',
+                    'DOTYPE' => '删除库位ID为' . $v['NID'] . '的所有绑定',
+                    'DOTIME' => date('Y-m-d H:i:s'),
+                    'DOContent' => '清除库位绑定操作',
+                    'LOGINIP' => Yii::$app->request->userIP,
+                ];
+                // 插入操作日志
+                $r1 = Yii::$app->py_db->createCommand()->insert('S_Log', $params)->execute();
+                $r2 = Yii::$app->py_db->createCommand()->insert('S_Logbak', $params)->execute();
+                $r3 = Yii::$app->py_db->createCommand("EXEC P_KC_DestoryBindingGoods {$v['NID']}, '{$v['goodsSkuNid']}'")->execute();
+                $par = [
+                    'person' => Yii::$app->user->identity->username,
+                    'changeTime' => date('Y-m-d H:i:s'),
+                    'OldLocation' => $v['LocationName'],
+                    'SKU' => $v['sku'],
+                    'NowLocation' => '',
+                    'StoreID' => $v['storeID'],
+                ];
+                $r4 = Yii::$app->py_db->createCommand()->insert('B_GoodsSKULocationLog', $par)->execute();
+                $tran->commit();
+            }catch (\Exception $e){
+                $tran->rollback();
+                $msg[] = $e->getMessage();
+            }
+        }
+        return $msg;
+    }
+
 }

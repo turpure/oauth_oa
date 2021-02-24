@@ -343,10 +343,9 @@ class WarehouseToolsController extends AdminController
 
     /** 仓位明细
      * actionPositionDetail
-     * Date: 2021-02-23 13:33
+     * Date: 2021-02-24 9:01
      * Author: henry
-     * @throws \PhpOffice\PhpSpreadsheet\Exception
-     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     * @return ArrayDataProvider
      */
     public function actionPositionDetail()
     {
@@ -431,11 +430,120 @@ class WarehouseToolsController extends AdminController
         $cond = Yii::$app->request->post('condition', []);
         $data = ApiWarehouseTools::getPositionDetailsView($cond);
         $title = ['仓库', '仓位', 'SKU个数', 'SKU','SKU名称','SKU状态','库存数量','开发日期'];
-        ExportTools::toExcelOrCsv('positionDetail', $data, 'xls', $title);
+        ExportTools::toExcelOrCsv('positionDetailView', $data, 'Xlsx', $title);
 
     }
 
 
+    /////////////////////////////////////仓位查询/////////////////////////////////////////////////////
+
+    /** 仓位查询
+     * actionPositionSearch
+     * Date: 2021-02-24 9:01
+     * Author: henry
+     * @return ArrayDataProvider
+     */
+    public function actionPositionSearch()
+    {
+        $cond = Yii::$app->request->post('condition', []);
+        $page = Yii::$app->request->post('page', 1);
+        $pageSize = $condition['pageSize'] ?? 20;
+        $data = ApiWarehouseTools::getPositionSearchData($cond);
+        return  new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['sku', 'skuName','goodsSkuStatus','number','devDate'],
+                'defaultOrder' => [
+                    'devDate' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'page' => $page - 1,
+                'pageSize' => $pageSize,
+            ],
+        ]);
+    }
+
+    /** 仓位查询--结果导出
+     * actionPositionSearchExport
+     * Date: 2021-02-23 13:33
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionPositionSearchExport()
+    {
+        $cond = Yii::$app->request->post('condition', []);
+        $data = ApiWarehouseTools::getPositionSearchData($cond);
+        $title = ['仓库', '仓位', 'SKU','SKU名称','SKU状态','库存数量','开发日期'];
+        ExportTools::toExcelOrCsv('positionSearch', $data, 'Xlsx', $title);
+    }
+
+/////////////////////////////////////无库存SKU查询与处理/////////////////////////////////////////////////////
+
+    /** 仓位无库存SKU 查询
+     * actionPositionSearch
+     * Date: 2021-02-24 9:01
+     * Author: henry
+     * @return ArrayDataProvider
+     */
+    public function actionPositionManage()
+    {
+        $cond = Yii::$app->request->post('condition', []);
+        $page = Yii::$app->request->post('page', 1);
+        $pageSize = $condition['pageSize'] ?? 20;
+        $data = ApiWarehouseTools::getPositionManageData($cond);
+        return  new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['sku', 'skuName','goodsSkuStatus','number','devDate'],
+                'defaultOrder' => [
+                    'devDate' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'page' => $page - 1,
+                'pageSize' => $pageSize,
+            ],
+        ]);
+    }
+
+    /** 仓位无库存SKU导出
+     * actionPositionManageExport
+     * Date: 2021-02-24 9:32
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionPositionManageExport()
+    {
+        $cond = Yii::$app->request->post('condition', []);
+        $data = ApiWarehouseTools::getPositionManageData($cond);
+        $title = ['仓库', '仓位', 'SKU','SKU名称','SKU状态','库存数量','开发日期'];
+        ExportTools::toExcelOrCsv('positionManage', $data, 'Xlsx', $title);
+    }
+
+    public function actionPositionSkuDelete()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        try{
+            $res = ApiWarehouseTools::positionSkuDelete($condition);
+            if($res){
+                return [
+                    'code' => 400,
+                    'message' => 'error',
+                    'data' => $res,
+                ];
+            }
+            return true;
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+
+    }
 
 
 }
