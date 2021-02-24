@@ -422,8 +422,8 @@ class ApiWarehouseTools
         $store = $condition['store'] ?: '义乌仓';
 
         //仓位SKU个数
-        $sNum = $condition['number'][0] ?? 0;
-        $lNum = $condition['number'][1] ?? 0;
+        $sNum = $condition['number'][0] ?? null;
+        $lNum = $condition['number'][1] ?? null;
 
         $sql = "SELECT aa.*,ISNULL(bb.stockSkuNum,0) stockSkuNum FROM (			
                     SELECT StoreName,sl.LocationName,COUNT(gs.sku) AS skuNum
