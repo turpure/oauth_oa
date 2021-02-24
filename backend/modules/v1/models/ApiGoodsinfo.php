@@ -2446,7 +2446,13 @@ class ApiGoodsinfo
             $title = static::getTitleName($keyWords, self::JoomTitleLength);
             foreach ($accounts as $account) {
                 $joomAccounts = OaJoomSuffix::find()->where(['joomName' => $account])->asArray()->one();
-                $imageInfo = static::getJoomImageInfo($joomInfo, $joomAccounts);
+                try {
+                    $imageInfo = static::getJoomImageInfo($joomInfo, $joomAccounts);
+                }
+
+                catch (\Exception $why) {
+                    var_dump($id); die;
+                }
                 foreach ($joomSku as $sku) {
 //                    $price = static::getJoomAdjust($sku['weight'], $priceInfo['price']);
                     $row['Parent Unique ID'] = $joomInfo['sku'] . $joomAccounts['skuCode'];
@@ -3845,10 +3851,12 @@ class ApiGoodsinfo
             $base = explode('_',$mainImage);
             $prefix = $base[0];
             if (strpos($prefix, '.jpg') !== false) {
-                return $prefix;
+                $mainImage = $prefix;
             }
-            $suffix = '_' . $account['mainImg'] . '_.jpg';
-            $mainImage = $prefix . $suffix;
+            else {
+                $suffix = '_' . $account['mainImg'] . '_.jpg';
+                $mainImage = $prefix . $suffix;
+            }
         } catch (\Exception  $why) {
             throw new Exception('please check  main image address!');
         }
