@@ -16,6 +16,7 @@ use yii\db\Expression;
  * @property string $subCate
  * @property string $createdDate
  * @property string $updatedDate
+ * @property int $flag
  */
 class OaShopify extends \yii\db\ActiveRecord
 {
@@ -48,6 +49,7 @@ class OaShopify extends \yii\db\ActiveRecord
             [['createdDate', 'updatedDate'], 'safe'],
             [['account', 'suffix'], 'string', 'max' => 50],
             [['tags'], 'string', 'max' => 100],
+            [['flag'], 'integer', 'max' => 100],
             [['cate', 'subCate'], 'string', 'max' => 20],
         ];
     }

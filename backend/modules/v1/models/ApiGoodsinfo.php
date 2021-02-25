@@ -2981,7 +2981,8 @@ class ApiGoodsinfo
                     $row['body_html'] = str_replace("\n", '<br>', $shopifyInfo['description']);
                     //$row['vendor'] = $shopifyInfo['sku'];
                     $row['product_type'] = $shopifyInfo['productType'];
-                    $row['tags'] = explode(',', self::getShopifyTagNew($shopifySku, $shopifyInfo));
+                    $row['tags'] = explode(',', self::getShopifyTagNew($shopifySku, $shopifyInfo,$account['flag']));
+                    //var_dump($row['tags']);exit;
                     $variantInfo = static::getShopifyVariantInfo($shopifySku, $shopifyInfo);
                     $row['variants'] = $variantInfo['variation'];
                     if ($variantInfo['options']) {
@@ -4241,13 +4242,13 @@ class ApiGoodsinfo
      * @param $skus
      * @return string
      */
-    private static function getShopifyTagNew($skus, $shopifyInfo)
+    private static function getShopifyTagNew($skus, $shopifyInfo, $flag)
     {
         $optionValue1 = [];
         $optionValue2 = [];
         foreach ($skus as $ele) {
-            $optionValue1[] = $ele['color'];
-            $optionValue2[] = $ele['size'];
+            $optionValue1[] = $flag ? ('Color_' . $ele['color']) : $ele['color'];
+            $optionValue2[] = $flag ? ('Size_' . $ele['size']) : $ele['size'];
         }
         $optionValue1 = array_unique(array_filter($optionValue1));
         $optionValue2 = array_unique(array_filter($optionValue2));
@@ -4255,16 +4256,36 @@ class ApiGoodsinfo
         $outArr = array_merge($optionValue1, $optionValue2);
         $out = implode(',', $outArr);
         if ($shopifyInfo['style']) {
-            $out .= $out ? (',' . $shopifyInfo['style']) : $shopifyInfo['style'];
+            if($flag){
+                $style = str_replace(',', ',Style_', $shopifyInfo['style']);
+                $out .= $out ? (',Style_' . $style) : ('Style_' . $style);
+            }else{
+                $out .= $out ? (',' . $shopifyInfo['style']) : $shopifyInfo['style'];
+            }
         }
         if ($shopifyInfo['length']) {
-            $out .= $out ? (',' . $shopifyInfo['length']) : $shopifyInfo['length'];
+            if($flag){
+                $length = str_replace(',', ',Length_', $shopifyInfo['length']);
+                $out .= $out ? (',Length_' . $length) : ('Length_' . $length);
+            }else{
+                $out .= $out ? (',' . $shopifyInfo['length']) : $shopifyInfo['length'];
+            }
         }
         if ($shopifyInfo['sleeveLength']) {
-            $out .= $out ? (',' . $shopifyInfo['sleeveLength']) : $shopifyInfo['sleeveLength'];
+            if($flag){
+                $sleeveLength = str_replace(',', ',Sleeve Length_', $shopifyInfo['sleeveLength']);
+                $out .= $out ? (',Sleeve Length_' . $sleeveLength) : ('Sleeve Length_' . $sleeveLength);
+            }else{
+                $out .= $out ? (',' . $shopifyInfo['sleeveLength']) : $shopifyInfo['sleeveLength'];
+            }
         }
         if ($shopifyInfo['neckline']) {
-            $out .= $out ? (',' . $shopifyInfo['neckline']) : $shopifyInfo['neckline'];
+            if($flag){
+                $neckline = str_replace(',', ',Neckline_', $shopifyInfo['neckline']);
+                $out .= $out ? (',Neckline_' . $neckline) : ('Neckline_' . $neckline);
+            }else{
+                $out .= $out ? (',' . $shopifyInfo['neckline']) : $shopifyInfo['neckline'];
+            }
         }
         if ($shopifyInfo['other']) {
             $out .= $out ? (',' . $shopifyInfo['other']) : $shopifyInfo['other'];
