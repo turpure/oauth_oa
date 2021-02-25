@@ -229,6 +229,80 @@ class WarehouseToolsController extends AdminController
         }
     }
 
+    /////////////////////////////////////每日发货量/////////////////////////////////////////////////////
+    public function actionDailyDelivery(){
+        $cond = Yii::$app->request->post('condition', []);
+        $store = $cond['store'] ?: '义乌仓';
+        $begin = $cond['dateRange'][0] ?? '';
+        $end = $cond['dateRange'][1] ?? '';
+        $dailyData = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}'")->queryAll();
+        $dailyDataPro = new ArrayDataProvider([
+            'allModels' => $dailyData,
+            'sort' => [
+                'attributes' => ['dt', 'singleNum', 'multiNum', 'totalNum'],
+                'defaultOrder' => [
+                    'dt' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => 100,
+            ],
+        ]);
+        $packageData = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}', 1 ")->queryAll();
+        $packageDataPro = new ArrayDataProvider([
+            'allModels' => $packageData,
+            'sort' => [
+                'attributes' => ['packageMen', 'singleNum', 'multiNum', 'totalNum'],
+                'defaultOrder' => [
+                    'dt' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => 100,
+            ],
+        ]);
+        return [
+            'dailyData' => $dailyDataPro->getModels(),
+            'packageData' => $packageDataPro->getModels(),
+        ];
+    }
+
+    /** 每日发货量导出
+     * actionPositionDetail
+     * Date: 2021-02-23 13:33
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionDailyDeliveryExport(){
+        $cond = Yii::$app->request->post('condition', []);
+        $store = $cond['store'] ?: '义乌仓';
+        $begin = $cond['dateRange'][0] ?? '';
+        $end = $cond['dateRange'][1] ?? '';
+        $dailyData = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}'")->queryAll();
+        $title = ['发货日期','单品订单数','多品订单数','总订单数'];
+        ExportTools::toExcelOrCsv('DailyDelivery', $dailyData, 'Xls', $title);
+    }
+
+    /** 打包定单量导出
+     * actionPositionDetail
+     * Date: 2021-02-23 13:33
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionPackageOrderExport(){
+        $cond = Yii::$app->request->post('condition', []);
+        $store = $cond['store'] ?: '义乌仓';
+        $begin = $cond['dateRange'][0] ?? '';
+        $end = $cond['dateRange'][1] ?? '';
+        $dailyData = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}', 1")->queryAll();
+        $title = ['打包人员','单品订单数','多品订单数','总订单数'];
+        ExportTools::toExcelOrCsv('PackageOrder', $dailyData, 'Xls', $title);
+    }
+
+
+
     /////////////////////////////////////仓位总况/////////////////////////////////////////////////////
 
     /** 仓位总况
