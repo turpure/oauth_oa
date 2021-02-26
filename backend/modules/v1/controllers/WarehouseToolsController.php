@@ -241,7 +241,7 @@ class WarehouseToolsController extends AdminController
             'sort' => [
                 'attributes' => ['dt', 'singleNum', 'multiNum', 'totalNum'],
                 'defaultOrder' => [
-                    'dt' => SORT_DESC,
+                    'dt' => SORT_ASC,
                 ]
             ],
             'pagination' => [
@@ -254,7 +254,7 @@ class WarehouseToolsController extends AdminController
             'sort' => [
                 'attributes' => ['packageMen', 'singleNum', 'multiNum', 'totalNum'],
                 'defaultOrder' => [
-                    'dt' => SORT_DESC,
+                    'singleNum' => SORT_DESC,
                 ]
             ],
             'pagination' => [
