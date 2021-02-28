@@ -46,9 +46,16 @@ class DataCenterController extends AdminController
      */
     public function actionOutOfStockInfo()
     {
-        $get = Yii::$app->request->get();
-        $pageSize = isset($get['pageSize']) ? $get['pageSize'] : 10;
-        $query = (new Query())->from('oauth_outOfStockSkuInfo');
+        $page = Yii::$app->request->get('page', 1);
+        $cond = Yii::$app->request->post('condition', []);
+//        $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 10;
+        $pageSize = Yii::$app->request->get('pageSize', 10);
+        $status = isset($cond['status']) ? $cond['status'] : [];
+        $purchase = isset($cond['purchase']) ? $cond['purchase'] : [];
+
+        $query = (new Query())->from('oauth_outOfStockSkuInfo')
+            ->andFilterWhere(['GoodsCodeStat' => $status])
+            ->andFilterWhere(['Purchaser' => $purchase]);
         $provider = new ActiveDataProvider([
             'query' => $query,
             'db' => \Yii::$app->py_db,

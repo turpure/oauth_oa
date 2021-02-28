@@ -706,7 +706,7 @@ class SchedulerController extends Controller
                     array_slice($ukVirtualList,$i*$step, $step))->execute();
             }
 
-            //插入AU真仓补货数据
+            //插入AU真补货数据
             $auRealList = Yii::$app->py_db->createCommand("EXEC oauth_auRealReplenish")->queryAll();
             $max = ceil(count($auRealList)/$step);
             for ($i = 0; $i < $max; $i++){
