@@ -77,7 +77,7 @@ class ApiCondition
             }
         }
         $ret = Helper::arrayUnique($department);
-        return Helper::arraySort($ret,'id',SORT_ASC);
+        return Helper::arraySort($ret,'department',SORT_ASC);
     }
 
     /**
