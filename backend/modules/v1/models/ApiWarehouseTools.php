@@ -433,16 +433,16 @@ class ApiWarehouseTools
                     LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID
                     WHERE s.StoreName='{$store}' GROUP BY sl.LocationName,StoreName 
                 ) aa left JOIN (
-                    SELECT StoreName,sl.LocationName,COUNT(gs.sku) AS stockSkuNum
-                    FROM [dbo].[B_StoreLocation](nolock) sl
-                    LEFT JOIN B_Store(nolock) s ON s.NID=sl.StoreID
-                    LEFT JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID
-                    LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID
-                    WHERE s.StoreName='{$store}' AND cs.Number > 0 GROUP BY sl.LocationName,StoreName
+                    SELECT StoreName,slt.LocationName,COUNT(gst.sku) AS stockSkuNum
+                    FROM [dbo].[B_StoreLocation](nolock) slt
+                    LEFT JOIN B_Store(nolock) st ON st.NID=slt.StoreID
+                    LEFT JOIN B_GoodsSKU(nolock) gst ON slt.NID=gst.LocationID
+                    LEFT JOIN KC_CurrentStock(nolock) cst ON gst.NID=cst.GoodsSKUID AND cst.StoreID=slt.StoreID
+                    WHERE st.StoreName='{$store}' AND cst.Number > 0 GROUP BY slt.LocationName,StoreName
                 ) bb ON aa.LocationName=bb.LocationName WHERE 0=0 ";
-        if($sNum || $sNum === 0) $sql .= " AND stockSkuNum >= '{$sNum}'";
-        if($lNum || $lNum === 0) $sql .= " AND stockSkuNum <= '{$lNum}'";
-        $sql .= " ORDER BY stockSkuNum DESC";
+        if($sNum || $sNum === 0) $sql .= " AND ISNULL(bb.stockSkuNum,0) >= '{$sNum}'";
+        if($lNum || $lNum === 0) $sql .= " AND ISNULL(bb.stockSkuNum,0) <= '{$lNum}'";
+        $sql .= " ORDER BY ISNULL(bb.stockSkuNum,0) DESC";
         return  Yii::$app->py_db->createCommand($sql)->queryAll();
 
     }
