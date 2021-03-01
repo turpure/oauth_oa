@@ -440,8 +440,8 @@ class ApiWarehouseTools
                     LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID
                     WHERE s.StoreName='{$store}' AND cs.Number > 0 GROUP BY sl.LocationName,StoreName
                 ) bb ON aa.LocationName=bb.LocationName WHERE 0=0 ";
-        if($sNum || $sNum === 0) $sql .= " AND aa.skuNum >= '{$sNum}'";
-        if($lNum || $lNum === 0) $sql .= " AND aa.skuNum <= '{$lNum}'";
+        if($sNum || $sNum === 0) $sql .= " AND stockSkuNum >= '{$sNum}'";
+        if($lNum || $lNum === 0) $sql .= " AND stockSkuNum <= '{$lNum}'";
         return  Yii::$app->py_db->createCommand($sql)->queryAll();
 
     }
@@ -490,13 +490,13 @@ class ApiWarehouseTools
     public static function getPositionSearchData($condition){
         $store = $condition['store'] ?: '义乌仓';
         $location = $condition['location'];
-        $sql = "SELECT StoreName,sl.LocationName,gs.sku,skuName,goodsSkuStatus,cs.Number,g.devDate
+        $sql = "SELECT StoreName,sl.LocationName,gs.sku,skuName,goodsSkuStatus,cs.Number,g.createDate as devDate
                 FROM [dbo].[B_StoreLocation](nolock) sl
                 LEFT JOIN B_Store(nolock) s ON s.NID=sl.StoreID
                 LEFT JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID
                 LEFT JOIN B_Goods(nolock) g ON g.NID=gs.goodsID
                 LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID  
-                WHERE s.StoreName='{$store}' AND sl.LocationName='{$location}'";
+                WHERE s.StoreName='{$store}' AND sl.LocationName LIKE '%{$location}%'";
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
 
