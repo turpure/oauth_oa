@@ -442,6 +442,7 @@ class ApiWarehouseTools
                 ) bb ON aa.LocationName=bb.LocationName WHERE 0=0 ";
         if($sNum || $sNum === 0) $sql .= " AND stockSkuNum >= '{$sNum}'";
         if($lNum || $lNum === 0) $sql .= " AND stockSkuNum <= '{$lNum}'";
+        $sql .= " ORDER BY stockSkuNum DESC";
         return  Yii::$app->py_db->createCommand($sql)->queryAll();
 
     }
@@ -471,11 +472,13 @@ class ApiWarehouseTools
                     FROM [dbo].[B_StoreLocation](nolock) slt
                     LEFT JOIN B_GoodsSKU(nolock) gst ON slt.NID=gst.LocationID
                     LEFT JOIN KC_CurrentStock(nolock) cst ON gst.NID=cst.GoodsSKUID AND cst.StoreID=slt.StoreID
+                    WHERE cst.Number > 0
                     GROUP BY slt.LocationName,slt.StoreID 
                 ) aa ON aa.LocationName=sl.LocationName AND aa.StoreID=sl.StoreID
                 WHERE s.StoreName='{$store}' ";
         if($sNum || $sNum === 0) $sql .= " AND isNULL(aa.skuNum,0) >= '{$sNum}'";
         if($lNum || $lNum === 0) $sql .= " AND isNULL(aa.skuNum,0) <= '{$lNum}'";
+        $sql .= " ORDER BY cs.Number DESC";
         return  Yii::$app->py_db->createCommand($sql)->queryAll();
 
     }

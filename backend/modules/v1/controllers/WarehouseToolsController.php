@@ -432,7 +432,7 @@ class WarehouseToolsController extends AdminController
             'sort' => [
                 'attributes' => ['skuNum', 'stockSkuNum'],
                 'defaultOrder' => [
-                    'skuNum' => SORT_DESC,
+                    'stockSkuNum' => SORT_DESC,
                 ]
             ],
             'pagination' => [
@@ -483,7 +483,7 @@ class WarehouseToolsController extends AdminController
             'sort' => [
                 'attributes' => ['sku', 'skuName','goodsskustatus','number','devDate'],
                 'defaultOrder' => [
-                    'devDate' => SORT_DESC,
+                    'number' => SORT_DESC,
                 ]
             ],
             'pagination' => [
@@ -526,9 +526,9 @@ class WarehouseToolsController extends AdminController
         return  new ArrayDataProvider([
             'allModels' => $data,
             'sort' => [
-                'attributes' => ['sku', 'skuName','goodsSkuStatus','number','devDate'],
+                'attributes' => ['sku', 'skuName','goodsSkuStatus','Number','devDate'],
                 'defaultOrder' => [
-                    'devDate' => SORT_DESC,
+                    'Number' => SORT_DESC,
                 ]
             ],
             'pagination' => [
