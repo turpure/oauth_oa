@@ -261,8 +261,8 @@ class ApiWarehouseTools
     {
 
         // 未扫描到，且SKU状态是导入
-        $ret =OaCleanOffline::find()->select('sku')->where(['checkStatus'=> '初始化','skuType' =>'导入'])->asArray()->all();
-        $sku = ArrayHelper::getColumn($ret,'sku');
+        $skuRet =OaCleanOffline::find()->select('sku')->where(['checkStatus'=> '初始化','skuType' =>'导入'])->asArray()->all();
+        $sku = ArrayHelper::getColumn($skuRet,'sku');
         $sku = implode("','", $sku);
         $sku = "'" . $sku . "'";
 
@@ -285,6 +285,18 @@ class ApiWarehouseTools
                 and gs.sku in ($sku)";
 
         $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $skuFound = ArrayHelper::getColumn($ret,'sku');
+        foreach ($skuRet as $su) {
+            if(!in_array($su['sku'], $skuFound,true)) {
+                $row = [];
+                $row['sku'] = $su['sku'];
+                $row['SkuName'] = '';
+                $row['Number'] = '';
+                $row['storeName'] = '';
+                $row['LocationName'] = '';
+                $ret[] = $row;
+            }
+        }
         $title = ['SKU', 'SKU名称', '库存数量', '义乌仓','仓位'];
         return ['data'=>$ret,'name' => 'un-picked-sku','title' => $title];
 
@@ -317,18 +329,17 @@ class ApiWarehouseTools
                 and gs.sku in ($sku)";
 
         $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
-        if(empty($ret)) {
-            $out = [];
-            foreach ($skuRet as $su) {
+        $skuFound = ArrayHelper::getColumn($ret,'sku');
+        foreach ($skuRet as $su) {
+            if(!in_array($su['sku'], $skuFound,true)) {
                 $row = [];
-                $row['SKU'] = $su['sku'];
-                $row['SKU名称'] = '';
-                $row['库存数量'] = '';
-                $row['义乌仓'] = '';
-                $row['仓位'] = '';
-                $out[] = $row;
+                $row['sku'] = $su['sku'];
+                $row['SkuName'] = '';
+                $row['Number'] = '';
+                $row['storeName'] = '';
+                $row['LocationName'] = '';
+                $ret[] = $row;
             }
-            $ret = $out;
         }
         $title = ['SKU', 'SKU名称', '库存数量', '义乌仓','仓位'];
         return ['data'=>$ret,'name' => 'wrong-picked-sku','title' => $title];
