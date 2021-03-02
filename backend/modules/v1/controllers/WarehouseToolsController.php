@@ -559,7 +559,6 @@ class WarehouseToolsController extends AdminController
     public function actionPositionDetailView()
     {
         $cond = Yii::$app->request->post('condition', []);
-        $cond['type'] = 'view';
         $data = ApiWarehouseTools::getPositionDetailsView($cond);
         return new ArrayDataProvider([
             'allModels' => $data,
@@ -587,7 +586,6 @@ class WarehouseToolsController extends AdminController
     public function actionPositionDetailViewExport()
     {
         $cond = Yii::$app->request->post('condition', []);
-        $cond['type'] = 'export';
         $data = ApiWarehouseTools::getPositionDetailsView($cond);
         $title = ['仓库', '仓位', 'SKU个数', 'SKU', 'SKU名称', 'SKU状态', '库存数量', '开发日期', '是否有采购单'];
         ExportTools::toExcelOrCsv('positionDetailView', $data, 'Xlsx', $title);
@@ -605,21 +603,16 @@ class WarehouseToolsController extends AdminController
     public function actionPositionDetailViewSheetsExport()
     {
         $cond = Yii::$app->request->post('condition', []);
-        $cond['type'] = 'export';
-        $filterNum = $cond['filterNum'] ?? 0;
         $data = ApiWarehouseTools::getPositionDetailsView($cond);
         $includedData = $notIncludedData = [];
         foreach ($data as $k => $v) {
-            if ($filterNum && $k < $filterNum) {
-                continue;
-            }
-            if ($v['number'] > 0 && $v['hasPurchaseOrder'] == '是') {
+            if ($v['hasPurchaseOrder'] == '是') {
                 $includedData[] = $v;
-            } elseif ($v['number'] > 0 && $v['hasPurchaseOrder'] == '否') {
+            } elseif ($v['hasPurchaseOrder'] == '否') {
                 $notIncludedData[] = $v;
             }
         }
-        $title = ['仓库', '仓位', 'SKU个数', 'SKU', 'SKU名称', 'SKU状态', '库存数量', '开发日期', '是否有采购单'];
+        $title = ['仓库', '仓位', '有库存SKU个数', 'SKU', 'SKU名称', 'SKU状态', '库存数量', '开发日期', '是否有采购单'];
         $data = [
             ['title' => $title, 'name' => '有采购单数据', 'data' => $includedData],
             ['title' => $title, 'name' => '无采购单数据', 'data' => $notIncludedData],

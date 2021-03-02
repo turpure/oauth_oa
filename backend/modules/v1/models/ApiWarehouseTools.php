@@ -687,54 +687,17 @@ class ApiWarehouseTools
     {
         $store = $condition['store'] ?: '义乌仓';
         $location = $condition['location'] ?? '';
+        $filterNum = $condition['filterNum'] ?? 0;
 
         //仓位SKU个数
-        $sNum = $condition['number'][0] ?? null;
-        $lNum = $condition['number'][1] ?? null;
-        $skuNum = $condition['type'] == 'export' ? 'aa.skuNum' : 0;
+        $sNum = $condition['number'][0] ?? '';
+        $lNum = $condition['number'][1] ?? '';
 
-        $sql = "SELECT StoreName,sl.LocationName,{$skuNum} as skuNum,gs.sku,skuName,goodsskustatus,cs.number,g.devDate,
-                CASE WHEN ISNULL(bb.orderNum, 0) > 0 OR ISNULL(cc.orderNum, 0) > 0 THEN '是' ELSE '否' END AS hasPurchaseOrder
-                FROM [dbo].[B_StoreLocation](nolock) sl
-                LEFT JOIN B_Store(nolock) s ON s.NID=sl.StoreID
-                LEFT JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID
-                LEFT JOIN B_Goods(nolock) g ON g.NID=gs.goodsID
-                LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID        
-                LEFT JOIN (
-	                SELECT gs.sku,COUNT (cm.Nid) AS orderNum
-                    FROM CG_StockOrderM (nolock) cm
-                    JOIN CG_StockOrderD (nolock) D ON cm.Nid = D.StockOrderNid
-                    LEFT JOIN B_goodsSKU (nolock) gs ON GoodsSKUID = gs.nid
-                    WHERE cm.Archive = 0 AND cm.checkflag = 1 AND cm.inflag = 0 
-                        AND d.amount > (d.inamount + isnull(d.inQtyDNoCheck, 0))
-                    GROUP BY sku
-                ) bb ON bb.sku = gs.sku
-                LEFT JOIN (
-                    SELECT gs.sku,COUNT (gm.NID) AS orderNum
-                    FROM CG_StockInM (nolock) gm
-                    INNER JOIN CG_StockInD (nolock) gd ON gm.NID = gd.StockInNID
-                    LEFT JOIN B_GoodsSKU (nolock) gs ON gs.NID = gd.GoodsSKUID
-                    WHERE gm.makeDate BETWEEN CONVERT (VARCHAR (10),DATEADD(dd, - 5, GETDATE()),121) AND GETDATE()
-                    GROUP BY sku
-                ) cc ON cc.sku = gs.sku ";
-        if($condition['type'] == 'export'){
-            $sql .= " LEFT JOIN(			
-                    SELECT slt.StoreID,slt.LocationName,COUNT(gst.sku) AS skuNum
-                    FROM [dbo].[B_StoreLocation](nolock) slt
-                    LEFT JOIN B_GoodsSKU(nolock) gst ON slt.NID=gst.LocationID
-                    LEFT JOIN KC_CurrentStock(nolock) cst ON gst.NID=cst.GoodsSKUID AND cst.StoreID=slt.StoreID
-                    WHERE cst.Number > 0
-                    GROUP BY slt.LocationName,slt.StoreID 
-                ) aa ON aa.LocationName=sl.LocationName AND aa.StoreID=sl.StoreID ";
-        }
-        $sql .= " WHERE s.StoreName='{$store}' ";
-        if ($condition['type'] == 'view') $sql .= " AND sl.LocationName='{$location}'";
-        if ($sNum || $sNum === '0') $sql .= " AND isNULL(aa.skuNum,0) >= '{$sNum}'";
-        if ($lNum || $lNum === '0') $sql .= " AND isNULL(aa.skuNum,0) <= '{$lNum}'";
-        $sql .= " ORDER BY cs.Number DESC";
+        $sql = "EXEC oauth_warehousePositionDetail '{$store}','{$location}','{$sNum}','{$lNum}','{$filterNum}'";
         return Yii::$app->py_db->createCommand($sql)->queryAll();
 
     }
+
 
     /** 仓位查询
      * getPositionDetails
