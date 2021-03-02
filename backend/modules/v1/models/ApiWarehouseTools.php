@@ -350,7 +350,8 @@ class ApiWarehouseTools
         $sku = $condition['sku'];
         // 只判断导入的SKU
         $checkSku = OaCleanOffline::find()->where(['sku' => $sku, 'skuType' => '导入'])->one();
-        if(empty($checkSku)) {
+        $checkSkuAgain = OaCleanOffline::find()->where(['sku' => $sku, 'skuType' => '扫描'])->one();
+        if(empty($checkSku) && empty($checkSkuAgain)) {
             $oaCleanOffline = new OaCleanOffline();
             $username = Yii::$app->user->identity->username;
             $oaCleanOffline->setAttributes(
