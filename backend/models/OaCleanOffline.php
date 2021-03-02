@@ -3,6 +3,8 @@
 namespace backend\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
+use yii\db\Expression;
 
 /**
  * This is the model class for table "oa_cleanOffline".
@@ -22,6 +24,20 @@ class OaCleanOffline extends \yii\db\ActiveRecord
     public static function tableName()
     {
         return 'oa_cleanOffline';
+    }
+
+
+    public function behaviors()
+    {
+        return [[
+            /**
+             * TimestampBehavior：
+             */
+            'class' => TimestampBehavior::className(),
+            'createdAtAttribute' => 'createdTime',
+            'updatedAtAttribute' => 'updatedTime',
+            'value' => new Expression('NOW()'),
+        ],];
     }
 
     /**
