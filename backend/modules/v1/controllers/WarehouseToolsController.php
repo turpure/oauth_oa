@@ -513,8 +513,8 @@ class WarehouseToolsController extends AdminController
     public function actionPositionDetail()
     {
         $cond = Yii::$app->request->post('condition', []);
-        $page = \Yii::$app->request->get('page', 1);;
-        $pageSize = $condition['pageSize'] ?? 20;
+        $page = \Yii::$app->request->get('page', 1);
+        $pageSize = $cond['pageSize'] ?? 20;
         $data = ApiWarehouseTools::getPositionDetails($cond);
         return new ArrayDataProvider([
             'allModels' => $data,
@@ -604,19 +604,26 @@ class WarehouseToolsController extends AdminController
     {
         $cond = Yii::$app->request->post('condition', []);
         $data = ApiWarehouseTools::getPositionDetailsView($cond);
-        $includedData = $notIncludedData = [];
+        $includedData = $notIncludedData = $emptyStockData = [];
         foreach ($data as $k => $v) {
-            if ($v['number'] > 0 && $v['hasPurchaseOrder'] == '是') {
-                $includedData[] = $v;
-            } elseif ($v['number'] > 0 && $v['hasPurchaseOrder'] == '否') {
-                $notIncludedData[] = $v;
+            if ($v['number'] > 0){
+                if ($v['hasPurchaseOrder'] == '是') {
+                    $includedData[] = $v;
+                } else{
+                    $notIncludedData[] = $v;
+                }
+            }else{
+                $emptyStockData[] = $v;
             }
+
         }
         $title = ['仓库', '仓位', '有库存SKU个数', 'SKU', 'SKU名称', 'SKU状态', '库存数量', '开发日期', '是否有采购单'];
         $data = [
-            ['title' => $title, 'name' => '有采购单数据', 'data' => $includedData],
-            ['title' => $title, 'name' => '无采购单数据', 'data' => $notIncludedData],
+            ['title' => $title, 'name' => 'SKU有采购单数据', 'data' => $includedData],
+            ['title' => $title, 'name' => 'SKU无采购单数据', 'data' => $notIncludedData],
+            ['title' => $title, 'name' => 'SKU库存为0数据', 'data' => $emptyStockData],
         ];
+//        return $data;
         ExportTools::toExcelMultipleSheets('positionDetailView', $data, 'Xlsx');
 
     }
@@ -634,7 +641,7 @@ class WarehouseToolsController extends AdminController
     {
         $cond = Yii::$app->request->post('condition', []);
         $page = Yii::$app->request->post('page', 1);
-        $pageSize = $condition['pageSize'] ?? 20;
+        $pageSize = $cond['pageSize'] ?? 20;
         $data = ApiWarehouseTools::getPositionSearchData($cond);
         return new ArrayDataProvider([
             'allModels' => $data,
@@ -678,7 +685,7 @@ class WarehouseToolsController extends AdminController
     {
         $cond = Yii::$app->request->post('condition', []);
         $page = Yii::$app->request->post('page', 1);
-        $pageSize = $condition['pageSize'] ?? 20;
+        $pageSize = $cond['pageSize'] ?? 20;
         $data = ApiWarehouseTools::getPositionManageData($cond);
         return new ArrayDataProvider([
             'allModels' => $data,
