@@ -7,12 +7,16 @@
 
 namespace backend\modules\v1\models;
 
+use backend\models\OaCleanOffline;
 use backend\models\ShopElf\BPerson;
+use backend\models\ShopElf\KCCurrentStock;
 use backend\models\TaskPick;
 use backend\models\TaskSort;
 use backend\models\TaskWarehouse;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use backend\modules\v1\utils\ExportTools;
 use yii\data\ArrayDataProvider;
+use yii\db\Exception;
 use yii\db\Expression;
 use yii\helpers\ArrayHelper;
 use Yii;
@@ -146,6 +150,219 @@ class ApiWarehouseTools
         return $provider;
     }
 
+
+    /**
+     * 线下清仓SKU列表
+     * @param $condition
+     * @return ActiveDataProvider
+     */
+    public static function getCleanOfflineList($condition)
+    {
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
+        $fieldsFilter = ['like' =>['sku'], 'equal' => ['checkStatus']];
+        $timeFilter = ['createdTime', 'updatedTime'];
+        $query = OaCleanOffline::find();
+        $query = Helper::generateFilter($query,$fieldsFilter,$condition);
+        $query = Helper::timeFilter($query,$timeFilter,$condition);
+        $query->orderBy('id DESC');
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
+    }
+
+
+    /**
+     * 上传清仓SKU
+     * @return array
+     */
+    public static function cleanOfflineImport()
+    {
+        $file = $_FILES['file'];
+        if (!$file) {
+            return ['code' => 400, 'message' => 'The file can not be empty!'];
+        }
+        //判断文件后缀
+        $extension = Helper::get_extension($file['name']);
+        if($extension !== 'Xlsx') return ['code' => 400, 'message' => "File format error,please upload files in the format of Xlsx"];
+
+        //文件上传
+        $result = Helper::file($file, 'cleanOfflineImport');
+        $fileName = $file['name'];
+        $fileSize = $file['size'];
+        if (!$result) {
+            return ['code' => 400, 'message' => 'File upload failed'];
+        }else{
+            //获取上传excel文件的内容并保存
+            return self::saveCleanOfflineData($result, $fileName, $fileSize, $extension);
+        }
+
+    }
+
+    /**
+     *读取文件并保存
+     */
+    private static function saveCleanOfflineData($file, $fileName, $fileSize, $extension)
+    {
+        $userName = Yii::$app->user->identity->username;
+        $reader = IOFactory::createReader($extension);
+        $spreadsheet = $reader->load($file);
+        $sheet = $spreadsheet->getSheet(0);
+        $highestRow = $sheet->getHighestRow(); // 取得总行数
+        $errorRes = [];
+        try {
+            for ($i = 2; $i <= $highestRow; $i++) {
+                $data['sku'] = $sheet->getCell("A" . $i)->getValue();
+                $data['creator'] = $userName;
+                $cleanOffline = new OaCleanOffline();
+                $cleanOffline->setAttributes($data);
+                $cleanOffline->save();
+            }
+            return $errorRes;
+        }catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+
+    /**
+     * 清仓模板
+     * @return array
+     */
+    public static function cleanOfflineImportTemplate()
+    {
+       $rows = [['SKU'=>'']];
+       $ret = ['data' => $rows, 'name' =>'SKU-Template'];
+       return $ret;
+
+    }
+
+
+    /**
+     *未拣货
+     * @return mixed
+     */
+    public static function cleanOfflineExportUnPicked()
+    {
+
+        $ret =OaCleanOffline::find()->select('sku')->where(['checkStatus'=> '初始化'])->asArray()->all();
+        $sku = ArrayHelper::getColumn($ret,'sku');
+        $sku = implode("','", $sku);
+        $sku = "'" . $sku . "'";
+
+        $sql = "SELECT
+                gs.sku,
+                gs.SkuName,
+                kc.Number, 
+                s.storeName,
+                bsl.LocationName
+                FROM
+                b_goodsSKU (nolock) gs
+                LEFT JOIN kc_currentstock (nolock) kc ON gs.nid = kc.goodsskuid
+                LEFT JOIN b_store (nolock) s ON s.nid = kc.storeid
+                LEFT JOIN B_GoodsSKULocation (nolock) bgs ON kc.GoodsSKUID = bgs.GoodsSKUID
+                AND isNull(bgs.StoreID, 0) = isNull(kc.StoreID, 0)
+                LEFT JOIN B_StoreLocation (nolock) bsl ON bsl.StoreID = kc.storeid
+                AND bsl.nid = bgs.LocationID
+                WHERE 
+                isnull(s.used, 0) = 0
+                and gs.sku in ($sku)";
+
+        $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $title = ['SKU', 'SKU名称', '库存数量', '义乌仓','仓位'];
+        return ['data'=>$ret,'name' => 'un-picked-sku','title' => $title];
+
+    }
+
+    public static function cleanOfflineImportExportWrongPicked()
+    {
+        $skuRet =OaCleanOffline::find()->select('sku')->where(['checkStatus'=> '未找到'])->asArray()->all();
+        $sku = ArrayHelper::getColumn($skuRet,'sku');
+        $sku = implode("','", $sku);
+        $sku = "'" . $sku . "'";
+
+        $sql = "SELECT
+                gs.sku,
+                gs.SkuName,
+                kc.Number, 
+                s.storeName,
+                bsl.LocationName
+                FROM
+                b_goodsSKU (nolock) gs
+                LEFT JOIN kc_currentstock (nolock) kc ON gs.nid = kc.goodsskuid
+                LEFT JOIN b_store (nolock) s ON s.nid = kc.storeid
+                LEFT JOIN B_GoodsSKULocation (nolock) bgs ON kc.GoodsSKUID = bgs.GoodsSKUID
+                AND isNull(bgs.StoreID, 0) = isNull(kc.StoreID, 0)
+                LEFT JOIN B_StoreLocation (nolock) bsl ON bsl.StoreID = kc.storeid
+                AND bsl.nid = bgs.LocationID
+                WHERE 
+                isnull(s.used, 0) = 0
+                and gs.sku in ($sku)";
+
+        $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
+        if(empty($ret)) {
+            $out = [];
+            foreach ($skuRet as $su) {
+                $row = [];
+                $row['SKU'] = $su['sku'];
+                $row['SKU名称'] = '';
+                $row['库存数量'] = '';
+                $row['义乌仓'] = '';
+                $row['仓位'] = '';
+                $out[] = $row;
+            }
+            $ret = $out;
+        }
+        $title = ['SKU', 'SKU名称', '库存数量', '义乌仓','仓位'];
+        return ['data'=>$ret,'name' => 'wrong-picked-sku','title' => $title];
+
+    }
+
+
+    /**
+     * 更改SKU的扫描状态
+     * @param $condition
+     * @return mixed
+     * @throws Exception
+     */
+    public static function cleanOfflineScan($condition)
+    {
+        if(!isset($condition['sku'])) {
+            throw new Exception('parameter of sku is required');
+        }
+        $sku = $condition['sku'];
+        $checkSku = OaCleanOffline::find()->where(['sku' => $sku])->one();
+        if(empty($checkSku)) {
+            $oaCleanOffline = new OaCleanOffline();
+            $username = Yii::$app->user->identity->username;
+            $oaCleanOffline->setAttributes(
+                ['sku' =>$sku,'checkStatus'=>'未找到', 'creator' => $username]
+            );
+            if(!$oaCleanOffline->save()) {
+                throw new Exception('fail to add sku!');
+            }
+            else {
+                throw new Exception('没有找到相关SKU!');
+            }
+        }
+        else {
+            $checkSku->setAttributes(['checkStatus' => '已找到']);
+            if(!$checkSku->save()) {
+                throw new Exception('fail to update sku!');
+            }
+            return ['已找到相关SKU!'];
+        }
+
+    }
+
+
+
     /**
      * @brief 添加入库任务
      * @param $condition
@@ -194,6 +411,8 @@ class ApiWarehouseTools
         ]);
         return $provider;
     }
+
+
 
     /**
      * @brief 入库扫描记录下载
