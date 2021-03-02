@@ -196,12 +196,20 @@ class ApiWarehouseTools
         if (!$result) {
             return ['code' => 400, 'message' => 'File upload failed'];
         }else{
+            static::truncateCleanOffLineData();
             //获取上传excel文件的内容并保存
             return self::saveCleanOfflineData($result, $fileName, $fileSize, $extension);
         }
 
     }
 
+    /**
+     * 清空之前的数据
+     */
+    private static function truncateCleanOffLineData()
+    {
+        OaCleanOffline::deleteAll();
+    }
     /**
      *读取文件并保存
      */

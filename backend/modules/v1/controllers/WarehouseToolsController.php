@@ -101,7 +101,6 @@ class WarehouseToolsController extends AdminController
     public function actionCleanOfflineImport()
     {
         try {
-            $condition = Yii::$app->request->post('condition', []);
             return ApiWarehouseTools::cleanOfflineImport();
         } catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
