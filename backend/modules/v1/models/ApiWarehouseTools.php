@@ -660,10 +660,11 @@ class ApiWarehouseTools
                     LEFT JOIN KC_CurrentStock(nolock) cst ON gst.NID=cst.GoodsSKUID AND cst.StoreID=slt.StoreID
                     WHERE st.StoreName='{$store}' AND cst.Number > 0 GROUP BY slt.LocationName,StoreName
                 ) bb ON aa.LocationName=bb.LocationName WHERE 0=0 ";
-        if ($sNum || $sNum === 0) $sql .= " AND ISNULL(bb.stockSkuNum,0) >= '{$sNum}'";
-        if ($lNum || $lNum === 0) $sql .= " AND ISNULL(bb.stockSkuNum,0) <= '{$lNum}'";
+        if ($sNum || $sNum === '0') $sql .= " AND ISNULL(bb.stockSkuNum,0) >= '{$sNum}'";
+        if ($lNum || $lNum === '0') $sql .= " AND ISNULL(bb.stockSkuNum,0) <= '{$lNum}'";
         $sql .= " ORDER BY ISNULL(bb.stockSkuNum,0) DESC";
         return Yii::$app->py_db->createCommand($sql)->queryAll();
+        return Yii::$app->py_db->createCommand($sql)->getRawSql();
 
     }
 
@@ -720,8 +721,8 @@ class ApiWarehouseTools
         }
         $sql .= " WHERE s.StoreName='{$store}' ";
         if ($condition['type'] == 'view') $sql .= " AND sl.LocationName='{$location}'";
-        if ($sNum || $sNum === 0) $sql .= " AND isNULL(aa.skuNum,0) >= '{$sNum}'";
-        if ($lNum || $lNum === 0) $sql .= " AND isNULL(aa.skuNum,0) <= '{$lNum}'";
+        if ($sNum || $sNum === '0') $sql .= " AND isNULL(aa.skuNum,0) >= '{$sNum}'";
+        if ($lNum || $lNum === '0') $sql .= " AND isNULL(aa.skuNum,0) <= '{$lNum}'";
         $sql .= " ORDER BY cs.Number DESC";
         return Yii::$app->py_db->createCommand($sql)->queryAll();
 
