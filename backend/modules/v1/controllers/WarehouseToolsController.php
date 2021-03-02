@@ -81,6 +81,102 @@ class WarehouseToolsController extends AdminController
         return ApiWarehouseTools::getSortLog($condition);
     }
 
+
+    /**
+     * @brief 线下清仓工具-SKU列表
+     */
+    public function actionCleanOfflineList()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition',[]);
+            return ApiWarehouseTools::getCleanOfflineList($condition);
+        }
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(),'message' => $why->getMessage()];
+        }
+    }
+
+    /**
+     * @brief 线下清仓工具-导入SKU
+     */
+    public function actionCleanOfflineImport()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition',[]);
+            return ApiWarehouseTools::cleanOfflineImport();
+        }
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(),'message' => $why->getMessage()];
+        }
+    }
+
+    /**
+     * @brief 线下清仓工具-导入SKU模板下载
+     */
+    public function actionCleanOfflineImportTemplate()
+    {
+        try {
+            $ret = ApiWarehouseTools::cleanOfflineImportTemplate();
+            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Xlsx');
+        }
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(),'message' => $why->getMessage()];
+        }
+    }
+
+
+    /**
+     * 导出未拣货列表
+     * @return array
+     */
+    public function actionCleanOfflineExportUnPicked()
+    {
+        try {
+            $ret = ApiWarehouseTools::cleanOfflineExportUnPicked();
+            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Xlsx',$title=$ret['title']);
+        }
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(),'message' => $why->getMessage()];
+        }
+    }
+
+    /**
+     * 导出错拣货列表
+     * @return array
+     */
+    public function actionCleanOfflineExportWrongPicked()
+    {
+        try {
+            $ret = ApiWarehouseTools::cleanOfflineImportExportWrongPicked();
+            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Xlsx');
+        }
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(),'message' => $why->getMessage()];
+        }
+    }
+
+
+    /**
+     * 扫描逻辑
+     * @return mixed
+     */
+    public function actionCleanOfflineScan()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition',[]);
+            return ApiWarehouseTools::cleanOfflineScan($condition);
+        }
+        catch (\Exception $why) {
+            return ['code' => $why->getCode(),'message' => $why->getMessage()];
+        }
+
+    }
+
+
+
+
+
+
     /**
      * @brief 保存入库任务
      * @return array|bool
