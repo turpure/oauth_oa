@@ -88,11 +88,10 @@ class WarehouseToolsController extends AdminController
     public function actionCleanOfflineList()
     {
         try {
-            $condition = Yii::$app->request->post('condition',[]);
+            $condition = Yii::$app->request->post('condition', []);
             return ApiWarehouseTools::getCleanOfflineList($condition);
-        }
-        catch (\Exception $why) {
-            return ['code' => $why->getCode(),'message' => $why->getMessage()];
+        } catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
 
@@ -102,11 +101,10 @@ class WarehouseToolsController extends AdminController
     public function actionCleanOfflineImport()
     {
         try {
-            $condition = Yii::$app->request->post('condition',[]);
+            $condition = Yii::$app->request->post('condition', []);
             return ApiWarehouseTools::cleanOfflineImport();
-        }
-        catch (\Exception $why) {
-            return ['code' => $why->getCode(),'message' => $why->getMessage()];
+        } catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
 
@@ -118,9 +116,8 @@ class WarehouseToolsController extends AdminController
         try {
             $ret = ApiWarehouseTools::cleanOfflineImportTemplate();
             ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Xlsx');
-        }
-        catch (\Exception $why) {
-            return ['code' => $why->getCode(),'message' => $why->getMessage()];
+        } catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
 
@@ -133,10 +130,9 @@ class WarehouseToolsController extends AdminController
     {
         try {
             $ret = ApiWarehouseTools::cleanOfflineExportUnPicked();
-            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Xlsx',$title=$ret['title']);
-        }
-        catch (\Exception $why) {
-            return ['code' => $why->getCode(),'message' => $why->getMessage()];
+            ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Xlsx', $title = $ret['title']);
+        } catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
 
@@ -149,9 +145,8 @@ class WarehouseToolsController extends AdminController
         try {
             $ret = ApiWarehouseTools::cleanOfflineImportExportWrongPicked();
             ExportTools::toExcelOrCsv($ret['name'], $ret['data'], 'Xlsx');
-        }
-        catch (\Exception $why) {
-            return ['code' => $why->getCode(),'message' => $why->getMessage()];
+        } catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
 
@@ -163,18 +158,13 @@ class WarehouseToolsController extends AdminController
     public function actionCleanOfflineScan()
     {
         try {
-            $condition = Yii::$app->request->post('condition',[]);
+            $condition = Yii::$app->request->post('condition', []);
             return ApiWarehouseTools::cleanOfflineScan($condition);
-        }
-        catch (\Exception $why) {
-            return ['code' => $why->getCode(),'message' => $why->getMessage()];
+        } catch (\Exception $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
 
     }
-
-
-
-
 
 
     /**
@@ -326,7 +316,8 @@ class WarehouseToolsController extends AdminController
     }
 
     /////////////////////////////////////每日发货量/////////////////////////////////////////////////////
-    public function actionDailyDelivery(){
+    public function actionDailyDelivery()
+    {
         $cond = Yii::$app->request->post('condition', []);
         $store = $cond['store'] ?: '义乌仓';
         $begin = $cond['dateRange'][0] ?? '';
@@ -370,13 +361,14 @@ class WarehouseToolsController extends AdminController
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    public function actionDailyDeliveryExport(){
+    public function actionDailyDeliveryExport()
+    {
         $cond = Yii::$app->request->post('condition', []);
         $store = $cond['store'] ?: '义乌仓';
         $begin = $cond['dateRange'][0] ?? '';
         $end = $cond['dateRange'][1] ?? '';
         $dailyData = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}'")->queryAll();
-        $title = ['发货日期','单品订单数','多品订单数','总订单数'];
+        $title = ['发货日期', '单品订单数', '多品订单数', '总订单数'];
         ExportTools::toExcelOrCsv('DailyDelivery', $dailyData, 'Xls', $title);
     }
 
@@ -387,13 +379,14 @@ class WarehouseToolsController extends AdminController
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    public function actionPackageOrderExport(){
+    public function actionPackageOrderExport()
+    {
         $cond = Yii::$app->request->post('condition', []);
         $store = $cond['store'] ?: '义乌仓';
         $begin = $cond['dateRange'][0] ?? '';
         $end = $cond['dateRange'][1] ?? '';
         $dailyData = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}', 1")->queryAll();
-        $title = ['打包人员','单品订单数','多品订单数','总订单数'];
+        $title = ['打包人员', '单品订单数', '多品订单数', '总订单数'];
         ExportTools::toExcelOrCsv('PackageOrder', $dailyData, 'Xls', $title);
     }
 
@@ -547,7 +540,8 @@ class WarehouseToolsController extends AdminController
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    public function actionPositionDetailExport(){
+    public function actionPositionDetailExport()
+    {
         $cond = Yii::$app->request->post('condition', []);
         $data = ApiWarehouseTools::getPositionDetails($cond);
         $title = ['仓库', '仓位', 'SKU个数', '有库存SKU个数'];
@@ -568,10 +562,10 @@ class WarehouseToolsController extends AdminController
         $cond = Yii::$app->request->post('condition', []);
         $cond['type'] = 'view';
         $data = ApiWarehouseTools::getPositionDetailsView($cond);
-        return  new ArrayDataProvider([
+        return new ArrayDataProvider([
             'allModels' => $data,
             'sort' => [
-                'attributes' => ['sku', 'skuName','goodsskustatus','number','devDate'],
+                'attributes' => ['sku', 'skuName', 'goodsskustatus', 'number', 'devDate'],
                 'defaultOrder' => [
                     'number' => SORT_DESC,
                 ]
@@ -582,6 +576,7 @@ class WarehouseToolsController extends AdminController
         ]);
 
     }
+
     /**
      * 仓位明细-- 明细导出
      * actionPositionDetail
@@ -595,7 +590,7 @@ class WarehouseToolsController extends AdminController
         $cond = Yii::$app->request->post('condition', []);
         $cond['type'] = 'export';
         $data = ApiWarehouseTools::getPositionDetailsView($cond);
-        $title = ['仓库', '仓位', 'SKU个数', 'SKU','SKU名称','SKU状态','库存数量','开发日期','是否有采购单'];
+        $title = ['仓库', '仓位', 'SKU个数', 'SKU', 'SKU名称', 'SKU状态', '库存数量', '开发日期', '是否有采购单'];
         ExportTools::toExcelOrCsv('positionDetailView', $data, 'Xlsx', $title);
 
     }
@@ -608,25 +603,29 @@ class WarehouseToolsController extends AdminController
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    public function actionPositionDetailViewShitsExport()
+    public function actionPositionDetailViewSheetsExport()
     {
         $cond = Yii::$app->request->post('condition', []);
         $cond['type'] = 'export';
         $filterNum = $cond['filterNum'] ?? 0;
         $data = ApiWarehouseTools::getPositionDetailsView($cond);
         $includedData = $notIncludedData = [];
-        foreach ($data as $k => $v){
-            if($filterNum && $k < $filterNum){
+        foreach ($data as $k => $v) {
+            if ($filterNum && $k < $filterNum) {
                 continue;
             }
-            if($v['hasPurchaseOrder'] == '是'){
+            if ($v['number'] > 0 && $v['hasPurchaseOrder'] == '是') {
                 $includedData[] = $v;
-            }else{
+            } elseif ($v['number'] > 0 && $v['hasPurchaseOrder'] == '否') {
                 $notIncludedData[] = $v;
             }
         }
-        $title = ['仓库', '仓位', 'SKU个数', 'SKU','SKU名称','SKU状态','库存数量','开发日期','是否有采购单'];
-        ExportTools::toExcelOrCsv('positionDetailView', $data, 'Xlsx', $title);
+        $title = ['仓库', '仓位', 'SKU个数', 'SKU', 'SKU名称', 'SKU状态', '库存数量', '开发日期', '是否有采购单'];
+        $data = [
+            ['title' => $title, 'name' => '有采购单数据', 'data' => $includedData],
+            ['title' => $title, 'name' => '无采购单数据', 'data' => $notIncludedData],
+        ];
+        ExportTools::toExcelMultipleSheets('positionDetailView', $data, 'Xlsx');
 
     }
 
@@ -645,10 +644,10 @@ class WarehouseToolsController extends AdminController
         $page = Yii::$app->request->post('page', 1);
         $pageSize = $condition['pageSize'] ?? 20;
         $data = ApiWarehouseTools::getPositionSearchData($cond);
-        return  new ArrayDataProvider([
+        return new ArrayDataProvider([
             'allModels' => $data,
             'sort' => [
-                'attributes' => ['sku', 'skuName','goodsSkuStatus','Number','devDate'],
+                'attributes' => ['sku', 'skuName', 'goodsSkuStatus', 'Number', 'devDate'],
                 'defaultOrder' => [
                     'Number' => SORT_DESC,
                 ]
@@ -671,7 +670,7 @@ class WarehouseToolsController extends AdminController
     {
         $cond = Yii::$app->request->post('condition', []);
         $data = ApiWarehouseTools::getPositionSearchData($cond);
-        $title = ['仓库', '仓位', 'SKU','SKU名称','SKU状态','库存数量','开发日期'];
+        $title = ['仓库', '仓位', 'SKU', 'SKU名称', 'SKU状态', '库存数量', '开发日期'];
         ExportTools::toExcelOrCsv('positionSearch', $data, 'Xlsx', $title);
     }
 
@@ -689,10 +688,10 @@ class WarehouseToolsController extends AdminController
         $page = Yii::$app->request->post('page', 1);
         $pageSize = $condition['pageSize'] ?? 20;
         $data = ApiWarehouseTools::getPositionManageData($cond);
-        return  new ArrayDataProvider([
+        return new ArrayDataProvider([
             'allModels' => $data,
             'sort' => [
-                'attributes' => ['sku', 'skuName','goodsSkuStatus','number','devDate'],
+                'attributes' => ['sku', 'skuName', 'goodsSkuStatus', 'number', 'devDate'],
                 'defaultOrder' => [
                     'devDate' => SORT_DESC,
                 ]
@@ -715,16 +714,16 @@ class WarehouseToolsController extends AdminController
     {
         $cond = Yii::$app->request->post('condition', []);
         $data = ApiWarehouseTools::getPositionManageData($cond);
-        $title = ['仓库', '仓位', 'SKU','SKU名称','SKU状态','库存数量','开发日期'];
+        $title = ['仓库', '仓位', 'SKU', 'SKU名称', 'SKU状态', '库存数量', '开发日期'];
         ExportTools::toExcelOrCsv('positionManage', $data, 'Xlsx', $title);
     }
 
     public function actionPositionSkuDelete()
     {
         $condition = Yii::$app->request->post('condition', []);
-        try{
+        try {
             $res = ApiWarehouseTools::positionSkuDelete($condition);
-            if($res){
+            if ($res) {
                 return [
                     'code' => 400,
                     'message' => 'error',
@@ -732,7 +731,7 @@ class WarehouseToolsController extends AdminController
                 ];
             }
             return true;
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
