@@ -267,7 +267,7 @@ class ApiCondition
      */
     public static function getStore()
     {
-        $sql = "select StoreName from  B_store ORDER BY CASE WHEN StoreName='义乌仓' THEN 0 ELSE 1 end,StoreName";
+        $sql = "select StoreName from  B_store(nolock) ORDER BY CASE WHEN StoreName='义乌仓' THEN 0 ELSE 1 end,StoreName";
         $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
         return ArrayHelper::getColumn($ret,'StoreName');
     }

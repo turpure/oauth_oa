@@ -11,6 +11,7 @@ use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
 use Yii;
 
@@ -154,6 +155,70 @@ class ExportTools
         }
         fclose($fp);  //每生成一个文件关闭
         return $filename;
+    }
+
+    /**
+     * @param $fileName
+     * @param $data = [['title'=>[],'name' => '', 'data'=>[]]]  title 字段名称 ，name sheet名称，data 导出数据
+     * @param $type
+     * @param $title
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public static function toExcelMultipleSheets($fileName, $data, $type='Xls')
+    {
+        $fileName = iconv('utf-8', 'gb2312', $fileName);
+        $fileName .= date('-YmdHis');
+        $sheet = new Spreadsheet();
+        foreach ($data as $k => $v){
+            if($k == 0){
+                $workSheet = $sheet->getActiveSheet()->setTitle($v['name']);
+            }else{
+                $workSheet = new Worksheet($sheet, $v['name']);
+                $sheet->addSheet($workSheet);
+            }
+
+            $cellName = $v['data'] ? array_keys($v['data'][0]) : [];
+            $len = count($cellName);
+
+            //set title
+            if(!empty($v['title'])) {
+                foreach ($v['title'] as $index => $value) {
+                    $workSheet->setCellValueByColumnAndRow($index + 1, 1, $value);
+                    $workSheet->getStyleByColumnAndRow($index + 1, 1)->getFont()->setBold(true);
+                    $workSheet->getColumnDimensionByColumn($index + 1)->setAutoSize(2 * count($value));
+                }
+            }
+            else {
+                foreach ($cellName as $index => $value) {
+                    $workSheet->setCellValueByColumnAndRow($index + 1, 1, $value);
+                    $workSheet->getStyleByColumnAndRow($index + 1, 1)->getFont()->setBold(true);
+                    $workSheet->getColumnDimensionByColumn($index + 1)->setAutoSize(count($value));
+                }
+            }
+
+            // set cell value
+            foreach ($v['data'] as $key => $row) {
+                for ($index=0; $index<$len;$index++) {
+                    $workSheet->setCellValueByColumnAndRow($index + 1, $key + 2,  $row[$cellName[$index]]);
+                }
+            }
+        }
+
+
+        //set header
+        header('pragma:public');
+        header('Access-Control-Allow-Origin: *');
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment;filename="'.$fileName.'.'.$type.'"');
+        header('Cache-Control: max-age=0');
+        header('Access-Control-Expose-Headers: Content-Disposition');
+        $writer = IOFactory::createWriter($sheet, $type);
+        if((strtolower($type) === 'csv')) {
+            $writer->setUseBOM(true);
+        }
+        $writer->save('php://output');
+        exit;
     }
 
 

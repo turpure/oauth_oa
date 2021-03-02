@@ -83,7 +83,7 @@ class ApiWarehouseTools
     public static function getPickMember()
     {
         $ret = BPerson::find()
-            ->andWhere(['in', 'Duty', ['拣货','拣货组长','拣货-分拣']])->all();
+            ->andWhere(['in', 'Duty', ['拣货', '拣货组长', '拣货-分拣']])->all();
         return ArrayHelper::getColumn($ret, 'PersonName');
     }
 
@@ -93,13 +93,13 @@ class ApiWarehouseTools
      */
     public static function getSortMember()
     {
-        $identity = Yii::$app->request->get('type','');
+        $identity = Yii::$app->request->get('type', '');
 
         $query = BPerson::find();
-        if($identity == 'warehouse'){
+        if ($identity == 'warehouse') {
             $ret = $query->andWhere(['in', 'Duty', ['入库分拣', '快递扫描']])->all();
-        }else{
-            $ret = $query->andWhere(['in', 'Duty', ['拣货','拣货组长','拣货-分拣']])->all();
+        } else {
+            $ret = $query->andWhere(['in', 'Duty', ['拣货', '拣货组长', '拣货-分拣']])->all();
         }
         return ArrayHelper::getColumn($ret, 'PersonName');
     }
@@ -112,11 +112,11 @@ class ApiWarehouseTools
     public static function getScanningLog($condition)
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-        $fieldsFilter = ['like' =>['batchNumber', 'picker', 'scanningMan'], 'equal' => ['isDone']];
+        $fieldsFilter = ['like' => ['batchNumber', 'picker', 'scanningMan'], 'equal' => ['isDone']];
         $timeFilter = ['createdTime', 'updatedTime'];
         $query = TaskPick::find();
-        $query = Helper::generateFilter($query,$fieldsFilter,$condition);
-        $query = Helper::timeFilter($query,$timeFilter,$condition);
+        $query = Helper::generateFilter($query, $fieldsFilter, $condition);
+        $query = Helper::timeFilter($query, $timeFilter, $condition);
         $query->orderBy('id DESC');
         $provider = new ActiveDataProvider([
             'query' => $query,
@@ -135,11 +135,11 @@ class ApiWarehouseTools
     public static function getSortLog($condition)
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-        $fieldsFilter = ['like' =>['batchNumber', 'picker', 'scanningMan'], 'equal' => ['isDone']];
+        $fieldsFilter = ['like' => ['batchNumber', 'picker', 'scanningMan'], 'equal' => ['isDone']];
         $timeFilter = ['createdTime', 'updatedTime'];
         $query = TaskSort::find();
-        $query = Helper::generateFilter($query,$fieldsFilter,$condition);
-        $query = Helper::timeFilter($query,$timeFilter,$condition);
+        $query = Helper::generateFilter($query, $fieldsFilter, $condition);
+        $query = Helper::timeFilter($query, $timeFilter, $condition);
         $query->orderBy('id DESC');
         $provider = new ActiveDataProvider([
             'query' => $query,
@@ -405,11 +405,11 @@ class ApiWarehouseTools
     public static function getWarehouseLog($condition)
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-        $fieldsFilter = ['like' =>['logisticsNo', 'user', 'sku'], 'equal' => ['number']];
+        $fieldsFilter = ['like' => ['logisticsNo', 'user', 'sku'], 'equal' => ['number']];
         $timeFilter = ['updatedTime'];
         $query = TaskWarehouse::find();
-        $query = Helper::generateFilter($query,$fieldsFilter,$condition);
-        $query = Helper::timeFilter($query,$timeFilter,$condition);
+        $query = Helper::generateFilter($query, $fieldsFilter, $condition);
+        $query = Helper::timeFilter($query, $timeFilter, $condition);
         $query->orderBy('id DESC');
         $provider = new ActiveDataProvider([
             'query' => $query,
@@ -429,11 +429,11 @@ class ApiWarehouseTools
      */
     public static function warehouseLogExport($condition)
     {
-        $fieldsFilter = ['like' =>['logisticsNo', 'user', 'sku'], 'equal' => ['number']];
+        $fieldsFilter = ['like' => ['logisticsNo', 'user', 'sku'], 'equal' => ['number']];
         $timeFilter = ['updatedTime'];
         $query = TaskWarehouse::find();
-        $query = Helper::generateFilter($query,$fieldsFilter,$condition);
-        $query = Helper::timeFilter($query,$timeFilter,$condition);
+        $query = Helper::generateFilter($query, $fieldsFilter, $condition);
+        $query = Helper::timeFilter($query, $timeFilter, $condition);
         $data = $query->orderBy('id DESC')->asArray()->all();
         $name = 'warehouseLog';
         ExportTools::toExcelOrCsv($name, $data, 'Xls');
@@ -447,25 +447,24 @@ class ApiWarehouseTools
      */
     public static function getFreightSpaceMatched($condition)
     {
-        $date =  $condition['date'];
+        $date = $condition['date'];
         $begin = $date[0];
         $end = $date[1];
         $member = isset($condition['member']) ? $condition['member'] : [];
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
         $billNumber = isset($condition['billNumber']) ? $condition['billNumber'] : '';
 
-        if(empty($member)) {
+        if (empty($member)) {
             $sql = "select makeDate,recorder, billNumber  from CG_StockInM(nolock) where convert(varchar(10),makeDate,121) BETWEEN :begin and  :end ";
-        }
-        else {
-            $member = implode("','",$member);
+        } else {
+            $member = implode("','", $member);
             $sql = "select makeDate,recorder, billNumber  from CG_StockInM(nolock) where recorder in ('{$member}') and convert(varchar(10),makeDate,121) BETWEEN :begin and  :end ";
         }
-        if(!empty($billNumber)) {
+        if (!empty($billNumber)) {
             $sql .= "And billNumber='{$billNumber}'";
         }
         $db = Yii::$app->py_db;
-        $data = $db->createCommand($sql,[':begin' => $begin, ':end' => $end])->queryAll();
+        $data = $db->createCommand($sql, [':begin' => $begin, ':end' => $end])->queryAll();
         $provider = new ArrayDataProvider([
             'allModels' => $data,
             'pagination' => [
@@ -500,15 +499,15 @@ class ApiWarehouseTools
         $query = TaskPick::find()->select(new Expression("batchNumber,picker,date_format(MAX(createdTime),'%Y-%m-%d') AS createdTime"));
         $query = $query->andWhere(['<>', "IFNULL(batchNumber,'')", '']);
         $query = $query->andWhere(['<>', "IFNULL(picker,'')", '']);
-        $query = $query->groupBy(['batchNumber','picker']);
+        $query = $query->groupBy(['batchNumber', 'picker']);
         $query = $query->having(['between', "date_format(MAX(createdTime),'%Y-%m-%d')", $condition['createdTime'][0], $condition['createdTime'][1]]);
         $list = $query->asArray()->all();
         //清空临时表数据
         Yii::$app->py_db->createCommand()->truncateTable('guest.oauth_taskPickTmp')->execute();
 
         $step = 200;
-        for ($i=1;$i<=ceil(count($list)/$step);$i++){
-            Yii::$app->py_db->createCommand()->batchInsert('guest.oauth_taskPickTmp',['batchNumber','picker','createdTime'],array_slice($list,($i-1)*$step,$step))->execute();
+        for ($i = 1; $i <= ceil(count($list) / $step); $i++) {
+            Yii::$app->py_db->createCommand()->batchInsert('guest.oauth_taskPickTmp', ['batchNumber', 'picker', 'createdTime'], array_slice($list, ($i - 1) * $step, $step))->execute();
         }
         //获取数据
         $sql = "EXEC guest.oauth_getPickStatisticsData '{$condition['createdTime'][0]}','{$condition['createdTime'][1]}'";
@@ -555,20 +554,20 @@ class ApiWarehouseTools
                 LEFT JOIN B_StoreLocation (nolock) sl ON sl.nid = bgs.LocationID
                 LEFT JOIN B_Store bs ON ISNULL(ptd.StoreID, 0) = ISNULL(bs.NID, 0)
                 WHERE FilterFlag = 1 ";
-        if($condition['sku']){
+        if ($condition['sku']) {
             $sql .= " AND ptd.sku LIKE '%{$condition['sku']}%'";
         }
-        if($condition['skuName']){
+        if ($condition['skuName']) {
             $sql .= " AND bgsku.skuName LIKE '%{$condition['skuName']}%'";
         }
-        if($condition['goodsSKUStatus']){
+        if ($condition['goodsSKUStatus']) {
             $sql .= " AND bgsku.GoodsSKUStatus LIKE '%{$condition['goodsSKUStatus']}%'";
         }
-        if($condition['purchaser']){
+        if ($condition['purchaser']) {
             $sql .= " AND bg.Purchaser LIKE '%{$condition['purchaser']}%'";
         }
 
-        if($beginTime && $endTime){
+        if ($beginTime && $endTime) {
             $sql .= " AND CONVERT(VARCHAR(10),DATEADD(HH,8,ordertime),121) BETWEEN '{$beginTime}' AND '{$endTime}' ";
         }
 
@@ -591,10 +590,11 @@ class ApiWarehouseTools
      * Author: henry
      * @return ArrayDataProvider
      */
-    public static function getWareSkuData($condition){
-        $sku = $condition['sku'] ? str_replace(",","','", $condition['sku']) : '';
+    public static function getWareSkuData($condition)
+    {
+        $sku = $condition['sku'] ? str_replace(",", "','", $condition['sku']) : '';
         $beginTime = isset($condition['changeTime'][0]) ? $condition['changeTime'][0] : '';
-        $endTime = isset($condition['changeTime'][1]) ? $condition['changeTime'][1].' 23:59:59' : '';
+        $endTime = isset($condition['changeTime'][1]) ? $condition['changeTime'][1] . ' 23:59:59' : '';
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
         $sql = "SELECT gs.sku,s.storeName,l.locationName,
                         CASE WHEN charindex('->',ll.person) > 0 THEN SUBSTRING(ll.person,1,charindex('->',person) - 1) 
@@ -607,19 +607,19 @@ class ApiWarehouseTools
                 INNER JOIN B_StoreLocation l ON l.NID=gsl.LocationID
                 INNER JOIN  B_GoodsSKULocationLog ll ON ll.sku=gs.sku AND ll.nowLocation=LocationName 
                 WHERE 1=1 ";
-        if($sku){
+        if ($sku) {
             $sql .= " AND gs.SKU IN ('{$sku}') ";
         }
-        if($condition['store']){
+        if ($condition['store']) {
             $sql .= " AND StoreName LIKE '%{$condition['sku']}%' ";
         }
-        if($condition['location']){
+        if ($condition['location']) {
             $sql .= " AND LocationName LIKE '%{$condition['location']}%' ";
         }
-        if($condition['person']){
+        if ($condition['person']) {
             $sql .= " AND person LIKE '%{$condition['person']}%' ";
         }
-        if($beginTime && $endTime){
+        if ($beginTime && $endTime) {
             $sql .= " AND changeTime BETWEEN '{$beginTime}' AND '{$endTime}' ";
         }
         $sql .= " ORDER BY gs.sku ASC, s.storeName ASC, changeTime DESC";
@@ -645,7 +645,8 @@ class ApiWarehouseTools
      * Author: henry
      * @return mixed
      */
-    public static function getPositionDetails($condition){
+    public static function getPositionDetails($condition)
+    {
         $store = $condition['store'] ?: '义乌仓';
 
         //仓位SKU个数
@@ -660,16 +661,17 @@ class ApiWarehouseTools
                     LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID
                     WHERE s.StoreName='{$store}' GROUP BY sl.LocationName,StoreName 
                 ) aa left JOIN (
-                    SELECT StoreName,sl.LocationName,COUNT(gs.sku) AS stockSkuNum
-                    FROM [dbo].[B_StoreLocation](nolock) sl
-                    LEFT JOIN B_Store(nolock) s ON s.NID=sl.StoreID
-                    LEFT JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID
-                    LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID
-                    WHERE s.StoreName='{$store}' AND cs.Number > 0 GROUP BY sl.LocationName,StoreName
+                    SELECT StoreName,slt.LocationName,COUNT(gst.sku) AS stockSkuNum
+                    FROM [dbo].[B_StoreLocation](nolock) slt
+                    LEFT JOIN B_Store(nolock) st ON st.NID=slt.StoreID
+                    LEFT JOIN B_GoodsSKU(nolock) gst ON slt.NID=gst.LocationID
+                    LEFT JOIN KC_CurrentStock(nolock) cst ON gst.NID=cst.GoodsSKUID AND cst.StoreID=slt.StoreID
+                    WHERE st.StoreName='{$store}' AND cst.Number > 0 GROUP BY slt.LocationName,StoreName
                 ) bb ON aa.LocationName=bb.LocationName WHERE 0=0 ";
-        if($sNum || $sNum === 0) $sql .= " AND stockSkuNum >= '{$sNum}'";
-        if($lNum || $lNum === 0) $sql .= " AND stockSkuNum <= '{$lNum}'";
-        return  Yii::$app->py_db->createCommand($sql)->queryAll();
+        if ($sNum || $sNum === 0) $sql .= " AND ISNULL(bb.stockSkuNum,0) >= '{$sNum}'";
+        if ($lNum || $lNum === 0) $sql .= " AND ISNULL(bb.stockSkuNum,0) <= '{$lNum}'";
+        $sql .= " ORDER BY ISNULL(bb.stockSkuNum,0) DESC";
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
 
     }
 
@@ -680,30 +682,56 @@ class ApiWarehouseTools
      * Author: henry
      * @return mixed
      */
-    public static function getPositionDetailsView($condition){
+    public static function getPositionDetailsView($condition)
+    {
         $store = $condition['store'] ?: '义乌仓';
+        $location = $condition['location'] ?? '';
 
         //仓位SKU个数
         $sNum = $condition['number'][0] ?? null;
         $lNum = $condition['number'][1] ?? null;
+        $skuNum = $condition['type'] == 'export' ? 'aa.skuNum' : 0;
 
-        $sql = "SELECT StoreName,sl.LocationName,aa.skuNum,gs.sku,skuName,goodsskustatus,cs.Number,g.devDate
+        $sql = "SELECT StoreName,sl.LocationName,{$skuNum} as skuNum,gs.sku,skuName,goodsskustatus,cs.number,g.devDate,
+                CASE WHEN ISNULL(bb.orderNum, 0) > 0 OR ISNULL(cc.orderNum, 0) > 0 THEN '是' ELSE '否' END AS hasPurchaseOrder
                 FROM [dbo].[B_StoreLocation](nolock) sl
                 LEFT JOIN B_Store(nolock) s ON s.NID=sl.StoreID
                 LEFT JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID
                 LEFT JOIN B_Goods(nolock) g ON g.NID=gs.goodsID
                 LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID        
-                LEFT JOIN(			
+                LEFT JOIN (
+	                SELECT gs.sku,COUNT (cm.Nid) AS orderNum
+                    FROM CG_StockOrderM (nolock) cm
+                    JOIN CG_StockOrderD (nolock) D ON cm.Nid = D.StockOrderNid
+                    LEFT JOIN B_goodsSKU (nolock) gs ON GoodsSKUID = gs.nid
+                    WHERE cm.Archive = 0 AND cm.checkflag = 1 AND cm.inflag = 0 
+                        AND d.amount > (d.inamount + isnull(d.inQtyDNoCheck, 0))
+                    GROUP BY sku
+                ) bb ON bb.sku = gs.sku
+                LEFT JOIN (
+                    SELECT gs.sku,COUNT (gm.NID) AS orderNum
+                    FROM CG_StockInM (nolock) gm
+                    INNER JOIN CG_StockInD (nolock) gd ON gm.NID = gd.StockInNID
+                    LEFT JOIN B_GoodsSKU (nolock) gs ON gs.NID = gd.GoodsSKUID
+                    WHERE gm.makeDate BETWEEN CONVERT (VARCHAR (10),DATEADD(dd, - 5, GETDATE()),121) AND GETDATE()
+                    GROUP BY sku
+                ) cc ON cc.sku = gs.sku ";
+        if($condition['type'] == 'export'){
+            $sql .= " LEFT JOIN(			
                     SELECT slt.StoreID,slt.LocationName,COUNT(gst.sku) AS skuNum
                     FROM [dbo].[B_StoreLocation](nolock) slt
                     LEFT JOIN B_GoodsSKU(nolock) gst ON slt.NID=gst.LocationID
                     LEFT JOIN KC_CurrentStock(nolock) cst ON gst.NID=cst.GoodsSKUID AND cst.StoreID=slt.StoreID
+                    WHERE cst.Number > 0
                     GROUP BY slt.LocationName,slt.StoreID 
-                ) aa ON aa.LocationName=sl.LocationName AND aa.StoreID=sl.StoreID
-                WHERE s.StoreName='{$store}' ";
-        if($sNum || $sNum === 0) $sql .= " AND isNULL(aa.skuNum,0) >= '{$sNum}'";
-        if($lNum || $lNum === 0) $sql .= " AND isNULL(aa.skuNum,0) <= '{$lNum}'";
-        return  Yii::$app->py_db->createCommand($sql)->queryAll();
+                ) aa ON aa.LocationName=sl.LocationName AND aa.StoreID=sl.StoreID ";
+        }
+        $sql .= " WHERE s.StoreName='{$store}' ";
+        if ($condition['type'] == 'view') $sql .= " AND sl.LocationName='{$location}'";
+        if ($sNum || $sNum === 0) $sql .= " AND isNULL(aa.skuNum,0) >= '{$sNum}'";
+        if ($lNum || $lNum === 0) $sql .= " AND isNULL(aa.skuNum,0) <= '{$lNum}'";
+        $sql .= " ORDER BY cs.Number DESC";
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
 
     }
 
@@ -714,7 +742,8 @@ class ApiWarehouseTools
      * Author: henry
      * @return mixed
      */
-    public static function getPositionSearchData($condition){
+    public static function getPositionSearchData($condition)
+    {
         $store = $condition['store'] ?: '义乌仓';
         $location = $condition['location'];
         $sql = "SELECT StoreName,sl.LocationName,gs.sku,skuName,goodsSkuStatus,cs.Number,g.createDate as devDate
@@ -734,10 +763,11 @@ class ApiWarehouseTools
      * Author: henry
      * @return mixed
      */
-    public static function getPositionManageData($condition){
+    public static function getPositionManageData($condition)
+    {
         $store = $condition['store'] ?: '义乌仓';
         $status = $condition['status'];
-        if(!is_array($status)) $status = [$status];
+        if (!is_array($status)) $status = [$status];
         $status = implode("','", $status);
         $sql = "SELECT StoreName,sl.LocationName,gs.sku,skuName,goodsSkuStatus,cs.Number,g.devDate,
                         sl.NID,sl.storeID,gs.NID as goodsSkuNid
@@ -752,10 +782,11 @@ class ApiWarehouseTools
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
 
-    public static function positionSkuDelete($condition){
+    public static function positionSkuDelete($condition)
+    {
         $data = self::getPositionManageData($condition);
         $msg = [];
-        foreach ($data as $v){
+        foreach ($data as $v) {
             $tran = Yii::$app->py_db->beginTransaction();
             try {
 
@@ -782,7 +813,7 @@ class ApiWarehouseTools
                 ];
                 $r4 = Yii::$app->py_db->createCommand()->insert('B_GoodsSKULocationLog', $par)->execute();
                 $tran->commit();
-            }catch (\Exception $e){
+            } catch (\Exception $e) {
                 $tran->rollback();
                 $msg[] = $e->getMessage();
             }
