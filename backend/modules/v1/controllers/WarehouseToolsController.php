@@ -415,7 +415,8 @@ class WarehouseToolsController extends AdminController
 
     /////////////////////////////////////仓位明细/////////////////////////////////////////////////////
 
-    /** 仓位明细
+    /**
+     * 仓位明细
      * actionPositionDetail
      * Date: 2021-02-24 9:01
      * Author: henry
@@ -442,7 +443,8 @@ class WarehouseToolsController extends AdminController
         ]);
     }
 
-    /** 仓位明细-- 主表导出
+    /**
+     * 仓位明细-- 主表导出
      * actionPositionDetail
      * Date: 2021-02-23 13:33
      * Author: henry
@@ -457,7 +459,8 @@ class WarehouseToolsController extends AdminController
 
     }
 
-    /** 仓位明细-- 查看明细
+    /**
+     * 仓位明细-- 查看明细
      * actionPositionDetail
      * Date: 2021-02-23 13:33
      * Author: henry
@@ -467,17 +470,8 @@ class WarehouseToolsController extends AdminController
     public function actionPositionDetailView()
     {
         $cond = Yii::$app->request->post('condition', []);
-        $store = $cond['store'] ?: '义乌仓';
-        $location = $cond['location'];
-
-        $sql = "SELECT gs.sku,skuName,goodsskustatus,cs.number,g.devDate
-                FROM [dbo].[B_StoreLocation](nolock) sl
-                LEFT JOIN B_Store(nolock) s ON s.NID=sl.StoreID
-                LEFT JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID
-                LEFT JOIN B_Goods(nolock) g ON g.NID=gs.goodsID
-                LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID 
-                WHERE s.StoreName='{$store}' AND sl.LocationName='{$location}'";
-        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $cond['type'] = 'view';
+        $data = ApiWarehouseTools::getPositionDetailsView($cond);
         return  new ArrayDataProvider([
             'allModels' => $data,
             'sort' => [
@@ -492,7 +486,8 @@ class WarehouseToolsController extends AdminController
         ]);
 
     }
-    /** 仓位明细-- 明细导出
+    /**
+     * 仓位明细-- 明细导出
      * actionPositionDetail
      * Date: 2021-02-23 13:33
      * Author: henry
@@ -502,8 +497,39 @@ class WarehouseToolsController extends AdminController
     public function actionPositionDetailViewExport()
     {
         $cond = Yii::$app->request->post('condition', []);
+        $cond['type'] = 'export';
         $data = ApiWarehouseTools::getPositionDetailsView($cond);
-        $title = ['仓库', '仓位', 'SKU个数', 'SKU','SKU名称','SKU状态','库存数量','开发日期'];
+        $title = ['仓库', '仓位', 'SKU个数', 'SKU','SKU名称','SKU状态','库存数量','开发日期','是否有采购单'];
+        ExportTools::toExcelOrCsv('positionDetailView', $data, 'Xlsx', $title);
+
+    }
+
+    /**
+     * 仓位明细-- 明细导出(按是否有采购单 分表)
+     * actionPositionDetail
+     * Date: 2021-02-23 13:33
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionPositionDetailViewShitsExport()
+    {
+        $cond = Yii::$app->request->post('condition', []);
+        $cond['type'] = 'export';
+        $filterNum = $cond['filterNum'] ?? 0;
+        $data = ApiWarehouseTools::getPositionDetailsView($cond);
+        $includedData = $notIncludedData = [];
+        foreach ($data as $k => $v){
+            if($filterNum && $k < $filterNum){
+                continue;
+            }
+            if($v['hasPurchaseOrder'] == '是'){
+                $includedData[] = $v;
+            }else{
+                $notIncludedData[] = $v;
+            }
+        }
+        $title = ['仓库', '仓位', 'SKU个数', 'SKU','SKU名称','SKU状态','库存数量','开发日期','是否有采购单'];
         ExportTools::toExcelOrCsv('positionDetailView', $data, 'Xlsx', $title);
 
     }
