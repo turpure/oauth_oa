@@ -350,9 +350,14 @@ class ApiWarehouseTools
         $sku = $condition['sku'];
         // 只判断导入的SKU
         $checkSku = OaCleanOffline::find()->where(['sku' => $sku, 'skuType' => '导入'])->one();
-        $checkSkuAgain = OaCleanOffline::find()->where(['sku' => $sku, 'skuType' => '扫描'])->one();
-        if(empty($checkSku) && empty($checkSkuAgain)) {
+        if(empty($checkSku)) {
+            $checkSkuAgain = OaCleanOffline::find()->where(['sku' => $sku, 'skuType' => '扫描'])->one();
             $oaCleanOffline = new OaCleanOffline();
+
+            if (!empty($checkSkuAgain)) {
+                throw new Exception('没有找到相关SKU!');
+            }
+
             $username = Yii::$app->user->identity->username;
             $oaCleanOffline->setAttributes(
                 ['sku' =>$sku,'checkStatus'=>'未找到', 'creator' => $username, 'skuType' => '扫描']
@@ -363,6 +368,9 @@ class ApiWarehouseTools
             else {
                 throw new Exception('没有找到相关SKU!');
             }
+
+
+
         }
         else {
             $checkSku->setAttributes(['checkStatus' => '已找到']);
