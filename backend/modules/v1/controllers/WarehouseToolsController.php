@@ -565,7 +565,7 @@ class WarehouseToolsController extends AdminController
         return new ArrayDataProvider([
             'allModels' => $data,
             'sort' => [
-                'attributes' => ['sku', 'skuName', 'goodsskustatus', 'number', 'devDate'],
+                'attributes' => ['sku', 'skuName', 'goodsskustatus', 'number', 'devDate', 'hasPurchaseOrder'],
                 'defaultOrder' => [
                     'number' => SORT_DESC,
                 ]
