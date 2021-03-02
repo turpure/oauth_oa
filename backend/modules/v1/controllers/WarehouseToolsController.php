@@ -606,9 +606,9 @@ class WarehouseToolsController extends AdminController
         $data = ApiWarehouseTools::getPositionDetailsView($cond);
         $includedData = $notIncludedData = [];
         foreach ($data as $k => $v) {
-            if ($v['hasPurchaseOrder'] == '是') {
+            if ($v['number'] > 0 && $v['hasPurchaseOrder'] == '是') {
                 $includedData[] = $v;
-            } elseif ($v['hasPurchaseOrder'] == '否') {
+            } elseif ($v['number'] > 0 && $v['hasPurchaseOrder'] == '否') {
                 $notIncludedData[] = $v;
             }
         }
