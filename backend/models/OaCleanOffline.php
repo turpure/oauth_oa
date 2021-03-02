@@ -11,6 +11,7 @@ use yii\db\Expression;
  *
  * @property int $id
  * @property string $sku
+ * @property string $skuType 导入，扫描
  * @property string $checkStatus 初始化,已找到,未找到
  * @property string $creator 创建人
  * @property string $createdTime
@@ -49,7 +50,7 @@ class OaCleanOffline extends \yii\db\ActiveRecord
             [['createdTime', 'updatedTime'], 'safe'],
             [['sku'], 'string', 'max' => 500],
             [['checkStatus'], 'string', 'max' => 10],
-            [['creator'], 'string', 'max' => 20],
+            [['creator', 'skuType'], 'string', 'max' => 20],
         ];
     }
 
@@ -61,6 +62,7 @@ class OaCleanOffline extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'sku' => 'Sku',
+            'skuType' => 'Sku Type',
             'checkStatus' => 'Check Status',
             'creator' => 'Creator',
             'createdTime' => 'Created Time',

@@ -225,6 +225,7 @@ class ApiWarehouseTools
             for ($i = 2; $i <= $highestRow; $i++) {
                 $data['sku'] = $sheet->getCell("A" . $i)->getValue();
                 $data['creator'] = $userName;
+                $data['skuType'] = '导入';
                 $cleanOffline = new OaCleanOffline();
                 $cleanOffline->setAttributes($data);
                 $cleanOffline->save();
@@ -259,7 +260,8 @@ class ApiWarehouseTools
     public static function cleanOfflineExportUnPicked()
     {
 
-        $ret =OaCleanOffline::find()->select('sku')->where(['checkStatus'=> '初始化'])->asArray()->all();
+        // 未扫描到，且SKU状态是导入
+        $ret =OaCleanOffline::find()->select('sku')->where(['checkStatus'=> '初始化','skuType' =>'导入'])->asArray()->all();
         $sku = ArrayHelper::getColumn($ret,'sku');
         $sku = implode("','", $sku);
         $sku = "'" . $sku . "'";
@@ -290,7 +292,8 @@ class ApiWarehouseTools
 
     public static function cleanOfflineImportExportWrongPicked()
     {
-        $skuRet =OaCleanOffline::find()->select('sku')->where(['checkStatus'=> '未找到'])->asArray()->all();
+        // 未找到，且是扫描
+        $skuRet =OaCleanOffline::find()->select('sku')->where(['checkStatus'=> '未找到', 'skuType' => '扫描'])->asArray()->all();
         $sku = ArrayHelper::getColumn($skuRet,'sku');
         $sku = implode("','", $sku);
         $sku = "'" . $sku . "'";
@@ -345,12 +348,13 @@ class ApiWarehouseTools
             throw new Exception('parameter of sku is required');
         }
         $sku = $condition['sku'];
-        $checkSku = OaCleanOffline::find()->where(['sku' => $sku])->one();
+        // 只判断导入的SKU
+        $checkSku = OaCleanOffline::find()->where(['sku' => $sku, 'skuType' => '导入'])->one();
         if(empty($checkSku)) {
             $oaCleanOffline = new OaCleanOffline();
             $username = Yii::$app->user->identity->username;
             $oaCleanOffline->setAttributes(
-                ['sku' =>$sku,'checkStatus'=>'未找到', 'creator' => $username]
+                ['sku' =>$sku,'checkStatus'=>'未找到', 'creator' => $username, 'skuType' => '扫描']
             );
             if(!$oaCleanOffline->save()) {
                 throw new Exception('fail to add sku!');
