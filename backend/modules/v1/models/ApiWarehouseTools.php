@@ -226,6 +226,7 @@ class ApiWarehouseTools
             for ($i = 2; $i <= $highestRow; $i++) {
                 $data['sku'] = $sheet->getCell("A" . $i)->getValue();
                 $data['creator'] = $userName;
+                $data['skuType'] = '导入';
                 $cleanOffline = new OaCleanOffline();
                 $cleanOffline->setAttributes($data);
                 $cleanOffline->save();
@@ -260,38 +261,8 @@ class ApiWarehouseTools
     public static function cleanOfflineExportUnPicked()
     {
 
-        $ret =OaCleanOffline::find()->select('sku')->where(['checkStatus'=> '初始化'])->asArray()->all();
-        $sku = ArrayHelper::getColumn($ret,'sku');
-        $sku = implode("','", $sku);
-        $sku = "'" . $sku . "'";
-
-        $sql = "SELECT
-                gs.sku,
-                gs.SkuName,
-                kc.Number, 
-                s.storeName,
-                bsl.LocationName
-                FROM
-                b_goodsSKU (nolock) gs
-                LEFT JOIN kc_currentstock (nolock) kc ON gs.nid = kc.goodsskuid
-                LEFT JOIN b_store (nolock) s ON s.nid = kc.storeid
-                LEFT JOIN B_GoodsSKULocation (nolock) bgs ON kc.GoodsSKUID = bgs.GoodsSKUID
-                AND isNull(bgs.StoreID, 0) = isNull(kc.StoreID, 0)
-                LEFT JOIN B_StoreLocation (nolock) bsl ON bsl.StoreID = kc.storeid
-                AND bsl.nid = bgs.LocationID
-                WHERE 
-                isnull(s.used, 0) = 0
-                and gs.sku in ($sku)";
-
-        $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
-        $title = ['SKU', 'SKU名称', '库存数量', '义乌仓','仓位'];
-        return ['data'=>$ret,'name' => 'un-picked-sku','title' => $title];
-
-    }
-
-    public static function cleanOfflineImportExportWrongPicked()
-    {
-        $skuRet =OaCleanOffline::find()->select('sku')->where(['checkStatus'=> '未找到'])->asArray()->all();
+        // 未扫描到，且SKU状态是导入
+        $skuRet =OaCleanOffline::find()->select('sku')->where(['checkStatus'=> '初始化','skuType' =>'导入'])->asArray()->all();
         $sku = ArrayHelper::getColumn($skuRet,'sku');
         $sku = implode("','", $sku);
         $sku = "'" . $sku . "'";
@@ -315,18 +286,61 @@ class ApiWarehouseTools
                 and gs.sku in ($sku)";
 
         $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
-        if(empty($ret)) {
-            $out = [];
-            foreach ($skuRet as $su) {
+        $skuFound = ArrayHelper::getColumn($ret,'sku');
+        foreach ($skuRet as $su) {
+            if(!in_array($su['sku'], $skuFound,true)) {
                 $row = [];
-                $row['SKU'] = $su['sku'];
-                $row['SKU名称'] = '';
-                $row['库存数量'] = '';
-                $row['义乌仓'] = '';
-                $row['仓位'] = '';
-                $out[] = $row;
+                $row['sku'] = $su['sku'];
+                $row['SkuName'] = '';
+                $row['Number'] = '';
+                $row['storeName'] = '';
+                $row['LocationName'] = '';
+                $ret[] = $row;
             }
-            $ret = $out;
+        }
+        $title = ['SKU', 'SKU名称', '库存数量', '义乌仓','仓位'];
+        return ['data'=>$ret,'name' => 'un-picked-sku','title' => $title];
+
+    }
+
+    public static function cleanOfflineImportExportWrongPicked()
+    {
+        // 未找到，且是扫描
+        $skuRet =OaCleanOffline::find()->select('sku')->where(['checkStatus'=> '未找到', 'skuType' => '扫描'])->asArray()->all();
+        $sku = ArrayHelper::getColumn($skuRet,'sku');
+        $sku = implode("','", $sku);
+        $sku = "'" . $sku . "'";
+
+        $sql = "SELECT
+                gs.sku,
+                gs.SkuName,
+                kc.Number, 
+                s.storeName,
+                bsl.LocationName
+                FROM
+                b_goodsSKU (nolock) gs
+                LEFT JOIN kc_currentstock (nolock) kc ON gs.nid = kc.goodsskuid
+                LEFT JOIN b_store (nolock) s ON s.nid = kc.storeid
+                LEFT JOIN B_GoodsSKULocation (nolock) bgs ON kc.GoodsSKUID = bgs.GoodsSKUID
+                AND isNull(bgs.StoreID, 0) = isNull(kc.StoreID, 0)
+                LEFT JOIN B_StoreLocation (nolock) bsl ON bsl.StoreID = kc.storeid
+                AND bsl.nid = bgs.LocationID
+                WHERE 
+                isnull(s.used, 0) = 0
+                and gs.sku in ($sku)";
+
+        $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $skuFound = ArrayHelper::getColumn($ret,'sku');
+        foreach ($skuRet as $su) {
+            if(!in_array($su['sku'], $skuFound,true)) {
+                $row = [];
+                $row['sku'] = $su['sku'];
+                $row['SkuName'] = '';
+                $row['Number'] = '';
+                $row['storeName'] = '';
+                $row['LocationName'] = '';
+                $ret[] = $row;
+            }
         }
         $title = ['SKU', 'SKU名称', '库存数量', '义乌仓','仓位'];
         return ['data'=>$ret,'name' => 'wrong-picked-sku','title' => $title];
@@ -346,12 +360,19 @@ class ApiWarehouseTools
             throw new Exception('parameter of sku is required');
         }
         $sku = $condition['sku'];
-        $checkSku = OaCleanOffline::find()->where(['sku' => $sku])->one();
+        // 只判断导入的SKU
+        $checkSku = OaCleanOffline::find()->where(['sku' => $sku, 'skuType' => '导入'])->one();
         if(empty($checkSku)) {
+            $checkSkuAgain = OaCleanOffline::find()->where(['sku' => $sku, 'skuType' => '扫描'])->one();
             $oaCleanOffline = new OaCleanOffline();
+
+            if (!empty($checkSkuAgain)) {
+                throw new Exception('没有找到相关SKU!');
+            }
+
             $username = Yii::$app->user->identity->username;
             $oaCleanOffline->setAttributes(
-                ['sku' =>$sku,'checkStatus'=>'未找到', 'creator' => $username]
+                ['sku' =>$sku,'checkStatus'=>'未找到', 'creator' => $username, 'skuType' => '扫描']
             );
             if(!$oaCleanOffline->save()) {
                 throw new Exception('fail to add sku!');
@@ -359,6 +380,9 @@ class ApiWarehouseTools
             else {
                 throw new Exception('没有找到相关SKU!');
             }
+
+
+
         }
         else {
             $checkSku->setAttributes(['checkStatus' => '已找到']);
