@@ -161,7 +161,7 @@ class ApiWarehouseTools
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
         $fieldsFilter = ['like' =>['sku'], 'equal' => ['checkStatus']];
         $timeFilter = ['createdTime', 'updatedTime'];
-        $query = OaCleanOffline::find()->where(['skuType' => '导入']);
+        $query = OaCleanOffline::find();
         $query = Helper::generateFilter($query,$fieldsFilter,$condition);
         $query = Helper::timeFilter($query,$timeFilter,$condition);
         $query->orderBy('id DESC');
@@ -304,8 +304,8 @@ class ApiWarehouseTools
 
     public static function cleanOfflineImportExportWrongPicked()
     {
-        // 未找到，且是扫描
-        $skuRet =OaCleanOffline::find()->select('sku')->where(['checkStatus'=> '未找到', 'skuType' => '扫描'])->asArray()->all();
+        // 拣错货，且是扫描
+        $skuRet =OaCleanOffline::find()->select('sku')->where(['checkStatus'=> '拣错货', 'skuType' => '扫描'])->asArray()->all();
         $sku = ArrayHelper::getColumn($skuRet,'sku');
         $sku = implode("','", $sku);
         $sku = "'" . $sku . "'";
@@ -371,7 +371,7 @@ class ApiWarehouseTools
 
             $username = Yii::$app->user->identity->username;
             $oaCleanOffline->setAttributes(
-                ['sku' =>$sku,'checkStatus'=>'未找到', 'creator' => $username, 'skuType' => '扫描']
+                ['sku' =>$sku,'checkStatus'=>'拣错货', 'creator' => $username, 'skuType' => '扫描']
             );
             if(!$oaCleanOffline->save()) {
                 throw new Exception('fail to add sku!');
