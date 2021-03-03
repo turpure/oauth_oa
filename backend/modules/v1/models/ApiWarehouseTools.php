@@ -161,7 +161,7 @@ class ApiWarehouseTools
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
         $fieldsFilter = ['like' =>['sku'], 'equal' => ['checkStatus']];
         $timeFilter = ['createdTime', 'updatedTime'];
-        $query = OaCleanOffline::find();
+        $query = OaCleanOffline::find()->where(['skuType' => '导入']);
         $query = Helper::generateFilter($query,$fieldsFilter,$condition);
         $query = Helper::timeFilter($query,$timeFilter,$condition);
         $query->orderBy('id DESC');
