@@ -7,6 +7,7 @@
 
 namespace backend\modules\v1\models;
 
+use backend\modules\v1\utils\Handler;
 use Yii;
 use yii\data\ArrayDataProvider;
 use yii\data\Sort;
@@ -327,6 +328,55 @@ class ApiDataCenter
             'skuLineAvg' => $skuLineAvg,
         ];
         return $result;
+    }
+
+    /**
+     * 获取库存周转数据
+     * @param $condition
+     * Date: 2021-03-03 16:43
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    public static function getStockTurnoverInfo($condition){
+        $par = [
+            'username' => isset($condition['member']) ? $condition['member'] : [],
+            'department' => isset($condition['depart']) ? $condition['depart'] : []
+        ];
+        $params = [
+            'cate' => implode(',', $condition['cate'] ?? []),
+            'subCate' => implode(',', $condition['cate'] ?? []),
+            'goodsStatus' => implode(',', $condition['goodsStatus'] ?? []),
+            'storeName' => implode(',', $condition['storeName'] ?? []),
+            'lastPurchaseDateBegin' => $condition['lastPurchaseDate'][0] ?? '',
+            'lastPurchaseDateEnd' => $condition['lastPurchaseDate'][1] ?? '',
+            'devDateBegin' => $condition['devDate'][0] ?? '',
+            'devDateEnd' => $condition['devDate'][1] ?? '',
+            'unsoldDays' => $condition['unsoldDays'] ?? 0,
+            'turnoverDays' => $condition['turnoverDays'] ?? 0,
+        ];
+        if($condition['dataType'] == 'developer'){
+            $params['SalerName'] = implode(',', $condition['member'] ?? []);
+            $params['suffix'] = '';
+            $params['suffix'] = '';
+            $sql = "EXEC oauth_goodsStockTurnover 0,'{$params['goodsStatus']}','{$params['cate']}','{$params['subCate']}',
+            '{$params['lastPurchaseDateBegin']}','{$params['lastPurchaseDateEnd']}','{$params['devDateBegin']}',
+            '{$params['devDateEnd']}','{$params['unsoldDays']}','{$params['turnoverDays']}',
+            '{$params['SalerName']}','{$params['storeName']}';";
+            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+            return $data;
+        }else{
+            $params['SalerName'] = '';
+            $paramsFilter = Handler::paramsHandler($par);
+            $params['suffix'] = $paramsFilter['store'] ? implode(',', $paramsFilter['store']) : '';
+            $sql = "EXEC oauth_goodsStockTurnover 0,'{$params['goodsStatus']}','{$params['cate']}','{$params['subCate']}',
+            
+            '{$params['lastPurchaseDateBegin']}','{$params['lastPurchaseDateEnd']}','{$params['devDateBegin']}',
+            '{$params['devDateEnd']}','{$params['unsoldDays']}','{$params['turnoverDays']}',
+            '','{$params['storeName']}','{$params['suffix']}';";
+            $data = Yii::$app->db->createCommand($sql)->queryAll();
+            return $data;
+        }
     }
 
 }

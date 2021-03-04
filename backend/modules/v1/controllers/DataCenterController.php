@@ -422,8 +422,42 @@ class DataCenterController extends AdminController
         }
     }
 
-                    //////////其他//////////
+
+
+                    //////////产品数据//////////
+
+    /**
+     * 库存周转
+     * Date: 2021-03-03 16:22
+     * Author: henry
+     * @return ArrayDataProvider
+     * @throws \yii\db\Exception
+     */
     public function actionStockTurnover (){
+        $page = Yii::$app->request->get('page', 1);
+        $condition = Yii::$app->request->post('condition', []);
+        $pageSize = $condition['pageSize'] ?? 20;
+        $data = ApiDataCenter::getStockTurnoverInfo($condition);
+        if($condition['dataType'] == 'developer'){
+            $attributes = ['goodsCode','StoreName','GoodsName','SalerName','Season','GoodsStatus','CreateDate',
+                'Number','Money','cate','subCate','lastPurchaseDate', 'unsoldDays', 'soldNum', 'turnoverDays'];
+        }else{
+            $attributes = ['goodsCode','StoreName','GoodsName','SalerName','Season','GoodsStatus','CreateDate',
+                'Number','Money','cate','subCate','lastPurchaseDate', 'unsoldDays', 'soldNum', 'turnoverDays'];
+        }
+        return new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => $attributes,
+                'defaultOrder' => [
+                    'turnoverDays' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'page' => $page - 1,
+                'pageSize' => $pageSize,
+            ],
+        ]);
 
     }
     public function actionPriceProtection (){
@@ -455,7 +489,16 @@ class DataCenterController extends AdminController
         $provider = new ActiveDataProvider([
             'query' => $query,
             'db' => \Yii::$app->py_db,
+            'sort' => [
+                'attributes' => ['GoodsCodeStat', 'NotInStore','Purchaser','SalerName','Season','SellCount1',
+                    'SellCount2','SellCount3','StockDays','delay_days','factStockNum','goodscode','goodsname',
+                    'hopeUseNum','num','sellDays'],
+                'defaultOrder' => [
+                    'sellDays' => SORT_DESC,
+                ]
+            ],
             'pagination' => [
+                'page' => $page - 1,
                 'pageSize' => $pageSize
             ]
         ]);
