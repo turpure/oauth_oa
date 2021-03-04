@@ -694,6 +694,7 @@ class DataCenterController extends AdminController
         $mappingEbayName = isset($cond['mappingEbayName']) ? $cond['mappingEbayName'] : '';
         $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
         $usRate = (float)ApiUkFic::getRateUkOrUs('USD');
+        $audRate = (float)ApiUkFic::getRateUkOrUs('AUD');
         //var_dump($usRate);exit;
         $sql = "SELECT * FROM (
                 SELECT DownTime,PayPalEamil,t.mappingEbayName,
@@ -707,8 +708,11 @@ class DataCenterController extends AdminController
                 s.memo,BatchId,isnull(s.paypalStatus,'使用中') as paypalStatus ,
                 CASE WHEN charindex('英国',s.memo) > 0 and GBP >= 400 THEN '是' 
                      WHEN charindex('超级浏览器',s.memo) > 0 and GBP >= 400 THEN '是' 
-                     WHEN charindex('集中付款',s.memo) > 0 and TotalRMB/{$usRate} >= 1600 THEN '是' 
-                     WHEN charindex('英国',s.memo) = 0 and charindex('超级浏览器',s.memo) = 0 and charindex('集中付款',s.memo) = 0 and TotalRMB/{$usRate} >= 2700 THEN '是' 
+                     WHEN charindex('集中付款',s.memo) > 0 and TotalRMB/{$usRate} >= 2000 THEN '是' 
+                     WHEN charindex('国内',s.memo) > 0 and TotalRMB/{$usRate} >= 2700 THEN '是' 
+                     WHEN charindex('澳洲',s.memo) > 0 and TotalRMB/{$audRate} >= 2700 THEN '是' 
+                     WHEN charindex('180天后解冻-国外',s.memo) > 0 and GBP >= 400 THEN '是' 
+                     WHEN charindex('180天后解冻-国内',s.memo) > 0 and USD >= 400 THEN '是' 
                 ELSE '否' END  AS isWithdraw
                 FROM Y_PayPalBalance b
                 LEFT JOIN Y_PayPalStatus s ON b.PayPalEamil=s.accountName 

@@ -12,7 +12,7 @@ use yii\db\Expression;
  * @property int $id
  * @property string $sku
  * @property string $skuType 导入，扫描
- * @property string $checkStatus 初始化,已找到,未找到
+ * @property string $checkStatus 初始化,已找到,拣错货
  * @property string $creator 创建人
  * @property string $createdTime
  * @property string $updatedTime
