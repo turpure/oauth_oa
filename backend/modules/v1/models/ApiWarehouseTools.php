@@ -758,13 +758,14 @@ class ApiWarehouseTools
         $status = $condition['status'];
         if (!is_array($status)) $status = [$status];
         $status = implode("','", $status);
-        $sql = "SELECT StoreName,sl.LocationName,gs.sku,skuName,goodsSkuStatus,cs.Number,g.devDate,
-                        sl.NID,sl.storeID,gs.NID as goodsSkuNid
-                FROM [dbo].[B_StoreLocation](nolock) sl
+        $sql = "SELECT StoreName,LocationName,gs.sku,skuName,goodsSkuStatus,cs.Number, g.devDate,
+                        sl.locationID,sl.storeID,gs.NID as goodsSkuNid
+                FROM [dbo].[B_GoodsSKU](nolock) gs
+                LEFT JOIN KC_CurrentStock(nolock) cs ON cs.GoodsSKUID = gs.NID 
+				LEFT JOIN B_GoodsSKULocation(nolock) sl ON sl.goodsSkuID=cs.goodsSkuID AND isNull(sl.StoreID, 0) = isNull(cs.StoreID, 0)
+                LEFT JOIN B_StoreLocation(nolock) bsl ON bsl.NID=sl.locationID
                 LEFT JOIN B_Store(nolock) s ON s.NID=sl.StoreID
-                LEFT JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID
                 LEFT JOIN B_Goods(nolock) g ON g.NID=gs.goodsID
-                LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID  
                 WHERE s.StoreName='{$store}' AND goodsSkuStatus IN ('{$status}') AND ISNULL(cs.Number,0)=0 
                 -- ORDER BY devDate
                 ";
@@ -791,7 +792,7 @@ class ApiWarehouseTools
                 // 插入操作日志
                 $r1 = Yii::$app->py_db->createCommand()->insert('S_Log', $params)->execute();
                 $r2 = Yii::$app->py_db->createCommand()->insert('S_Logbak', $params)->execute();
-                $r3 = Yii::$app->py_db->createCommand("EXEC P_KC_DestoryBindingGoods {$v['NID']}, '{$v['goodsSkuNid']}'")->execute();
+                $r3 = Yii::$app->py_db->createCommand("EXEC P_KC_DestoryBindingGoods {$v['LocationID']}, '{$v['goodsSkuNid']}'")->execute();
                 $par = [
                     'person' => Yii::$app->user->identity->username,
                     'changeTime' => date('Y-m-d H:i:s'),
