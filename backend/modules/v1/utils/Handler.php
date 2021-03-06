@@ -236,9 +236,9 @@ class Handler
      * @brief 处理销售员和账号关联
      * @param $queryParams
      * @throws \yii\db\Exception
-     * @return mixed
+     * @return mixed | array
      */
-    public static function paramsParse($queryParams)
+    public static function paramsParse($queryParams = [])
     {
         $ret = self::userFilter($queryParams);
         $data = [];

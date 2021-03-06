@@ -340,10 +340,6 @@ class ApiDataCenter
      * @throws \yii\db\Exception
      */
     public static function getStockTurnoverInfo($condition){
-        $par = [
-            'username' => isset($condition['member']) ? $condition['member'] : [],
-            'department' => isset($condition['depart']) ? $condition['depart'] : []
-        ];
         $params = [
             'cate' => implode(',', $condition['cate'] ?? []),
             'subCate' => implode(',', $condition['cate'] ?? []),
@@ -363,9 +359,11 @@ class ApiDataCenter
             '{$params['lastPurchaseDateBegin']}','{$params['lastPurchaseDateEnd']}','{$params['devDateBegin']}',
             '{$params['devDateEnd']}','{$params['unsoldDays']}','{$params['turnoverDays']}',
             '{$params['SalerName']}','{$params['storeName']}';";
-            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-            return $data;
         }else{
+            $par = [
+                'username' => isset($condition['member']) ? $condition['member'] : [],
+                'department' => isset($condition['depart']) ? $condition['depart'] : []
+            ];
             $params['SalerName'] = '';
             $suffixFilter = Handler::paramsParse($par);
 
@@ -374,30 +372,36 @@ class ApiDataCenter
             '{$params['lastPurchaseDateBegin']}','{$params['lastPurchaseDateEnd']}','{$params['devDateBegin']}',
             '{$params['devDateEnd']}','{$params['unsoldDays']}','{$params['turnoverDays']}',
             '','{$params['storeName']}','{$params['suffix']}';";
-            //$data = Yii::$app->py_db->createCommand($sql)->queryAll();
-            $data = [
-
-                ['goodsCode' => '2C0313','StoreName' => '义乌仓','GoodsName' => '羊毛空姐帽','SalerName' => '毕郑强','Season' => '','GoodsStatus' => '浮动款','CreateDate' => '8/8/2017','Number' => '64.0000','Money' => '661.2183','cate' => '饰品配件','subCate' => '帽子','lastPurchaseDate' => '2/27/2021 13:12:57.000','soldNum' => '50','suffix' => 'WISE91-Vivichaner','personDutySoldNum' => '3','personDutyCostPrice' => '28.3509','dutySoldNum' => '6','turnoverDays' => '38'],
-                ['goodsCode' => '2C0313','StoreName' => '义乌仓','GoodsName' => '羊毛空姐帽','SalerName' => '毕郑强','Season' => '','GoodsStatus' => '浮动款','CreateDate' => '8/8/2017','Number' => '64.0000','Money' => '661.2183','cate' => '饰品配件','subCate' => '帽子','lastPurchaseDate' => '2/27/2021 13:12:57.000','soldNum' => '50','suffix' => 'WISF3-floorhong','personDutySoldNum' => '3','personDutyCostPrice' => '30.9892','dutySoldNum' => '6','turnoverDays' => '38'],
-                ['goodsCode' => '2C0329','StoreName' => '义乌仓','GoodsName' => '男朋克毛线帽','SalerName' => '宋现中','Season' => '秋冬','GoodsStatus' => '旺款','CreateDate' => '8/11/2017','Number' => '41.0000','Money' => '196.9219','cate' => '饰品配件','subCate' => '帽子','lastPurchaseDate' => '1/5/2021 11:21:44.000','soldNum' => '97','suffix' => 'WISF3-floorhong','personDutySoldNum' => '1','personDutyCostPrice' => '4.8003','dutySoldNum' => '28','turnoverDays' => '13'],
-                ['goodsCode' => '2C0329','StoreName' => '义乌仓','GoodsName' => '男朋克毛线帽','SalerName' => '宋现中','Season' => '秋冬','GoodsStatus' => '旺款','CreateDate' => '8/11/2017','Number' => '41.0000','Money' => '196.9219','cate' => '饰品配件','subCate' => '帽子','lastPurchaseDate' => '1/5/2021 11:21:44.000','soldNum' => '97','suffix' => 'WISE44-wendeewent','personDutySoldNum' => '25','personDutyCostPrice' => '120.1219','dutySoldNum' => '28','turnoverDays' => '13'],
-                ['goodsCode' => '2C0329','StoreName' => '义乌仓','GoodsName' => '男朋克毛线帽','SalerName' => '宋现中','Season' => '秋冬','GoodsStatus' => '旺款','CreateDate' => '8/11/2017','Number' => '41.0000','Money' => '196.9219','cate' => '饰品配件','subCate' => '帽子','lastPurchaseDate' => '1/5/2021 11:21:44.000','soldNum' => '97','suffix' => 'WISE149-beforedawnn','personDutySoldNum' => '2','personDutyCostPrice' => '9.6000','dutySoldNum' => '28','turnoverDays' => '13'],
-
-            ];
-
-
-
-            //$dataSalers = elper::arrayGroupBy($data, 'goodsCode');
-            $dataSalers = [];
-            //获取
-            foreach ($data as &$v){
-                $v['saler'] = self::getUsernameBySuffix($v['suffix']);
-            }
-            return $data;
         }
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        return $data;
     }
-    public static function getUsernameBySuffix($suffix){
-        $sql = "";
+
+    /**
+     * 开发库存周转 明细
+     * @param $condition
+     * Date: 2021-03-06 10:08
+     * Author: henry
+     * @return mixed
+     * @throws \yii\db\Exception
+     */
+    public  static function getDeveloperStockTurnoverInfo($condition){
+        //获取所有销售员--账号 信息
+        $suffixFilter = Handler::paramsParse();
+        $params = [
+            'goodsCode' => $condition['goodsCode'] ?? '',
+            'storeName' => $condition['storeName'] ?? '',
+            'lastPurchaseDate' => $condition['lastPurchaseDate'] ?? '',
+            'suffix' => implode(',', $suffixFilter),
+        ];
+        $sql = "EXEC oauth_salesData30DaysBeforeLastPurchaseDate '{$params['goodsCode']}','{$params['storeName']}',
+                '{$params['lastPurchaseDate']}','{$params['suffix']}'";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        return $data;
+
     }
+
+
+
 
 }
