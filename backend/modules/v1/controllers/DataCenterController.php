@@ -458,6 +458,25 @@ class DataCenterController extends AdminController
     }
 
     /**
+     * 销售库存周转下载
+     * Date: 2021-03-06 13:10
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     * @throws \yii\db\Exception
+     */
+    public function actionSalerStockTurnoverExport()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $condition['dataType'] = 'saler';
+        $data = ApiDataCenter::getStockTurnoverInfo($condition);
+        $title = ['商品编码', '仓库', '商品名称', '开发员', '季节', '商品状态', '开发时间',
+            '库存数量', '库存金额', '类目', '子类目', '销售员', '最后采购时间', '最近30天销量', '个人销量',
+            '责任销量', '个人责任销量', '个人责任成本', '库存周转', '个人责任占比'];
+        ExportTools::toExcelOrCsv('salerStockTurnover', $data, 'Xlsx', $title);
+    }
+
+    /**
      * 开发库存周转
      * Date: 2021-03-03 16:22
      * Author: henry
@@ -488,6 +507,23 @@ class DataCenterController extends AdminController
 
     }
 
+    /**
+     * 开发库存周转下载
+     * Date: 2021-03-06 13:10
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     * @throws \yii\db\Exception
+     */
+    public function actionDeveloperStockTurnoverExport()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $condition['dataType'] = 'developer';
+        $data = ApiDataCenter::getStockTurnoverInfo($condition);
+        $title = ['商品编码', '仓库', '商品名称', '开发员', '季节', '商品状态', '开发时间',
+            '库存数量', '库存金额', '类目', '子类目', '最后采购时间', '未售天数', '最近30天销量','库存周转'];
+        ExportTools::toExcelOrCsv('developerStockTurnover', $data, 'Xlsx', $title);
+    }
 
     /**
      * 开发库存周转销售明细
@@ -517,36 +553,69 @@ class DataCenterController extends AdminController
 
     }
 
+    /**
+     * 库龄表
+     * Date: 2021-03-06 16:52
+     * Author: henry
+     * @return ArrayDataProvider
+     */
     public function actionSkuStorageAge()
     {
         $condition = Yii::$app->request->post('condition', []);
-//        $data = ApiDataCenter::getDeveloperStockTurnoverInfo($condition);
         //获取所有销售员--账号 信息
-        $suffixFilter = Handler::paramsParse();
         $params = [
-            'salerName' => implode(',', $condition['salerName'] ?? []),
-            'storeName' => implode(',', $condition['storeName'] ?? []),
+            'salerName' => implode(',', $condition['salerName'] ?: []),
+            'storeName' => implode(',', $condition['storeName'] ?: ['义乌仓']),
             'skuStatus' => implode(',', $condition['skuStatus'] ?? []),
             'cate' => implode(',', $condition['cate'] ?? []),
-            'subCate' => implode(',', $condition['cate'] ?? []),
-            'maxStorageAge' => $condition['maxStorageAge'] ?? 0,
+            'subCate' => implode(',', $condition['subCate'] ?? []),
+            'maxStorageAge' => $condition['maxStorageAge'] ?: 0,
         ];
-        $sql = "EXEC oauth_skuStorageAge '{$params['salerName']}','{$params['storeName']}','{$params['skuStatus']}'
+        $sql = "EXEC oauth_skuStorageAge '{$params['salerName']}','{$params['storeName']}','{$params['skuStatus']}',
                 '{$params['cate']}','{$params['subCate']}','{$params['maxStorageAge']}'";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         return new ArrayDataProvider([
             'allModels' => $data,
             'sort' => [
-                'attributes' => ['goodsCode', 'StoreName', 'GoodsName', 'SalerName', 'Season', 'GoodsStatus', 'CreateDate',
-                    'Number', 'Money', 'cate', 'subCate', 'lastPurchaseDate', 'unsoldDays', 'soldNum', 'turnoverDays'],
+                'attributes' => ['sku', 'storeName', 'skuName', 'salerName', 'season', 'goodsSkuStatus', 'createDate',
+                    'number', 'money', 'cate', 'subCate', 'thirtyStockNum', 'thirtyStockMoney',
+                    'sixtyStockNum', 'sixtyStockMoney','ninetyStockNum','ninetyStockMoney','moreStockNum','moreStockMoney'],
                 'defaultOrder' => [
-                    'turnoverDays' => SORT_DESC,
+                    'number' => SORT_DESC,
                 ]
             ],
             'pagination' => [
                 'pageSize' => 1000,
             ],
         ]);
+    }
+
+    /**
+     * 库龄表下载
+     * Date: 2021-03-06 16:52
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionSkuStorageAgeExport()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        //获取所有销售员--账号 信息
+        $params = [
+            'salerName' => implode(',', $condition['salerName'] ?? []),
+            'storeName' => implode(',', $condition['storeName'] ?: ['义乌仓']),
+            'skuStatus' => implode(',', $condition['skuStatus'] ?? []),
+            'cate' => implode(',', $condition['cate'] ?? []),
+            'subCate' => implode(',', $condition['subCate'] ?? []),
+            'maxStorageAge' => $condition['maxStorageAge'] ?: 0,
+        ];
+        $sql = "EXEC oauth_skuStorageAge '{$params['salerName']}','{$params['storeName']}','{$params['skuStatus']}',
+                '{$params['cate']}','{$params['subCate']}','{$params['maxStorageAge']}'";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $title = ['SKU', '仓库', 'SKU名称', '开发员', '季节', 'SKU状态', '开发时间',
+            '库存数量', '库存金额', '类目', '子类目', '0-30天库存数量', '0-30天库存金额', '30-60天库存数量','30-60天库存金额',
+            '60-90天库存数量','60-90天库存金额','90天以上库存数量','90天以上库存金额'];
+        ExportTools::toExcelOrCsv('skuStorageAge', $data, 'Xlsx', $title);
     }
 
     public function actionPriceProtection()
