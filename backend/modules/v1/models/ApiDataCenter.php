@@ -412,7 +412,7 @@ class ApiDataCenter
      */
     public static function getPriceProtectionInfo($condition){
         $params['saler'] = $condition['saler'] ?: '';
-        $params['foulSaler'] = $condition['saler'] ?? '';
+        $params['foulSaler'] = $condition['foulSaler'] ?? '';
         $params['goodsStatus'] = implode(',', $condition['goodsStatus'] ?: ['爆款','旺款']);
         $suffixPar = ['username' => []];
         $allSuffix = Handler::paramsParse($suffixPar);

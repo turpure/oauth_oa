@@ -22,6 +22,10 @@ class WarehouseToolsController extends AdminController
         'class' => 'yii\rest\Serializer',
         'collectionEnvelope' => 'items',
     ];
+    public function behaviors()
+    {
+        return parent::behaviors();
+    }
 
     /**
      * @brief 拣货
@@ -544,6 +548,7 @@ class WarehouseToolsController extends AdminController
                 ]
             ],
             'pagination' => [
+                'validatePage' => true,
                 'page' => $page - 1,
                 'pageSize' => $pageSize,
             ],
