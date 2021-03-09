@@ -548,8 +548,6 @@ class WarehouseToolsController extends AdminController
                 ]
             ],
             'pagination' => [
-                'validatePage' => true,
-                'page' => $page - 1,
                 'pageSize' => $pageSize,
             ],
         ]);
@@ -676,7 +674,6 @@ class WarehouseToolsController extends AdminController
                 ]
             ],
             'pagination' => [
-                'page' => $page - 1,
                 'pageSize' => $pageSize,
             ],
         ]);
@@ -720,7 +717,6 @@ class WarehouseToolsController extends AdminController
                 ]
             ],
             'pagination' => [
-                'page' => $page - 1,
                 'pageSize' => $pageSize,
             ],
         ]);

@@ -451,7 +451,6 @@ class DataCenterController extends AdminController
                 ]
             ],
             'pagination' => [
-                'page' => $page - 1,
                 'pageSize' => $pageSize,
             ],
         ]);
@@ -500,7 +499,6 @@ class DataCenterController extends AdminController
                 ]
             ],
             'pagination' => [
-                'page' => $page - 1,
                 'pageSize' => $pageSize,
             ],
         ]);
@@ -643,7 +641,6 @@ class DataCenterController extends AdminController
                 ]
             ],
             'pagination' => [
-                'page' => $page - 1,
                 'pageSize' => $pageSize,
             ],
         ]);
@@ -692,7 +689,6 @@ class DataCenterController extends AdminController
                 ]
             ],
             'pagination' => [
-                'page' => $page - 1,
                 'pageSize' => $pageSize,
             ],
         ]);
