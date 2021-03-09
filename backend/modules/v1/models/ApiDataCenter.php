@@ -412,13 +412,13 @@ class ApiDataCenter
      */
     public static function getPriceProtectionInfo($condition){
         $params['saler'] = $condition['saler'] ?: '';
-        $params['foulSaler'] = $condition['saler'] ?: '';
+        $params['foulSaler'] = $condition['saler'] ?? '';
         $params['goodsStatus'] = implode(',', $condition['goodsStatus'] ?: ['爆款','旺款']);
         $suffixPar = ['username' => []];
         $allSuffix = Handler::paramsParse($suffixPar);
         $params['allSuffix'] = implode(',', $allSuffix);
-        $params['flag'] = $condition['dataType'] == 'protection' ? 0 : 1;
-        $sql = "EXEC oauth_goodsPriceProtection '{{$params['flag']}}','{$params['saler']}','{$params['foulSaler']}',
+        $params['flag'] = $condition['dataType'] == 'priceProtection' ? 0 : 1;
+        $sql = "EXEC oauth_goodsPriceProtection {$params['flag']},'{$params['saler']}','{$params['foulSaler']}',
         '{$params['goodsStatus']}','{$params['allSuffix']}';";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         return $data;

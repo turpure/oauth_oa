@@ -679,12 +679,16 @@ class ApiWarehouseTools
         $lNum = $condition['number'][1] ?? null;
 
         $sql = "SELECT aa.*,ISNULL(bb.stockSkuNum,0) stockSkuNum FROM (			
-                    SELECT StoreName,sl.LocationName,COUNT(DISTINCT isnull(gs.sku,'')) AS skuNum
-                    FROM [dbo].[B_StoreLocation](nolock) sl
-                    LEFT JOIN B_Store(nolock) s ON s.NID=sl.StoreID
-					LEFT JOIN B_GoodsSKULocation(nolock) bgs ON sl.NID=bgs.locationID AND sl.StoreID=bgs.StoreID
-					LEFT JOIN B_GoodsSKU(nolock) gs ON gs.NID=bgs.GoodsSKUID
-                    WHERE s.StoreName='{$store}' GROUP BY sl.LocationName,StoreName 
+                    SELECT StoreName,LocationName,SUM(skuNum) AS skuNum
+				    FROM (
+						SELECT StoreName,sl.LocationName,--		isnull(gs.sku,'')--COUNT(DISTINCT isnull(gs.sku,'')) AS skuNum
+						CASE WHEN isnull(gs.sku,'') = '' THEN 0 ELSE 1 END AS skuNum
+                        FROM [dbo].[B_StoreLocation](nolock) sl
+                        LEFT JOIN B_Store(nolock) s ON s.NID=sl.StoreID
+						LEFT JOIN B_GoodsSKULocation(nolock) bgs ON sl.NID=bgs.locationID AND sl.StoreID=bgs.StoreID
+						LEFT JOIN B_GoodsSKU(nolock) gs ON gs.NID=bgs.GoodsSKUID
+                        WHERE s.StoreName='{$store}' 
+			        ) a GROUP BY LocationName,StoreName
                 ) aa left JOIN (
                     SELECT StoreName,slt.LocationName,COUNT(gst.sku) AS stockSkuNum
                     FROM [dbo].[B_StoreLocation](nolock) slt
