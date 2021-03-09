@@ -353,7 +353,7 @@ class ApiDataCenter
             'turnoverDays' => $condition['turnoverDays'] ?? 0,
         ];
         if($condition['dataType'] == 'developer'){
-            $params['SalerName'] = implode(',', $condition['member'] ?? []);
+            $params['SalerName'] = $condition['member'] ?: '';
             $params['suffix'] = '';
             $sql = "EXEC oauth_goodsStockTurnover 0,'{$params['goodsStatus']}','{$params['cate']}','{$params['subCate']}',
             '{$params['lastPurchaseDateBegin']}','{$params['lastPurchaseDateEnd']}','{$params['devDateBegin']}',
@@ -362,7 +362,7 @@ class ApiDataCenter
         }else {
             $par = [
                 'username' => isset($condition['member']) ? $condition['member'] : [],
-                'department' => isset($condition['depart']) ? $condition['depart'] : []
+                'department' => isset($condition['depart']) && $condition['depart'] ? [$condition['depart']] : []
             ];
             $params['SalerName'] = '';
             $suffixFilter = Handler::paramsParse($par);
