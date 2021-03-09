@@ -448,12 +448,16 @@ class WarehouseToolsController extends AdminController
         ];
 
         $sql = "SELECT skuNum, COUNT(LocationName) AS locationNum FROM(
-                SELECT sl.LocationName,COUNT(DISTINCT gs.SKU) AS skuNum
-                FROM [dbo].[B_StoreLocation](nolock) sl
-                INNER JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID
-                LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID
-                WHERE sl.StoreID='{$storeId}' AND cs.Number > 0 GROUP BY sl.LocationName) s
-                GROUP BY skuNum ORDER BY skuNum DESC";
+		            SELECT LocationName,sum(skuNum) AS skuNum FROM(
+                        SELECT sl.LocationName,isnull(gs.SKU,'') AS sku,cs.number,
+                        CASE WHEN isnull(gs.SKU,'')='' OR cs.number <= 0 THEN 0 ELSE 1 END skuNum
+                        FROM [dbo].[B_StoreLocation](nolock) sl
+                        LEFT JOIN B_GoodsSKULocation(nolock) gsl ON sl.NID=gsl.LocationID AND gsl.StoreID=sl.StoreID
+                        LEFT JOIN KC_CurrentStock(nolock) cs ON cs.GoodsSKUID=gsl.GoodsSKUID AND cs.StoreID=gsl.StoreID
+						LEFT JOIN B_GoodsSKU(nolock) gs ON gs.NID=cs.GoodsSKUID
+                        WHERE sl.StoreID='{$storeId}' 
+		            )aa GROUP BY LocationName
+                ) bb GROUP BY skuNum ORDER BY skuNum ";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         $dataProvider = new ArrayDataProvider([
             'allModels' => $data,
