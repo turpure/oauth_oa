@@ -359,7 +359,7 @@ class ApiDataCenter
             '{$params['lastPurchaseDateBegin']}','{$params['lastPurchaseDateEnd']}','{$params['devDateBegin']}',
             '{$params['devDateEnd']}','{$params['unsoldDays']}','{$params['turnoverDays']}',
             '{$params['SalerName']}','{$params['storeName']}';";
-        }else{
+        }else {
             $par = [
                 'username' => isset($condition['member']) ? $condition['member'] : [],
                 'department' => isset($condition['depart']) ? $condition['depart'] : []
@@ -399,6 +399,29 @@ class ApiDataCenter
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         return $data;
 
+    }
+
+
+    /**
+     * 获取价格保护信息
+     * @param $condition
+     * Date: 2021-03-08 16:43
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    public static function getPriceProtectionInfo($condition){
+        $params['saler'] = $condition['saler'] ?: '';
+        $params['foulSaler'] = $condition['saler'] ?: '';
+        $params['goodsStatus'] = implode(',', $condition['goodsStatus'] ?: ['爆款','旺款']);
+        $suffixPar = ['username' => []];
+        $allSuffix = Handler::paramsParse($suffixPar);
+        $params['allSuffix'] = implode(',', $allSuffix);
+        $params['flag'] = $condition['dataType'] == 'protection' ? 0 : 1;
+        $sql = "EXEC oauth_goodsPriceProtection '{{$params['flag']}}','{$params['saler']}','{$params['foulSaler']}',
+        '{$params['goodsStatus']}','{$params['allSuffix']}';";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        return $data;
     }
 
 

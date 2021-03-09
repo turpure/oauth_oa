@@ -618,13 +618,84 @@ class DataCenterController extends AdminController
         ExportTools::toExcelOrCsv('skuStorageAge', $data, 'Xlsx', $title);
     }
 
+    /**
+     * 价格保护
+     * Date: 2021-03-08 10:59
+     * Author: henry
+     * @return ArrayDataProvider
+     * @throws \yii\db\Exception
+     */
     public function actionPriceProtection()
     {
-
+        $page = Yii::$app->request->get('page', 1);
+        $condition = Yii::$app->request->post('condition', []);
+        $pageSize = $condition['pageSize'] ?? 20;
+        $condition['dataType'] = 'priceProtection';
+        $data = ApiDataCenter::getPriceProtectionInfo($condition);
+        return new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['goodsCode', 'StoreName', 'GoodsName', 'SalerName', 'Season', 'GoodsStatus', 'CreateDate',
+                    'Number', 'Money', 'cate', 'subCate', 'saler', 'lastPurchaseDate', 'soldNum', 'personSoldNum',
+                    'dutySoldNum', 'personDutySoldNum', 'personDutyCostPrice', 'turnoverDays', 'dutyRate'],
+                'defaultOrder' => [
+                    'turnoverDays' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'page' => $page - 1,
+                'pageSize' => $pageSize,
+            ],
+        ]);
     }
 
+    /**
+     * 价格保护 导出
+     * Date: 2021-03-08 16:27
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     * @throws \yii\db\Exception
+     */
+    public function actionPriceProtectionExport()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $condition['dataType'] = 'protection';
+        $data = ApiDataCenter::getPriceProtectionInfo($condition);
+        $title = ['产品编码', '仓库', '销售员', '商品名称', '商品状态', '类目', '子类目', '开发员', '开发时间',
+            '库存数量', '30天销量', '30天本人销量', '库存周转','本人销量占比'];
+        ExportTools::toExcelOrCsv('priceProtection', $data, 'Xlsx', $title);
+    }
+
+    /**
+     * 价格保护异常
+     * Date: 2021-03-08 10:59
+     * Author: henry
+     * @return ArrayDataProvider
+     * @throws \yii\db\Exception
+     */
     public function actionPriceProtectionError()
     {
+        $page = Yii::$app->request->get('page', 1);
+        $condition = Yii::$app->request->post('condition', []);
+        $pageSize = $condition['pageSize'] ?? 20;
+        $condition['dataType'] = 'priceProtectionError';
+        $data = ApiDataCenter::getPriceProtectionInfo($condition);
+        return new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['goodsCode', 'StoreName', 'GoodsName', 'SalerName', 'Season', 'GoodsStatus', 'CreateDate',
+                    'Number', 'Money', 'cate', 'subCate', 'saler', 'lastPurchaseDate', 'soldNum', 'personSoldNum',
+                    'dutySoldNum', 'personDutySoldNum', 'personDutyCostPrice', 'turnoverDays', 'dutyRate'],
+                'defaultOrder' => [
+                    'turnoverDays' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'page' => $page - 1,
+                'pageSize' => $pageSize,
+            ],
+        ]);
 
     }
 

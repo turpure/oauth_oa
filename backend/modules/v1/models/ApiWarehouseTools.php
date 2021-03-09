@@ -679,20 +679,21 @@ class ApiWarehouseTools
         $lNum = $condition['number'][1] ?? null;
 
         $sql = "SELECT aa.*,ISNULL(bb.stockSkuNum,0) stockSkuNum FROM (			
-                    SELECT StoreName,sl.LocationName,COUNT(gs.sku) AS skuNum
+                    SELECT StoreName,sl.LocationName,COUNT(DISTINCT isnull(gs.sku,'')) AS skuNum
                     FROM [dbo].[B_StoreLocation](nolock) sl
                     LEFT JOIN B_Store(nolock) s ON s.NID=sl.StoreID
-                    LEFT JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID
-                    LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID
+					LEFT JOIN B_GoodsSKULocation(nolock) bgs ON sl.NID=bgs.locationID AND sl.StoreID=bgs.StoreID
+					LEFT JOIN B_GoodsSKU(nolock) gs ON gs.NID=bgs.GoodsSKUID
                     WHERE s.StoreName='{$store}' GROUP BY sl.LocationName,StoreName 
                 ) aa left JOIN (
                     SELECT StoreName,slt.LocationName,COUNT(gst.sku) AS stockSkuNum
                     FROM [dbo].[B_StoreLocation](nolock) slt
-                    LEFT JOIN B_Store(nolock) st ON st.NID=slt.StoreID
-                    LEFT JOIN B_GoodsSKU(nolock) gst ON slt.NID=gst.LocationID
-                    LEFT JOIN KC_CurrentStock(nolock) cst ON gst.NID=cst.GoodsSKUID AND cst.StoreID=slt.StoreID
+										INNER JOIN B_GoodsSKULocation(nolock) gslt ON slt.NID=gslt.locationID AND gslt.StoreID=slt.StoreID
+                    INNER JOIN B_Store(nolock) st ON st.NID=slt.StoreID
+                    INNER JOIN B_GoodsSKU(nolock) gst ON gst.NID=gslt.GoodsSKUID
+                    INNER JOIN KC_CurrentStock(nolock) cst ON gst.NID=cst.GoodsSKUID AND cst.StoreID=slt.StoreID
                     WHERE st.StoreName='{$store}' AND cst.Number > 0 GROUP BY slt.LocationName,StoreName
-                ) bb ON aa.LocationName=bb.LocationName WHERE 0=0 ";
+                ) bb ON ISNULL(aa.LocationName,'')=ISNULL(bb.LocationName,'') WHERE 0=0 ";
         if ($sNum || $sNum === '0') $sql .= " AND ISNULL(bb.stockSkuNum,0) >= '{$sNum}'";
         if ($lNum || $lNum === '0') $sql .= " AND ISNULL(bb.stockSkuNum,0) <= '{$lNum}'";
         $sql .= " ORDER BY ISNULL(bb.stockSkuNum,0) DESC";

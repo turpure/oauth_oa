@@ -409,14 +409,26 @@ class WarehouseToolsController extends AdminController
         $locationSql = "SELECT COUNT(DISTINCT LocationName) AS Number FROM [dbo].[B_StoreLocation](nolock) WHERE StoreID='{$storeId}'";
         $locationNum = Yii::$app->py_db->createCommand($locationSql)->queryScalar();
         //有SKU仓位数
-        $skuLocationSql = "SELECT COUNT(DISTINCT LocationName) AS Number FROM [dbo].[B_StoreLocation](nolock) sl
-                        INNER JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID WHERE sl.StoreID='{$storeId}'";
+        $skuLocationSql = "SELECT COUNT(DISTINCT LocationName) AS Number 
+                            FROM [dbo].[B_StoreLocation](nolock) l
+                            WHERE StoreID='{$storeId}' AND nid  IN(SELECT LocationID FROM B_GoodsSKULocation a WHERE StoreID = l.StoreID)";
         $skuLocationNum = Yii::$app->py_db->createCommand($skuLocationSql)->queryScalar();
         //空仓位数
-        $emptyLocationSql = "SELECT COUNT(DISTINCT LocationName) AS Number FROM [dbo].[B_StoreLocation](nolock) sl
-                        Left JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID 
-                        WHERE sl.StoreID='{$storeId}' AND ISNULL(gs.sku,'')=''";
+        $emptyLocationSql = "SELECT COUNT(DISTINCT LocationName) AS Number 
+                            FROM [dbo].[B_StoreLocation](nolock) l
+                            WHERE StoreID='{$storeId}' AND nid NOT IN(SELECT LocationID FROM B_GoodsSKULocation a WHERE StoreID = l.StoreID)";
         $emptyLocationNum = Yii::$app->py_db->createCommand($emptyLocationSql)->queryScalar();
+        //无库存仓位数
+        $nonStockLocationSql = "SELECT COUNT(DISTINCT LocationName) AS Number 
+                            FROM [dbo].[B_StoreLocation](nolock) l
+                            LEFT JOIN (
+                                SELECT gsl.locationID,gsl.StoreID,SUM(isnull(cs.number,0)) AS num
+                                FROM B_GoodsSKULocation(nolock) gsl 
+                                INNER JOIN B_GoodsSKU(nolock) gs ON gs.NID=gsl.GoodsSKUID 
+                                LEFT JOIN KC_CurrentStock(nolock) cs ON cs.GoodsSKUID=gs.NID AND cs.StoreID=gsl.StoreID
+                                WHERE gsl.StoreID='{$storeId}' AND isnull(cs.number,0)>=0 GROUP BY gsl.locationID,gsl.StoreID
+                            ) aa ON aa.locationID=l.nid AND aa.StoreID=l.StoreID WHERE l.StoreID='{$storeId}' AND isnull(aa.num,0)=0";
+        $nonStockLocationNum = Yii::$app->py_db->createCommand($nonStockLocationSql)->queryScalar();
         //有库存SKU个数
         $locationSkuSql = "SELECT COUNT(DISTINCT sku) AS Number FROM [dbo].[B_StoreLocation](nolock) sl
                         INNER JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID 
@@ -428,6 +440,7 @@ class WarehouseToolsController extends AdminController
             'locationNum' => $locationNum,
             'skuLocationNum' => $skuLocationNum,
             'emptyLocationNum' => $emptyLocationNum,
+            'nonStockLocationNum' => $nonStockLocationNum,
             'locationSkuNum' => $locationSkuNum,
             'skuLocationRate' => (string)round($locationSkuNum / ($locationNum ?: 1), 2),
         ];
