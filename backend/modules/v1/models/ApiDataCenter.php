@@ -394,9 +394,12 @@ class ApiDataCenter
             'lastPurchaseDate' => $condition['lastPurchaseDate'] ?? '',
             'suffix' => implode(',', $suffixFilter),
         ];
-        $sql = "EXEC oauth_salesData30DaysBeforeLastPurchaseDate '{$params['goodsCode']}','{$params['storeName']}',
-                '{$params['lastPurchaseDate']}','{$params['suffix']}'";
-        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        //$sql = "EXEC oauth_salesData30DaysBeforeLastPurchaseDate '{$params['goodsCode']}','{$params['storeName']}',
+         //       '{$params['lastPurchaseDate']}','{$params['suffix']}'";
+        //$data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $sql = "CALL oauth_salesData30DaysBeforeLastPurchaseDate('{$params['goodsCode']}','{$params['storeName']}',
+        '{$params['lastPurchaseDate']}')";
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
         return $data;
 
     }
