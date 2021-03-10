@@ -575,6 +575,7 @@ class DataCenterController extends AdminController
     public function actionSkuStorageAge()
     {
         $condition = Yii::$app->request->post('condition', []);
+        $pageSize = $condition['pageSize'] ?: 20;
         //获取所有销售员--账号 信息
         $params = [
             'salerName' => implode(',', $condition['salerName'] ?: []),
@@ -598,7 +599,7 @@ class DataCenterController extends AdminController
                 ]
             ],
             'pagination' => [
-                'pageSize' => 1000,
+                'pageSize' => $pageSize,
             ],
         ]);
     }
