@@ -387,12 +387,12 @@ class ApiDataCenter
      */
     public  static function getDeveloperStockTurnoverInfo($condition){
         //获取所有销售员--账号 信息
-        $suffixFilter = Handler::paramsParse();
+        //$suffixFilter = Handler::paramsParse();
         $params = [
             'goodsCode' => $condition['goodsCode'] ?? '',
             'storeName' => $condition['storeName'] ?? '',
             'lastPurchaseDate' => $condition['lastPurchaseDate'] ?? '',
-            'suffix' => implode(',', $suffixFilter),
+            //'suffix' => implode(',', $suffixFilter),
         ];
         //$sql = "EXEC oauth_salesData30DaysBeforeLastPurchaseDate '{$params['goodsCode']}','{$params['storeName']}',
          //       '{$params['lastPurchaseDate']}','{$params['suffix']}'";

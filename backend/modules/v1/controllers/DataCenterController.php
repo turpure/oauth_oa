@@ -548,7 +548,22 @@ class DataCenterController extends AdminController
                 'pageSize' => 1000,
             ],
         ]);
+    }
 
+    /**
+     * 开发库存周转销售明细下载
+     * Date: 2021-03-06 13:10
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     * @throws \yii\db\Exception
+     */
+    public function actionDeveloperStockTurnoverDetailExport()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $data = ApiDataCenter::getDeveloperStockTurnoverInfo($condition);
+        $title = ['销售员', '商品编码', '仓库', '销量', '销售额', '毛利(￥)', '毛利率'];
+        ExportTools::toExcelOrCsv('developerStockTurnover', $data, 'Xlsx', $title);
     }
 
     /**
