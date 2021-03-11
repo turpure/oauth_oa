@@ -85,6 +85,20 @@ class TaskController extends AdminController
      }
 
 
+    /**
+     * 任务中心角标
+     *  @return mixed
+     */
+    public function actionCornerMark(){
+        return [
+            'turnover' => 1,
+            'loss' => 2,
+            'low' => 3,
+            'high' => 4,
+            'error' => 5,
+        ];
+    }
+
 
 
 
