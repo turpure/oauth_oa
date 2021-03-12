@@ -9,6 +9,7 @@
 namespace backend\modules\v1\controllers;
 
 
+use backend\modules\v1\models\ApiDataCenter;
 use backend\modules\v1\models\ApiEbayTool;
 use backend\modules\v1\models\ApiSmtTool;
 use backend\modules\v1\models\ApiTask;
@@ -85,10 +86,21 @@ class TaskController extends AdminController
 
     /**
      * 价格保护异常
-     *  @return mixed
+     * Date: 2021-03-12 16:47
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
      */
      public function actionPriceProtectionError(){
-
+         //$page = Yii::$app->request->get('page', 1);
+         //$condition = Yii::$app->request->post('condition', []);
+         //$pageSize = $condition['pageSize'] ?? 20;
+         $user = Yii::$app->user->identity->username;
+         $userList = ApiUser::getUserList($user);
+         $condition['dataType'] = 'priceProtectionError';
+         $condition['saler'] = $condition['foulSaler'] = $userList;
+         $data = ApiDataCenter::getPriceProtectionInfo($condition);
+         return $data;
      }
 
 
