@@ -11,6 +11,7 @@ use backend\modules\v1\models\ApiReport;
 use backend\modules\v1\models\ApiSettings;
 use backend\modules\v1\models\ApiUk;
 use backend\modules\v1\models\ApiUkFic;
+use backend\modules\v1\models\ApiUser;
 use backend\modules\v1\utils\Handler;
 use console\models\ConScheduler;
 use yii\console\Controller;
@@ -1012,8 +1013,6 @@ class SchedulerController extends Controller
             echo date('Y-m-d H:i:s')." Goods rights update failed!\n";
         }
     }
-
-
 
 
     /**
