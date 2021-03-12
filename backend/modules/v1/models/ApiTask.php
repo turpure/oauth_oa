@@ -49,11 +49,8 @@ class ApiTask
         $user = Yii::$app->user->identity->username;
         $userList = ApiUser::getUserList($user);
         $userStr = implode(',', $userList);
-        $suffixPar = ['username' => []];
-        $allSuffix = Handler::paramsParse($suffixPar);
-        $allSuffix = implode(',', $allSuffix);
-        $sql = "Exec oauth_taskOfGoodsProfitResult $type,'{$userStr}','{$allSuffix}'";
-        return Yii::$app->py_db->createCommand($sql)->queryAll();
+        $sql = "CALL oauth_taskOfGoodsProfitResult ($type,'{$userStr}')";
+        return Yii::$app->db->createCommand($sql)->queryAll();
     }
 
 }

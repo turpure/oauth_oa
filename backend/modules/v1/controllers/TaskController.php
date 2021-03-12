@@ -101,10 +101,10 @@ class TaskController extends AdminController
      */
     public function actionCornerMark(){
         $turnoverData = $lossData = $lowData = $highsData = [];
-//        $turnoverData = $data = ApiTask::getTurnoverData();
-//        $lossData = ApiTask::getProfitData($type = 0);
-//        $lowData = ApiTask::getProfitData($type = 1);
-//        $highsData = ApiTask::getProfitData($type = 2);
+        $turnoverData = $data = ApiTask::getTurnoverData();
+        $lossData = ApiTask::getProfitData($type = 0);
+        $lowData = ApiTask::getProfitData($type = 1);
+        $highsData = ApiTask::getProfitData($type = 2);
 
         return [
             'turnover' => count($turnoverData),
