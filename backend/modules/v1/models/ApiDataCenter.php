@@ -345,6 +345,7 @@ class ApiDataCenter
             'subCate' => implode(',', $condition['cate'] ?? []),
             'goodsStatus' => implode(',', $condition['goodsStatus'] ?? []),
             'storeName' => implode(',', $condition['storeName'] ?? []),
+            'goodsCode' => implode(',', $condition['goodsCode'] ?? ''),
             'lastPurchaseDateBegin' => $condition['lastPurchaseDate'][0] ?? '',
             'lastPurchaseDateEnd' => $condition['lastPurchaseDate'][1] ?? '',
             'devDateBegin' => $condition['devDate'][0] ?? '',
@@ -358,7 +359,7 @@ class ApiDataCenter
             $sql = "EXEC oauth_goodsStockTurnover 0,'{$params['goodsStatus']}','{$params['cate']}','{$params['subCate']}',
             '{$params['lastPurchaseDateBegin']}','{$params['lastPurchaseDateEnd']}','{$params['devDateBegin']}',
             '{$params['devDateEnd']}','{$params['unsoldDays']}','{$params['turnoverDays']}',
-            '{$params['SalerName']}','{$params['storeName']}';";
+            '{$params['SalerName']}','{$params['storeName']}','{$params['goodsCode']}';";
         }else {
             $par = [
                 'username' => isset($condition['member']) ? $condition['member'] : [],
@@ -371,7 +372,7 @@ class ApiDataCenter
             $sql = "EXEC oauth_goodsStockTurnover 1,'{$params['goodsStatus']}','{$params['cate']}','{$params['subCate']}',  
             '{$params['lastPurchaseDateBegin']}','{$params['lastPurchaseDateEnd']}','{$params['devDateBegin']}',
             '{$params['devDateEnd']}','{$params['unsoldDays']}','{$params['turnoverDays']}',
-            '','{$params['storeName']}','{$params['suffix']}';";
+            '','{$params['storeName']}','{$params['goodsCode']}','{$params['suffix']}';";
         }
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         return $data;
