@@ -345,7 +345,7 @@ class ApiDataCenter
             'subCate' => implode(',', $condition['cate'] ?? []),
             'goodsStatus' => implode(',', $condition['goodsStatus'] ?? []),
             'storeName' => implode(',', $condition['storeName'] ?? []),
-            'goodsCode' => implode(',', $condition['goodsCode'] ?? ''),
+            'goodsCode' => $condition['goodsCode'] ?? '',
             'lastPurchaseDateBegin' => $condition['lastPurchaseDate'][0] ?? '',
             'lastPurchaseDateEnd' => $condition['lastPurchaseDate'][1] ?? '',
             'devDateBegin' => $condition['devDate'][0] ?? '',

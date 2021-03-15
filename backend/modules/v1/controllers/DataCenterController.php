@@ -469,7 +469,7 @@ class DataCenterController extends AdminController
         $condition = Yii::$app->request->post('condition', []);
         $condition['dataType'] = 'saler';
         $data = ApiDataCenter::getStockTurnoverInfo($condition);
-        $title = ['商品编码', '仓库', '商品名称', '开发员', '季节', '商品状态', '开发时间',
+        $title = ['商品编码', '主图', '仓库', '商品名称', '开发员', '季节', '商品状态', '开发时间',
             '库存数量', '库存金额', '类目', '子类目', '销售员', '最后采购时间', '最近30天销量', '个人销量',
             '责任销量', '个人责任销量', '个人责任成本', '库存周转', '个人责任占比'];
         ExportTools::toExcelOrCsv('salerStockTurnover', $data, 'Xlsx', $title);
@@ -518,7 +518,7 @@ class DataCenterController extends AdminController
         $condition = Yii::$app->request->post('condition', []);
         $condition['dataType'] = 'developer';
         $data = ApiDataCenter::getStockTurnoverInfo($condition);
-        $title = ['商品编码', '仓库', '商品名称', '开发员', '季节', '商品状态', '开发时间',
+        $title = ['商品编码', '主图', '仓库', '商品名称', '开发员', '季节', '商品状态', '开发时间',
             '库存数量', '库存金额', '类目', '子类目', '最后采购时间', '未售天数', '最近30天销量','库存周转'];
         ExportTools::toExcelOrCsv('developerStockTurnover', $data, 'Xlsx', $title);
     }
@@ -626,7 +626,7 @@ class DataCenterController extends AdminController
         $sql = "EXEC oauth_skuStorageAge '{$params['salerName']}','{$params['storeName']}','{$params['skuStatus']}',
                 '{$params['cate']}','{$params['subCate']}','{$params['maxStorageAge']}'";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-        $title = ['SKU', '仓库', 'SKU名称', '开发员', '季节', 'SKU状态', '开发时间',
+        $title = ['SKU', '主图', '仓库', 'SKU名称', '开发员', '季节', 'SKU状态', '开发时间',
             '库存数量', '库存金额', '类目', '子类目', '0-30天库存数量', '0-30天库存金额', '30-60天库存数量','30-60天库存金额',
             '60-90天库存数量','60-90天库存金额','90天以上库存数量','90天以上库存金额'];
         ExportTools::toExcelOrCsv('skuStorageAge', $data, 'Xlsx', $title);
@@ -675,7 +675,7 @@ class DataCenterController extends AdminController
         $condition = Yii::$app->request->post('condition', []);
         $condition['dataType'] = 'priceProtection';
         $data = ApiDataCenter::getPriceProtectionInfo($condition);
-        $title = ['产品编码', '仓库', '销售员', '商品名称', '商品状态', '类目', '子类目', '开发员', '开发时间',
+        $title = ['产品编码', '主图', '仓库', '销售员', '商品名称', '商品状态', '类目', '子类目', '开发员', '开发时间',
             '库存数量', '30天销量', '30天本人销量', '库存周转','本人销量占比'];
         ExportTools::toExcelOrCsv('priceProtection', $data, 'Xlsx', $title);
     }
@@ -724,7 +724,7 @@ class DataCenterController extends AdminController
         $condition = Yii::$app->request->post('condition', []);
         $condition['dataType'] = 'priceProtectionError';
         $data = ApiDataCenter::getPriceProtectionInfo($condition);
-        $title = ['产品编码', '仓库', '销售员', '商品名称', '商品状态', '类目', '子类目', '开发员', '开发时间', '库存数量', '30天销量',
+        $title = ['产品编码', '主图', '仓库', '销售员', '商品名称', '商品状态', '类目', '子类目', '开发员', '开发时间', '库存数量', '30天销量',
             '30天本人销量', '库存周转','本人销量占比','本人3天均价($)','犯规销售员','3天犯规最低价格($)','犯规销售员近30天销量'];
         ExportTools::toExcelOrCsv('priceProtectionError', $data, 'Xlsx', $title);
     }
