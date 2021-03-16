@@ -1575,6 +1575,8 @@ class ProductCenterTools
                 }
             }
 
+        }else{
+            throw new Exception($ret['error_message'] ?? ($ret['exception'] ?? 'token error'));
         }
 
     }

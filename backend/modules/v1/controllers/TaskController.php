@@ -10,20 +10,18 @@ namespace backend\modules\v1\controllers;
 
 
 use backend\modules\v1\models\ApiDataCenter;
-use backend\modules\v1\models\ApiEbayTool;
-use backend\modules\v1\models\ApiSmtTool;
 use backend\modules\v1\models\ApiTask;
-use backend\modules\v1\models\ApiTool;
 use backend\modules\v1\models\ApiUser;
-use backend\modules\v1\models\ApiWishTool;
-use backend\modules\v1\utils\Handler;
 use yii\data\ArrayDataProvider;
-use yii\filters\VerbFilter;
-use yii\helpers\ArrayHelper;
 use Yii;
 class TaskController extends AdminController
 {
     public $modelClass = 'backend\modules\v1\models\ApiTask';
+
+    public $serializer = [
+        'class' => 'yii\rest\Serializer',
+        'collectionEnvelope' => 'items',
+    ];
 
 
     /**
@@ -112,18 +110,20 @@ class TaskController extends AdminController
      * @throws \yii\db\Exception
      */
     public function actionCornerMark(){
-        $turnoverData = $lossData = $lowData = $highsData = [];
         $turnoverData = $data = ApiTask::getTurnoverData();
-        $lossData = ApiTask::getProfitData($type = 0);
-        $lowData = ApiTask::getProfitData($type = 1);
-        $highsData = ApiTask::getProfitData($type = 2);
-
+        //var_dump($turnoverData);exit;
+        $profitData = ApiTask::getProfitData($type = 3);
+        $user = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($user);
+        $condition['dataType'] = 'priceProtectionError';
+        $condition['saler'] = $condition['foulSaler'] = $userList;
+        $errorData = ApiDataCenter::getPriceProtectionInfo($condition);
         return [
             'turnover' => count($turnoverData),
-            'loss' => count($lossData),
-            'low' => count($lowData),
-            'high' => count($highsData),
-            'error' => 5,
+            'loss' => $profitData[0]['lossNum'] ?? 0,
+            'low' => $profitData[0]['lowNum'] ?? 0,
+            'high' => $profitData[0]['highNum'] ?? 0,
+            'error' => count($errorData),
         ];
     }
 

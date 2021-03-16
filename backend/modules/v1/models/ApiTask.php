@@ -50,6 +50,7 @@ class ApiTask
         $userList = ApiUser::getUserList($user);
         $userStr = implode(',', $userList);
         $sql = "CALL oauth_taskOfGoodsProfitResult ($type,'{$userStr}')";
+        //var_dump($sql);exit;
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
 
