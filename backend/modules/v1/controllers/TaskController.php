@@ -111,19 +111,19 @@ class TaskController extends AdminController
      */
     public function actionCornerMark(){
         $turnoverData = $data = ApiTask::getTurnoverData();
-        //var_dump($turnoverData);exit;
         $profitData = ApiTask::getProfitData($type = 3);
         $user = Yii::$app->user->identity->username;
         $userList = ApiUser::getUserList($user);
         $condition['dataType'] = 'priceProtectionError';
+        $condition['goodsStatus'] = '';
         $condition['saler'] = $condition['foulSaler'] = $userList;
         $errorData = ApiDataCenter::getPriceProtectionInfo($condition);
         return [
-            'turnover' => count($turnoverData),
+            'turnover' => (string) count($turnoverData),
             'loss' => $profitData[0]['lossNum'] ?? 0,
             'low' => $profitData[0]['lowNum'] ?? 0,
             'high' => $profitData[0]['highNum'] ?? 0,
-            'error' => count($errorData),
+            'error' => (string) count($errorData),
         ];
     }
 

@@ -416,18 +416,26 @@ class ApiDataCenter
      */
     public static function getPriceProtectionInfo($condition){
         $saler = $condition['saler'] ?: [];
-        $saler = is_array($saler) ? implode(',', $saler) : implode(',', [$saler]);
+        $saler = is_array($saler) ? implode("','", $saler) : $saler;
         $foulSaler = $condition['foulSaler'] ?? '';
-        $foulSaler = is_array($foulSaler) ? implode(',', $foulSaler) : implode(',', [$foulSaler]);
+        $foulSaler = is_array($foulSaler) ? implode("','", $foulSaler) : $foulSaler;
         //var_dump($saler);
         //var_dump($foulSaler);exit;
-        $goodsStatus = implode(',', $condition['goodsStatus'] ?? []);
-        $suffixPar = ['username' => []];
-        $allSuffix = Handler::paramsParse($suffixPar);
-        $allSuffix = implode(',', $allSuffix);
-        $flag = $condition['dataType'] == 'priceProtection' ? 0 : 1;
-        $sql = "EXEC oauth_goodsPriceProtection {$flag},'{$saler}','{$foulSaler}','{$goodsStatus}','{$allSuffix}';";
-        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $goodsStatus = implode("','", $condition['goodsStatus'] ?: ['爆款', '旺款']);
+        if($condition['dataType'] == 'priceProtection'){
+            $sql = "SELECT DISTINCT goodsCode, mainImage, storeName, saler, goodsName, goodsStatus, cate, subCate,
+                    salerName, createDate, `number`, soldNum, personSoldNum, turnoverDays, rate 
+                    FROM `cache_priceProtectionData` WHERE 1=1 ";
+            if($goodsStatus) $sql .= " AND goodsStatus IN ('{$goodsStatus}')";
+            if($saler) $sql .= " AND saler IN ('{$saler}')";
+        }else{
+            $sql = "SELECT * FROM `cache_priceProtectionData` WHERE 1=1 ";
+            if($goodsStatus) $sql .= " AND goodsStatus IN ('{$goodsStatus}')";
+            if($saler) $sql .= " AND saler IN ('{$saler}')";
+            if($foulSaler) $sql .= " AND foulSaler IN ('{$foulSaler}')";
+        }
+
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
         return $data;
     }
 

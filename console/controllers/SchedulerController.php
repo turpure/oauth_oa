@@ -1015,6 +1015,36 @@ class SchedulerController extends Controller
     }
 
 
+    public function actionFetchPriceProtectionData()
+    {
+        try {
+            $suffixPar = ['username' => []];
+            $allSuffix = Handler::paramsParse($suffixPar);
+            $allSuffix = implode(',', $allSuffix);
+            $sql = "EXEC oauth_goodsPriceProtection '{$allSuffix}';";
+            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+            $step = 100;
+            $max = ceil(count($data)/$step);
+
+            Yii::$app->db->createCommand("TRUNCATE TABLE cache_priceProtectionData;")->execute();
+            for ($i = 0; $i < $max; $i++){
+                Yii::$app->db->createCommand()->batchInsert('cache_priceProtectionData',
+                    [
+                        'goodsCode', 'mainImage', 'storeName', 'saler', 'goodsName', 'goodsStatus', 'cate', 'subCate',
+                        'salerName', 'createDate', 'number', 'soldNum', 'personSoldNum', 'turnoverDays', 'rate',
+                        'aveAmt', 'foulSaler', 'amt', 'foulSalerSoldNum', 'updateTime'
+                    ],
+                    array_slice($data,$i*$step, $step))->execute();
+            }
+            echo date('Y-m-d H:i:s')." Goods rights update successful!\n";
+        }catch (\Exception $e){
+            echo date('Y-m-d H:i:s')." Get stock status data failed, cause of '{$e->getMessage()}'. \n";
+            //echo $e->getMessage();
+        }
+
+    }
+
+
     /**
      * @brief 批量更新依赖毛利润报表的命令
      */
