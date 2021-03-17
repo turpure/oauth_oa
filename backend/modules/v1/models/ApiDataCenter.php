@@ -428,11 +428,18 @@ class ApiDataCenter
                     FROM `cache_priceProtectionData` WHERE 1=1 ";
             if($goodsStatus) $sql .= " AND goodsStatus IN ('{$goodsStatus}')";
             if($saler) $sql .= " AND saler IN ('{$saler}')";
-        }else{
+        }elseif($condition['dataType'] == 'priceProtectionError'){
             $sql = "SELECT * FROM `cache_priceProtectionData` WHERE 1=1 ";
             if($goodsStatus) $sql .= " AND goodsStatus IN ('{$goodsStatus}')";
             if($saler) $sql .= " AND saler IN ('{$saler}')";
             if($foulSaler) $sql .= " AND foulSaler IN ('{$foulSaler}')";
+        }else{
+            $sql = "SELECT c.* FROM `cache_priceProtectionData` c
+                    LEFT JOIN task_priceProtectionHandleLog l on c.goodsCode = l.goodsCode 
+                                AND c.storeName=l.storeName AND c.foulSaler=l.foulSaler 
+                    WHERE 1=1 AND (IFNULL(l.updateTime,'') = '' OR DATEDIFF(NOW(), l.updateTime) > 10)";
+            if($saler) $sql .= " AND saler IN ('{$saler}')";
+            if($foulSaler) $sql .= " AND c.foulSaler IN ('{$foulSaler}')";
         }
 
         $data = Yii::$app->db->createCommand($sql)->queryAll();

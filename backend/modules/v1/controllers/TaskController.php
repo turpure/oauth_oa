@@ -14,6 +14,7 @@ use backend\modules\v1\models\ApiTask;
 use backend\modules\v1\models\ApiUser;
 use yii\data\ArrayDataProvider;
 use Yii;
+
 class TaskController extends AdminController
 {
     public $modelClass = 'backend\modules\v1\models\ApiTask';
@@ -31,7 +32,8 @@ class TaskController extends AdminController
      * @return ArrayDataProvider
      * @throws \yii\db\Exception
      */
-    public function actionStockTurnover(){
+    public function actionStockTurnover()
+    {
         $condition = Yii::$app->request->post('condition', []);
         $pageSize = $condition['pageSize'] ?? 20;
         $data = ApiTask::getTurnoverData();
@@ -56,7 +58,8 @@ class TaskController extends AdminController
      * @return mixed
      * @throws \yii\db\Exception
      */
-    public function actionProductLoss(){
+    public function actionProductLoss()
+    {
         return ApiTask::getProfitData($type = 0);
     }
 
@@ -67,7 +70,8 @@ class TaskController extends AdminController
      * @return mixed
      * @throws \yii\db\Exception
      */
-    public function actionProductProfitLow(){
+    public function actionProductProfitLow()
+    {
         return ApiTask::getProfitData($type = 1);
     }
 
@@ -78,9 +82,10 @@ class TaskController extends AdminController
      * @return mixed
      * @throws \yii\db\Exception
      */
-     public function actionProductProfitHigh(){
-         return ApiTask::getProfitData($type = 2);
-     }
+    public function actionProductProfitHigh()
+    {
+        return ApiTask::getProfitData($type = 2);
+    }
 
     /**
      * 价格保护异常
@@ -89,17 +94,61 @@ class TaskController extends AdminController
      * @return array
      * @throws \yii\db\Exception
      */
-     public function actionPriceProtectionError(){
-         //$page = Yii::$app->request->get('page', 1);
-         //$condition = Yii::$app->request->post('condition', []);
-         //$pageSize = $condition['pageSize'] ?? 20;
-         $user = Yii::$app->user->identity->username;
-         $userList = ApiUser::getUserList($user);
-         $condition['dataType'] = 'priceProtectionError';
-         $condition['saler'] = $condition['foulSaler'] = $userList;
-         $data = ApiDataCenter::getPriceProtectionInfo($condition);
-         return $data;
-     }
+    public function actionPriceProtectionError()
+    {
+        //$page = Yii::$app->request->get('page', 1);
+        //$condition = Yii::$app->request->post('condition', []);
+        //$pageSize = $condition['pageSize'] ?? 20;
+        $user = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($user);
+        $condition['dataType'] = 'task';
+        $condition['saler'] = $condition['foulSaler'] = $userList;
+        $condition['goodsStatus'] = '';
+        $data = ApiDataCenter::getPriceProtectionInfo($condition);
+        return $data;
+    }
+
+    /**
+     * 价格保护异常处理
+     * Date: 2021-03-17 11:06
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    public function actionPriceProtectionHandle()
+    {
+        $user = Yii::$app->user->identity->username;
+        $condition = Yii::$app->request->post('condition', []);
+        $id = $condition['id'] ?: 0;
+        $query = Yii::$app->db->createCommand("select * from cache_priceProtectionData where id = $id")->queryOne();
+        $logSql = "select * from task_priceProtectionHandleLog 
+                    where goodsCode = '{$query['goodsCode']}' AND storeName = '{$query['storeName']}' 
+                    AND foulSaler = '{$query['foulSaler']}'";
+        $handleLog = Yii::$app->db->createCommand($logSql)->queryOne();
+        if ($query['foulSaler'] != $user) {
+            return [
+                'code' => 400,
+                'message' => 'Can not handle this data!'
+            ];
+        }
+        if ($handleLog) {
+            Yii::$app->db->createCommand()->update(
+                'task_priceProtectionHandleLog',
+                ['updateTime' => date('Y-m-d H:i:s')],
+                ['goodsCode' => $query['goodsCode'],
+                    'storeName' => $query['storeName'],
+                    'foulSaler' => $query['foulSaler']
+                ])->execute();
+        } else {
+            Yii::$app->db->createCommand()->insert(
+                'task_priceProtectionHandleLog',
+                ['goodsCode' => $query['goodsCode'],
+                    'storeName' => $query['storeName'],
+                    'foulSaler' => $query['foulSaler'],
+                    'updateTime' => date('Y-m-d H:i:s'),
+                ])->execute();
+        }
+    }
 
 
     /**
@@ -109,7 +158,8 @@ class TaskController extends AdminController
      * @return array
      * @throws \yii\db\Exception
      */
-    public function actionCornerMark(){
+    public function actionCornerMark()
+    {
         $turnoverData = $data = ApiTask::getTurnoverData();
         $profitData = ApiTask::getProfitData($type = 3);
         $user = Yii::$app->user->identity->username;
@@ -119,20 +169,13 @@ class TaskController extends AdminController
         $condition['saler'] = $condition['foulSaler'] = $userList;
         $errorData = ApiDataCenter::getPriceProtectionInfo($condition);
         return [
-            'turnover' => (string) count($turnoverData),
+            'turnover' => (string)count($turnoverData),
             'loss' => $profitData[0]['lossNum'] ?? 0,
             'low' => $profitData[0]['lowNum'] ?? 0,
             'high' => $profitData[0]['highNum'] ?? 0,
-            'error' => (string) count($errorData),
+            'error' => (string)count($errorData),
         ];
     }
-
-
-
-
-
-
-
 
 
 }
