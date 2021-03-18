@@ -14,6 +14,7 @@ use backend\modules\v1\models\ApiTask;
 use backend\modules\v1\models\ApiUser;
 use yii\data\ArrayDataProvider;
 use Yii;
+use yii\db\Exception;
 
 class TaskController extends AdminController
 {
@@ -160,21 +161,33 @@ class TaskController extends AdminController
      */
     public function actionCornerMark()
     {
-        $turnoverData = $data = ApiTask::getTurnoverData();
-        $profitData = ApiTask::getProfitData($type = 3);
-        $user = Yii::$app->user->identity->username;
-        $userList = ApiUser::getUserList($user);
-        $condition['dataType'] = 'priceProtectionError';
-        $condition['goodsStatus'] = '';
-        $condition['saler'] = $condition['foulSaler'] = $userList;
-        $errorData = ApiDataCenter::getPriceProtectionInfo($condition);
-        return [
-            'turnover' => (string)count($turnoverData),
-            'loss' => $profitData[0]['lossNum'] ?? 0,
-            'low' => $profitData[0]['lowNum'] ?? 0,
-            'high' => $profitData[0]['highNum'] ?? 0,
-            'error' => (string)count($errorData),
-        ];
+        try {
+            $turnoverData = $data = ApiTask::getTurnoverData();
+            $profitData = ApiTask::getProfitData($type = 3);
+            $user = Yii::$app->user->identity->username;
+            $userList = ApiUser::getUserList($user);
+            $condition['dataType'] = 'taskCount';
+            $condition['goodsStatus'] = '';
+            $condition['saler'] = $condition['foulSaler'] = $userList;
+            $errorData = ApiDataCenter::getPriceProtectionInfo($condition);
+            return [
+                'turnover' => (string)count($turnoverData),
+                'loss' => $profitData[0]['lossNum'] ?? 0,
+                'low' => $profitData[0]['lowNum'] ?? 0,
+                'high' => $profitData[0]['highNum'] ?? 0,
+                'error' => (string)count($errorData),
+            ];
+        }catch (Exception $e){
+            return $e->getMessage();
+            return [
+                'turnover' => 0,
+                'loss' => 0,
+                'low' => 0,
+                'high' => 0,
+                'error' => 0,
+            ];
+        }
+
     }
 
 

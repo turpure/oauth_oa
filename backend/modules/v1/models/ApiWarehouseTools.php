@@ -816,4 +816,12 @@ class ApiWarehouseTools
         return $msg;
     }
 
+    public static function getDifferenceOrderRateData($condition){
+        $storeName = $condition['storeName'] ?: '';
+        $beginDate = $condition['dateRange'][0] ?: '';
+        $endDate = $condition['dateRange'][1] ?: '';
+        $sql = "EXEC oauth_warehouse_tools_difference_order_rate '{$storeName}','{$beginDate}','{$endDate}'";
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
+    }
+
 }

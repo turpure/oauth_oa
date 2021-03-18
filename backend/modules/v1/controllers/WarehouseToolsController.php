@@ -760,4 +760,32 @@ class WarehouseToolsController extends AdminController
     }
 
 
+
+
+    /////////////////////////////////每日差异单比例////////////////////////////////////
+
+    /**
+     * 每日差异单比例
+     * Date: 2021-03-18 16:15
+     * Author: henry
+     * @return array
+     */
+    public function actionDifferenceOrderRate(){
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $storeName = $condition['storeName'] ?: '';
+            $beginDate = $condition['dateRange'][0] ?: '';
+            $endDate = $condition['dateRange'][1] ?: '';
+            $sql = "EXEC oauth_warehouse_tools_difference_order_rate '{$storeName}','{$beginDate}','{$endDate}'";
+            return Yii::$app->py_db->createCommand($sql)->queryAll();
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+
+
 }
