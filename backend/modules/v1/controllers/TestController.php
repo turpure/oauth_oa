@@ -131,11 +131,15 @@ class TestController extends AdminController
         $response = curl_exec($curl);
         curl_close($curl);
         $res =  json_decode($response,true);
+//        var_dump(count($res));exit;
 //            return $res;
         $data = [];
         $i = 0;
         foreach ($res as $v){
-            if($v['fyndiq_status'] == 'blocked') {
+//            var_dump($v);exit;
+//            if($v['fyndiq_status'] == 'blocked') {
+            if($v['status'] == 'for sale') {
+//            if(true) {
                 var_dump($v['sku']);
                 $i += 1;
                 $url = "https://merchants-api.fyndiq.se/api/v1/articles/".$v['id'];
@@ -147,7 +151,8 @@ class TestController extends AdminController
                     'markets' => $v['markets'],
                     'title' => $v['title'],
                     'description' => $v['description'],
-                    'shipping_time' => $v['shipping_time'],
+//                    'shipping_time' => $v['shipping_time'],
+                    'shipping_time' => [["market"=>"SE", "min"=>13, "max"=>16]],
                 ];
                 $result = Helper::post($url, json_encode($params), $header, 'PUT');
                 $data[] = [
