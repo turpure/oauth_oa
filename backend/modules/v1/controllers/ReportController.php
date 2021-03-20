@@ -877,6 +877,21 @@ class ReportController extends AdminController
         }
     }
 
+    /**
+     * @brief 开发汇率产品利润表
+     * @return mixed
+     */
+    public function actionDevRateGoodsProfit()
+    {
+        try {
+            $request = Yii::$app->request->post();
+            $condition = $request['condition'];
+            return ApiReport::getDevRateGoodsProfit($condition);
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+    }
+
 
     /**
      * @brief 导出开发利润
