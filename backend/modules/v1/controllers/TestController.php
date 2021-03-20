@@ -41,13 +41,35 @@ class TestController extends AdminController
     public  function actionTest(){
         try {
 
-            $sql = "SELECT goodsCode,seller1 FROM cache_skuSeller where IFNULL(seller1,'')<>'' ";
-            $result = Yii::$app->db->createCommand($sql)->queryAll();
+            $sql = "EXEC oauth_skuStorageAge '','','','','',0,1 ";
+            $result = Yii::$app->py_db->createCommand($sql)->queryAll();
+            $resData = $item = [];
+            $flag = false;  //默认标记，没有取到库存最早采购日期
             foreach ($result as $v){
-                $res = BGoods::updateAll(['possessMan2' => $v['seller1']],['goodsCode' => $v['goodsCode']]);
-                if(!$res) throw new Exception('Error');
+                //设置每个仓库->SKU 对应关系的初始值
+                if($v['order_id'] == 1){
+                    $item = $v;
+                    $flag = false;//重置默认标记
+                }
+                // 累计入库数量 大于等于 现有库存，取当前时间
+                if($flag === false){
+                    if($item['inAmount'] >= $v['number']){
+                        $resData[] = [
+                            'sku' => $item['sku'],
+                            'storeID' => $item['storeID'],
+                            'storeName' => $item['storeName'],
+                            'maxPurchaseDate' => substr($v['makeDate'],0,10)
+                        ];
+                        $flag = true;  //设置标记，已取到最大日期，后面的同仓库同SKU数据，直接跳过
+                    }else{
+                        $item['inAmount'] += $v['inAmount'];
+                    }
+                }else{
+                    continue; //标记$flag = true，已取到最大日期，后面的同仓库同SKU数据，直接跳过
+                }
+
             }
-            return true;
+            return $resData;
 
         } catch (\Exception $why) {
             return ['code' => 400, 'message'=>$why->getMessage()];
@@ -109,11 +131,15 @@ class TestController extends AdminController
         $response = curl_exec($curl);
         curl_close($curl);
         $res =  json_decode($response,true);
+//        var_dump(count($res));exit;
 //            return $res;
         $data = [];
         $i = 0;
         foreach ($res as $v){
-            if($v['fyndiq_status'] == 'blocked') {
+//            var_dump($v);exit;
+//            if($v['fyndiq_status'] == 'blocked') {
+            if($v['status'] == 'for sale') {
+//            if(true) {
                 var_dump($v['sku']);
                 $i += 1;
                 $url = "https://merchants-api.fyndiq.se/api/v1/articles/".$v['id'];
@@ -125,7 +151,8 @@ class TestController extends AdminController
                     'markets' => $v['markets'],
                     'title' => $v['title'],
                     'description' => $v['description'],
-                    'shipping_time' => $v['shipping_time'],
+//                    'shipping_time' => $v['shipping_time'],
+                    'shipping_time' => [["market"=>"SE", "min"=>13, "max"=>16]],
                 ];
                 $result = Helper::post($url, json_encode($params), $header, 'PUT');
                 $data[] = [

@@ -233,12 +233,28 @@ class Handler
     }
 
     /**
+     * @brief 处理销售员和账号关联
+     * @param $queryParams
+     * @throws \yii\db\Exception
+     * @return mixed | array
+     */
+    public static function paramsParse($queryParams = [])
+    {
+        $ret = self::userFilter($queryParams);
+        $data = [];
+        foreach ($ret as $value) {
+            $data[] = $value['username'] . '/' . $value['store'];
+        }
+        return $data;
+    }
+
+    /**
      * @brief 过滤出账号
      * @param $query
      * @return array
      * @throws \yii\db\Exception
      */
-    private static function  userFilter($query) {
+    public static function  userFilter($query) {
         $sql = 'call oauth_userInfo';
         $db = Yii::$app->db;
         $userInfo = $db->createCommand($sql)->queryAll();

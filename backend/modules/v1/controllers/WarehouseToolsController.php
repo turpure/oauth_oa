@@ -22,6 +22,10 @@ class WarehouseToolsController extends AdminController
         'class' => 'yii\rest\Serializer',
         'collectionEnvelope' => 'items',
     ];
+    public function behaviors()
+    {
+        return parent::behaviors();
+    }
 
     /**
      * @brief 拣货
@@ -409,14 +413,28 @@ class WarehouseToolsController extends AdminController
         $locationSql = "SELECT COUNT(DISTINCT LocationName) AS Number FROM [dbo].[B_StoreLocation](nolock) WHERE StoreID='{$storeId}'";
         $locationNum = Yii::$app->py_db->createCommand($locationSql)->queryScalar();
         //有SKU仓位数
-        $skuLocationSql = "SELECT COUNT(DISTINCT LocationName) AS Number FROM [dbo].[B_StoreLocation](nolock) sl
-                        INNER JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID WHERE sl.StoreID='{$storeId}'";
+        $skuLocationSql = "SELECT COUNT(DISTINCT LocationName) AS Number 
+                            FROM [dbo].[B_StoreLocation](nolock) l
+                            WHERE StoreID='{$storeId}' AND nid  IN(SELECT LocationID FROM B_GoodsSKULocation a WHERE StoreID = l.StoreID)";
         $skuLocationNum = Yii::$app->py_db->createCommand($skuLocationSql)->queryScalar();
         //空仓位数
-        $emptyLocationSql = "SELECT COUNT(DISTINCT LocationName) AS Number FROM [dbo].[B_StoreLocation](nolock) sl
-                        Left JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID 
-                        WHERE sl.StoreID='{$storeId}' AND ISNULL(gs.sku,'')=''";
+        $emptyLocationSql = "SELECT COUNT(DISTINCT LocationName) AS Number 
+                            FROM [dbo].[B_StoreLocation](nolock) l
+                            WHERE StoreID='{$storeId}' AND nid NOT IN(SELECT LocationID FROM B_GoodsSKULocation a WHERE StoreID = l.StoreID)";
         $emptyLocationNum = Yii::$app->py_db->createCommand($emptyLocationSql)->queryScalar();
+        //无库存仓位数
+        $nonStockLocationSql = "SELECT COUNT(DISTINCT LocationName) AS Number 
+                            FROM [dbo].[B_StoreLocation](nolock) l
+                            INNER JOIN (
+                                SELECT gsl.locationID,gsl.StoreID
+                                FROM B_GoodsSKULocation(nolock) gsl 
+                                INNER JOIN B_GoodsSKU(nolock) gs ON gs.NID=gsl.GoodsSKUID 
+                                LEFT JOIN KC_CurrentStock(nolock) cs ON cs.GoodsSKUID=gs.NID AND cs.StoreID=gsl.StoreID
+                                -- WHERE isnull(cs.number,0)>=0 
+                                GROUP BY gsl.locationID,gsl.StoreID
+								HAVING SUM(isnull(cs.number,0))<=0
+                            ) aa ON aa.locationID=l.nid AND aa.StoreID=l.StoreID WHERE l.StoreID='{$storeId}' ";
+        $nonStockLocationNum = Yii::$app->py_db->createCommand($nonStockLocationSql)->queryScalar();
         //有库存SKU个数
         $locationSkuSql = "SELECT COUNT(DISTINCT sku) AS Number FROM [dbo].[B_StoreLocation](nolock) sl
                         INNER JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID 
@@ -428,17 +446,22 @@ class WarehouseToolsController extends AdminController
             'locationNum' => $locationNum,
             'skuLocationNum' => $skuLocationNum,
             'emptyLocationNum' => $emptyLocationNum,
+            'nonStockLocationNum' => $nonStockLocationNum,
             'locationSkuNum' => $locationSkuNum,
             'skuLocationRate' => (string)round($locationSkuNum / ($locationNum ?: 1), 2),
         ];
 
         $sql = "SELECT skuNum, COUNT(LocationName) AS locationNum FROM(
-                SELECT sl.LocationName,COUNT(DISTINCT gs.SKU) AS skuNum
-                FROM [dbo].[B_StoreLocation](nolock) sl
-                INNER JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID
-                LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID
-                WHERE sl.StoreID='{$storeId}' AND cs.Number > 0 GROUP BY sl.LocationName) s
-                GROUP BY skuNum ORDER BY skuNum DESC";
+		            SELECT LocationName,sum(skuNum) AS skuNum FROM(
+                        SELECT sl.LocationName,isnull(gs.SKU,'') AS sku,cs.number,
+                        CASE WHEN isnull(gs.SKU,'')='' OR cs.number <= 0 THEN 0 ELSE 1 END skuNum
+                        FROM [dbo].[B_StoreLocation](nolock) sl
+                        LEFT JOIN B_GoodsSKULocation(nolock) gsl ON sl.NID=gsl.LocationID AND gsl.StoreID=sl.StoreID
+                        LEFT JOIN KC_CurrentStock(nolock) cs ON cs.GoodsSKUID=gsl.GoodsSKUID AND cs.StoreID=gsl.StoreID
+						LEFT JOIN B_GoodsSKU(nolock) gs ON gs.NID=cs.GoodsSKUID
+                        WHERE sl.StoreID='{$storeId}' 
+		            )aa GROUP BY LocationName
+                ) bb GROUP BY skuNum ORDER BY skuNum ";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         $dataProvider = new ArrayDataProvider([
             'allModels' => $data,
@@ -513,19 +536,18 @@ class WarehouseToolsController extends AdminController
     public function actionPositionDetail()
     {
         $cond = Yii::$app->request->post('condition', []);
-        $page = \Yii::$app->request->get('page', 1);;
-        $pageSize = $condition['pageSize'] ?? 20;
+        $page = \Yii::$app->request->get('page', 1);
+        $pageSize = $cond['pageSize'] ?? 20;
         $data = ApiWarehouseTools::getPositionDetails($cond);
         return new ArrayDataProvider([
             'allModels' => $data,
             'sort' => [
-                'attributes' => ['skuNum', 'stockSkuNum'],
+                'attributes' => ['StoreName','LocationName','skuNum', 'stockSkuNum'],
                 'defaultOrder' => [
                     'stockSkuNum' => SORT_DESC,
                 ]
             ],
             'pagination' => [
-                'page' => $page - 1,
                 'pageSize' => $pageSize,
             ],
         ]);
@@ -559,7 +581,6 @@ class WarehouseToolsController extends AdminController
     public function actionPositionDetailView()
     {
         $cond = Yii::$app->request->post('condition', []);
-        $cond['type'] = 'view';
         $data = ApiWarehouseTools::getPositionDetailsView($cond);
         return new ArrayDataProvider([
             'allModels' => $data,
@@ -587,7 +608,6 @@ class WarehouseToolsController extends AdminController
     public function actionPositionDetailViewExport()
     {
         $cond = Yii::$app->request->post('condition', []);
-        $cond['type'] = 'export';
         $data = ApiWarehouseTools::getPositionDetailsView($cond);
         $title = ['仓库', '仓位', 'SKU个数', 'SKU', 'SKU名称', 'SKU状态', '库存数量', '开发日期', '是否有采购单'];
         ExportTools::toExcelOrCsv('positionDetailView', $data, 'Xlsx', $title);
@@ -605,25 +625,27 @@ class WarehouseToolsController extends AdminController
     public function actionPositionDetailViewSheetsExport()
     {
         $cond = Yii::$app->request->post('condition', []);
-        $cond['type'] = 'export';
-        $filterNum = $cond['filterNum'] ?? 0;
         $data = ApiWarehouseTools::getPositionDetailsView($cond);
-        $includedData = $notIncludedData = [];
+        $includedData = $notIncludedData = $emptyStockData = [];
         foreach ($data as $k => $v) {
-            if ($filterNum && $k < $filterNum) {
-                continue;
+            if ($v['number'] > 0){
+                if ($v['hasPurchaseOrder'] == '是') {
+                    $includedData[] = $v;
+                } else{
+                    $notIncludedData[] = $v;
+                }
+            }else{
+                $emptyStockData[] = $v;
             }
-            if ($v['number'] > 0 && $v['hasPurchaseOrder'] == '是') {
-                $includedData[] = $v;
-            } elseif ($v['number'] > 0 && $v['hasPurchaseOrder'] == '否') {
-                $notIncludedData[] = $v;
-            }
+
         }
-        $title = ['仓库', '仓位', 'SKU个数', 'SKU', 'SKU名称', 'SKU状态', '库存数量', '开发日期', '是否有采购单'];
+        $title = ['仓库', '仓位', '有库存SKU个数', 'SKU', 'SKU名称', 'SKU状态', '库存数量', '开发日期', '是否有采购单'];
         $data = [
-            ['title' => $title, 'name' => '有采购单数据', 'data' => $includedData],
-            ['title' => $title, 'name' => '无采购单数据', 'data' => $notIncludedData],
+            ['title' => $title, 'name' => 'SKU有采购单数据', 'data' => $includedData],
+            ['title' => $title, 'name' => 'SKU无采购单数据', 'data' => $notIncludedData],
+            ['title' => $title, 'name' => 'SKU库存为0数据', 'data' => $emptyStockData],
         ];
+//        return $data;
         ExportTools::toExcelMultipleSheets('positionDetailView', $data, 'Xlsx');
 
     }
@@ -641,7 +663,7 @@ class WarehouseToolsController extends AdminController
     {
         $cond = Yii::$app->request->post('condition', []);
         $page = Yii::$app->request->post('page', 1);
-        $pageSize = $condition['pageSize'] ?? 20;
+        $pageSize = $cond['pageSize'] ?? 20;
         $data = ApiWarehouseTools::getPositionSearchData($cond);
         return new ArrayDataProvider([
             'allModels' => $data,
@@ -652,7 +674,6 @@ class WarehouseToolsController extends AdminController
                 ]
             ],
             'pagination' => [
-                'page' => $page - 1,
                 'pageSize' => $pageSize,
             ],
         ]);
@@ -685,7 +706,7 @@ class WarehouseToolsController extends AdminController
     {
         $cond = Yii::$app->request->post('condition', []);
         $page = Yii::$app->request->post('page', 1);
-        $pageSize = $condition['pageSize'] ?? 20;
+        $pageSize = $cond['pageSize'] ?? 20;
         $data = ApiWarehouseTools::getPositionManageData($cond);
         return new ArrayDataProvider([
             'allModels' => $data,
@@ -696,7 +717,6 @@ class WarehouseToolsController extends AdminController
                 ]
             ],
             'pagination' => [
-                'page' => $page - 1,
                 'pageSize' => $pageSize,
             ],
         ]);
@@ -738,6 +758,72 @@ class WarehouseToolsController extends AdminController
         }
 
     }
+
+
+
+
+    /////////////////////////////////每日差异单比例////////////////////////////////////
+
+    /**
+     * 每日差异单比例
+     * Date: 2021-03-18 16:15
+     * Author: henry
+     * @return array
+     */
+    public function actionDifferenceOrderRate(){
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $storeName = $condition['storeName'] ?: '';
+            $beginDate = $condition['dateRange'][0] ?: '';
+            $endDate = $condition['dateRange'][1] ?: '';
+            $sql = "EXEC oauth_warehouse_tools_difference_order_rate '{$storeName}','{$beginDate}','{$endDate}'";
+            return Yii::$app->py_db->createCommand($sql)->queryAll();
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /////////////////////////////////入库时效////////////////////////////////////
+
+    /**
+     * 入库时效
+     * Date: 2021-03-19 14:33
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionStorageTimeRate(){
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $storeName = $condition['storeName'] ?: '';
+            $beginDate = $condition['dateRange'][0] ?: '';
+            $endDate = $condition['dateRange'][1] ?: '';
+            $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}','{$storeName}'";
+            $data =  Yii::$app->py_db->createCommand($sql)->queryAll();
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => ['storeName', 'dt', 'totalNum','inNum','notInNum','notInRate','num','rate',
+                        'oneNum','oneRate','twoNum','twoRate','threeNum','threeRate','otherNum','otherRate'],
+                    'defaultOrder' => [
+                        'storeName' => SORT_ASC,
+                        'dt' => SORT_ASC,
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => 100,
+                ],
+            ]);
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
 
 
 }

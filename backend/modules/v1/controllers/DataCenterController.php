@@ -422,15 +422,311 @@ class DataCenterController extends AdminController
         }
     }
 
-                    //////////其他//////////
-    public function actionStockTurnover (){
+
+
+    //////////产品数据//////////
+
+    /**
+     * 销售库存周转
+     * Date: 2021-03-03 16:22
+     * Author: henry
+     * @return ArrayDataProvider
+     * @throws \yii\db\Exception
+     */
+    public function actionSalerStockTurnover()
+    {
+        $page = Yii::$app->request->get('page', 1);
+        $condition = Yii::$app->request->post('condition', []);
+        $pageSize = $condition['pageSize'] ?? 20;
+        $condition['dataType'] = 'saler';
+        $data = ApiDataCenter::getStockTurnoverInfo($condition);
+        return new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['goodsCode', 'StoreName', 'GoodsName', 'SalerName', 'Season', 'GoodsStatus', 'CreateDate',
+                    'Number', 'Money', 'cate', 'subCate', 'saler', 'lastPurchaseDate', 'soldNum', 'personSoldNum',
+                    'dutySoldNum', 'personDutySoldNum', 'personDutyCostPrice', 'turnoverDays', 'dutyRate'],
+                'defaultOrder' => [
+                    'turnoverDays' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+    }
+
+    /**
+     * 销售库存周转下载
+     * Date: 2021-03-06 13:10
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     * @throws \yii\db\Exception
+     */
+    public function actionSalerStockTurnoverExport()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $condition['dataType'] = 'saler';
+        $data = ApiDataCenter::getStockTurnoverInfo($condition);
+        $title = ['商品编码', '主图', '仓库', '商品名称', '开发员', '季节', '商品状态', '开发时间',
+            '库存数量', '库存金额', '类目', '子类目', '销售员', '最后采购时间', '最近30天销量', '个人销量',
+            '责任销量', '个人责任销量', '个人责任成本', '库存周转', '个人责任占比'];
+        ExportTools::toExcelOrCsv('salerStockTurnover', $data, 'Xlsx', $title);
+    }
+
+    /**
+     * 开发库存周转
+     * Date: 2021-03-03 16:22
+     * Author: henry
+     * @return ArrayDataProvider
+     * @throws \yii\db\Exception
+     */
+    public function actionDeveloperStockTurnover()
+    {
+        $page = Yii::$app->request->get('page', 1);
+        $condition = Yii::$app->request->post('condition', []);
+        $pageSize = $condition['pageSize'] ?? 20;
+        $condition['dataType'] = 'developer';
+        $data = ApiDataCenter::getStockTurnoverInfo($condition);
+        return new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['goodsCode', 'StoreName', 'GoodsName', 'SalerName', 'Season', 'GoodsStatus', 'CreateDate',
+                    'Number', 'Money', 'cate', 'subCate', 'lastPurchaseDate', 'unsoldDays', 'soldNum', 'turnoverDays'],
+                'defaultOrder' => [
+                    'turnoverDays' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
 
     }
-    public function actionPriceProtection (){
+
+    /**
+     * 开发库存周转下载
+     * Date: 2021-03-06 13:10
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     * @throws \yii\db\Exception
+     */
+    public function actionDeveloperStockTurnoverExport()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $condition['dataType'] = 'developer';
+        $data = ApiDataCenter::getStockTurnoverInfo($condition);
+        $title = ['商品编码', '主图', '仓库', '商品名称', '开发员', '季节', '商品状态', '开发时间',
+            '库存数量', '库存金额', '类目', '子类目', '最后采购时间', '未售天数', '最近30天销量','库存周转'];
+        ExportTools::toExcelOrCsv('developerStockTurnover', $data, 'Xlsx', $title);
+    }
+
+    /**
+     * 开发库存周转销售明细
+     * Date: 2021-03-03 16:22
+     * Author: henry
+     * @return ArrayDataProvider
+     * @throws \yii\db\Exception
+     */
+    public function actionDeveloperStockTurnoverDetail()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $data = ApiDataCenter::getDeveloperStockTurnoverInfo($condition);
+
+        return new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['goodsCode', 'StoreName', 'GoodsName', 'SalerName', 'Season', 'GoodsStatus', 'CreateDate',
+                    'Number', 'Money', 'cate', 'subCate', 'lastPurchaseDate', 'unsoldDays', 'soldNum', 'turnoverDays'],
+                'defaultOrder' => [
+                    'turnoverDays' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => 1000,
+            ],
+        ]);
+    }
+
+    /**
+     * 开发库存周转销售明细下载
+     * Date: 2021-03-06 13:10
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     * @throws \yii\db\Exception
+     */
+    public function actionDeveloperStockTurnoverDetailExport()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $data = ApiDataCenter::getDeveloperStockTurnoverInfo($condition);
+        $title = ['销售员', '商品编码', '仓库', '销量', '销售额', '毛利(￥)', '毛利率'];
+        ExportTools::toExcelOrCsv('developerStockTurnover', $data, 'Xlsx', $title);
+    }
+
+    /**
+     * 库龄表
+     * Date: 2021-03-06 16:52
+     * Author: henry
+     * @return ArrayDataProvider
+     */
+    public function actionSkuStorageAge()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $pageSize = $condition['pageSize'] ?: 20;
+        //获取所有销售员--账号 信息
+        $params = [
+            'salerName' => implode(',', $condition['salerName'] ?: []),
+            'storeName' => implode(',', $condition['storeName'] ?: ['义乌仓']),
+            'skuStatus' => implode(',', $condition['skuStatus'] ?? []),
+            'cate' => implode(',', $condition['cate'] ?? []),
+            'subCate' => implode(',', $condition['subCate'] ?? []),
+            'maxStorageAge' => $condition['maxStorageAge'] ?: 0,
+        ];
+        $sql = "EXEC oauth_skuStorageAge '{$params['salerName']}','{$params['storeName']}','{$params['skuStatus']}',
+                '{$params['cate']}','{$params['subCate']}','{$params['maxStorageAge']}'";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        return new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['sku', 'storeName', 'skuName', 'salerName', 'season', 'goodsSkuStatus', 'createDate',
+                    'number', 'money', 'cate', 'subCate', 'thirtyStockNum', 'thirtyStockMoney',
+                    'sixtyStockNum', 'sixtyStockMoney','ninetyStockNum','ninetyStockMoney','moreStockNum','moreStockMoney'],
+                'defaultOrder' => [
+                    'number' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+    }
+
+    /**
+     * 库龄表下载
+     * Date: 2021-03-06 16:52
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionSkuStorageAgeExport()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        //获取所有销售员--账号 信息
+        $params = [
+            'salerName' => implode(',', $condition['salerName'] ?? []),
+            'storeName' => implode(',', $condition['storeName'] ?: ['义乌仓']),
+            'skuStatus' => implode(',', $condition['skuStatus'] ?? []),
+            'cate' => implode(',', $condition['cate'] ?? []),
+            'subCate' => implode(',', $condition['subCate'] ?? []),
+            'maxStorageAge' => $condition['maxStorageAge'] ?: 0,
+        ];
+        $sql = "EXEC oauth_skuStorageAge '{$params['salerName']}','{$params['storeName']}','{$params['skuStatus']}',
+                '{$params['cate']}','{$params['subCate']}','{$params['maxStorageAge']}'";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $title = ['SKU', '主图', '仓库', 'SKU名称', '开发员', '季节', 'SKU状态', '开发时间',
+            '库存数量', '库存金额', '类目', '子类目', '0-30天库存数量', '0-30天库存金额', '30-60天库存数量','30-60天库存金额',
+            '60-90天库存数量','60-90天库存金额','90天以上库存数量','90天以上库存金额'];
+        ExportTools::toExcelOrCsv('skuStorageAge', $data, 'Xlsx', $title);
+    }
+
+    /**
+     * 价格保护
+     * Date: 2021-03-08 10:59
+     * Author: henry
+     * @return ArrayDataProvider
+     * @throws \yii\db\Exception
+     */
+    public function actionPriceProtection()
+    {
+        $page = Yii::$app->request->get('page', 1);
+        $condition = Yii::$app->request->post('condition', []);
+        $pageSize = $condition['pageSize'] ?? 20;
+        $condition['dataType'] = 'priceProtection';
+        $data = ApiDataCenter::getPriceProtectionInfo($condition);
+        return new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['goodsCode', 'StoreName', 'GoodsName', 'SalerName', 'Season', 'GoodsStatus', 'CreateDate',
+                    'Number', 'Money', 'cate', 'subCate', 'saler', 'lastPurchaseDate', 'soldNum', 'personSoldNum',
+                    'dutySoldNum', 'personDutySoldNum', 'personDutyCostPrice', 'turnoverDays', 'dutyRate'],
+                'defaultOrder' => [
+                    'turnoverDays' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+    }
+
+    /**
+     * 价格保护 导出
+     * Date: 2021-03-08 16:27
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     * @throws \yii\db\Exception
+     */
+    public function actionPriceProtectionExport()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $condition['dataType'] = 'priceProtection';
+        $data = ApiDataCenter::getPriceProtectionInfo($condition);
+        $title = ['产品编码', '主图', '仓库', '销售员', '商品名称', '商品状态', '类目', '子类目', '开发员', '开发时间',
+            '库存数量', '30天销量', '30天本人销量', '库存周转','本人销量占比'];
+        ExportTools::toExcelOrCsv('priceProtection', $data, 'Xlsx', $title);
+    }
+
+    /**
+     * 价格保护异常
+     * Date: 2021-03-08 10:59
+     * Author: henry
+     * @return ArrayDataProvider
+     * @throws \yii\db\Exception
+     */
+    public function actionPriceProtectionError()
+    {
+        $page = Yii::$app->request->get('page', 1);
+        $condition = Yii::$app->request->post('condition', []);
+        $pageSize = $condition['pageSize'] ?? 20;
+        $condition['dataType'] = 'priceProtectionError';
+        $data = ApiDataCenter::getPriceProtectionInfo($condition);
+        return new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['goodsCode', 'storeName', 'saler', 'goodsName', 'goodsStatus', 'cate', 'subCate',
+                    'salerName',  'CreateDate', 'number', 'soldNum',  'personSoldNum', 'turnoverDays', 'rate',
+                    'aveAmt', 'foulSaler', 'amt', 'foulSalerSoldNum'],
+                'defaultOrder' => [
+                    'turnoverDays' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
 
     }
-    public function actionPriceProtectionError (){
 
+    /**
+     * 价格保护异常 导出
+     * Date: 2021-03-08 16:27
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     * @throws \yii\db\Exception
+     */
+    public function actionPriceProtectionErrorExport()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $condition['dataType'] = 'priceProtectionError';
+        $data = ApiDataCenter::getPriceProtectionInfo($condition);
+        $title = ['产品编码', '主图', '仓库', '销售员', '商品名称', '商品状态', '类目', '子类目', '开发员', '开发时间', '库存数量', '30天销量',
+            '30天本人销量', '库存周转','本人销量占比','本人3天均价($)','犯规销售员','3天犯规最低价格($)','犯规销售员近30天销量'];
+        ExportTools::toExcelOrCsv('priceProtectionError', $data, 'Xlsx', $title);
     }
 
 
@@ -455,7 +751,16 @@ class DataCenterController extends AdminController
         $provider = new ActiveDataProvider([
             'query' => $query,
             'db' => \Yii::$app->py_db,
+            'sort' => [
+                'attributes' => ['GoodsCodeStat', 'NotInStore', 'Purchaser', 'SalerName', 'Season', 'SellCount1',
+                    'SellCount2', 'SellCount3', 'StockDays', 'delay_days', 'factStockNum', 'goodscode', 'goodsname',
+                    'hopeUseNum', 'num', 'sellDays'],
+                'defaultOrder' => [
+                    'sellDays' => SORT_DESC,
+                ]
+            ],
             'pagination' => [
+                'page' => $page - 1,
                 'pageSize' => $pageSize
             ]
         ]);
@@ -497,9 +802,6 @@ class DataCenterController extends AdminController
         ];
         return ApiDataCenter::getSalesChangeData($condition);
     }
-
-
-
 
 
     /**
@@ -780,10 +1082,10 @@ class DataCenterController extends AdminController
         if ($paypalStatus) $sql .= " AND paypalStatus LIKE '%{$paypalStatus}%'";
         if ($memo) $sql .= " AND memo LIKE '%{$memo}%'";
         if ($isPyUsed || $isPyUsed === "0") $sql .= " AND isPyUsed = '{$isPyUsed}'";
-        if ($isUrUsed){
+        if ($isUrUsed) {
             $sql .= " AND ISNULL(isUsed,0) = 1 AND ISNULL(isUsedBalance,0) = 1 ";
         }
-        if ($isUrUsed === '0'){
+        if ($isUrUsed === '0') {
             $sql .= " AND (ISNULL(isUsed,0) = 0 OR ISNULL(isUsedBalance,0) = 0) ";
         }
         try {
@@ -794,7 +1096,7 @@ class DataCenterController extends AdminController
                 'allModels' => $data,
                 'sort' => [
                     'attributes' => [
-                        'nid','accountName', 'isUrUsed', 'isPyUsed', 'paypalStatus', 'createdTime', 'updatedTime'
+                        'nid', 'accountName', 'isUrUsed', 'isPyUsed', 'paypalStatus', 'createdTime', 'updatedTime'
                     ],
                     'defaultOrder' => [
                         'nid' => SORT_DESC,
@@ -841,10 +1143,10 @@ class DataCenterController extends AdminController
         if ($paypalStatus) $sql .= " AND paypalStatus LIKE '%{$paypalStatus}%'";
         if ($memo) $sql .= " AND memo LIKE '%{$memo}%'";
         if ($isPyUsed || $isPyUsed === "0") $sql .= " AND isPyUsed = '{$isPyUsed}'";
-        if ($isUrUsed){
+        if ($isUrUsed) {
             $sql .= " AND ISNULL(isUsed,0) = 1 AND ISNULL(isUsedBalance,0) = 1 ";
         }
-        if ($isUrUsed === '0'){
+        if ($isUrUsed === '0') {
             $sql .= " AND (ISNULL(isUsed,0) = 0 OR ISNULL(isUsedBalance,0) = 0) ";
         }
 
@@ -882,9 +1184,9 @@ class DataCenterController extends AdminController
         } else {
             //更新 TOKEN 信息
             $token = YPayPalToken::findOne(['accountName' => $query->accountName]);
-            if($token){
+            if ($token) {
                 $token->isUsedBalance = $query->isUrUsed;
-                if($query->isUrUsed == '1'){
+                if ($query->isUrUsed == '1') {
                     $token->isUsed = 1;
                 }
                 $tokenChangedAttr = $token->getDirtyAttributes();
@@ -892,9 +1194,9 @@ class DataCenterController extends AdminController
                 // 添加 TOKEN 修改日志
                 $content = 'PayPal token信息更新：';
                 foreach ($tokenChangedAttr as $k => $v) {
-                    if($v == 1){
+                    if ($v == 1) {
                         $str = '是';
-                    }else{
+                    } else {
                         $str = '否';
                     }
                     $content .= $k . '->' . $str . ',';
@@ -967,10 +1269,10 @@ class DataCenterController extends AdminController
                 FROM Y_PayPalTransactions b
                 LEFT JOIN Y_PayPalToken t ON b.paypal_account=t.accountName 
                 WHERE 1=1 ";
-            if($accountName){
+            if ($accountName) {
                 $sql .= " AND paypal_account IN ('{$accounts}')";
             }
-            if($mappingEbayName){
+            if ($mappingEbayName) {
                 $sql .= " AND mappingEbayName LIKE '%{$mappingEbayName}%'";
             }
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
@@ -1005,8 +1307,8 @@ class DataCenterController extends AdminController
         $accountName = isset($cond['paypal_account']) ? $cond['paypal_account'] : [];
         $beginDate = isset($cond['dateRange'][0]) ? $cond['dateRange'][0] : '';
         $endDate = isset($cond['dateRange'][1]) ? $cond['dateRange'][1] : '';
-        $fileNameDateSuffix = str_replace('-','',$beginDate) . '--' . str_replace('-','',$endDate);
-        $title = ['DateTime','TransactionID','Name','Type','Status','Currency','Gross','Fee','Net','FromEmailAddress','ToEmailAddress','EbayName'];
+        $fileNameDateSuffix = str_replace('-', '', $beginDate) . '--' . str_replace('-', '', $endDate);
+        $title = ['DateTime', 'TransactionID', 'Name', 'Type', 'Status', 'Currency', 'Gross', 'Fee', 'Net', 'FromEmailAddress', 'ToEmailAddress', 'EbayName'];
         try {
             $fileNameArr = [];
             foreach ($accountName as $account) {
@@ -1017,7 +1319,7 @@ class DataCenterController extends AdminController
                     FROM [dbo].[y_paypalTransactions] s
                     LEFT JOIN Y_PayPalToken t ON s.paypal_account=t.accountName 
                     WHERE paypal_account LIKE '%{$account}%'";
-                if($beginDate && $endDate) $sql .= " AND convert(varchar(10),transaction_date,121) between '{$beginDate}' and '{$endDate}'";
+                if ($beginDate && $endDate) $sql .= " AND convert(varchar(10),transaction_date,121) between '{$beginDate}' and '{$endDate}'";
                 /*$sql .= " AND (payer_full_name LIKE 'ebay%'
                     OR transaction_type_description IN ('Express Checkout Payment', 'Tax collected by partner', 'General Payment',
                           'Pre-approved Payment Bill User Payment', 'Third Party Recoupment', 'Mass Pay Payment')
@@ -1029,9 +1331,9 @@ class DataCenterController extends AdminController
                 $data = Yii::$app->py_db->createCommand($sql)->queryAll();
 
                 $token = YPayPalToken::findOne(['accountName' => $account]);
-                if($token && $token['mappingEbayName']){
+                if ($token && $token['mappingEbayName']) {
                     $name = 'payPalTransaction-' . $account . '-' . $token['mappingEbayName'] . '-' . $fileNameDateSuffix;
-                }else{
+                } else {
                     $name = 'payPalTransaction-' . $account . '-' . $fileNameDateSuffix;
                 }
                 $fileNameArr[] = ExportTools::saveToExcelOrCsv($name, $data, 'Xls', $title);
@@ -1042,7 +1344,7 @@ class DataCenterController extends AdminController
             $filename = $fileNameDateSuffix . "payPal.zip";
             $zip->open($filename, \ZipArchive::CREATE);   //打开压缩包
             foreach ($fileNameArr as $file) {
-                $zip->addFromString($file,file_get_contents($file)); //向压缩包中添加文件
+                $zip->addFromString($file, file_get_contents($file)); //向压缩包中添加文件
             }
             $zip->close();  //关闭压缩包
             foreach ($fileNameArr as $file) {
@@ -1051,7 +1353,7 @@ class DataCenterController extends AdminController
             //输出压缩文件提供下载
             header("Cache-Control: max-age=0");
             header("Content-Description: File Transfer");
-            header('Content-disposition: attachment; filename=' . iconv('utf-8','gbk//ignore',$filename)); // 文件名
+            header('Content-disposition: attachment; filename=' . iconv('utf-8', 'gbk//ignore', $filename)); // 文件名
             header("Content-Type: application/zip"); // zip格式的
             header("Content-Transfer-Encoding: binary"); //
             ob_clean();
@@ -1059,14 +1361,14 @@ class DataCenterController extends AdminController
             readfile($filename);//输出文件;
             unlink($filename); //删除压缩包临时文件
         } catch (\Exception $e) {
-            $dir = Yii::$app->basePath.'/web/';
-            if($handle = opendir($dir)) {
-                while(false !== ($file = readdir($handle))) {
-                    if(strripos(strtolower($file),'.xls') !== false ||
-                        strripos(strtolower($file),'.xlsx') !== false ||
-                        strripos(strtolower($file),'.csv') !== false ||
-                        strripos(strtolower($file),'.zip') !== false
-                    ){
+            $dir = Yii::$app->basePath . '/web/';
+            if ($handle = opendir($dir)) {
+                while (false !== ($file = readdir($handle))) {
+                    if (strripos(strtolower($file), '.xls') !== false ||
+                        strripos(strtolower($file), '.xlsx') !== false ||
+                        strripos(strtolower($file), '.csv') !== false ||
+                        strripos(strtolower($file), '.zip') !== false
+                    ) {
                         //按名称过滤
                         @unlink($file);
                     }
@@ -1096,8 +1398,8 @@ class DataCenterController extends AdminController
         $accountName = isset($cond['paypal_account']) ? $cond['paypal_account'] : [];
         $beginDate = isset($cond['dateRange'][0]) ? $cond['dateRange'][0] : '';
         $endDate = isset($cond['dateRange'][1]) ? $cond['dateRange'][1] : '';
-        $fileNameDateSuffix = str_replace('-','',$beginDate) . '--' . str_replace('-','',$endDate);
-        $title = ['DateTime','TransactionID','Name','Type','Status','Currency','Gross','Fee','Net','FromEmailAddress','ToEmailAddress','EbayName'];
+        $fileNameDateSuffix = str_replace('-', '', $beginDate) . '--' . str_replace('-', '', $endDate);
+        $title = ['DateTime', 'TransactionID', 'Name', 'Type', 'Status', 'Currency', 'Gross', 'Fee', 'Net', 'FromEmailAddress', 'ToEmailAddress', 'EbayName'];
         try {
             $fileNameArr = [];
             foreach ($accountName as $account) {
@@ -1108,8 +1410,8 @@ class DataCenterController extends AdminController
                     FROM [dbo].[y_paypalTransactions] s 
                     LEFT JOIN Y_PayPalToken t ON s.paypal_account=t.accountName 
                     WHERE 1=1 ";
-                if($accountName) $sql .= " AND paypal_account LIKE '%{$account}%'";
-                if($beginDate && $endDate) $sql .= " AND convert(varchar(10),transaction_date,121) between '{$beginDate}' and '{$endDate}'";
+                if ($accountName) $sql .= " AND paypal_account LIKE '%{$account}%'";
+                if ($beginDate && $endDate) $sql .= " AND convert(varchar(10),transaction_date,121) between '{$beginDate}' and '{$endDate}'";
                 $sql .= " AND (payer_full_name LIKE 'ebay%' AND payer_full_name NOT LIKE 'ebay-shop%' AND payer_full_name <> 'ebay' AND ISNULL(transaction_amount,0) < 0 
                     OR ISNULL(transaction_type_description,'') IN ('PayPal Checkout APIs.', '', 
                           'General: received payment of a type not belonging to the other T00nn categories.', 
@@ -1120,9 +1422,9 @@ class DataCenterController extends AdminController
                 ) ORDER BY transaction_date";
                 $data = Yii::$app->py_db->createCommand($sql)->queryAll();
                 $token = YPayPalToken::findOne(['accountName' => $account]);
-                if($token && $token['mappingEbayName']){
+                if ($token && $token['mappingEbayName']) {
                     $name = 'payPalTransaction-' . $account . '-' . $token['mappingEbayName'] . '-' . $fileNameDateSuffix;
-                }else{
+                } else {
                     $name = 'payPalTransaction-' . $account . '-' . $fileNameDateSuffix;
                 }
                 $fileNameArr[] = ExportTools::saveToExcelOrCsv($name, $data, 'Xls', $title);
@@ -1133,7 +1435,7 @@ class DataCenterController extends AdminController
             $filename = $fileNameDateSuffix . "payPal.zip";
             $zip->open($filename, \ZipArchive::CREATE);   //打开压缩包
             foreach ($fileNameArr as $file) {
-                $zip->addFromString($file,file_get_contents($file)); //向压缩包中添加文件
+                $zip->addFromString($file, file_get_contents($file)); //向压缩包中添加文件
             }
             $zip->close();  //关闭压缩包
             foreach ($fileNameArr as $file) {
@@ -1142,7 +1444,7 @@ class DataCenterController extends AdminController
             //输出压缩文件提供下载
             header("Cache-Control: max-age=0");
             header("Content-Description: File Transfer");
-            header('Content-disposition: attachment; filename=' . iconv('utf-8','gbk//ignore',$filename)); // 文件名
+            header('Content-disposition: attachment; filename=' . iconv('utf-8', 'gbk//ignore', $filename)); // 文件名
             header("Content-Type: application/zip"); // zip格式的
             header("Content-Transfer-Encoding: binary"); //
             ob_clean();
@@ -1150,14 +1452,14 @@ class DataCenterController extends AdminController
             readfile($filename);//输出文件;
             unlink($filename); //删除压缩包临时文件
         } catch (\Exception $e) {
-            $dir = Yii::$app->basePath.'/web/';
-            if($handle = opendir($dir)) {
-                while(false !== ($file = readdir($handle))) {
-                    if(strripos(strtolower($file),'.xls') !== false ||
-                        strripos(strtolower($file),'.xlsx') !== false ||
-                        strripos(strtolower($file),'.csv') !== false ||
-                        strripos(strtolower($file),'.zip') !== false
-                    ){
+            $dir = Yii::$app->basePath . '/web/';
+            if ($handle = opendir($dir)) {
+                while (false !== ($file = readdir($handle))) {
+                    if (strripos(strtolower($file), '.xls') !== false ||
+                        strripos(strtolower($file), '.xlsx') !== false ||
+                        strripos(strtolower($file), '.csv') !== false ||
+                        strripos(strtolower($file), '.zip') !== false
+                    ) {
                         //按名称过滤
                         @unlink($file);
                     }
@@ -1177,7 +1479,8 @@ class DataCenterController extends AdminController
      * Author: henry
      * @return array|ArrayDataProvider
      */
-    public function actionPpToken(){
+    public function actionPpToken()
+    {
         $request = Yii::$app->request;
         if (!$request->isPost) {
             return [];
@@ -1220,7 +1523,8 @@ class DataCenterController extends AdminController
      * Author: henry
      * @return array
      */
-    public function actionPpTokenExport(){
+    public function actionPpTokenExport()
+    {
         $request = Yii::$app->request;
         if (!$request->isPost) {
             return [];
@@ -1246,7 +1550,7 @@ class DataCenterController extends AdminController
             if ($isUsedRefund || $isUsedRefund === "0") $query->andWhere(['isUsedRefund' => $isUsedRefund]);
             if ($isUsedTransaction || $isUsedTransaction === "0") $query->andWhere(['isUsedTransaction' => $isUsedTransaction]);
             $data = $query->orderBy('accountName')->asArray()->all();
-            $title = ['payPal账号','用户名','签名','eBay账号','是否启用','是否获取余额','是否获取退款','是否获取交易明细','时间'];
+            $title = ['payPal账号', '用户名', '签名', 'eBay账号', '是否启用', '是否获取余额', '是否获取退款', '是否获取交易明细', '时间'];
             ExportTools::toExcelOrCsv('payPalToken', $data, 'Xls', $title);
         } catch (\Exception $e) {
             return [
@@ -1279,13 +1583,13 @@ class DataCenterController extends AdminController
         $res = $query->save();
         if (!$res) {
             return ['code' => 400, 'message' => 'Failed to save payPal info!'];
-        }else{
+        } else {
             if (!$query->isNewRecord) {
                 $content = 'PayPal token信息更新：';
                 foreach ($changedAttr as $k => $v) {
-                    if($v == 1){
+                    if ($v == 1) {
                         $str = '是';
-                    }else{
+                    } else {
                         $str = '否';
                     }
                     $content .= $k . '->' . $str . ',';

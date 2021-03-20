@@ -3649,7 +3649,7 @@ class ApiGoodsinfo
                         'currency' => 'SEK',
                     ]
                 ]];
-                $var['shipping_time'] = [["market" => "SE", "min" => 9, "max" => 12]];
+                $var['shipping_time'] = [["market" => "SE", "min" => 13, "max" => 16]];
                 $var['main_image'] = $sku['linkUrl'];
                 $extraImages = explode("\n", $wishInfo['extraImages']);
                 $key = array_search($sku['linkUrl'], $extraImages);

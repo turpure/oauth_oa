@@ -243,16 +243,16 @@ class ApiTinyTool
                         bgc.CategoryParentName,
                         bgc.CategoryName
                     FROM b_goods AS bg
-                    LEFT JOIN B_GoodsSKU AS bgs ON bg.NID = bgs.GoodsID
-                    LEFT JOIN B_GoodsCats AS bgc ON bgc.NID = bg.GoodsCategoryID
-                    LEFT JOIN B_Supplier bs ON bs.NID = bg.SupplierID
+                    LEFT JOIN B_GoodsSKU(nolock) AS bgs ON bg.NID = bgs.GoodsID
+                    LEFT JOIN B_GoodsCats(nolock) AS bgc ON bgc.NID = bg.GoodsCategoryID
+                    LEFT JOIN B_Supplier(nolock) bs ON bs.NID = bg.SupplierID
                     -- WHERE bgs.SKU IN (SELECT MIN (bgs.SKU) FROM B_GoodsSKU AS bgs GROUP BY bgs.GoodsID)
-                    WHERE EXISTS(SELECT MIN(SKU) FROM B_GoodsSKU AS bgss  GROUP BY bgss.GoodsID HAVING bgs.SKU=MIN(bgss.SKU))
+                    WHERE EXISTS(SELECT MIN(SKU) FROM B_GoodsSKU(nolock) AS bgss  GROUP BY bgss.GoodsID HAVING bgs.SKU=MIN(bgss.SKU))
                     AND bg.CreateDate BETWEEN '$beginDate' AND '$endDate' ";
             if ($supplierName) $sql .= " AND bs.SupplierName LIKE '%$supplierName%' ";
-            if ($possessMan1) $sql .= " AND bg.possessman1 LIKE '%$possessMan1%' ";
-            if ($possessMan2) $sql .= " AND bg.possessman2 LIKE '%$possessMan2%' ";
-            if ($salerName) $sql .= " AND bg.SalerName LIKE '%$salerName%' ";
+            if ($possessMan1) $sql .= " AND bg.possessman1 LIKE '$possessMan1%' ";
+            if ($possessMan2) $sql .= " AND bg.possessman2 LIKE '$possessMan2%' ";
+            if ($salerName) $sql .= " AND bg.SalerName LIKE '$salerName%' ";
             if ($goodsName) {
                 foreach ($goodsName as $v) {
                     $sql .= " AND bg.GoodsName LIKE '%$v%' ";
@@ -260,8 +260,10 @@ class ApiTinyTool
             }
 
             if ($goodsSkuStatus) $sql .= " AND bgs.GoodsSKUStatus IN ('$goodsSkuStatus') ";
-            if ($categoryParentName) $sql .= " AND bgc.CategoryParentName LIKE '%$categoryParentName%' ";
-            if ($categoryName) $sql .= " AND bgc.CategoryName LIKE '%$categoryName%'";
+//            if ($categoryParentName) $sql .= " AND bgc.CategoryParentName LIKE '%$categoryParentName%' ";
+            if ($categoryParentName) $sql .= " AND bgc.CategoryParentName = '$categoryParentName' ";
+//            if ($categoryName) $sql .= " AND bgc.CategoryName LIKE '%$categoryName%'";
+            if ($categoryName) $sql .= " AND bgc.CategoryName = '$categoryName'";
             $sql .= "  ORDER BY bg.CreateDate DESC";
             $res = Yii::$app->py_db->createCommand($sql)->queryAll();
             $data = new ArrayDataProvider([

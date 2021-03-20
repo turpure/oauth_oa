@@ -7,6 +7,8 @@
 
 namespace backend\modules\v1\models;
 
+use backend\modules\v1\utils\Handler;
+use backend\modules\v1\utils\Helper;
 use Yii;
 use yii\data\ArrayDataProvider;
 use yii\data\Sort;
@@ -328,5 +330,123 @@ class ApiDataCenter
         ];
         return $result;
     }
+
+    /**
+     * 获取库存周转数据
+     * @param $condition
+     * Date: 2021-03-03 16:43
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    public static function getStockTurnoverInfo($condition){
+        $params = [
+            'cate' => implode(',', $condition['cate'] ?? []),
+            'subCate' => implode(',', $condition['cate'] ?? []),
+            'goodsStatus' => implode(',', $condition['goodsStatus'] ?? []),
+            'storeName' => implode(',', $condition['storeName'] ?? []),
+            'goodsCode' => $condition['goodsCode'] ?? '',
+            'lastPurchaseDateBegin' => $condition['lastPurchaseDate'][0] ?? '',
+            'lastPurchaseDateEnd' => $condition['lastPurchaseDate'][1] ?? '',
+            'devDateBegin' => $condition['devDate'][0] ?? '',
+            'devDateEnd' => $condition['devDate'][1] ?? '',
+            'unsoldDays' => $condition['unsoldDays'] ?? 0,
+            'turnoverDays' => $condition['turnoverDays'] ?? 0,
+        ];
+        if($condition['dataType'] == 'developer'){
+            $params['SalerName'] = $condition['member'] ?: '';
+            $params['suffix'] = '';
+            $sql = "EXEC oauth_goodsStockTurnover 0,'{$params['goodsStatus']}','{$params['cate']}','{$params['subCate']}',
+            '{$params['lastPurchaseDateBegin']}','{$params['lastPurchaseDateEnd']}','{$params['devDateBegin']}',
+            '{$params['devDateEnd']}','{$params['unsoldDays']}','{$params['turnoverDays']}',
+            '{$params['SalerName']}','{$params['storeName']}','{$params['goodsCode']}';";
+        }else {
+            $par = [
+                'username' => isset($condition['member']) ? $condition['member'] : [],
+                'department' => isset($condition['depart']) && $condition['depart'] ? [$condition['depart']] : []
+            ];
+            $params['SalerName'] = '';
+            $suffixFilter = Handler::paramsParse($par);
+
+            $params['suffix'] = implode(',', $suffixFilter);
+            $sql = "EXEC oauth_goodsStockTurnover 1,'{$params['goodsStatus']}','{$params['cate']}','{$params['subCate']}',  
+            '{$params['lastPurchaseDateBegin']}','{$params['lastPurchaseDateEnd']}','{$params['devDateBegin']}',
+            '{$params['devDateEnd']}','{$params['unsoldDays']}','{$params['turnoverDays']}',
+            '','{$params['storeName']}','{$params['goodsCode']}','{$params['suffix']}';";
+        }
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        return $data;
+    }
+
+    /**
+     * 开发库存周转 明细
+     * @param $condition
+     * Date: 2021-03-06 10:08
+     * Author: henry
+     * @return mixed
+     * @throws \yii\db\Exception
+     */
+    public  static function getDeveloperStockTurnoverInfo($condition){
+        //获取所有销售员--账号 信息
+        //$suffixFilter = Handler::paramsParse();
+        $params = [
+            'goodsCode' => $condition['goodsCode'] ?? '',
+            'storeName' => $condition['storeName'] ?? '',
+            'lastPurchaseDate' => $condition['lastPurchaseDate'] ?? '',
+            //'suffix' => implode(',', $suffixFilter),
+        ];
+        //$sql = "EXEC oauth_salesData30DaysBeforeLastPurchaseDate '{$params['goodsCode']}','{$params['storeName']}',
+         //       '{$params['lastPurchaseDate']}','{$params['suffix']}'";
+        //$data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $sql = "CALL oauth_salesData30DaysBeforeLastPurchaseDate('{$params['goodsCode']}','{$params['storeName']}',
+        '{$params['lastPurchaseDate']}')";
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
+        return $data;
+
+    }
+
+
+    /**
+     * 获取价格保护信息
+     * @param $condition
+     * Date: 2021-03-08 16:43
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    public static function getPriceProtectionInfo($condition){
+        $saler = $condition['saler'] ?: [];
+        $saler = is_array($saler) ? implode("','", $saler) : $saler;
+        $foulSaler = $condition['foulSaler'] ?? '';
+        $foulSaler = is_array($foulSaler) ? implode("','", $foulSaler) : $foulSaler;
+        //var_dump($saler);
+        //var_dump($foulSaler);exit;
+        $goodsStatus = implode("','", $condition['goodsStatus'] ?: ['爆款', '旺款']);
+        if($condition['dataType'] == 'priceProtection'){
+            $sql = "SELECT DISTINCT goodsCode, mainImage, storeName, saler, goodsName, goodsStatus, cate, subCate,
+                    salerName, createDate, `number`, soldNum, personSoldNum, turnoverDays, rate 
+                    FROM `cache_priceProtectionData` WHERE 1=1 ";
+            if($goodsStatus) $sql .= " AND goodsStatus IN ('{$goodsStatus}')";
+            if($saler) $sql .= " AND saler IN ('{$saler}')";
+        }elseif($condition['dataType'] == 'priceProtectionError'){
+            $sql = "SELECT * FROM `cache_priceProtectionData` WHERE 1=1 ";
+            if($goodsStatus) $sql .= " AND goodsStatus IN ('{$goodsStatus}')";
+            if($saler) $sql .= " AND saler IN ('{$saler}')";
+            if($foulSaler) $sql .= " AND foulSaler IN ('{$foulSaler}')";
+        }else{
+            $sql = "SELECT c.* FROM `cache_priceProtectionData` c
+                    LEFT JOIN task_priceProtectionHandleLog l on c.goodsCode = l.goodsCode 
+                                AND c.storeName=l.storeName AND c.foulSaler=l.foulSaler 
+                    WHERE 1=1 AND (IFNULL(l.updateTime,'') = '' OR DATEDIFF(NOW(), l.updateTime) > 10)";
+            if($saler) $sql .= " AND saler IN ('{$saler}')";
+            if($foulSaler) $sql .= " AND c.foulSaler IN ('{$foulSaler}')";
+        }
+
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
+        return $data;
+    }
+
+
+
 
 }
