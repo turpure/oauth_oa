@@ -1215,17 +1215,17 @@ class ApiReport
         if(!is_array($sellers)) {
             throw new Exception('sellers should be an array');
         }
-        $sql = 'select  cp.goodsCode, bs.storeName, cp.planNumber,cp.createdTime,goodsName, bg.bmpFileName, bc.categoryParentName,bc.categoryName,
+        $sql = 'select  cp.goodsCode, bs.storeName, cp.planNumber,cp.createdTime,goodsName, bg.bmpFileName as img, bc.categoryParentName,bc.categoryName,
             stockNumber, stockMoney,
             bg.salername as developer, \'\' as seller
             from  oauth_clearPlan as cp 
             LEFT JOIN b_goods(nolock) as bg on   cp.goodsCode = bg.goodsCode
             LEFT JOIN b_goodsCats as bc on bg.goodsCategoryId = bc.nid
             LEFT JOIN (select storeId, goodsId, sum(number) as stockNumber,sum(money) as stockMoney  from   KC_CurrentStock(nolock) as kcs GROUP BY kcs.storeId, kcs.goodsId)  as ks on ks.goodsid = bg.nid
-            LEFT JOIN b_store(nolock) as bs on bs.nid = ks.storeId ';
+            LEFT JOIN b_store(nolock) as bs on bs.nid = ks.storeId where cp.isRemoved = 0 ';
         if(!empty($stores)) {
             $stores = implode(',', $stores);
-            $sql .= ' where ks.storeId in ('. $stores .')';
+            $sql .= ' and ks.storeId in ('. $stores .')';
         }
         $query = Yii::$app->py_db->createCommand($sql)->queryAll();
         $provider = new ArrayDataProvider([
@@ -1236,6 +1236,14 @@ class ApiReport
         ]);
         return $provider;
 
+    }
+
+
+    /**
+     * 逻辑清空清仓计划表
+     */
+    public static function truncateClearList() {
+        OauthClearPlan::updateAll(['isRemoved' => 1]);
     }
 
     /**

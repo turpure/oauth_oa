@@ -941,6 +941,17 @@ class ReportController extends AdminController
     }
 
 
+    public function actionTruncateClearList()
+    {
+        try {
+            ApiReport::truncateClearList();
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+
+    }
+
+
 
     /**
      * @brief 导出开发利润
