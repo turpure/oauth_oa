@@ -1625,4 +1625,79 @@ class DataCenterController extends AdminController
         return $query;
     }
 
+    ################################供应商######################################
+
+    public function actionSuppliersProfit(){
+        $condition = Yii::$app->request->post('condition', []);
+        $pageSize = $condition['pageSize'] ?? 20;
+        $data = ApiDataCenter::getSupplierProfit($condition);
+        return new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['supplierName', 'personName', 'supplierCode', 'url', 'linkMan', 'mobile', 'address',
+                    'categoryName',  'categoryLevel', 'arrivalDays', 'memo',  'amount', 'money', 'qty',
+                    'profitRmb', 'maxProfitRmb', 'profitAdd'],
+                'defaultOrder' => [
+                    'profitAdd' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+    }
+
+    /**
+     * actionSuppliersProfitExport
+     * Date: 2021-03-22 15:46
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+
+    public function actionSuppliersProfitExport(){
+        $condition = Yii::$app->request->post('condition', []);
+        $data = ApiDataCenter::getSupplierProfit($condition);
+        $title = ['供应商名称', '采购员', '编码', '网址', '联系人', '手机', '地址', '类别', '等级', '到货天数', '备注',
+            '采购总数量', '采购总金额(￥)','销量','毛利(￥)','前3个月最高单月毛利(￥)','毛利增长(￥)'];
+        ExportTools::toExcelOrCsv('suppliersProfit', $data, 'Xlsx', $title);
+    }
+
+    public function actionSuppliersProfitDetail(){
+        $condition = Yii::$app->request->post('condition', []);
+        $pageSize = $condition['pageSize'] ?? 20;
+        $data = ApiDataCenter::getSupplierProfitDetail($condition);
+        return new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['goodsCode', 'goodsName', 'cate', 'subCate', 'salerName', 'purchaser', 'createDate',
+                    'amount', 'money', 'qty', 'profitRmb'],
+                'defaultOrder' => [
+                    'profitRmb' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+    }
+
+    /**
+     * actionSuppliersProfitExport
+     * Date: 2021-03-22 15:46
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+
+    public function actionSuppliersProfitDetailExport(){
+        $condition = Yii::$app->request->post('condition', []);
+        $data = ApiDataCenter::getSupplierProfitDetail($condition);
+        $title = ['产品编码', '产品名称', '大类目', '小类目', '开发员', '采购员', '开发日期',
+            '采购总数量', '采购总金额(￥)','销量','毛利(￥)'];
+        ExportTools::toExcelOrCsv('suppliersProfitDetail', $data, 'Xlsx', $title);
+    }
+
+
+
 }

@@ -7,11 +7,12 @@
 
 namespace backend\modules\v1\models;
 
+use backend\models\User;
 use backend\modules\v1\utils\Handler;
-use backend\modules\v1\utils\Helper;
 use Yii;
 use yii\data\ArrayDataProvider;
-use yii\data\Sort;
+use yii\db\Expression;
+use yii\db\Query;
 
 class ApiDataCenter
 {
@@ -50,8 +51,7 @@ class ApiDataCenter
 				ORDER BY t.DefaultExpress";
         try {
             return $con->createCommand($sql)->queryAll();
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return [
                 'code' => 400,
                 'message' => $why->getMessage()
@@ -85,7 +85,7 @@ class ApiDataCenter
             'allModels' => $list,
             'sort' => [
                 'defaultOrder' => ['numDiff' => SORT_DESC],
-                'attributes' => ['suffix', 'username', 'goodsName','goodsCode','lastNum','lastAmt','num','amt','numDiff','amtDiff'],
+                'attributes' => ['suffix', 'username', 'goodsName', 'goodsCode', 'lastNum', 'lastAmt', 'num', 'amt', 'numDiff', 'amtDiff'],
             ],
             'pagination' => [
                 'pageSize' => $condition['pageSize'],
@@ -114,8 +114,7 @@ class ApiDataCenter
         ];
         try {
             return $con->createCommand($sql)->bindValues($params)->queryAll();
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return [
                 'code' => 400,
                 'message' => $why->getMessage()
@@ -144,20 +143,19 @@ class ApiDataCenter
                 LEFT JOIN auth_department pd ON pd.id=d.parent
                 WHERE flag=0
                 ";
-        if($condition['store']) {
-            $store = str_replace(',', "','",$condition['store']);
+        if ($condition['store']) {
+            $store = str_replace(',', "','", $condition['store']);
             $sql .= " AND cw.suffix IN ('{$store}')";
         }
-        if($condition['trendId']) {
-            $tradeId = str_replace(',', "','",$condition['trendId']);
+        if ($condition['trendId']) {
+            $tradeId = str_replace(',', "','", $condition['trendId']);
             $sql .= " AND cw.trendId IN ('{$tradeId}')";
         };
-        if($condition['beginDate'] && $condition['endDate']) $sql .= " AND cw.orderCloseDate BETWEEN '{$condition['beginDate']}' AND '{$condition['endDate']}'";
+        if ($condition['beginDate'] && $condition['endDate']) $sql .= " AND cw.orderCloseDate BETWEEN '{$condition['beginDate']}' AND '{$condition['endDate']}'";
         $con = Yii::$app->db;
         try {
             return $con->createCommand($sql)->queryAll();
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return [
                 'code' => 400,
                 'message' => $why->getMessage()
@@ -178,7 +176,7 @@ class ApiDataCenter
     public static function updateWeight($condition)
     {
         $nidList = $condition['nid'];
-        $nids = implode(',',$nidList);
+        $nids = implode(',', $nidList);
         $sql = "EXEC oauth_updateOrderWeight '{$nids}'";
 
         $transaction = Yii::$app->db->beginTransaction();
@@ -187,8 +185,8 @@ class ApiDataCenter
             if ($result === false) {
                 $transaction->rollBack();
             }
-            if($nidList){
-                foreach ($nidList as $value){
+            if ($nidList) {
+                foreach ($nidList as $value) {
                     $res = Yii::$app->py_db->createCommand("EXEC P_Fr_CalcShippingCostByNid {$value}")->execute();
                     if ($res === false) {
                         $transaction->rollBack();
@@ -244,13 +242,13 @@ class ApiDataCenter
         ];
         $data = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
         $pieData = $barData = [];
-        foreach ($data as $v){
-            if ($v['type'] == 'pie'){
+        foreach ($data as $v) {
+            if ($v['type'] == 'pie') {
                 $pieData[] = [
                     'name' => $v['name'],
                     'value' => $v['value'],
                 ];
-            }else{
+            } else {
                 $barData[] = [
                     'dt' => $v['dt'],
                     'name' => $v['name'],
@@ -277,37 +275,37 @@ class ApiDataCenter
         sort($pieName);
         //获取走势图时间数据
         $orderPie = $skuPie = [];
-        $orderLineNum =  $skuLineNum  = [];
+        $orderLineNum = $skuLineNum = [];
         $orderLineRate = $skuLineRate = [];
         $orderLineAvg = $skuLineAvg = [];
-        foreach($data as $value){
+        foreach ($data as $value) {
             //订单价格饼图数据
-            if($value['type'] == 'order'){
+            if ($value['type'] == 'order') {
                 $orderPie[] = ['name' => $value['flag'], 'value' => $value['orderNum']];
             }
             //SKu价格饼图数据
-            if($value['type'] == 'sku'){
+            if ($value['type'] == 'sku') {
                 $skuPie[] = ['name' => $value['flag'], 'value' => $value['orderNum']];
             }
 
             //订单价格区间订单数量线图数据
-            if($value['type'] == 'orderTrend'){
+            if ($value['type'] == 'orderTrend') {
                 $orderLineNum[] = ['flag' => $value['flag'], 'orderDate' => $value['orderDate'], 'orderNum' => $value['orderNum']];
                 $orderLineRate[] = ['flag' => $value['flag'], 'orderDate' => $value['orderDate'], 'rate' => $value['rate']];
             }
 
             //线形图时间数据 SKU价格区间SKU数量线图数据
-            if($value['type'] == 'skuTrend'){
+            if ($value['type'] == 'skuTrend') {
                 $skuLineNum[] = ['flag' => $value['flag'], 'orderDate' => $value['orderDate'], 'orderNum' => $value['orderNum']];
                 $skuLineRate[] = ['flag' => $value['flag'], 'orderDate' => $value['orderDate'], 'rate' => $value['rate']];
             }
             //每天平均订单价格数据
-            if($value['type'] == 'orderAvg'){
+            if ($value['type'] == 'orderAvg') {
                 $orderLineAvg[] = ['orderDate' => $value['orderDate'], 'amtAvg' => $value['rate']];
             }
 
             //每天平均SKU单价数据
-            if($value['type'] == 'skuAvg'){
+            if ($value['type'] == 'skuAvg') {
                 $skuLineAvg[] = ['orderDate' => $value['orderDate'], 'amtAvg' => $value['rate']];
             }
         }
@@ -339,7 +337,8 @@ class ApiDataCenter
      * @return array
      * @throws \yii\db\Exception
      */
-    public static function getStockTurnoverInfo($condition){
+    public static function getStockTurnoverInfo($condition)
+    {
         $params = [
             'cate' => implode(',', $condition['cate'] ?? []),
             'subCate' => implode(',', $condition['cate'] ?? []),
@@ -353,14 +352,14 @@ class ApiDataCenter
             'unsoldDays' => $condition['unsoldDays'] ?? 0,
             'turnoverDays' => $condition['turnoverDays'] ?? 0,
         ];
-        if($condition['dataType'] == 'developer'){
+        if ($condition['dataType'] == 'developer') {
             $params['SalerName'] = $condition['member'] ?: '';
             $params['suffix'] = '';
             $sql = "EXEC oauth_goodsStockTurnover 0,'{$params['goodsStatus']}','{$params['cate']}','{$params['subCate']}',
             '{$params['lastPurchaseDateBegin']}','{$params['lastPurchaseDateEnd']}','{$params['devDateBegin']}',
             '{$params['devDateEnd']}','{$params['unsoldDays']}','{$params['turnoverDays']}',
             '{$params['SalerName']}','{$params['storeName']}','{$params['goodsCode']}';";
-        }else {
+        } else {
             $par = [
                 'username' => isset($condition['member']) ? $condition['member'] : [],
                 'department' => isset($condition['depart']) && $condition['depart'] ? [$condition['depart']] : []
@@ -386,7 +385,8 @@ class ApiDataCenter
      * @return mixed
      * @throws \yii\db\Exception
      */
-    public  static function getDeveloperStockTurnoverInfo($condition){
+    public static function getDeveloperStockTurnoverInfo($condition)
+    {
         //获取所有销售员--账号 信息
         //$suffixFilter = Handler::paramsParse();
         $params = [
@@ -396,7 +396,7 @@ class ApiDataCenter
             //'suffix' => implode(',', $suffixFilter),
         ];
         //$sql = "EXEC oauth_salesData30DaysBeforeLastPurchaseDate '{$params['goodsCode']}','{$params['storeName']}',
-         //       '{$params['lastPurchaseDate']}','{$params['suffix']}'";
+        //       '{$params['lastPurchaseDate']}','{$params['suffix']}'";
         //$data = Yii::$app->py_db->createCommand($sql)->queryAll();
         $sql = "CALL oauth_salesData30DaysBeforeLastPurchaseDate('{$params['goodsCode']}','{$params['storeName']}',
         '{$params['lastPurchaseDate']}')";
@@ -414,7 +414,8 @@ class ApiDataCenter
      * @return array
      * @throws \yii\db\Exception
      */
-    public static function getPriceProtectionInfo($condition){
+    public static function getPriceProtectionInfo($condition)
+    {
         $saler = $condition['saler'] ?: [];
         $saler = is_array($saler) ? implode("','", $saler) : $saler;
         $foulSaler = $condition['foulSaler'] ?? '';
@@ -422,31 +423,100 @@ class ApiDataCenter
         //var_dump($saler);
         //var_dump($foulSaler);exit;
         $goodsStatus = implode("','", $condition['goodsStatus'] ?: ['爆款', '旺款']);
-        if($condition['dataType'] == 'priceProtection'){
+        if ($condition['dataType'] == 'priceProtection') {
             $sql = "SELECT DISTINCT goodsCode, mainImage, storeName, saler, goodsName, goodsStatus, cate, subCate,
                     salerName, createDate, `number`, soldNum, personSoldNum, turnoverDays, rate 
                     FROM `cache_priceProtectionData` WHERE 1=1 ";
-            if($goodsStatus) $sql .= " AND goodsStatus IN ('{$goodsStatus}')";
-            if($saler) $sql .= " AND saler IN ('{$saler}')";
-        }elseif($condition['dataType'] == 'priceProtectionError'){
+            if ($goodsStatus) $sql .= " AND goodsStatus IN ('{$goodsStatus}')";
+            if ($saler) $sql .= " AND saler IN ('{$saler}')";
+        } elseif ($condition['dataType'] == 'priceProtectionError') {
             $sql = "SELECT * FROM `cache_priceProtectionData` WHERE 1=1 ";
-            if($goodsStatus) $sql .= " AND goodsStatus IN ('{$goodsStatus}')";
-            if($saler) $sql .= " AND saler IN ('{$saler}')";
-            if($foulSaler) $sql .= " AND foulSaler IN ('{$foulSaler}')";
-        }else{
+            if ($goodsStatus) $sql .= " AND goodsStatus IN ('{$goodsStatus}')";
+            if ($saler) $sql .= " AND saler IN ('{$saler}')";
+            if ($foulSaler) $sql .= " AND foulSaler IN ('{$foulSaler}')";
+        } else {
             $sql = "SELECT c.* FROM `cache_priceProtectionData` c
                     LEFT JOIN task_priceProtectionHandleLog l on c.goodsCode = l.goodsCode 
                                 AND c.storeName=l.storeName AND c.foulSaler=l.foulSaler 
                     WHERE 1=1 AND (IFNULL(l.updateTime,'') = '' OR DATEDIFF(NOW(), l.updateTime) > 10)";
-            if($saler) $sql .= " AND saler IN ('{$saler}')";
-            if($foulSaler) $sql .= " AND c.foulSaler IN ('{$foulSaler}')";
+            if ($saler) $sql .= " AND saler IN ('{$saler}')";
+            if ($foulSaler) $sql .= " AND c.foulSaler IN ('{$foulSaler}')";
         }
 
         $data = Yii::$app->db->createCommand($sql)->queryAll();
         return $data;
     }
 
+/////////////////////////////////////////供应商//////////////////////////////////////////////////
 
+    /**
+     * 获取开发员以及对应的部门和开发利率信息
+     * Date: 2021-03-20 10:34
+     * Author: henry
+     * @return array
+     */
+    public static function getDeveloper()
+    {
+        $developer = (new Query())
+            ->select(['u.username','depart' => new Expression('case when d.parent=0 then d.id else d.parent end')])
+            ->from('auth_department_child as dc')
+            ->leftJoin('auth_department as d', 'd.id=dc.department_id')
+            ->leftJoin('user as u', 'u.id=dc.user_id')
+            ->leftJoin('auth_assignment as a', 'u.id=a.user_id')
+            ->where(['a.item_name' => '产品开发', 'u.status' => 10])->all();
+        return $developer;
+    }
+
+
+    /**
+     * getSupplierProfit
+     * @param $condition
+     * Date: 2021-03-22 15:42
+     * Author: henry
+     * @return mixed
+     */
+    public static function getSupplierProfit($condition){
+        $purchaseDateBegin = $condition['purchaseDate'][0] ?: '';
+        $purchaseDateEnd = $condition['purchaseDate'][1] ?: '';
+        $deliverDateBegin = $condition['deliverDate'][0] ?: '';
+        $deliverDateEnd = $condition['deliverDate'][1] ?: '';
+        $cate = implode(',', $condition['cate'] ?: []);
+        $subCate = implode(',', ($condition['subCate'] ?: []));
+        $purchaser = $condition['purchaser'] ?: '';
+        $supplierName = $condition['supplierName'] ?: '';
+        $developer = ApiDataCenter::getDeveloper();
+        $developerStr = [];
+        foreach ($developer as $v){
+            $developerStr[] = $v['username'].'/'.$v['depart'];
+        }
+        $developerStr = implode(',', $developerStr);
+        $sql = "EXEC oauth_data_center_supplier_goods_profit '{$purchaseDateBegin}','{$purchaseDateEnd}',
+                '{$deliverDateBegin}','{$deliverDateEnd}','{$purchaser}','{$supplierName}',
+                '{$cate}','{$subCate}','{$developerStr}' ";
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
+    }
+
+    /**
+     * getSupplierProfit
+     * @param $condition
+     * Date: 2021-03-22 15:42
+     * Author: henry
+     * @return mixed
+     */
+    public static function getSupplierProfitDetail($condition){
+        $purchaseNo = $condition['purchaseNo'] ?: '';
+        $deliverDateBegin = $condition['deliverDate'][0] ?: '';
+        $deliverDateEnd = $condition['deliverDate'][1] ?: '';
+        $developer = ApiDataCenter::getDeveloper();
+        $developerStr = [];
+        foreach ($developer as $v){
+            $developerStr[] = $v['username'].'/'.$v['depart'];
+        }
+        $developerStr = implode(',', $developerStr);
+        $sql = "EXEC oauth_data_center_supplier_goods_profit_detail '{$purchaseNo}',
+                '{$deliverDateBegin}','{$deliverDateEnd}','{$developerStr}' ";
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
+    }
 
 
 }
