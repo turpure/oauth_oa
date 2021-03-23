@@ -1188,7 +1188,7 @@ class ApiReport
             'sort' => ['attributes' =>
                 [
                     'developer', 'introducer', 'goodsCode', 'goodsName','devDate', 'goodsStatus',
-                    'sold','amt','profit','rate'
+                    'sold','amt','profit','rate','maxMonthProfit'
                 ]
             ],
             'pagination' => [
