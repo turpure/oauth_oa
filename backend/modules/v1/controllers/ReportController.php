@@ -894,6 +894,25 @@ class ReportController extends AdminController
 
 
     /**
+     * @brief 导出开发利润
+     * @return array
+     */
+    public function actionExportDevRateGoodsProfit()
+    {
+        try {
+            $request = Yii::$app->request->post();
+            $condition = $request['condition'];
+            $data =  ApiReport::exportDevRateGoodsProfit($condition);
+            $title = ['开发员','产品编码','主图', '商品名称','开发日期', '产品状态', '推荐人', '销量','销售额','总利润', '利润率'];
+            ExportTools::toExcelOrCsv('dev-rate-goods-profit', $data, 'Xls', $title);
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+    }
+
+
+
+    /**
      * 开发汇率下账号产品利润-- 此处只考虑清仓计划里面的产品
      * @return array
      */
@@ -922,6 +941,36 @@ class ReportController extends AdminController
 
     }
 
+    }
+
+    /**
+     * @brief 导出开发利润
+     * @return array
+     */
+    public function actionExportDevRateSuffixGoodsProfit()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $params = [
+                'platform' => isset($cond['plat']) ? $condition['plat'] : [],
+                'username' => isset($cond['member']) ? $condition['member'] : [],
+                'store' => isset($cond['account']) ? $condition['account'] : []
+            ];
+            $paramsFilter = Handler::paramsHandler($params);
+            $condition = [
+                'dateType' => $condition['dateType'] ?: 0,
+                'beginDate' => $condition['dateRange'][0],
+                'endDate' => $condition['dateRange'][1],
+                'queryType' => $paramsFilter['queryType'],
+                'store' => implode(',', $paramsFilter['store']),
+                'warehouse' => $condition['store'] ? implode(',', $condition['store']) : '',
+            ];
+            $data = ApiReport::getDevRateSuffixGoodsProfit($condition)->models;
+            $title = ['开发员','产品编码','主图', '商品名称','开发日期', '产品状态', '推荐人', '销量','销售额','总利润', '利润率'];
+            ExportTools::toExcelOrCsv('dev-profit', $data, 'Xls', $title);
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
     }
 
 
