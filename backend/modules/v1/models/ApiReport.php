@@ -1281,7 +1281,7 @@ class ApiReport
         if(!is_array($sellers)) {
             throw new Exception('sellers should be an array');
         }
-        $sql = 'select  cp.goodsCode, bs.storeName, cp.planNumber,cp.createdTime,goodsName, (select top 1 bmpFileName from b_goodsSku(nolock) where bgs.goodsId= bg.nid) as img, bc.categoryParentName,bc.categoryName,
+        $sql = 'select  cp.goodsCode, bs.storeName, cp.planNumber,cp.createdTime,goodsName, (select top 1 bmpFileName from b_goodsSku(nolock)  where goodsId= bg.nid) as img, bc.categoryParentName,bc.categoryName,
             stockNumber, stockMoney,
             bg.salername as developer, \'\' as seller
             from  oauth_clearPlan as cp 
