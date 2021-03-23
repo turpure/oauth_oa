@@ -7,11 +7,13 @@
 
 namespace backend\modules\v1\models;
 
+use backend\models\OauthClearPlan;
 use backend\modules\v1\utils\ExportTools;
 use Yii;
 use yii\data\ArrayDataProvider;
 use yii\data\SqlDataProvider;
 use yii\db\ActiveQuery;
+use yii\db\Exception;
 use yii\db\Query;
 use yii\helpers\ArrayHelper;
 use backend\models\ShopElf\BDictionary;
@@ -1156,6 +1158,159 @@ class ApiReport
         ]);
         return $provider;
     }
+
+
+
+    /**
+     * @brief 获取开发汇率产品利润
+     * @param $condition
+     * @return ArrayDataProvider
+     * @throws \Exception
+     */
+    public static function getDevRateGoodsProfit($condition)
+    {
+        $developer = isset($condition['developer']) ? $condition['developer'] : [];
+        $goodsStatus = isset($condition['goodsStatus']) ? $condition['goodsStatus'] : [];
+        $introducer = isset($condition['introducer']) ? $condition['introducer'] : '';
+        $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
+        list($beginDate, $endDate) = $condition['dateRange'];
+        list($devBeginDate, $devEndDate) = isset($condition['devDateRange']) && $condition['devDateRange'] ? $condition['devDateRange'] : ['',''];
+        $dateFlag = $condition['dateType'];
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $sql = 'call report_devRateGoodsProfitAPI (:developer,:introducer,:goodsCode,:goodsStatus, :beginDate, :endDate, :dateFlag, :devBeginDate, :devEndDate)';
+        $params = [':developer' => implode(',', $developer),':introducer' => $introducer,
+            ':goodsCode' => $goodsCode, ':goodsStatus' => implode(',', $goodsStatus),
+            ':beginDate' => $beginDate, ':endDate' => $endDate, ':dateFlag' => (int)$dateFlag,
+            ':devBeginDate' => $devBeginDate, ':devEndDate' => $devEndDate,];
+        $query = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
+        $provider = new ArrayDataProvider([
+            'allModels' => $query,
+            'sort' => ['attributes' =>
+                [
+                    'developer', 'introducer', 'goodsCode', 'goodsName','devDate', 'goodsStatus',
+                    'sold','amt','profit','rate'
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
+    }
+
+
+    /**
+     * 返回清仓列表
+     * @param $condition
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getClearList($condition) {
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $stores = isset($condition['stores'])? $condition['stores']: [];
+        $sellers = isset($condition['sellers'])? $condition['sellers']: [];
+        if(!is_array($stores)) {
+            throw new Exception('stores should be an array');
+        }
+        if(!is_array($sellers)) {
+            throw new Exception('sellers should be an array');
+        }
+        $sql = 'select  cp.goodsCode, bs.storeName, cp.planNumber,cp.createdTime,goodsName, bg.bmpFileName as img, bc.categoryParentName,bc.categoryName,
+            stockNumber, stockMoney,
+            bg.salername as developer, \'\' as seller
+            from  oauth_clearPlan as cp 
+            LEFT JOIN b_goods(nolock) as bg on   cp.goodsCode = bg.goodsCode
+            LEFT JOIN b_goodsCats as bc on bg.goodsCategoryId = bc.nid
+            LEFT JOIN (select storeId, goodsId, sum(number) as stockNumber,sum(money) as stockMoney  from   KC_CurrentStock(nolock) as kcs GROUP BY kcs.storeId, kcs.goodsId)  as ks on ks.goodsid = bg.nid
+            LEFT JOIN b_store(nolock) as bs on bs.nid = ks.storeId where cp.isRemoved = 0 ';
+        if(!empty($stores)) {
+            $stores = implode(',', $stores);
+            $sql .= ' and ks.storeId in ('. $stores .')';
+        }
+        $query = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $provider = new ArrayDataProvider([
+            'allModels' => $query,
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
+
+    }
+
+
+    /**
+     * 逻辑清空清仓计划表
+     */
+    public static function truncateClearList() {
+        OauthClearPlan::updateAll(['isRemoved' => 1]);
+    }
+
+    /**
+     * 清仓产品导入模板
+     * @param $condition
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public static function exportClearListTemplate($condition) {
+        $fileName = 'clear-products-template';
+        $titles = ['商品编码'];
+        $data = [['商品编码' => '7A0001']];
+        ExportTools::toExcelOrCsv($fileName, $data,'Csv', $titles);
+
+    }
+
+    public static function importClearList() {
+        $fields = ['goodsCode'];
+        $planNumber = 'QC-' . (string)date('Y-m-d');
+        try {
+            if (Yii::$app->request->isPost ) {
+                $tmpName = $_FILES['file']['tmp_name'];
+                $csvAsArray = array_map('str_getcsv', file($tmpName));
+
+                // 删除列名
+                array_shift($csvAsArray);
+                foreach ($csvAsArray as &$row) {
+                    foreach ($row as &$ceil) {
+                        //检测编码方式
+                        $encode = mb_detect_encoding($ceil, array('ASCII','UTF-8','GB2312','GBK','BIG5'));
+                        // 转换编码方式
+                        $ceil =  iconv($encode, 'UTF-8',$ceil);
+                    }
+                    //释放
+                    unset($ceil);
+
+                    //生产新产品
+                    $product = array_combine($fields, $row);
+
+                    //更新状态
+                    $product['planNumber'] = $planNumber;
+
+                    static::saveNewClearProduct($product);
+                }
+            }
+            return ['上传成功'];
+        }
+        catch(\Exception $why) {
+            throw new Exception('上传失败');
+        }
+    }
+
+    /**
+     * 创建新计划
+     * @param $product
+     * @throws \Exception
+     */
+    public static function saveNewClearProduct($product) {
+        $plan = new OauthClearPlan();
+        $product['createdTime'] = date('Y-m-d H:i:s');
+        $plan->setAttributes($product);
+        if (!$plan->save()) {
+            throw new \Exception('Create new clear plan failed!');
+        }
+    }
+
+
 
     /**
      * @brief 获取开发产品利润明细

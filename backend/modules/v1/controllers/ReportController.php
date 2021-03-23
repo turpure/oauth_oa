@@ -877,6 +877,81 @@ class ReportController extends AdminController
         }
     }
 
+    /**
+     * @brief 开发汇率产品利润表
+     * @return mixed
+     */
+    public function actionDevRateGoodsProfit()
+    {
+        try {
+            $request = Yii::$app->request->post();
+            $condition = $request['condition'];
+            return ApiReport::getDevRateGoodsProfit($condition);
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+    }
+
+
+
+    /**
+     * @brief 清仓列表
+     * @return mixed
+     */
+    public function actionClearList()
+    {
+        try {
+            $request = Yii::$app->request->post();
+            $condition = $request['condition'];
+            return ApiReport::getClearList($condition);
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+    }
+
+    /**
+     * @brief 清仓列表
+     * @return mixed
+     */
+    public function actionImportClearList()
+    {
+        try {
+            $request = Yii::$app->request->post();
+//            $condition = $request['condition'];
+            return ApiReport::importClearList();
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+    }
+
+
+    /**
+     * @brief 清仓列表
+     * @return mixed
+     */
+    public function actionExportClearTemplate()
+    {
+        try {
+            $request = Yii::$app->request->post();
+            $condition = $request['condition'];
+            ApiReport::exportClearListTemplate($condition);
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+    }
+
+
+    public function actionTruncateClearList()
+    {
+        try {
+            ApiReport::truncateClearList();
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+
+    }
+
+
 
     /**
      * @brief 导出开发利润
