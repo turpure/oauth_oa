@@ -1200,6 +1200,44 @@ class ApiReport
 
 
     /**
+     * @brief 获取开发汇率账号产品利润
+     * @param $condition
+     * @return mixed
+     * @throws \Exception
+     */
+
+    public static function getDevRateSuffixGoodsProfit($condition)
+    {
+//        $sql = 'call report_salesProfit(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse,:exchangeRate, :wishExchangeRate);';
+        $sql = 'call report_devRateSuffixGoodsProfitAPI(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse);';
+        $sqlParams = [
+            ':dateType' => $condition['dateType'],
+            ':beginDate' => $condition['beginDate'],
+            ':endDate' => $condition['endDate'],
+            ':queryType' => $condition['queryType'],
+            ':store' => $condition['store'],
+            ':warehouse' => $condition['warehouse'],
+        ];
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $ret = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
+        $provider = new ArrayDataProvider([
+            'allModels' => $ret,
+            'sort' => ['attributes' =>
+                [
+                    'sold','salemoney','grossprofit','grossprofitRate'
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
+
+
+    }
+
+
+    /**
      * 返回清仓列表
      * @param $condition
      * @return mixed
