@@ -1218,7 +1218,21 @@ class ApiReport
             ':store' => $condition['store'],
             ':warehouse' => $condition['warehouse'],
         ];
-        return Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $ret = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
+        $provider = new ArrayDataProvider([
+            'allModels' => $ret,
+            'sort' => ['attributes' =>
+                [
+                    'sold','salemoney','grossprofit','grossprofitRate'
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
+
 
     }
 

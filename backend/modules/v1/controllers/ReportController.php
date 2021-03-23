@@ -906,7 +906,6 @@ class ReportController extends AdminController
                 'username' => isset($cond['member']) ? $condition['member'] : [],
                 'store' => isset($cond['account']) ? $condition['account'] : []
             ];
-            $exchangeRate = ApiSettings::getExchangeRate();
             $paramsFilter = Handler::paramsHandler($params);
             $condition = [
                 'dateType' => $condition['dateType'] ?: 0,
@@ -915,10 +914,8 @@ class ReportController extends AdminController
                 'queryType' => $paramsFilter['queryType'],
                 'store' => implode(',', $paramsFilter['store']),
                 'warehouse' => $condition['store'] ? implode(',', $condition['store']) : '',
-                'exchangeRate' => $exchangeRate['salerRate'],
-                'wishExchangeRate' => $exchangeRate['wishSalerRate'],
             ];
-            return ApiReport::getSalesReport($condition);
+            return ApiReport::getDevRateSuffixGoodsProfit($condition);
         }
         catch (\Exception $why) {
         return ['message' => $why->getMessage(), 'code' => $why->getCode()];
