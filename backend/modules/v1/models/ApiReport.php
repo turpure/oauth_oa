@@ -1232,8 +1232,7 @@ class ApiReport
 
     public static function getDevRateSuffixGoodsProfit($condition)
     {
-//        $sql = 'call report_salesProfit(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse,:exchangeRate, :wishExchangeRate);';
-        $sql = 'call report_devRateSuffixGoodsProfitAPI(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse);';
+        $sql = 'call    report_devRateSuffixGoodsProfitAPI(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse);';
         $sqlParams = [
             ':dateType' => $condition['dateType'],
             ':beginDate' => $condition['beginDate'],

@@ -921,9 +921,9 @@ class ReportController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             $params = [
-                'platform' => isset($cond['plat']) ? $condition['plat'] : [],
-                'username' => isset($cond['member']) ? $condition['member'] : [],
-                'store' => isset($cond['account']) ? $condition['account'] : []
+                'platform' => isset($condition['plat']) ? $condition['plat'] : [],
+                'username' => isset($condition['member']) ? $condition['member'] : [],
+                'store' => isset($condition['account']) ? $condition['account'] : []
             ];
             $paramsFilter = Handler::paramsHandler($params);
             $condition = [
