@@ -1274,6 +1274,7 @@ class ApiReport
     public static function getClearList($condition) {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $stores = isset($condition['stores'])? $condition['stores']: [];
+        $goodsStatus = isset($condition['goodsStatus'])? $condition['goodsStatus']: [];
         $sellers = isset($condition['sellers'])? $condition['sellers']: [];
         if(!is_array($stores)) {
             throw new Exception('stores should be an array');
@@ -1281,7 +1282,7 @@ class ApiReport
         if(!is_array($sellers)) {
             throw new Exception('sellers should be an array');
         }
-        $sql = 'select  cp.goodsCode, bs.storeName, cp.planNumber,cp.createdTime,goodsName, (select top 1 bmpFileName from b_goodsSku(nolock)  where goodsId= bg.nid) as img, bc.categoryParentName,bc.categoryName,
+        $sql = 'select  cp.goodsCode, bg.goodsStatus, bs.storeName, cp.planNumber,cp.createdTime,goodsName, (select top 1 bmpFileName from b_goodsSku(nolock)  where goodsId= bg.nid) as img, bc.categoryParentName,bc.categoryName,
             stockNumber, stockMoney,
             bg.salername as developer, \'\' as seller
             from  oauth_clearPlan as cp 
@@ -1292,6 +1293,10 @@ class ApiReport
         if(!empty($stores)) {
             $stores = implode(',', $stores);
             $sql .= ' and ks.storeId in ('. $stores .')';
+        }
+        if(!empty($goodsStatus)) {
+            $goodsStatus = implode("','", $goodsStatus);
+            $sql .= " and bg.goodsStatus in ('". $goodsStatus ."')";
         }
         $query = Yii::$app->py_db->createCommand($sql)->queryAll();
         $provider = new ArrayDataProvider([
