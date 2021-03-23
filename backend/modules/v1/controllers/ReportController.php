@@ -893,6 +893,41 @@ class ReportController extends AdminController
     }
 
 
+    /**
+     * 开发汇率下账号产品利润-- 此处只考虑清仓计划里面的产品
+     * @return array
+     */
+    public function actionDevRateSuffixGoodsProfit()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $params = [
+                'platform' => isset($cond['plat']) ? $condition['plat'] : [],
+                'username' => isset($cond['member']) ? $condition['member'] : [],
+                'store' => isset($cond['account']) ? $condition['account'] : []
+            ];
+            $exchangeRate = ApiSettings::getExchangeRate();
+            $paramsFilter = Handler::paramsHandler($params);
+            $condition = [
+                'dateType' => $condition['dateType'] ?: 0,
+                'beginDate' => $condition['dateRange'][0],
+                'endDate' => $condition['dateRange'][1],
+                'queryType' => $paramsFilter['queryType'],
+                'store' => implode(',', $paramsFilter['store']),
+                'warehouse' => $condition['store'] ? implode(',', $condition['store']) : '',
+                'exchangeRate' => $exchangeRate['salerRate'],
+                'wishExchangeRate' => $exchangeRate['wishSalerRate'],
+            ];
+            return ApiReport::getSalesReport($condition);
+        }
+        catch (\Exception $why) {
+        return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+
+    }
+
+    }
+
+
 
     /**
      * @brief 清仓列表
