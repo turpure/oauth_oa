@@ -519,7 +519,7 @@ class ApiDataCenter
         $developerStr = implode(',', $developerStr);
         $sql = "EXEC oauth_data_center_supplier_goods_profit_detail '{$supplierID}','{$salerID}',
                 '{$purchaseDateBegin}','{$purchaseDateEnd}','{$deliverDateBegin}','{$deliverDateEnd}','{$developerStr}' ";
-        var_dump($sql);exit;
+        //var_dump($sql);exit;
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
 
