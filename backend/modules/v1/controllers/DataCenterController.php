@@ -20,6 +20,7 @@ use backend\modules\v1\utils\ExportTools;
 use backend\modules\v1\utils\Handler;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
+use yii\db\Exception;
 use yii\db\Query;
 use Yii;
 use yii\helpers\ArrayHelper;
@@ -1628,23 +1629,31 @@ class DataCenterController extends AdminController
     ################################供应商######################################
 
     public function actionSuppliersProfit(){
-        $condition = Yii::$app->request->post('condition', []);
-        $pageSize = $condition['pageSize'] ?? 20;
-        $data = ApiDataCenter::getSupplierProfit($condition);
-        return new ArrayDataProvider([
-            'allModels' => $data,
-            'sort' => [
-                'attributes' => ['supplierName', 'personName', 'supplierCode', 'url', 'linkMan', 'mobile', 'address',
-                    'categoryName',  'categoryLevel', 'arrivalDays', 'memo',  'amount', 'money', 'qty',
-                    'profitRmb', 'maxProfitRmb', 'profitAdd'],
-                'defaultOrder' => [
-                    'profitAdd' => SORT_DESC,
-                ]
-            ],
-            'pagination' => [
-                'pageSize' => $pageSize,
-            ],
-        ]);
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $pageSize = $condition['pageSize'] ?? 20;
+            $data = ApiDataCenter::getSupplierProfit($condition);
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => ['supplierName', 'personName', 'supplierCode', 'url', 'linkMan', 'mobile', 'address',
+                        'categoryName',  'categoryLevel', 'arrivalDays', 'memo',  'amount', 'money', 'qty',
+                        'profitRmb', 'maxProfitRmb', 'profitAdd'],
+                    'defaultOrder' => [
+                        'profitAdd' => SORT_DESC,
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+
     }
 
     /**
@@ -1664,22 +1673,30 @@ class DataCenterController extends AdminController
     }
 
     public function actionSuppliersProfitDetail(){
-        $condition = Yii::$app->request->post('condition', []);
-        $pageSize = $condition['pageSize'] ?? 20;
-        $data = ApiDataCenter::getSupplierProfitDetail($condition);
-        return new ArrayDataProvider([
-            'allModels' => $data,
-            'sort' => [
-                'attributes' => ['goodsCode', 'goodsName', 'cate', 'subCate', 'salerName', 'purchaser', 'createDate',
-                    'amount', 'money', 'qty', 'profitRmb'],
-                'defaultOrder' => [
-                    'profitRmb' => SORT_DESC,
-                ]
-            ],
-            'pagination' => [
-                'pageSize' => $pageSize,
-            ],
-        ]);
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $pageSize = $condition['pageSize'] ?? 20;
+            $data = ApiDataCenter::getSupplierProfitDetail($condition);
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => ['goodsCode', 'goodsName', 'cate', 'subCate', 'salerName', 'purchaser', 'createDate',
+                        'amount', 'money', 'qty', 'profitRmb'],
+                    'defaultOrder' => [
+                        'profitRmb' => SORT_DESC,
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+
     }
 
     /**

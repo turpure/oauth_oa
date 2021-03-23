@@ -493,6 +493,7 @@ class ApiDataCenter
         $sql = "EXEC oauth_data_center_supplier_goods_profit '{$purchaseDateBegin}','{$purchaseDateEnd}',
                 '{$deliverDateBegin}','{$deliverDateEnd}','{$purchaser}','{$supplierName}',
                 '{$cate}','{$subCate}','{$developerStr}' ";
+        //var_dump($sql);exit;
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
 
@@ -504,7 +505,10 @@ class ApiDataCenter
      * @return mixed
      */
     public static function getSupplierProfitDetail($condition){
-        $purchaseNo = $condition['purchaseNo'] ?: '';
+        $supplierID = $condition['supplierID'] ?: '';
+        $salerID = $condition['salerID'] ?: '';
+        $purchaseDateBegin = $condition['purchaseDate'][0] ?: '';
+        $purchaseDateEnd = $condition['purchaseDate'][1] ?: '';
         $deliverDateBegin = $condition['deliverDate'][0] ?: '';
         $deliverDateEnd = $condition['deliverDate'][1] ?: '';
         $developer = ApiDataCenter::getDeveloper();
@@ -513,8 +517,9 @@ class ApiDataCenter
             $developerStr[] = $v['username'].'/'.$v['depart'];
         }
         $developerStr = implode(',', $developerStr);
-        $sql = "EXEC oauth_data_center_supplier_goods_profit_detail '{$purchaseNo}',
-                '{$deliverDateBegin}','{$deliverDateEnd}','{$developerStr}' ";
+        $sql = "EXEC oauth_data_center_supplier_goods_profit_detail '{$supplierID}','{$salerID}',
+                '{$purchaseDateBegin}','{$purchaseDateEnd}','{$deliverDateBegin}','{$deliverDateEnd}','{$developerStr}' ";
+        var_dump($sql);exit;
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
 
