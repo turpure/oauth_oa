@@ -362,6 +362,19 @@ class ApiCondition
             ];
         }
     }
+    public static function getSuppliersLevels(){
+        $sql = 'SELECT DictionaryName FROM B_Dictionary WHERE CategoryID = 32 ORDER BY FitCode';
+        try {
+            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+            return ArrayHelper::getColumn($data, 'DictionaryName');
+        }
+        catch (\Exception $why) {
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
+        }
+    }
 
 
 }

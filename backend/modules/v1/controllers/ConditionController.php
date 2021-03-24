@@ -113,5 +113,12 @@ class ConditionController extends AdminController
         return ApiCondition::getGoodsCats();
     }
 
+    /**
+     * @brief goods cats
+     */
+    public function actionSuppliersLevel()
+    {
+        return ApiCondition::getSuppliersLevels();
+    }
 
 }

@@ -1714,6 +1714,10 @@ class DataCenterController extends AdminController
             '采购总数量', '采购总金额(￥)','销量','毛利(￥)'];
         ExportTools::toExcelOrCsv('suppliersProfitDetail', $data, 'Xlsx', $title);
     }
+    public function actionSuppliersProfitSummary(){
+        $condition = Yii::$app->request->post('condition', []);
+        return ApiDataCenter::getSupplierProfitSummary($condition);
+    }
 
 
 

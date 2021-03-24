@@ -484,6 +484,7 @@ class ApiDataCenter
         $subCate = implode(',', ($condition['subCate'] ?: []));
         $purchaser = $condition['purchaser'] ?: '';
         $supplierName = $condition['supplierName'] ?: '';
+        $supplierLevel = $condition['supplierLevel'] ?: '';
         $developer = ApiDataCenter::getDeveloper();
         $developerStr = [];
         foreach ($developer as $v){
@@ -491,7 +492,7 @@ class ApiDataCenter
         }
         $developerStr = implode(',', $developerStr);
         $sql = "EXEC oauth_data_center_supplier_goods_profit '{$purchaseDateBegin}','{$purchaseDateEnd}',
-                '{$deliverDateBegin}','{$deliverDateEnd}','{$purchaser}','{$supplierName}',
+                '{$deliverDateBegin}','{$deliverDateEnd}','{$purchaser}','{$supplierName}','{$supplierLevel}',
                 '{$cate}','{$subCate}','{$developerStr}' ";
         //var_dump($sql);exit;
         return Yii::$app->py_db->createCommand($sql)->queryAll();
@@ -519,6 +520,21 @@ class ApiDataCenter
         $developerStr = implode(',', $developerStr);
         $sql = "EXEC oauth_data_center_supplier_goods_profit_detail '{$supplierID}','{$salerID}',
                 '{$purchaseDateBegin}','{$purchaseDateEnd}','{$deliverDateBegin}','{$deliverDateEnd}','{$developerStr}' ";
+        //var_dump($sql);exit;
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
+    }
+
+    public static function getSupplierProfitSummary($condition){
+        $deliverDateBegin = $condition['deliverDate'][0] ?: '';
+        $deliverDateEnd = $condition['deliverDate'][1] ?: '';
+        $supplierName = $condition['supplierName'] ?: '';
+        $developer = ApiDataCenter::getDeveloper();
+        $developerStr = [];
+        foreach ($developer as $v){
+            $developerStr[] = $v['username'].'/'.$v['depart'];
+        }
+        $developerStr = implode(',', $developerStr);
+        $sql = "EXEC oauth_data_center_supplier_goods_profit_summary '{$deliverDateBegin}','{$deliverDateEnd}','{$supplierName}','{$developerStr}' ";
         //var_dump($sql);exit;
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
