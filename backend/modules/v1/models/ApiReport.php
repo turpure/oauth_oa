@@ -1188,6 +1188,45 @@ class ApiReport
             'sort' => ['attributes' =>
                 [
                     'developer', 'introducer', 'goodsCode', 'goodsName','devDate', 'goodsStatus',
+                    'sold','amt','profit','rate','maxMonthProfit'
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
+    }
+
+
+
+    /**
+     * @brief 获取开发汇率开发利润
+     * @param $condition
+     * @return ArrayDataProvider
+     * @throws \Exception
+     */
+    public static function getDevRateDeveloperGoodsProfit($condition)
+    {
+        $developer = isset($condition['developer']) ? $condition['developer'] : [];
+        $goodsStatus = isset($condition['goodsStatus']) ? $condition['goodsStatus'] : [];
+        $introducer = isset($condition['introducer']) ? $condition['introducer'] : '';
+        $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
+        list($beginDate, $endDate) = $condition['dateRange'];
+        list($devBeginDate, $devEndDate) = isset($condition['devDateRange']) && $condition['devDateRange'] ? $condition['devDateRange'] : ['',''];
+        $dateFlag = $condition['dateType'];
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $sql = 'call report_devRateDeveloperGoodsProfitAPI (:developer,:goodsStatus, :beginDate, :endDate, :dateFlag, :devBeginDate, :devEndDate)';
+        $params = [':developer' => implode(',', $developer),
+            ':goodsStatus' => implode(',', $goodsStatus),
+            ':beginDate' => $beginDate, ':endDate' => $endDate, ':dateFlag' => (int)$dateFlag,
+            ':devBeginDate' => $devBeginDate, ':devEndDate' => $devEndDate,];
+        $query = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
+        $provider = new ArrayDataProvider([
+            'allModels' => $query,
+            'sort' => ['attributes' =>
+                [
+                    'developer',  'devDate', 'goodsStatus',
                     'sold','amt','profit','rate'
                 ]
             ],
@@ -1197,6 +1236,30 @@ class ApiReport
         ]);
         return $provider;
     }
+
+    /**
+     * @brief 导出开发汇率产品利润
+     * @param $condition
+     * @return ArrayDataProvider
+     * @throws \Exception
+     */
+    public static function exportDevRateGoodsProfit($condition)
+    {
+        $developer = isset($condition['developer']) ? $condition['developer'] : [];
+        $goodsStatus = isset($condition['goodsStatus']) ? $condition['goodsStatus'] : [];
+        $introducer = isset($condition['introducer']) ? $condition['introducer'] : '';
+        $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
+        list($beginDate, $endDate) = $condition['dateRange'];
+        list($devBeginDate, $devEndDate) = isset($condition['devDateRange']) && $condition['devDateRange'] ? $condition['devDateRange'] : ['',''];
+        $dateFlag = $condition['dateType'];
+        $sql = 'call report_devRateGoodsProfitAPI (:developer,:introducer,:goodsCode,:goodsStatus, :beginDate, :endDate, :dateFlag, :devBeginDate, :devEndDate)';
+        $params = [':developer' => implode(',', $developer),':introducer' => $introducer,
+            ':goodsCode' => $goodsCode, ':goodsStatus' => implode(',', $goodsStatus),
+            ':beginDate' => $beginDate, ':endDate' => $endDate, ':dateFlag' => (int)$dateFlag,
+            ':devBeginDate' => $devBeginDate, ':devEndDate' => $devEndDate,];
+        return Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
+    }
+
 
 
     /**
@@ -1208,8 +1271,7 @@ class ApiReport
 
     public static function getDevRateSuffixGoodsProfit($condition)
     {
-//        $sql = 'call report_salesProfit(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse,:exchangeRate, :wishExchangeRate);';
-        $sql = 'call report_devRateSuffixGoodsProfitAPI(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse);';
+        $sql = 'call    report_devRateSuffixGoodsProfitAPI(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse);';
         $sqlParams = [
             ':dateType' => $condition['dateType'],
             ':beginDate' => $condition['beginDate'],
@@ -1237,6 +1299,10 @@ class ApiReport
     }
 
 
+
+
+
+
     /**
      * 返回清仓列表
      * @param $condition
@@ -1246,6 +1312,7 @@ class ApiReport
     public static function getClearList($condition) {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $stores = isset($condition['stores'])? $condition['stores']: [];
+        $goodsStatus = isset($condition['goodsStatus'])? $condition['goodsStatus']: [];
         $sellers = isset($condition['sellers'])? $condition['sellers']: [];
         if(!is_array($stores)) {
             throw new Exception('stores should be an array');
@@ -1253,7 +1320,7 @@ class ApiReport
         if(!is_array($sellers)) {
             throw new Exception('sellers should be an array');
         }
-        $sql = 'select  cp.goodsCode, bs.storeName, cp.planNumber,cp.createdTime,goodsName, bg.bmpFileName as img, bc.categoryParentName,bc.categoryName,
+        $sql = 'select  cp.goodsCode, bg.goodsStatus, bs.storeName, cp.planNumber,cp.createdTime,goodsName, (select top 1 bmpFileName from b_goodsSku(nolock)  where goodsId= bg.nid) as img, bc.categoryParentName,bc.categoryName,
             stockNumber, stockMoney,
             bg.salername as developer, \'\' as seller
             from  oauth_clearPlan as cp 
@@ -1264,6 +1331,10 @@ class ApiReport
         if(!empty($stores)) {
             $stores = implode(',', $stores);
             $sql .= ' and ks.storeId in ('. $stores .')';
+        }
+        if(!empty($goodsStatus)) {
+            $goodsStatus = implode("','", $goodsStatus);
+            $sql .= " and bg.goodsStatus in ('". $goodsStatus ."')";
         }
         $query = Yii::$app->py_db->createCommand($sql)->queryAll();
         $provider = new ArrayDataProvider([
