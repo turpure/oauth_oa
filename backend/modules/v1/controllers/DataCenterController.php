@@ -1637,10 +1637,11 @@ class DataCenterController extends AdminController
                 'allModels' => $data,
                 'sort' => [
                     'attributes' => ['supplierName', 'personName', 'supplierCode', 'url', 'linkMan', 'mobile', 'address',
-                        'categoryName',  'categoryLevel', 'arrivalDays', 'memo',  'amount', 'money', 'qty',
-                        'profitRmb', 'maxProfitRmb', 'profitAdd'],
+                        'categoryName',  'categoryLevel', 'arrivalDays', 'memo',  'amount', 'money', 'qty', 'profitRmb',
+                        //'maxProfitRmb', 'profitAdd'
+                    ],
                     'defaultOrder' => [
-                        'profitAdd' => SORT_DESC,
+                        'profitRmb' => SORT_DESC,
                     ]
                 ],
                 'pagination' => [
