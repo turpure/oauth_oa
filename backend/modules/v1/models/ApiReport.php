@@ -1198,6 +1198,45 @@ class ApiReport
         return $provider;
     }
 
+
+
+    /**
+     * @brief 获取开发汇率开发利润
+     * @param $condition
+     * @return ArrayDataProvider
+     * @throws \Exception
+     */
+    public static function getDevRateDeveloperGoodsProfit($condition)
+    {
+        $developer = isset($condition['developer']) ? $condition['developer'] : [];
+        $goodsStatus = isset($condition['goodsStatus']) ? $condition['goodsStatus'] : [];
+        $introducer = isset($condition['introducer']) ? $condition['introducer'] : '';
+        $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
+        list($beginDate, $endDate) = $condition['dateRange'];
+        list($devBeginDate, $devEndDate) = isset($condition['devDateRange']) && $condition['devDateRange'] ? $condition['devDateRange'] : ['',''];
+        $dateFlag = $condition['dateType'];
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $sql = 'call report_devRateDeveloperGoodsProfitAPI (:developer,:goodsStatus, :beginDate, :endDate, :dateFlag, :devBeginDate, :devEndDate)';
+        $params = [':developer' => implode(',', $developer),
+            ':goodsStatus' => implode(',', $goodsStatus),
+            ':beginDate' => $beginDate, ':endDate' => $endDate, ':dateFlag' => (int)$dateFlag,
+            ':devBeginDate' => $devBeginDate, ':devEndDate' => $devEndDate,];
+        $query = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
+        $provider = new ArrayDataProvider([
+            'allModels' => $query,
+            'sort' => ['attributes' =>
+                [
+                    'developer',  'devDate', 'goodsStatus',
+                    'sold','amt','profit','rate'
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
+    }
+
     /**
      * @brief 导出开发汇率产品利润
      * @param $condition

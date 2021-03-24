@@ -894,6 +894,41 @@ class ReportController extends AdminController
 
 
     /**
+     * @brief 开发汇率开发利润表
+     * @return mixed
+     */
+    public function actionDevRateDeveloperGoodsProfit()
+    {
+        try {
+            $request = Yii::$app->request->post();
+            $condition = $request['condition'];
+            return ApiReport::getDevRateDeveloperGoodsProfit($condition);
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+    }
+
+
+    /**
+     * @brief 导出开发汇率开发利润表
+     * @return array
+     */
+    public function actionExportDevRateDeveloperGoodsProfit()
+    {
+        try {
+            $request = Yii::$app->request->post();
+            $condition = $request['condition'];
+            $condition['pageSize'] = 100000;
+            $data =  ApiReport::getDevRateDeveloperGoodsProfit($condition)->allModels;
+            $title = ['开发员', '销量','销售额','总利润', '利润率(%)'];
+            ExportTools::toExcelOrCsv('dev-rate-developer-profit', $data, 'Xls', $title);
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+    }
+
+
+    /**
      * @brief 导出开发利润
      * @return array
      */
@@ -903,7 +938,7 @@ class ReportController extends AdminController
             $request = Yii::$app->request->post();
             $condition = $request['condition'];
             $data =  ApiReport::exportDevRateGoodsProfit($condition);
-            $title = ['开发员','产品编码','主图', '商品名称','开发日期', '产品状态', '推荐人', '销量','销售额','总利润','近三个月单月最高利润', '利润率(%)'];
+            $title = ['开发员','产品编码','主图', '商品名称','开发日期', '产品状态', '推荐人', '销量','销售额','总利润', '利润率(%)'];
             ExportTools::toExcelOrCsv('dev-rate-goods-profit', $data, 'Xls', $title);
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
