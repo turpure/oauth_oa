@@ -1316,7 +1316,6 @@ class ApiReport
         $stores = isset($condition['stores'])? $condition['stores']: [];
         $goodsStatus = isset($condition['goodsStatus'])? $condition['goodsStatus']: [];
         $sellers = isset($condition['sellers'])? $condition['sellers']: [];
-        $sellers[] = 'all';
         if(!is_array($stores)) {
             throw new Exception('stores should be an array');
         }
@@ -1341,6 +1340,7 @@ class ApiReport
         }
 
         if(!empty($sellers)) {
+            $sellers[] = 'all';
             $sellers = implode("','", $sellers);
             $sql .= " and (cp.sellers in ('". $sellers ."')) ";
         }
