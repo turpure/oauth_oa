@@ -968,6 +968,7 @@ class ReportController extends AdminController
                 'queryType' => $paramsFilter['queryType'],
                 'store' => implode(',', $paramsFilter['store']),
                 'warehouse' => $condition['store'] ? implode(',', $condition['store']) : '',
+                'pageSize' => isset($condition['pageSize']) ? $condition['pageSize'] : 10
             ];
             return ApiReport::getDevRateSuffixGoodsProfit($condition);
         }
@@ -977,6 +978,7 @@ class ReportController extends AdminController
     }
 
     }
+
 
     /**
      * @brief 导出开发利润
@@ -1001,7 +1003,7 @@ class ReportController extends AdminController
                 'warehouse' => $condition['store'] ? implode(',', $condition['store']) : '',
             ];
             $data = ApiReport::getDevRateSuffixGoodsProfit($condition)->models;
-            $title = ['开发员','产品编码','主图', '商品名称','开发日期', '产品状态', '推荐人', '销量','销售额','总利润', '利润率'];
+            $title = ['产品编码','产品名称','平台', '部门', '账号','销售员', '仓库','销量','销售额','总利润', '利润率(%)'];
             ExportTools::toExcelOrCsv('dev-profit', $data, 'Xls', $title);
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
@@ -1020,6 +1022,23 @@ class ReportController extends AdminController
             $request = Yii::$app->request->post();
             $condition = $request['condition'];
             return ApiReport::getClearList($condition);
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        }
+    }
+    /**
+     * @brief 清仓列表
+     * @return mixed
+     */
+    public function actionExportClearList()
+    {
+        try {
+            $request = Yii::$app->request->post();
+            $condition = $request['condition'];
+            $condition['pageSize'] = 100000;
+            $data = ApiReport::getClearList($condition)->models;
+            $title = ['产品编码','产品状态','仓库','清仓计划','计划创建时间','产品名称','主图','主类目','子类目','库存数量','库存金额','开发员','销售员'];
+            ExportTools::toExcelOrCsv('clear-list', $data, 'Xls', $title);
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
