@@ -527,6 +527,7 @@ class ApiDataCenter
     public static function getSupplierProfitSummary($condition){
         $deliverDateBegin = $condition['deliverDate'][0] ?: '';
         $deliverDateEnd = $condition['deliverDate'][1] ?: '';
+        $profit = $condition['profit'] ?: 0;
         $supplierName = $condition['supplierName'] ?: '';
         $developer = ApiDataCenter::getDeveloper();
         $developerStr = [];
@@ -534,7 +535,7 @@ class ApiDataCenter
             $developerStr[] = $v['username'].'/'.$v['depart'];
         }
         $developerStr = implode(',', $developerStr);
-        $sql = "EXEC oauth_data_center_supplier_goods_profit_summary '{$deliverDateBegin}','{$deliverDateEnd}','{$supplierName}','{$developerStr}' ";
+        $sql = "EXEC oauth_data_center_supplier_goods_profit_summary '{$deliverDateBegin}','{$deliverDateEnd}','{$supplierName}','{$profit}','{$developerStr}' ";
         //var_dump($sql);exit;
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
