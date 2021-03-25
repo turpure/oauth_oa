@@ -9,6 +9,7 @@ namespace backend\modules\v1\models;
 
 use backend\models\OauthClearPlan;
 use backend\modules\v1\utils\ExportTools;
+use backend\modules\v1\utils\Helper;
 use Yii;
 use yii\data\ArrayDataProvider;
 use yii\data\SqlDataProvider;
@@ -1322,7 +1323,7 @@ class ApiReport
         }
         $sql = 'select  cp.goodsCode, bg.goodsStatus, bs.storeName, cp.planNumber,cp.createdTime,goodsName, (select top 1 bmpFileName from b_goodsSku(nolock)  where goodsId= bg.nid) as img, bc.categoryParentName,bc.categoryName,
             stockNumber, stockMoney,
-            bg.salername as developer, \'\' as seller
+            bg.salername as developer, cp.sellers as seller
             from  oauth_clearPlan as cp 
             LEFT JOIN b_goods(nolock) as bg on   cp.goodsCode = bg.goodsCode
             LEFT JOIN b_goodsCats as bc on bg.goodsCategoryId = bc.nid
@@ -1412,11 +1413,70 @@ class ApiReport
      */
     public static function saveNewClearProduct($product) {
         $plan = new OauthClearPlan();
+        $goodsCode = $product['goodsCode'];
+        $sellers = static::getMainSellers($goodsCode);
+        $product['sellers'] = $sellers;
         $product['createdTime'] = date('Y-m-d H:i:s');
         $plan->setAttributes($product);
         if (!$plan->save()) {
             throw new \Exception('Create new clear plan failed!');
         }
+    }
+
+    /**
+     * 获取主销售人
+     * @param $goodsCode
+     * @return mixed
+     */
+    public static function getMainSellers($goodsCode) {
+        $sql = "oauth_goodsCodeSuffixSold '$goodsCode'";
+        $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $userSuffixMap = static::getAllSuffixUser();
+        $sellers = [];
+        if(empty($ret)) {
+            $allSellers = array_values($userSuffixMap);
+            $sellers = $allSellers;
+        }
+        else {
+            $topOne = $ret[0];
+            if($topOne['stockNumber'] >=20)
+            {
+                $sellers[] = $userSuffixMap[$topOne['suffix']];
+            }
+
+            else {
+                $suffix = ArrayHelper::getColumn($ret,'suffix');
+                foreach ($suffix as $row) {
+                    $sellers[] = $userSuffixMap[$row];
+                }
+            }
+        }
+        return implode(',',$sellers);
+
+    }
+
+    /**
+     * 获取所有账号的销售
+     */
+    private static function getAllSuffixUser() {
+        $sql = '
+        SELECT
+		 username,
+		ats.store
+        FROM
+        `auth_store` ats
+        LEFT JOIN auth_store_child AS atc ON atc.store_id = ats.id
+        LEFT JOIN `user` AS u ON u.id = atc.user_id
+        LEFT JOIN auth_department_child AS adpc ON adpc.user_id = u.id
+        LEFT JOIN auth_department AS adp ON adpc.department_id = adp.id
+        LEFT JOIN auth_department AS adpp ON adp.parent = adpp.id
+        ';
+         $ret = Yii::$app->db->createCommand($sql)->queryAll();
+         $userSuffixMap = [];
+         foreach ($ret as $row) {
+             $userSuffixMap[$row['store']] = $row['username'];
+         }
+         return $userSuffixMap;
     }
 
 
