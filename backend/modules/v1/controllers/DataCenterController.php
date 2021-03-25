@@ -1669,7 +1669,8 @@ class DataCenterController extends AdminController
         $condition = Yii::$app->request->post('condition', []);
         $data = ApiDataCenter::getSupplierProfit($condition);
         $title = ['供应商名称', '采购员', '编码', '网址', '联系人', '手机', '地址', '类别', '等级', '到货天数', '备注',
-            '采购总数量', '采购总金额(￥)','销量','毛利(￥)','前3个月最高单月毛利(￥)','毛利增长(￥)'];
+            '采购总数量', '采购总金额(￥)','销量','毛利(￥)',  //'前3个月最高单月毛利(￥)','毛利增长(￥)'
+        ];
         ExportTools::toExcelOrCsv('suppliersProfit', $data, 'Xlsx', $title);
     }
 
@@ -1716,8 +1717,16 @@ class DataCenterController extends AdminController
         ExportTools::toExcelOrCsv('suppliersProfitDetail', $data, 'Xlsx', $title);
     }
     public function actionSuppliersProfitSummary(){
-        $condition = Yii::$app->request->post('condition', []);
-        return ApiDataCenter::getSupplierProfitSummary($condition);
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            return ApiDataCenter::getSupplierProfitSummary($condition);
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+
     }
 
 
