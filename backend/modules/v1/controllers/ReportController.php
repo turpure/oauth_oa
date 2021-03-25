@@ -920,7 +920,7 @@ class ReportController extends AdminController
             $condition = $request['condition'];
             $condition['pageSize'] = 100000;
             $data =  ApiReport::getDevRateDeveloperGoodsProfit($condition)->allModels;
-            $title = ['开发员', '销量','销售额','总利润', '利润率(%)'];
+            $title = ['开发员','销售额','销量','总利润', '利润率(%)'];
             ExportTools::toExcelOrCsv('dev-rate-developer-profit', $data, 'Xls', $title);
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
@@ -938,7 +938,7 @@ class ReportController extends AdminController
             $request = Yii::$app->request->post();
             $condition = $request['condition'];
             $data =  ApiReport::exportDevRateGoodsProfit($condition);
-            $title = ['开发员','产品编码','主图', '商品名称','开发日期', '产品状态', '推荐人', '销量','销售额','总利润', '利润率(%)'];
+            $title = ['开发员','推荐人','商品编码', '商品名称','主图','开发日期', '商品状态',  '销量','销售额','总利润', '利润率(%)'];
             ExportTools::toExcelOrCsv('dev-rate-goods-profit', $data, 'Xls', $title);
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
