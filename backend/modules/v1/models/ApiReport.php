@@ -1316,6 +1316,7 @@ class ApiReport
         $stores = isset($condition['stores'])? $condition['stores']: [];
         $goodsStatus = isset($condition['goodsStatus'])? $condition['goodsStatus']: [];
         $sellers = isset($condition['sellers'])? $condition['sellers']: [];
+        $sellers[] = 'all';
         if(!is_array($stores)) {
             throw new Exception('stores should be an array');
         }
@@ -1337,6 +1338,11 @@ class ApiReport
         if(!empty($goodsStatus)) {
             $goodsStatus = implode("','", $goodsStatus);
             $sql .= " and bg.goodsStatus in ('". $goodsStatus ."')";
+        }
+
+        if(!empty($sellers)) {
+            $sellers = implode("','", $sellers);
+            $sql .= " and (cp.sellers in ('". $sellers ."')) ";
         }
         $query = Yii::$app->py_db->createCommand($sql)->queryAll();
         $provider = new ArrayDataProvider([
