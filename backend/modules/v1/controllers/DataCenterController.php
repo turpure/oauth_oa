@@ -593,7 +593,7 @@ class DataCenterController extends AdminController
             'allModels' => $data,
             'sort' => [
                 'attributes' => ['sku', 'storeName', 'skuName', 'salerName', 'season', 'goodsSkuStatus', 'createDate',
-                    'number', 'money', 'cate', 'subCate', 'thirtyStockNum', 'thirtyStockMoney',
+                    'number', 'money', 'cate', 'subCate', 'thirtyStockNum', 'thirtyStockMoney','maxStorageAge',
                     'sixtyStockNum', 'sixtyStockMoney','ninetyStockNum','ninetyStockMoney','moreStockNum','moreStockMoney'],
                 'defaultOrder' => [
                     'number' => SORT_DESC,
@@ -629,7 +629,7 @@ class DataCenterController extends AdminController
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         $title = ['SKU', '主图', '仓库', 'SKU名称', '开发员', '季节', 'SKU状态', '开发时间',
             '库存数量', '库存金额', '类目', '子类目', '0-30天库存数量', '0-30天库存金额', '30-60天库存数量','30-60天库存金额',
-            '60-90天库存数量','60-90天库存金额','90天以上库存数量','90天以上库存金额'];
+            '60-90天库存数量','60-90天库存金额','90天以上库存数量','90天以上库存金额','180天以上'];
         ExportTools::toExcelOrCsv('skuStorageAge', $data, 'Xlsx', $title);
     }
 
