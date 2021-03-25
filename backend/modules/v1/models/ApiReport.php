@@ -1331,7 +1331,7 @@ class ApiReport
             LEFT JOIN (select storeId, goodsId, sum(number) as stockNumber,sum(money) as stockMoney  from   KC_CurrentStock(nolock) as kcs GROUP BY kcs.storeId, kcs.goodsId)  as ks on ks.goodsid = bg.nid
             LEFT JOIN b_store(nolock) as bs on bs.nid = ks.storeId where cp.isRemoved = 0 ';
         if(!empty($stores)) {
-            $stores = implode(',', $stores);
+            $stores = implode("','", $stores);
             $sql .= " and bs.name in ('". $stores ."')";
         }
         if(!empty($goodsStatus)) {
