@@ -1332,7 +1332,7 @@ class ApiReport
             LEFT JOIN b_store(nolock) as bs on bs.nid = ks.storeId where cp.isRemoved = 0 ';
         if(!empty($stores)) {
             $stores = implode("','", $stores);
-            $sql .= " and bs.name in ('". $stores ."')";
+            $sql .= " and bs.StoreName in ('". $stores ."')";
         }
         if(!empty($goodsStatus)) {
             $goodsStatus = implode("','", $goodsStatus);
