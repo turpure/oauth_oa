@@ -585,7 +585,7 @@ class WarehouseToolsController extends AdminController
         return new ArrayDataProvider([
             'allModels' => $data,
             'sort' => [
-                'attributes' => ['sku', 'skuName', 'goodsskustatus', 'number', 'devDate', 'hasPurchaseOrder'],
+                'attributes' => ['sku', 'skuName', 'goodsskustatus', 'number', 'devDate', 'hasPurchaseOrder','reservationNum'],
                 'defaultOrder' => [
                     'number' => SORT_DESC,
                 ]
@@ -609,7 +609,7 @@ class WarehouseToolsController extends AdminController
     {
         $cond = Yii::$app->request->post('condition', []);
         $data = ApiWarehouseTools::getPositionDetailsView($cond);
-        $title = ['仓库', '仓位', 'SKU个数', 'SKU', 'SKU名称', 'SKU状态', '库存数量', '开发日期', '是否有采购单'];
+        $title = ['仓库', '仓位', 'SKU个数', 'SKU', 'SKU名称', 'SKU状态', '库存数量', '开发日期', '占用数量', '是否有采购单'];
         ExportTools::toExcelOrCsv('positionDetailView', $data, 'Xlsx', $title);
 
     }
@@ -629,7 +629,7 @@ class WarehouseToolsController extends AdminController
         $includedData = $notIncludedData = $emptyStockData = [];
         foreach ($data as $k => $v) {
             if ($v['number'] > 0){
-                if ($v['hasPurchaseOrder'] == '是') {
+                if ($v['hasPurchaseOrder'] == '是' || $v['reservationNum'] > 0) {
                     $includedData[] = $v;
                 } else{
                     $notIncludedData[] = $v;
@@ -639,10 +639,10 @@ class WarehouseToolsController extends AdminController
             }
 
         }
-        $title = ['仓库', '仓位', '有库存SKU个数', 'SKU', 'SKU名称', 'SKU状态', '库存数量', '开发日期', '是否有采购单'];
+        $title = ['仓库', '仓位', '有库存SKU个数', 'SKU', 'SKU名称', 'SKU状态', '库存数量', '开发日期', '占用数量', '是否有采购单'];
         $data = [
-            ['title' => $title, 'name' => 'SKU有采购单数据', 'data' => $includedData],
-            ['title' => $title, 'name' => 'SKU无采购单数据', 'data' => $notIncludedData],
+            ['title' => $title, 'name' => 'SKU有采购单或有占用数据', 'data' => $includedData],
+            ['title' => $title, 'name' => 'SKU无采购单且无占用数据', 'data' => $notIncludedData],
             ['title' => $title, 'name' => 'SKU库存为0数据', 'data' => $emptyStockData],
         ];
 //        return $data;
