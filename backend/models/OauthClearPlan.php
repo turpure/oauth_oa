@@ -15,6 +15,7 @@ use yii\db\Expression;
  * @property string $comment
  * @property int $isRemoved
  * @property string $createdTime
+ * @property string $sellers
  */
 class OauthClearPlan extends \yii\db\ActiveRecord
 {
@@ -42,7 +43,7 @@ class OauthClearPlan extends \yii\db\ActiveRecord
     {
         return [
             [['goodsCode', 'planNumber', 'comment'], 'string'],
-            [['createdTime','isRemoved'], 'safe'],
+            [['createdTime','isRemoved','sellers'], 'safe'],
         ];
     }
 
@@ -54,6 +55,7 @@ class OauthClearPlan extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'goodsCode' => 'Goods Code',
+            'sellers' => 'Sellers',
             'isRemoved' => 'is removed',
             'planNumber' => 'Plan Number',
             'comment' => 'Comment',
