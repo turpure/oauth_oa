@@ -455,7 +455,7 @@ class ApiDataCenter
      * Author: henry
      * @return array
      */
-    public static function getDeveloper()
+    public static function  getDeveloper()
     {
         $developer = (new Query())
             ->select(['u.username','depart' => new Expression('case when d.parent=0 then d.id else d.parent end')])
