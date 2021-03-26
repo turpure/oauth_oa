@@ -838,21 +838,8 @@ class WarehouseToolsController extends AdminController
             $beginDate = $condition['dateRange'][0] ?: '';
             $endDate = $condition['dateRange'][1] ?: '';
             $sql = "EXEC oauth_warehouse_tools_deliver_time_rate '{$beginDate}','{$endDate}','{$storeName}'";
-            $data =  Yii::$app->py_db->createCommand($sql)->queryAll();
-            return new ArrayDataProvider([
-                'allModels' => $data,
-                'sort' => [
-                    'attributes' => ['storeName', 'dt', 'totalNum','inNum','notInNum','notInRate','num','rate',
-                        'oneNum','oneRate','twoNum','twoRate','threeNum','threeRate','otherNum','otherRate'],
-                    'defaultOrder' => [
-                        'storeName' => SORT_ASC,
-                        'dt' => SORT_ASC,
-                    ]
-                ],
-                'pagination' => [
-                    'pageSize' => 100,
-                ],
-            ]);
+            return  Yii::$app->py_db->createCommand($sql)->queryAll();
+
         }catch (Exception $e){
             return [
                 'code' => 400,
