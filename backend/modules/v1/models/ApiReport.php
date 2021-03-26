@@ -8,6 +8,7 @@
 namespace backend\modules\v1\models;
 
 use backend\models\OauthClearPlan;
+use backend\models\OauthClearPlanDetail;
 use backend\modules\v1\utils\ExportTools;
 use backend\modules\v1\utils\Helper;
 use Yii;
@@ -1330,12 +1331,18 @@ class ApiReport
             LEFT JOIN (select storeId, goodsId, sum(number) as stockNumber,sum(money) as stockMoney  from   KC_CurrentStock(nolock) as kcs GROUP BY kcs.storeId, kcs.goodsId)  as ks on ks.goodsid = bg.nid
             LEFT JOIN b_store(nolock) as bs on bs.nid = ks.storeId where cp.isRemoved = 0 ';
         if(!empty($stores)) {
-            $stores = implode(',', $stores);
-            $sql .= ' and ks.storeId in ('. $stores .')';
+            $stores = implode("','", $stores);
+            $sql .= " and bs.StoreName in ('". $stores ."')";
         }
         if(!empty($goodsStatus)) {
             $goodsStatus = implode("','", $goodsStatus);
             $sql .= " and bg.goodsStatus in ('". $goodsStatus ."')";
+        }
+
+        if(!empty($sellers)) {
+            $sellers[] = 'all';
+            $sellers = implode("','", $sellers);
+            $sql .= " and (cp.sellers in ('". $sellers ."')) ";
         }
         $query = Yii::$app->py_db->createCommand($sql)->queryAll();
         $provider = new ArrayDataProvider([
@@ -1380,6 +1387,7 @@ class ApiReport
 
                 // 删除列名
                 array_shift($csvAsArray);
+                $products = [];
                 foreach ($csvAsArray as &$row) {
                     foreach ($row as &$ceil) {
                         //检测编码方式
@@ -1396,8 +1404,10 @@ class ApiReport
                     //更新状态
                     $product['planNumber'] = $planNumber;
 
-                    static::saveNewClearProduct($product);
+                    $products[] = $product;
+
                 }
+                static::saveNewClearProduct($products);
             }
             return ['上传成功'];
         }
@@ -1408,77 +1418,123 @@ class ApiReport
 
     /**
      * 创建新计划
-     * @param $product
+     * @param $products
      * @throws \Exception
      */
-    public static function saveNewClearProduct($product) {
-        $plan = new OauthClearPlan();
-        $goodsCode = $product['goodsCode'];
-        $sellers = static::getMainSellers($goodsCode);
-        $product['sellers'] = $sellers;
-        $product['createdTime'] = date('Y-m-d H:i:s');
-        $plan->setAttributes($product);
-        if (!$plan->save()) {
+    public static function saveNewClearProduct($products) {
+        $sellers = static::getMainSellers($products);
+        $accountsMap =static::getSellerSuffixMap();
+        $trans = Yii::$app->py_db->beginTransaction();
+
+        try {
+
+            foreach ($products as $product) {
+                $plan = new OauthClearPlan();
+                $theSeller = $sellers[$product['goodsCode']];
+                $product['sellers'] = $theSeller;
+                $product['createdTime'] = date('Y-m-d H:i:s');
+                $plan->setAttributes($product);
+                if (!$plan->save()) {
+                    throw new \Exception('Create new clear plan failed!');
+                }
+
+//                if ($theSeller !== 'all') {
+//                    $accounts = $accountsMap[$theSeller];
+//
+//                    foreach ($accounts as $as) {
+//                        $detail = new OauthClearPlanDetail();
+//                        $info = ['planId' => $detail->id, 'seller' => $theSeller, 'suffix' => $as];
+//                        $detail->setAttributes($info);
+//                        if (!$detail->save()) {
+//                            throw new \Exception('Create new clear plan failed!');
+//                        }
+//                    }
+//                }
+            }
+            $trans->commit();
+        }
+        catch (\Exception $why) {
+            $trans->rollBack();
             throw new \Exception('Create new clear plan failed!');
         }
     }
 
     /**
      * 获取主销售人
-     * @param $goodsCode
+     * @param $products
      * @return mixed
+     * @throws \Exception
      */
-    public static function getMainSellers($goodsCode) {
-        $sql = "oauth_goodsCodeSuffixSold '$goodsCode'";
-        $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
-        $userSuffixMap = static::getAllSuffixUser();
-        $sellers = [];
-        if(empty($ret)) {
-            $allSellers = array_values($userSuffixMap);
-            $sellers = $allSellers;
+    public static function getMainSellers($products) {
+        $goodsCode = [];
+        foreach ($products as $pt) {
+            $goodsCode[] = $pt['goodsCode'];
         }
-        else {
-            $topOne = $ret[0];
-            if($topOne['stockNumber'] >=20)
-            {
-                $sellers[] = $userSuffixMap[$topOne['suffix']];
-            }
-
-            else {
-                $suffix = ArrayHelper::getColumn($ret,'suffix');
-                foreach ($suffix as $row) {
-                    $sellers[] = $userSuffixMap[$row];
+        $goodsCodeString = implode(',', $goodsCode);
+        $sellers = [];
+        $goodsCodeSellerMap = static::getMainSellerMap($goodsCodeString);
+        foreach ($goodsCode as $gc) {
+            if(array_key_exists($gc, $goodsCodeSellerMap)) {
+                $goodsInfo = $goodsCodeSellerMap[$gc];
+                if($goodsInfo['stockNumber'] >=20000){
+                    $sellers[$gc] = 'all';
+                }
+                else {
+                    $sellers[$gc] = $goodsInfo['username'];
                 }
             }
+            else {
+                $sellers[$gc] = 'all';
+            }
         }
-        return implode(',',$sellers);
+        return $sellers;
+    }
+
+    /**
+     * 获取所有的销售
+     * @return mixed
+     * @throws Exception
+     */
+    private static function getAllSeller() {
+        $sql = 'SELECT distinct username,ats.store FROM `auth_store` ats LEFT JOIN auth_store_child AS atc ON atc.store_id = ats.id LEFT JOIN `user` AS u ON u.id = atc.user_id LEFT JOIN auth_department_child AS adpc ON adpc.user_id = u.id LEFT JOIN auth_department AS adp ON adpc.department_id = adp.id LEFT JOIN auth_department AS adpp ON adp.parent = adpp.id';
+        $ret = Yii::$app->db->createCommand($sql)->queryAll();
+        return implode(',',array_unique(ArrayHelper::getColumn($ret,'username')));
 
     }
 
     /**
-     * 获取所有账号的销售
+     * 获取所有的账号销售表
+     * @return mixed
+     * @throws Exception
      */
-    private static function getAllSuffixUser() {
-        $sql = '
-        SELECT
-		 username,
-		ats.store
-        FROM
-        `auth_store` ats
-        LEFT JOIN auth_store_child AS atc ON atc.store_id = ats.id
-        LEFT JOIN `user` AS u ON u.id = atc.user_id
-        LEFT JOIN auth_department_child AS adpc ON adpc.user_id = u.id
-        LEFT JOIN auth_department AS adp ON adpc.department_id = adp.id
-        LEFT JOIN auth_department AS adpp ON adp.parent = adpp.id
-        ';
-         $ret = Yii::$app->db->createCommand($sql)->queryAll();
-         $userSuffixMap = [];
-         foreach ($ret as $row) {
-             $userSuffixMap[$row['store']] = $row['username'];
-         }
-         return $userSuffixMap;
+    private static function getSellerSuffixMap()
+    {
+        $sql = 'SELECT username,ats.store FROM `auth_store` ats LEFT JOIN auth_store_child AS atc ON atc.store_id = ats.id LEFT JOIN `user` AS u ON u.id = atc.user_id LEFT JOIN auth_department_child AS adpc ON adpc.user_id = u.id LEFT JOIN auth_department AS adp ON adpc.department_id = adp.id LEFT JOIN auth_department AS adpp ON adp.parent = adpp.id';
+        $ret = Yii::$app->db->createCommand($sql)->queryAll();
+        $map = [];
+        foreach ($ret as $row) {
+            $username = $row['username'];
+            $map[$username][] = $row['store'];
+        }
+        return $map;
     }
 
+
+    /**
+     * 根据商品编码获取主责任人
+     * @param $goodsCodes
+     * @return array
+     */
+    private static function getMainSellerMap($goodsCodes) {
+        $sql = "oauth_goodsCodeSuffixSold '$goodsCodes'";
+        $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $sellerMap = [];
+        foreach ($ret as $row) {
+            $sellerMap[$row['goodsCode']] = $row;
+        }
+        return $sellerMap;
+
+    }
 
 
     /**
