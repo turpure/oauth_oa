@@ -1273,7 +1273,7 @@ class ApiReport
 
     public static function getDevRateSuffixGoodsProfit($condition)
     {
-        $sql = 'call    report_devRateSuffixGoodsProfitAPI(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse);';
+        $sql = 'call  report_devRateSuffixGoodsProfitAPI(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse);';
         $sqlParams = [
             ':dateType' => $condition['dateType'],
             ':beginDate' => $condition['beginDate'],
@@ -1284,8 +1284,18 @@ class ApiReport
         ];
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $ret = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
+        $clearGoodsList = static::currentClearList();
+        $data = [];
+        if(!empty($clearGoodsList)) {
+            foreach ($ret as $row) {
+                if (in_array($row['goodsCode'], $clearGoodsList, true)) {
+                    $data[] = $row;
+                }
+
+            }
+        }
         $provider = new ArrayDataProvider([
-            'allModels' => $ret,
+            'allModels' => $data,
             'sort' => ['attributes' =>
                 [
                     'sold','salemoney','grossprofit','grossprofitRate'
@@ -1296,8 +1306,21 @@ class ApiReport
             ],
         ]);
         return $provider;
+    }
 
 
+    /**
+     * 清仓计划里面的商品编码
+     * @return array
+     */
+    private static function currentClearList() {
+        $sql = 'select goodsCode from oauth_clearPlan where isRemoved = 1';
+        $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $data = [];
+        if(empty($ret)) {
+            return $data;
+        }
+        return ArrayHelper::getColumn($ret,'goodsCode');
     }
 
 
@@ -1438,18 +1461,18 @@ class ApiReport
                     throw new \Exception('Create new clear plan failed!');
                 }
 
-//                if ($theSeller !== 'all') {
-//                    $accounts = $accountsMap[$theSeller];
-//
-//                    foreach ($accounts as $as) {
-//                        $detail = new OauthClearPlanDetail();
-//                        $info = ['planId' => $detail->id, 'seller' => $theSeller, 'suffix' => $as];
-//                        $detail->setAttributes($info);
-//                        if (!$detail->save()) {
-//                            throw new \Exception('Create new clear plan failed!');
-//                        }
-//                    }
-//                }
+                if ($theSeller !== 'all') {
+                    $accounts = $accountsMap[$theSeller];
+
+                    foreach ($accounts as $as) {
+                        $detail = new OauthClearPlanDetail();
+                        $info = ['planId' => $detail->id, 'seller' => $theSeller, 'suffix' => $as];
+                        $detail->setAttributes($info);
+                        if (!$detail->save()) {
+                            throw new \Exception('Create new clear plan failed!');
+                        }
+                    }
+                }
             }
             $trans->commit();
         }
@@ -1476,7 +1499,7 @@ class ApiReport
         foreach ($goodsCode as $gc) {
             if(array_key_exists($gc, $goodsCodeSellerMap)) {
                 $goodsInfo = $goodsCodeSellerMap[$gc];
-                if($goodsInfo['stockNumber'] >=20000){
+                if($goodsInfo['stockNumber'] >=20){
                     $sellers[$gc] = 'all';
                 }
                 else {
