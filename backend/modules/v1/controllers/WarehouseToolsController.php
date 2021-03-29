@@ -797,6 +797,7 @@ class WarehouseToolsController extends AdminController
     public function actionStorageTimeRate(){
         try {
             $condition = Yii::$app->request->post('condition', []);
+            $pageSize = $condition['pageSize'] ? : 20;
             $storeName = $condition['storeName'] ?: '';
             $beginDate = $condition['dateRange'][0] ?: '';
             $endDate = $condition['dateRange'][1] ?: '';
@@ -813,7 +814,7 @@ class WarehouseToolsController extends AdminController
                     ]
                 ],
                 'pagination' => [
-                    'pageSize' => 100,
+                    'pageSize' => $pageSize,
                 ],
             ]);
         }catch (Exception $e){
@@ -834,6 +835,7 @@ class WarehouseToolsController extends AdminController
     public function actionDeliverTimeRate(){
         try {
             $condition = Yii::$app->request->post('condition', []);
+            $pageSize = $condition['pageSize'] ? : 20;
             $storeName = $condition['storeName'] ?: '';
             $beginDate = $condition['dateRange'][0] ?: '';
             $endDate = $condition['dateRange'][1] ?: '';
@@ -850,7 +852,7 @@ class WarehouseToolsController extends AdminController
                     ]
                 ],
                 'pagination' => [
-                    'pageSize' => 100,
+                    'pageSize' => $pageSize,
                 ],
             ]);
         }catch (Exception $e){
