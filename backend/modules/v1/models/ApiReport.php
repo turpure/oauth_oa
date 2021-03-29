@@ -1289,7 +1289,14 @@ class ApiReport
         if(!empty($clearGoodsList)) {
             foreach ($ret as $row) {
                 if (in_array($row['goodsCode'], $clearGoodsList, true)) {
-                    $data[] = $row;
+                    if(!empty($condition['greatGoodsProfit'])) {
+                        if($row['goodsTotalProfit'] > $condition['greatGoodsProfit']) {
+                            $data[] = $row;
+                        }
+                    }
+                    else {
+                        $data[] = $row;
+                    }
                 }
 
             }
@@ -1314,7 +1321,7 @@ class ApiReport
      * @return array
      */
     private static function currentClearList() {
-        $sql = 'select goodsCode from oauth_clearPlan where isRemoved = 1';
+        $sql = 'select goodsCode from oauth_clearPlan where isRemoved = 0';
         $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
         $data = [];
         if(empty($ret)) {
