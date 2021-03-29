@@ -1050,6 +1050,28 @@ class SchedulerController extends Controller
 
 
     /**
+     * 获取发货时效数据
+     * Date: 2021-03-29 8:49
+     * Author: henry
+     */
+    public function actionFetchDeliverTimeData()
+    {
+        try {
+            $beginData = '2021-01-01';
+            $endDate = date('Y-m-d', strtotime('-1 days'));
+            $sql = "EXEC oauth_warehouse_tools_deliver_trade_backup '{$beginData}','{$endDate}';";
+            $data = Yii::$app->py_db->createCommand($sql)->execute();
+            echo date('Y-m-d H:i:s')." Goods rights update successful!\n";
+        }catch (\Exception $e){
+            echo date('Y-m-d H:i:s')." Get stock status data failed, cause of '{$e->getMessage()}'. \n";
+            //echo $e->getMessage();
+        }
+
+    }
+
+
+
+    /**
      * @brief 批量更新依赖毛利润报表的命令
      */
 
