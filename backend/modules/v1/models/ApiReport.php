@@ -1289,16 +1289,8 @@ class ApiReport
         if(!empty($clearGoodsList)) {
             foreach ($ret as $row) {
                 if (in_array($row['goodsCode'], $clearGoodsList, true)) {
-                    if(!empty($condition['greatGoodsProfit'])) {
-                        if($row['goodsTotalProfit'] > $condition['greatGoodsProfit']) {
-                            $data[] = $row;
-                        }
-                    }
-                    else {
-                        $data[] = $row;
-                    }
+                    $data[] = $row;
                 }
-
             }
         }
         $provider = new ArrayDataProvider([
