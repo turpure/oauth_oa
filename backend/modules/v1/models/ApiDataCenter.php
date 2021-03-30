@@ -455,10 +455,10 @@ class ApiDataCenter
      * Author: henry
      * @return array
      */
-    public static function  getDeveloper()
+    public static function getDeveloper()
     {
         $developer = (new Query())
-            ->select(['u.username','depart' => new Expression('case when d.parent=0 then d.id else d.parent end')])
+            ->select(['u.username', 'depart' => new Expression('case when d.parent=0 then d.id else d.parent end')])
             ->from('auth_department_child as dc')
             ->leftJoin('auth_department as d', 'd.id=dc.department_id')
             ->leftJoin('user as u', 'u.id=dc.user_id')
@@ -475,7 +475,8 @@ class ApiDataCenter
      * Author: henry
      * @return mixed
      */
-    public static function getSupplierProfit($condition){
+    public static function getSupplierProfit($condition)
+    {
         $purchaseDateBegin = $condition['purchaseDate'][0] ?: '';
         $purchaseDateEnd = $condition['purchaseDate'][1] ?: '';
         $deliverDateBegin = $condition['deliverDate'][0] ?: '';
@@ -487,13 +488,14 @@ class ApiDataCenter
         $supplierLevel = $condition['supplierLevel'] ?: '';
         $developer = ApiDataCenter::getDeveloper();
         $developerStr = [];
-        foreach ($developer as $v){
-            $developerStr[] = $v['username'].'/'.$v['depart'];
+        foreach ($developer as $v) {
+            $developerStr[] = $v['username'] . '/' . $v['depart'];
         }
         $developerStr = implode(',', $developerStr);
+        $flag = $condition['flag'];
         $sql = "EXEC oauth_data_center_supplier_goods_profit '{$purchaseDateBegin}','{$purchaseDateEnd}',
                 '{$deliverDateBegin}','{$deliverDateEnd}','{$purchaser}','{$supplierName}','{$supplierLevel}',
-                '{$cate}','{$subCate}','{$developerStr}' ";
+                '{$cate}','{$subCate}','{$developerStr}','{$flag}'";
         //var_dump($sql);exit;
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
@@ -505,7 +507,8 @@ class ApiDataCenter
      * Author: henry
      * @return mixed
      */
-    public static function getSupplierProfitDetail($condition){
+    public static function getSupplierProfitDetail($condition)
+    {
         $supplierID = $condition['supplierID'] ?: '';
         $salerID = $condition['salerID'] ?: '';
         $purchaseDateBegin = $condition['purchaseDate'][0] ?: '';
@@ -514,8 +517,8 @@ class ApiDataCenter
         $deliverDateEnd = $condition['deliverDate'][1] ?: '';
         $developer = ApiDataCenter::getDeveloper();
         $developerStr = [];
-        foreach ($developer as $v){
-            $developerStr[] = $v['username'].'/'.$v['depart'];
+        foreach ($developer as $v) {
+            $developerStr[] = $v['username'] . '/' . $v['depart'];
         }
         $developerStr = implode(',', $developerStr);
         $sql = "EXEC oauth_data_center_supplier_goods_profit_detail '{$supplierID}','{$salerID}',
@@ -524,21 +527,44 @@ class ApiDataCenter
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
 
-    public static function getSupplierProfitSummary($condition){
+    public static function getSupplierProfitSummary($condition)
+    {
         $deliverDateBegin = $condition['deliverDate'][0] ?: '';
         $deliverDateEnd = $condition['deliverDate'][1] ?: '';
         $profit = $condition['profit'] ?: 0;
         $supplierName = $condition['supplierName'] ?: '';
         $developer = ApiDataCenter::getDeveloper();
         $developerStr = [];
-        foreach ($developer as $v){
-            $developerStr[] = $v['username'].'/'.$v['depart'];
+        foreach ($developer as $v) {
+            $developerStr[] = $v['username'] . '/' . $v['depart'];
         }
         $developerStr = implode(',', $developerStr);
         $sql = "EXEC oauth_data_center_supplier_goods_profit_summary '{$deliverDateBegin}','{$deliverDateEnd}','{$supplierName}','{$profit}','{$developerStr}' ";
         //var_dump($sql);exit;
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
+
+    /**
+     * 获取供应商等级
+     * @param $condition
+     * Date: 2021-03-30 10:52
+     * Author: henry
+     */
+    public static function getSupplierLevel($condition)
+    {
+        $sql = "SELECT s.nid AS supplierID,supplierName,linkMan,mobile,address,categoryName,bd.DictionaryName AS categoryLevel,s.memo
+		FROM B_Supplier(nolock) s 
+		LEFT JOIN B_SupplierCats(nolock) sc ON Sc.nid=s.categoryID
+		LEFT JOIN B_Dictionary (nolock) bd ON s.categoryLevel = bd.NID AND bd.categoryID=32 WHERE 1=1 ";
+        if ($condition['supplierName']) $sql .= " supplierName LIKE '%{$condition['supplierName']}%' ";
+        if ($condition['linkMan']) $sql .= " linkMan LIKE '%{$condition['linkMan']}%' ";
+        if ($condition['categoryName']) $sql .= " categoryName LIKE '%{$condition['categoryName']}%' ";
+        if ($condition['categoryLevel']) $sql .= " bd.DictionaryName LIKE '%{$condition['categoryLevel']}%' ";
+        if ($condition['memo']) $sql .= " s.memo LIKE '%{$condition['memo']}%' ";
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
+
+    }
+
 
 
 }
