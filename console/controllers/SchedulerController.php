@@ -313,8 +313,8 @@ class SchedulerController extends Controller
     public function actionSalesAmt()
     {
 		//获取上月时间
-        $lastBeginDate = date('Y-m-01', strtotime('-1 month -1 day'));
-        $lastEndDate = date('Y-m-t', strtotime(' -1 month -1 day'));
+        $lastBeginDate = date('Y-m-01', strtotime('last day of -1 month -1 day'));
+        $lastEndDate = date('Y-m-t', strtotime('last day of -1 month -1 day'));
         $beginDate = date('Y-m-01', strtotime('-1 day'));
         $endDate = date('Y-m-d', strtotime('-1 day'));
         try {
@@ -461,8 +461,8 @@ class SchedulerController extends Controller
      */
     public function actionSalesRanking(){
 		//获取上月时间
-        $lastBeginDate = date('Y-m-01', strtotime('-1 month -1 day'));
-        $lastEndDate = date('Y-m-t', strtotime(' -1 month -1 day'));
+        $lastBeginDate = date('Y-m-01', strtotime('last day of -1 month -1 day'));
+        $lastEndDate = date('Y-m-t', strtotime('last day of -1 month -1 day'));
         $beginDate = date('Y-m-01', strtotime('-1 day'));
         $endDate = date('Y-m-d', strtotime('-1 day'));
         try {
