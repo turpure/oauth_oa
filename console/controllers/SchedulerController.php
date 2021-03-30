@@ -219,10 +219,11 @@ class SchedulerController extends Controller
     public function actionProfit()
     {
         //获取上月时间
-        $lastBeginDate = date('Y-m-01', strtotime('-1 month -1 day'));
-        $lastEndDate = date('Y-m-t', strtotime(' -1 month -1 day'));
+        $lastBeginDate = date('Y-m-01', strtotime('last day of -1 month -1 day'));
+        $lastEndDate = date('Y-m-t', strtotime('last day of -1 month -1 day'));
         $beginDate = date('Y-m-01', strtotime('-1 day'));
         $endDate = date('Y-m-d', strtotime('-1 day'));
+
         try {
             //获取账号信息
             $params = [
@@ -1050,20 +1051,40 @@ class SchedulerController extends Controller
 
 
     /**
-     * 获取发货时效数据
+     * 发货时效备份数据（已发货已归档数据，操作日志处理）
      * Date: 2021-03-29 8:49
      * Author: henry
      */
     public function actionFetchDeliverTimeData()
     {
         try {
-            $beginData = '2021-01-01';
+            $beginDate = '2021-01-01';
             $endDate = date('Y-m-d', strtotime('-1 days'));
-            $sql = "EXEC oauth_warehouse_tools_deliver_trade_backup '{$beginData}','{$endDate}';";
+            $sql = "EXEC oauth_warehouse_tools_deliver_trade_backup '{$beginDate}','{$endDate}';";
             $data = Yii::$app->py_db->createCommand($sql)->execute();
-            echo date('Y-m-d H:i:s')." Goods rights update successful!\n";
+            echo date('Y-m-d H:i:s')." Goods deliver time data successful!\n";
         }catch (\Exception $e){
-            echo date('Y-m-d H:i:s')." Get stock status data failed, cause of '{$e->getMessage()}'. \n";
+            echo date('Y-m-d H:i:s')." Get deliver time data failed, cause of '{$e->getMessage()}'. \n";
+            //echo $e->getMessage();
+        }
+
+    }
+
+    /**
+     * 每月更新供应商等级
+     * Date: 2021-03-30 8:49
+     * Author: henry
+     */
+    public function actionUpdateSupplierLevel()
+    {
+        try {
+            $lastBeginDate = date('Y-m-01', strtotime('last day of -1 month -1 day'));
+            $lastEndDate = date('Y-m-t', strtotime('last day of -1 month -1 day'));
+            $sql = "EXEC oauth_data_center_update_supplier_level '{$lastBeginDate}','{$lastEndDate}';";
+            $data = Yii::$app->py_db->createCommand($sql)->execute();
+            echo date('Y-m-d H:i:s')." Update supplier level successful!\n";
+        }catch (\Exception $e){
+            echo date('Y-m-d H:i:s')." Update supplier level failed, cause of '{$e->getMessage()}'. \n";
             //echo $e->getMessage();
         }
 
