@@ -1211,23 +1211,76 @@ class ApiReport
     public static function getDevRateDeveloperGoodsProfit($condition)
     {
         $developer = isset($condition['developer']) ? $condition['developer'] : [];
-        $homeGreatProfit = isset($condition['homeGreatProfit']) ? $condition['homeGreatProfit'] : [];
-        $overseaGreatProfit = isset($condition['overseaGreatProfit']) ? $condition['overseaGreatProfit'] : [];
+        $homeGreatProfit = isset($condition['homeGreatProfit']) ? $condition['homeGreatProfit'] : 3000;
+        $overseaGreatProfit = isset($condition['overseaGreatProfit']) ? $condition['overseaGreatProfit'] : 5000;
         $goodsStatus = isset($condition['goodsStatus']) ? $condition['goodsStatus'] : [];
         list($beginDate, $endDate) = $condition['dateRange'];
         list($devBeginDate, $devEndDate) = isset($condition['devDateRange']) && $condition['devDateRange'] ? $condition['devDateRange'] : ['',''];
         $dateFlag = $condition['dateType'];
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $sql = 'call report_devRateDeveloperGoodsProfitAPI (:developer,:goodsStatus, :beginDate, 
-        :endDate, :dateFlag, :devBeginDate, :devEndDate :homeGreatProfit, :overseaGreatProfit)';
+        :endDate, :dateFlag, :devBeginDate, :devEndDate, :homeGreatProfit, :overseaGreatProfit)';
         $params = [':developer' => implode(',', $developer),
             ':goodsStatus' => implode(',', $goodsStatus),
             ':beginDate' => $beginDate, ':endDate' => $endDate, ':dateFlag' => (int)$dateFlag,
-            ':devBeginDate' => $devBeginDate, ':devEndDate' => $devEndDate,];
-        $query = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
+            ':devBeginDate' => $devBeginDate, ':devEndDate' => $devEndDate,
+            ':homeGreatProfit' => $homeGreatProfit, ':overseaGreatProfit' => $overseaGreatProfit,
+            ];
+
+        $oneMonthAgo = static::getPreMonth($beginDate, 1);
+        $twoMonthAgo = static::getPreMonth($beginDate, 2);
+        $threeMonthAgo = static::getPreMonth($beginDate, 3);
+
+        $current = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
+
+        $params[':beginDate'] = $oneMonthAgo[0];
+        $params[':endDate'] = $oneMonthAgo[1];
+        $oneMonthData = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
+
+        $params[':beginDate'] = $twoMonthAgo[0];
+        $params[':endDate'] = $twoMonthAgo[1];
+        $twoMonthData = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
+
+        $params[':beginDate'] = $threeMonthAgo[0];
+        $params[':endDate'] = $threeMonthAgo[1];
+        $threeMonthData = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
+
+        foreach ($current as  &$cur) {
+            foreach ($oneMonthData as $od) {
+                if($cur['developer'] === $od['developer']) {
+                    $cur['oneMonthProfit'] = $od['profit'];
+                }
+            }
+            foreach ($twoMonthData as $td) {
+                if($cur['developer'] === $td['developer']) {
+                    $cur['twoMonthProfit'] = $td['profit'];
+                }
+            }
+
+            foreach ($threeMonthData as $hd) {
+                if($cur['developer'] === $hd['developer']) {
+                    $cur['threeMonthProfit'] = $hd['profit'];
+                }
+            }
+
+        }
+        foreach ($current as &$cur) {
+            if(!isset($cur['oneMonthProfit'])) {
+                $cur['oneMonthProfit'] = 0;
+            }
+
+            if(!isset($cur['twoMonthProfit'])) {
+                $cur['twoMonthProfit'] = 0;
+            }
+
+            if(!isset($cur['threeMonthProfit'])) {
+                $cur['threeMonthProfit'] = 0;
+            }
+            $cur['maxMonthProfit'] = max([$cur['oneMonthProfit'],$cur['twoMonthProfit'], $cur['threeMonthProfit']]);
+        }
 
         $provider = new ArrayDataProvider([
-            'allModels' => $query,
+            'allModels' => $current,
             'sort' => ['attributes' =>
                 [
                     'developer', 'goodsStatus',
@@ -1240,6 +1293,14 @@ class ApiReport
         ]);
         return $provider;
     }
+
+    //获取指定日期上个月的第一天和最后一天
+    private static function getPreMonth($date, $m) {
+        $time = strtotime ( $date );
+        $firstDay = date ( 'Y-m-01', strtotime ( date ( 'Y', $time ) . '-' . (date ( 'm', $time ) - $m) . '-01' ) );
+        $lastDay = date ( 'Y-m-d', strtotime ( "$firstDay +1 month -1 day" ) );
+        return [$firstDay, $lastDay];
+}
 
     /**
      * @brief 导出开发汇率产品利润
