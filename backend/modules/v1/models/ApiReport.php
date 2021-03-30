@@ -1244,7 +1244,7 @@ class ApiReport
         $params[':beginDate'] = $threeMonthAgo[0];
         $params[':endDate'] = $threeMonthAgo[1];
         $threeMonthData = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
-
+        $ret = [];
         foreach ($current as  &$cur) {
             foreach ($oneMonthData as $od) {
                 if($cur['developer'] === $od['developer']) {
@@ -1264,7 +1264,9 @@ class ApiReport
             }
 
         }
+        $ret = [];
         foreach ($current as &$cur) {
+            $row = [];
             if(!isset($cur['oneMonthProfit'])) {
                 $cur['oneMonthProfit'] = 0;
             }
@@ -1277,10 +1279,18 @@ class ApiReport
                 $cur['threeMonthProfit'] = 0;
             }
             $cur['maxMonthProfit'] = max([$cur['oneMonthProfit'],$cur['twoMonthProfit'], $cur['threeMonthProfit']]);
+            $cur['profitGrowth'] = $cur['profit'] - $cur['maxMonthProfit'];
+            $row['developer'] = $cur['developer'];
+            $row['amt'] = $cur['amt'];
+            $row['sold'] = $cur['sold'];
+            $row['profit'] = $cur['profit'];
+            $row['maxMonthProfit'] = $cur['maxMonthProfit'];
+            $row['profitGrowth'] = $cur['profitGrowth'];
+            $ret[] = $row;
         }
 
         $provider = new ArrayDataProvider([
-            'allModels' => $current,
+            'allModels' => $ret,
             'sort' => ['attributes' =>
                 [
                     'developer', 'goodsStatus',
