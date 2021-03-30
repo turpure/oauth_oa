@@ -556,11 +556,11 @@ class ApiDataCenter
 		FROM B_Supplier(nolock) s 
 		LEFT JOIN B_SupplierCats(nolock) sc ON Sc.nid=s.categoryID
 		LEFT JOIN B_Dictionary (nolock) bd ON s.categoryLevel = bd.NID AND bd.categoryID=32 WHERE 1=1 ";
-        if ($condition['supplierName']) $sql .= " supplierName LIKE '%{$condition['supplierName']}%' ";
-        if ($condition['linkMan']) $sql .= " linkMan LIKE '%{$condition['linkMan']}%' ";
-        if ($condition['categoryName']) $sql .= " categoryName LIKE '%{$condition['categoryName']}%' ";
-        if ($condition['categoryLevel']) $sql .= " bd.DictionaryName LIKE '%{$condition['categoryLevel']}%' ";
-        if ($condition['memo']) $sql .= " s.memo LIKE '%{$condition['memo']}%' ";
+        if ($condition['supplierName']) $sql .= " AND supplierName LIKE '%{$condition['supplierName']}%' ";
+        if ($condition['linkMan']) $sql .= " AND linkMan LIKE '%{$condition['linkMan']}%' ";
+        if ($condition['categoryName']) $sql .= " AND categoryName LIKE '%{$condition['categoryName']}%' ";
+        if ($condition['categoryLevel']) $sql .= " AND bd.DictionaryName LIKE '%{$condition['categoryLevel']}%' ";
+        if ($condition['memo']) $sql .= " AND s.memo LIKE '%{$condition['memo']}%' ";
         return Yii::$app->py_db->createCommand($sql)->queryAll();
 
     }
