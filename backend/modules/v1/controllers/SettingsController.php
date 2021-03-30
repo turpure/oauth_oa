@@ -7,6 +7,8 @@
 
 namespace backend\modules\v1\controllers;
 
+use backend\models\ShopElf\BDictionary;
+use backend\models\ShopElf\BSupplier;
 use backend\modules\v1\models\ApiSettings;
 use yii\db\Exception;
 use yii\filters\VerbFilter;
@@ -57,6 +59,31 @@ class SettingsController extends AdminController
         }
         if ($request->isGet) {
             return ApiSettings::getExchangeRate();
+        }
+    }
+
+    public function actionSupplierLevelStandard()
+    {
+        try {
+            $request = Yii::$app->request;
+            if ($request->isPost) {
+                $post = $request->post();
+                $cond = $post['condition'];
+                foreach ($cond as $v){
+                    if($v['Memo']){
+                        BDictionary::updateAll(['Memo' => $v['Memo']],['NID' => $v['NID']]);
+                    }
+                }
+                return true;
+            }
+            if ($request->isGet) {
+                return BDictionary::findAll(['CategoryID' => 32]);
+            }
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
         }
     }
 
