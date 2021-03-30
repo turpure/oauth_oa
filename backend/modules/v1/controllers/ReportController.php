@@ -968,7 +968,6 @@ class ReportController extends AdminController
                 'queryType' => $paramsFilter['queryType'],
                 'store' => implode(',', $paramsFilter['store']),
                 'warehouse' => $condition['store'] ? implode(',', $condition['store']) : '',
-                'greatGoodsProfit' => $condition['greatGoodsProfit'] ? (float)$condition['greatGoodsProfit'] : '',
                 'pageSize' => isset($condition['pageSize']) ? $condition['pageSize'] : 10
             ];
             return ApiReport::getDevRateSuffixGoodsProfit($condition);
