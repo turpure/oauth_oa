@@ -1211,24 +1211,26 @@ class ApiReport
     public static function getDevRateDeveloperGoodsProfit($condition)
     {
         $developer = isset($condition['developer']) ? $condition['developer'] : [];
+        $homeGreatProfit = isset($condition['homeGreatProfit']) ? $condition['homeGreatProfit'] : [];
+        $overseaGreatProfit = isset($condition['overseaGreatProfit']) ? $condition['overseaGreatProfit'] : [];
         $goodsStatus = isset($condition['goodsStatus']) ? $condition['goodsStatus'] : [];
-        $introducer = isset($condition['introducer']) ? $condition['introducer'] : '';
-        $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
         list($beginDate, $endDate) = $condition['dateRange'];
         list($devBeginDate, $devEndDate) = isset($condition['devDateRange']) && $condition['devDateRange'] ? $condition['devDateRange'] : ['',''];
         $dateFlag = $condition['dateType'];
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-        $sql = 'call report_devRateDeveloperGoodsProfitAPI (:developer,:goodsStatus, :beginDate, :endDate, :dateFlag, :devBeginDate, :devEndDate)';
+        $sql = 'call report_devRateDeveloperGoodsProfitAPI (:developer,:goodsStatus, :beginDate, 
+        :endDate, :dateFlag, :devBeginDate, :devEndDate :homeGreatProfit, :overseaGreatProfit)';
         $params = [':developer' => implode(',', $developer),
             ':goodsStatus' => implode(',', $goodsStatus),
             ':beginDate' => $beginDate, ':endDate' => $endDate, ':dateFlag' => (int)$dateFlag,
             ':devBeginDate' => $devBeginDate, ':devEndDate' => $devEndDate,];
         $query = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
+
         $provider = new ArrayDataProvider([
             'allModels' => $query,
             'sort' => ['attributes' =>
                 [
-                    'developer',  'devDate', 'goodsStatus',
+                    'developer', 'goodsStatus',
                     'sold','amt','profit','rate'
                 ]
             ],

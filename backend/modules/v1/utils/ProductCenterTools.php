@@ -1205,13 +1205,19 @@ class ProductCenterTools
     public static function getDeclaredValue($infoId)
     {
         $minPrice = static::getMaxRetailPrice($infoId);
-        if ($minPrice >= 0 && $minPrice <= 2) {
-            return 1;
+        if ($minPrice >= 0 && $minPrice <= 1) {
+            return 0.1;
+        }
+        if ($minPrice >= 1 && $minPrice <= 2) {
+            return 0.5;
         }
         if ($minPrice > 2 && $minPrice <= 5) {
+            return 1;
+        }
+        if ($minPrice > 5 && $minPrice <= 10) {
             return 2;
         }
-        if ($minPrice > 5 && $minPrice <= 20) {
+        if ($minPrice > 10 && $minPrice <= 20) {
             return 3;
         }
         if ($minPrice > 20 && $minPrice <= 30) {
