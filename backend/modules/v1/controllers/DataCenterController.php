@@ -1746,7 +1746,7 @@ class DataCenterController extends AdminController
             return new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
-                    'attributes' => ['supplierID','supplierName','linkMan','mobile','address','categoryName','categoryLevel','memo'],
+                    'attributes' => ['supplierID','supplierName','linkMan','mobile','address','categoryName','supplierLevel','memo'],
                     'defaultOrder' => [
                         'supplierID' => SORT_ASC,
                     ]
