@@ -1086,28 +1086,8 @@ class SchedulerController extends Controller
         try {
             $lastBeginDate = date('Y-m-01', strtotime('last day of -1 month -1 day'));
             $lastEndDate = date('Y-m-t', strtotime('last day of -1 month -1 day'));
-            $sql = "SELECT NID,ISNULL(money,0) AS money
-                    FROM B_Supplier(nolock) s 
-                    LEFT JOIN(			
-                        SELECT supplierID,SUM(orderMoney) AS money
-                        FROM CG_StockOrderM (nolock) m 
-                        WHERE CheckFlag = 1 AND CONVERT(VARCHAR(10),audieDate,121) BETWEEN '{$lastBeginDate}' AND '{$lastEndDate}'
-                        GROUP BY supplierID 
-                    ) aa ON NID=supplierID
-                    ORDER BY ISNULL(money,0) DESC";
-            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-            $levelSql = "SELECT * FROM B_Dictionary WHERE categoryID=32 ORDER BY CONVERT(INT ,memo) DESC ";
-            $levelData = Yii::$app->py_db->createCommand($levelSql)->queryAll();
-            foreach ($data as $v){
-                $level = 1214;  // 默认 D 级
-                foreach ($levelData as $le){
-                    if($v['money'] >= $le['Memo']) {
-                        $level = (int) $le['NID'];
-                        break;
-                    }
-                }
-                Yii::$app->py_db->createCommand()->update('B_Supplier',['CategoryLevel' => $level], ['NID' => $v['NID']])->execute();
-            }
+            $sql = "oauth_data_center_update_supplier_level '{$lastBeginDate}' AND '{$lastEndDate}';";
+            $data = Yii::$app->py_db->createCommand($sql)->execute();
             echo date('Y-m-d H:i:s') . " Update supplier level successful!\n";
         } catch (\Exception $e) {
             echo date('Y-m-d H:i:s') . " Update supplier level failed, cause of '{$e->getMessage()}'. \n";
