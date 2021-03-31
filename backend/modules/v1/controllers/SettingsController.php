@@ -69,7 +69,7 @@ class SettingsController extends AdminController
             if ($request->isPost) {
                 $post = $request->post();
                 $cond = $post['condition'];
-                if ($cond['Memo']) {
+                if ($cond['Memo'] || $cond['Memo'] == 0) {
                     BDictionary::updateAll(['Memo' => $cond['Memo']], ['NID' => $cond['NID']]);
                 }
                 return true;
