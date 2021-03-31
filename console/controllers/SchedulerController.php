@@ -55,20 +55,20 @@ class SchedulerController extends Controller
     }
 
 
-    public function actionBackupSuffix(){
+    public function actionBackupSuffix()
+    {
         try {
             $sql = 'SELECT DictionaryName AS suffix,FitCode AS plat FROM B_Dictionary WHERE CategoryID=12 AND Used=0';
             $list = Yii::$app->py_db->createCommand($sql)->queryAll();
             Yii::$app->db->createCommand()->truncateTable('cache_suffix')->execute();
-            Yii::$app->db->createCommand()->batchInsert('cache_suffix',['suffix','plat'],$list)->execute();
+            Yii::$app->db->createCommand()->batchInsert('cache_suffix', ['suffix', 'plat'], $list)->execute();
             print date('Y-m-d H:i:s') . "INFO:success to backup py suffix data!\n";
-        }catch (Exception $e){
+        } catch (Exception $e) {
             print date('Y-m-d H:i:s') . "INFO:fail to  to backup py suffix data cause of $e \n";
         }
 
 
     }
-
 
 
     /**
@@ -96,7 +96,7 @@ class SchedulerController extends Controller
         $beginDate = '2020-12-01';//date('Y-m-d', strtotime('-30 days'));
         //$endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
         $endDate = '2020-12-31';//昨天时间
-        $dateRate = round(((strtotime($endDate) - strtotime($beginDate))/24/3600 + 1)*100/122, 2);
+        $dateRate = round(((strtotime($endDate) - strtotime($beginDate)) / 24 / 3600 + 1) * 100 / 122, 2);
         //print_r($dateRate);exit;
         try {
 
@@ -117,20 +117,20 @@ class SchedulerController extends Controller
                 'dateFlag' => 1,
                 'beginDate' => $beginDate,
                 'endDate' => $endDate,
-                'seller' => implode(',', ArrayHelper::getColumn($seller,'username')),
+                'seller' => implode(',', ArrayHelper::getColumn($seller, 'username')),
                 'flag' => 1
             ];
             $devList = ApiReport::getDevelopReport($condition);
-            foreach ($devList as $value){
+            foreach ($devList as $value) {
                 $targetSql = "SELECT IFNULL(target,0) AS target FROM site_targetAll WHERE role='开发' and username='{$value['salernameZero']}'";
-                $target =  Yii::$app->db->createCommand($targetSql)->queryScalar();
-                $backupSql =  "SELECT sum(profitZn) AS profitZn FROM site_targetAllBackupData WHERE role='开发' and username='{$value['salernameZero']}' GROUP BY username";
-                $lastProfit =  Yii::$app->db->createCommand($backupSql)->queryScalar();
+                $target = Yii::$app->db->createCommand($targetSql)->queryScalar();
+                $backupSql = "SELECT sum(profitZn) AS profitZn FROM site_targetAllBackupData WHERE role='开发' and username='{$value['salernameZero']}' GROUP BY username";
+                $lastProfit = Yii::$app->db->createCommand($backupSql)->queryScalar();
                 Yii::$app->db->createCommand()->update(
                     'site_targetAll',
                     [
                         'amt' => $value['netprofittotal'] + $lastProfit,
-                        'rate' => $target != 0 ? round(($value['netprofittotal'] + $lastProfit)*100.0/$target,2) : 0,
+                        'rate' => $target != 0 ? round(($value['netprofittotal'] + $lastProfit) * 100.0 / $target, 2) : 0,
                         'dateRate' => $dateRate,
                         'updatetime' => $endDate
                     ],
@@ -166,8 +166,8 @@ class SchedulerController extends Controller
 
             Yii::$app->db->createCommand("delete from cache_sales_change where orderTime between '{$begin}' and '{$end}'")->execute();
             $step = 200;
-            $num = ceil(count($list)/$step);
-            for ($i = 0; $i < $num; $i++){
+            $num = ceil(count($list) / $step);
+            for ($i = 0; $i < $num; $i++) {
                 Yii::$app->db->createCommand()->batchInsert(
                     'cache_sales_change',
                     ['orderId', 'suffix', 'goodsCode', 'goodsName', 'qty', 'amt', 'orderTime', 'createDate'],
@@ -219,10 +219,11 @@ class SchedulerController extends Controller
     public function actionProfit()
     {
         //获取上月时间
-        $lastBeginDate = date('Y-m-01', strtotime('-1 month -1 day'));
-        $lastEndDate = date('Y-m-t', strtotime(' -1 month -1 day'));
+        $lastBeginDate = date('Y-m-01', strtotime('last day of -1 month -1 day'));
+        $lastEndDate = date('Y-m-t', strtotime('last day of -1 month -1 day'));
         $beginDate = date('Y-m-01', strtotime('-1 day'));
         $endDate = date('Y-m-d', strtotime('-1 day'));
+
         try {
             //获取账号信息
             $params = [
@@ -244,13 +245,13 @@ class SchedulerController extends Controller
             //初步数据保存到Mysql数据库cache_developProfitTmp，进一步进行计算
             Yii::$app->db->createCommand('TRUNCATE TABLE cache_developProfitTmp')->execute();
             Yii::$app->db->createCommand()->batchInsert('cache_developProfitTmp',
-                ['tableType','timegroupZero','salernameZero','salemoneyrmbusZero','salemoneyrmbznZero','costmoneyrmbZero',
-                    'ppebayusZero','ppebayznZero','inpackagefeermbZero','expressfarermbZero','devofflinefeeZero','devOpeFeeZero',
-                    'netprofitZero','netrateZero','timegroupSix','salemoneyrmbusSix','salemoneyrmbznSix','costmoneyrmbSix',
-                    'ppebayusSix','ppebayznSix','inpackagefeermbSix','expressfarermbSix','devofflinefeeSix','devOpeFeeSix',
-                    'netprofitSix','netrateSix','timegroupTwe','salemoneyrmbusTwe','salemoneyrmbznTwe','costmoneyrmbTwe',
-                    'ppebayusTwe','ppebayznTwe','inpackagefeermbTwe','expressfarermbTwe','devofflinefeeTwe','devOpeFeeTwe',
-                    'netprofitTwe','netrateTwe','salemoneyrmbtotal','netprofittotal','netratetotal','devRate','devRate1','devRate5','devRate7','type'],
+                ['tableType', 'timegroupZero', 'salernameZero', 'salemoneyrmbusZero', 'salemoneyrmbznZero', 'costmoneyrmbZero',
+                    'ppebayusZero', 'ppebayznZero', 'inpackagefeermbZero', 'expressfarermbZero', 'devofflinefeeZero', 'devOpeFeeZero',
+                    'netprofitZero', 'netrateZero', 'timegroupSix', 'salemoneyrmbusSix', 'salemoneyrmbznSix', 'costmoneyrmbSix',
+                    'ppebayusSix', 'ppebayznSix', 'inpackagefeermbSix', 'expressfarermbSix', 'devofflinefeeSix', 'devOpeFeeSix',
+                    'netprofitSix', 'netrateSix', 'timegroupTwe', 'salemoneyrmbusTwe', 'salemoneyrmbznTwe', 'costmoneyrmbTwe',
+                    'ppebayusTwe', 'ppebayznTwe', 'inpackagefeermbTwe', 'expressfarermbTwe', 'devofflinefeeTwe', 'devOpeFeeTwe',
+                    'netprofitTwe', 'netrateTwe', 'salemoneyrmbtotal', 'netprofittotal', 'netratetotal', 'devRate', 'devRate1', 'devRate5', 'devRate7', 'type'],
                 $devData)->execute();
 
 
@@ -273,24 +274,24 @@ class SchedulerController extends Controller
             ];
 //            $lastProfit = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->getRawSql();
             $lastProfit = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
-            foreach ($lastProfit as &$v){
+            foreach ($lastProfit as &$v) {
                 /*Yii::$app->db->createCommand()->batchInsert('cache_salerProfitTmp',
                     ['pingtai','department','suffix','salesman','salemoney','salemoneyzn',
                         'ebayfeeebay','ebayfeeznebay','ppFee','ppFeezn','costmoney','expressFare',
                         'inpackagemoney','storename','refund','refundrate','diefeeZn','insertionFee',
                         'saleOpeFeeZn','grossprofit','grossprofitRate'],
                     $lastProfit)->execute();*/
-                $v = array_merge($v,['month' => 'last']);
-                Yii::$app->db->createCommand()->insert('cache_salerProfitTmp',$v)->execute();
+                $v = array_merge($v, ['month' => 'last']);
+                Yii::$app->db->createCommand()->insert('cache_salerProfitTmp', $v)->execute();
             }
 
             //获取本月毛利
             $sqlParams[':beginDate'] = $beginDate;
             $sqlParams[':endDate'] = $endDate;
             $thisProfit = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
-            foreach ($thisProfit as &$v){
-                $v = array_merge($v,['month' => 'this']);
-                Yii::$app->db->createCommand()->insert('cache_salerProfitTmp',$v)->execute();
+            foreach ($thisProfit as &$v) {
+                $v = array_merge($v, ['month' => 'this']);
+                Yii::$app->db->createCommand()->insert('cache_salerProfitTmp', $v)->execute();
             }
 
             //汇总数据结果
@@ -311,9 +312,9 @@ class SchedulerController extends Controller
      */
     public function actionSalesAmt()
     {
-		//获取上月时间
-        $lastBeginDate = date('Y-m-01', strtotime('-1 month -1 day'));
-        $lastEndDate = date('Y-m-t', strtotime(' -1 month -1 day'));
+        //获取上月时间
+        $lastBeginDate = date('Y-m-01', strtotime('last day of -1 month -1 day'));
+        $lastEndDate = date('Y-m-t', strtotime('last day of -1 month -1 day'));
         $beginDate = date('Y-m-01', strtotime('-1 day'));
         $endDate = date('Y-m-d', strtotime('-1 day'));
         try {
@@ -339,13 +340,13 @@ class SchedulerController extends Controller
             $developers = Yii::$app->db->createCommand($sql)->queryAll();
 
             // 按销售表的排序重新组合现有开发人员表
-            $tmpDevelopers = ArrayHelper::getColumn($developers,'username');
-            $tmpDevList = ArrayHelper::getColumn($devList,'username');
+            $tmpDevelopers = ArrayHelper::getColumn($developers, 'username');
+            $tmpDevList = ArrayHelper::getColumn($devList, 'username');
 
             $resDevList = array_unique(array_merge(array_intersect($tmpDevList, $tmpDevelopers), $tmpDevelopers));
 
             $data = [];
-            foreach ($resDevList as $k => $val){
+            foreach ($resDevList as $k => $val) {
                 $data[$k]['username'] = $val;
                 $data[$k]['img'] = '';
                 $data[$k]['depart'] = '';
@@ -356,15 +357,15 @@ class SchedulerController extends Controller
                 $data[$k]['rate'] = 0;
                 $data[$k]['dateRate'] = 0;
                 $data[$k]['updateTime'] = $endDate;
-                foreach ($developers as $v){
-                    if($val == $v['username']){
+                foreach ($developers as $v) {
+                    if ($val == $v['username']) {
                         $data[$k]['img'] = $v['img'];
                         $data[$k]['depart'] = $v['depart'];
                         continue;
                     }
                 }
-                foreach ($devList as $v){
-                    if($val == $v['username']){
+                foreach ($devList as $v) {
+                    if ($val == $v['username']) {
                         $data[$k]['lastAmt'] = $v['lastAmt'];
                         $data[$k]['amt'] = $v['amt'];
                         $data[$k]['amtDiff'] = $v['amt'] - $v['lastAmt'];
@@ -373,7 +374,7 @@ class SchedulerController extends Controller
                         continue;
                     }
                 }
-                if($data[$k]['amt'] == 0 && $data[$k]['lastAmt'] == 0){
+                if ($data[$k]['amt'] == 0 && $data[$k]['lastAmt'] == 0) {
                     unset($data[$k]);
                 }
             }
@@ -458,10 +459,11 @@ class SchedulerController extends Controller
      * Date: 2019-05-07 16:15
      * Author: henry
      */
-    public function actionSalesRanking(){
-		//获取上月时间
-        $lastBeginDate = date('Y-m-01', strtotime('-1 month -1 day'));
-        $lastEndDate = date('Y-m-t', strtotime(' -1 month -1 day'));
+    public function actionSalesRanking()
+    {
+        //获取上月时间
+        $lastBeginDate = date('Y-m-01', strtotime('last day of -1 month -1 day'));
+        $lastEndDate = date('Y-m-t', strtotime('last day of -1 month -1 day'));
         $beginDate = date('Y-m-01', strtotime('-1 day'));
         $endDate = date('Y-m-d', strtotime('-1 day'));
         try {
@@ -494,18 +496,18 @@ class SchedulerController extends Controller
                 ':wishExchangeRate' => $wishExchangeRate
             ];
             $lastProfit = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
-            foreach ($lastProfit as &$v){
-                $v = array_merge($v,['month' => 'last']);
-                Yii::$app->db->createCommand()->insert('cache_salerProfitTmp',$v)->execute();
+            foreach ($lastProfit as &$v) {
+                $v = array_merge($v, ['month' => 'last']);
+                Yii::$app->db->createCommand()->insert('cache_salerProfitTmp', $v)->execute();
             }
 
             //获取本月毛利
             $sqlParams[':beginDate'] = $beginDate;
             $sqlParams[':endDate'] = $endDate;
             $thisProfit = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
-            foreach ($thisProfit as &$v){
-                $v = array_merge($v,['month' => 'this']);
-                Yii::$app->db->createCommand()->insert('cache_salerProfitTmp',$v)->execute();
+            foreach ($thisProfit as &$v) {
+                $v = array_merge($v, ['month' => 'this']);
+                Yii::$app->db->createCommand()->insert('cache_salerProfitTmp', $v)->execute();
             }
 
             //汇总数据结果
@@ -548,8 +550,8 @@ class SchedulerController extends Controller
         foreach ($goodsList as $k => $v) {
             $orderNum = 0;
             $goodsStatus = '';
-            foreach ($orderList as $value){
-                if($v['goodsCode'] == $value['goodsCode']){
+            foreach ($orderList as $value) {
+                if ($v['goodsCode'] == $value['goodsCode']) {
                     $orderNum += $value['l_qty'];//出单数
                     $goodsStatus = $value['goodsStatus'];
                     break;
@@ -561,11 +563,11 @@ class SchedulerController extends Controller
         }
         //print_r($developer);exit;
         $orderNumList = $nonOrderNumList = [];
-       foreach($list as $k => $value){
+        foreach ($list as $k => $value) {
             $stockOrderNum = $nonStockOrderNum = $hot = $exu = $nonHot = $nonExu = 0;
-            foreach ($developer as $v){
+            foreach ($developer as $v) {
 
-                if($value['username'] === $v['developer']){
+                if ($value['username'] === $v['developer']) {
                     $nonStockOrderNum = ($v['stockUp'] === '否' && $v['orderNum'] > 0) ? $nonStockOrderNum + 1 : $nonStockOrderNum;
                     $stockOrderNum = ($v['stockUp'] == '是' && $v['orderNum'] > 0) ? $stockOrderNum + 1 : $stockOrderNum;
                     $hot = ($v['goodsStatus'] == '爆款' && $v['stockUp'] == '是' && $v['orderNum'] > 0) ? $hot + 1 : $hot;
@@ -576,41 +578,41 @@ class SchedulerController extends Controller
             }
 
 
-           //计算 备货和不备货的爆旺款率
-           $hotAndExuRate = $value['stockNum'] == 0 ? 0 : round(($hot+$exu)*1.0/$value['stockNum'], 4)*100;
-           $nonHotAndExuRate = $value['nonStockNum'] == 0 ? 0 : round(($nonHot+$nonExu)*1.0/$value['nonStockNum'], 4)*100;
-           //计算 备货和不备货的出单率
-           $orderRate = $value['stockNum'] == 0 ? 0 : round($stockOrderNum*1.0/$value['stockNum'], 4)*100;
-           $nonOrderRate = $value['nonStockNum'] == 0 ? 0 : round($nonStockOrderNum*1.0/$value['nonStockNum'], 4)*100;
-           //计算 出单率评分
-           $rate1 = round(max(1-max((80-$orderRate),0)*0.025,0.5),2);
-           $nonRate1 = round(max(1-max((80-$nonOrderRate),0)*0.025,0.5),2);
-           //计算 爆旺款率评分
-           $rate2 = round(2-max((30-$hotAndExuRate)*0.04,0),2);
-           $nonRate2 = round(2-max((30-$nonHotAndExuRate)*0.04,0),2);
+            //计算 备货和不备货的爆旺款率
+            $hotAndExuRate = $value['stockNum'] == 0 ? 0 : round(($hot + $exu) * 1.0 / $value['stockNum'], 4) * 100;
+            $nonHotAndExuRate = $value['nonStockNum'] == 0 ? 0 : round(($nonHot + $nonExu) * 1.0 / $value['nonStockNum'], 4) * 100;
+            //计算 备货和不备货的出单率
+            $orderRate = $value['stockNum'] == 0 ? 0 : round($stockOrderNum * 1.0 / $value['stockNum'], 4) * 100;
+            $nonOrderRate = $value['nonStockNum'] == 0 ? 0 : round($nonStockOrderNum * 1.0 / $value['nonStockNum'], 4) * 100;
+            //计算 出单率评分
+            $rate1 = round(max(1 - max((80 - $orderRate), 0) * 0.025, 0.5), 2);
+            $nonRate1 = round(max(1 - max((80 - $nonOrderRate), 0) * 0.025, 0.5), 2);
+            //计算 爆旺款率评分
+            $rate2 = round(2 - max((30 - $hotAndExuRate) * 0.04, 0), 2);
+            $nonRate2 = round(2 - max((30 - $nonHotAndExuRate) * 0.04, 0), 2);
 
-           $item1['developer'] = $item2['developer'] = $value['username'];
-           $item1['number'] = (int)$value['stockNum'];
-           $item1['orderNum'] = $stockOrderNum;
-           $item1['hotStyleNum'] = $hot;
-           $item1['exuStyleNum'] = $exu;
-           $item1['rate1'] = $rate1;
-           $item1['rate2'] = $rate2;
-           $item1['createDate'] = date('Y-m-d H:i:s');
-           $item1['isStock'] = 'stock';
+            $item1['developer'] = $item2['developer'] = $value['username'];
+            $item1['number'] = (int)$value['stockNum'];
+            $item1['orderNum'] = $stockOrderNum;
+            $item1['hotStyleNum'] = $hot;
+            $item1['exuStyleNum'] = $exu;
+            $item1['rate1'] = $rate1;
+            $item1['rate2'] = $rate2;
+            $item1['createDate'] = date('Y-m-d H:i:s');
+            $item1['isStock'] = 'stock';
 
-           $item2['number'] = (int)$value['nonStockNum'];
-           $item2['orderNum'] = $nonStockOrderNum;
-           $item2['hotStyleNum'] = $nonHot;
-           $item2['exuStyleNum'] = $nonExu;
-           $item2['rate1'] = $nonRate1;
-           $item2['rate2'] = $nonRate2;
-           $item2['createDate'] = date('Y-m-d H:i:s');
-           $item2['isStock'] = 'nonstock';
+            $item2['number'] = (int)$value['nonStockNum'];
+            $item2['orderNum'] = $nonStockOrderNum;
+            $item2['hotStyleNum'] = $nonHot;
+            $item2['exuStyleNum'] = $nonExu;
+            $item2['rate1'] = $nonRate1;
+            $item2['rate2'] = $nonRate2;
+            $item2['createDate'] = date('Y-m-d H:i:s');
+            $item2['isStock'] = 'nonstock';
 
-           $orderNumList[$k] = $item1;
-           $nonOrderNumList[$k] = $item2;
-       }
+            $orderNumList[$k] = $item1;
+            $nonOrderNumList[$k] = $item2;
+        }
         $tran = Yii::$app->db->beginTransaction();
         try {
             //插入数据表oa_stockGoodsNum
@@ -648,10 +650,10 @@ class SchedulerController extends Controller
                 }
             }
             $tran->commit();
-            echo date('Y-m-d H:i:s')." (new)The stock data update successful!\n";;
-        }catch (\Exception $e){
+            echo date('Y-m-d H:i:s') . " (new)The stock data update successful!\n";;
+        } catch (\Exception $e) {
             $tran->rollBack();
-            echo date('Y-m-d H:i:s')." (new)The stock data update failed!\n";
+            echo date('Y-m-d H:i:s') . " (new)The stock data update failed!\n";
         }
 
     }
@@ -663,11 +665,12 @@ class SchedulerController extends Controller
      * Author: henry
      * @throws \yii\db\Exception
      */
-    public function actionWish(){
+    public function actionWish()
+    {
         $res = Yii::$app->py_db->createCommand("P_oa_updateGoodsStatusToTableOaGoodsInfo")->queryAll();
         //更新 oa_goodsinfo 表的stockDays，goodsStatus
-        foreach ($res as $v){
-            Yii::$app->db->createCommand()->update('proCenter.oa_goodsinfo',$v,['goodsCode' => $v['goodsCode']])->execute();
+        foreach ($res as $v) {
+            Yii::$app->db->createCommand()->update('proCenter.oa_goodsinfo', $v, ['goodsCode' => $v['goodsCode']])->execute();
         }
 
         // 更新 oa_goodsinfo 表的wishPublish
@@ -675,10 +678,10 @@ class SchedulerController extends Controller
 	            CASE WHEN stockDays>0 AND storeName='义乌仓' AND IFNULL(dictionaryName,'') not like '%wish%' and  (completeStatus NOT LIKE '%Wish%' OR completeStatus IS NULL) then 'Y' 
 			          ELSE 'N' END ";
         $ss = Yii::$app->db->createCommand($sql)->execute();
-        if($ss){
-            echo date('Y-m-d H:i:s')." Update successful!\n";
-        }else{
-            echo date('Y-m-d H:i:s')." Update failed!\n";
+        if ($ss) {
+            echo date('Y-m-d H:i:s') . " Update successful!\n";
+        } else {
+            echo date('Y-m-d H:i:s') . " Update failed!\n";
         }
     }
 
@@ -688,54 +691,55 @@ class SchedulerController extends Controller
      * Author: henry
      * @throws \yii\db\Exception
      */
-    public function actionOverseasReplenish(){
+    public function actionOverseasReplenish()
+    {
         $step = 400;
-        try{
+        try {
             //清空数据表
             Yii::$app->db->createCommand("TRUNCATE TABLE cache_overseasReplenish;")->execute();
 
             //插入UK虚拟仓补货数据
             $ukVirtualList = Yii::$app->py_db->createCommand("EXEC oauth_ukVirtualReplenish;")->queryAll();
-            $max = ceil(count($ukVirtualList)/$step);
-            for ($i = 0; $i < $max; $i++){
+            $max = ceil(count($ukVirtualList) / $step);
+            for ($i = 0; $i < $max; $i++) {
                 Yii::$app->db->createCommand()->batchInsert('cache_overseasReplenish',
                     [
                         'SKU', 'SKUName', 'goodsCode', 'salerName', 'goodsStatus', 'purchaser', 'supplierName',
                         'saleNum3days', 'saleNum7days', 'saleNum15days', 'saleNum30days', 'trend', 'saleNumDailyAve', 'hopeUseNum',
                         'amount', 'totalHopeUN', 'hopeSaleDays', 'purchaseNum', 'price', 'purCost', 'type'
                     ],
-                    array_slice($ukVirtualList,$i*$step, $step))->execute();
+                    array_slice($ukVirtualList, $i * $step, $step))->execute();
             }
 
             //插入AU真补货数据
             $auRealList = Yii::$app->py_db->createCommand("EXEC oauth_auRealReplenish")->queryAll();
-            $max = ceil(count($auRealList)/$step);
-            for ($i = 0; $i < $max; $i++){
+            $max = ceil(count($auRealList) / $step);
+            for ($i = 0; $i < $max; $i++) {
                 Yii::$app->db->createCommand()->batchInsert('cache_overseasReplenish',
                     [
                         'SKU', 'SKUName', 'goodsCode', 'salerName', 'goodsStatus', 'price', 'weight', 'purchaser', 'supplierName',
                         'saleNum3days', 'saleNum7days', 'saleNum15days', 'saleNum30days', 'trend', 'saleNumDailyAve', '399HopeUseNum',
                         'uHopeUseNum', 'totalHopeUseNum', 'uHopeSaleDays', 'hopeSaleDays', 'purchaseNum', 'shipNum', 'purCost', 'shipWeight', 'type'
                     ],
-                    array_slice($auRealList,$i*$step, $step))->execute();
+                    array_slice($auRealList, $i * $step, $step))->execute();
             }
 
             //插入UK真仓补货数据
             $ukRealList = Yii::$app->py_db->createCommand("EXEC oauth_ukRealReplenish")->queryAll();
-            $max = ceil(count($ukRealList)/$step);
-            for ($i = 0; $i < $max; $i++){
+            $max = ceil(count($ukRealList) / $step);
+            for ($i = 0; $i < $max; $i++) {
                 Yii::$app->db->createCommand()->batchInsert('cache_overseasReplenish',
                     [
                         'SKU', 'SKUName', 'goodsCode', 'salerName', 'goodsStatus', 'price', 'weight', 'purchaser', 'supplierName',
                         'saleNum3days', 'saleNum7days', 'saleNum15days', 'saleNum30days', 'trend', 'saleNumDailyAve', '399HopeUseNum',
                         'uHopeUseNum', 'totalHopeUseNum', 'uHopeSaleDays', 'hopeSaleDays', 'purchaseNum', 'shipNum', 'purCost', 'shipWeight', 'type'
                     ],
-                    array_slice($ukRealList,$i*$step, $step))->execute();
+                    array_slice($ukRealList, $i * $step, $step))->execute();
             }
 
-            echo date('Y-m-d H:i:s')." Get overseas replenish data successful!\n";
-        }catch (\Exception $e){
-            echo date('Y-m-d H:i:s')." Get overseas replenish data failed!\n";
+            echo date('Y-m-d H:i:s') . " Get overseas replenish data successful!\n";
+        } catch (\Exception $e) {
+            echo date('Y-m-d H:i:s') . " Get overseas replenish data failed!\n";
             //echo $e->getMessage();
         }
 
@@ -747,27 +751,28 @@ class SchedulerController extends Controller
      * Author: henry
      * @throws \yii\db\Exception
      */
-    public function actionStockStatus(){
+    public function actionStockStatus()
+    {
         $beginTime = time();
         $step = 100;
-        try{
+        try {
             //插入库存预警数据
             Yii::$app->db->createCommand("TRUNCATE TABLE cache_stockWaringTmpData;")->execute();
 
             //分页获取数据
-            for($k=1; ;$k++){
+            for ($k = 1; ; $k++) {
                 $stockList = Yii::$app->py_db->createCommand("EXEC oauth_stockStatus 1,'{$k}';")->queryAll();
-                if(!count($stockList)){
+                if (!count($stockList)) {
                     break;
                 }
-                $max = ceil(count($stockList)/$step);
-                for ($i = 0; $i < $max; $i++){
+                $max = ceil(count($stockList) / $step);
+                for ($i = 0; $i < $max; $i++) {
                     Yii::$app->db->createCommand()->batchInsert('cache_stockWaringTmpData',
                         [
                             'goodsCode', 'sku', 'skuName', 'storeName', 'goodsStatus', 'salerName', 'createDate', 'costPrice', 'useNum', 'costmoney',
                             'notInStore', 'notInCostmoney', 'hopeUseNum', 'totalCostmoney', 'sellCount1', 'sellCount2', 'sellCount3', 'weight', 'updateTime'
                         ],
-                        array_slice($stockList,$i*$step, $step))->execute();
+                        array_slice($stockList, $i * $step, $step))->execute();
                 }
             }
 
@@ -776,34 +781,34 @@ class SchedulerController extends Controller
             Yii::$app->db->createCommand("TRUNCATE TABLE cache_30DayOrderTmpData;")->execute();
 
             $saleList = Yii::$app->py_db->createCommand("EXEC oauth_stockStatus")->queryAll();
-            $max = ceil(count($saleList)/$step);
-            for ($i = 0; $i < $max; $i++){
+            $max = ceil(count($saleList) / $step);
+            for ($i = 0; $i < $max; $i++) {
                 Yii::$app->db->createCommand()->batchInsert('cache_30DayOrderTmpData',
                     [
-                        'sku','salerName', 'storeName', 'goodsStatus', 'costMoney', 'updateTime',
+                        'sku', 'salerName', 'storeName', 'goodsStatus', 'costMoney', 'updateTime',
                         'threeSellCount', 'sevenSellCount', 'fourteenSellCount', 'thirtySellCount', 'trend'
                     ],
-                    array_slice($saleList,$i*$step, $step))->execute();
+                    array_slice($saleList, $i * $step, $step))->execute();
             }
             //计算耗时
             $endTime = time();
             $diff = $endTime - $beginTime;
-            if($diff >= 3600){
-                $hour = floor($diff/3600);
-                $diff = $diff%3600;
-                $minute = floor($diff/60);
-                $second = $diff%60;
+            if ($diff >= 3600) {
+                $hour = floor($diff / 3600);
+                $diff = $diff % 3600;
+                $minute = floor($diff / 60);
+                $second = $diff % 60;
                 $message = "It takes {$hour} hours,{$minute} minutes and {$second} seconds!";
-            }elseif ($diff >= 60){
-                $minute = floor($diff/60);
-                $second = $diff%60;
+            } elseif ($diff >= 60) {
+                $minute = floor($diff / 60);
+                $second = $diff % 60;
                 $message = "It takes {$minute} minutes and {$second} seconds!";
-            }else{
+            } else {
                 $message = "It takes {$diff} seconds!";
             }
-            echo date('Y-m-d H:i:s')." Get stock status data successful! $message\n";
-        }catch (\Exception $e){
-            echo date('Y-m-d H:i:s')." Get stock status data failed, cause of '{$e->getMessage()}'. \n";
+            echo date('Y-m-d H:i:s') . " Get stock status data successful! $message\n";
+        } catch (\Exception $e) {
+            echo date('Y-m-d H:i:s') . " Get stock status data failed, cause of '{$e->getMessage()}'. \n";
             //echo $e->getMessage();
         }
 
@@ -816,10 +821,10 @@ class SchedulerController extends Controller
     public function actionZzTarget()
     {
         $startDate = '2019-05-31';
-        $endDate =  date('Y-m-d',strtotime('-1 day'));
-        $endDate =  '2019-08-31';
+        $endDate = date('Y-m-d', strtotime('-1 day'));
+        $endDate = '2019-08-31';
         //计算时间进度
-        $dateRate = round((strtotime($endDate) - strtotime($startDate))/86400/92,4);
+        $dateRate = round((strtotime($endDate) - strtotime($startDate)) / 86400 / 92, 4);
         //计算销售数据
         $startDate = date('Y-m-01');
         $startDate = date('2019-08-01');
@@ -838,8 +843,8 @@ class SchedulerController extends Controller
      */
     public function actionUpdateWeight()
     {
-        $endDate =  date('Y-m-d',strtotime('-1 day'));
-        $startDate = date('Y-m-d',strtotime('-9 day', strtotime('-1 day')));
+        $endDate = date('Y-m-d', strtotime('-1 day'));
+        $startDate = date('Y-m-d', strtotime('-9 day', strtotime('-1 day')));
         //计算时间进度
         try {
             Yii::$app->py_db->createCommand("EXEC B_py_ModifyProductWeight '{$startDate}','{$endDate}'")->execute();
@@ -905,7 +910,7 @@ class SchedulerController extends Controller
             $sql = "EXEC guest.oauth_getSalesAmtOfLatestMonth";
             $list = Yii::$app->py_db->createCommand($sql)->queryAll();
             Yii::$app->db->createCommand()->truncateTable('data_salesAmtOfLatestMonth')->execute();
-            Yii::$app->db->createCommand()->batchInsert('data_salesAmtOfLatestMonth',['goodsCode','createDate','developer','possessMan1','amt','updateTime'],$list)->execute();
+            Yii::$app->db->createCommand()->batchInsert('data_salesAmtOfLatestMonth', ['goodsCode', 'createDate', 'developer', 'possessMan1', 'amt', 'updateTime'], $list)->execute();
 
             print date('Y-m-d H:i:s') . " INFO:success to get sales amt of latest month!\n";
         } catch (\Exception $why) {
@@ -923,26 +928,26 @@ class SchedulerController extends Controller
     public function actionSuffixSkuProfit()
     {
         try {
-            $flagArr = [0,1];//时间类型  0- 交易时间 1- 发货时间
+            $flagArr = [0, 1];//时间类型  0- 交易时间 1- 发货时间
             $step = 300;
 
-            $beginDate = date('Y-m', strtotime('-1 days')).'-01';//上月或本月1号时间
+            $beginDate = date('Y-m', strtotime('-1 days')) . '-01';//上月或本月1号时间
             $endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
 
             $beginDate = '2019-12-01';
             $endDate = '2020-12-31';
             //删除已有时间段内数据，重新获取保存
-                Yii::$app->db->createCommand("DELETE FROM cache_suffixSkuProfitReport WHERE orderDate BETWEEN '{$beginDate}' AND '{$endDate}' ")->execute();
+            Yii::$app->db->createCommand("DELETE FROM cache_suffixSkuProfitReport WHERE orderDate BETWEEN '{$beginDate}' AND '{$endDate}' ")->execute();
 
-            foreach ($flagArr as $v){
+            foreach ($flagArr as $v) {
                 $sql = "EXEC guest.oauth_reportSuffixSkuProfitBackup $v, '{$beginDate}', '{$endDate}'";
                 $list = Yii::$app->py_db->createCommand($sql)->queryAll();
                 //var_dump(count($list));exit;
-                $count = ceil(count($list)/$step);
-                for ($i=0;$i<$count;$i++){
+                $count = ceil(count($list) / $step);
+                for ($i = 0; $i < $count; $i++) {
                     Yii::$app->db->createCommand()->batchInsert('cache_suffixSkuProfitReport',
-                        ['dateFlag', 'orderDate','suffix','pingtai','goodsCode','goodsName', 'storeName','salerName','skuQty','saleMoneyRmb','refund','profitRmb']
-                        ,array_slice($list,$i*$step,$step))->execute();
+                        ['dateFlag', 'orderDate', 'suffix', 'pingtai', 'goodsCode', 'goodsName', 'storeName', 'salerName', 'skuQty', 'saleMoneyRmb', 'refund', 'profitRmb']
+                        , array_slice($list, $i * $step, $step))->execute();
                 }
 
             }
@@ -957,7 +962,8 @@ class SchedulerController extends Controller
      * Date: 2019-11-06 17:41
      * Author: henry
      */
-    public function actionGetRepData(){
+    public function actionGetRepData()
+    {
         try {
             $ukList = Yii::$app->py_db->createCommand("EXEC LY_eBayUKRealWarehouse_Replenishment_20191105")->queryAll();
             //Yii::$app->db->createCommand()->truncateTable('cache_overseasReplenish')->execute();
@@ -965,18 +971,18 @@ class SchedulerController extends Controller
             //获取UK真仓补货
             Yii::$app->db->createCommand("DELETE  FROM cache_overseasReplenish WHERE type ='UK真仓';")->execute();
             Yii::$app->db->createCommand()->batchInsert('cache_overseasReplenish',
-                ['SKU','SKUName','goodsCode','salerName','goodsStatus','price','weight','purchaser','supplierName',
-                    'saleNum3days','saleNum7days','saleNum15days','saleNum30days','trend','saleNumDailyAve','399HopeUseNum',
-                    'uHopeUseNum','totalHopeUseNum','uHopeSaleDays','hopeSaleDays','purchaseNum','shipNum','purCost','shipWeight','type'
+                ['SKU', 'SKUName', 'goodsCode', 'salerName', 'goodsStatus', 'price', 'weight', 'purchaser', 'supplierName',
+                    'saleNum3days', 'saleNum7days', 'saleNum15days', 'saleNum30days', 'trend', 'saleNumDailyAve', '399HopeUseNum',
+                    'uHopeUseNum', 'totalHopeUseNum', 'uHopeSaleDays', 'hopeSaleDays', 'purchaseNum', 'shipNum', 'purCost', 'shipWeight', 'type'
                 ],
                 $ukList)->execute();
             // 获取AU真仓补货
             Yii::$app->db->createCommand("DELETE  FROM cache_overseasReplenish WHERE type ='AU真仓';")->execute();
             $auList = Yii::$app->py_db->createCommand("EXEC LY_eBayAURealWarehouse_Replenishment_20191105")->queryAll();
             Yii::$app->db->createCommand()->batchInsert('cache_overseasReplenish',
-                ['SKU','SKUName','goodsCode','salerName','goodsStatus','price','weight','purchaser','supplierName',
-                    'saleNum3days','saleNum7days','saleNum15days','saleNum30days','trend','saleNumDailyAve','399HopeUseNum',
-                    'uHopeUseNum','totalHopeUseNum','uHopeSaleDays','hopeSaleDays','purchaseNum','shipNum','purCost','shipWeight','type'
+                ['SKU', 'SKUName', 'goodsCode', 'salerName', 'goodsStatus', 'price', 'weight', 'purchaser', 'supplierName',
+                    'saleNum3days', 'saleNum7days', 'saleNum15days', 'saleNum30days', 'trend', 'saleNumDailyAve', '399HopeUseNum',
+                    'uHopeUseNum', 'totalHopeUseNum', 'uHopeSaleDays', 'hopeSaleDays', 'purchaseNum', 'shipNum', 'purCost', 'shipWeight', 'type'
                 ],
                 $auList)->execute();
 
@@ -990,11 +996,12 @@ class SchedulerController extends Controller
      * Date: 2020-03-27 11:12
      * Author: henry
      */
-    public function actionWarehouseIntegral($begin = '', $end = ''){
-        try{
+    public function actionWarehouseIntegral($begin = '', $end = '')
+    {
+        try {
             ConScheduler::getWarehouseIntegralData($begin, $end);
             print date('Y-m-d H:i:s') . " INFO:success to get warehouse integral data \n";
-        }catch (Exception $why){
+        } catch (Exception $why) {
             print date('Y-m-d H:i:s') . " INFO:fail to get warehouse integral data because $why \n";
         }
     }
@@ -1007,10 +1014,10 @@ class SchedulerController extends Controller
     public function actionUpdateRights()
     {
         $res = Yii::$app->py_db->createCommand("EXEC z_update_B_goods_rights")->execute();
-        if($res){
-            echo date('Y-m-d H:i:s')." Goods rights update successful!\n";
-        }else{
-            echo date('Y-m-d H:i:s')." Goods rights update failed!\n";
+        if ($res) {
+            echo date('Y-m-d H:i:s') . " Goods rights update successful!\n";
+        } else {
+            echo date('Y-m-d H:i:s') . " Goods rights update failed!\n";
         }
     }
 
@@ -1028,21 +1035,62 @@ class SchedulerController extends Controller
             $sql = "EXEC oauth_goodsPriceProtection '{$allSuffix}';";
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             $step = 100;
-            $max = ceil(count($data)/$step);
+            $max = ceil(count($data) / $step);
 
             Yii::$app->db->createCommand("TRUNCATE TABLE cache_priceProtectionData;")->execute();
-            for ($i = 0; $i < $max; $i++){
+            for ($i = 0; $i < $max; $i++) {
                 Yii::$app->db->createCommand()->batchInsert('cache_priceProtectionData',
                     [
                         'goodsCode', 'mainImage', 'storeName', 'saler', 'goodsName', 'goodsStatus', 'cate', 'subCate',
                         'salerName', 'createDate', 'number', 'soldNum', 'personSoldNum', 'turnoverDays', 'rate',
                         'aveAmt', 'foulSaler', 'amt', 'foulSalerSoldNum', 'updateTime'
                     ],
-                    array_slice($data,$i*$step, $step))->execute();
+                    array_slice($data, $i * $step, $step))->execute();
             }
-            echo date('Y-m-d H:i:s')." Goods rights update successful!\n";
-        }catch (\Exception $e){
-            echo date('Y-m-d H:i:s')." Get stock status data failed, cause of '{$e->getMessage()}'. \n";
+            echo date('Y-m-d H:i:s') . " Goods rights update successful!\n";
+        } catch (\Exception $e) {
+            echo date('Y-m-d H:i:s') . " Get stock status data failed, cause of '{$e->getMessage()}'. \n";
+            //echo $e->getMessage();
+        }
+
+    }
+
+
+    /**
+     * 发货时效备份数据（已发货已归档数据，操作日志处理）
+     * Date: 2021-03-29 8:49
+     * Author: henry
+     */
+    public function actionFetchDeliverTimeData()
+    {
+        try {
+            $beginDate = '2021-01-01';
+            $endDate = date('Y-m-d', strtotime('-1 days'));
+            $sql = "EXEC oauth_warehouse_tools_deliver_trade_backup '{$beginDate}','{$endDate}';";
+            $data = Yii::$app->py_db->createCommand($sql)->execute();
+            echo date('Y-m-d H:i:s') . " Goods deliver time data successful!\n";
+        } catch (\Exception $e) {
+            echo date('Y-m-d H:i:s') . " Get deliver time data failed, cause of '{$e->getMessage()}'. \n";
+            //echo $e->getMessage();
+        }
+
+    }
+
+    /**
+     * 每月更新供应商等级
+     * Date: 2021-03-30 8:49
+     * Author: henry
+     */
+    public function actionUpdateSupplierLevel()
+    {
+        try {
+            $lastBeginDate = date('Y-m-01', strtotime('last day of -1 month -1 day'));
+            $lastEndDate = date('Y-m-t', strtotime('last day of -1 month -1 day'));
+            $sql = "oauth_data_center_update_supplier_level '{$lastBeginDate}' AND '{$lastEndDate}';";
+            $data = Yii::$app->py_db->createCommand($sql)->execute();
+            echo date('Y-m-d H:i:s') . " Update supplier level successful!\n";
+        } catch (\Exception $e) {
+            echo date('Y-m-d H:i:s') . " Update supplier level failed, cause of '{$e->getMessage()}'. \n";
             //echo $e->getMessage();
         }
 

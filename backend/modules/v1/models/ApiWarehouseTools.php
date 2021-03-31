@@ -521,7 +521,7 @@ class ApiWarehouseTools
      */
     public static function getPickStatisticsData($condition)
     {
-        $query = TaskPick::find()->select(new Expression("batchNumber,picker,date_format(MAX(createdTime),'%Y-%m-%d') AS createdTime"));
+        /*$query = TaskPick::find()->select(new Expression("batchNumber,picker,date_format(MAX(createdTime),'%Y-%m-%d') AS createdTime"));
         $query = $query->andWhere(['<>', "IFNULL(batchNumber,'')", '']);
         $query = $query->andWhere(['<>', "IFNULL(picker,'')", '']);
         $query = $query->groupBy(['batchNumber', 'picker']);
@@ -533,7 +533,7 @@ class ApiWarehouseTools
         $step = 200;
         for ($i = 1; $i <= ceil(count($list) / $step); $i++) {
             Yii::$app->py_db->createCommand()->batchInsert('guest.oauth_taskPickTmp', ['batchNumber', 'picker', 'createdTime'], array_slice($list, ($i - 1) * $step, $step))->execute();
-        }
+        }*/
         //获取数据
         $sql = "EXEC guest.oauth_getPickStatisticsData '{$condition['createdTime'][0]}','{$condition['createdTime'][1]}'";
 

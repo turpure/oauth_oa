@@ -20,6 +20,7 @@ use backend\modules\v1\utils\ExportTools;
 use backend\modules\v1\utils\Handler;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
+use yii\db\Exception;
 use yii\db\Query;
 use Yii;
 use yii\helpers\ArrayHelper;
@@ -592,7 +593,7 @@ class DataCenterController extends AdminController
             'allModels' => $data,
             'sort' => [
                 'attributes' => ['sku', 'storeName', 'skuName', 'salerName', 'season', 'goodsSkuStatus', 'createDate',
-                    'number', 'money', 'cate', 'subCate', 'thirtyStockNum', 'thirtyStockMoney',
+                    'number', 'money', 'cate', 'subCate', 'thirtyStockNum', 'thirtyStockMoney','maxStorageAge',
                     'sixtyStockNum', 'sixtyStockMoney','ninetyStockNum','ninetyStockMoney','moreStockNum','moreStockMoney'],
                 'defaultOrder' => [
                     'number' => SORT_DESC,
@@ -628,7 +629,7 @@ class DataCenterController extends AdminController
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         $title = ['SKU', '主图', '仓库', 'SKU名称', '开发员', '季节', 'SKU状态', '开发时间',
             '库存数量', '库存金额', '类目', '子类目', '0-30天库存数量', '0-30天库存金额', '30-60天库存数量','30-60天库存金额',
-            '60-90天库存数量','60-90天库存金额','90天以上库存数量','90天以上库存金额'];
+            '60-90天库存数量','60-90天库存金额','90天以上库存数量','90天以上库存金额','180天以上'];
         ExportTools::toExcelOrCsv('skuStorageAge', $data, 'Xlsx', $title);
     }
 
@@ -1624,5 +1625,179 @@ class DataCenterController extends AdminController
         $query = YPayPalTokenLogs::findAll(['tokenId' => $tokenId]);
         return $query;
     }
+
+    ################################供应商######################################
+
+    public function actionSuppliersProfit(){
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $pageSize = $condition['pageSize'] ?? 20;
+            $condition['flag'] = 0;
+            $data = ApiDataCenter::getSupplierProfit($condition);
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => ['supplierName', 'personName', 'supplierCode', 'url', 'linkMan', 'mobile', 'address',
+                        'categoryName',  'categoryLevel', 'arrivalDays', 'memo',  'amount', 'money', 'qty', 'profitRmb',
+                        //'maxProfitRmb', 'profitAdd'
+                    ],
+                    'defaultOrder' => [
+                        'profitRmb' => SORT_DESC,
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+
+    }
+
+    /**
+     * actionSuppliersProfitExport
+     * Date: 2021-03-22 15:46
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+
+    public function actionSuppliersProfitExport(){
+        $condition = Yii::$app->request->post('condition', []);
+        $condition['flag'] = 1;
+        $data = ApiDataCenter::getSupplierProfit($condition);
+        $title = ['供应商名称', '采购员', '编码', '网址', '联系人', '手机', '地址', '类别', '等级', '到货天数', '备注',
+            '采购总数量', '采购总金额(￥)','销量','毛利(￥)',  //'前3个月最高单月毛利(￥)','毛利增长(￥)'
+        ];
+        ExportTools::toExcelOrCsv('suppliersProfit', $data, 'Xlsx', $title);
+    }
+
+    public function actionSuppliersProfitDetail(){
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $pageSize = $condition['pageSize'] ?? 20;
+            $data = ApiDataCenter::getSupplierProfitDetail($condition);
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => ['goodsCode', 'goodsName', 'cate', 'subCate', 'salerName', 'purchaser', 'createDate',
+                        'amount', 'money', 'qty', 'profitRmb'],
+                    'defaultOrder' => [
+                        'profitRmb' => SORT_DESC,
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+
+    }
+
+    /**
+     * actionSuppliersProfitExport
+     * Date: 2021-03-22 15:46
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+
+    public function actionSuppliersProfitDetailExport(){
+        $condition = Yii::$app->request->post('condition', []);
+        $data = ApiDataCenter::getSupplierProfitDetail($condition);
+        $title = ['产品编码', '产品名称', '大类目', '小类目', '开发员', '采购员', '开发日期',
+            '采购总数量', '采购总金额(￥)','销量','毛利(￥)'];
+        ExportTools::toExcelOrCsv('suppliersProfitDetail', $data, 'Xlsx', $title);
+    }
+    public function actionSuppliersProfitSummary(){
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            return ApiDataCenter::getSupplierProfitSummary($condition);
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+
+    }
+
+    /**
+     * 供应商等级
+     * actionSuppliersLevel
+     * Date: 2021-03-30 11:15
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionSuppliersLevel(){
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $pageSize = $condition['pageSize'] ?? 20;
+            $data = ApiDataCenter::getSupplierLevel($condition);
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => ['supplierID','supplierName','linkMan','mobile','address','categoryName','supplierLevel','memo'],
+                    'defaultOrder' => [
+                        'supplierID' => SORT_ASC,
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+
+    }
+
+    /**
+     * 供应商等级下载
+     * Date: 2021-03-30 10:56
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionSuppliersLevelExport(){
+        $condition = Yii::$app->request->post('condition', []);
+        $data = ApiDataCenter::getSupplierLevel($condition);
+        $title = ['供应商ID','供应商名称', '联系人', '手机', '地址', '类别', '等级', '备注'];
+        ExportTools::toExcelOrCsv('suppliersLevel', $data, 'Xlsx', $title);
+    }
+
+    /**
+     * 供应商商品
+     * Date: 2021-03-30 10:53
+     * Author: henry
+     * @return array
+     */
+    public function actionSuppliersGoods(){
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $sql = "SELECT goodsCode,goodsName,purchaser,salerName FROM B_Goods WHERE SupplierID='{$condition['supplierID']}'";
+            return Yii::$app->py_db->createCommand($sql)->queryAll();
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+
+    }
+
+
 
 }

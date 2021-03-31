@@ -585,7 +585,7 @@ class WarehouseToolsController extends AdminController
         return new ArrayDataProvider([
             'allModels' => $data,
             'sort' => [
-                'attributes' => ['sku', 'skuName', 'goodsskustatus', 'number', 'devDate', 'hasPurchaseOrder'],
+                'attributes' => ['sku', 'skuName', 'goodsskustatus', 'number', 'devDate', 'hasPurchaseOrder','reservationNum'],
                 'defaultOrder' => [
                     'number' => SORT_DESC,
                 ]
@@ -609,7 +609,7 @@ class WarehouseToolsController extends AdminController
     {
         $cond = Yii::$app->request->post('condition', []);
         $data = ApiWarehouseTools::getPositionDetailsView($cond);
-        $title = ['仓库', '仓位', 'SKU个数', 'SKU', 'SKU名称', 'SKU状态', '库存数量', '开发日期', '是否有采购单'];
+        $title = ['仓库', '仓位', 'SKU个数', 'SKU', 'SKU名称', 'SKU状态', '库存数量', '开发日期', '占用数量', '是否有采购单'];
         ExportTools::toExcelOrCsv('positionDetailView', $data, 'Xlsx', $title);
 
     }
@@ -629,7 +629,7 @@ class WarehouseToolsController extends AdminController
         $includedData = $notIncludedData = $emptyStockData = [];
         foreach ($data as $k => $v) {
             if ($v['number'] > 0){
-                if ($v['hasPurchaseOrder'] == '是') {
+                if ($v['hasPurchaseOrder'] == '是' || $v['reservationNum'] > 0) {
                     $includedData[] = $v;
                 } else{
                     $notIncludedData[] = $v;
@@ -639,10 +639,10 @@ class WarehouseToolsController extends AdminController
             }
 
         }
-        $title = ['仓库', '仓位', '有库存SKU个数', 'SKU', 'SKU名称', 'SKU状态', '库存数量', '开发日期', '是否有采购单'];
+        $title = ['仓库', '仓位', '有库存SKU个数', 'SKU', 'SKU名称', 'SKU状态', '库存数量', '开发日期', '占用数量', '是否有采购单'];
         $data = [
-            ['title' => $title, 'name' => 'SKU有采购单数据', 'data' => $includedData],
-            ['title' => $title, 'name' => 'SKU无采购单数据', 'data' => $notIncludedData],
+            ['title' => $title, 'name' => 'SKU有采购单或有占用数据', 'data' => $includedData],
+            ['title' => $title, 'name' => 'SKU无采购单且无占用数据', 'data' => $notIncludedData],
             ['title' => $title, 'name' => 'SKU库存为0数据', 'data' => $emptyStockData],
         ];
 //        return $data;
@@ -797,6 +797,7 @@ class WarehouseToolsController extends AdminController
     public function actionStorageTimeRate(){
         try {
             $condition = Yii::$app->request->post('condition', []);
+            $pageSize = $condition['pageSize'] ? : 20;
             $storeName = $condition['storeName'] ?: '';
             $beginDate = $condition['dateRange'][0] ?: '';
             $endDate = $condition['dateRange'][1] ?: '';
@@ -813,7 +814,45 @@ class WarehouseToolsController extends AdminController
                     ]
                 ],
                 'pagination' => [
-                    'pageSize' => 100,
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+
+    /**
+     * 发货时效
+     * Date: 2021-03-19 14:33
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionDeliverTimeRate(){
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $pageSize = $condition['pageSize'] ? : 20;
+            $storeName = $condition['storeName'] ?: '';
+            $beginDate = $condition['dateRange'][0] ?: '';
+            $endDate = $condition['dateRange'][1] ?: '';
+            $sql = "EXEC oauth_warehouse_tools_deliver_time_rate '{$beginDate}','{$endDate}','{$storeName}'";
+            $data =  Yii::$app->py_db->createCommand($sql)->queryAll();
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => ['dt','storeName', 'totalNum', 'deliverableNum','zeroNum','zeroRate',
+                        'oneNum','oneRate','twoNum','twoRate','threeNum','threeRate','otherNum','otherRate'],
+                    'defaultOrder' => [
+                        'storeName' => SORT_ASC,
+                        'dt' => SORT_ASC,
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
                 ],
             ]);
         }catch (Exception $e){

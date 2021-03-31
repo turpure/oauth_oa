@@ -394,6 +394,12 @@ class ProductCenterTools
                     throw new \Exception('fail to save supplier info');
                 }
             }
+            if(!$bSupplier->supplierLoginId){
+                $bSupplier->supplierLoginId = $oaGoods1688['companyName'];
+                if (!$bSupplier->save()) {
+                    throw new \Exception('fail to save supplier info');
+                }
+            }
         }
     }
 

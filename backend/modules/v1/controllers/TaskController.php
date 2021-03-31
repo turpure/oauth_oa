@@ -38,7 +38,8 @@ class TaskController extends AdminController
         $condition = Yii::$app->request->post('condition', []);
         $pageSize = $condition['pageSize'] ?? 20;
         $data = ApiTask::getTurnoverData();
-        return new ArrayDataProvider([
+        return $data;
+        /*return new ArrayDataProvider([
             'allModels' => $data,
             'sort' => [
                 'attributes' => ['goodsCode', 'storeName', 'turnoverDays'],
@@ -49,7 +50,7 @@ class TaskController extends AdminController
             'pagination' => [
                 'pageSize' => $pageSize,
             ],
-        ]);
+        ]);*/
     }
 
     /**
