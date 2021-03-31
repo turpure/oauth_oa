@@ -75,7 +75,7 @@ class SettingsController extends AdminController
                 return true;
             }
             if ($request->isGet) {
-                return BDictionary::findAll(['CategoryID' => 32]);
+                return BDictionary::find()->where(['CategoryID' => 32])->orderBy('FitCode')->all();
             }
         } catch (Exception $e) {
             return [

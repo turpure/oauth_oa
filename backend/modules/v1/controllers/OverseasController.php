@@ -6,6 +6,7 @@
  */
 
 namespace backend\modules\v1\controllers;
+
 use backend\modules\v1\models\ApiMine;
 use backend\modules\v1\models\ApiOverseas;
 use backend\modules\v1\utils\AttributeInfoTools;
@@ -30,30 +31,37 @@ class OverseasController extends AdminController
 
     /**
      * 调拨单列表
-     * Date: 2021-03-31 16:53
+     * Date: 2021-03-31 18:00
      * Author: henry
-     * @return ArrayDataProvider
+     * @return array|ArrayDataProvider
      */
     public function actionStockChangeList()
     {
-        $condition = Yii::$app->request->post()['condition'];
-        $pageSize = $condition['pageSize'] ?? 20;
-        $data = ApiOverseas::getStockChangeList($condition);
-        return new ArrayDataProvider([
-            'allModels' => $data,
-            'sort' => [
-                'attributes' => ['MakeDate','Billnumber','Memo','StoreOutName','StoreInName','Recorder',
-                    'checkflag','Audier','AudieDate','StoreInMan','StoreOutMan','FinancialMan','FinancialTime',
-                    'PackPersonFee','PackMaterialFee','HeadFreight','Tariff','TotalAmount','TotalMoney','TotalinMoney',
-                    'logicsWayName','expressName','logicsWayNumber','RealWeight','ThrowWeight','Archive'],
-                'defaultOrder' => [
-                    'MakeDate' => SORT_ASC,
-                ]
-            ],
-            'pagination' => [
-                'pageSize' => $pageSize,
-            ],
-        ]);
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $pageSize = $condition['pageSize'] ?? 20;
+            $data = ApiOverseas::getStockChangeList($condition);
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => ['MakeDate', 'Billnumber', 'Memo', 'StoreOutName', 'StoreInName', 'Recorder',
+                        'checkflag', 'Audier', 'AudieDate', 'StoreInMan', 'StoreOutMan', 'FinancialMan', 'FinancialTime',
+                        'PackPersonFee', 'PackMaterialFee', 'HeadFreight', 'Tariff', 'TotalAmount', 'TotalMoney', 'TotalinMoney',
+                        'logicsWayName', 'expressName', 'logicsWayNumber', 'RealWeight', 'ThrowWeight', 'Archive'],
+                    'defaultOrder' => [
+                        'MakeDate' => SORT_ASC,
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
     }
 
     /**
@@ -66,8 +74,7 @@ class OverseasController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiMine::getMineInfo($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             $ret['code'] = $why->getCode();
             $ret['message'] = $why->getMessage();
             return $ret;
@@ -83,8 +90,7 @@ class OverseasController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiMine::mine($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             $ret['code'] = $why->getCode();
             $ret['message'] = $why->getMessage();
             return $ret;
@@ -100,14 +106,13 @@ class OverseasController extends AdminController
         $condition = Yii::$app->request->post()['condition'];
         $plat = isset($condition['plat']) && $condition['plat'] ? $condition['plat'] : 'joom';
         try {
-            if($plat == 'joom'){
+            if ($plat == 'joom') {
                 ApiMine::exportToJoom($condition);
-            }else{
+            } else {
                 ApiMine::exportToVova($condition);
             }
 
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             $ret['code'] = $why->getCode();
             $ret['message'] = $why->getMessage();
             return $ret;
@@ -124,8 +129,7 @@ class OverseasController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiMine::finish($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             $ret['code'] = $why->getCode();
             $ret['message'] = $why->getMessage();
             return $ret;
@@ -141,8 +145,7 @@ class OverseasController extends AdminController
         $condition = Yii::$app->request->post()['condition'];
         try {
             return ApiMine::save($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             $ret['code'] = $why->getCode();
             $ret['message'] = $why->getMessage();
             return $ret;
@@ -160,8 +163,7 @@ class OverseasController extends AdminController
             $condition = Yii::$app->request->post()['condition'];
             ApiMine::save($condition);
             return ApiMine::finish(['id' => $condition['basicInfo']['id']]);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             $ret['code'] = $why->getCode();
             $ret['message'] = $why->getMessage();
             return $ret;
@@ -178,8 +180,7 @@ class OverseasController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiMine::deleteDetail($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             $ret['code'] = $why->getCode();
             $ret['message'] = $why->getMessage();
             return $ret;
@@ -196,8 +197,7 @@ class OverseasController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiMine::delete($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             $ret['code'] = $why->getCode();
             $ret['message'] = $why->getMessage();
             return $ret;
@@ -214,8 +214,7 @@ class OverseasController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiMine::setPrice($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             $ret['code'] = $why->getCode();
             $ret['message'] = $why->getMessage();
             return $ret;
@@ -231,8 +230,7 @@ class OverseasController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiMine::setCat($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             $ret['code'] = $why->getCode();
             $ret['message'] = $why->getMessage();
             return $ret;
@@ -267,8 +265,7 @@ class OverseasController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiMine::sendToDevelop($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             $ret['code'] = $why->getCode();
             $ret['message'] = $why->getMessage();
             return $ret;
@@ -284,8 +281,7 @@ class OverseasController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiMine::bindShopSku($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             $ret['code'] = $why->getCode();
             $ret['message'] = $why->getMessage();
             return $ret;
@@ -302,8 +298,7 @@ class OverseasController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiMine::saveShopSku($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             $ret['code'] = $why->getCode();
             $ret['message'] = $why->getMessage();
             return $ret;
@@ -330,8 +325,7 @@ class OverseasController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiMine::subscribeJoomCate($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => 400, 'message' => $why->getMessage()];
         }
     }
@@ -355,8 +349,7 @@ class OverseasController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiMine::subscribeJoomStore($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => 400, 'message' => $why->getMessage()];
         }
     }
@@ -370,8 +363,7 @@ class OverseasController extends AdminController
     {
         try {
             return ApiMine::getJoomStoreSubscribed();
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => 400, 'message' => $why->getMessage()];
         }
     }
@@ -385,8 +377,7 @@ class OverseasController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiMine::getJoomStoreProduct($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => 400, 'message' => $why->getMessage()];
         }
     }
@@ -400,8 +391,7 @@ class OverseasController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiMine::getJoomCateProduct($condition);
-        }
-        catch (\Exception $why) {
+        } catch (\Exception $why) {
             return ['code' => 400, 'message' => $why->getMessage()];
         }
     }
