@@ -920,7 +920,7 @@ class ReportController extends AdminController
             $condition = $request['condition'];
             $condition['pageSize'] = 100000;
             $data =  ApiReport::getDevRateDeveloperGoodsProfit($condition)->allModels;
-            $title = ['开发员','销售额','销量','总利润', '利润率(%)'];
+            $title = ['开发员','销售额','销量','总利润','近三个月单月最高利润', '增长利润'];
             ExportTools::toExcelOrCsv('dev-rate-developer-profit', $data, 'Xls', $title);
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
