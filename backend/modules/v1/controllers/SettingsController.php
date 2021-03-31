@@ -69,17 +69,15 @@ class SettingsController extends AdminController
             if ($request->isPost) {
                 $post = $request->post();
                 $cond = $post['condition'];
-                foreach ($cond as $v){
-                    if($v['Memo']){
-                        BDictionary::updateAll(['Memo' => $v['Memo']],['NID' => $v['NID']]);
-                    }
+                if ($cond['Memo']) {
+                    BDictionary::updateAll(['Memo' => $cond['Memo']], ['NID' => $cond['NID']]);
                 }
                 return true;
             }
             if ($request->isGet) {
                 return BDictionary::findAll(['CategoryID' => 32]);
             }
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),
@@ -100,14 +98,14 @@ class SettingsController extends AdminController
         }
         //判断文件后缀
         $extension = ApiSettings::get_extension($file['name']);
-        if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
+        if ($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
 
         //文件上传
         $result = ApiSettings::file($file, 'deadfee');
         if (!$result) {
             return ['code' => 400, 'message' => 'File upload failed'];
         }
-            //获取上传excel文件的内容并保存
+        //获取上传excel文件的内容并保存
 //            $res = ApiUpload::getExcelData($result,ApiUpload::SALES, ApiUpload::DEAD_FEE);
 //            if($res !== true) return ['code' => 400, 'message' => $res];
     }
@@ -125,16 +123,16 @@ class SettingsController extends AdminController
         }
         //判断文件后缀
         $extension = ApiSettings::get_extension($file['name']);
-        if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
+        if ($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
 
         //文件上传
         $result = ApiSettings::file($file, 'deadfee');
         if (!$result) {
             return ['code' => 400, 'message' => 'File upload failed'];
-        }else{
+        } else {
             //获取上传excel文件的内容并保存
-            $res = ApiSettings::getExcelData($result,ApiSettings::DEVELOP, ApiSettings::DEAD_FEE);
-            if($res !== true) return ['code' => 400, 'message' => $res];
+            $res = ApiSettings::getExcelData($result, ApiSettings::DEVELOP, ApiSettings::DEAD_FEE);
+            if ($res !== true) return ['code' => 400, 'message' => $res];
         }
     }
 
@@ -151,16 +149,16 @@ class SettingsController extends AdminController
         }
         //判断文件后缀
         $extension = ApiSettings::get_extension($file['name']);
-        if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
+        if ($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
 
         //文件上传
         $result = ApiSettings::file($file, 'deadfee');
         if (!$result) {
             return ['code' => 400, 'message' => 'File upload failed'];
-        }else{
+        } else {
             //获取上传excel文件的内容并保存
-            $res = ApiSettings::getExcelData($result,ApiSettings::POSSESS, ApiSettings::DEAD_FEE);
-            if($res !== true) return ['code' => 400, 'message' => $res];
+            $res = ApiSettings::getExcelData($result, ApiSettings::POSSESS, ApiSettings::DEAD_FEE);
+            if ($res !== true) return ['code' => 400, 'message' => $res];
         }
     }
 
@@ -177,16 +175,16 @@ class SettingsController extends AdminController
         }
         //判断文件后缀
         $extension = ApiSettings::get_extension($file['name']);
-        if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
+        if ($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
 
         //文件上传
         $result = ApiSettings::file($file, 'deadfee');
         if (!$result) {
             return ['code' => 400, 'message' => 'File upload failed'];
-        }else{
+        } else {
             //获取上传excel文件的内容并保存
-            $res = ApiSettings::getExcelData($result,ApiSettings::PURCHASE, ApiSettings::DEAD_FEE);
-            if($res !== true) return ['code' => 400, 'message' => $res];
+            $res = ApiSettings::getExcelData($result, ApiSettings::PURCHASE, ApiSettings::DEAD_FEE);
+            if ($res !== true) return ['code' => 400, 'message' => $res];
         }
     }
 
@@ -204,16 +202,16 @@ class SettingsController extends AdminController
         }
         //判断文件后缀
         $extension = ApiSettings::get_extension($file['name']);
-        if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
+        if ($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
 
         //文件上传
         $result = ApiSettings::file($file, 'opreatefee');
         if (!$result) {
             return ['code' => 400, 'message' => 'File upload failed'];
-        }else{
+        } else {
             //获取上传excel文件的内容并保存
-            $res = ApiSettings::getExcelData($result,ApiSettings::SALES, ApiSettings::OPERATE_FEE);
-            if($res !== true) return ['code' => 400, 'message' => $res];
+            $res = ApiSettings::getExcelData($result, ApiSettings::SALES, ApiSettings::OPERATE_FEE);
+            if ($res !== true) return ['code' => 400, 'message' => $res];
         }
     }
 
@@ -230,16 +228,16 @@ class SettingsController extends AdminController
         }
         //判断文件后缀
         $extension = ApiSettings::get_extension($file['name']);
-        if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
+        if ($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
 
         //文件上传
         $result = ApiSettings::file($file, 'opreatefee');
         if (!$result) {
             return ['code' => 400, 'message' => 'File upload failed'];
-        }else{
+        } else {
             //获取上传excel文件的内容并保存
-            $res = ApiSettings::getExcelData($result,ApiSettings::DEVELOP, ApiSettings::OPERATE_FEE);
-            if($res !== true) return ['code' => 400, 'message' => $res];
+            $res = ApiSettings::getExcelData($result, ApiSettings::DEVELOP, ApiSettings::OPERATE_FEE);
+            if ($res !== true) return ['code' => 400, 'message' => $res];
         }
     }
 
@@ -256,16 +254,16 @@ class SettingsController extends AdminController
         }
         //判断文件后缀
         $extension = ApiSettings::get_extension($file['name']);
-        if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
+        if ($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
 
         //文件上传
         $result = ApiSettings::file($file, 'opreatefee');
         if (!$result) {
             return ['code' => 400, 'message' => 'File upload failed'];
-        }else{
+        } else {
             //获取上传excel文件的内容并保存
-            $res = ApiSettings::getExcelData($result,ApiSettings::POSSESS, ApiSettings::OPERATE_FEE);
-            if($res !== true) return ['code' => 400, 'message' => $res];
+            $res = ApiSettings::getExcelData($result, ApiSettings::POSSESS, ApiSettings::OPERATE_FEE);
+            if ($res !== true) return ['code' => 400, 'message' => $res];
         }
     }
 
@@ -283,17 +281,17 @@ class SettingsController extends AdminController
         }
         //判断文件后缀
         $extension = ApiSettings::get_extension($file['name']);
-        if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
+        if ($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
 
         //文件上传
         $result = ApiSettings::file($file, 'opreatefee');
         if (!$result) {
             return ['code' => 400, 'message' => 'File upload failed'];
-        }else{
+        } else {
             //获取上传excel文件的内容并保存
-            $res = ApiSettings::getExcelData($result,ApiSettings::PURCHASE, ApiSettings::OPERATE_FEE);
+            $res = ApiSettings::getExcelData($result, ApiSettings::PURCHASE, ApiSettings::OPERATE_FEE);
 
-            if($res !== true) return ['code' => 400, 'message' => $res];
+            if ($res !== true) return ['code' => 400, 'message' => $res];
         }
     }
 
@@ -304,9 +302,10 @@ class SettingsController extends AdminController
      * @return array|bool
      * @throws Exception
      */
-    public function actionWarehouseRate(){
+    public function actionWarehouseRate()
+    {
         $request = Yii::$app->request;
-        if($request->isGet){
+        if ($request->isGet) {
             $sql = "SELECT * FROM warehouse_integral_rate";
             return Yii::$app->db->createCommand($sql)->queryAll();
         }
@@ -322,20 +321,20 @@ class SettingsController extends AdminController
 
             $id = isset($cond['id']) && $cond['id'] ? $cond['id'] : 0;
             $query = Yii::$app->db->createCommand("SELECT * FROM warehouse_integral_rate WHERE id={$id}")->queryOne();
-            try{
-                if($query){
-                    Yii::$app->db->createCommand()->update('warehouse_integral_rate',[
+            try {
+                if ($query) {
+                    Yii::$app->db->createCommand()->update('warehouse_integral_rate', [
                         'type' => $cond['type'],
                         'rate' => $cond['rate']
-                    ],['id' => $id])->execute();
-                }else{
-                    Yii::$app->db->createCommand()->insert('warehouse_integral_rate',[
+                    ], ['id' => $id])->execute();
+                } else {
+                    Yii::$app->db->createCommand()->insert('warehouse_integral_rate', [
                         'type' => $cond['type'],
                         'rate' => $cond['rate']
                     ])->execute();
                 }
                 return true;
-            }catch (Exception $why){
+            } catch (Exception $why) {
                 return [
                     'code' => 400,
                     'message' => $why->getMessage(),
@@ -346,22 +345,23 @@ class SettingsController extends AdminController
             $post = $request->post();
             $cond = $post['condition'];
             $id = isset($cond['id']) && $cond['id'] ? $cond['id'] : 0;
-            try{
-                Yii::$app->db->createCommand()->delete('warehouse_integral_rate',['id' => $id])->execute();
+            try {
+                Yii::$app->db->createCommand()->delete('warehouse_integral_rate', ['id' => $id])->execute();
                 return true;
-            }catch (Exception $why){
+            } catch (Exception $why) {
                 return [
                     'code' => 400,
                     'message' => $why->getMessage(),
                 ];
             }
         }
-	}
+    }
 
 
-	public function actionWarehouseUser(){
+    public function actionWarehouseUser()
+    {
         $request = Yii::$app->request;
-        if($request->isGet){
+        if ($request->isGet) {
             $sql = "SELECT * FROM warehouse_user_info";
             return Yii::$app->db->createCommand($sql)->queryAll();
         }
@@ -377,16 +377,16 @@ class SettingsController extends AdminController
 
             $id = isset($cond['id']) && $cond['id'] ? $cond['id'] : 0;
             $query = Yii::$app->db->createCommand("SELECT * FROM warehouse_user_info WHERE id={$id}")->queryOne();
-            try{
-                if($query){
-                    Yii::$app->db->createCommand()->update('warehouse_user_info',[
+            try {
+                if ($query) {
+                    Yii::$app->db->createCommand()->update('warehouse_user_info', [
                         'name' => $cond['name'],
                         'group' => $cond['group'],
                         'job' => $cond['job'],
                         'team' => $cond['team']
-                    ],['id' => $id])->execute();
-                }else{
-                    Yii::$app->db->createCommand()->insert('warehouse_user_info',[
+                    ], ['id' => $id])->execute();
+                } else {
+                    Yii::$app->db->createCommand()->insert('warehouse_user_info', [
                         'name' => $cond['name'],
                         'group' => $cond['group'],
                         'job' => $cond['job'],
@@ -394,7 +394,7 @@ class SettingsController extends AdminController
                     ])->execute();
                 }
                 return true;
-            }catch (Exception $why){
+            } catch (Exception $why) {
                 return [
                     'code' => 400,
                     'message' => $why->getMessage(),
@@ -405,43 +405,44 @@ class SettingsController extends AdminController
             $post = $request->post();
             $cond = $post['condition'];
             $id = isset($cond['id']) && $cond['id'] ? $cond['id'] : 0;
-            try{
-                Yii::$app->db->createCommand()->delete('warehouse_user_info',['id' => $id])->execute();
+            try {
+                Yii::$app->db->createCommand()->delete('warehouse_user_info', ['id' => $id])->execute();
                 return true;
-            }catch (Exception $why){
+            } catch (Exception $why) {
                 return [
                     'code' => 400,
                     'message' => $why->getMessage(),
                 ];
             }
         }
-	}
+    }
 
 
+    public function actionImportIntegralData()
+    {
+        $file = $_FILES['file'];
 
-	public function actionImportIntegralData(){
-		$file = $_FILES['file'];
+        if (!$file) {
+            return ['code' => 400, 'message' => 'The file can not be empty!'];
+        }
+        //判断文件后缀
+        $extension = ApiSettings::get_extension($file['name']);
+        if ($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
 
-		if (!$file) {
-			return ['code' => 400, 'message' => 'The file can not be empty!'];
-		}
-		//判断文件后缀
-		$extension = ApiSettings::get_extension($file['name']);
-		if($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
-
-		//文件上传
-		$result = ApiSettings::file($file, 'warehouseIntegralData');
+        //文件上传
+        $result = ApiSettings::file($file, 'warehouseIntegralData');
         $fileName = $file['name'];
         $fileSize = $file['size'];
-		if (!$result) {
-			return ['code' => 400, 'message' => 'File upload failed'];
-		}else{
-			//获取上传excel文件的内容并保存
-			return ApiSettings::saveIntegralData($result, $fileName, $fileSize);
-		}
-	}
+        if (!$result) {
+            return ['code' => 400, 'message' => 'File upload failed'];
+        } else {
+            //获取上传excel文件的内容并保存
+            return ApiSettings::saveIntegralData($result, $fileName, $fileSize);
+        }
+    }
 
-    public function actionIntegralLog(){
+    public function actionIntegralLog()
+    {
 
         $month = date('Y-m');
         $lastMonth = date('Y-m', strtotime('-1 month'));
@@ -461,7 +462,8 @@ class SettingsController extends AdminController
      * Author: henry
      * @return array
      */
-    public function actionImportProductsInfo(){
+    public function actionImportProductsInfo()
+    {
         $file = $_FILES['file'];
 
         if (!$file) {
@@ -469,7 +471,7 @@ class SettingsController extends AdminController
         }
         //判断文件后缀
         $extension = strtolower(ApiSettings::get_extension($file['name']));
-        if(!in_array($extension, ['.xlsx', '.xls'])) return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' or 'xls' format"];
+        if (!in_array($extension, ['.xlsx', '.xls'])) return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' or 'xls' format"];
 
         //文件上传
         $result = ApiSettings::file($file, 'productInfo');
@@ -477,15 +479,11 @@ class SettingsController extends AdminController
         $fileSize = $file['size'];
         if (!$result) {
             return ['code' => 400, 'message' => 'File upload failed'];
-        }else{
+        } else {
             //获取上传excel文件的内容并保存
             return ApiSettings::saveProductData($result, $extension);
         }
     }
-
-
-
-
 
 
 }
