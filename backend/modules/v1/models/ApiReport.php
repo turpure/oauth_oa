@@ -1293,7 +1293,7 @@ class ApiReport
             'allModels' => $ret,
             'sort' => ['attributes' =>
                 [
-                    'developer', 'goodsStatus',
+                    'developer', 'profitGrowth','maxMonthProfit',
                     'sold','amt','profit','rate'
                 ]
             ],
