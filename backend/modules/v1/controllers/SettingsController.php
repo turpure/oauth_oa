@@ -75,11 +75,16 @@ class SettingsController extends AdminController
                 $model = Yii::$app->py_db->createCommand("select * from oauth_supplier_level where DictionaryNID={$cond['NID']}")->queryOne();
                 if ($model) {
                     Yii::$app->py_db->createCommand()->update('oauth_supplier_level',
-                        ['targetSupplierNum' => $cond['targetSupplierNum'], 'content' => $cond['content']],
+                        [
+                            'serviceLevel' => $cond['serviceLevel'],
+                            'targetSupplierNum' => $cond['targetSupplierNum'],
+                            'content' => $cond['content']
+                        ],
                         ['DictionaryNID' => $cond['NID']])->execute();
                 } else {
                     Yii::$app->py_db->createCommand()->insert('oauth_supplier_level',
                         [
+                            'serviceLevel' => $cond['serviceLevel'],
                             'targetSupplierNum' => $cond['targetSupplierNum'],
                             'content' => $cond['content'],
                             'DictionaryNID' => $cond['NID']
@@ -88,7 +93,7 @@ class SettingsController extends AdminController
                 return true;
             }
             if ($request->isGet) {
-                $sql = "SELECT d.NID,DictionaryName,Memo,targetSupplierNum,content,
+                $sql = "SELECT d.NID,DictionaryName,Memo,serviceLevel,targetSupplierNum,content,
 		                supplierNum = (SELECT COUNT(1) FROM B_Supplier WHERE CategoryLevel=d.NID)
                         FROM [dbo].[B_Dictionary] d
                         LEFT JOIN oauth_supplier_level l ON d.NID=DictionaryNID
