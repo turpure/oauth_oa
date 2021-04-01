@@ -1809,6 +1809,7 @@ class DataCenterController extends AdminController
     public function actionSuppliersGoodsExport(){
         $condition = Yii::$app->request->post('condition', []);
         $sql = "SELECT goodsCode,goodsName,purchaser,salerName FROM B_Goods WHERE SupplierID='{$condition['supplierID']}'";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         $title = ['商品编码','商品名称', '采购员', '开发员'];
         ExportTools::toExcelOrCsv('suppliersLevel', $data, 'Xlsx', $title);
     }
