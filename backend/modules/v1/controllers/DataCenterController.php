@@ -1749,7 +1749,7 @@ class DataCenterController extends AdminController
                     'attributes' => ['supplierID','supplierName','linkMan','mobile','address','categoryName',
                             'supplierLevel','memo','LastPurchaseMoney'],
                     'defaultOrder' => [
-                        'supplierID' => SORT_ASC,
+                        'LastPurchaseMoney' => SORT_DESC,
                     ]
                 ],
                 'pagination' => [
@@ -1811,7 +1811,7 @@ class DataCenterController extends AdminController
         $sql = "SELECT goodsCode,goodsName,purchaser,salerName FROM B_Goods WHERE SupplierID='{$condition['supplierID']}'";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         $title = ['商品编码','商品名称', '采购员', '开发员'];
-        ExportTools::toExcelOrCsv('suppliersLevel', $data, 'Xlsx', $title);
+        ExportTools::toExcelOrCsv('suppliersGoods', $data, 'Xlsx', $title);
     }
 
 

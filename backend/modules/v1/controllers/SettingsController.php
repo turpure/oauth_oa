@@ -94,7 +94,7 @@ class SettingsController extends AdminController
             }
             if ($request->isGet) {
                 $sql = "SELECT d.NID,DictionaryName,Memo,serviceLevel,targetSupplierNum,content,
-		                supplierNum = (SELECT COUNT(1) FROM B_Supplier WHERE CategoryLevel=d.NID)
+		                supplierNum = (SELECT COUNT(1) FROM B_Supplier WHERE CategoryLevel=d.NID AND LastPurchaseMoney > 0)
                         FROM [dbo].[B_Dictionary] d
                         LEFT JOIN oauth_supplier_level l ON d.NID=DictionaryNID
                         WHERE CategoryID=32 ORDER BY FitCode";
