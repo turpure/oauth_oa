@@ -1746,7 +1746,8 @@ class DataCenterController extends AdminController
             return new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
-                    'attributes' => ['supplierID','supplierName','linkMan','mobile','address','categoryName','supplierLevel','memo'],
+                    'attributes' => ['supplierID','supplierName','linkMan','mobile','address','categoryName',
+                            'supplierLevel','memo','LastPurchaseMoney'],
                     'defaultOrder' => [
                         'supplierID' => SORT_ASC,
                     ]
@@ -1774,7 +1775,7 @@ class DataCenterController extends AdminController
     public function actionSuppliersLevelExport(){
         $condition = Yii::$app->request->post('condition', []);
         $data = ApiDataCenter::getSupplierLevel($condition);
-        $title = ['供应商ID','供应商名称', '联系人', '手机', '地址', '类别', '等级', '备注'];
+        $title = ['供应商ID','供应商名称', '联系人', '手机', '地址', '类别', '等级', '备注', '上月采购金额'];
         ExportTools::toExcelOrCsv('suppliersLevel', $data, 'Xlsx', $title);
     }
 
@@ -1798,6 +1799,20 @@ class DataCenterController extends AdminController
 
     }
 
+    /**
+     * 供应商商品下载
+     * Date: 2021-03-30 10:56
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionSuppliersGoodsExport(){
+        $condition = Yii::$app->request->post('condition', []);
+        $sql = "SELECT goodsCode,goodsName,purchaser,salerName FROM B_Goods WHERE SupplierID='{$condition['supplierID']}'";
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
+        $title = ['商品编码','商品名称', '采购员', '开发员'];
+        ExportTools::toExcelOrCsv('suppliersLevel', $data, 'Xlsx', $title);
+    }
 
 
 }

@@ -552,7 +552,8 @@ class ApiDataCenter
      */
     public static function getSupplierLevel($condition)
     {
-        $sql = "SELECT s.nid AS supplierID,supplierName,linkMan,mobile,address,categoryName,bd.DictionaryName AS supplierLevel,s.memo
+        $sql = "SELECT s.nid AS supplierID,supplierName,linkMan,mobile,address,categoryName,
+                    bd.DictionaryName AS supplierLevel,s.memo,LastPurchaseMoney
 		FROM B_Supplier(nolock) s 
 		LEFT JOIN B_SupplierCats(nolock) sc ON Sc.nid=s.categoryID
 		LEFT JOIN B_Dictionary (nolock) bd ON s.categoryLevel = bd.NID AND bd.categoryID=32 WHERE 1=1 ";
