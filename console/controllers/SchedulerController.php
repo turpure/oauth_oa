@@ -1097,6 +1097,26 @@ class SchedulerController extends Controller
     }
 
 
+    public function actionClearDeadlockShopElf()
+    {
+        try {
+            $data = Yii::$app->py_db->createCommand("P_lockinfo 0,0")->queryAll();
+            foreach ($data as $v) {
+                if ($v['deadlock'] > 0) {
+                    Yii::$app->py_db->createCommand("P_lockinfo 1,0")->execute();
+                    echo date('Y-m-d H:i:s') . " Clear deadlock successful!\n";
+                }else{
+                    echo date('Y-m-d H:i:s') . " Processes with no deadlocks to clean up\n";
+                }
+                break;
+            }
+        } catch (\Exception $e) {
+            echo date('Y-m-d H:i:s') . " Clear deadlock failed, cause of '{$e->getMessage()}'. \n";
+            //echo $e->getMessage();
+        }
+    }
+
+
     /**
      * @brief 批量更新依赖毛利润报表的命令
      */
