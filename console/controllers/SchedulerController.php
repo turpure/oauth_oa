@@ -1086,7 +1086,9 @@ class SchedulerController extends Controller
         try {
             $lastBeginDate = date('Y-m-01', strtotime('last day of -1 month -1 day'));
             $lastEndDate = date('Y-m-t', strtotime('last day of -1 month -1 day'));
-            $sql = "oauth_data_center_update_supplier_level '{$lastBeginDate}' AND '{$lastEndDate}';";
+//            print($lastBeginDate);
+//            print($lastEndDate);
+            $sql = "oauth_data_center_update_supplier_level '{$lastBeginDate}','{$lastEndDate}';";
             $data = Yii::$app->py_db->createCommand($sql)->execute();
             echo date('Y-m-d H:i:s') . " Update supplier level successful!\n";
         } catch (\Exception $e) {
