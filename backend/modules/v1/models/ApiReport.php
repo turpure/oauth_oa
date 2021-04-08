@@ -639,7 +639,7 @@ class ApiReport
         }
         try {
                 //["suffix","pingtai", "GoodsCode","GoodsName", "SalerName", "SKUQty", "SaleMoneyRmb","ProfitRmb", "rate","salesman"];
-            $title = ['销售员','卖家简称','平台','商品编码','商品名称','开发员','开发日期','仓库','销量','销售额￥','退款￥','利润￥','利润率%','退款利润占比'];
+            $title = ['销售员','卖家简称','平台','商品编码','主图','商品名称','开发员','开发日期','仓库','销量','销售额￥','退款￥','利润￥','利润率%','退款利润占比'];
             return [$title, $list];
 
         } catch (\Exception $why) {
