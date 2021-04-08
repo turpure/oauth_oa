@@ -1211,8 +1211,8 @@ class ApiReport
     public static function getDevRateDeveloperGoodsProfit($condition)
     {
         $developer = isset($condition['developer']) ? $condition['developer'] : [];
-        $homeGreatProfit = isset($condition['homeGreatProfit']) ? $condition['homeGreatProfit'] : 3000;
-        $overseaGreatProfit = isset($condition['overseaGreatProfit']) ? $condition['overseaGreatProfit'] : 5000;
+        $homeGreatProfit = isset($condition['homeGreatProfit']) && !empty($condition['homeGreatProfit']) ? $condition['homeGreatProfit'] : 3000;
+        $overseaGreatProfit = isset($condition['overseaGreatProfit']) && !empty($condition['$overseaGreatProfit']) ? $condition['overseaGreatProfit'] : 5000;
         $goodsStatus = isset($condition['goodsStatus']) ? $condition['goodsStatus'] : [];
         list($beginDate, $endDate) = $condition['dateRange'];
         list($devBeginDate, $devEndDate) = isset($condition['devDateRange']) && $condition['devDateRange'] ? $condition['devDateRange'] : ['',''];
