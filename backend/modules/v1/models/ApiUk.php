@@ -193,9 +193,12 @@ class ApiUk
         }
 
         //计算毛利
-        $profit = $data['price'] * (1 - $params['vatRate']/100) * (1 - $params['adRate']/100) - $data['pFee'] - $data['eFee'] -
-            ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate +
-            $params['shippingPrice'] * (1 - $params['vatRate']/100) * $params['adRate']/100;
+        //$profit = $data['price'] * (1 - $params['vatRate']/100) * (1 - $params['adRate']/100) - $data['pFee'] - $data['eFee'] -
+        //    ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate +
+        //    $params['shippingPrice'] * (1 - $params['vatRate']/100) * $params['adRate']/100;
+        $profit = $data['price'] * (1 - $params['adRate']/100) - $data['pFee'] - $data['eFee'] -
+            ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate -
+            ($data['price'] + $params['shippingPrice']) * (1 - 1/(1 + $params['adRate']/100));
         $data['profit'] = round($profit, 2);
         $data['eFee'] = round($data['eFee'], 2);
         $data['pFee'] = round($data['pFee'], 2);
@@ -203,8 +206,10 @@ class ApiUk
 
         //计算毛利率
         $data['adRate'] = $params['adRate'];
-        $data['adFee'] = round($params['price'] * (1 - $params['vatRate']/100) * $params['adRate'] / 100,2);
-        $data['vatFee'] = round($data['price'] * $params['vatRate'] / 100,2);
+        //$data['adFee'] = round($params['price'] * (1 - $params['vatRate']/100) * $params['adRate'] / 100,2);
+        $data['adFee'] = round($params['price'] * $params['adRate'] / 100,2);
+        //$data['vatFee'] = round($data['price'] * $params['vatRate'] / 100,2);
+        $data['vatFee'] = round(($data['price'] + $params['shippingPrice']) * (1 - 1/(1 + $params['vatRate'] / 100)),2);
         $data['rate'] = round($profit / ($data['price'] * (1 - $params['vatRate']/100)) * 100, 2);
 
         return $data;
