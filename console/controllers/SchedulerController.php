@@ -400,8 +400,8 @@ class SchedulerController extends Controller
      */
     public function actionWeightDiff()
     {
-        $beginDate = '2018-10-01';
-        $endDate = date('Y-m-d', strtotime('-1 day'));
+        $beginDate = '2021-01-01';
+        $endDate = date('Y-m-d');
         //print_r($endDate);exit;
         try {
             //获取开发人员毛利
