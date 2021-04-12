@@ -186,19 +186,24 @@ class ApiUk
         $usRate = ApiUkFic::getRateUkOrUs('USD');//美元汇率
         $newPrice = $data['price'] * $ukRate / $usRate;//英镑转化成美元
         //获取paypal交易费
-        if ($newPrice > 8) {
-            $data['pFee'] = $data['price'] * Yii::$app->params['bpRate_uk'] + Yii::$app->params['bpBasic_uk'];
-        } else {
-            $data['pFee'] = $data['price'] * Yii::$app->params['spRate_uk'] + Yii::$app->params['spBasic_uk'];
+        if ($params['vatRate']){
+            if ($newPrice > 8) {
+                $data['pFee'] = $data['price'] * Yii::$app->params['bpRate_uk'] + Yii::$app->params['bpBasic_uk'];
+            } else {
+                $data['pFee'] = $data['price'] * Yii::$app->params['spRate_uk'] + Yii::$app->params['spBasic_uk'];
+            }
+        }else{
+            $data['pFee'] = 0.36; //托管账号固定费用
         }
+
 
         //计算毛利
         //$profit = $data['price'] * (1 - $params['vatRate']/100) * (1 - $params['adRate']/100) - $data['pFee'] - $data['eFee'] -
         //    ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate +
         //    $params['shippingPrice'] * (1 - $params['vatRate']/100) * $params['adRate']/100;
-        $profit = $data['price'] * (1 - $params['adRate']/100) - $data['pFee'] - $data['eFee'] -
+        $profit = $data['price']  - $params['price'] * $params['adRate']/100 - $data['pFee'] - $data['eFee'] -
             ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate -
-            ($data['price'] + $params['shippingPrice']) * (1 - 1/(1 + $params['adRate']/100));
+            $data['price'] * (1 - 1/(1 + $params['vatRate']/100));
         $data['profit'] = round($profit, 2);
         $data['eFee'] = round($data['eFee'], 2);
         $data['pFee'] = round($data['pFee'], 2);
@@ -211,8 +216,8 @@ class ApiUk
         //$data['rate'] = round($profit / ($data['price'] * (1 - $params['vatRate']/100)) * 100, 2);
         $data['adFee'] = round($params['price'] * $params['adRate'] / 100,2);
 //        var_dump($data['price']);exit;
-        $data['vatFee'] = round(($data['price'] + $params['shippingPrice']) * (1 - 1/(1 + $params['vatRate'] / 100)),2);
-        $data['rate'] = round($profit / (($data['price'] + $params['shippingPrice']) * (1 + $params['vatRate']/100)) * 100, 2);
+        $data['vatFee'] = round($data['price']  * (1 - 1/(1 + $params['vatRate'] / 100)),2);
+        $data['rate'] = round($profit / ( $data['price'] / (1 + $params['vatRate']/100) ) * 100, 2);
 
         return $data;
     }
