@@ -1420,9 +1420,9 @@ class ApiReport
         $sql = 'select  cp.goodsCode, bg.goodsStatus, bs.storeName, cp.planNumber,cp.createdTime,goodsName, (select top 1 bmpFileName from b_goodsSku(nolock)  where goodsId= bg.nid) as img, bc.categoryParentName,bc.categoryName,
             stockNumber, stockMoney,
             bg.salername as developer, cp.sellers as seller
-            from  oauth_clearPlan as cp 
+            from  oauth_clearPlan(nolock) as cp 
             LEFT JOIN b_goods(nolock) as bg on   cp.goodsCode = bg.goodsCode
-            LEFT JOIN b_goodsCats as bc on bg.goodsCategoryId = bc.nid
+            LEFT JOIN b_goodsCats(nolock) as bc on bg.goodsCategoryId = bc.nid
             LEFT JOIN (select storeId, goodsId, sum(number) as stockNumber,sum(money) as stockMoney  from   KC_CurrentStock(nolock) as kcs GROUP BY kcs.storeId, kcs.goodsId)  as ks on ks.goodsid = bg.nid
             LEFT JOIN b_store(nolock) as bs on bs.nid = ks.storeId where cp.isRemoved = 0 ';
         if(!empty($stores)) {
