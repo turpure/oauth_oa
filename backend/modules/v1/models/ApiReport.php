@@ -1518,14 +1518,23 @@ class ApiReport
      */
     public static function saveNewClearProduct($products) {
         $sellers = static::getMainSellers($products);
+
+        # 销售账号表
         $accountsMap =static::getSellerSuffixMap();
+
+        # 账号销售表
+        $suffixSellerMap = static::getSuffixSellerMap();
+
         $trans = Yii::$app->py_db->beginTransaction();
 
         try {
 
             foreach ($products as $product) {
                 $plan = new OauthClearPlan();
+
+                # 根据历史表算出的主销售
                 $theSeller = $sellers[$product['goodsCode']];
+
                 $product['sellers'] = $theSeller;
                 $product['createdTime'] = date('Y-m-d H:i:s');
                 $plan->setAttributes($product);
@@ -1534,6 +1543,11 @@ class ApiReport
                 }
 
                 if ($theSeller !== 'all') {
+
+                    # 如果账号对应的主销售有变化就取当前账号对应的销售
+                    if(!isset($accountsMap[$theSeller])) {
+                        continue;
+                    }
                     $accounts = $accountsMap[$theSeller];
 
                     foreach ($accounts as $as) {
@@ -1544,8 +1558,9 @@ class ApiReport
                             throw new \Exception('Create new clear plan failed!');
                         }
                     }
+                    }
+
                 }
-            }
             $trans->commit();
         }
         catch (\Exception $why) {
@@ -1610,6 +1625,23 @@ class ApiReport
         foreach ($ret as $row) {
             $username = $row['username'];
             $map[$username][] = $row['store'];
+        }
+        return $map;
+    }
+
+
+    /**
+     * 获取所有的账号对应的销售
+     * @return mixed
+     * @throws Exception
+     */
+    private static function getSuffixSellerMap()
+    {
+        $sql = 'SELECT username,ats.store FROM `auth_store` ats LEFT JOIN auth_store_child AS atc ON atc.store_id = ats.id LEFT JOIN `user` AS u ON u.id = atc.user_id LEFT JOIN auth_department_child AS adpc ON adpc.user_id = u.id LEFT JOIN auth_department AS adp ON adpc.department_id = adp.id LEFT JOIN auth_department AS adpp ON adp.parent = adpp.id';
+        $ret = Yii::$app->db->createCommand($sql)->queryAll();
+        $map = [];
+        foreach ($ret as $row) {
+            $map[$row['store']] = $row['username'];
         }
         return $map;
     }
