@@ -41,6 +41,13 @@ class TestController extends AdminController
     public  function actionTest(){
         try {
 
+//            $sql = "select top 1 nid FROM  P_TradeUn(nolock) m";
+//            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+            //$sql = "select * FROM  proCenter.oa_goodsinfo limit 1";
+            //$data = Yii::$app->db->createCommand($sql)->queryAll();
+//            var_dump($data);exit;
+
+
             $sql = "EXEC oauth_skuStorageAge '','','','','',0,1 ";
             $result = Yii::$app->py_db->createCommand($sql)->queryAll();
             $resData = $item = [];
@@ -116,7 +123,8 @@ class TestController extends AdminController
 
         $curl = curl_init();
         curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://merchants-api.fyndiq.se/api/v1/articles?limit=1000",
+            //CURLOPT_URL => "https://merchants-api.fyndiq.se/api/v1/articles?limit=1000",
+            CURLOPT_URL => "https://merchants-api.fyndiq.se/api/v1/categories/SE/en-US/",
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
@@ -132,38 +140,7 @@ class TestController extends AdminController
         curl_close($curl);
         $res =  json_decode($response,true);
 //        var_dump(count($res));exit;
-//            return $res;
-        $data = [];
-        $i = 0;
-        foreach ($res as $v){
-//            var_dump($v);exit;
-//            if($v['fyndiq_status'] == 'blocked') {
-            if($v['status'] == 'for sale') {
-//            if(true) {
-                var_dump($v['sku']);
-                $i += 1;
-                $url = "https://merchants-api.fyndiq.se/api/v1/articles/".$v['id'];
-                $params = [
-                    'sku' => $v['sku'],
-                    'categories' => $v['categories'],
-                    'status' => $v['status'],
-                    'main_image' => $v['main_image'],
-                    'markets' => $v['markets'],
-                    'title' => $v['title'],
-                    'description' => $v['description'],
-//                    'shipping_time' => $v['shipping_time'],
-                    'shipping_time' => [["market"=>"SE", "min"=>13, "max"=>16]],
-                ];
-                $result = Helper::post($url, json_encode($params), $header, 'PUT');
-                $data[] = [
-                    'sku' => $v['sku'],
-                    'res' => $result
-                ];
-            }
-        }
-//            return $i;
-            return $data;
-
+        return $res;
 
     }
 
