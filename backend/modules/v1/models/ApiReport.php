@@ -1575,7 +1575,7 @@ class ApiReport
                     $sellers[$gc] = 'all';
                 }
                 else {
-                    $sellers[$gc] = $goodsInfo['username'];
+                    $sellers[$gc] = !empty($goodsInfo['username'])? $goodsInfo['username']: 'all';
                 }
             }
             else {
