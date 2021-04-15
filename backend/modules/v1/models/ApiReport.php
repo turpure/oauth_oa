@@ -1466,8 +1466,8 @@ class ApiReport
      */
     public static function exportClearListTemplate($condition) {
         $fileName = 'clear-products-template';
-        $titles = ['商品编码'];
-        $data = [['商品编码' => '7A0001']];
+        $titles = ['商品编码','仓库名称'];
+        $data = [['商品编码' => '7A0001', '仓库名称' => '义乌仓']];
         ExportTools::toExcelOrCsv($fileName, $data,'Csv', $titles);
 
     }
