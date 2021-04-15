@@ -824,8 +824,10 @@ class ApiWarehouseTools
      * @return mixed
      */
     public static function getNotPickingTradeNum($condition){
-        $beginDate = $condition['dateRange'][0] ?: '';
-        $endDate = $condition['dateRange'][1] ?: '';
+//        $beginDate = $condition['dateRange'][0] ?: '';
+//        $endDate = $condition['dateRange'][1] ?: '';
+        $beginDate = date('Y-m-d', strtotime('-60 days'));
+        $endDate = date('Y-m-d');
         $sql = "SELECT COUNT (1) AS allcount FROM P_Trade (nolock) m
                 WHERE FilterFlag = 20 AND CONVERT(VARCHAR(10),dateadd(hh,8,ordertime),121) BETWEEN '{$beginDate}' AND '{$endDate}'";
         return Yii::$app->py_db->createCommand($sql)->queryScalar();
