@@ -367,6 +367,7 @@ class WarehouseToolsController extends AdminController
         $store = $cond['store'] ?: '义乌仓';
         $begin = $cond['dateRange'][0] ?? '';
         $end = $cond['dateRange'][1] ?? '';
+        $totalNotPickingNum = ApiWarehouseTools::getNotPickingTradeNum($cond);
         $dailyData = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}'")->queryAll();
         $dailyDataPro = new ArrayDataProvider([
             'allModels' => $dailyData,
@@ -394,6 +395,7 @@ class WarehouseToolsController extends AdminController
             ],
         ]);
         return [
+            'totalNotPickingNum' => $totalNotPickingNum,
             'dailyData' => $dailyDataPro->getModels(),
             'packageData' => $packageDataPro->getModels(),
         ];

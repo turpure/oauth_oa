@@ -535,7 +535,7 @@ class ApiWarehouseTools
             Yii::$app->py_db->createCommand()->batchInsert('guest.oauth_taskPickTmp', ['batchNumber', 'picker', 'createdTime'], array_slice($list, ($i - 1) * $step, $step))->execute();
         }*/
         //获取数据
-        $sql = "EXEC guest.oauth_getPickStatisticsData '{$condition['createdTime'][0]}','{$condition['createdTime'][1]}','{$flag}'";
+        $sql = "EXEC guest.oauth_getPickStatisticsData '{$condition['dateRange'][0]}','{$condition['dateRange'][1]}','{$flag}'";
 
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
@@ -824,8 +824,8 @@ class ApiWarehouseTools
      * @return mixed
      */
     public static function getNotPickingTradeNum($condition){
-        $beginDate = $condition['createdTime'][0] ?: '';
-        $endDate = $condition['createdTime'][1] ?: '';
+        $beginDate = $condition['dateRange'][0] ?: '';
+        $endDate = $condition['dateRange'][1] ?: '';
         $sql = "SELECT COUNT (1) AS allcount FROM P_Trade (nolock) m
                 WHERE FilterFlag = 20 AND CONVERT(VARCHAR(10),dateadd(hh,8,ordertime),121) BETWEEN '{$beginDate}' AND '{$endDate}'";
         return Yii::$app->py_db->createCommand($sql)->queryScalar();
