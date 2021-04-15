@@ -201,14 +201,56 @@ class WarehouseToolsController extends AdminController
     }
 
     /**
-     * @brief 拣货统计
-     * @return \yii\data\ActiveDataProvider
+     * 拣货统计
+     * Date: 2021-04-15 10:31
+     * Author: henry
+     * @return array|mixed
      */
     public function actionPickStatistics()
     {
-        $condition = Yii::$app->request->post()['condition'];
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $totalNotPickingNum = ApiWarehouseTools::getNotPickingTradeNum($condition);
+            $personPickingData = ApiWarehouseTools::getPickStatisticsData($condition);
+            $datePickingData = ApiWarehouseTools::getPickStatisticsData($condition, 1);
+            return [
+                'totalNotPickingNum' => $totalNotPickingNum,
+                'personPickingData' => $personPickingData,
+                'datePickingData' => $datePickingData,
+            ];
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
 
-        return ApiWarehouseTools::getPickStatisticsData($condition);
+    /**
+     * actionPersonPickingExport
+     * Date: 2021-04-15 11:52
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionPersonPickingExport(){
+        $condition = Yii::$app->request->post()['condition'];
+        $personPickingData = ApiWarehouseTools::getPickStatisticsData($condition);
+        $title = ['拣货人','单品拣货量','多品拣货量','总拣货量'];
+        ExportTools::toExcelOrCsv('PersonPickingData', $personPickingData, 'Xls', $title);
+    }
+    /**
+     * actionDatePickingExport
+     * Date: 2021-04-15 11:52
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionDatePickingExport(){
+        $condition = Yii::$app->request->post()['condition'];
+        $datePickingData = ApiWarehouseTools::getPickStatisticsData($condition);
+        $title = ['拣货日期','单品拣货量','多品拣货量','总拣货量'];
+        ExportTools::toExcelOrCsv('DatePickingData', $datePickingData, 'Xls', $title);
     }
 
 

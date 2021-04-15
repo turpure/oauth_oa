@@ -519,7 +519,7 @@ class ApiWarehouseTools
      * Author: henry
      * @return mixed
      */
-    public static function getPickStatisticsData($condition)
+    public static function getPickStatisticsData($condition, $flag = 0)
     {
         /*$query = TaskPick::find()->select(new Expression("batchNumber,picker,date_format(MAX(createdTime),'%Y-%m-%d') AS createdTime"));
         $query = $query->andWhere(['<>', "IFNULL(batchNumber,'')", '']);
@@ -535,7 +535,7 @@ class ApiWarehouseTools
             Yii::$app->py_db->createCommand()->batchInsert('guest.oauth_taskPickTmp', ['batchNumber', 'picker', 'createdTime'], array_slice($list, ($i - 1) * $step, $step))->execute();
         }*/
         //获取数据
-        $sql = "EXEC guest.oauth_getPickStatisticsData '{$condition['createdTime'][0]}','{$condition['createdTime'][1]}'";
+        $sql = "EXEC guest.oauth_getPickStatisticsData '{$condition['createdTime'][0]}','{$condition['createdTime'][1]}','{$flag}'";
 
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
@@ -816,12 +816,19 @@ class ApiWarehouseTools
         return $msg;
     }
 
-    public static function getDifferenceOrderRateData($condition){
-        $storeName = $condition['storeName'] ?: '';
-        $beginDate = $condition['dateRange'][0] ?: '';
-        $endDate = $condition['dateRange'][1] ?: '';
-        $sql = "EXEC oauth_warehouse_tools_difference_order_rate '{$storeName}','{$beginDate}','{$endDate}'";
-        return Yii::$app->py_db->createCommand($sql)->queryAll();
+    /**
+     * getNotPickingTradeNum
+     * @param $condition
+     * Date: 2021-04-15 10:25
+     * Author: henry
+     * @return mixed
+     */
+    public static function getNotPickingTradeNum($condition){
+        $beginDate = $condition['createdTime'][0] ?: '';
+        $endDate = $condition['createdTime'][1] ?: '';
+        $sql = "SELECT COUNT (1) AS allcount FROM P_Trade (nolock) m
+                WHERE FilterFlag = 20 AND CONVERT(VARCHAR(10),dateadd(hh,8,ordertime),121) BETWEEN '{$beginDate}' AND '{$endDate}'";
+        return Yii::$app->py_db->createCommand($sql)->queryScalar();
     }
 
 }
