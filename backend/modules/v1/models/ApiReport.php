@@ -1424,7 +1424,7 @@ class ApiReport
             LEFT JOIN b_goods(nolock) as bg on   cp.goodsCode = bg.goodsCode
             LEFT JOIN b_goodsCats(nolock) as bc on bg.goodsCategoryId = bc.nid
             LEFT JOIN (select storeId, goodsId, sum(number) as stockNumber,sum(money) as stockMoney  from   KC_CurrentStock(nolock) as kcs GROUP BY kcs.storeId, kcs.goodsId)  as ks on ks.goodsid = bg.nid
-            LEFT JOIN b_store(nolock) as bs on bs.nid = ks.storeId where cp.isRemoved = 0 ';
+            LEFT JOIN b_store(nolock) as bs on bs.nid = ks.storeId where bs.nid=7 and cp.isRemoved = 0 ';
         if(!empty($stores)) {
             $stores = implode("','", $stores);
             $sql .= " and bs.StoreName in ('". $stores ."')";
@@ -1552,7 +1552,7 @@ class ApiReport
 
                     foreach ($accounts as $as) {
                         $detail = new OauthClearPlanDetail();
-                        $info = ['planId' => $detail->id, 'seller' => $theSeller, 'suffix' => $as];
+                        $info = ['planId' => $plan->id, 'seller' => $theSeller, 'suffix' => $as];
                         $detail->setAttributes($info);
                         if (!$detail->save()) {
                             throw new \Exception('Create new clear plan failed!');
