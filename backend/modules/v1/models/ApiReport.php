@@ -1410,6 +1410,7 @@ class ApiReport
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $stores = isset($condition['stores'])? $condition['stores']: [];
         $goodsStatus = isset($condition['goodsStatus'])? $condition['goodsStatus']: [];
+        $goodsCode = isset($condition['goodsCode'])? $condition['goodsCode']: '';
         $sellers = isset($condition['sellers'])? $condition['sellers']: [];
         if(!is_array($stores)) {
             throw new Exception('stores should be an array');
@@ -1424,7 +1425,7 @@ class ApiReport
             LEFT JOIN b_goods(nolock) as bg on   cp.goodsCode = bg.goodsCode
             LEFT JOIN b_goodsCats(nolock) as bc on bg.goodsCategoryId = bc.nid
             LEFT JOIN (select storeId, goodsId, sum(number) as stockNumber,sum(money) as stockMoney  from   KC_CurrentStock(nolock) as kcs GROUP BY kcs.storeId, kcs.goodsId)  as ks on ks.goodsid = bg.nid
-            LEFT JOIN b_store(nolock) as bs on bs.nid = ks.storeId where cp.isRemoved = 0 ';
+            LEFT JOIN b_store(nolock) as bs on bs.nid = ks.storeId where bs.storeName=cp.storeName and cp.isRemoved = 0 ';
         if(!empty($stores)) {
             $stores = implode("','", $stores);
             $sql .= " and bs.StoreName in ('". $stores ."')";
@@ -1438,6 +1439,10 @@ class ApiReport
             $sellers[] = 'all';
             $sellers = implode("','", $sellers);
             $sql .= " and (cp.sellers in ('". $sellers ."')) ";
+        }
+
+        if(!empty($goodsCode)) {
+            $sql .= " and (cp.goodsCode = '". $goodsCode ."') ";
         }
         $query = Yii::$app->py_db->createCommand($sql)->queryAll();
         $provider = new ArrayDataProvider([
@@ -1466,14 +1471,14 @@ class ApiReport
      */
     public static function exportClearListTemplate($condition) {
         $fileName = 'clear-products-template';
-        $titles = ['商品编码'];
-        $data = [['商品编码' => '7A0001']];
+        $titles = ['商品编码','仓库名称'];
+        $data = [['商品编码' => '7A0001', '仓库名称' => '义乌仓']];
         ExportTools::toExcelOrCsv($fileName, $data,'Csv', $titles);
 
     }
 
     public static function importClearList() {
-        $fields = ['goodsCode'];
+        $fields = ['goodsCode', 'storeName'];
         $planNumber = 'QC-' . (string)date('Y-m-d');
         try {
             if (Yii::$app->request->isPost ) {
@@ -1495,6 +1500,7 @@ class ApiReport
 
                     //生产新产品
                     $product = array_combine($fields, $row);
+
 
                     //更新状态
                     $product['planNumber'] = $planNumber;
@@ -1522,8 +1528,6 @@ class ApiReport
         # 销售账号表
         $accountsMap =static::getSellerSuffixMap();
 
-        # 账号销售表
-        $suffixSellerMap = static::getSuffixSellerMap();
 
         $trans = Yii::$app->py_db->beginTransaction();
 
@@ -1541,25 +1545,6 @@ class ApiReport
                 if (!$plan->save()) {
                     throw new \Exception('Create new clear plan failed!');
                 }
-
-                if ($theSeller !== 'all') {
-
-                    # 如果账号对应的主销售有变化就取当前账号对应的销售
-                    if(!isset($accountsMap[$theSeller])) {
-                        continue;
-                    }
-                    $accounts = $accountsMap[$theSeller];
-
-                    foreach ($accounts as $as) {
-                        $detail = new OauthClearPlanDetail();
-                        $info = ['planId' => $detail->id, 'seller' => $theSeller, 'suffix' => $as];
-                        $detail->setAttributes($info);
-                        if (!$detail->save()) {
-                            throw new \Exception('Create new clear plan failed!');
-                        }
-                    }
-                    }
-
                 }
             $trans->commit();
         }
