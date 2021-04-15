@@ -1410,6 +1410,7 @@ class ApiReport
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $stores = isset($condition['stores'])? $condition['stores']: [];
         $goodsStatus = isset($condition['goodsStatus'])? $condition['goodsStatus']: [];
+        $goodsCode = isset($condition['goodsCode'])? $condition['goodsCode']: '';
         $sellers = isset($condition['sellers'])? $condition['sellers']: [];
         if(!is_array($stores)) {
             throw new Exception('stores should be an array');
@@ -1438,6 +1439,10 @@ class ApiReport
             $sellers[] = 'all';
             $sellers = implode("','", $sellers);
             $sql .= " and (cp.sellers in ('". $sellers ."')) ";
+        }
+
+        if(!empty($goodsCode)) {
+            $sql .= " and (cp.goodsCode = '". $goodsCode ."') ";
         }
         $query = Yii::$app->py_db->createCommand($sql)->queryAll();
         $provider = new ArrayDataProvider([
@@ -1473,7 +1478,7 @@ class ApiReport
     }
 
     public static function importClearList() {
-        $fields = ['goodsCode'];
+        $fields = ['goodsCode', 'storeName'];
         $planNumber = 'QC-' . (string)date('Y-m-d');
         try {
             if (Yii::$app->request->isPost ) {
@@ -1495,6 +1500,7 @@ class ApiReport
 
                     //生产新产品
                     $product = array_combine($fields, $row);
+
 
                     //更新状态
                     $product['planNumber'] = $planNumber;
@@ -1522,8 +1528,6 @@ class ApiReport
         # 销售账号表
         $accountsMap =static::getSellerSuffixMap();
 
-        # 账号销售表
-        $suffixSellerMap = static::getSuffixSellerMap();
 
         $trans = Yii::$app->py_db->beginTransaction();
 
@@ -1541,25 +1545,6 @@ class ApiReport
                 if (!$plan->save()) {
                     throw new \Exception('Create new clear plan failed!');
                 }
-
-                if ($theSeller !== 'all') {
-
-                    # 如果账号对应的主销售有变化就取当前账号对应的销售
-                    if(!isset($accountsMap[$theSeller])) {
-                        continue;
-                    }
-                    $accounts = $accountsMap[$theSeller];
-
-                    foreach ($accounts as $as) {
-                        $detail = new OauthClearPlanDetail();
-                        $info = ['planId' => $plan->id, 'seller' => $theSeller, 'suffix' => $as];
-                        $detail->setAttributes($info);
-                        if (!$detail->save()) {
-                            throw new \Exception('Create new clear plan failed!');
-                        }
-                    }
-                    }
-
                 }
             $trans->commit();
         }
