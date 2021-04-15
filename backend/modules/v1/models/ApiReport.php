@@ -1447,6 +1447,11 @@ class ApiReport
         $query = Yii::$app->py_db->createCommand($sql)->queryAll();
         $provider = new ArrayDataProvider([
             'allModels' => $query,
+            'sort' => ['attributes' =>
+                [
+                    'stockNumber','stockMoney',
+                ]
+            ],
             'pagination' => [
                 'pageSize' => $pageSize,
             ],
