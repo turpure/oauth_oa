@@ -541,6 +541,54 @@ class ApiWarehouseTools
     }
 
 
+    /** 获取上货统计数据
+     * @param $condition
+     * Date: 2021-04-19 16:16
+     * Author: henry
+     * @return mixed
+     */
+    public static function getLoadStatisticsData($condition, $flag = 0)
+    {
+        //获取数据
+        $sql = "EXEC oauth_warehouse_tools_pda_loading_statistics '{$condition['dateRange'][0]}','{$condition['dateRange'][1]}',
+        '{$condition['scanUser']}','{$condition['sku']}','{$flag}'";
+
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
+    }
+
+    public static function getLoadStatisticsDetail($condition, $flag = 0){
+        if ($flag == 0){
+            $scanUser = str_replace(',', "','", $condition['scanUser']);
+            $sql = "SELECT locationName,sku,CONVERT(VARCHAR(10),ScanTime,121) AS scanTime,COUNT(sku) AS num
+                    FROM [dbo].[P_PdaScanLog](nolock)
+                    WHERE CONVERT(VARCHAR(10),ScanTime,121) BETWEEN '{$condition['dateRange'][0]}' AND '{$condition['dateRange'][1]} '
+                        AND scanUser IN ('{$scanUser}') ";
+            if (isset($condition['sku']) && $condition['sku']){
+                $sku = str_replace(',', "','", $condition['sku']);
+                $sql .= " AND sku IN ('{$sku}')";
+            }
+            $sql .= " GROUP BY locationName,sku,CONVERT(VARCHAR(10),ScanTime,121) ORDER BY CONVERT(VARCHAR(10),ScanTime,121) DESC";
+        }else{
+            $sql = "SELECT locationName,sku,scanUser,COUNT(sku) AS num
+                    FROM [dbo].[P_PdaScanLog](nolock)
+                    WHERE CONVERT(VARCHAR(10),ScanTime,121) BETWEEN '{$condition['dateRange'][0]}' AND '{$condition['dateRange'][1]}'";
+            if (isset($condition['scanUser']) && $condition['scanUser']){
+                $scanUser = str_replace(',', "','", $condition['scanUser']);
+                $sql .= " AND scanUser IN ('{$scanUser}')";
+            }
+            if (isset($condition['sku']) && $condition['sku']){
+                $sku = str_replace(',', "','", $condition['sku']);
+                $sql .= " AND sku IN ('{$sku}')";
+            }
+            $sql .= " GROUP BY locationName,sku,scanUser ORDER BY scanUser";
+        }
+
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
+    }
+
+
+
+
     /** 获取拣货统计数据
      * @param $condition
      * Date: 2019-08-23 16:16

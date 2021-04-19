@@ -200,6 +200,8 @@ class WarehouseToolsController extends AdminController
         return ApiWarehouseTools::warehouseLogExport($condition);
     }
 
+    #############################拣货统计#########################################
+
     /**
      * 拣货统计
      * Date: 2021-04-15 10:31
@@ -252,6 +254,72 @@ class WarehouseToolsController extends AdminController
         $title = ['拣货日期','单品拣货量','多品拣货量','总拣货量'];
         ExportTools::toExcelOrCsv('DatePickingData', $datePickingData, 'Xls', $title);
     }
+
+    #############################上货统计#########################################
+    /**
+     * 上货统计
+     * Date: 2021-04-19 10:31
+     * Author: henry
+     * @return array|mixed
+     */
+    public function actionLoadingStatistics()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $personLoadingData = ApiWarehouseTools::getLoadStatisticsData($condition);
+            $dateLoadingData = ApiWarehouseTools::getLoadStatisticsData($condition, 1);
+            return [
+                'personLoadingData' => $personLoadingData,
+                'dateLoadingData' => $dateLoadingData,
+            ];
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * actionLoadingPersonDetail
+     * Date: 2021-04-19 16:09
+     * Author: henry
+     * @return array
+     */
+    public function actionLoadingPersonDetail(){
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiWarehouseTools::getLoadStatisticsDetail($condition);
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+
+    }
+
+    /**
+     * actionLoadingDateDetail
+     * Date: 2021-04-19 16:10
+     * Author: henry
+     * @return array
+     */
+    public function actionLoadingDateDetail(){
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiWarehouseTools::getLoadStatisticsDetail($condition, 1);
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+
+
+
 
 
     /**
@@ -906,6 +974,8 @@ class WarehouseToolsController extends AdminController
             ];
         }
     }
+
+
 
 
 
