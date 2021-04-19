@@ -1132,12 +1132,13 @@ class ApiTinyTool
         $username = Yii::$app->user->identity->username;
         $userArr = ApiUser::getUserList($username);
         $userList = implode("','", $userArr);
+        $thisMonth = date('Y-m');
 
         $sql = "SELECT c.goodsCode,c.sku,skuName,c.storeName,c.goodsStatus,c.salerName,createDate,costPrice,
                 c.costmoney,useNum,oceanNum,airNum,weight,
                 ss.seller1,ss.seller2,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart ,
-                IFNULL(ca.threeSellCount,0) AS threeSellCount, IFNULL(ca.sevenSellCount,0) AS sevenSellCount, 
-                IFNULL(ca.fourteenSellCount,0) AS fourteenSellCount, IFNULL(ca.thirtySellCount,0) AS thirtySellCount,
+                IFNULL(threeSellCount,0) AS threeSellCount, IFNULL(sevenSellCount,0) AS sevenSellCount, 
+                IFNULL(fourteenSellCount,0) AS fourteenSellCount, IFNULL(thirtySellCount,0) AS thirtySellCount,
          CASE WHEN IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.4 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1 = 0 THEN 10000
          ELSE  round(ifnull(hopeUseNum,0)/(IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.1 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1),0)
          END  AS turnoverDays
@@ -1149,12 +1150,13 @@ class ApiTinyTool
                 LEFT JOIN (
 					SELECT sku,storeName,SUM(num) airNum FROM cache_wyt_ukma_sku_not_in_store_num WHERE shipType='空运-普货' GROUP BY sku,storeName
 				) cw ON cw.sku=c.sku AND cw.storeName=c.storeName
-                LEFT JOIN cache_30DayOrderTmpData ca ON ca.sku=c.sku AND ca.storeName=c.storeName
                 LEFT JOIN `user` u ON u.username=ss.seller1
 				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
 				LEFT JOIN auth_department d ON d.id=dc.department_id
 				LEFT JOIN auth_department p ON p.id=d.parent
-				WHERE seller1 IN ('{$userList}') AND c.storeName IN ('万邑通UK', '万邑通UK-MA仓', '谷仓UK')";
+				WHERE seller1 IN ('{$userList}') AND c.storeName IN ('万邑通UK', '万邑通UK-MA仓', '谷仓UK')
+				AND SUBSTRING(updateTime,1,7) = '{$thisMonth}' 
+				";
         if ($goodsCode) {
             $sql .= " AND c.goodsCode LIKE '%{$goodsCode}%'";
         }
