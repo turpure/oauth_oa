@@ -83,6 +83,8 @@ class DataCenterController extends AdminController
      */
     public function actionStockStatus()
     {
+        $condition = Yii::$app->request->post('condition', []);
+        $month = $condition['month'] ?? date('Y-m');
         $sql = "SELECT aa.storeName,aa.useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
                         IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
                         CASE WHEN IFNULL(aveCostmoney,0)=0 AND IFNULL(totalCostmoney,0)<>0 THEN 10000 
@@ -100,8 +102,11 @@ class DataCenterController extends AdminController
                         SUM(notInStore) notInStore,
                         SUM(notInCostmoney) notInCostmoney,
                         SUM(hopeUseNum) hopeUseNum,
-                        SUM(totalCostmoney) totalCostmoney
-                        FROM `cache_stockWaringTmpData`
+                        SUM(totalCostmoney) totalCostmoney,
+                        SUM(sellCostMoney) AS 30DayCostmoney,
+                        ROUND(SUM(sellCostMoney)/30,4) AS aveCostmoney
+                        FROM `cache_stockWaringTmpData` 
+                        WHERE SUBSTRING(updateTime,1,7) = '{$month}' 
                         GROUP BY CASE WHEN storeName='万邑通UK' THEN '万邑通UK' 
 														WHEN storeName='万邑通UK-MA仓' THEN '万邑通UK' 
 														WHEN storeName='金皖399' THEN '金皖399' 
@@ -109,27 +114,7 @@ class DataCenterController extends AdminController
 														WHEN storeName='万邑通UK-MA空运中转' THEN '金皖399' 
 														WHEN storeName='万邑通UK-MA海运中转' THEN '金皖399' 
 														ELSE storeName END 
-                ) aa LEFT JOIN 
-                (
-                        SELECT CASE WHEN storeName='万邑通UK' THEN '万邑通UK' 
-														WHEN storeName='万邑通UK-MA仓' THEN '万邑通UK' 
-														WHEN storeName='金皖399' THEN '金皖399' 
-														WHEN storeName='谷仓UK中转' THEN '金皖399' 
-														WHEN storeName='万邑通UK-MA空运中转' THEN '金皖399' 
-														WHEN storeName='万邑通UK-MA海运中转' THEN '金皖399' 
-														ELSE storeName END storeName,
-                        SUM(costMoney) AS 30DayCostmoney,
-                        ROUND(SUM(costMoney)/30,4) AS aveCostmoney
-                        FROM `cache_30DayOrderTmpData`
-                        GROUP BY CASE WHEN storeName='万邑通UK' THEN '万邑通UK' 
-														WHEN storeName='万邑通UK-MA仓' THEN '万邑通UK' 
-														WHEN storeName='金皖399' THEN '金皖399' 
-														WHEN storeName='谷仓UK中转' THEN '金皖399' 
-														WHEN storeName='万邑通UK-MA空运中转' THEN '金皖399' 
-														WHEN storeName='万邑通UK-MA海运中转' THEN '金皖399' 
-														ELSE storeName END 
-                ) bb ON aa.storeName=bb.storeName
-                ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
+                ) aa ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
         try {
             return Yii::$app->db->createCommand($sql)->queryAll();
         } catch (\Exception $e) {
@@ -152,33 +137,27 @@ class DataCenterController extends AdminController
             return [];
         }
         $cond = $request->post('condition');
+        $month = $cond['month'] ?? date('Y-m');
 
-        $sql = "SELECT aa.storeName,aa.goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
-                        IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
+        $sql = "SELECT aa.storeName,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,
+                    hopeUseNum,totalCostmoney,IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
                         CASE WHEN IFNULL(aveCostmoney,0)=0 AND totalCostmoney>0 THEN 10000 ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
                 FROM(
-                        SELECT storeName,IFNULL(goodsStatus,'无状态') goodsStatus,
+                        SELECT storeName,
+                        CASE WHEN IFNULL(goodsStatus,'')='' THEN '无状态' ELSE goodsStatus END AS goodsStatus,
                         SUM(useNum) AS useNum,
                         SUM(costmoney) costmoney,
                         SUM(notInStore) notInStore,
                         SUM(notInCostmoney) notInCostmoney,
                         SUM(hopeUseNum) hopeUseNum,
-                        SUM(totalCostmoney) totalCostmoney
+                        SUM(totalCostmoney) totalCostmoney,
+                        SUM(sellCostMoney) AS 30DayCostmoney,
+                        ROUND(SUM(sellCostMoney)/30,4) AS aveCostmoney
                         FROM `cache_stockWaringTmpData`
-                        WHERE 1=1 ";
+                        WHERE SUBSTRING(updateTime,1,7) = '{$month}'  ";
         if (isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
-        $sql .= " GROUP BY storeName,IFNULL(goodsStatus,'无状态')
-                ) aa LEFT JOIN 
-                (
-                        SELECT storeName,IFNULL(goodsStatus,'无状态') goodsStatus,
-                        SUM(costMoney) AS 30DayCostmoney,
-                        ROUND(SUM(costMoney)/30,4) AS aveCostmoney
-                        FROM `cache_30DayOrderTmpData`
-                        WHERE 1=1 ";
-        if (isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
-        $sql .= " GROUP BY storeName,IFNULL(goodsStatus,'无状态')
-                ) bb ON aa.storeName=bb.storeName AND IFNULL(aa.goodsStatus,'无状态')=IFNULL(bb.goodsStatus,'无状态')
-                ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
+        $sql .= " GROUP BY storeName,CASE WHEN IFNULL(goodsStatus,'')='' THEN '无状态' ELSE goodsStatus END
+                ) aa ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
         try {
             $data = Yii::$app->db->createCommand($sql)->queryAll();
             return $data;
@@ -202,7 +181,8 @@ class DataCenterController extends AdminController
             return [];
         }
         $cond = $request->post('condition');
-        $sql = "SELECT aa.storeName,aa.salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
+        $month = $cond['month'] ?? date('Y-m');
+        $sql = "SELECT aa.storeName,salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
                         IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
                         CASE WHEN IFNULL(aveCostmoney,0)=0 AND totalCostmoney>0 THEN 10000 ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
                 FROM(
@@ -213,23 +193,14 @@ class DataCenterController extends AdminController
                         SUM(notInStore) notInStore,
                         SUM(notInCostmoney) notInCostmoney,
                         SUM(hopeUseNum) hopeUseNum,
-                        SUM(totalCostmoney) totalCostmoney
+                        SUM(totalCostmoney) totalCostmoney,
+                        SUM(sellCostMoney) AS 30DayCostmoney,
+                        ROUND(SUM(sellCostMoney)/30,4) AS aveCostmoney
                         FROM `cache_stockWaringTmpData`
-                        WHERE 1=1 ";
+                        WHERE SUBSTRING(updateTime,1,7) = '{$month}'  ";
         if (isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
         $sql .= " GROUP BY storeName,CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END
-                ) aa LEFT JOIN 
-                (
-                        SELECT storeName,
-                        CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END AS salerName,
-                        SUM(costMoney) AS 30DayCostmoney,
-                        ROUND(SUM(costMoney)/30,4) AS aveCostmoney
-                        FROM `cache_30DayOrderTmpData`
-                        WHERE 1=1 ";
-        if (isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
-        $sql .= " GROUP BY storeName,CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END
-                ) bb ON aa.storeName=bb.storeName AND IFNULL(aa.salerName,'无人')=IFNULL(bb.salerName,'无人')
-                ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
+                ) aa ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
         try {
             return Yii::$app->db->createCommand($sql)->queryAll();
         } catch (\Exception $e) {
@@ -251,7 +222,9 @@ class DataCenterController extends AdminController
         if (!$request->isPost) {
             return [];
         }
-        $sql = "SELECT IFNULL(aa.depart,'无部门') AS depart,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
+        $cond = $request->post('condition');
+        $month = $cond['month'] ?? date('Y-m');
+        $sql = "SELECT IFNULL(depart,'无部门') AS depart,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
                         IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
                         CASE WHEN IFNULL(aveCostmoney,0)=0 AND totalCostmoney>0 THEN 10000 ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
                 FROM(
@@ -262,27 +235,17 @@ class DataCenterController extends AdminController
                         SUM(notInStore) notInStore,
                         SUM(notInCostmoney) notInCostmoney,
                         SUM(hopeUseNum) hopeUseNum,
-                        SUM(totalCostmoney) totalCostmoney
+                        SUM(totalCostmoney) totalCostmoney,
+                        SUM(sellCostMoney) AS 30DayCostmoney,
+                        ROUND(SUM(sellCostMoney)/30,4) AS aveCostmoney
                         FROM `cache_stockWaringTmpData` c
                         LEFT JOIN `user` u ON u.username=c.salerName
 						LEFT JOIN auth_department_child dc ON dc.user_id=u.id
 					  	LEFT JOIN auth_department d ON d.id=dc.department_id
 						LEFT JOIN auth_department p ON p.id=d.parent
+						WHERE SUBSTRING(updateTime,1,7) = '{$month}' 
                         GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END
-                ) aa LEFT JOIN 
-                (
-                        SELECT 
-                        CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart,
-                        SUM(costMoney) AS 30DayCostmoney,
-                        ROUND(SUM(costMoney)/30,4) AS aveCostmoney
-                        FROM `cache_30DayOrderTmpData` c
-                        LEFT JOIN `user` u ON u.username=c.salerName
-						LEFT JOIN auth_department_child dc ON dc.user_id=u.id
-					  	LEFT JOIN auth_department d ON d.id=dc.department_id
-						LEFT JOIN auth_department p ON p.id=d.parent
-                        GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END
-                ) bb ON IFNULL(aa.depart,'无部门')=IFNULL(bb.depart,'无部门')
-                ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
+                ) aa ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
         try {
             return Yii::$app->db->createCommand($sql)->queryAll();
         } catch (\Exception $e) {
@@ -306,9 +269,9 @@ class DataCenterController extends AdminController
             return [];
         }
         $cond = $request->post('condition');
-
-        $sql = "SELECT IFNULL(aa.depart,'无部门') AS depart,aa.goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
-                        IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
+        $month = $cond['month'] ?? date('Y-m');
+        $sql = "SELECT IFNULL(depart,'无部门') AS depart,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,
+                        hopeUseNum,totalCostmoney,IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
                         CASE WHEN IFNULL(aveCostmoney,0)=0 AND totalCostmoney>0 THEN 10000 ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
                 FROM(
                         SELECT 
@@ -319,35 +282,19 @@ class DataCenterController extends AdminController
                         SUM(notInStore) notInStore,
                         SUM(notInCostmoney) notInCostmoney,
                         SUM(hopeUseNum) hopeUseNum,
-                        SUM(totalCostmoney) totalCostmoney
+                        SUM(totalCostmoney) totalCostmoney,
+                        SUM(sellCostMoney) AS 30DayCostmoney,
+                        ROUND(SUM(sellCostMoney)/30,4) AS aveCostmoney
                         FROM `cache_stockWaringTmpData` c
                         LEFT JOIN `user` u ON u.username=c.salerName
 						LEFT JOIN auth_department_child dc ON dc.user_id=u.id
 					  	LEFT JOIN auth_department d ON d.id=dc.department_id
 						LEFT JOIN auth_department p ON p.id=d.parent
-                        WHERE 1=1 ";
+                        WHERE SUBSTRING(updateTime,1,7) = '{$month}'  ";
         if (isset($cond['depart']) && $cond['depart'])
             $sql .= " AND (IFNULL(d.department,'无部门') LIKE '%{$cond['depart']}%' AND IFNULL(p.department,'无部门') LIKE '%{$cond['depart']}%')";
-
         $sql .= " GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END,IFNULL(goodsStatus,'无状态')
-                ) aa LEFT JOIN 
-                (
-                        SELECT 
-                        CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart,
-                        IFNULL(goodsStatus,'无状态') goodsStatus,
-                        SUM(costMoney) AS 30DayCostmoney,
-                        ROUND(SUM(costMoney)/30,4) AS aveCostmoney
-                        FROM `cache_30DayOrderTmpData` c
-                        LEFT JOIN `user` u ON u.username=c.salerName
-						LEFT JOIN auth_department_child dc ON dc.user_id=u.id
-					  	LEFT JOIN auth_department d ON d.id=dc.department_id
-						LEFT JOIN auth_department p ON p.id=d.parent
-                        WHERE 1=1 ";
-        if (isset($cond['storeName']) && $cond['storeName'])
-            $sql .= " AND (IFNULL(d.department,'无部门') LIKE '%{$cond['depart']}%' AND IFNULL(p.department,'无部门') LIKE '%{$cond['depart']}%')";
-        $sql .= " GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END,IFNULL(goodsStatus,'无状态')
-                ) bb ON aa.depart=bb.depart AND IFNULL(aa.goodsStatus,'无状态')=IFNULL(bb.goodsStatus,'无状态')
-                ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
+                ) bb ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
         try {
             $data = Yii::$app->db->createCommand($sql)->queryAll();
             return $data;
@@ -371,8 +318,9 @@ class DataCenterController extends AdminController
             return [];
         }
         $cond = $request->post('condition');
-        $sql = "SELECT IFNULL(aa.depart,'无部门') AS depart,aa.salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
-                        IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
+        $month = $cond['month'] ?? date('Y-m');
+        $sql = "SELECT IFNULL(depart,'无部门') AS depart,aa.salerName,useNum,costmoney,notInStore,notInCostmoney,
+                        hopeUseNum,totalCostmoney,IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
                         CASE WHEN IFNULL(aveCostmoney,0)=0 AND totalCostmoney>0 THEN 10000 ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
                 FROM(
                         SELECT 
@@ -383,36 +331,20 @@ class DataCenterController extends AdminController
                         SUM(notInStore) notInStore,
                         SUM(notInCostmoney) notInCostmoney,
                         SUM(hopeUseNum) hopeUseNum,
-                        SUM(totalCostmoney) totalCostmoney
+                        SUM(totalCostmoney) totalCostmoney,
+                        SUM(sellCostMoney) AS 30DayCostmoney,
+                        ROUND(SUM(sellCostMoney)/30,4) AS aveCostmoney
                         FROM `cache_stockWaringTmpData` c
                         LEFT JOIN `user` u ON u.username=c.salerName
 						LEFT JOIN auth_department_child dc ON dc.user_id=u.id
 					  	LEFT JOIN auth_department d ON d.id=dc.department_id
 						LEFT JOIN auth_department p ON p.id=d.parent
-                        WHERE 1=1 ";
+                        WHERE SUBSTRING(updateTime,1,7) = '{$month}'  ";
         if (isset($cond['depart']) && $cond['depart'])
             $sql .= " AND (IFNULL(d.department,'无部门') LIKE '%{$cond['depart']}%' AND IFNULL(p.department,'无部门') LIKE '%{$cond['depart']}%')";
         $sql .= " GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END,
                             CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END
-                ) aa LEFT JOIN 
-                (
-                        SELECT 
-                        CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart,
-                        CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END AS salerName,
-                        SUM(costMoney) AS 30DayCostmoney,
-                        ROUND(SUM(costMoney)/30,4) AS aveCostmoney
-                        FROM `cache_30DayOrderTmpData` c
-                        LEFT JOIN `user` u ON u.username=c.salerName
-						LEFT JOIN auth_department_child dc ON dc.user_id=u.id
-					  	LEFT JOIN auth_department d ON d.id=dc.department_id
-						LEFT JOIN auth_department p ON p.id=d.parent
-                        WHERE 1=1 ";
-        if (isset($cond['depart']) && $cond['depart'])
-            $sql .= " AND (IFNULL(d.department,'无部门') LIKE '%{$cond['depart']}%' AND IFNULL(p.department,'无部门') LIKE '%{$cond['depart']}%')";
-        $sql .= " GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END,
-                              CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END
-                ) bb ON aa.depart=bb.depart AND IFNULL(aa.salerName,'无人')=IFNULL(bb.salerName,'无人')
-                ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
+                ) aa ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
         try {
             return Yii::$app->db->createCommand($sql)->queryAll();
         } catch (\Exception $e) {
