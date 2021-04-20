@@ -327,7 +327,23 @@ class WarehouseToolsController extends AdminController
         }
     }
 
-
+    /**
+     *
+     * Date: 2021-04-20 16:08
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionLoadingStatisticsExport(){
+        $condition = Yii::$app->request->post()['condition'];
+        $personLoadingData = ApiWarehouseTools::getLoadStatisticsData($condition);
+        $dateLoadingData = ApiWarehouseTools::getLoadStatisticsData($condition, 1);
+        $data = [
+            ['title' => ['日期', '上架数量'], 'name' => '时间数据', 'data' => $dateLoadingData],
+            ['title' => ['上架人员', '上架数量'], 'name' => '人员数据', 'data' => $personLoadingData],
+        ];
+        ExportTools::toExcelMultipleSheets('positionDetailView', $data, 'Xlsx');
+    }
 
 
 
