@@ -564,8 +564,9 @@ class ApiWarehouseTools
     }
 
     public static function getLoadStatisticsDetail($condition, $flag = 0){
+        $user = $condition['scanUser'] ? : self::getWarehouseMember('load');
+        $scanUser = implode("','", $user);
         if ($flag == 0){
-            $scanUser = str_replace(',', "','", $condition['scanUser']);
             $sql = "SELECT locationName,sku,CONVERT(VARCHAR(10),ScanTime,121) AS scanTime,COUNT(sku) AS num
                     FROM [dbo].[P_PdaScanLog](nolock)
                     WHERE CONVERT(VARCHAR(10),ScanTime,121) BETWEEN '{$condition['dateRange'][0]}' AND '{$condition['dateRange'][1]} '
@@ -578,11 +579,8 @@ class ApiWarehouseTools
         }else{
             $sql = "SELECT locationName,sku,scanUser,COUNT(sku) AS num
                     FROM [dbo].[P_PdaScanLog](nolock)
-                    WHERE CONVERT(VARCHAR(10),ScanTime,121) BETWEEN '{$condition['dateRange'][0]}' AND '{$condition['dateRange'][1]}'";
-            if (isset($condition['scanUser']) && $condition['scanUser']){
-                $scanUser = str_replace(',', "','", $condition['scanUser']);
-                $sql .= " AND scanUser IN ('{$scanUser}')";
-            }
+                    WHERE CONVERT(VARCHAR(10),ScanTime,121) BETWEEN '{$condition['dateRange'][0]}' AND '{$condition['dateRange'][1]}'
+                    AND scanUser IN ('{$scanUser}') ";
             if (isset($condition['sku']) && $condition['sku']){
                 $sku = str_replace(',', "','", $condition['sku']);
                 $sql .= " AND sku IN ('{$sku}')";
