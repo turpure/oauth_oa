@@ -43,7 +43,16 @@ class WarehouseToolsController extends AdminController
      */
     public function actionPickMember()
     {
-        return ApiWarehouseTools::getPickMember();
+        return ApiWarehouseTools::getWarehouseMember('pick');
+    }
+
+    /**
+     * @brief 上架人
+     * @return array
+     */
+    public function actionLoadMember()
+    {
+        return ApiWarehouseTools::getWarehouseMember('load');
     }
 
     /**
@@ -55,6 +64,7 @@ class WarehouseToolsController extends AdminController
         $condition = Yii::$app->request->post()['condition'];
         return ApiWarehouseTools::getScanningLog($condition);
     }
+
 
     /**
      * @brief 拣货人

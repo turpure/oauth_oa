@@ -80,10 +80,15 @@ class ApiWarehouseTools
      * @brief 获取拣货人
      * @return array
      */
-    public static function getPickMember()
+    public static function getWarehouseMember($type)
     {
-        $ret = BPerson::find()
-            ->andWhere(['in', 'Duty', ['拣货', '拣货组长', '拣货-分拣']])->all();
+        $query = BPerson::find();
+        if ($type == 'load'){
+            $query->andWhere(['in', 'Duty', ['上架']]);
+        }else{
+            $query->andWhere(['in', 'Duty', ['拣货', '拣货组长', '拣货-分拣']]);
+        }
+        $ret = $query->all();
         return ArrayHelper::getColumn($ret, 'PersonName');
     }
 
@@ -549,9 +554,10 @@ class ApiWarehouseTools
      */
     public static function getLoadStatisticsData($condition, $flag = 0)
     {
+        $user = $condition['scanUser'] ? : implode(',', self::getWarehouseMember('load'));
         //获取数据
         $sql = "EXEC oauth_warehouse_tools_pda_loading_statistics '{$condition['dateRange'][0]}','{$condition['dateRange'][1]}',
-        '{$condition['scanUser']}','{$condition['sku']}','{$flag}'";
+        '{$user}','{$condition['sku']}','{$flag}'";
 
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
