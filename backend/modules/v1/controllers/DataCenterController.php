@@ -91,12 +91,12 @@ class DataCenterController extends AdminController
                               ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
                 FROM(
                         SELECT CASE WHEN storeName='万邑通UK' THEN '万邑通UK' 
-														WHEN storeName='万邑通UK-MA仓' THEN '万邑通UK' 
-														WHEN storeName='金皖399' THEN '金皖399' 
-														WHEN storeName='谷仓UK中转' THEN '金皖399' 
-														WHEN storeName='万邑通UK-MA空运中转' THEN '金皖399' 
-														WHEN storeName='万邑通UK-MA海运中转' THEN '金皖399' 
-														ELSE storeName END storeName,
+                                    WHEN storeName='万邑通UK-MA仓' THEN '万邑通UK' 
+                                    WHEN storeName='金皖399' THEN '金皖399' 
+                                    WHEN storeName='谷仓UK中转' THEN '金皖399' 
+                                    WHEN storeName='万邑通UK-MA空运中转' THEN '金皖399' 
+                                    WHEN storeName='万邑通UK-MA海运中转' THEN '金皖399' 
+                                    ELSE storeName END storeName,
                         SUM(useNum) AS useNum,
                         SUM(costmoney) costmoney,
                         SUM(notInStore) notInStore,
@@ -105,15 +105,19 @@ class DataCenterController extends AdminController
                         SUM(totalCostmoney) totalCostmoney,
                         SUM(sellCostMoney) AS 30DayCostmoney,
                         ROUND(SUM(sellCostMoney)/30,4) AS aveCostmoney
-                        FROM `cache_stockWaringTmpData` 
-                        WHERE SUBSTRING(updateTime,1,7) = '{$month}' 
-                        GROUP BY CASE WHEN storeName='万邑通UK' THEN '万邑通UK' 
-														WHEN storeName='万邑通UK-MA仓' THEN '万邑通UK' 
-														WHEN storeName='金皖399' THEN '金皖399' 
-														WHEN storeName='谷仓UK中转' THEN '金皖399' 
-														WHEN storeName='万邑通UK-MA空运中转' THEN '金皖399' 
-														WHEN storeName='万邑通UK-MA海运中转' THEN '金皖399' 
-														ELSE storeName END 
+                        FROM (
+                            SELECT storeName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
+                            FROM `cache_stockWaringTmpData` WHERE updateMonth = '{$month}' 
+                            UNION
+                            SELECT storeName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
+                             FROM `cache_stockWaringTmpDataBackup` WHERE updateMonth = '{$month}' 
+                        ) a GROUP BY CASE WHEN storeName='万邑通UK' THEN '万邑通UK' 
+                                WHEN storeName='万邑通UK-MA仓' THEN '万邑通UK' 
+                                WHEN storeName='金皖399' THEN '金皖399' 
+                                WHEN storeName='谷仓UK中转' THEN '金皖399' 
+                                WHEN storeName='万邑通UK-MA空运中转' THEN '金皖399' 
+                                WHEN storeName='万邑通UK-MA海运中转' THEN '金皖399' 
+                                ELSE storeName END 
                 ) aa ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
         try {
             return Yii::$app->db->createCommand($sql)->queryAll();
@@ -153,8 +157,13 @@ class DataCenterController extends AdminController
                         SUM(totalCostmoney) totalCostmoney,
                         SUM(sellCostMoney) AS 30DayCostmoney,
                         ROUND(SUM(sellCostMoney)/30,4) AS aveCostmoney
-                        FROM `cache_stockWaringTmpData`
-                        WHERE SUBSTRING(updateTime,1,7) = '{$month}'  ";
+                        FROM (
+                            SELECT storeName,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
+                             FROM `cache_stockWaringTmpData` WHERE updateMonth = '{$month}' 
+                            UNION
+                            SELECT storeName,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
+                             FROM `cache_stockWaringTmpDataBackup` WHERE updateMonth = '{$month}' 
+                        ) a WHERE 1=1 ";
         if (isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
         $sql .= " GROUP BY storeName,CASE WHEN IFNULL(goodsStatus,'')='' THEN '无状态' ELSE goodsStatus END
                 ) aa ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
@@ -196,8 +205,13 @@ class DataCenterController extends AdminController
                         SUM(totalCostmoney) totalCostmoney,
                         SUM(sellCostMoney) AS 30DayCostmoney,
                         ROUND(SUM(sellCostMoney)/30,4) AS aveCostmoney
-                        FROM `cache_stockWaringTmpData`
-                        WHERE SUBSTRING(updateTime,1,7) = '{$month}'  ";
+                        FROM (
+                            SELECT storeName,salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
+                             FROM `cache_stockWaringTmpData` WHERE updateMonth = '{$month}' 
+                            UNION
+                            SELECT storeName,salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
+                             FROM `cache_stockWaringTmpDataBackup` WHERE updateMonth = '{$month}' 
+                        ) a WHERE 1=1  ";
         if (isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
         $sql .= " GROUP BY storeName,CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END
                 ) aa ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
@@ -238,12 +252,17 @@ class DataCenterController extends AdminController
                         SUM(totalCostmoney) totalCostmoney,
                         SUM(sellCostMoney) AS 30DayCostmoney,
                         ROUND(SUM(sellCostMoney)/30,4) AS aveCostmoney
-                        FROM `cache_stockWaringTmpData` c
+                        FROM (
+                            SELECT storeName,salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
+                             FROM `cache_stockWaringTmpData` WHERE updateMonth = '{$month}' 
+                            UNION
+                            SELECT storeName,salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
+                             FROM `cache_stockWaringTmpDataBackup` WHERE updateMonth = '{$month}' 
+                        ) c
                         LEFT JOIN `user` u ON u.username=c.salerName
 						LEFT JOIN auth_department_child dc ON dc.user_id=u.id
 					  	LEFT JOIN auth_department d ON d.id=dc.department_id
 						LEFT JOIN auth_department p ON p.id=d.parent
-						WHERE SUBSTRING(updateTime,1,7) = '{$month}' 
                         GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END
                 ) aa ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
         try {
@@ -285,12 +304,18 @@ class DataCenterController extends AdminController
                         SUM(totalCostmoney) totalCostmoney,
                         SUM(sellCostMoney) AS 30DayCostmoney,
                         ROUND(SUM(sellCostMoney)/30,4) AS aveCostmoney
-                        FROM `cache_stockWaringTmpData` c
+                        FROM (
+                            SELECT storeName,salerName,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
+                             FROM `cache_stockWaringTmpData` WHERE updateMonth = '{$month}' 
+                            UNION
+                            SELECT storeName,salerName,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
+                             FROM `cache_stockWaringTmpDataBackup` WHERE updateMonth = '{$month}' 
+                        ) c
                         LEFT JOIN `user` u ON u.username=c.salerName
 						LEFT JOIN auth_department_child dc ON dc.user_id=u.id
 					  	LEFT JOIN auth_department d ON d.id=dc.department_id
 						LEFT JOIN auth_department p ON p.id=d.parent
-                        WHERE SUBSTRING(updateTime,1,7) = '{$month}'  ";
+                        WHERE 1=1  ";
         if (isset($cond['depart']) && $cond['depart'])
             $sql .= " AND (IFNULL(d.department,'无部门') LIKE '%{$cond['depart']}%' AND IFNULL(p.department,'无部门') LIKE '%{$cond['depart']}%')";
         $sql .= " GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END,IFNULL(goodsStatus,'无状态')
@@ -334,12 +359,18 @@ class DataCenterController extends AdminController
                         SUM(totalCostmoney) totalCostmoney,
                         SUM(sellCostMoney) AS 30DayCostmoney,
                         ROUND(SUM(sellCostMoney)/30,4) AS aveCostmoney
-                        FROM `cache_stockWaringTmpData` c
+                        FROM (
+                            SELECT storeName,salerName,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
+                             FROM `cache_stockWaringTmpData` WHERE updateMonth = '{$month}' 
+                            UNION
+                            SELECT storeName,salerName,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
+                             FROM `cache_stockWaringTmpDataBackup` WHERE updateMonth = '{$month}' 
+                        ) c
                         LEFT JOIN `user` u ON u.username=c.salerName
 						LEFT JOIN auth_department_child dc ON dc.user_id=u.id
 					  	LEFT JOIN auth_department d ON d.id=dc.department_id
 						LEFT JOIN auth_department p ON p.id=d.parent
-                        WHERE SUBSTRING(updateTime,1,7) = '{$month}'  ";
+                        WHERE 1=1  ";
         if (isset($cond['depart']) && $cond['depart'])
             $sql .= " AND (IFNULL(d.department,'无部门') LIKE '%{$cond['depart']}%' AND IFNULL(p.department,'无部门') LIKE '%{$cond['depart']}%')";
         $sql .= " GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END,
