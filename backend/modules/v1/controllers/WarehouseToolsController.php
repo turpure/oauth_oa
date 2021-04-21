@@ -8,9 +8,13 @@
 namespace backend\modules\v1\controllers;
 
 
+use backend\models\SysConfig;
+use backend\models\TaskLabel;
+use backend\models\TaskLabelGoodsRate;
 use backend\modules\v1\models\ApiWarehouseTools;
 use backend\modules\v1\utils\ExportTools;
 use Yii;
+use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\db\Exception;
 use yii\helpers\ArrayHelper;
@@ -26,6 +30,9 @@ class WarehouseToolsController extends AdminController
     {
         return parent::behaviors();
     }
+
+
+    ######################################拣货工具#########################################
 
     /**
      * @brief 拣货
@@ -47,15 +54,6 @@ class WarehouseToolsController extends AdminController
     }
 
     /**
-     * @brief 上架人
-     * @return array
-     */
-    public function actionLoadMember()
-    {
-        return ApiWarehouseTools::getWarehouseMember('load');
-    }
-
-    /**
      * @brief 拣货任务记录
      * @return \yii\data\ActiveDataProvider
      */
@@ -65,9 +63,10 @@ class WarehouseToolsController extends AdminController
         return ApiWarehouseTools::getScanningLog($condition);
     }
 
+    ######################################分拣#########################################
 
     /**
-     * @brief 拣货人
+     * @brief 分拣人
      * @return array
      */
     public function actionSortMember()
@@ -95,6 +94,8 @@ class WarehouseToolsController extends AdminController
         return ApiWarehouseTools::getSortLog($condition);
     }
 
+
+    ######################################线下清仓工具#########################################
 
     /**
      * @brief 线下清仓工具-SKU列表
@@ -179,6 +180,7 @@ class WarehouseToolsController extends AdminController
 
     }
 
+    ######################################入库工具#########################################
 
     /**
      * @brief 保存入库任务
@@ -209,6 +211,145 @@ class WarehouseToolsController extends AdminController
         $condition = Yii::$app->request->post()['condition'];
         return ApiWarehouseTools::warehouseLogExport($condition);
     }
+
+    #############################贴标工具#########################################
+    /**
+     * @brief 贴标人
+     * @return array
+     */
+    public function actionLabelMember()
+    {
+        return ApiWarehouseTools::getWarehouseMember('label');
+    }
+
+    /**
+     * @brief 贴标设置
+     * @return array | bool
+     */
+    public function actionLabelSet()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $model = SysConfig::findOne(['name' => SysConfig::LABEL_SET_SKU_NUM]);
+            if(!$model){
+                $model = new SysConfig();
+                $model->name = SysConfig::LABEL_SET_SKU_NUM;
+            }
+            $model->value = $condition['value'];
+            $model->memo = $condition['memo'];
+            $model->creator = Yii::$app->user->identity->username;
+            if($model->save()){
+                return true;
+            }else{
+                throw new Exception("Failed to save setting info!");
+            }
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * @brief 贴标扫描
+     * @return array | bool
+     */
+    public function actionLabel()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $model = new TaskLabel();
+            $model->setAttributes($condition);
+            if($model->save()){
+                return true;
+            }else{
+                throw new Exception("Failed to save info of '{$condition['batchNumber']}'");
+            }
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * 贴标-- 商品难度系数
+     * Date: 2021-04-21 17:04
+     * Author: henry
+     * @return ActiveDataProvider
+     */
+    public function actionLabelGoodsRate()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $pageSize = $condition['pageSize'] ?: 20;
+        $data = TaskLabelGoodsRate::find();
+        return new ActiveDataProvider([
+            'query' => $data,
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+    }
+
+    /**
+     * @brief 贴标-- 商品难度系数保存
+     * @return array | bool
+     */
+    public function actionLabelGoodsSave()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $goodsCode = $condition['goodsCode'] ?: '';
+            $model = TaskLabelGoodsRate::findOne(['goodsCode' => $goodsCode]);
+            if(!$model){
+                $model = new TaskLabelGoodsRate();
+                $model->creator = Yii::$app->user->identity->username;
+            }
+            $model->setAttributes($condition);
+            if($model->save()){
+                return true;
+            }else{
+                throw new Exception("Failed to save info of '{$condition['goodsCode']}'");
+            }
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+
+    }
+
+    /**
+     * @brief 贴标-- 商品难度系数删除
+     * @return array | bool
+     */
+    public function actionLabelGoodsDelete()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            TaskLabelGoodsRate::deleteAll(['goodsCode' => $condition['goodsCode']]);
+            return true;
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * @brief 贴标统计
+     * @return array
+     */
+    public function actionLabelStatistics()
+    {
+        return 123;
+    }
+
+
 
     #############################拣货统计#########################################
 
@@ -266,6 +407,14 @@ class WarehouseToolsController extends AdminController
     }
 
     #############################上货统计#########################################
+    /**
+     * @brief 上架人
+     * @return array
+     */
+    public function actionLoadMember()
+    {
+        return ApiWarehouseTools::getWarehouseMember('load');
+    }
     /**
      * 上货统计
      * Date: 2021-04-19 10:31

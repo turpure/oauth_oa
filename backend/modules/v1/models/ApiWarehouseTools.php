@@ -82,9 +82,13 @@ class ApiWarehouseTools
      */
     public static function getWarehouseMember($type)
     {
-        $query = BPerson::find();
+        $query = BPerson::find()->andWhere(['Used' => 0]);
         if ($type == 'load'){
             $query->andWhere(['in', 'Duty', ['上架']]);
+        }elseif ($type == 'label'){
+            $query->andWhere(['in', 'Duty', ['打标']]);
+            $ret = $query->all();
+            return ArrayHelper::map($ret, 'PersonCode','PersonName');
         }else{
             $query->andWhere(['in', 'Duty', ['拣货', '拣货组长', '拣货-分拣']]);
         }
