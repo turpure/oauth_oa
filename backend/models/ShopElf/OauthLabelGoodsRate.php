@@ -1,6 +1,6 @@
 <?php
 
-namespace backend\models;
+namespace backend\models\ShopElf;
 
 use Yii;
 use yii\behaviors\TimestampBehavior;
@@ -27,7 +27,7 @@ class OauthLabelGoodsRate extends \yii\db\ActiveRecord
             'class' => TimestampBehavior::className(),
             'createdAtAttribute' => 'createdTime',
             'updatedAtAttribute' => 'updatedTime',
-            'value' => new Expression('NOW()'),
+            'value' => new Expression('GETDATE()'),
         ],];
     }
     /**

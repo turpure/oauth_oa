@@ -8,9 +8,8 @@
 namespace backend\modules\v1\controllers;
 
 
-use backend\models\OauthSysConfig;
-use backend\models\TaskLabel;
-use backend\models\OauthLabelGoodsRate;
+use backend\models\ShopElf\OauthSysConfig;
+use backend\models\ShopElf\OauthLabelGoodsRate;
 use backend\modules\v1\models\ApiWarehouseTools;
 use backend\modules\v1\utils\ExportTools;
 use Yii;
