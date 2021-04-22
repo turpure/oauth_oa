@@ -522,6 +522,24 @@ class ApiWarehouseTools
 
     }
 
+    /** 获取贴标统计数据
+     * @param $condition
+     * Date: 2019-08-23 16:16
+     * Author: henry
+     * @return mixed
+     */
+    public static function getLabelStatisticsData($condition, $flag = 0){
+        //获取数据
+//        $sql = "EXEC guest.oauth_getPickStatisticsData '{$condition['dateRange'][0]}','{$condition['dateRange'][1]}','{$flag}'";
+        $condition['dateRange'][1] .= ' 23:59:59';
+        $sql = "SELECT batchNumber,username,SUBSTR(createdTime,1,10) AS createdTime FROM `task_label` 
+                WHERE createdTime BETWEEN '{$condition['dateRange'][0]}' AND '{$condition['dateRange'][1]}'";
+        $labelData = Yii::$app->db->createCommand($sql)->queryAll();
+
+
+
+    }
+
     /** 获取拣货统计数据
      * @param $condition
      * Date: 2019-08-23 16:16

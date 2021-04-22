@@ -6,17 +6,19 @@ use Yii;
 use yii\behaviors\TimestampBehavior;
 use yii\db\Expression;
 /**
- * This is the model class for table "task_label_goods_rate".
+ * This is the model class for table "oauth_sys_config".
  *
  * @property string $id
- * @property string $goodsCode
- * @property float $rate
+ * @property string $name
+ * @property string $value
+ * @property string $memo
  * @property string $creator
  * @property string $createdTime
- * @property string updatedTime
+ * @property string $updatedTime
  */
-class TaskLabelGoodsRate extends \yii\db\ActiveRecord
+class OauthSysConfig extends \yii\db\ActiveRecord
 {
+    const LABEL_SET_SKU_NUM = 'labelSetSkuNum';
 
     public function behaviors()
     {
@@ -35,7 +37,19 @@ class TaskLabelGoodsRate extends \yii\db\ActiveRecord
      */
     public static function tableName()
     {
-        return 'task_label_goods_rate';
+        return 'oauth_sys_config';
+    }
+
+    /**
+     * the database connection used by this AR class.
+     * Date: 2021-04-22 11:54
+     * Author: henry
+     * @return object|\yii\db\Connection|null
+     * @throws \yii\base\InvalidConfigException
+     */
+    public static function getDb()
+    {
+        return Yii::$app->get('py_db');
     }
 
     /**
@@ -45,8 +59,7 @@ class TaskLabelGoodsRate extends \yii\db\ActiveRecord
     {
         return [
             [['createdTime', 'updatedTime'], 'safe'],
-            [['rate'], 'safe'],
-            [['goodsCode'], 'string', 'max' => 50],
+            [['name', 'value', 'memo'], 'string', 'max' => 300],
             [['creator'], 'string', 'max' => 20],
         ];
     }

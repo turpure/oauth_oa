@@ -8,9 +8,9 @@
 namespace backend\modules\v1\controllers;
 
 
-use backend\models\SysConfig;
+use backend\models\OauthSysConfig;
 use backend\models\TaskLabel;
-use backend\models\TaskLabelGoodsRate;
+use backend\models\OauthLabelGoodsRate;
 use backend\modules\v1\models\ApiWarehouseTools;
 use backend\modules\v1\utils\ExportTools;
 use Yii;
@@ -223,26 +223,34 @@ class WarehouseToolsController extends AdminController
     }
 
     /**
-     * @brief 贴标设置
-     * @return array | bool
+     * 贴标设置
+     * Date: 2021-04-22 11:45
+     * Author: henry
+     * @return array|OauthSysConfig|bool|null
      */
     public function actionLabelSet()
     {
         try {
-            $condition = Yii::$app->request->post('condition', []);
-            $model = SysConfig::findOne(['name' => SysConfig::LABEL_SET_SKU_NUM]);
-            if(!$model){
-                $model = new SysConfig();
-                $model->name = SysConfig::LABEL_SET_SKU_NUM;
-            }
-            $model->value = $condition['value'];
-            $model->memo = $condition['memo'];
-            $model->creator = Yii::$app->user->identity->username;
-            if($model->save()){
-                return true;
+            $request = Yii::$app->request;
+            if($request->isGet){
+                return OauthSysConfig::findOne(['name' => OauthSysConfig::LABEL_SET_SKU_NUM]);
             }else{
-                throw new Exception("Failed to save setting info!");
+                $condition = $request->post('condition', []);
+                $model = OauthSysConfig::findOne(['name' => OauthSysConfig::LABEL_SET_SKU_NUM]);
+                if(!$model){
+                    $model = new OauthSysConfig();
+                    $model->name = OauthSysConfig::LABEL_SET_SKU_NUM;
+                }
+                $model->value = $condition['value'];
+                $model->memo = $condition['memo'];
+                $model->creator = Yii::$app->user->identity->username;
+                if($model->save()){
+                    return true;
+                }else{
+                    throw new Exception("Failed to save setting info!");
+                }
             }
+
         }catch (Exception $e){
             return [
                 'code' => 400,
@@ -259,9 +267,13 @@ class WarehouseToolsController extends AdminController
     {
         try {
             $condition = Yii::$app->request->post('condition', []);
-            $model = new TaskLabel();
-            $model->setAttributes($condition);
-            if($model->save()){
+            $batchNumber = $condition['batchNumber'];
+            $username = $condition['username'];
+            $updateTime = date('Y-m-d H:i:s');
+            $sql = "";
+            $res = Yii::$app->db->createCommand($sql)->execute();
+            return true;
+            if($res){
                 return true;
             }else{
                 throw new Exception("Failed to save info of '{$condition['batchNumber']}'");
@@ -284,7 +296,7 @@ class WarehouseToolsController extends AdminController
     {
         $condition = Yii::$app->request->post('condition', []);
         $pageSize = $condition['pageSize'] ?: 20;
-        $data = TaskLabelGoodsRate::find();
+        $data = OauthLabelGoodsRate::find();
         return new ActiveDataProvider([
             'query' => $data,
             'pagination' => [
@@ -302,9 +314,9 @@ class WarehouseToolsController extends AdminController
         try {
             $condition = Yii::$app->request->post('condition', []);
             $goodsCode = $condition['goodsCode'] ?: '';
-            $model = TaskLabelGoodsRate::findOne(['goodsCode' => $goodsCode]);
+            $model = OauthLabelGoodsRate::findOne(['goodsCode' => $goodsCode]);
             if(!$model){
-                $model = new TaskLabelGoodsRate();
+                $model = new OauthLabelGoodsRate();
                 $model->creator = Yii::$app->user->identity->username;
             }
             $model->setAttributes($condition);
@@ -330,7 +342,7 @@ class WarehouseToolsController extends AdminController
     {
         try {
             $condition = Yii::$app->request->post('condition', []);
-            TaskLabelGoodsRate::deleteAll(['goodsCode' => $condition['goodsCode']]);
+            OauthLabelGoodsRate::deleteAll(['goodsCode' => $condition['goodsCode']]);
             return true;
         }catch (Exception $e){
             return [
@@ -346,7 +358,20 @@ class WarehouseToolsController extends AdminController
      */
     public function actionLabelStatistics()
     {
-        return 123;
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $personLabelData = ApiWarehouseTools::getPickStatisticsData($condition);
+            $dateLabelData = ApiWarehouseTools::getPickStatisticsData($condition, 1);
+            return [
+                'personLabelData' => $personLabelData,
+                'dateLabelData' => $dateLabelData,
+            ];
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
     }
 
 
