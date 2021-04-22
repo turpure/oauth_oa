@@ -13,6 +13,7 @@ use backend\models\ShopElf\KCCurrentStock;
 use backend\models\TaskPick;
 use backend\models\TaskSort;
 use backend\models\TaskWarehouse;
+use Codeception\Template\Api;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use backend\modules\v1\utils\ExportTools;
 use yii\data\ArrayDataProvider;
@@ -522,23 +523,6 @@ class ApiWarehouseTools
 
     }
 
-    /** 获取贴标统计数据
-     * @param $condition
-     * Date: 2019-08-23 16:16
-     * Author: henry
-     * @return mixed
-     */
-    public static function getLabelStatisticsData($condition, $flag = 0){
-        //获取数据
-//        $sql = "EXEC guest.oauth_getPickStatisticsData '{$condition['dateRange'][0]}','{$condition['dateRange'][1]}','{$flag}'";
-        $condition['dateRange'][1] .= ' 23:59:59';
-        $sql = "SELECT batchNumber,username,SUBSTR(createdTime,1,10) AS createdTime FROM `task_label` 
-                WHERE createdTime BETWEEN '{$condition['dateRange'][0]}' AND '{$condition['dateRange'][1]}'";
-        $labelData = Yii::$app->db->createCommand($sql)->queryAll();
-
-
-
-    }
 
     /** 获取拣货统计数据
      * @param $condition
@@ -907,5 +891,67 @@ class ApiWarehouseTools
                 WHERE FilterFlag = 20 AND CONVERT(VARCHAR(10),dateadd(hh,8,ordertime),121) BETWEEN '{$beginDate}' AND '{$endDate}'";
         return Yii::$app->py_db->createCommand($sql)->queryScalar();
     }
+
+    ###########################贴标###############################
+
+    /**
+     * 贴标
+     * @param $condition
+     * Date: 2021-04-22 14:45
+     * Author: henry
+     * @return array|bool
+     * @throws Exception
+     */
+    public static function label($condition){
+        $batchNumber = $condition['batchNumber'];
+        $username = $condition['username'];
+        $updateTime = date('Y-m-d H:i:s');
+        $sql = "SELECT m.nid FROM CG_StockInM (nolock) m
+		        LEFT JOIN CG_StockOrderM (nolock) sm ON sm.billNumber = m.stockOrder
+		        WHERE stockOrder='{$batchNumber}' ";
+        $orderIdList = Yii::$app->py_db->createCommand($sql)->queryAll();
+//        var_dump($orderIdList);exit;
+        $tran = Yii::$app->py_db->beginTransaction();
+        try {
+            foreach ($orderIdList as $id){
+                $updateStockSql = "UPDATE CG_StockInM SET weigher='{$username}', weighingTime='{$updateTime}' WHERE NID = {$id['nid']}";
+                $logs = 'oauth-' . $username . ' ' . $updateTime . ' 修改称重信息';
+                $logSql = "INSERT INTO CG_StockLogs
+                            VALUES('采购入库单', {$id['nid']}, '{$username}', '{$logs}') ";
+                $update = Yii::$app->py_db->createCommand($updateStockSql)->execute();
+                $insert = Yii::$app->py_db->createCommand($logSql)->execute();
+                if(!$update || !$insert){
+                    throw new Exception("Failed to save info of '{$batchNumber}'");
+                }
+            }
+            $tran->commit();
+            return true;
+        }catch (Exception $e){
+            $tran->rollBack();
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /** 获取贴标统计数据
+     * @param $condition
+     * Date: 2019-08-23 16:16
+     * Author: henry
+     * @return mixed
+     */
+    public static function getLabelStatisticsData($condition, $flag = 0){
+        $member = self::getWarehouseMember('label');
+        $userList = $condition['username'] ? : ArrayHelper::getColumn($member, 'PersonCode');
+        $userList = implode(',', $userList);
+        //获取数据
+        $sql = "EXEC oauth_warehouse_tools_label_statistics '{$condition['dateRange'][0]}', 
+                    '{$condition['dateRange'][1]}', '{$userList}','{$flag}'";
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
+    }
+
+
+
 
 }

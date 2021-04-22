@@ -266,17 +266,7 @@ class WarehouseToolsController extends AdminController
     {
         try {
             $condition = Yii::$app->request->post('condition', []);
-            $batchNumber = $condition['batchNumber'];
-            $username = $condition['username'];
-            $updateTime = date('Y-m-d H:i:s');
-            $sql = "";
-            $res = Yii::$app->db->createCommand($sql)->execute();
-            return true;
-            if($res){
-                return true;
-            }else{
-                throw new Exception("Failed to save info of '{$condition['batchNumber']}'");
-            }
+            return ApiWarehouseTools::label($condition);
         }catch (Exception $e){
             return [
                 'code' => 400,
@@ -312,8 +302,8 @@ class WarehouseToolsController extends AdminController
     {
         try {
             $condition = Yii::$app->request->post('condition', []);
-            $goodsCode = $condition['goodsCode'] ?: '';
-            $model = OauthLabelGoodsRate::findOne(['goodsCode' => $goodsCode]);
+            $id = $condition['id'] ?: '';
+            $model = OauthLabelGoodsRate::findOne(['id' => $id]);
             if(!$model){
                 $model = new OauthLabelGoodsRate();
                 $model->creator = Yii::$app->user->identity->username;
@@ -341,7 +331,7 @@ class WarehouseToolsController extends AdminController
     {
         try {
             $condition = Yii::$app->request->post('condition', []);
-            OauthLabelGoodsRate::deleteAll(['goodsCode' => $condition['goodsCode']]);
+            OauthLabelGoodsRate::deleteAll(['id' => $condition['id']]);
             return true;
         }catch (Exception $e){
             return [
@@ -359,8 +349,8 @@ class WarehouseToolsController extends AdminController
     {
         try {
             $condition = Yii::$app->request->post()['condition'];
-            $personLabelData = ApiWarehouseTools::getPickStatisticsData($condition);
-            $dateLabelData = ApiWarehouseTools::getPickStatisticsData($condition, 1);
+            $personLabelData = ApiWarehouseTools::getLabelStatisticsData($condition);
+            $dateLabelData = ApiWarehouseTools::getLabelStatisticsData($condition, 1);
             return [
                 'personLabelData' => $personLabelData,
                 'dateLabelData' => $dateLabelData,
