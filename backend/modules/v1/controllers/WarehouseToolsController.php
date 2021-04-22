@@ -302,7 +302,7 @@ class WarehouseToolsController extends AdminController
     {
         try {
             $condition = Yii::$app->request->post('condition', []);
-            $id = $condition['id'] ?: '';
+            $id = $condition['id'] ?? '';
             $model = OauthLabelGoodsRate::findOne(['id' => $id]);
             if(!$model){
                 $model = new OauthLabelGoodsRate();
