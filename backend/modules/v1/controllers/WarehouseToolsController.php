@@ -371,8 +371,8 @@ class WarehouseToolsController extends AdminController
      */
     public function actionLabelStatisticsExport(){
         $condition = Yii::$app->request->post()['condition'];
-        $personData = ApiWarehouseTools::getLoadStatisticsData($condition);
-        $dateData = ApiWarehouseTools::getLoadStatisticsData($condition, 1);
+        $personData = ApiWarehouseTools::getLabelStatisticsData($condition);
+        $dateData = ApiWarehouseTools::getLabelStatisticsData($condition, 1);
         $data = [
             ['title' => ['贴标人员', '贴标SKU数量'], 'name' => '人员数据', 'data' => $personData],
             ['title' => ['日期', '贴标SKU数量'], 'name' => '时间数据', 'data' => $dateData],
