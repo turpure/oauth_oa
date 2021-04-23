@@ -39,7 +39,7 @@ class ApiOverseas
         $sku = $condition['sku'] ?: '';
         $sql = "SELECT c.NID, C.MakeDate,C.Billnumber,C.Memo,
                         BO.StoreName AS StoreOutName,Bi.StoreName AS StoreInName,c.Recorder,
-                        CASE C.checkflag WHEN 1 THEN '审核' WHEN 3 THEN '作废' ELSE '未审核' END AS checkflag,
+                        CASE C.checkflag WHEN 1 THEN '审核' WHEN 3 THEN '作废' ELSE '未审核' END AS Checkflag,
                         C.Audier,C.AudieDate,C.StoreInMan,c.StoreOutMan,FinancialMan,FinancialTime,
                         PackPersonFee,PackMaterialFee,HeadFreight,Tariff,
                         TotalAmount = (SELECT SUM(IsNull(Amount, 0)) FROM KC_StockChangeD WHERE StockChangeNID = C.Nid),

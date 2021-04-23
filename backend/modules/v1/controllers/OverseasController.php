@@ -65,6 +65,49 @@ class OverseasController extends AdminController
         }
     }
 
+    /**
+     * 查询调拨SKU信息
+     * Date: 2021-04-22 18:00
+     * Author: henry
+     * @return array | bool
+     */
+    public function actionSkuStockInfo(){
+
+
+    }
+
+    /**
+     * 创建调拨单
+     * Date: 2021-04-22 18:00
+     * Author: henry
+     * @return array | bool
+     */
+    public function actionCreateStockChange(){
+
+
+    }
+
+    /**
+     * 更新调拨单
+     * Date: 2021-04-22 18:00
+     * Author: henry
+     * @return array | bool
+     */
+    public function actionUpdateStockChange(){
+
+
+    }
+
+    /**
+     * 作废调拨单
+     * Date: 2021-04-22 18:00
+     * Author: henry
+     * @return array | bool
+     */
+    public function actionDeleteStockChange(){
+
+
+    }
 
 
 

@@ -363,7 +363,22 @@ class WarehouseToolsController extends AdminController
         }
     }
 
-
+    /**
+     * Date: 2021-04-20 16:08
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionLabelStatisticsExport(){
+        $condition = Yii::$app->request->post()['condition'];
+        $personData = ApiWarehouseTools::getLoadStatisticsData($condition);
+        $dateData = ApiWarehouseTools::getLoadStatisticsData($condition, 1);
+        $data = [
+            ['title' => ['贴标人员', '贴标SKU数量'], 'name' => '人员数据', 'data' => $personData],
+            ['title' => ['日期', '贴标SKU数量'], 'name' => '时间数据', 'data' => $dateData],
+        ];
+        ExportTools::toExcelMultipleSheets('labelStatistics', $data, 'Xlsx');
+    }
 
     #############################拣货统计#########################################
 
@@ -505,7 +520,7 @@ class WarehouseToolsController extends AdminController
             ['title' => ['日期', '上架数量'], 'name' => '时间数据', 'data' => $dateLoadingData],
             ['title' => ['上架人员', '上架数量'], 'name' => '人员数据', 'data' => $personLoadingData],
         ];
-        ExportTools::toExcelMultipleSheets('positionDetailView', $data, 'Xlsx');
+        ExportTools::toExcelMultipleSheets('loadingStatistics', $data, 'Xlsx');
     }
 
 

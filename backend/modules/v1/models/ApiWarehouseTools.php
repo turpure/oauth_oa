@@ -906,9 +906,7 @@ class ApiWarehouseTools
         $batchNumber = $condition['batchNumber'];
         $username = $condition['username'];
         $updateTime = date('Y-m-d H:i:s');
-        $sql = "SELECT m.nid FROM CG_StockInM (nolock) m
-		        LEFT JOIN CG_StockOrderM (nolock) sm ON sm.billNumber = m.stockOrder
-		        WHERE stockOrder='{$batchNumber}' ";
+        $sql = "SELECT nid FROM CG_StockInM (nolock) WHERE BillNumber='{$batchNumber}' ";
         $orderIdList = Yii::$app->py_db->createCommand($sql)->queryAll();
 //        var_dump($orderIdList);exit;
         $tran = Yii::$app->py_db->beginTransaction();
