@@ -71,8 +71,17 @@ class OverseasController extends AdminController
      * Author: henry
      * @return array | bool
      */
-    public function actionSkuStockInfo(){
-
+    public function actionSkuStockInfo()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiOverseas::getSkuStockInfo($condition);
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
 
     }
 
@@ -82,7 +91,8 @@ class OverseasController extends AdminController
      * Author: henry
      * @return array | bool
      */
-    public function actionCreateStockChange(){
+    public function actionCreateStockChange()
+    {
 
 
     }
@@ -93,7 +103,8 @@ class OverseasController extends AdminController
      * Author: henry
      * @return array | bool
      */
-    public function actionUpdateStockChange(){
+    public function actionUpdateStockChange()
+    {
 
 
     }
@@ -104,13 +115,11 @@ class OverseasController extends AdminController
      * Author: henry
      * @return array | bool
      */
-    public function actionDeleteStockChange(){
+    public function actionDeleteStockChange()
+    {
 
 
     }
-
-
-
 
 
 }
