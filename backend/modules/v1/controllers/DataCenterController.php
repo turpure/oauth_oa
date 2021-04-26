@@ -688,7 +688,7 @@ class DataCenterController extends AdminController
         $condition = Yii::$app->request->post('condition', []);
         $condition['dataType'] = 'priceProtectionError';
         $data = ApiDataCenter::getPriceProtectionInfo($condition);
-        $title = ['产品编码', '主图', '仓库', '销售员', '商品名称', '商品状态', '类目', '子类目', '开发员', '开发时间', '库存数量', '30天销量',
+        $title = ['ID','产品编码', '主图', '仓库', '平台', '销售员', '商品名称', '商品状态', '类目', '子类目', '开发员', '开发时间', '库存数量', '30天销量',
             '30天本人销量', '库存周转','本人销量占比','本人3天均价($)','犯规销售员','3天犯规最低价格($)','犯规销售员近30天销量'];
         ExportTools::toExcelOrCsv('priceProtectionError', $data, 'Xlsx', $title);
     }

@@ -1041,7 +1041,7 @@ class SchedulerController extends Controller
             for ($i = 0; $i < $max; $i++) {
                 Yii::$app->db->createCommand()->batchInsert('cache_priceProtectionData',
                     [
-                        'goodsCode', 'mainImage', 'storeName', 'saler', 'goodsName', 'goodsStatus', 'cate', 'subCate',
+                        'goodsCode', 'mainImage', 'storeName', 'plat', 'saler', 'goodsName', 'goodsStatus', 'cate', 'subCate',
                         'salerName', 'createDate', 'number', 'soldNum', 'personSoldNum', 'turnoverDays', 'rate',
                         'aveAmt', 'foulSaler', 'amt', 'foulSalerSoldNum', 'updateTime'
                     ],

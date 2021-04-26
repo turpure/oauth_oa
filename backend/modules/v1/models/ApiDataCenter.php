@@ -424,13 +424,13 @@ class ApiDataCenter
         //var_dump($foulSaler);exit;
         $goodsStatus = implode("','", $condition['goodsStatus'] ?: ['爆款', '旺款']);
         if ($condition['dataType'] == 'priceProtection') {
-            $sql = "SELECT DISTINCT goodsCode, mainImage, storeName, saler, goodsName, goodsStatus, cate, subCate,
+            $sql = "SELECT DISTINCT goodsCode, mainImage, storeName, plat, saler, goodsName, goodsStatus, cate, subCate,
                     salerName, createDate, `number`, soldNum, personSoldNum, turnoverDays, rate 
                     FROM `cache_priceProtectionData` WHERE 1=1 ";
             if ($goodsStatus) $sql .= " AND goodsStatus IN ('{$goodsStatus}')";
             if ($saler) $sql .= " AND saler IN ('{$saler}')";
         } elseif ($condition['dataType'] == 'priceProtectionError') {
-            $sql = "SELECT * FROM `cache_priceProtectionData` WHERE 1=1 ";
+            $sql = "SELECT * FROM `cache_priceProtectionData` WHERE IFNULL(foulSaler,'')<>'' ";
             if ($goodsStatus) $sql .= " AND goodsStatus IN ('{$goodsStatus}')";
             if ($saler) $sql .= " AND saler IN ('{$saler}')";
             if ($foulSaler) $sql .= " AND foulSaler IN ('{$foulSaler}')";
