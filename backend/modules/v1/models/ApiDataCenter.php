@@ -418,6 +418,7 @@ class ApiDataCenter
     {
         $saler = $condition['saler'] ?: [];
         $saler = is_array($saler) ? implode("','", $saler) : $saler;
+        $plat = $condition['plat'] ?? '';
         $foulSaler = $condition['foulSaler'] ?? '';
         $foulSaler = is_array($foulSaler) ? implode("','", $foulSaler) : $foulSaler;
         //var_dump($saler);
@@ -427,11 +428,13 @@ class ApiDataCenter
             $sql = "SELECT DISTINCT goodsCode, mainImage, storeName, plat, saler, goodsName, goodsStatus, cate, subCate,
                     salerName, createDate, `number`, soldNum, personSoldNum, turnoverDays, rate 
                     FROM `cache_priceProtectionData` WHERE 1=1 ";
+            if ($plat) $sql .= " AND plat IN ('{$plat}')";
             if ($goodsStatus) $sql .= " AND goodsStatus IN ('{$goodsStatus}')";
             if ($saler) $sql .= " AND saler IN ('{$saler}')";
         } elseif ($condition['dataType'] == 'priceProtectionError') {
             $sql = "SELECT * FROM `cache_priceProtectionData` WHERE IFNULL(foulSaler,'')<>'' ";
             if ($goodsStatus) $sql .= " AND goodsStatus IN ('{$goodsStatus}')";
+            if ($plat) $sql .= " AND plat IN ('{$plat}')";
             if ($saler) $sql .= " AND saler IN ('{$saler}')";
             if ($foulSaler) $sql .= " AND foulSaler IN ('{$foulSaler}')";
         } else {
