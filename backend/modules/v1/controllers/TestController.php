@@ -145,7 +145,13 @@ class TestController extends AdminController
     }
 
 
+    public  function actionTest3(){
+        $arr2 = [1,2,3,5,7,9];
+        $arr1 = [4,6,8,1,2,3];
+        $res = array_diff($arr1,$arr2);
 
+        return $res;
+    }
 
 
 

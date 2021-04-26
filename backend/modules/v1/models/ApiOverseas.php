@@ -22,6 +22,7 @@ use backend\models\ShopElf\BStore;
 use backend\models\ShopElf\KCStockChangeD;
 use backend\models\ShopElf\KCStockChangeM;
 use yii\db\Exception;
+use yii\helpers\ArrayHelper;
 
 class ApiOverseas
 {
@@ -161,8 +162,12 @@ class ApiOverseas
 //            var_dump($condition);exit;
         }
         //获取仓库ID
-        $condition['basicInfo']['StoreInID'] = BStore::findOne(['StoreName' => $condition['basicInfo']['inStoreName']])['NID'];
-        $condition['basicInfo']['StoreOutID'] = BStore::findOne(['StoreName' => $condition['basicInfo']['outStoreName']])['NID'];
+        if(!isset($condition['basicInfo']['StoreInID']) || !$condition['basicInfo']['StoreInID']){
+            $condition['basicInfo']['StoreInID'] = BStore::findOne(['StoreName' => $condition['basicInfo']['StoreInName']])['NID'];
+        }
+        if(!isset($condition['basicInfo']['StoreOutID']) || !$condition['basicInfo']['StoreOutID']){
+            $condition['basicInfo']['StoreOutID'] = BStore::findOne(['StoreName' => $condition['basicInfo']['StoreOutName']])['NID'];
+        }
 
         $tran = \Yii::$app->py_db->beginTransaction();
         try {
@@ -172,11 +177,23 @@ class ApiOverseas
                 throw new Exception('Failed to save main stock change order info!');
             }
             //删除调拨单详细信息
-            KCStockChangeD::deleteAll(['StockChangeNID' => $model->NID]);
+            $oldSkuList = KCStockChangeD::findAll(['StockChangeNID' => $model->NID]);
+            $oldSkuIds = ArrayHelper::getColumn($oldSkuList,'GoodsSKUID');
+            $newSkuIds = ArrayHelper::getColumn($condition['skuInfo'],'GoodsSKUID');
+            $deleteSkuIds = array_diff($oldSkuIds, $newSkuIds);
+
+            //删除多余SKU 信息
+            KCStockChangeD::deleteAll(['StockChangeNID' => $model->NID, 'GoodsSKUID' => $deleteSkuIds]);
+
             //保存调拨单详细信息
             foreach ($condition['skuInfo'] as $sku){
-                $model_d = new KCStockChangeD();
+                if (in_array($sku['GoodsSKUID'], $oldSkuIds)){
+                    $model_d = KCStockChangeD::findOne(['GoodsSKUID' => $sku['GoodsSKUID'], 'StockChangeNID' => $model->NID]);
+                }else{
+                    $model_d = new KCStockChangeD();
+                }
                 $model_d->setAttributes($sku);
+                $model_d->StockChangeNID = $model->NID;
                 if(!$model_d->save()){
                     throw new Exception('Failed to save detail stock change order info!');
                 }
@@ -198,9 +215,67 @@ class ApiOverseas
      * @throws Exception
      */
     public static function updateStockChangeInPrice($stockChangeNID){
-        $sql = "";
-        return \Yii::$app->db->createCommand($sql)->execute();
+        $sql = "exec oauth_overseas_update_stock_change_order_in_price $stockChangeNID";
+        return \Yii::$app->py_db->createCommand($sql)->execute();
     }
+
+    /**
+     * 获取调拨单详情
+     * @param $condition
+     * Date: 2021-04-26 17:33
+     * Author: henry
+     * @return int
+     * @throws Exception
+     */
+    public static function getStockChange($condition){
+        $id = $condition['NID'];
+        $basicSql = "SELECT C.NID,C.CheckFlag,C.BillNumber,C.MakeDate,C.StoreInID,C.StoreOutID,C.Memo,C.recorder,C.Audier,
+	                AudieDate = CONVERT (CHAR(10), C.AudieDate, 121),C.StoreInMan,C.StoreOutMan,C.FinancialMan,
+	                Bi.StoreName AS StoreOutName,BO.StoreName AS StoreInName,PackPersonFee,PackMaterialFee,
+	                isnull(ifHeadFreight, 1) AS ifHeadFreight,HeadFreight,Tariff,
+	                BW.name AS logicsWayName,BE.name AS expressName,logicsWayNumber,RealWeight,ThrowWeight
+                    FROM KC_StockChangeM C
+                    LEFT OUTER JOIN B_store BI ON BI.NID = C.StoreInID
+                    LEFT OUTER JOIN B_store BO ON BO.NID = C.StoreOutID
+                    LEFT OUTER JOIN B_LogisticWay BW ON BW.NID = C.logicsWayNID
+                    LEFT OUTER JOIN T_Express BE ON BE.NID = C.expressnid
+                    WHERE C.NID = $id";
+        $skuSql = "SELECT d.NID,d.StockChangenid,S.barCode,d.GoodsID,s.Goodscode,s.Goodsname,s.Class,s.Unit,d.amount,
+		                d.stockAmount,d.price AS costprice,d.money,s.Model,gs.SKU,gs.property1,gs.property2,gs.property3,
+		                D.Remark,gs.nid AS GoodsSKUID,
+		                LocationName = (SELECT TOP 1 IsNull(a.LocationName, '') FROM B_StoreLocation a
+			                                INNER JOIN B_GoodsSKULocation b ON a.NID = b.LocationID
+			                                WHERE b.StoreID = m.storeinid AND b.GoodsSKUID = d.goodsskuid),
+		                OutLocationName = (SELECT TOP 1 IsNull(a.LocationName, '') FROM B_StoreLocation a
+			                                INNER JOIN B_GoodsSKULocation b ON a.NID = b.LocationID
+			                                WHERE b.StoreID = m.storeoutid AND b.GoodsSKUID = d.goodsskuid),
+		                gs.SkuName,d.PackPersonFee,d.PackMaterialFee,d.HeadFreight,d.Tariff,gs.Weight,
+		                d.InStockQty,d.InPrice,d.inmoney
+	                FROM KC_StockChangeD d
+                    INNER JOIN B_GoodsSKU gs ON gs.NID = d.GoodsSKUID
+                    INNER JOIN B_Goods s ON s.NID = d.GoodsID
+                    INNER JOIN KC_StockChangeM M ON M.NID = d.StockChangenid
+                    WHERE m.NID = $id";
+        $res['basicInfo'] = \Yii::$app->py_db->createCommand($basicSql)->queryAll();
+        $res['skuInfo'] = \Yii::$app->py_db->createCommand($skuSql)->queryAll();
+        return  $res;
+    }
+
+    /**
+     * 审核调拨单
+     * @param $condition
+     * Date: 2021-04-26 17:33
+     * Author: henry
+     * @return int
+     * @throws Exception
+     */
+    public static function checkStockChange($condition){
+        $id = $condition['NID'];
+        $sql = "exec P_KC_OutCheckReservationNum 'KC_StockChangeM', $id ";
+        return \Yii::$app->py_db->createCommand($sql)->execute();
+    }
+
+
 
 
 

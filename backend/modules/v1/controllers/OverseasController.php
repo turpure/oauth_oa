@@ -86,12 +86,12 @@ class OverseasController extends AdminController
     }
 
     /**
-     * 创建调拨单
+     * 创建/编辑调拨单
      * Date: 2021-04-22 18:00
      * Author: henry
      * @return array | bool
      */
-    public function actionCreateStockChange()
+    public function actionSaveStockChange()
     {
         try {
             $condition = Yii::$app->request->post()['condition'];
@@ -106,26 +106,42 @@ class OverseasController extends AdminController
     }
 
     /**
-     * 更新调拨单
+     * 获取调拨单详情
      * Date: 2021-04-22 18:00
      * Author: henry
      * @return array | bool
      */
-    public function actionUpdateStockChange()
+    public function actionGetStockChange()
     {
-
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiOverseas::getStockChange($condition);
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
 
     }
 
     /**
-     * 作废调拨单
+     * 审核调拨单
      * Date: 2021-04-22 18:00
      * Author: henry
      * @return array | bool
      */
-    public function actionDeleteStockChange()
+    public function actionCheckStockChange()
     {
-
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiOverseas::checkStockChange($condition);
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
 
     }
 

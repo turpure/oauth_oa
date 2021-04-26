@@ -34,12 +34,13 @@ class ApiUk
                 $skuNum = 1;
             }
 //                var_dump($newSku);exit;
-            $priceSql = "SELECT max(costprice) FROM Y_R_tStockingWaring WHERE sku='{$newSku}' and costprice > 0 and storeName like '万邑通UK%'";
+            $priceSql = "SELECT max(costprice) FROM Y_R_tStockingWaring(nolock) WHERE sku='{$newSku}' and costprice > 0 and storeName like '万邑通UK%'";
             $price = Yii::$app->py_db->createCommand($priceSql)->queryScalar();
             if (!$price) {
-                $priceSql = "SELECT max(goodsPrice) FROM Y_R_tStockingWaring WHERE sku='{$newSku}'";
+                $priceSql = "SELECT max(goodsPrice) FROM Y_R_tStockingWaring(nolock) WHERE sku='{$newSku}'";
                 $price = Yii::$app->py_db->createCommand($priceSql)->queryScalar();
             }
+            if($price == null) $price = 0;
             $sql = "SELECT aa.SKU,aa.skuname,aa.goodscode,aa.CategoryName,aa.CreateDate,aa.price * " . $skuNum * $num . " as price,
                            k.weight*1000*" . $skuNum * $num . " AS weight,
                           k.length,k.width,k.height*" . $skuNum * $num . " as height ," . $skuNum * $num . " AS num
