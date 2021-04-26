@@ -65,6 +65,8 @@ class KCStockChangeM extends \yii\db\ActiveRecord
             [['BillNumber', 'Memo', 'Audier', 'Recorder', 'StoreInMan', 'StoreOutMan', 'FinancialMan', 'logicsWayNumber', 'AddClient'], 'string'],
             [['MakeDate', 'AudieDate', 'FinancialTime'], 'safe'],
             [['O_AMT', 'PackPersonFee', 'PackMaterialFee', 'HeadFreight', 'Tariff', 'RealWeight', 'ThrowWeight'], 'number'],
+            ['AddClient', 'default', 'value' => 'UR_CENTER'],
+            ['CheckFlag', 'default', 'value' => 0],
         ];
     }
 

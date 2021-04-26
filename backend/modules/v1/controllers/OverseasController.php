@@ -93,8 +93,16 @@ class OverseasController extends AdminController
      */
     public function actionCreateStockChange()
     {
-
-
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $stockChangeNID = ApiOverseas::saveStockChange($condition);
+            return ApiOverseas::updateStockChangeInPrice($stockChangeNID);
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
     }
 
     /**

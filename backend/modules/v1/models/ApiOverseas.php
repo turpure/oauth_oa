@@ -18,6 +18,11 @@
 namespace backend\modules\v1\models;
 
 
+use backend\models\ShopElf\BStore;
+use backend\models\ShopElf\KCStockChangeD;
+use backend\models\ShopElf\KCStockChangeM;
+use yii\db\Exception;
+
 class ApiOverseas
 {
     /**
@@ -53,7 +58,7 @@ class ApiOverseas
                     LEFT JOIN B_store BO ON BO.NID = C.StoreOutID
                     LEFT JOIN B_LogisticWay BW ON BW.NID = C.logicsWayNID
                     LEFT JOIN T_Express BE ON BE.NID = C.ExpressNid                   
-                    WHERE ISNULL(Billtype, 0) IN(0, 1) -- AND  AddClient = 'UR_CENTER'
+                    WHERE ISNULL(Billtype, 0) IN(0, 1)  AND  AddClient = 'UR_CENTER'
                             AND CONVERT(VARCHAR(10), MAkeDate, 121) BETWEEN '{$beginDate}' AND '{$endDate}' ";
         if ($BillNumber) $sql .= " AND BillNumber LIKE '%{$BillNumber}%' ";
         if ($logicsWayNumber) $sql .= " AND logicsWayNumber LIKE '%{$logicsWayNumber}%' ";
@@ -132,6 +137,73 @@ class ApiOverseas
         return \Yii::$app->py_db->createCommand($sql)->queryAll();
 
     }
+
+
+    /**
+     * 保存调拨单信息（增加、编辑）
+     * @param $condition
+     * Date: 2021-04-25 17:32
+     * Author: henry
+     * @return bool
+     * @throws Exception
+     */
+    public static function saveStockChange($condition){
+        $nid = $condition['basicInfo']['NID'] ?? 0;
+        $model = KCStockChangeM::findOne(['NID' => $nid]);
+        if($model && $model['CheckFlag'] != 0){
+            throw new Exception('Approved order cannot be modified!');
+        }
+        if(!$model){
+           $model = new KCStockChangeM();
+            $condition['basicInfo']['BillNumber'] = \Yii::$app->db->createCommand("EXEC P_S_CodeRuleGet 22334,'' ")->queryScalar();
+            $condition['basicInfo']['MakeDate'] = date('Y-m-d H:i:s');
+            $condition['basicInfo']['Recorder'] = \Yii::$app->user->identity->username;
+//            var_dump($condition);exit;
+        }
+        //获取仓库ID
+        $condition['basicInfo']['StoreInID'] = BStore::findOne(['StoreName' => $condition['basicInfo']['inStoreName']])['NID'];
+        $condition['basicInfo']['StoreOutID'] = BStore::findOne(['StoreName' => $condition['basicInfo']['outStoreName']])['NID'];
+
+        $tran = \Yii::$app->py_db->beginTransaction();
+        try {
+            //保存调拨单主体信息
+            $model->setAttributes($condition['basicInfo']);
+            if(!$model->save()){
+                throw new Exception('Failed to save main stock change order info!');
+            }
+            //删除调拨单详细信息
+            KCStockChangeD::deleteAll(['StockChangeNID' => $model->NID]);
+            //保存调拨单详细信息
+            foreach ($condition['skuInfo'] as $sku){
+                $model_d = new KCStockChangeD();
+                $model_d->setAttributes($sku);
+                if(!$model_d->save()){
+                    throw new Exception('Failed to save detail stock change order info!');
+                }
+            }
+            $tran->commit();
+            return $model->NID;
+        }catch (Exception $e){
+            $tran->rollBack();
+            throw new Exception('Failed to save stock change order info cause of' . $e->getMessage());
+        }
+    }
+
+    /**
+     * 更新调拨单 入库价格
+     * @param $stockChangeNID
+     * Date: 2021-04-25 17:33
+     * Author: henry
+     * @return int
+     * @throws Exception
+     */
+    public static function updateStockChangeInPrice($stockChangeNID){
+        $sql = "";
+        return \Yii::$app->db->createCommand($sql)->execute();
+    }
+
+
+
 
 
 }

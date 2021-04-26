@@ -1222,16 +1222,16 @@ class ApiTinyTool
                 FROM P_Trade (nolock) m
                 LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
                 LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
-                WHERE FilterFlag IN (5,6) AND e.name LIKE '%万邑通%' AND 
+                WHERE FilterFlag IN (5,6) AND e.name LIKE '%万邑通%' AND ISNULL(TrackNo,'')='' AND 
                 l.name IN ('UKMA-Hermes - UK Standard 48', 'UKMA-Hermes - Standard 48 Claim',
                         'UKLE-Hermes - UK Standard 48', 'UKLE-Hermes - Standard 48 Claim') -- and m.nid=22937671 
                 ";
         //过滤偏远地区
         foreach ($doc as $k => $ele) {
             if ($k == 0) {
-                $sql .= " AND (SHIPTOZIP LIKE '{$ele['zipCode']}%'";
+                $sql .= " AND ( replace(SHIPTOZIP,' ','') LIKE '{$ele['zipCode']}%'";
             } else {
-                $sql .= " OR SHIPTOZIP LIKE '{$ele['zipCode']}%'";
+                $sql .= " OR replace(SHIPTOZIP,' ','') LIKE '{$ele['zipCode']}%'";
             }
             if ($k == count($doc) - 1) {
                 $sql .= ")";
@@ -1243,16 +1243,16 @@ class ApiTinyTool
                 FROM P_TradeUn (nolock) m
                 LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
                 LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
-                WHERE FilterFlag = 1 AND e.name LIKE '%万邑通%' 
+                WHERE FilterFlag = 1 AND e.name LIKE '%万邑通%' AND ISNULL(TrackNo,'')='' 
                 AND l.name IN ('UKMA-Hermes - UK Standard 48', 'UKMA-Hermes - Standard 48 Claim', 
                         'UKLE-Hermes - UK Standard 48', 'UKLE-Hermes - Standard 48 Claim')
                 ";
         //过滤偏远地区
         foreach ($doc as $k => $ele) {
             if ($k == 0) {
-                $sql .= " AND (SHIPTOZIP LIKE '{$ele['zipCode']}%'";
+                $sql .= " AND ( replace(SHIPTOZIP,' ','') LIKE '{$ele['zipCode']}%'";
             } else {
-                $sql .= " OR SHIPTOZIP LIKE '{$ele['zipCode']}%'";
+                $sql .= " OR replace(SHIPTOZIP,' ','') LIKE '{$ele['zipCode']}%'";
             }
             if ($k == count($doc) - 1) {
                 $sql .= ")";
@@ -1260,7 +1260,7 @@ class ApiTinyTool
         }
         //var_dump($sql);exit;
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-        //var_dump($data);exit;
+//        var_dump($data);exit;
         $transaction = BGoods::getDb()->beginTransaction();
         try {
             foreach ($data as $v) {
