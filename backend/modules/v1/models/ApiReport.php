@@ -997,6 +997,45 @@ class ApiReport
         }
     }
 
+    public static function getTrusteeshipFee($condition){
+        $sql = "SELECT notename as suffix,fee_type,total,CONVERT(DECIMAL(6,2),total * ExchangeRate) AS totalRmb,currency_code,fee_time
+                FROM [dbo].[y_fee] LEFT JOIN B_CurrencyCode  ON currency_code=CURRENCYCODE
+                WHERE fee_type='CreditCard' AND 
+                CONVERT(varchar(10),fee_time,121)  BETWEEN '" . $condition['beginDate'] . "' and '" . $condition['endDate'] . "'";
+        if ($condition['suffix']) $sql .= ' AND notename IN (' . $condition['suffix'] . ') ';
+
+        $userSql = "SELECT s.store,s.platform,IFNULL(u.username,'未分配') AS username
+                    FROM `auth_store` s 
+                    LEFT JOIN `auth_store_child` sc ON s.id=sc.store_id
+                    LEFT JOIN `user` u ON u.id=sc.user_id
+                    WHERE u.`status`=10 ";
+        if ($condition['suffix']) $userSql .= ' AND store IN (' . $condition['suffix'] . ') ';
+        try {
+            $dataTmp = Yii::$app->py_db->createCommand($sql)->queryAll();
+            $userData = Yii::$app->db->createCommand($userSql)->queryAll();
+            $userData = ArrayHelper::map($userData, 'store', 'username');
+            $data = [];
+            foreach ($dataTmp as $v) {
+                $item = $v;
+                $item['salesman'] = isset($userData[$v['suffix']]) ? $userData[$v['suffix']] : '未分配';
+                $data[] = $item;
+            }
+            $totalAveAmount = array_sum(ArrayHelper::getColumn($data, 'aveAmount'));
+            $provider = new ArrayDataProvider([
+                'allModels' => $data,
+                'pagination' => [
+                    'pageSize' => $condition['pageSize'],
+                ],
+            ]);
+
+            return ['provider' => $provider, 'extra' => ['totalAveAmount' => $totalAveAmount]];
+        } catch (\Exception $why) {
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
+        }
+    }
 
     /**
      * @param $condition
@@ -1025,7 +1064,7 @@ class ApiReport
                 $item['salesman'] = isset($userData[$v['suffix']]) ? $userData[$v['suffix']] : '未分配';
                 $data[] = $item;
             }
-            $totalAveAmount = array_sum(ArrayHelper::getColumn($data, 'aveAmount'));
+            $totalAveAmount = array_sum(ArrayHelper::getColumn($data, 'saleOpeFeeZn'));
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'pagination' => [

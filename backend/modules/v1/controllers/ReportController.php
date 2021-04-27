@@ -690,7 +690,6 @@ class ReportController extends AdminController
         return ApiReport::getDeadFee($condition);
     }
 
-
     /**
      * 其他死库明细
      * Date: 2019-01-04 10:21
@@ -712,7 +711,6 @@ class ReportController extends AdminController
         ];
         return ApiReport::getOtherDeadFee($condition);
     }
-
 
     /**
      * 杂费明细
@@ -742,6 +740,33 @@ class ReportController extends AdminController
 
     }
 
+    /**
+     * eBay托管费
+     * Date: 2021-04-27 13:38
+     * Author: henry
+     * @return array|ArrayDataProvider
+     * @throws \yii\db\Exception
+     */
+    public function actionTrusteeshipFee()
+    {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        $params = [
+            'platform' => isset($cond['plat']) ? $cond['plat'] : [],
+            'username' => isset($cond['member']) ? $cond['member'] : [],
+            'store' => isset($cond['account']) ? $cond['account'] : []
+        ];
+        $paramsFilter = Handler::paramsHandler($params);
+        $condition = [
+            'beginDate' => $cond['dateRange'][0],
+            'endDate' => $cond['dateRange'][1],
+            'suffix' => "'" . implode("','", $paramsFilter['store']) . "'",
+            'page' => isset($cond['page']) ? $cond['page'] : 1,
+            'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 10,
+        ];
+        return ApiReport::getTrusteeshipFee($condition);
+
+    }
 
     /** 导出excel表格
      * Date: 2019-04-12 16:10
