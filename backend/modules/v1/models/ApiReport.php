@@ -1029,7 +1029,7 @@ class ApiReport
                 ],
             ]);
 
-            return ['provider' => $provider, 'extra' => ['totalAmount' => $totalAmount, 'totalAmountRmb' => $totalAmountRmb]];
+            return ['provider' => $provider, 'extra' => ['totalAmount' => round($totalAmount,2), 'totalAmountRmb' => round($totalAmountRmb,2)]];
         } catch (\Exception $why) {
             return [
                 'code' => 400,
