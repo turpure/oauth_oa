@@ -1020,7 +1020,8 @@ class ApiReport
                 $item['salesman'] = isset($userData[$v['suffix']]) ? $userData[$v['suffix']] : '未分配';
                 $data[] = $item;
             }
-            $totalAveAmount = array_sum(ArrayHelper::getColumn($data, 'aveAmount'));
+            $totalAmount = array_sum(ArrayHelper::getColumn($data, 'total'));
+            $totalAmountRmb = array_sum(ArrayHelper::getColumn($data, 'totalRmb'));
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'pagination' => [
@@ -1028,7 +1029,7 @@ class ApiReport
                 ],
             ]);
 
-            return ['provider' => $provider, 'extra' => ['totalAveAmount' => $totalAveAmount]];
+            return ['provider' => $provider, 'extra' => ['totalAmount' => $totalAmount, 'totalAmountRmb' => $totalAmountRmb]];
         } catch (\Exception $why) {
             return [
                 'code' => 400,
