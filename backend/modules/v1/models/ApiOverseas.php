@@ -100,26 +100,13 @@ class ApiOverseas
         if (!$sku) {
             return ['code' => 400, 'message' => '关键字不能为空，请输入SKU或商品编码或商品名称'];
         }
-        $sql = "SELECT TOP 500 g.NID AS GoodsID,g.GoodsCode,G.GoodsName,G.Class,G.Model,G.Unit,
-		        isnull(cs.KcMaxNum, 0) AS MaxNum,isnull(cs.KcMinNum, 0) AS MinNum,S.SKU,S.property1,s.property2,s.property3,
+        $sql = "SELECT TOP 500 g.NID AS GoodsID,g.GoodsCode,G.GoodsName,G.Class,G.Model,G.Unit,S.SKU,S.property1,
+                s.property2,s.property3,bs.storename,1 as Amount,0 AS PackPersonFee,0 AS PackMaterialFee,0 AS HeadFreight,0 AS Tariff,
 		        s.NID AS GoodsSKUID,cs.Number,cs.ReservationNum AS zyNum,(cs.Number - cs.ReservationNum) AS kyNum,
-		        s.SKUName,g.PackMsg,MAX(isnull(cs.price, 0)) AS CostPrice,g.MinPrice,g.salePrice,bs.storename,
-		        CASE WHEN isnull(s.CostPrice, 0) = 0 THEN IsNull(g.CostPrice, 0) ELSE s.CostPrice END AS StockPrice,
-	            isnull(g.PackageCount, 0) PackageCount,s.GoodsSKUStatus AS GoodsStatus,MAX (bsl.LocationName) AS LocationName,
-	            MAX (ss.SupplierName) AS SupplierName,MAX (ss.OfficePhone) AS OfficePhone,MAX (ss.Mobile) AS Mobile,
-	            MAX (ss.Address) AS stockAddress,isnull(cs.sellcount1, 0) AS sellcount1,isnull(cs.sellcount2, 0) AS sellcount2,
-	            isnull(cs.sellcount3, 0) AS sellcount3,
-	            CASE WHEN isNull(sys1.paraValue, '0') = '1' THEN
-	                CASE WHEN ISNULL(s.CostPrice, 0) <> 0 THEN s.CostPrice ELSE IsNull(g.CostPrice, 0) END
-                ELSE isnull(cs.price, 0) END AS CostPriceOther,
-                CASE WHEN isNull(sys1.paraValue, '0') = '1' THEN
-	                CASE WHEN ISNULL(s.CostPrice, 0) <> 0 THEN s.CostPrice ELSE IsNull(g.CostPrice, 0) END
-                ELSE
-                    CASE WHEN isnull(cs.price, 0) = 0 THEN
-	                    CASE WHEN ISNULL(s.CostPrice, 0) <> 0 THEN s.CostPrice ELSE IsNull(g.CostPrice, 0) END
-                    ELSE isnull(cs.price, 0) END
-                END AS CostPriceotherout,
-                MAX (s.RetailPrice) AS RetailPrice,g.ItemUrl,g.Style,
+		        s.SKUName,MAX(isnull(cs.price, 0)) AS Price,MAX (ss.SupplierName) AS SupplierName,
+	            isnull(g.PackageCount, 0) PackageCount,s.GoodsSKUStatus AS GoodsStatus,
+	            isnull(cs.sellcount1, 0) AS sellcount1,isnull(cs.sellcount2, 0) AS sellcount2,
+	            isnull(cs.sellcount3, 0) AS sellcount3,MAX (s.RetailPrice) AS RetailPrice,g.ItemUrl,g.Style,
                 MAX(CASE WHEN isnull(s.Weight, 0) <> 0 THEN s.Weight / 1000.0 ELSE g.Weight / 1000.0 END) AS Weight,
                 g.StockMinAmount,IsNull(g.Used, 0) AS Used, 0 AS notinamount
             FROM B_GoodsSKU (nolock) s
@@ -131,9 +118,9 @@ class ApiOverseas
             LEFT JOIN B_StoreLocation (nolock) bsl ON bsl.NID = bgs.LocationID
             LEFT JOIN b_store (nolock) bs ON bs.NID = cs.storeid
             WHERE isnull(bs.used, 0) = 0 AND bs.StoreName = '{$outStoreName}' AND (s.SKU LIKE '%{$sku}%' OR s.SKUName LIKE '%{$sku}%')
-            GROUP BY g.NID,g.GoodsCode,G.GoodsName,G.Class,G.Model,g.ItemUrl,G.Unit,isnull(cs.kcMaxNum, 0),isnull(cs.kcMinNum, 0),
-            s.NID,s.SKUName,g.PackMsg,S.SKU,S.property1,s.property2,s.property3,s.CostPrice,g.CostPrice,g.MinPrice,g.salePrice,
-            g.PackageCount,s.GoodsSKUStatus,sys1.paraValue,g.Style,g.StockMinAmount,IsNull(g.Used, 0),cs.Number,cs.ReservationNum,
+            GROUP BY g.NID,g.GoodsCode,G.GoodsName,G.Class,G.Model,g.ItemUrl,G.Unit,s.NID,s.SKUName,S.SKU,
+            S.property1,s.property2,s.property3,s.CostPrice,g.CostPrice,s.GoodsSKUStatus,sys1.paraValue,
+            g.Style,g.StockMinAmount,IsNull(g.Used, 0),cs.Number,cs.ReservationNum,isnull(g.PackageCount, 0),
             cs.sellcount1,cs.sellcount2,cs.sellcount3,cs.price,bs.storename";
         return \Yii::$app->py_db->createCommand($sql)->queryAll();
 
@@ -240,8 +227,8 @@ class ApiOverseas
                     LEFT OUTER JOIN B_LogisticWay BW ON BW.NID = C.logicsWayNID
                     LEFT OUTER JOIN T_Express BE ON BE.NID = C.expressnid
                     WHERE C.NID = $id";
-        $skuSql = "SELECT d.NID,d.StockChangenid,S.barCode,d.GoodsID,s.Goodscode,s.Goodsname,s.Class,s.Unit,d.amount,
-		                d.stockAmount,d.price AS costprice,d.money,s.Model,gs.SKU,gs.property1,gs.property2,gs.property3,
+        $skuSql = "SELECT d.NID,d.StockChangenid,S.barCode,d.GoodsID,s.Goodscode,s.Goodsname,s.Class,s.Unit,d.Amount,
+		                d.StockAmount,d.price AS Price,d.Money,s.Model,gs.SKU,gs.property1,gs.property2,gs.property3,
 		                D.Remark,gs.nid AS GoodsSKUID,
 		                LocationName = (SELECT TOP 1 IsNull(a.LocationName, '') FROM B_StoreLocation a
 			                                INNER JOIN B_GoodsSKULocation b ON a.NID = b.LocationID
