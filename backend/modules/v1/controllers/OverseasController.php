@@ -9,6 +9,7 @@ namespace backend\modules\v1\controllers;
 
 use backend\modules\v1\models\ApiMine;
 use backend\modules\v1\models\ApiOverseas;
+use backend\modules\v1\models\ApiWarehouseTools;
 use backend\modules\v1\utils\AttributeInfoTools;
 use Codeception\Template\Api;
 use Yii;
@@ -29,6 +30,15 @@ class OverseasController extends AdminController
     }
 
     //==================================海外仓 调拨单=============================================
+
+    /**
+     * @brief 分拣人
+     * @return array
+     */
+    public function actionMember()
+    {
+        return ApiWarehouseTools::getWarehouseMember('all');
+    }
 
     /**
      * 调拨单列表
