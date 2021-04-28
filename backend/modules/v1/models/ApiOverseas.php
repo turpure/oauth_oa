@@ -143,7 +143,7 @@ class ApiOverseas
         }
         if(!$model){
            $model = new KCStockChangeM();
-            $condition['basicInfo']['BillNumber'] = \Yii::$app->db->createCommand("EXEC P_S_CodeRuleGet 22334,'' ")->queryScalar();
+            $condition['basicInfo']['BillNumber'] = \Yii::$app->py_db->createCommand("EXEC P_S_CodeRuleGet 22334,'' ")->queryScalar();
             $condition['basicInfo']['MakeDate'] = date('Y-m-d H:i:s');
             $condition['basicInfo']['Recorder'] = \Yii::$app->user->identity->username;
 //            var_dump($condition);exit;
