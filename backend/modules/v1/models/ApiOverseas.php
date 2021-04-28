@@ -228,7 +228,7 @@ class ApiOverseas
                     LEFT OUTER JOIN B_LogisticWay BW ON BW.NID = C.logicsWayNID
                     LEFT OUTER JOIN T_Express BE ON BE.NID = C.expressnid
                     WHERE C.NID = $id";
-        $skuSql = "SELECT d.NID,d.StockChangenid,S.barCode,d.GoodsID,s.Goodscode,s.Goodsname,s.Class,s.Unit,d.Amount,
+        $skuSql = "SELECT d.NID,d.StockChangenid,S.barCode,d.GoodsID,s.GoodsCode,s.GoodsName,s.Class,s.Unit,d.Amount,
 		                d.StockAmount,d.price AS Price,d.Money,s.Model,gs.SKU,gs.property1,gs.property2,gs.property3,
 		                D.Remark,gs.nid AS GoodsSKUID,
 		                LocationName = (SELECT TOP 1 IsNull(a.LocationName, '') FROM B_StoreLocation a
@@ -244,7 +244,7 @@ class ApiOverseas
                     INNER JOIN B_Goods s ON s.NID = d.GoodsID
                     INNER JOIN KC_StockChangeM M ON M.NID = d.StockChangenid
                     WHERE m.NID = $id";
-        $res['basicInfo'] = \Yii::$app->py_db->createCommand($basicSql)->queryAll();
+        $res['basicInfo'] = \Yii::$app->py_db->createCommand($basicSql)->queryOne();
         $res['skuInfo'] = \Yii::$app->py_db->createCommand($skuSql)->queryAll();
         return  $res;
     }
