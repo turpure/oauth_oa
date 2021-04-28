@@ -60,7 +60,7 @@ class KCStockChangeM extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['CheckFlag', 'BillNumber', 'MakeDate'], 'required'],
+            [['BillNumber', 'MakeDate'], 'required'],
             [['CheckFlag', 'StoreInID', 'StoreOutID', 'IfHeadFreight', 'expressnid', 'logicsWayNID', 'Archive', 'Billtype'], 'integer'],
             [['BillNumber', 'Memo', 'Audier', 'Recorder', 'StoreInMan', 'StoreOutMan', 'FinancialMan', 'logicsWayNumber', 'AddClient'], 'string'],
             [['MakeDate', 'AudieDate', 'FinancialTime'], 'safe'],

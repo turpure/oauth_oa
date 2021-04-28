@@ -145,7 +145,7 @@ class ApiOverseas
            $model = new KCStockChangeM();
             $condition['basicInfo']['BillNumber'] = \Yii::$app->py_db->createCommand("EXEC P_S_CodeRuleGet 22334,'' ")->queryScalar();
             $condition['basicInfo']['MakeDate'] = date('Y-m-d H:i:s');
-            $condition['basicInfo']['Recorder'] = \Yii::$app->user->identity->username;
+            $condition['basicInfo']['Recorder'] = $condition['basicInfo']['Recorder'] ?: \Yii::$app->user->identity->username;
 //            var_dump($condition);exit;
         }
         //获取仓库ID
@@ -161,6 +161,7 @@ class ApiOverseas
             //保存调拨单主体信息
             $model->setAttributes($condition['basicInfo']);
             if(!$model->save()){
+                //var_dump($model->getErrors());
                 throw new Exception('Failed to save main stock change order info!');
             }
             //删除调拨单详细信息
@@ -189,7 +190,7 @@ class ApiOverseas
             return $model->NID;
         }catch (Exception $e){
             $tran->rollBack();
-            throw new Exception('Failed to save stock change order info cause of' . $e->getMessage());
+            throw new Exception($e->getMessage());
         }
     }
 
