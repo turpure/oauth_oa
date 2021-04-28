@@ -64,7 +64,7 @@ class ApiOverseas
         if ($BillNumber) $sql .= " AND BillNumber LIKE '%{$BillNumber}%' ";
         if ($logicsWayNumber) $sql .= " AND logicsWayNumber LIKE '%{$logicsWayNumber}%' ";
         if ($inOrOutMan) $sql .= " AND (StoreInMan LIKE '%{$inOrOutMan}%' OR StoreOutMan LIKE '%{$inOrOutMan}%') ";
-        if ($inOrOutStoreName) $sql .= " AND (BI.StoreName = '{$inOrOutStoreName}' OR BO.StoreName '{$inOrOutStoreName}') ";
+        if ($inOrOutStoreName) $sql .= " AND (BI.StoreName = '{$inOrOutStoreName}' OR BO.StoreName = '{$inOrOutStoreName}') ";
         $statusList = [];
         foreach ($status as $v) {
             if ($v == '未审核') $statusList[] = 0;
