@@ -219,7 +219,7 @@ class ApiOverseas
         $id = $condition['NID'];
         $basicSql = "SELECT C.NID,C.CheckFlag,C.BillNumber,C.MakeDate,C.StoreInID,C.StoreOutID,C.Memo,C.Recorder,C.Audier,
 	                AudieDate = CONVERT (CHAR(10), C.AudieDate, 121),C.StoreInMan,C.StoreOutMan,C.FinancialMan,
-	                Bi.StoreName AS StoreOutName,BO.StoreName AS StoreInName,PackPersonFee,PackMaterialFee,
+	                BO.StoreName AS StoreOutName,BI.StoreName AS StoreInName,PackPersonFee,PackMaterialFee,
 	                isnull(ifHeadFreight, 1) AS ifHeadFreight,HeadFreight,Tariff,
 	                BW.name AS logicsWayName,BE.name AS expressName,logicsWayNumber,RealWeight,ThrowWeight
                     FROM KC_StockChangeM C
