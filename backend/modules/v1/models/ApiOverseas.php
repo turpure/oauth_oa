@@ -236,7 +236,8 @@ class ApiOverseas
 	                FROM KC_StockChangeD d
                     INNER JOIN B_GoodsSKU gs ON gs.NID = d.GoodsSKUID
                     INNER JOIN B_Goods s ON s.NID = d.GoodsID
-                    INNER JOIN KC_CurrentStock (nolock) cs ON cs.goodsSKUID = d.goodsSKUID
+                    INNER JOIN KC_StockChangeM m ON m.NID = d.StockChangeNID
+                    INNER JOIN KC_CurrentStock (nolock) cs ON cs.goodsSKUID = d.goodsSKUID and cs.storeID = m.StoreOutID
                     WHERE d.StockChangeNID = $id";
         $res['basicInfo'] = \Yii::$app->py_db->createCommand($basicSql)->queryOne();
         $res['skuInfo'] = \Yii::$app->py_db->createCommand($skuSql)->queryAll();
