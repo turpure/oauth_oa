@@ -228,22 +228,16 @@ class ApiOverseas
                     LEFT OUTER JOIN B_LogisticWay BW ON BW.NID = C.logicsWayNID
                     LEFT OUTER JOIN T_Express BE ON BE.NID = C.expressnid
                     WHERE C.NID = $id";
-        $skuSql = "SELECT d.NID,d.StockChangenid,S.barCode,d.GoodsID,s.GoodsCode,s.GoodsName,s.Class,s.Unit,d.Amount,
+        $skuSql = "SELECT d.NID,d.StockChangeNID,S.barCode,d.GoodsID,s.GoodsCode,s.GoodsName,s.Class,s.Unit,d.Amount,
 		                d.StockAmount,d.price AS Price,d.Money,s.Model,gs.SKU,gs.property1,gs.property2,gs.property3,
-		                D.Remark,gs.nid AS GoodsSKUID,
-		                LocationName = (SELECT TOP 1 IsNull(a.LocationName, '') FROM B_StoreLocation a
-			                                INNER JOIN B_GoodsSKULocation b ON a.NID = b.LocationID
-			                                WHERE b.StoreID = m.storeinid AND b.GoodsSKUID = d.goodsskuid),
-		                OutLocationName = (SELECT TOP 1 IsNull(a.LocationName, '') FROM B_StoreLocation a
-			                                INNER JOIN B_GoodsSKULocation b ON a.NID = b.LocationID
-			                                WHERE b.StoreID = m.storeoutid AND b.GoodsSKUID = d.goodsskuid),
+		                D.Remark,gs.nid AS GoodsSKUID,d.InStockQty,d.InPrice,d.inmoney,
 		                gs.SkuName,d.PackPersonFee,d.PackMaterialFee,d.HeadFreight,d.Tariff,gs.Weight,
-		                d.InStockQty,d.InPrice,d.inmoney
+		                cs.Number,cs.ReservationNum AS zyNum,(cs.Number - cs.ReservationNum) AS kyNum
 	                FROM KC_StockChangeD d
                     INNER JOIN B_GoodsSKU gs ON gs.NID = d.GoodsSKUID
                     INNER JOIN B_Goods s ON s.NID = d.GoodsID
-                    INNER JOIN KC_StockChangeM M ON M.NID = d.StockChangenid
-                    WHERE m.NID = $id";
+                    INNER JOIN KC_CurrentStock (nolock) cs ON cs.goodsSKUID = d.goodsSKUID
+                    WHERE d.StockChangeNID = $id";
         $res['basicInfo'] = \Yii::$app->py_db->createCommand($basicSql)->queryOne();
         $res['skuInfo'] = \Yii::$app->py_db->createCommand($skuSql)->queryAll();
         return  $res;
