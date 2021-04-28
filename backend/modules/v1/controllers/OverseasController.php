@@ -64,7 +64,7 @@ class OverseasController extends AdminController
                     ]
                 ],
                 'pagination' => [
-                    'pageSize' => 2,
+                    'pageSize' => $pageSize,
                 ],
             ]);
         } catch (\Exception $e) {
