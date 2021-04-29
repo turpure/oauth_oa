@@ -103,12 +103,13 @@ class ApiOverseas
         $sql = "SELECT TOP 500 g.NID AS GoodsID,g.GoodsCode,G.GoodsName,G.Class,G.Model,G.Unit,S.SKU,S.property1,
                 s.property2,s.property3,bs.storename,1 as Amount,0 AS PackPersonFee,0 AS PackMaterialFee,0 AS HeadFreight,0 AS Tariff,
 		        s.NID AS GoodsSKUID,cs.Number,cs.ReservationNum AS zyNum,(cs.Number - cs.ReservationNum) AS kyNum,
-		        s.SKUName,MAX(isnull(cs.price, 0)) AS Price,MAX (ss.SupplierName) AS SupplierName,
+		        s.SKUName,MAX(isnull(cs.price, 0)) AS Price,MAX(isnull(cs.price, 0)) AS Money,MAX (ss.SupplierName) AS SupplierName,
 	            isnull(g.PackageCount, 0) PackageCount,s.GoodsSKUStatus AS GoodsStatus,
 	            isnull(cs.sellcount1, 0) AS sellcount1,isnull(cs.sellcount2, 0) AS sellcount2,
 	            isnull(cs.sellcount3, 0) AS sellcount3,MAX (s.RetailPrice) AS RetailPrice,g.ItemUrl,g.Style,
                 MAX(CASE WHEN isnull(s.Weight, 0) <> 0 THEN s.Weight / 1000.0 ELSE g.Weight / 1000.0 END) AS Weight,
-                g.StockMinAmount,IsNull(g.Used, 0) AS Used, 0 AS notinamount
+                g.StockMinAmount,IsNull(g.Used, 0) AS Used, 0 AS notinamount, 
+                MAX(isnull(cs.price, 0)) AS inPrice,MAX(isnull(cs.price, 0)) AS inmoney
             FROM B_GoodsSKU (nolock) s
             LEFT JOIN B_SysParams (nolock) sys1 ON sys1.ParaCode = 'CalCostFlag'
             INNER JOIN B_Goods (nolock) g ON g.nid = s.goodsID
@@ -179,6 +180,9 @@ class ApiOverseas
                     $model_d = KCStockChangeD::findOne(['GoodsSKUID' => $sku['GoodsSKUID'], 'StockChangeNID' => $model->NID]);
                 }else{
                     $model_d = new KCStockChangeD();
+                }
+                if(!isset($condition['skuInfo']['Money']) || !$condition['skuInfo']['Money']){
+                    $condition['skuInfo']['Money'] = $condition['skuInfo']['Amount'] * $condition['skuInfo']['Price'];
                 }
                 $model_d->setAttributes($sku);
                 $model_d->StockChangeNID = $model->NID;
