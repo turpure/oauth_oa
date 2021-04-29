@@ -56,10 +56,14 @@ class ApiWarehouseTools
                 'trackingNumber' => $condition['trackingNumber'],
                 'stockOrderNumber' => $data['stockOrderNumber'] ?? '',
                 'createdTime' => date('Y-m-d H:i:s'),
-                'flag' => $data['stockOrderNumber'] ?? 0,
+                'flag' => $data['flag'] ?? 0,
             ];
             $res = Yii::$app->db->createCommand()->insert('task_package', $row)->execute();
-            var_dump($res);exit;
+            if(!$res){
+                throw new Exception('Failed to save info!');
+            }
+            $data = ['flag' => $row['flag']];
+            return  $data;
         } catch (Exception $e){
             return [
                 'code' => 400,
