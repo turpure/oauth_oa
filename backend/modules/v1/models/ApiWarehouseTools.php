@@ -28,10 +28,18 @@ use backend\modules\v1\utils\Helper;
 class ApiWarehouseTools
 {
     public static function getPackageScanningLog($condition){
+        $pageSize = $condition['pageSize'] ?: 20;
         $befin = $condition['dateRange'][0];
         $end = $condition['dateRange'][1] . " 23:59:59";
-        $sql = "SELECT * FROM `task_package` WHERE createdTime BETWEEN '{$befin}' AND '{$end}' ";
-        return Yii::$app->db->createCommand($sql)->queryAll();
+        $sql = "SELECT * FROM `task_package` WHERE createdTime BETWEEN '{$befin}' AND '{$end}' ORDER BY createdTime DESC";
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
+        $provider = new ArrayDataProvider([
+            'allModels' => $data,
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
     }
 
     /**
