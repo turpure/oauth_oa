@@ -27,6 +27,12 @@ use backend\modules\v1\utils\Helper;
 
 class ApiWarehouseTools
 {
+    public static function getPackageScanningLog($condition){
+        $befin = $condition['dateRange'][0];
+        $end = $condition['dateRange'][1] . " 23:59:59";
+        $sql = "SELECT * FROM `task_package` WHERE createdTime BETWEEN '{$befin}' AND '{$end}' ";
+        return Yii::$app->db->createCommand($sql)->queryAll();
+    }
 
     /**
      * @brief 包裹扫描结果

@@ -191,6 +191,15 @@ class WarehouseToolsController extends AdminController
         return ApiWarehouseTools::getPackageScanningResult($condition);
     }
 
+    /**
+     * @brief 包裹扫描
+     * @return array|bool
+     */
+    public function actionPackageScanningLog()
+    {
+        $condition = Yii::$app->request->post('condition');
+        return ApiWarehouseTools::getPackageScanningLog($condition);
+    }
 
 
 
