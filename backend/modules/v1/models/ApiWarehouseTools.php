@@ -28,6 +28,45 @@ use backend\modules\v1\utils\Helper;
 class ApiWarehouseTools
 {
 
+    /**
+     * @brief 包裹扫描结果
+     * @param $condition
+     * @return array|bool
+     */
+    public static function getPackageScanningResult($condition){
+        $sql = "SELECT LogisticOrderNo,stockOrderNumber, 
+                        CASE WHEN COUNT(a.goodsskuID) = COUNT(DISTINCT b.goodsskuid) THEN 1 ELSE 0 END AS flag
+                FROM(
+                        SELECT LogisticOrderNo,sm.billNumber AS stockOrderNumber,d.goodsskuID
+                        FROM CG_StockOrderM (nolock) sm 
+                        LEFT JOIN b_store (nolock) bs ON bs.nid = sm.storeid
+                        LEFT JOIN CG_StockOrderD (nolock) d ON sm.nid = d.stockOrderNID
+                        WHERE LogisticOrderNo = '{$condition['trackingNumber']}'
+                ) a LEFT JOIN(
+                        SELECT sku,goodsskuid,SUM(l_qty) AS num
+                        FROM P_TradeDtUn (nolock) dt 
+                        LEFT JOIN P_TradeUn (nolock) t ON dt.tradeNID = t.NID
+                        WHERE t.FilterFlag = 1 AND orderTime BETWEEN DATEADD(dd, -90, CONVERT(VARCHAR(10),GETDATE(),121)) AND GETDATE()
+                        GROUP BY sku,goodsskuid
+                ) b ON a.goodsskuID=b.goodsskuid
+                GROUP BY LogisticOrderNo,stockOrderNumber";
+        try {
+            $data = Yii::$app->py_db->createCommand($sql)->queryOne();
+            $row = [
+                'trackingNumber' => $condition['trackingNumber'],
+                'stockOrderNumber' => $data['stockOrderNumber'] ?? '',
+                'createdTime' => date('Y-m-d H:i:s'),
+                'flag' => $data['stockOrderNumber'] ?? 0,
+            ];
+            $res = Yii::$app->db->createCommand()->insert('task_package', $row)->execute();
+            var_dump($res);exit;
+        } catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
 
     /**
      * @brief 添加拣货任务
@@ -934,6 +973,16 @@ class ApiWarehouseTools
                 'message' => $e->getMessage(),
             ];
         }
+    }
+    public static function getLabelDetail($condition){
+        $sql = "SELECT g.goodsCode,goodsName,gs.sku,skuName,amount,ISNULL(rate,1) AS rate 
+                FROM CG_StockInD (nolock) d 
+                LEFT JOIN CG_StockInM (nolock) m ON m.NID=d.stockInNID
+                LEFT JOIN B_Goods (nolock) g ON g.NID=d.goodsid
+                LEFT JOIN B_GoodsSKU (nolock) gs ON gs.NID=d.goodsSkuid
+                LEFT JOIN oauth_label_goods_rate (nolock) gr ON gr.goodsCode=g.goodsCode
+                WHERE BillNumber= '{$condition['batchNumber']}'";
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
 
     /** 获取贴标统计数据

@@ -179,6 +179,21 @@ class WarehouseToolsController extends AdminController
 
     }
 
+    #####################################包裹扫描工具##############################################
+
+    /**
+     * @brief 包裹扫描
+     * @return array|bool
+     */
+    public function actionPackageScanning()
+    {
+        $condition = Yii::$app->request->post('condition');
+        return ApiWarehouseTools::getPackageScanningResult($condition);
+    }
+
+
+
+
     ######################################入库工具#########################################
 
     /**
@@ -267,6 +282,25 @@ class WarehouseToolsController extends AdminController
         try {
             $condition = Yii::$app->request->post('condition', []);
             return ApiWarehouseTools::label($condition);
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * 明细
+     * Date: 2021-04-29 10:36
+     * Author: henry
+     * @return array|bool
+     */
+    public function actionLabelDetail()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            return ApiWarehouseTools::getLabelDetail($condition);
         }catch (Exception $e){
             return [
                 'code' => 400,
