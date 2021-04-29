@@ -181,8 +181,8 @@ class ApiOverseas
                 }else{
                     $model_d = new KCStockChangeD();
                 }
-                if(!isset($condition['skuInfo']['Money']) || !$condition['skuInfo']['Money']){
-                    $condition['skuInfo']['Money'] = $condition['skuInfo']['Amount'] * $condition['skuInfo']['Price'];
+                if(!isset($sku['Money']) || !$sku['Money']){
+                    $sku['Money'] = $sku['Amount'] * $sku['Price'];
                 }
                 $model_d->setAttributes($sku);
                 $model_d->StockChangeNID = $model->NID;
