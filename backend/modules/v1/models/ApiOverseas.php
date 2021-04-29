@@ -84,6 +84,49 @@ class ApiOverseas
     }
 
     /**
+     * 批量导入SKU 信息
+     * @param $condition
+     * Date: 2021-03-31 16:53
+     * Author: henry
+     * @return array
+     */
+    public static function getImportData($file, $extension){
+        $outStoreName = \Yii::$app->request->post('outStoreName','');
+        if (!$outStoreName) {
+            return ['code' => 400, 'message' => '调出仓库不能为空'];
+        }
+        if($extension == '.xlsx'){
+            $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        }else{
+            $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+        }
+        $spreadsheet = $reader->load(\Yii::$app->basePath . $file);
+        $sheet = $spreadsheet->getSheet(0);
+        $highestRow = $sheet->getHighestRow(); // 取得总行数
+        try {
+            $result = [];
+            for ($i = 2; $i <= $highestRow; $i++) {
+                $sku = (string) $sheet->getCell("A" . $i)->getValue();
+                $amount = (int) $sheet->getCell("B" . $i)->getValue();
+                $price = $sheet->getCell("C" . $i)->getValue();
+                if(!$sku) break;
+                $params = ['sku' => $sku, 'outStoreName' => $outStoreName];
+                $list = self::getSkuStockInfo($params);
+                if($list){
+                    $list[0]['Amount'] = $amount;
+                    $result[] = $list[0];
+                }
+            }
+            return $result;
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
      * 查询 SKU 信息
      * @param $condition
      * Date: 2021-03-31 16:53

@@ -9,6 +9,7 @@ namespace backend\modules\v1\controllers;
 
 use backend\modules\v1\models\ApiMine;
 use backend\modules\v1\models\ApiOverseas;
+use backend\modules\v1\models\ApiSettings;
 use backend\modules\v1\models\ApiWarehouseTools;
 use backend\modules\v1\utils\AttributeInfoTools;
 use Codeception\Template\Api;
@@ -72,6 +73,33 @@ class OverseasController extends AdminController
                 'code' => 400,
                 'message' => $e->getMessage()
             ];
+        }
+    }
+
+    /**
+     * 批量导入SKU信息
+     * Date: 2021-04-29 18:00
+     * Author: henry
+     * @return array | bool
+     */
+    public function actionImportSkuStockInfo()
+    {
+        $file = $_FILES['file'];
+
+        if (!$file) {
+            return ['code' => 400, 'message' => 'The file can not be empty!'];
+        }
+        //判断文件后缀
+        $extension = ApiSettings::get_extension($file['name']);
+        if (!in_array($extension , ['.xlsx', '.xls'])) return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' or 'xls'"];
+
+        //文件上传
+        $result = ApiSettings::file($file, 'ebayStockChange');
+        if (!$result) {
+            return ['code' => 400, 'message' => 'File upload failed'];
+        } else {
+            //获取上传excel文件的内容并保存
+            return ApiOverseas::getImportData($result, $extension);
         }
     }
 
