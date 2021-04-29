@@ -91,7 +91,7 @@ class ApiOverseas
      * @return array
      */
     public static function getImportData($file, $extension){
-        $outStoreName = \Yii::$app->request->post('outStoreName','');
+        $outStoreName = \Yii::$app->request->get('outStoreName','');
         if (!$outStoreName) {
             return ['code' => 400, 'message' => '调出仓库不能为空'];
         }
