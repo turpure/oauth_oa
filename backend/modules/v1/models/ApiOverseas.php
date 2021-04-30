@@ -152,7 +152,7 @@ class ApiOverseas
 	            isnull(cs.sellcount3, 0) AS sellcount3,MAX (s.RetailPrice) AS RetailPrice,g.ItemUrl,g.Style,
                 MAX(CASE WHEN isnull(s.Weight, 0) <> 0 THEN s.Weight / 1000.0 ELSE g.Weight / 1000.0 END) AS Weight,
                 g.StockMinAmount,IsNull(g.Used, 0) AS Used, 0 AS notinamount, 
-                MAX(isnull(cs.price, 0)) AS inPrice,MAX(isnull(cs.price, 0)) AS inmoney
+                MAX(isnull(cs.price, 0)) AS InPrice,MAX(isnull(cs.price, 0)) AS inmoney
             FROM B_GoodsSKU (nolock) s
             LEFT JOIN B_SysParams (nolock) sys1 ON sys1.ParaCode = 'CalCostFlag'
             INNER JOIN B_Goods (nolock) g ON g.nid = s.goodsID
