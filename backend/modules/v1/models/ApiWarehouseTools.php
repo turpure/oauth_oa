@@ -306,6 +306,7 @@ class ApiWarehouseTools
                 $data['sku'] = $sheet->getCell("A" . $i)->getValue();
                 $data['creator'] = $userName;
                 $data['skuType'] = '导入';
+                if (!$data['sku']) break;
                 $cleanOffline = new OaCleanOffline();
                 $cleanOffline->setAttributes($data);
                 $cleanOffline->save();
