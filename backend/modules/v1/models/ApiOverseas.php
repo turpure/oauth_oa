@@ -304,7 +304,18 @@ class ApiOverseas
     public static function checkStockChange($condition){
         $id = $condition['NID'];
         $sql = "exec P_KC_OutCheckReservationNum 'KC_StockChangeM', $id ";
-        return \Yii::$app->py_db->createCommand($sql)->execute();
+        $msg = \Yii::$app->py_db->createCommand($sql)->queryOne();
+        if($msg['errorcount'] > 0){
+            return ['code' => 400, 'message' => $msg['errormsg']];
+        }else{
+            $user = \Yii::$app->user->identity->username;
+            $checkSql = "exec P_KC_CurrentStock 'KC_StockChangeM', $user, 1, $id ";
+            $res = \Yii::$app->py_db->createCommand($checkSql)->queryOne();
+            if($res['errorcount'] > 0){
+                return ['code' => 400, 'message' => $res['errormsg']];
+            }
+            return true;
+        }
     }
 
 
