@@ -48,7 +48,7 @@ class ApiOverseas
                         CASE C.checkflag WHEN 1 THEN '审核' WHEN 3 THEN '作废' ELSE '未审核' END AS Checkflag,
                         C.Audier,C.AudieDate,C.StoreInMan,c.StoreOutMan,FinancialMan,FinancialTime,
                         PackPersonFee,PackMaterialFee,HeadFreight,Tariff,
-                        TotalAmount = (SELECT SUM(IsNull(Amount, 0)) FROM KC_StockChangeD WHERE StockChangeNID = C.Nid),
+                        TotalAmount = (SELECT convert(integer,SUM(IsNull(Amount, 0))) FROM KC_StockChangeD WHERE StockChangeNID = C.Nid),
                         TotalMoney = (SELECT SUM(IsNull(Money, 0)) FROM KC_StockChangeD WHERE StockChangeNID = C.Nid),
                         TotalinMoney = (SELECT SUM(IsNull(inMoney, 0)) FROM KC_StockChangeD WHERE StockChangeNID = C.Nid),
                         BW.name AS logicsWayName,
@@ -145,7 +145,8 @@ class ApiOverseas
         }
         $sql = "SELECT TOP 500 g.NID AS GoodsID,g.GoodsCode,G.GoodsName,G.Class,G.Model,G.Unit,S.SKU,S.property1,
                 s.property2,s.property3,bs.storename,1 as Amount,0 AS PackPersonFee,0 AS PackMaterialFee,0 AS HeadFreight,0 AS Tariff,
-		        s.NID AS GoodsSKUID,cs.Number,cs.ReservationNum AS zyNum,(cs.Number - cs.ReservationNum) AS kyNum,
+		        s.NID AS GoodsSKUID,convert(integer,cs.Number) as Number,convert(integer,cs.ReservationNum) AS zyNum,
+		        convert(integer,(cs.Number - cs.ReservationNum)) AS kyNum,
 		        s.SKUName,MAX(isnull(cs.price, 0)) AS Price,MAX(isnull(cs.price, 0)) AS Money,MAX (ss.SupplierName) AS SupplierName,
 	            isnull(g.PackageCount, 0) PackageCount,s.GoodsSKUStatus AS GoodsStatus,
 	            isnull(cs.sellcount1, 0) AS sellcount1,isnull(cs.sellcount2, 0) AS sellcount2,
@@ -275,11 +276,12 @@ class ApiOverseas
                     LEFT OUTER JOIN B_LogisticWay BW ON BW.NID = C.logicsWayNID
                     LEFT OUTER JOIN T_Express BE ON BE.NID = C.expressnid
                     WHERE C.NID = $id";
-        $skuSql = "SELECT d.NID,d.StockChangeNID,S.barCode,d.GoodsID,s.GoodsCode,s.GoodsName,s.Class,s.Unit,d.Amount,
-		                d.StockAmount,d.price AS Price,d.Money,s.Model,gs.SKU,gs.property1,gs.property2,gs.property3,
-		                D.Remark,gs.nid AS GoodsSKUID,d.InStockQty,d.InPrice,d.inmoney,
-		                gs.SkuName,d.PackPersonFee,d.PackMaterialFee,d.HeadFreight,d.Tariff,gs.Weight,
-		                cs.Number,cs.ReservationNum AS zyNum,(cs.Number - cs.ReservationNum) AS kyNum
+        $skuSql = "SELECT d.NID,d.StockChangeNID,S.barCode,d.GoodsID,s.GoodsCode,s.GoodsName,s.Class,s.Unit,
+                        convert(integer,d.Amount) as Amount,d.StockAmount,d.price AS Price,d.Money,s.Model,gs.SKU,
+                        gs.property1,gs.property2,gs.property3,D.Remark,gs.nid AS GoodsSKUID,d.InStockQty,d.InPrice,
+                        d.inmoney,gs.SkuName,d.PackPersonFee,d.PackMaterialFee,d.HeadFreight,d.Tariff,gs.Weight,
+		                convert(integer,cs.Number) as Number,convert(integer,cs.ReservationNum) AS zyNum,
+		                convert(integer,cs.Number - cs.ReservationNum) AS kyNum
 	                FROM KC_StockChangeD d
                     INNER JOIN B_GoodsSKU gs ON gs.NID = d.GoodsSKUID
                     INNER JOIN B_Goods s ON s.NID = d.GoodsID
