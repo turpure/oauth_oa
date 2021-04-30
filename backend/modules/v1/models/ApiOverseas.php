@@ -311,7 +311,7 @@ class ApiOverseas
             $user = \Yii::$app->user->identity->username;
             $checkSql = "exec P_KC_CurrentStock 'KC_StockChangeM', $user, 1, $id ";
             $res = \Yii::$app->py_db->createCommand($checkSql)->queryOne();
-            if($res['errorcount'] > 0){
+            if(!$res['errorcount']){
                 return ['code' => 400, 'message' => $res['errormsg']];
             }
             return true;
