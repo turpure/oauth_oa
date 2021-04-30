@@ -103,27 +103,65 @@ class ApiOverseas
         $spreadsheet = $reader->load(\Yii::$app->basePath . $file);
         $sheet = $spreadsheet->getSheet(0);
         $highestRow = $sheet->getHighestRow(); // 取得总行数
+//        return $highestRow;
         try {
-            $result = [];
+            $result = $skuList = [];
             for ($i = 2; $i <= $highestRow; $i++) {
                 $sku = (string) $sheet->getCell("A" . $i)->getValue();
                 $amount = (int) $sheet->getCell("B" . $i)->getValue();
-                $price = $sheet->getCell("C" . $i)->getValue();
                 if(!$sku) break;
-                $params = ['sku' => $sku, 'outStoreName' => $outStoreName];
+//                var_dump($sku);
+                $skuList[] = $sku;
+                $result[] = ['SKU' => $sku, 'Amount' => $amount];
+                /*$params = ['sku' => $sku, 'outStoreName' => $outStoreName];
                 $list = self::getSkuStockInfo($params);
                 if($list){
                     $list[0]['Amount'] = $amount;
                     $result[] = $list[0];
+                }*/
+            }
+            $list = self::getSkuDetail($skuList, $outStoreName);
+            foreach ($list as &$v){
+                foreach ($result as $value){
+                    if($v['SKU'] == $value['SKU']) $v['Amount'] = (string) $value['Amount'];
                 }
             }
-            return $result;
+            return $list;
         } catch (\Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
             ];
         }
+    }
+
+    private static function getSkuDetail($skuList, $storeName){
+        $skuList = implode("','", $skuList);
+        $sql = "SELECT TOP 500 g.NID AS GoodsID,g.GoodsCode,G.GoodsName,G.Class,G.Model,G.Unit,S.SKU,S.property1,
+                s.property2,s.property3,bs.storename,1 as Amount,0 AS PackPersonFee,0 AS PackMaterialFee,0 AS HeadFreight,0 AS Tariff,
+		        s.NID AS GoodsSKUID,convert(integer,cs.Number) as Number,convert(integer,cs.ReservationNum) AS zyNum,
+		        convert(integer,(cs.Number - cs.ReservationNum)) AS kyNum,
+		        s.SKUName,MAX(isnull(cs.price, 0)) AS Price,MAX(isnull(cs.price, 0)) AS Money,MAX (ss.SupplierName) AS SupplierName,
+	            isnull(g.PackageCount, 0) PackageCount,s.GoodsSKUStatus AS GoodsStatus,
+	            isnull(cs.sellcount1, 0) AS sellcount1,isnull(cs.sellcount2, 0) AS sellcount2,
+	            isnull(cs.sellcount3, 0) AS sellcount3,MAX (s.RetailPrice) AS RetailPrice,g.ItemUrl,g.Style,
+                MAX(CASE WHEN isnull(s.Weight, 0) <> 0 THEN s.Weight / 1000.0 ELSE g.Weight / 1000.0 END) AS Weight,
+                g.StockMinAmount,IsNull(g.Used, 0) AS Used, 0 AS notinamount, 
+                MAX(isnull(cs.price, 0)) AS InPrice,MAX(isnull(cs.price, 0)) AS inmoney
+            FROM B_GoodsSKU (nolock) s
+            LEFT JOIN B_SysParams (nolock) sys1 ON sys1.ParaCode = 'CalCostFlag'
+            INNER JOIN B_Goods (nolock) g ON g.nid = s.goodsID
+            LEFT OUTER JOIN B_Supplier (nolock) ss ON ss.nid = g.supplierid
+            LEFT OUTER JOIN KC_CurrentStock (nolock) cs ON cs.goodsSKUID = s.NID
+            LEFT JOIN B_GoodsSKULocation (nolock) bgs ON bgs.GoodsSKUID = cs.GoodsSKUID AND bgs.storeid = cs.storeid
+            LEFT JOIN B_StoreLocation (nolock) bsl ON bsl.NID = bgs.LocationID
+            LEFT JOIN b_store (nolock) bs ON bs.NID = cs.storeid
+            WHERE isnull(bs.used, 0) = 0 AND bs.StoreName = '{$storeName}' AND s.SKU IN ('{$skuList}')
+            GROUP BY g.NID,g.GoodsCode,G.GoodsName,G.Class,G.Model,g.ItemUrl,G.Unit,s.NID,s.SKUName,S.SKU,
+            S.property1,s.property2,s.property3,s.CostPrice,g.CostPrice,s.GoodsSKUStatus,sys1.paraValue,
+            g.Style,g.StockMinAmount,IsNull(g.Used, 0),cs.Number,cs.ReservationNum,isnull(g.PackageCount, 0),
+            cs.sellcount1,cs.sellcount2,cs.sellcount3,cs.price,bs.storename";
+        return \Yii::$app->py_db->createCommand($sql)->queryAll();
     }
 
     /**

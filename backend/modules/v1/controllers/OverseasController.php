@@ -85,6 +85,7 @@ class OverseasController extends AdminController
     public function actionImportSkuStockInfo()
     {
         $file = $_FILES['file'];
+        //var_dump($file);exit;
 
         if (!$file) {
             return ['code' => 400, 'message' => 'The file can not be empty!'];
