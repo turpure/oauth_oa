@@ -10,6 +10,8 @@ namespace backend\modules\v1\controllers;
 
 use backend\models\ShopElf\OauthSysConfig;
 use backend\models\ShopElf\OauthLabelGoodsRate;
+use backend\modules\v1\models\ApiOverseas;
+use backend\modules\v1\models\ApiSettings;
 use backend\modules\v1\models\ApiWarehouseTools;
 use backend\modules\v1\utils\ExportTools;
 use Yii;
@@ -335,6 +337,32 @@ class WarehouseToolsController extends AdminController
                 'pageSize' => $pageSize,
             ],
         ]);
+    }
+
+    /**
+     * 批量导入商品难度系数
+     * Date: 2021-04-30 10:21
+     * Author: henry
+     * @return array
+     */
+    public function actionImportLabelGoods(){
+        $file = $_FILES['file'];
+
+        if (!$file) {
+            return ['code' => 400, 'message' => 'The file can not be empty!'];
+        }
+        //判断文件后缀
+        $extension = ApiSettings::get_extension($file['name']);
+        if (!in_array($extension , ['.xlsx', '.xls'])) return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' or 'xls'"];
+
+        //文件上传
+        $result = ApiSettings::file($file, 'labelGoods');
+        if (!$result) {
+            return ['code' => 400, 'message' => 'File upload failed'];
+        } else {
+            //获取上传excel文件的内容并保存
+            return ApiWarehouseTools::saveImportLabelGoods($result, $extension);
+        }
     }
 
     /**

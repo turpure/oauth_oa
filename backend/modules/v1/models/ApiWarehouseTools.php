@@ -10,6 +10,7 @@ namespace backend\modules\v1\models;
 use backend\models\OaCleanOffline;
 use backend\models\ShopElf\BPerson;
 use backend\models\ShopElf\KCCurrentStock;
+use backend\models\ShopElf\OauthLabelGoodsRate;
 use backend\models\TaskPick;
 use backend\models\TaskSort;
 use backend\models\TaskWarehouse;
@@ -27,11 +28,19 @@ use backend\modules\v1\utils\Helper;
 
 class ApiWarehouseTools
 {
+    /**
+     * 包裹扫描日志
+     * @param $condition
+     * Date: 2021-04-30 10:18
+     * Author: henry
+     * @return ArrayDataProvider
+     * @throws Exception
+     */
     public static function getPackageScanningLog($condition){
         $pageSize = $condition['pageSize'] ?: 20;
-        $befin = $condition['dateRange'][0];
+        $begin = $condition['dateRange'][0];
         $end = $condition['dateRange'][1] . " 23:59:59";
-        $sql = "SELECT * FROM `task_package` WHERE createdTime BETWEEN '{$befin}' AND '{$end}' ORDER BY createdTime DESC";
+        $sql = "SELECT * FROM `task_package` WHERE createdTime BETWEEN '{$begin}' AND '{$end}' ORDER BY createdTime DESC";
         $data = Yii::$app->db->createCommand($sql)->queryAll();
         $provider = new ArrayDataProvider([
             'allModels' => $data,
@@ -992,6 +1001,14 @@ class ApiWarehouseTools
             ];
         }
     }
+
+    /**
+     * 贴标商品详情
+     * @param $condition
+     * Date: 2021-04-30 10:23
+     * Author: henry
+     * @return mixed
+     */
     public static function getLabelDetail($condition){
         $sql = "SELECT g.goodsCode,goodsName,gs.sku,skuName,amount,ISNULL(rate,1) AS rate 
                 FROM CG_StockInD (nolock) d 
@@ -1002,6 +1019,43 @@ class ApiWarehouseTools
                 WHERE BillNumber= '{$condition['batchNumber']}'";
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
+
+    public static function saveImportLabelGoods($file, $extension){
+        if($extension == '.xlsx'){
+            $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        }else{
+            $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+        }
+        $spreadsheet = $reader->load(\Yii::$app->basePath . $file);
+        $sheet = $spreadsheet->getSheet(0);
+        $highestRow = $sheet->getHighestRow(); // 取得总行数
+        try {
+            $result = [];
+            for ($i = 2; $i <= $highestRow; $i++) {
+                $goodsCode = (string) $sheet->getCell("A" . $i)->getValue();
+                $rate = (int) $sheet->getCell("B" . $i)->getValue();
+                if(!$goodsCode) break;
+                $model = OauthLabelGoodsRate::findOne(['goodsCode' => $goodsCode]);
+                if(!$model){
+                    $model = new OauthLabelGoodsRate();
+                    $model->creator = Yii::$app->user->identity->username;
+                }
+                $model->goodsCode = $goodsCode;
+                $model->rate = $rate;
+                if(!$model->save()){
+                    $result[] = "Failed to save info of '{$goodsCode}'";
+                }
+            }
+            return $result;
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+
 
     /** 获取贴标统计数据
      * @param $condition
