@@ -84,7 +84,7 @@ class ApiWarehouseTools
             $row = [
                 'trackingNumber' => $condition['trackingNumber'],
                 'stockOrderNumber' => $data['stockOrderNumber'] ?? '',
-                'username' => $data['stockOrderNumber'] ?? '',
+                'username' => $condition['username'],
                 'createdTime' => date('Y-m-d H:i:s'),
                 'flag' => $data['flag'] ?? 0,
             ];
