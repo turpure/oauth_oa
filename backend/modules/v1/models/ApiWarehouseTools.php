@@ -37,10 +37,16 @@ class ApiWarehouseTools
      * @throws Exception
      */
     public static function getPackageScanningLog($condition){
+        $username = $condition['username'];
+        $trackingNumber = $condition['trackingNumber'];
+        $pageSize = $condition['pageSize'] ?: 20;
         $pageSize = $condition['pageSize'] ?: 20;
         $begin = $condition['dateRange'][0];
         $end = $condition['dateRange'][1] . " 23:59:59";
-        $sql = "SELECT * FROM `task_package` WHERE createdTime BETWEEN '{$begin}' AND '{$end}' ORDER BY createdTime DESC";
+        $sql = "SELECT * FROM `task_package` WHERE createdTime BETWEEN '{$begin}' AND '{$end}' ";
+        if ($username) $sql .= " AND username LIKE '%{$username}%' ";
+        if ($trackingNumber) $sql .= " AND trackingNumber LIKE '%{$trackingNumber}%' ";
+        $sql .= " ORDER BY createdTime DESC";
         $data = Yii::$app->db->createCommand($sql)->queryAll();
         $provider = new ArrayDataProvider([
             'allModels' => $data,
@@ -78,6 +84,7 @@ class ApiWarehouseTools
             $row = [
                 'trackingNumber' => $condition['trackingNumber'],
                 'stockOrderNumber' => $data['stockOrderNumber'] ?? '',
+                'username' => $data['stockOrderNumber'] ?? '',
                 'createdTime' => date('Y-m-d H:i:s'),
                 'flag' => $data['flag'] ?? 0,
             ];
@@ -153,7 +160,9 @@ class ApiWarehouseTools
         if ($type == 'all'){
             $data = $query->all();
             return ArrayHelper::getColumn($data, 'PersonName');
-        } elseif ($type == 'load'){
+        } elseif ($type == 'packageScanning'){
+            $query->andWhere(['in', 'Duty', ['快递扫描']]);
+        }elseif ($type == 'load'){
             $query->andWhere(['in', 'Duty', ['上架']]);
         } elseif ($type == 'label'){
             $query->andWhere(['in', 'Duty', ['打标']]);

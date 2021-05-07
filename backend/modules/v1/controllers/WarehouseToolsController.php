@@ -182,6 +182,9 @@ class WarehouseToolsController extends AdminController
     }
 
     #####################################包裹扫描工具##############################################
+    public function actionPackageScanningMember(){
+        return ApiWarehouseTools::getWarehouseMember('packageScanning');
+    }
 
     /**
      * @brief 包裹扫描
@@ -194,8 +197,11 @@ class WarehouseToolsController extends AdminController
     }
 
     /**
-     * @brief 包裹扫描
-     * @return array|bool
+     * 包裹扫描
+     * Date: 2021-05-07 14:35
+     * Author: henry
+     * @return ArrayDataProvider
+     * @throws Exception
      */
     public function actionPackageScanningLog()
     {
