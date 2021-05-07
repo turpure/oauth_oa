@@ -215,7 +215,13 @@ class ApiTinyTool
      */
     public static function getGoodsPicture($condition)
     {
+        $department = ArrayHelper::getValue($condition, 'department', '');
         $salerName = ArrayHelper::getValue($condition, 'salerName', '');
+
+        if($department){
+            $userList = ApiCondition::getDevelopersByDepartment($department);
+            $salerName = $salerName ? : implode("','", $userList);
+        }
         $possessMan1 = ArrayHelper::getValue($condition, 'possessMan1', '');
         $possessMan2 = ArrayHelper::getValue($condition, 'possessMan2', '');
         $beginDate = ArrayHelper::getValue($condition, 'beginDate', '') ?: '2015-06-01';
@@ -229,19 +235,8 @@ class ApiTinyTool
         $categoryName = ArrayHelper::getValue($condition, 'categoryName', '');
         $pageSize = ArrayHelper::getValue($condition, 'pageSize', 30);
         try {
-            $sql = "SELECT
-                        bg.possessman1,
-                        bg.SalerName AS developer,
-                        bg.GoodsCode,
-                        bg.GoodsName,
-                        bg.CreateDate,
-                        bgs.SKU,
-                        bgs.GoodsSKUStatus,
-                        bgs.BmpFileName,
-                        bg.LinkUrl,
-                        bg.Brand,
-                        bgc.CategoryParentName,
-                        bgc.CategoryName
+            $sql = "SELECT bg.possessman1,bg.SalerName AS developer,bg.GoodsCode,bg.GoodsName,bg.CreateDate,bgs.SKU,
+                        bgs.GoodsSKUStatus,bgs.BmpFileName,bg.LinkUrl,bg.Brand,bgc.CategoryParentName,bgc.CategoryName
                     FROM b_goods AS bg
                     LEFT JOIN B_GoodsSKU(nolock) AS bgs ON bg.NID = bgs.GoodsID
                     LEFT JOIN B_GoodsCats(nolock) AS bgc ON bgc.NID = bg.GoodsCategoryID
@@ -252,7 +247,7 @@ class ApiTinyTool
             if ($supplierName) $sql .= " AND bs.SupplierName LIKE '%$supplierName%' ";
             if ($possessMan1) $sql .= " AND bg.possessman1 LIKE '$possessMan1%' ";
             if ($possessMan2) $sql .= " AND bg.possessman2 LIKE '$possessMan2%' ";
-            if ($salerName) $sql .= " AND bg.SalerName LIKE '$salerName%' ";
+            if ($salerName) $sql .= " AND bg.SalerName IN ('{$salerName}') ";
             if ($goodsName) {
                 foreach ($goodsName as $v) {
                     $sql .= " AND bg.GoodsName LIKE '%$v%' ";

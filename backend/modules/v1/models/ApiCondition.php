@@ -21,6 +21,24 @@ use backend\modules\v1\utils\Helper;
 class ApiCondition
 {
     /**
+     * 根据部门获取部门开发人员
+     * @param $department
+     * Date: 2021-05-07 11:38
+     * Author: henry
+     * @return array
+     */
+    public static function getDevelopersByDepartment($department){
+        $userInfo = self::getUsers();
+        $data = [];
+        foreach ($userInfo as $user){
+            if($user['position'] == '开发' && $user['parent_department'] == $department) {
+                $data[] = $user['username'];
+            }
+        }
+        return $data;
+    }
+
+    /**
      * 获取用户所在一级部门
      * @return array
      */
