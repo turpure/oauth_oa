@@ -1028,6 +1028,7 @@ class ReportController extends AdminController
                 'queryType' => $paramsFilter['queryType'],
                 'store' => implode(',', $paramsFilter['store']),
                 'warehouse' => $condition['store'] ? implode(',', $condition['store']) : '',
+                'pageSize' => $condition['pageSize'] ?? 10000
             ];
             $data = ApiReport::getDevRateSuffixGoodsProfit($condition)->models;
             $title = ['产品编码', '产品名称', '平台', '部门', '账号', '销售员', '仓库', '销量', '销售额', '总利润', '利润率(%)'];
