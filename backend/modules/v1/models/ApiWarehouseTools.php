@@ -660,7 +660,7 @@ class ApiWarehouseTools
     public static function getLoadRateData($condition){
         //获取数据
         $sql = "EXEC oauth_warehouse_tools_pda_loading_data 0, '{$condition['dateRange'][0]}','{$condition['dateRange'][1]}',
-        '{$condition['sku']}','{$condition['isLoad']}','{$condition['isError']}'";
+        '{$condition['SKU']}','{$condition['isLoad']}','{$condition['isError']}'";
 
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
