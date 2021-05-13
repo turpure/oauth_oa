@@ -11,6 +11,7 @@ use backend\models\OaCleanOffline;
 use backend\models\ShopElf\BPerson;
 use backend\models\ShopElf\KCCurrentStock;
 use backend\models\ShopElf\OauthLabelGoodsRate;
+use backend\models\ShopElf\OauthLoadSkuError;
 use backend\models\TaskPick;
 use backend\models\TaskSort;
 use backend\models\TaskWarehouse;
@@ -603,7 +604,8 @@ class ApiWarehouseTools
     }
 
 
-    /** 获取拣货统计数据
+    /**
+     * 获取拣货统计数据
      * @param $condition
      * Date: 2019-08-23 16:16
      * Author: henry
@@ -630,8 +632,55 @@ class ApiWarehouseTools
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
 
+    ///////////////////////////////上架工具//////////////////////////////////////////////////////
 
-    /** 获取上货统计数据
+
+    /**
+     * 获取异常SKU
+     * @param $condition
+     * Date: 2021-04-19 16:16
+     * Author: henry
+     * @return mixed
+     */
+    public static function getLoadErrorData($condition){
+        $beginDate = $condition['dateRange'][0];
+        $endDate = $condition['dateRange'][1] . ' 23:59:59';
+        //获取数据
+//        $sql = "SELECT SKU, recorder, createdDate FROM [dbo].[oauth_load_sku_error] WHERE createdDate BETWEEN '{$beginDate}' AND '{$endDate}'; ";
+        return OauthLoadSkuError::find()->andWhere(['BETWEEN','createdDate', $beginDate, $endDate])->all();
+    }
+
+    /**
+     * 获取上架完成度数据
+     * @param $condition
+     * Date: 2021-04-19 16:16
+     * Author: henry
+     * @return mixed
+     */
+    public static function getLoadRateData($condition){
+        //获取数据
+        $sql = "EXEC oauth_warehouse_tools_pda_loading_data 0, '{$condition['dateRange'][0]}','{$condition['dateRange'][1]}',
+        '{$condition['sku']}','{$condition['isLoad']}','{$condition['isError']}'";
+
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
+    }
+
+    /**
+     * 获取上架统计数据
+     * @param $condition
+     * Date: 2021-04-19 16:16
+     * Author: henry
+     * @return mixed
+     */
+    public static function getLoadListData($condition){
+
+        //获取数据
+        $sql = "EXEC oauth_warehouse_tools_pda_loading_data 1, '{$condition['dateRange'][0]}','{$condition['dateRange'][1]}'";
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
+    }
+
+    /**
+     * 获取上货统计数据
      * @param $condition
      * Date: 2021-04-19 16:16
      * Author: henry
@@ -679,7 +728,8 @@ class ApiWarehouseTools
 
 
 
-    /** 获取拣货统计数据
+    /**
+     * 获取拣货统计数据
      * @param $condition
      * Date: 2019-08-23 16:16
      * Author: henry
@@ -747,7 +797,8 @@ class ApiWarehouseTools
         return $provider;
     }
 
-    /** 仓库仓位SKU对应表
+    /**
+     * 仓库仓位SKU对应表
      * @param $condition
      * Date: 2019-09-03 10:23
      * Author: henry

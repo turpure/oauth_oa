@@ -8,6 +8,7 @@
 namespace backend\modules\v1\controllers;
 
 
+use backend\models\ShopElf\OauthLoadSkuError;
 use backend\models\ShopElf\OauthSysConfig;
 use backend\models\ShopElf\OauthLabelGoodsRate;
 use backend\modules\v1\models\ApiOverseas;
@@ -457,26 +458,31 @@ class WarehouseToolsController extends AdminController
         ExportTools::toExcelMultipleSheets('labelStatistics', $data, 'Xlsx');
     }
 
-    #############################拣货统计#########################################
-
+    #############################上架工具#########################################
     /**
-     * 拣货统计
-     * Date: 2021-04-15 10:31
+     * 上架异常SKU列表
+     * Date: 2021-05-10 10:31
      * Author: henry
      * @return array|mixed
      */
-    public function actionPickStatistics()
+    public function actionLoadError()
     {
         try {
             $condition = Yii::$app->request->post()['condition'];
-            $totalNotPickingNum = ApiWarehouseTools::getNotPickingTradeNum($condition);
-            $personPickingData = ApiWarehouseTools::getPickStatisticsData($condition);
-            $datePickingData = ApiWarehouseTools::getPickStatisticsData($condition, 1);
-            return [
-                'totalNotPickingNum' => $totalNotPickingNum,
-                'personPickingData' => $personPickingData,
-                'datePickingData' => $datePickingData,
-            ];
+            $pageSize = $condition['pageSize'] ?: 20;
+            $data = ApiWarehouseTools::getLoadErrorData($condition);
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => ['SKU', 'recorder', 'createdDate'],
+                    'defaultOrder' => [
+                        'createdDate' => SORT_DESC,
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
         }catch (Exception $e){
             return [
                 'code' => 400,
@@ -486,33 +492,100 @@ class WarehouseToolsController extends AdminController
     }
 
     /**
-     * actionPersonPickingExport
-     * Date: 2021-04-15 11:52
+     * 上架异常SKU列表
+     * Date: 2021-05-10 10:31
      * Author: henry
-     * @throws \PhpOffice\PhpSpreadsheet\Exception
-     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     * @return array|bool
      */
-    public function actionPersonPickingExport(){
-        $condition = Yii::$app->request->post()['condition'];
-        $personPickingData = ApiWarehouseTools::getPickStatisticsData($condition);
-        $title = ['拣货人','单品拣货量','多品拣货量','总拣货量'];
-        ExportTools::toExcelOrCsv('PersonPickingData', $personPickingData, 'Xls', $title);
-    }
-    /**
-     * actionDatePickingExport
-     * Date: 2021-04-15 11:52
-     * Author: henry
-     * @throws \PhpOffice\PhpSpreadsheet\Exception
-     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
-     */
-    public function actionDatePickingExport(){
-        $condition = Yii::$app->request->post()['condition'];
-        $datePickingData = ApiWarehouseTools::getPickStatisticsData($condition);
-        $title = ['拣货日期','单品拣货量','多品拣货量','总拣货量'];
-        ExportTools::toExcelOrCsv('DatePickingData', $datePickingData, 'Xls', $title);
+    public function actionSaveSkuLoadError()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $query = OauthLoadSkuError::findOne($condition['id']);
+            $query = $query ?: new OauthLoadSkuError();
+            $query->SKU = $condition['SKU'];
+            $query->recorder = Yii::$app->user->identity->username;
+            $res = $query->save();
+            if(!$res){
+                throw new \Exception('Failed save sku info!');
+            }
+            return true;
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
     }
 
-    #############################上货统计#########################################
+    /**
+     * 上架完成度
+     * Date: 2021-05-10 10:31
+     * Author: henry
+     * @return array|mixed
+     */
+    public function actionLoadRate()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $pageSize = $condition['pageSize'] ?: 20;
+            $data = ApiWarehouseTools::getLoadRateData($condition);
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => ['warehouseMen', 'warehouseDate', 'SKU', 'loadMen', 'loadDate', 'isLoad', 'isError'],
+                    'defaultOrder' => [
+                        'warehouseDate' => SORT_DESC,
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * 上架统计列表
+     * Date: 2021-05-10 10:31
+     * Author: henry
+     * @return array|mixed
+     */
+    public function actionLoadList()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $pageSize = $condition['pageSize'] ?: 100;
+            $data = ApiWarehouseTools::getLoadListData($condition);
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => ['dt', 'totalNum', 'num', 'rate', 'oneDateNum', 'oneDateRate', 'errorNum', 'problemNum'],
+                    'defaultOrder' => [
+                        'dt' => SORT_DESC,
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+
+
+
+
     /**
      * @brief 上架人
      * @return array
@@ -599,6 +672,64 @@ class WarehouseToolsController extends AdminController
         ];
         ExportTools::toExcelMultipleSheets('loadingStatistics', $data, 'Xlsx');
     }
+
+
+    #############################拣货统计#########################################
+
+    /**
+     * 拣货统计
+     * Date: 2021-04-15 10:31
+     * Author: henry
+     * @return array|mixed
+     */
+    public function actionPickStatistics()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $totalNotPickingNum = ApiWarehouseTools::getNotPickingTradeNum($condition);
+            $personPickingData = ApiWarehouseTools::getPickStatisticsData($condition);
+            $datePickingData = ApiWarehouseTools::getPickStatisticsData($condition, 1);
+            return [
+                'totalNotPickingNum' => $totalNotPickingNum,
+                'personPickingData' => $personPickingData,
+                'datePickingData' => $datePickingData,
+            ];
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * actionPersonPickingExport
+     * Date: 2021-04-15 11:52
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionPersonPickingExport(){
+        $condition = Yii::$app->request->post()['condition'];
+        $personPickingData = ApiWarehouseTools::getPickStatisticsData($condition);
+        $title = ['拣货人','单品拣货量','多品拣货量','总拣货量'];
+        ExportTools::toExcelOrCsv('PersonPickingData', $personPickingData, 'Xls', $title);
+    }
+    /**
+     * actionDatePickingExport
+     * Date: 2021-04-15 11:52
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionDatePickingExport(){
+        $condition = Yii::$app->request->post()['condition'];
+        $datePickingData = ApiWarehouseTools::getPickStatisticsData($condition);
+        $title = ['拣货日期','单品拣货量','多品拣货量','总拣货量'];
+        ExportTools::toExcelOrCsv('DatePickingData', $datePickingData, 'Xls', $title);
+    }
+
+
 
 
 
