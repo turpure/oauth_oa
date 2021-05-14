@@ -61,7 +61,7 @@ class OverseasController extends AdminController
                         'PackPersonFee', 'PackMaterialFee', 'HeadFreight', 'Tariff', 'TotalAmount', 'TotalMoney', 'TotalinMoney',
                         'logicsWayName', 'expressName', 'logicsWayNumber', 'RealWeight', 'ThrowWeight', 'Archive'],
                     'defaultOrder' => [
-                        'MakeDate' => SORT_ASC,
+                        'MakeDate' => SORT_DESC,
                     ]
                 ],
                 'pagination' => [
