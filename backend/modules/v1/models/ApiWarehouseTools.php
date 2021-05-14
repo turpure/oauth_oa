@@ -41,12 +41,16 @@ class ApiWarehouseTools
         $username = $condition['username'];
         $trackingNumber = $condition['trackingNumber'];
         $pageSize = $condition['pageSize'] ?: 20;
-        $pageSize = $condition['pageSize'] ?: 20;
+        $stockOrderNumber = $condition['stockOrderNumber'] ?: '';
+        $flag = $condition['flag'] ?: '';
         $begin = $condition['dateRange'][0];
         $end = $condition['dateRange'][1] . " 23:59:59";
         $sql = "SELECT * FROM `task_package` WHERE createdTime BETWEEN '{$begin}' AND '{$end}' ";
         if ($username) $sql .= " AND username LIKE '%{$username}%' ";
         if ($trackingNumber) $sql .= " AND trackingNumber LIKE '%{$trackingNumber}%' ";
+        if ($stockOrderNumber) $sql .= " AND stockOrderNumber LIKE '%{$stockOrderNumber}%' ";
+        if ($flag == '是') $sql .= " AND flag = 1 ";
+        if ($flag == '否') $sql .= " AND flag = 0 ";
         $sql .= " ORDER BY createdTime DESC";
         $data = Yii::$app->db->createCommand($sql)->queryAll();
         $provider = new ArrayDataProvider([
@@ -182,7 +186,7 @@ class ApiWarehouseTools
      */
     public static function getSortMember()
     {
-        $identity = Yii::$app->request->get('type', '');
+        $identity = Yii::$app->request->get('type', 'warehouse');
 
         $query = BPerson::find();
         if ($identity == 'warehouse') {
