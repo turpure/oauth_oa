@@ -49,8 +49,7 @@ class ApiWarehouseTools
         if ($username) $sql .= " AND username LIKE '%{$username}%' ";
         if ($trackingNumber) $sql .= " AND trackingNumber LIKE '%{$trackingNumber}%' ";
         if ($stockOrderNumber) $sql .= " AND stockOrderNumber LIKE '%{$stockOrderNumber}%' ";
-        if ($flag == '是') $sql .= " AND flag = 1 ";
-        if ($flag == '否') $sql .= " AND flag = 0 ";
+        if ($flag == 0 || $flag) $sql .= " AND flag = '{$flag}' ";
         $sql .= " ORDER BY createdTime DESC";
         $data = Yii::$app->db->createCommand($sql)->queryAll();
         $provider = new ArrayDataProvider([
