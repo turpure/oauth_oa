@@ -42,14 +42,15 @@ class ApiWarehouseTools
         $trackingNumber = $condition['trackingNumber'];
         $pageSize = $condition['pageSize'] ?: 20;
         $stockOrderNumber = $condition['stockOrderNumber'] ?: '';
-        $flag = $condition['flag'] ?: '';
+        $flag = $condition['flag'];
         $begin = $condition['dateRange'][0];
         $end = $condition['dateRange'][1] . " 23:59:59";
         $sql = "SELECT * FROM `task_package` WHERE createdTime BETWEEN '{$begin}' AND '{$end}' ";
         if ($username) $sql .= " AND username LIKE '%{$username}%' ";
         if ($trackingNumber) $sql .= " AND trackingNumber LIKE '%{$trackingNumber}%' ";
         if ($stockOrderNumber) $sql .= " AND stockOrderNumber LIKE '%{$stockOrderNumber}%' ";
-        if ($flag == 0 || $flag) $sql .= " AND flag = '{$flag}' ";
+        if (in_array($flag, ['0', '1']) ) $sql .= " AND flag = '{$flag}' ";
+
         $sql .= " ORDER BY createdTime DESC";
         $data = Yii::$app->db->createCommand($sql)->queryAll();
         $provider = new ArrayDataProvider([
