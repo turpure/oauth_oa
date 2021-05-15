@@ -69,7 +69,7 @@ class ApiWarehouseTools
      */
     public static function getPackageScanningResult($condition){
         $sql = "SELECT LogisticOrderNo,stockOrderNumber, 
-                        CASE WHEN COUNT(a.goodsskuID) = 0 THEN 2 WHEN COUNT(a.goodsskuID) = COUNT(DISTINCT b.goodsskuid) THEN 1 ELSE 0 END AS flag
+                        CASE WHEN COUNT(a.goodsskuID) = COUNT(DISTINCT b.goodsskuid) THEN 1 ELSE 0 END AS flag
                 FROM(
                         SELECT LogisticOrderNo,sm.billNumber AS stockOrderNumber,d.goodsskuID
                         FROM CG_StockOrderM (nolock) sm 
@@ -91,7 +91,7 @@ class ApiWarehouseTools
                 'stockOrderNumber' => $data['stockOrderNumber'] ?? '',
                 'username' => $condition['username'],
                 'createdTime' => date('Y-m-d H:i:s'),
-                'flag' => $data['flag'] ?? 0,
+                'flag' => $data['flag'] ?? 2,
             ];
             $res = Yii::$app->db->createCommand()->insert('task_package', $row)->execute();
             if(!$res){
