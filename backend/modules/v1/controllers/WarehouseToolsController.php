@@ -1349,6 +1349,43 @@ class WarehouseToolsController extends AdminController
         }
     }
 
+    /**
+     * 入库时效2.0
+     * Date: 2021-03-19 14:33
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionStorageTimeRate2(){
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $pageSize = $condition['pageSize'] ? : 20;
+            $storeName = $condition['storeName'] ?: '';
+            $beginDate = $condition['dateRange'][0] ?: '';
+            $endDate = $condition['dateRange'][1] ?: '';
+            $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}','{$storeName}','2.0'";
+            $data =  Yii::$app->py_db->createCommand($sql)->queryAll();
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => ['storeName', 'dt', 'totalNum','inNum','notInNum','notInRate','num','rate',
+                        'oneNum','oneRate','twoNum','twoRate','threeNum','threeRate','otherNum','otherRate'],
+                    'defaultOrder' => [
+                        'storeName' => SORT_ASC,
+                        'dt' => SORT_ASC,
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
 
     /**
      * 发货时效
@@ -1364,6 +1401,43 @@ class WarehouseToolsController extends AdminController
             $beginDate = $condition['dateRange'][0] ?: '';
             $endDate = $condition['dateRange'][1] ?: '';
             $sql = "EXEC oauth_warehouse_tools_deliver_time_rate '{$beginDate}','{$endDate}','{$storeName}'";
+            $data =  Yii::$app->py_db->createCommand($sql)->queryAll();
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => ['dt','storeName', 'totalNum', 'deliverableNum','zeroNum','zeroRate',
+                        'oneNum','oneRate','twoNum','twoRate','threeNum','threeRate','otherNum','otherRate'],
+                    'defaultOrder' => [
+                        'storeName' => SORT_ASC,
+                        'dt' => SORT_ASC,
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * 发货时效2.0
+     * Date: 2021-03-19 14:33
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionDeliverTimeRate2(){
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $pageSize = $condition['pageSize'] ? : 20;
+            $storeName = $condition['storeName'] ?: '';
+            $beginDate = $condition['dateRange'][0] ?: '';
+            $endDate = $condition['dateRange'][1] ?: '';
+            $sql = "EXEC oauth_warehouse_tools_deliver_time_rate '{$beginDate}','{$endDate}','{$storeName}','2.0'";
             $data =  Yii::$app->py_db->createCommand($sql)->queryAll();
             return new ArrayDataProvider([
                 'allModels' => $data,
