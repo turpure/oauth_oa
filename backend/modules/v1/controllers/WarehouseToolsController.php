@@ -729,7 +729,7 @@ class WarehouseToolsController extends AdminController
         ExportTools::toExcelOrCsv('DatePickingData', $datePickingData, 'Xls', $title);
     }
 
-
+    #############################出库统计#########################################
 
 
 
@@ -861,9 +861,24 @@ class WarehouseToolsController extends AdminController
                 'pageSize' => 100,
             ],
         ]);
+
         $packageData = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}', 1 ")->queryAll();
         $packageDataPro = new ArrayDataProvider([
             'allModels' => $packageData,
+            'sort' => [
+                'attributes' => ['packageMen', 'singleNum', 'multiNum', 'totalNum'],
+                'defaultOrder' => [
+                    'singleNum' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => 100,
+            ],
+        ]);
+
+        $pickingData = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}', 2 ")->queryAll();
+        $pickingDataPro = new ArrayDataProvider([
+            'allModels' => $pickingData,
             'sort' => [
                 'attributes' => ['packageMen', 'singleNum', 'multiNum', 'totalNum'],
                 'defaultOrder' => [
@@ -878,6 +893,7 @@ class WarehouseToolsController extends AdminController
             'totalNotPickingNum' => $totalNotPickingNum,
             'dailyData' => $dailyDataPro->getModels(),
             'packageData' => $packageDataPro->getModels(),
+            'pickingData' => $pickingDataPro->getModels(),
         ];
     }
 
@@ -1327,7 +1343,9 @@ class WarehouseToolsController extends AdminController
             $endDate = $condition['dateRange'][1] ?: '';
             $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}','{$storeName}'";
             $data =  Yii::$app->py_db->createCommand($sql)->queryAll();
-            return new ArrayDataProvider([
+            $totalNum = array_sum(ArrayHelper::getColumn($data,'totalNum'));
+            $totalInNum = array_sum(ArrayHelper::getColumn($data,'inNum'));
+            $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
                     'attributes' => ['storeName', 'dt', 'totalNum','inNum','notInNum','notInRate','num','rate',
@@ -1341,6 +1359,13 @@ class WarehouseToolsController extends AdminController
                     'pageSize' => $pageSize,
                 ],
             ]);
+            return [
+                'provider' => $provider,
+                'extra' => [
+                    'totalNum' => $totalNum,
+                    'totalInNum' => $totalInNum,
+                ]
+            ];
         }catch (Exception $e){
             return [
                 'code' => 400,
@@ -1364,7 +1389,9 @@ class WarehouseToolsController extends AdminController
             $endDate = $condition['dateRange'][1] ?: '';
             $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}','{$storeName}','2.0'";
             $data =  Yii::$app->py_db->createCommand($sql)->queryAll();
-            return new ArrayDataProvider([
+            $totalNum = array_sum(ArrayHelper::getColumn($data,'totalNum'));
+            $totalInNum = array_sum(ArrayHelper::getColumn($data,'inNum'));
+            $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
                     'attributes' => ['storeName', 'dt', 'totalNum','inNum','notInNum','notInRate','num','rate',
@@ -1378,6 +1405,13 @@ class WarehouseToolsController extends AdminController
                     'pageSize' => $pageSize,
                 ],
             ]);
+            return [
+                'provider' => $provider,
+                'extra' => [
+                    'totalNum' => $totalNum,
+                    'totalInNum' => $totalInNum,
+                ]
+            ];
         }catch (Exception $e){
             return [
                 'code' => 400,

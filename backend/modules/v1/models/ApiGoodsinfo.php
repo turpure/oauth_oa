@@ -3692,7 +3692,9 @@ class ApiGoodsinfo
                     $var[$option] = $sku['size'];
                     $value2[] = $sku['size'];
                 }
-                $var['price'] = $sku['price'];
+                //2021-05-18 调整
+//                $var['price'] = $sku['price'];
+                $var['price'] = $sku['msrp'];
                 //$row['compare_at_price'] = $sku['msrp'];
                 $var['weight'] = $sku['weight'];
                 $var['weight_unit'] = 'g';
