@@ -64,11 +64,62 @@ class ApiWarehouseTools
     }
 
     /**
+     * 包裹扫描统计
+     * @param $condition
+     * Date: 2021-05-19 14:17
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
+    public static function getPackageScanningStatistics($condition){
+        $begin = $condition['dateRange'][0];
+        $end = $condition['dateRange'][1] . " 23:59:59";
+        $sql = "SELECT trackingNumber,stockOrderNumber,username,flag,SUBSTR( MAX(createdTime),1,10) AS createdTime FROM `task_package` 
+                WHERE createdTime BETWEEN '{$begin}' AND '{$end}' ";
+
+        $sql .= " GROUP BY trackingNumber,stockOrderNumber,username,flag";
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
+        $userList = array_unique(ArrayHelper::getColumn($data, 'username'));
+        $timeList = array_unique(ArrayHelper::getColumn($data, 'createdTime'));
+//        var_dump($userList);
+//        var_dump($timeList);exit;
+        $res = [];
+        foreach ($timeList as $time){
+            foreach ($userList as $user){
+                $item = [
+                    'dt' => $time,
+                    'username' => $user,
+                    'scanNum' => 0,
+                    'outOfStockNum' => 0,
+                    'num' => 0,
+                    'errorNum' => 0,
+                ];
+                foreach ($data as $v){
+                    if($v['createdTime'] == $time && $v['username'] == $user){
+                        $item['scanNum'] += 1;
+                        if($v['flag'] == 1) $item['outOfStockNum'] += 1;  //缺货
+                        if($v['flag'] == 0) $item['num'] += 1;            //正常
+                        if($v['flag'] == 2) $item['errorNum'] += 1;       //异常
+                    }
+                }
+                $res[] = $item;
+            }
+        }
+        return $res;
+    }
+
+    /**
      * @brief 包裹扫描结果
      * @param $condition
      * @return array|bool
      */
     public static function getPackageScanningResult($condition){
+        if(!$condition['trackingNumber']){
+            return [
+                'code' => 400,
+                'message' => 'tracking number can not be empty!'
+            ];
+        }
         $sql = "SELECT LogisticOrderNo,stockOrderNumber, 
                         CASE WHEN COUNT(a.goodsskuID) = COUNT(DISTINCT b.goodsskuid) THEN 1 ELSE 0 END AS flag
                 FROM(

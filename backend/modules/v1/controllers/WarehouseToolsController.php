@@ -210,6 +210,19 @@ class WarehouseToolsController extends AdminController
         return ApiWarehouseTools::getPackageScanningLog($condition);
     }
 
+    /**
+     * 包裹扫描
+     * Date: 2021-05-07 14:35
+     * Author: henry
+     * @return ArrayDataProvider
+     * @throws Exception
+     */
+    public function actionPackageScanningStatistics()
+    {
+        $condition = Yii::$app->request->post('condition');
+        return ApiWarehouseTools::getPackageScanningStatistics($condition);
+    }
+
 
 
     ######################################入库工具#########################################
