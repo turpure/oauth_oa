@@ -857,23 +857,23 @@ class WarehouseToolsController extends AdminController
                 'multiNum' => $v['multiNum'],
                 'skuMultiNum' => $v['skuMultiNum'],
                 'totalNum' => $v['totalNum'],
-                'skuTotalNum' => $v['skuTotalNum'],
+                'skuTotalNum' => $v['totalSkuNum'],
             ];
             if($v['flag'] == 'date'){
                 $item['dt'] = $v['name'];
                 $dailyData[] = $item;
             }elseif ($v['flag'] == 'packageMen'){
-                $item['packageMen'] = $item['name'];
+                $item['packageMen'] = $v['name'];
                 $packageData[] = $item;
             }else{
-                $item['packingMen'] = $item['name'];
+                $item['packingMen'] = $v['name'];
                 $pickingData[] = $item;
             }
         }
         $dailyDataPro = new ArrayDataProvider([
             'allModels' => $dailyData,
             'sort' => [
-                'attributes' => ['dt', 'singleNum', 'skuSingleNum', 'multiNum','skuMultiNum', 'totalNum','skuTotalNum'],
+                'attributes' => ['dt', 'singleNum', 'skuSingleNum', 'multiNum','skuMultiNum', 'totalNum','totalSkuNum'],
                 'defaultOrder' => [
                     'dt' => SORT_ASC,
                 ]
@@ -886,7 +886,7 @@ class WarehouseToolsController extends AdminController
         $packageDataPro = new ArrayDataProvider([
             'allModels' => $packageData,
             'sort' => [
-                'attributes' => ['packageMen', 'singleNum', 'skuSingleNum', 'multiNum','skuMultiNum', 'totalNum','skuTotalNum'],
+                'attributes' => ['packageMen', 'singleNum', 'skuSingleNum', 'multiNum','skuMultiNum', 'totalNum','totalSkuNum'],
                 'defaultOrder' => [
                     'singleNum' => SORT_DESC,
                 ]
@@ -899,7 +899,7 @@ class WarehouseToolsController extends AdminController
         $pickingDataPro = new ArrayDataProvider([
             'allModels' => $pickingData,
             'sort' => [
-                'attributes' => ['packageMen', 'singleNum', 'skuSingleNum', 'multiNum','skuMultiNum', 'totalNum','skuTotalNum'],
+                'attributes' => ['pickingMen', 'singleNum', 'skuSingleNum', 'multiNum','skuMultiNum', 'totalNum','totalSkuNum'],
                 'defaultOrder' => [
                     'singleNum' => SORT_DESC,
                 ]
