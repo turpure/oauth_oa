@@ -46,7 +46,7 @@ class ApiWarehouseTools
         $begin = $condition['dateRange'][0];
         $end = $condition['dateRange'][1] . " 23:59:59";
         $sql = "SELECT trackingNumber,stockOrderNumber,username,flag,MAX(createdTime) AS createdTime 
-                FROM `oauth_task_package_info` 
+                FROM oauth_task_package_info 
                 WHERE createdTime BETWEEN '{$begin}' AND '{$end}' ";
         if ($username) $sql .= " AND username LIKE '%{$username}%' ";
         if ($trackingNumber) $sql .= " AND trackingNumber LIKE '%{$trackingNumber}%' ";
@@ -76,7 +76,7 @@ class ApiWarehouseTools
         $begin = $condition['dateRange'][0];
         $end = $condition['dateRange'][1] . " 23:59:59";
         $sql = "SELECT trackingNumber,stockOrderNumber,username,flag,SUBSTR( MAX(createdTime),1,10) AS createdTime 
-                FROM `oauth_task_package_info` 
+                FROM oauth_task_package_info 
                 WHERE createdTime BETWEEN '{$begin}' AND '{$end}' ";
 
         $sql .= " GROUP BY trackingNumber,stockOrderNumber,username,flag";
