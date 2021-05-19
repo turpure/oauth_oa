@@ -850,22 +850,24 @@ class WarehouseToolsController extends AdminController
         $totalNotPickingNum = ApiWarehouseTools::getNotPickingTradeNum($cond);
         $data = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}'")->queryAll();
         $dailyData = $packageData = $pickingData = [];
-        foreach ($data as $v){
+        foreach ($data as &$v){
+            $item = [
+                'singleNum' => $v['singleNum'],
+                'skuSingleNum' => $v['skuSingleNum'],
+                'multiNum' => $v['multiNum'],
+                'skuMultiNum' => $v['skuMultiNum'],
+                'totalNum' => $v['totalNum'],
+                'skuTotalNum' => $v['skuTotalNum'],
+            ];
             if($v['flag'] == 'date'){
-                $item = $v;
                 $item['dt'] = $v['name'];
-                unset($item['name'], $item['flag']);
                 $dailyData[] = $item;
             }elseif ($v['flag'] == 'packageMen'){
-                $item = $v;
-                $item['packageMen'] = $v['name'];
-                unset($item['name'], $item['flag']);
-                $packageData[] = $v;
+                $item['packageMen'] = $item['name'];
+                $packageData[] = $item;
             }else{
-                $item = $v;
-                $item['packingMen'] = $v['name'];
-                unset($item['name'], $item['flag']);
-                $pickingData[] = $v;
+                $item['packingMen'] = $item['name'];
+                $pickingData[] = $item;
             }
         }
         $dailyDataPro = new ArrayDataProvider([
@@ -962,6 +964,31 @@ class WarehouseToolsController extends AdminController
         }
         $title = ['打包人员', '单品订单数', '单品SKU数', '多品订单数', '多品SKU数', '总订单数', '总SKU数'];
         ExportTools::toExcelOrCsv('PackageOrder', $dailyData, 'Xls', $title);
+    }
+
+    /** 打包定单量导出
+     * actionPositionDetail
+     * Date: 2021-02-23 13:33
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionPackingOrderExport()
+    {
+        $cond = Yii::$app->request->post('condition', []);
+        $store = $cond['store'] ?: '义乌仓';
+        $begin = $cond['dateRange'][0] ?? '';
+        $end = $cond['dateRange'][1] ?? '';
+        $data = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}', 1")->queryAll();
+        $dailyData = [];
+        foreach ($data as $v) {
+            if ($v['flag'] == 'packingMen') {
+                unset($v['flag']);
+                $dailyData[] = $v;
+            }
+        }
+        $title = ['拣货人员', '单品订单数', '单品SKU数', '多品订单数', '多品SKU数', '总订单数', '总SKU数'];
+        ExportTools::toExcelOrCsv('PackingOrder', $dailyData, 'Xls', $title);
     }
 
 

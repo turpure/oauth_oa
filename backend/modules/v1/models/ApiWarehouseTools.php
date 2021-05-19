@@ -45,13 +45,14 @@ class ApiWarehouseTools
         $flag = $condition['flag'];
         $begin = $condition['dateRange'][0];
         $end = $condition['dateRange'][1] . " 23:59:59";
-        $sql = "SELECT * FROM `task_package` WHERE createdTime BETWEEN '{$begin}' AND '{$end}' ";
+        $sql = "SELECT trackingNumber,stockOrderNumber,username,flag,MAX(createdTime) AS createdTime FROM `task_package` 
+                WHERE createdTime BETWEEN '{$begin}' AND '{$end}' ";
         if ($username) $sql .= " AND username LIKE '%{$username}%' ";
         if ($trackingNumber) $sql .= " AND trackingNumber LIKE '%{$trackingNumber}%' ";
         if ($stockOrderNumber) $sql .= " AND stockOrderNumber LIKE '%{$stockOrderNumber}%' ";
         if (in_array($flag, ['0', '1']) ) $sql .= " AND flag = '{$flag}' ";
 
-        $sql .= " ORDER BY createdTime DESC";
+        $sql .= " GROUP BY trackingNumber,stockOrderNumber,username,flag ORDER BY MAX(createdTime) DESC";
         $data = Yii::$app->db->createCommand($sql)->queryAll();
         $provider = new ArrayDataProvider([
             'allModels' => $data,
