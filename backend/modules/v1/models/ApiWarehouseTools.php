@@ -45,7 +45,8 @@ class ApiWarehouseTools
         $flag = $condition['flag'];
         $begin = $condition['dateRange'][0];
         $end = $condition['dateRange'][1] . " 23:59:59";
-        $sql = "SELECT trackingNumber,stockOrderNumber,username,flag,MAX(createdTime) AS createdTime FROM `task_package` 
+        $sql = "SELECT trackingNumber,stockOrderNumber,username,flag,MAX(createdTime) AS createdTime 
+                FROM `oauth_task_package_info` 
                 WHERE createdTime BETWEEN '{$begin}' AND '{$end}' ";
         if ($username) $sql .= " AND username LIKE '%{$username}%' ";
         if ($trackingNumber) $sql .= " AND trackingNumber LIKE '%{$trackingNumber}%' ";
@@ -53,7 +54,7 @@ class ApiWarehouseTools
         if (in_array($flag, ['0', '1', '2']) ) $sql .= " AND flag = '{$flag}' ";
 
         $sql .= " GROUP BY trackingNumber,stockOrderNumber,username,flag ORDER BY MAX(createdTime) DESC";
-        $data = Yii::$app->db->createCommand($sql)->queryAll();
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         $provider = new ArrayDataProvider([
             'allModels' => $data,
             'pagination' => [
@@ -74,11 +75,12 @@ class ApiWarehouseTools
     public static function getPackageScanningStatistics($condition){
         $begin = $condition['dateRange'][0];
         $end = $condition['dateRange'][1] . " 23:59:59";
-        $sql = "SELECT trackingNumber,stockOrderNumber,username,flag,SUBSTR( MAX(createdTime),1,10) AS createdTime FROM `task_package` 
+        $sql = "SELECT trackingNumber,stockOrderNumber,username,flag,SUBSTR( MAX(createdTime),1,10) AS createdTime 
+                FROM `oauth_task_package_info` 
                 WHERE createdTime BETWEEN '{$begin}' AND '{$end}' ";
 
         $sql .= " GROUP BY trackingNumber,stockOrderNumber,username,flag";
-        $data = Yii::$app->db->createCommand($sql)->queryAll();
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         $userList = array_unique(ArrayHelper::getColumn($data, 'username'));
         $timeList = array_unique(ArrayHelper::getColumn($data, 'createdTime'));
 //        var_dump($userList);
@@ -145,7 +147,7 @@ class ApiWarehouseTools
                 'createdTime' => date('Y-m-d H:i:s'),
                 'flag' => $data['flag'] ?? 2,
             ];
-            $res = Yii::$app->db->createCommand()->insert('task_package', $row)->execute();
+            $res = Yii::$app->py_db->createCommand()->insert('oauth_task_package_info', $row)->execute();
             if(!$res){
                 throw new Exception('Failed to save info!');
             }

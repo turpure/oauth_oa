@@ -211,10 +211,10 @@ class WarehouseToolsController extends AdminController
     }
 
     /**
-     * 包裹扫描
+     * 包裹扫描统计
      * Date: 2021-05-07 14:35
      * Author: henry
-     * @return ArrayDataProvider
+     * @return array
      * @throws Exception
      */
     public function actionPackageScanningStatistics()
