@@ -50,7 +50,7 @@ class ApiWarehouseTools
         if ($username) $sql .= " AND username LIKE '%{$username}%' ";
         if ($trackingNumber) $sql .= " AND trackingNumber LIKE '%{$trackingNumber}%' ";
         if ($stockOrderNumber) $sql .= " AND stockOrderNumber LIKE '%{$stockOrderNumber}%' ";
-        if (in_array($flag, ['0', '1']) ) $sql .= " AND flag = '{$flag}' ";
+        if (in_array($flag, ['0', '1', '2']) ) $sql .= " AND flag = '{$flag}' ";
 
         $sql .= " GROUP BY trackingNumber,stockOrderNumber,username,flag ORDER BY MAX(createdTime) DESC";
         $data = Yii::$app->db->createCommand($sql)->queryAll();
