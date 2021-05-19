@@ -848,11 +848,30 @@ class WarehouseToolsController extends AdminController
         $begin = $cond['dateRange'][0] ?? '';
         $end = $cond['dateRange'][1] ?? '';
         $totalNotPickingNum = ApiWarehouseTools::getNotPickingTradeNum($cond);
-        $dailyData = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}'")->queryAll();
+        $data = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}'")->queryAll();
+        $dailyData = $packageData = $pickingData = [];
+        foreach ($data as $v){
+            if($v['flag'] == 'date'){
+                $item = $v;
+                $item['dt'] = $v['name'];
+                unset($item['name'], $item['flag']);
+                $dailyData[] = $item;
+            }elseif ($v['flag'] == 'packageMen'){
+                $item = $v;
+                $item['packageMen'] = $v['name'];
+                unset($item['name'], $item['flag']);
+                $packageData[] = $v;
+            }else{
+                $item = $v;
+                $item['packingMen'] = $v['name'];
+                unset($item['name'], $item['flag']);
+                $pickingData[] = $v;
+            }
+        }
         $dailyDataPro = new ArrayDataProvider([
             'allModels' => $dailyData,
             'sort' => [
-                'attributes' => ['dt', 'singleNum', 'multiNum', 'totalNum'],
+                'attributes' => ['dt', 'singleNum', 'skuSingleNum', 'multiNum','skuMultiNum', 'totalNum','skuTotalNum'],
                 'defaultOrder' => [
                     'dt' => SORT_ASC,
                 ]
@@ -862,11 +881,10 @@ class WarehouseToolsController extends AdminController
             ],
         ]);
 
-        $packageData = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}', 1 ")->queryAll();
         $packageDataPro = new ArrayDataProvider([
             'allModels' => $packageData,
             'sort' => [
-                'attributes' => ['packageMen', 'singleNum', 'multiNum', 'totalNum'],
+                'attributes' => ['packageMen', 'singleNum', 'skuSingleNum', 'multiNum','skuMultiNum', 'totalNum','skuTotalNum'],
                 'defaultOrder' => [
                     'singleNum' => SORT_DESC,
                 ]
@@ -876,11 +894,10 @@ class WarehouseToolsController extends AdminController
             ],
         ]);
 
-        $pickingData = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}', 2 ")->queryAll();
         $pickingDataPro = new ArrayDataProvider([
             'allModels' => $pickingData,
             'sort' => [
-                'attributes' => ['packageMen', 'singleNum', 'multiNum', 'totalNum'],
+                'attributes' => ['packageMen', 'singleNum', 'skuSingleNum', 'multiNum','skuMultiNum', 'totalNum','skuTotalNum'],
                 'defaultOrder' => [
                     'singleNum' => SORT_DESC,
                 ]
@@ -910,8 +927,15 @@ class WarehouseToolsController extends AdminController
         $store = $cond['store'] ?: '义乌仓';
         $begin = $cond['dateRange'][0] ?? '';
         $end = $cond['dateRange'][1] ?? '';
-        $dailyData = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}'")->queryAll();
-        $title = ['发货日期', '单品订单数', '多品订单数', '总订单数'];
+        $data = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}'")->queryAll();
+        $dailyData = [];
+        foreach ($data as $v) {
+            if ($v['flag'] == 'date') {
+                unset($v['flag']);
+                $dailyData[] = $v;
+            }
+        }
+        $title = ['发货日期', '单品订单数', '单品SKU数', '多品订单数', '多品SKU数', '总订单数', '总SKU数'];
         ExportTools::toExcelOrCsv('DailyDelivery', $dailyData, 'Xls', $title);
     }
 
@@ -928,8 +952,15 @@ class WarehouseToolsController extends AdminController
         $store = $cond['store'] ?: '义乌仓';
         $begin = $cond['dateRange'][0] ?? '';
         $end = $cond['dateRange'][1] ?? '';
-        $dailyData = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}', 1")->queryAll();
-        $title = ['打包人员', '单品订单数', '多品订单数', '总订单数'];
+        $data = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}', 1")->queryAll();
+        $dailyData = [];
+        foreach ($data as $v) {
+            if ($v['flag'] == 'packageMen') {
+                unset($v['flag']);
+                $dailyData[] = $v;
+            }
+        }
+        $title = ['打包人员', '单品订单数', '单品SKU数', '多品订单数', '多品SKU数', '总订单数', '总SKU数'];
         ExportTools::toExcelOrCsv('PackageOrder', $dailyData, 'Xls', $title);
     }
 
