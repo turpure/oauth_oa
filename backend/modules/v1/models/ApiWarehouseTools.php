@@ -83,6 +83,7 @@ class ApiWarehouseTools
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         $userList = array_unique(ArrayHelper::getColumn($data, 'username'));
         $timeList = array_unique(ArrayHelper::getColumn($data, 'createdTime'));
+        sort($timeList);
 //        var_dump($userList);
 //        var_dump($timeList);exit;
         $res = [];

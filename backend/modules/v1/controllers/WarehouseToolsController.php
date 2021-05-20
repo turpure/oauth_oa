@@ -11,7 +11,6 @@ namespace backend\modules\v1\controllers;
 use backend\models\ShopElf\OauthLoadSkuError;
 use backend\models\ShopElf\OauthSysConfig;
 use backend\models\ShopElf\OauthLabelGoodsRate;
-use backend\modules\v1\models\ApiOverseas;
 use backend\modules\v1\models\ApiSettings;
 use backend\modules\v1\models\ApiWarehouseTools;
 use backend\modules\v1\utils\ExportTools;
@@ -220,7 +219,20 @@ class WarehouseToolsController extends AdminController
     public function actionPackageScanningStatistics()
     {
         $condition = Yii::$app->request->post('condition');
-        return ApiWarehouseTools::getPackageScanningStatistics($condition);
+        $data = ApiWarehouseTools::getPackageScanningStatistics($condition);
+        $provider = new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['dt', 'username', 'scanNum', 'outOfStockNum', 'num', 'errorNum'],
+                'defaultOrder' => [
+                    'dt' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => 1000,
+            ],
+        ]);
+        return $provider->getModels();
     }
 
 
@@ -256,6 +268,7 @@ class WarehouseToolsController extends AdminController
         $condition = Yii::$app->request->post()['condition'];
         return ApiWarehouseTools::warehouseLogExport($condition);
     }
+
 
     #############################贴标工具#########################################
     /**
@@ -742,7 +755,6 @@ class WarehouseToolsController extends AdminController
         ExportTools::toExcelOrCsv('DatePickingData', $datePickingData, 'Xls', $title);
     }
 
-    #############################出库统计#########################################
 
 
 
