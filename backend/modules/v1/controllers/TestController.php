@@ -146,11 +146,19 @@ class TestController extends AdminController
 
 
     public  function actionTest3(){
-        $arr2 = [1,2,3,5,7,9];
-        $arr1 = [4,6,8,1,2,3];
-        $res = array_diff($arr1,$arr2);
-
-        return $res;
+        $sql = "SELECT trackingNumber,stockOrderNumber,username,flag,createdTime 
+                FROM task_package";
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
+        $step = 500;
+        $h = ceil(count($data)*1.0/$step);
+        for ($i = 0; $i < $h; $i++){
+            $res = Yii::$app->py_db->createCommand()->batchInsert('oauth_task_package_info',
+                ['trackingNumber','stockOrderNumber','username','flag','createdTime'],
+                array_slice($data, $i * $step, $step)
+                )->execute();
+            var_dump($res);
+        }
+//        var_dump($h);exit;
     }
 
 

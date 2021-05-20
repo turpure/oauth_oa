@@ -75,7 +75,7 @@ class ApiWarehouseTools
     public static function getPackageScanningStatistics($condition){
         $begin = $condition['dateRange'][0];
         $end = $condition['dateRange'][1] . " 23:59:59";
-        $sql = "SELECT trackingNumber,stockOrderNumber,username,flag,SUBSTR( MAX(createdTime),1,10) AS createdTime 
+        $sql = "SELECT trackingNumber,stockOrderNumber,username,flag,CONVERT(VARCHAR(10), MAX(createdTime),121) AS createdTime 
                 FROM oauth_task_package_info 
                 WHERE createdTime BETWEEN '{$begin}' AND '{$end}' ";
 
