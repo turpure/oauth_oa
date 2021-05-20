@@ -883,6 +883,7 @@ class WarehouseToolsController extends AdminController
                 'skuMultiNum' => $v['skuMultiNum'],
                 'totalNum' => $v['totalNum'],
                 'totalSkuNum' => $v['totalSkuNum'],
+                'skuTypeNum' => $v['skuTypeNum'],
             ];
             if($v['flag'] == 'date'){
                 $item['dt'] = $v['name'];
