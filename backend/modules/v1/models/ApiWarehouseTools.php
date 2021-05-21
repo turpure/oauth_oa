@@ -123,30 +123,34 @@ class ApiWarehouseTools
                 'message' => 'tracking number can not be empty!'
             ];
         }
-        $sql = "SELECT LogisticOrderNo,stockOrderNumber, 
-                        CASE WHEN COUNT(a.goodsskuID) = COUNT(DISTINCT b.goodsskuid) THEN 1 ELSE 0 END AS flag
-                FROM(
-                        SELECT LogisticOrderNo,sm.billNumber AS stockOrderNumber,d.goodsskuID
-                        FROM CG_StockOrderM (nolock) sm 
-                        LEFT JOIN b_store (nolock) bs ON bs.nid = sm.storeid
-                        LEFT JOIN CG_StockOrderD (nolock) d ON sm.nid = d.stockOrderNID
-                        WHERE LogisticOrderNo = '{$condition['trackingNumber']}'
-                ) a LEFT JOIN(
-                        SELECT sku,goodsskuid,SUM(l_qty) AS num
-                        FROM P_TradeDtUn (nolock) dt 
-                        LEFT JOIN P_TradeUn (nolock) t ON dt.tradeNID = t.NID
-                        WHERE t.FilterFlag = 1 AND orderTime BETWEEN DATEADD(dd, -90, CONVERT(VARCHAR(10),GETDATE(),121)) AND GETDATE()
-                        GROUP BY sku,goodsskuid
-                ) b ON a.goodsskuID=b.goodsskuid
-                GROUP BY LogisticOrderNo,stockOrderNumber";
+        $sql = "SELECT DISTINCT LogisticOrderNo,sm.billNumber AS stockOrderNumber, ISNULL(d.goodsskuID,0) AS goodsskuID
+                FROM CG_StockOrderM (nolock) sm 
+                LEFT JOIN CG_StockOrderD (nolock) d ON sm.nid = d.stockOrderNID
+                LEFT JOIN P_TradeDtUn (nolock) dt ON dt.goodsskuID=d.goodsskuID
+                LEFT JOIN P_TradeUn (nolock) t ON dt.tradeNID = t.NID
+                WHERE t.FilterFlag = 1 AND orderTime BETWEEN DATEADD(dd, -90, CONVERT(VARCHAR(10),GETDATE(),121)) AND GETDATE()
+                	AND LogisticOrderNo = '{$condition['trackingNumber']}' ORDER BY ISNULL(d.goodsskuID,0) DESC ";
         try {
-            $data = Yii::$app->py_db->createCommand($sql)->queryOne();
+            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+            if(!$data){
+                $flag = 2;
+            }else{
+                $flag = 0;  //默认 不缺货
+                foreach ($data as $v){
+                    // 查询到 缺货的SKU id 设置为 1
+                    if($v['goodsskuID'] > 0) {
+                        $flag = 1;
+                        break;
+                    }
+                }
+            }
+
             $row = [
                 'trackingNumber' => $condition['trackingNumber'],
                 'stockOrderNumber' => $data['stockOrderNumber'] ?? '',
                 'username' => $condition['username'],
                 'createdTime' => date('Y-m-d H:i:s'),
-                'flag' => $data['flag'] ?? 2,
+                'flag' => $flag,
             ];
             $res = Yii::$app->py_db->createCommand()->insert('oauth_task_package_info', $row)->execute();
             if(!$res){
