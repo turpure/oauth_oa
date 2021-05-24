@@ -237,7 +237,7 @@ class ApiTinyTool
         try {
             $sql = "SELECT bg.possessman1,bg.SalerName AS developer,bg.GoodsCode,bg.GoodsName,bg.CreateDate,bgs.SKU,
                         bgs.GoodsSKUStatus,bgs.BmpFileName,bg.LinkUrl,bg.Brand,bgc.CategoryParentName,bgc.CategoryName
-                    FROM b_goods AS bg
+                    FROM b_goods(nolock) AS bg
                     LEFT JOIN B_GoodsSKU(nolock) AS bgs ON bg.NID = bgs.GoodsID
                     LEFT JOIN B_GoodsCats(nolock) AS bgc ON bgc.NID = bg.GoodsCategoryID
                     LEFT JOIN B_Supplier(nolock) bs ON bs.NID = bg.SupplierID
