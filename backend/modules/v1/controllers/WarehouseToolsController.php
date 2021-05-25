@@ -197,6 +197,17 @@ class WarehouseToolsController extends AdminController
     }
 
     /**
+     * @brief 包裹删除
+     * @return array|bool
+     */
+    public function actionPackageDelete()
+    {
+        $condition = Yii::$app->request->post('condition');
+        return ApiWarehouseTools::packageDelete($condition);
+    }
+
+
+    /**
      * 包裹扫描
      * Date: 2021-05-07 14:35
      * Author: henry

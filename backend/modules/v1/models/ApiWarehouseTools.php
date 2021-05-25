@@ -162,6 +162,34 @@ class ApiWarehouseTools
     }
 
     /**
+     * @brief 包裹扫描删除
+     * @param $condition
+     * @return array|bool
+     */
+    public static function packageDelete($condition){
+        if(!$condition['id']){
+            return [
+                'code' => 400,
+                'message' => 'tracking id can not be empty!'
+            ];
+        }
+        try {
+            $res = Yii::$app->py_db->createCommand()->delete(
+                'oauth_task_package_info',
+                ['id' => $condition['id']])->execute();
+            if(!$res){
+                throw new Exception('Failed to mark info!');
+            }
+            return  true;
+        } catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
      * @brief 添加拣货任务
      * @param $condition
      * @return array|bool
