@@ -1579,8 +1579,40 @@ class WarehouseToolsController extends AdminController
         }
     }
 
-
-
+    /////////////////////////////////KPI////////////////////////////////////
+    public function actionKpiReport(){
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $pageSize = $condition['pageSize'] ? : 20;
+            $name = $condition['name'] ?: '';
+            $beginDate = $condition['dateRange'][0] ?: '';
+            $endDate = $condition['dateRange'][1] ?: '';
+            $sql = "SELECT * FROM `warehouse_kpi_report` WHERE dt BETWEEN '{$beginDate}' AND '{$endDate}' ";
+            if ($name) $sql .= " AND `name`='{$name}'";
+            $data =  Yii::$app->db->createCommand($sql)->queryAll();
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => ['dt','name', 'pur_in_package_num', 'marking_stock_order_num','marking_sku_num',
+                        'labeling_sku_num','labeling_goods_num','pda_in_storage_sku_num','pda_in_storage_goods_num',
+                        'pda_in_storage_location_num','single_sku_num','single_goods_num','single_location_num',
+                        'multi_sku_num','multi_goods_num','multi_location_num','update_date'],
+                    'defaultOrder' => [
+                        'dt' => SORT_DESC,
+                        'name' => SORT_ASC,
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
 
 
 }
