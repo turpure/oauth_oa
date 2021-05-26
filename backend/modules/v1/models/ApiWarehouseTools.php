@@ -53,7 +53,7 @@ class ApiWarehouseTools
         if ($stockOrderNumber) $sql .= " AND stockOrderNumber LIKE '%{$stockOrderNumber}%' ";
         if (in_array($flag, ['0', '1', '2']) ) $sql .= " AND flag = '{$flag}' ";
 
-        $sql .= " GROUP BY trackingNumber,stockOrderNumber,username,flag ORDER BY MAX(createdTime) DESC";
+        $sql .= " GROUP BY id,trackingNumber,stockOrderNumber,username,flag ORDER BY MAX(createdTime) DESC";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         $provider = new ArrayDataProvider([
             'allModels' => $data,
