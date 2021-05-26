@@ -45,7 +45,7 @@ class ApiWarehouseTools
         $flag = $condition['flag'];
         $begin = $condition['dateRange'][0];
         $end = $condition['dateRange'][1] . " 23:59:59";
-        $sql = "SELECT trackingNumber,stockOrderNumber,username,flag,MAX(createdTime) AS createdTime 
+        $sql = "SELECT id,trackingNumber,stockOrderNumber,username,flag,MAX(createdTime) AS createdTime 
                 FROM oauth_task_package_info 
                 WHERE createdTime BETWEEN '{$begin}' AND '{$end}' ";
         if ($username) $sql .= " AND username LIKE '%{$username}%' ";
