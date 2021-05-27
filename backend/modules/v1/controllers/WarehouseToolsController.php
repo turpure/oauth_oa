@@ -27,6 +27,7 @@ class WarehouseToolsController extends AdminController
         'class' => 'backend\modules\v1\utils\PowerfulSerializer',
         'collectionEnvelope' => 'items',
     ];
+
     public function behaviors()
     {
         return parent::behaviors();
@@ -182,7 +183,8 @@ class WarehouseToolsController extends AdminController
     }
 
     #####################################包裹扫描工具##############################################
-    public function actionPackageScanningMember(){
+    public function actionPackageScanningMember()
+    {
         return ApiWarehouseTools::getWarehouseMember('packageScanning');
     }
 
@@ -282,6 +284,7 @@ class WarehouseToolsController extends AdminController
 
 
     #############################贴标工具#########################################
+
     /**
      * @brief 贴标人
      * @return array
@@ -301,26 +304,26 @@ class WarehouseToolsController extends AdminController
     {
         try {
             $request = Yii::$app->request;
-            if($request->isGet){
+            if ($request->isGet) {
                 return OauthSysConfig::findOne(['name' => OauthSysConfig::LABEL_SET_SKU_NUM]);
-            }else{
+            } else {
                 $condition = $request->post('condition', []);
                 $model = OauthSysConfig::findOne(['name' => OauthSysConfig::LABEL_SET_SKU_NUM]);
-                if(!$model){
+                if (!$model) {
                     $model = new OauthSysConfig();
                     $model->name = OauthSysConfig::LABEL_SET_SKU_NUM;
                 }
                 $model->value = $condition['value'];
                 $model->memo = $condition['memo'];
                 $model->creator = Yii::$app->user->identity->username;
-                if($model->save()){
+                if ($model->save()) {
                     return true;
-                }else{
+                } else {
                     throw new Exception("Failed to save setting info!");
                 }
             }
 
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
@@ -337,7 +340,7 @@ class WarehouseToolsController extends AdminController
         try {
             $condition = Yii::$app->request->post('condition', []);
             return ApiWarehouseTools::label($condition);
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
@@ -356,7 +359,7 @@ class WarehouseToolsController extends AdminController
         try {
             $condition = Yii::$app->request->post('condition', []);
             return ApiWarehouseTools::getLabelDetail($condition);
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
@@ -389,7 +392,8 @@ class WarehouseToolsController extends AdminController
      * Author: henry
      * @return array
      */
-    public function actionImportLabelGoods(){
+    public function actionImportLabelGoods()
+    {
         $file = $_FILES['file'];
 
         if (!$file) {
@@ -397,7 +401,7 @@ class WarehouseToolsController extends AdminController
         }
         //判断文件后缀
         $extension = ApiSettings::get_extension($file['name']);
-        if (!in_array($extension , ['.xlsx', '.xls'])) return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' or 'xls'"];
+        if (!in_array($extension, ['.xlsx', '.xls'])) return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' or 'xls'"];
 
         //文件上传
         $result = ApiSettings::file($file, 'labelGoods');
@@ -419,17 +423,17 @@ class WarehouseToolsController extends AdminController
             $condition = Yii::$app->request->post('condition', []);
             $id = $condition['id'] ?? '';
             $model = OauthLabelGoodsRate::findOne(['id' => $id]);
-            if(!$model){
+            if (!$model) {
                 $model = new OauthLabelGoodsRate();
                 $model->creator = Yii::$app->user->identity->username;
             }
             $model->setAttributes($condition);
-            if($model->save()){
+            if ($model->save()) {
                 return true;
-            }else{
+            } else {
                 throw new Exception("Failed to save info of '{$condition['goodsCode']}'");
             }
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
@@ -448,7 +452,7 @@ class WarehouseToolsController extends AdminController
             $condition = Yii::$app->request->post('condition', []);
             OauthLabelGoodsRate::deleteAll(['id' => $condition['id']]);
             return true;
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
@@ -470,7 +474,7 @@ class WarehouseToolsController extends AdminController
                 'personLabelData' => $personLabelData,
                 'dateLabelData' => $dateLabelData,
             ];
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),
@@ -484,7 +488,8 @@ class WarehouseToolsController extends AdminController
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    public function actionLabelStatisticsExport(){
+    public function actionLabelStatisticsExport()
+    {
         $condition = Yii::$app->request->post()['condition'];
         $personData = ApiWarehouseTools::getLabelStatisticsData($condition);
         $dateData = ApiWarehouseTools::getLabelStatisticsData($condition, 1);
@@ -496,6 +501,7 @@ class WarehouseToolsController extends AdminController
     }
 
     #############################上架工具#########################################
+
     /**
      * 上架异常SKU列表
      * Date: 2021-05-10 10:31
@@ -520,7 +526,7 @@ class WarehouseToolsController extends AdminController
                     'pageSize' => $pageSize,
                 ],
             ]);
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),
@@ -543,11 +549,11 @@ class WarehouseToolsController extends AdminController
             $query->SKU = $condition['SKU'];
             $query->recorder = Yii::$app->user->identity->username;
             $res = $query->save();
-            if(!$res){
+            if (!$res) {
                 throw new \Exception('Failed save sku info!');
             }
             return true;
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),
@@ -579,7 +585,7 @@ class WarehouseToolsController extends AdminController
                     'pageSize' => $pageSize,
                 ],
             ]);
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),
@@ -611,16 +617,13 @@ class WarehouseToolsController extends AdminController
                     'pageSize' => $pageSize,
                 ],
             ]);
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),
             ];
         }
     }
-
-
-
 
 
     /**
@@ -631,6 +634,7 @@ class WarehouseToolsController extends AdminController
     {
         return ApiWarehouseTools::getWarehouseMember('load');
     }
+
     /**
      * 上货统计
      * Date: 2021-04-19 10:31
@@ -647,7 +651,7 @@ class WarehouseToolsController extends AdminController
                 'personLoadingData' => $personLoadingData,
                 'dateLoadingData' => $dateLoadingData,
             ];
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),
@@ -661,11 +665,12 @@ class WarehouseToolsController extends AdminController
      * Author: henry
      * @return array
      */
-    public function actionLoadingPersonDetail(){
+    public function actionLoadingPersonDetail()
+    {
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiWarehouseTools::getLoadStatisticsDetail($condition);
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),
@@ -680,11 +685,12 @@ class WarehouseToolsController extends AdminController
      * Author: henry
      * @return array
      */
-    public function actionLoadingDateDetail(){
+    public function actionLoadingDateDetail()
+    {
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiWarehouseTools::getLoadStatisticsDetail($condition, 1);
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),
@@ -699,7 +705,8 @@ class WarehouseToolsController extends AdminController
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    public function actionLoadingStatisticsExport(){
+    public function actionLoadingStatisticsExport()
+    {
         $condition = Yii::$app->request->post()['condition'];
         $personLoadingData = ApiWarehouseTools::getLoadStatisticsData($condition);
         $dateLoadingData = ApiWarehouseTools::getLoadStatisticsData($condition, 1);
@@ -731,7 +738,7 @@ class WarehouseToolsController extends AdminController
                 'personPickingData' => $personPickingData,
                 'datePickingData' => $datePickingData,
             ];
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage(),
@@ -746,12 +753,14 @@ class WarehouseToolsController extends AdminController
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    public function actionPersonPickingExport(){
+    public function actionPersonPickingExport()
+    {
         $condition = Yii::$app->request->post()['condition'];
         $personPickingData = ApiWarehouseTools::getPickStatisticsData($condition);
-        $title = ['拣货人','单品拣货量','多品拣货量','总拣货量'];
+        $title = ['拣货人', '单品拣货量', '多品拣货量', '总拣货量'];
         ExportTools::toExcelOrCsv('PersonPickingData', $personPickingData, 'Xls', $title);
     }
+
     /**
      * actionDatePickingExport
      * Date: 2021-04-15 11:52
@@ -759,15 +768,13 @@ class WarehouseToolsController extends AdminController
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    public function actionDatePickingExport(){
+    public function actionDatePickingExport()
+    {
         $condition = Yii::$app->request->post()['condition'];
         $datePickingData = ApiWarehouseTools::getPickStatisticsData($condition);
-        $title = ['拣货日期','单品拣货量','多品拣货量','总拣货量'];
+        $title = ['拣货日期', '单品拣货量', '多品拣货量', '总拣货量'];
         ExportTools::toExcelOrCsv('DatePickingData', $datePickingData, 'Xls', $title);
     }
-
-
-
 
 
     /**
@@ -886,7 +893,7 @@ class WarehouseToolsController extends AdminController
         $totalNotPickingNum = ApiWarehouseTools::getNotPickingTradeNum($cond);
         $data = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}'")->queryAll();
         $dailyData = $packageData = $pickingData = [];
-        foreach ($data as &$v){
+        foreach ($data as &$v) {
             $item = [
                 'singleNum' => $v['singleNum'],
                 'skuSingleNum' => $v['skuSingleNum'],
@@ -896,13 +903,13 @@ class WarehouseToolsController extends AdminController
                 'totalSkuNum' => $v['totalSkuNum'],
                 'skuTypeNum' => $v['skuTypeNum'],
             ];
-            if($v['flag'] == 'date'){
+            if ($v['flag'] == 'date') {
                 $item['dt'] = $v['name'];
                 $dailyData[] = $item;
-            }elseif ($v['flag'] == 'packageMen'){
+            } elseif ($v['flag'] == 'packageMen') {
                 $item['packageMen'] = $v['name'];
                 $packageData[] = $item;
-            }else{
+            } else {
                 $item['packingMen'] = $v['name'];
                 $pickingData[] = $item;
             }
@@ -910,7 +917,7 @@ class WarehouseToolsController extends AdminController
         $dailyDataPro = new ArrayDataProvider([
             'allModels' => $dailyData,
             'sort' => [
-                'attributes' => ['dt', 'singleNum', 'skuSingleNum', 'multiNum','skuMultiNum', 'totalNum','totalSkuNum'],
+                'attributes' => ['dt', 'singleNum', 'skuSingleNum', 'multiNum', 'skuMultiNum', 'totalNum', 'totalSkuNum'],
                 'defaultOrder' => [
                     'dt' => SORT_ASC,
                 ]
@@ -923,7 +930,7 @@ class WarehouseToolsController extends AdminController
         $packageDataPro = new ArrayDataProvider([
             'allModels' => $packageData,
             'sort' => [
-                'attributes' => ['packageMen', 'singleNum', 'skuSingleNum', 'multiNum','skuMultiNum', 'totalNum','totalSkuNum'],
+                'attributes' => ['packageMen', 'singleNum', 'skuSingleNum', 'multiNum', 'skuMultiNum', 'totalNum', 'totalSkuNum'],
                 'defaultOrder' => [
                     'singleNum' => SORT_DESC,
                 ]
@@ -936,7 +943,7 @@ class WarehouseToolsController extends AdminController
         $pickingDataPro = new ArrayDataProvider([
             'allModels' => $pickingData,
             'sort' => [
-                'attributes' => ['pickingMen', 'singleNum', 'skuSingleNum', 'multiNum','skuMultiNum', 'totalNum','totalSkuNum'],
+                'attributes' => ['pickingMen', 'singleNum', 'skuSingleNum', 'multiNum', 'skuMultiNum', 'totalNum', 'totalSkuNum'],
                 'defaultOrder' => [
                     'singleNum' => SORT_DESC,
                 ]
@@ -1177,7 +1184,7 @@ class WarehouseToolsController extends AdminController
         return new ArrayDataProvider([
             'allModels' => $data,
             'sort' => [
-                'attributes' => ['StoreName','LocationName','skuNum', 'stockSkuNum'],
+                'attributes' => ['StoreName', 'LocationName', 'skuNum', 'stockSkuNum'],
                 'defaultOrder' => [
                     'stockSkuNum' => SORT_DESC,
                 ]
@@ -1220,7 +1227,7 @@ class WarehouseToolsController extends AdminController
         return new ArrayDataProvider([
             'allModels' => $data,
             'sort' => [
-                'attributes' => ['sku', 'skuName', 'goodsskustatus', 'number', 'devDate', 'hasPurchaseOrder','reservationNum'],
+                'attributes' => ['sku', 'skuName', 'goodsskustatus', 'number', 'devDate', 'hasPurchaseOrder', 'reservationNum'],
                 'defaultOrder' => [
                     'number' => SORT_DESC,
                 ]
@@ -1263,13 +1270,13 @@ class WarehouseToolsController extends AdminController
         $data = ApiWarehouseTools::getPositionDetailsView($cond);
         $includedData = $notIncludedData = $emptyStockData = [];
         foreach ($data as $k => $v) {
-            if ($v['number'] > 0){
+            if ($v['number'] > 0) {
                 if ($v['hasPurchaseOrder'] == '是' || $v['reservationNum'] > 0) {
                     $includedData[] = $v;
-                } else{
+                } else {
                     $notIncludedData[] = $v;
                 }
-            }else{
+            } else {
                 $emptyStockData[] = $v;
             }
 
@@ -1405,7 +1412,8 @@ class WarehouseToolsController extends AdminController
      * Author: henry
      * @return array
      */
-    public function actionDifferenceOrderRate(){
+    public function actionDifferenceOrderRate()
+    {
         try {
             $condition = Yii::$app->request->post('condition', []);
             $storeName = $condition['storeName'] ?: '';
@@ -1413,7 +1421,7 @@ class WarehouseToolsController extends AdminController
             $endDate = $condition['dateRange'][1] ?: '';
             $sql = "EXEC oauth_warehouse_tools_difference_order_rate '{$storeName}','{$beginDate}','{$endDate}'";
             return Yii::$app->py_db->createCommand($sql)->queryAll();
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
@@ -1429,22 +1437,23 @@ class WarehouseToolsController extends AdminController
      * Author: henry
      * @return array|ArrayDataProvider
      */
-    public function actionStorageTimeRate(){
+    public function actionStorageTimeRate()
+    {
         try {
             $condition = Yii::$app->request->post('condition', []);
-            $pageSize = $condition['pageSize'] ? : 20;
+            $pageSize = $condition['pageSize'] ?: 20;
             $storeName = $condition['storeName'] ?: '';
             $beginDate = $condition['dateRange'][0] ?: '';
             $endDate = $condition['dateRange'][1] ?: '';
             $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}','{$storeName}'";
-            $data =  Yii::$app->py_db->createCommand($sql)->queryAll();
-            $totalNum = array_sum(ArrayHelper::getColumn($data,'totalNum'));
-            $totalInNum = array_sum(ArrayHelper::getColumn($data,'inNum'));
+            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+            $totalNum = array_sum(ArrayHelper::getColumn($data, 'totalNum'));
+            $totalInNum = array_sum(ArrayHelper::getColumn($data, 'inNum'));
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
-                    'attributes' => ['storeName', 'dt', 'totalNum','inNum','notInNum','notInRate','num','rate',
-                        'oneNum','oneRate','twoNum','twoRate','threeNum','threeRate','otherNum','otherRate'],
+                    'attributes' => ['storeName', 'dt', 'totalNum', 'inNum', 'notInNum', 'notInRate', 'num', 'rate',
+                        'oneNum', 'oneRate', 'twoNum', 'twoRate', 'threeNum', 'threeRate', 'otherNum', 'otherRate'],
                     'defaultOrder' => [
                         'storeName' => SORT_ASC,
                         'dt' => SORT_ASC,
@@ -1461,7 +1470,7 @@ class WarehouseToolsController extends AdminController
                     'totalInNum' => $totalInNum,
                 ]
             ];
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
@@ -1475,22 +1484,23 @@ class WarehouseToolsController extends AdminController
      * Author: henry
      * @return array|ArrayDataProvider
      */
-    public function actionStorageTimeRate2(){
+    public function actionStorageTimeRate2()
+    {
         try {
             $condition = Yii::$app->request->post('condition', []);
-            $pageSize = $condition['pageSize'] ? : 20;
+            $pageSize = $condition['pageSize'] ?: 20;
             $storeName = $condition['storeName'] ?: '';
             $beginDate = $condition['dateRange'][0] ?: '';
             $endDate = $condition['dateRange'][1] ?: '';
             $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}','{$storeName}','2.0'";
-            $data =  Yii::$app->py_db->createCommand($sql)->queryAll();
-            $totalNum = array_sum(ArrayHelper::getColumn($data,'totalNum'));
-            $totalInNum = array_sum(ArrayHelper::getColumn($data,'inNum'));
+            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+            $totalNum = array_sum(ArrayHelper::getColumn($data, 'totalNum'));
+            $totalInNum = array_sum(ArrayHelper::getColumn($data, 'inNum'));
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
-                    'attributes' => ['storeName', 'dt', 'totalNum','inNum','notInNum','notInRate','num','rate',
-                        'oneNum','oneRate','twoNum','twoRate','threeNum','threeRate','otherNum','otherRate'],
+                    'attributes' => ['storeName', 'dt', 'totalNum', 'inNum', 'notInNum', 'notInRate', 'num', 'rate',
+                        'oneNum', 'oneRate', 'twoNum', 'twoRate', 'threeNum', 'threeRate', 'otherNum', 'otherRate'],
                     'defaultOrder' => [
                         'storeName' => SORT_ASC,
                         'dt' => SORT_ASC,
@@ -1507,7 +1517,7 @@ class WarehouseToolsController extends AdminController
                     'totalInNum' => $totalInNum,
                 ]
             ];
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
@@ -1522,20 +1532,21 @@ class WarehouseToolsController extends AdminController
      * Author: henry
      * @return array|ArrayDataProvider
      */
-    public function actionDeliverTimeRate(){
+    public function actionDeliverTimeRate()
+    {
         try {
             $condition = Yii::$app->request->post('condition', []);
-            $pageSize = $condition['pageSize'] ? : 20;
+            $pageSize = $condition['pageSize'] ?: 20;
             $storeName = $condition['storeName'] ?: '';
             $beginDate = $condition['dateRange'][0] ?: '';
             $endDate = $condition['dateRange'][1] ?: '';
             $sql = "EXEC oauth_warehouse_tools_deliver_time_rate '{$beginDate}','{$endDate}','{$storeName}'";
-            $data =  Yii::$app->py_db->createCommand($sql)->queryAll();
+            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             return new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
-                    'attributes' => ['dt','storeName', 'totalNum', 'deliverableNum','zeroNum','zeroRate',
-                        'oneNum','oneRate','twoNum','twoRate','threeNum','threeRate','otherNum','otherRate'],
+                    'attributes' => ['dt', 'storeName', 'totalNum', 'deliverableNum', 'zeroNum', 'zeroRate',
+                        'oneNum', 'oneRate', 'twoNum', 'twoRate', 'threeNum', 'threeRate', 'otherNum', 'otherRate'],
                     'defaultOrder' => [
                         'storeName' => SORT_ASC,
                         'dt' => SORT_ASC,
@@ -1545,7 +1556,7 @@ class WarehouseToolsController extends AdminController
                     'pageSize' => $pageSize,
                 ],
             ]);
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
@@ -1559,20 +1570,21 @@ class WarehouseToolsController extends AdminController
      * Author: henry
      * @return array|ArrayDataProvider
      */
-    public function actionDeliverTimeRate2(){
+    public function actionDeliverTimeRate2()
+    {
         try {
             $condition = Yii::$app->request->post('condition', []);
-            $pageSize = $condition['pageSize'] ? : 20;
+            $pageSize = $condition['pageSize'] ?: 20;
             $storeName = $condition['storeName'] ?: '';
             $beginDate = $condition['dateRange'][0] ?: '';
             $endDate = $condition['dateRange'][1] ?: '';
             $sql = "EXEC oauth_warehouse_tools_deliver_time_rate '{$beginDate}','{$endDate}','{$storeName}','2.0'";
-            $data =  Yii::$app->py_db->createCommand($sql)->queryAll();
+            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             return new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
-                    'attributes' => ['dt','storeName', 'totalNum', 'deliverableNum','zeroNum','zeroRate',
-                        'oneNum','oneRate','twoNum','twoRate','threeNum','threeRate','otherNum','otherRate'],
+                    'attributes' => ['dt', 'storeName', 'totalNum', 'deliverableNum', 'zeroNum', 'zeroRate',
+                        'oneNum', 'oneRate', 'twoNum', 'twoRate', 'threeNum', 'threeRate', 'otherNum', 'otherRate'],
                     'defaultOrder' => [
                         'storeName' => SORT_ASC,
                         'dt' => SORT_ASC,
@@ -1582,7 +1594,7 @@ class WarehouseToolsController extends AdminController
                     'pageSize' => $pageSize,
                 ],
             ]);
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
@@ -1591,23 +1603,24 @@ class WarehouseToolsController extends AdminController
     }
 
     /////////////////////////////////KPI////////////////////////////////////
-    public function actionKpiReport(){
+    public function actionKpiReport()
+    {
         try {
             $condition = Yii::$app->request->post('condition', []);
-            $pageSize = $condition['pageSize'] ? : 20;
+            $pageSize = $condition['pageSize'] ?: 20;
             $name = $condition['name'] ?: '';
             $beginDate = $condition['dateRange'][0] ?: '';
             $endDate = $condition['dateRange'][1] ?: '';
             $sql = "SELECT * FROM `warehouse_kpi_report` WHERE dt BETWEEN '{$beginDate}' AND '{$endDate}' ";
             if ($name) $sql .= " AND `name`='{$name}'";
-            $data =  Yii::$app->db->createCommand($sql)->queryAll();
+            $data = Yii::$app->db->createCommand($sql)->queryAll();
             return new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
-                    'attributes' => ['dt','name', 'pur_in_package_num', 'marking_stock_order_num','marking_sku_num',
-                        'labeling_sku_num','labeling_goods_num','pda_in_storage_sku_num','pda_in_storage_goods_num',
-                        'pda_in_storage_location_num','single_sku_num','single_goods_num','single_location_num',
-                        'multi_sku_num','multi_goods_num','multi_location_num','update_date'],
+                    'attributes' => ['dt', 'name', 'job', 'pur_in_package_num', 'marking_stock_order_num', 'marking_sku_num',
+                        'labeling_sku_num', 'labeling_goods_num', 'pda_in_storage_sku_num', 'pda_in_storage_goods_num',
+                        'pda_in_storage_location_num', 'single_sku_num', 'single_goods_num', 'single_location_num',
+                        'multi_sku_num', 'multi_goods_num', 'multi_location_num', 'update_date'],
                     'defaultOrder' => [
                         'dt' => SORT_DESC,
                         'name' => SORT_ASC,
@@ -1617,12 +1630,36 @@ class WarehouseToolsController extends AdminController
                     'pageSize' => $pageSize,
                 ],
             ]);
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
             ];
         }
+    }
+
+    /**
+     * actionKpiExport
+     * Date: 2021-05-27 15:27
+     * Author: henry
+     * @throws Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionKpiExport()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $name = $condition['name'] ?: '';
+        $beginDate = $condition['dateRange'][0] ?: '';
+        $endDate = $condition['dateRange'][1] ?: '';
+        $sql = "SELECT * FROM `warehouse_kpi_report` WHERE dt BETWEEN '{$beginDate}' AND '{$endDate}' ";
+        if ($name) $sql .= " AND `name`='{$name}'";
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
+        $title = ['id', '姓名', '日期', '职位', '扫描包裹数', '打标订单数', '打标SKU种数','贴标SKU种数','贴标产品数',
+            '入库SKU种数','入库产品数','入库库位数','拣货单品SKU种数','拣货单品产品数','拣货单品库位数','拣货多品SKU种数',
+            '拣货多品产品数','拣货多品库位数','更新时间'];
+        ExportTools::toExcelOrCsv('KPIreport', $data, 'Xls', $title);
+
     }
 
 

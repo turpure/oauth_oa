@@ -992,7 +992,8 @@ class SchedulerController extends Controller
         }
     }
 
-    /**  获取仓库积分数据 并 计算 积分排行榜
+    /**
+     * 获取仓库积分数据 并 计算 积分排行榜
      * Date: 2020-03-27 11:12
      * Author: henry
      */
@@ -1003,6 +1004,22 @@ class SchedulerController extends Controller
             print date('Y-m-d H:i:s') . " INFO:success to get warehouse integral data \n";
         } catch (Exception $why) {
             print date('Y-m-d H:i:s') . " INFO:fail to get warehouse integral data because $why \n";
+        }
+    }
+
+    /**
+     * 获取仓库KPI数据
+     * Date: 2021-05-27 11:12
+     * Author: henry
+     */
+    public function actionWarehouseKpi($begin = '', $end = '')
+    {
+        try {
+            ConScheduler::getWarehouseKpiData($begin, $end);
+            print date('Y-m-d H:i:s') . " INFO:success to get warehouse integral data \n";
+        } catch (\Exception $e) {
+            echo date('Y-m-d H:i:s') . " fail to get warehouse KPI data because '{$e->getMessage()}'. \n";
+            //echo $e->getMessage();
         }
     }
 
@@ -1104,7 +1121,7 @@ class SchedulerController extends Controller
         try {
             $data = Yii::$app->py_db->createCommand("P_lockinfo 0,0")->queryAll();
             foreach ($data as $v) {
-                if ($v['deadlock'] > 0) {
+                if ($v['deadlock'] > 100) {
                     Yii::$app->py_db->createCommand("P_lockinfo 1,0")->execute();
                     echo date('Y-m-d H:i:s') . " Clear deadlock successful!\n";
                 }else{
