@@ -37,6 +37,14 @@ use Yii;
  * @property string $stockUp
  * @property int $mineId
  * @property string $recommendId
+ * @property string $packageSize
+ * @property string $volumeWeight
+ * @property string $keyWords
+ * @property string $lowestMarketPrice
+ * @property string $dailySalesNum
+ * @property string $hotTime
+ * @property string $stockNum
+ * @property string $goodsType
  */
 class OaGoods extends \yii\db\ActiveRecord
 {
