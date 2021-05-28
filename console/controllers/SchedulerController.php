@@ -1059,12 +1059,12 @@ class SchedulerController extends Controller
                 Yii::$app->db->createCommand()->batchInsert('cache_priceProtectionData',
                     [
                         'goodsCode', 'mainImage', 'storeName', 'plat', 'saler', 'goodsName', 'goodsStatus', 'cate', 'subCate',
-                        'salerName', 'createDate', 'number', 'soldNum', 'personSoldNum', 'turnoverDays', 'rate',
+                        'salerName', 'createDate', 'number', 'soldNum', 'personSoldNum', 'turnoverDays', 'rate', 'maxPrice',
                         'aveAmt', 'foulSaler', 'amt', 'foulSalerSoldNum', 'updateTime'
                     ],
                     array_slice($data, $i * $step, $step))->execute();
             }
-            echo date('Y-m-d H:i:s') . " Goods rights update successful!\n";
+            echo date('Y-m-d H:i:s') . " Get goods price protection data successful!\n";
         } catch (\Exception $e) {
             echo date('Y-m-d H:i:s') . " Get stock status data failed, cause of '{$e->getMessage()}'. \n";
             //echo $e->getMessage();
