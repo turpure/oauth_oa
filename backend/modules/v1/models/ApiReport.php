@@ -79,7 +79,8 @@ class ApiReport
             foreach ($list as $value) {
                 $item = $value;
                 $rate = self::getDeveloperRate($userList, $value['salernameZero']);
-
+                // 过滤掉离职员工
+                if($rate == 0) break;
                 //print_r($rate);exit;
                 //重新计算各时间段销售额（￥）、pp交易费（￥）、毛利润、毛利率
                 //0-6月
@@ -235,7 +236,9 @@ class ApiReport
         $rateArr = Yii::$app->py_db->createCommand("select * from Y_Ratemanagement")->queryOne();
         $rate = 0;
         foreach ($userList as $u) {
-            if ($username === $u['username']) {
+            if ($u['username'] == '无人') {
+                $rate = $rateArr['devRate'];
+            }else if ($username === $u['username']) {
                 if ($u['departId'] == 1) {   //一部
                     $rate = $rateArr['devRate1'];
                 } elseif ($u['departId'] == 4) {   //五部
@@ -247,7 +250,7 @@ class ApiReport
                 }
                 break;//跳出内层循环
             } else {
-                $rate = $rateArr['devRate'];
+                $rate = 0;
             }
         }
         return $rate;
