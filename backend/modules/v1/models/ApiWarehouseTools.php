@@ -1015,6 +1015,7 @@ class ApiWarehouseTools
     {
         $store = $condition['store'] ?: '义乌仓';
         $location = $condition['location'];
+        $address = $condition['address'] ?? '';
         $sql = "SELECT StoreName,sl.LocationName,gs.sku,skuName,goodsSkuStatus,cs.Number,g.createDate as devDate
                 FROM [dbo].[B_StoreLocation](nolock) sl
                 LEFT JOIN B_Store(nolock) s ON s.NID=sl.StoreID
@@ -1022,6 +1023,7 @@ class ApiWarehouseTools
                 LEFT JOIN B_Goods(nolock) g ON g.NID=gs.goodsID
                 LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID  
                 WHERE s.StoreName='{$store}' AND sl.LocationName LIKE '%{$location}%'";
+        if($address) $sql .= " AND sl.Address='{$address}' ";
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
 
