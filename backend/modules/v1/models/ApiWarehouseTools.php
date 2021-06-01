@@ -1022,8 +1022,9 @@ class ApiWarehouseTools
                 LEFT JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID
                 LEFT JOIN B_Goods(nolock) g ON g.NID=gs.goodsID
                 LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID  
-                WHERE s.StoreName='{$store}' AND sl.LocationName LIKE '%{$location}%'";
-        if($address) $sql .= " AND sl.Address LIKE '{$address}%' ";
+                WHERE s.StoreName='{$store}' ";
+        if($location) $sql .= " AND sl.LocationName LIKE '%{$location}%' ";
+        if($address) $sql .= " AND sl.LocationName LIKE '{$address}%' ";
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
 
