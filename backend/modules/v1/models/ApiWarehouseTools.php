@@ -14,7 +14,7 @@ use backend\models\ShopElf\OauthLabelGoodsRate;
 use backend\models\ShopElf\OauthLoadSkuError;
 use backend\models\TaskPick;
 use backend\models\TaskSort;
-use backend\models\TaskWarehouse;
+use backend\models\ShopElf\TaskWarehouse;
 use Codeception\Template\Api;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use backend\modules\v1\utils\ExportTools;
