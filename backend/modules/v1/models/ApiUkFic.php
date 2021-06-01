@@ -21,7 +21,8 @@ class ApiUkFic
     public static function getRateUkOrUs($code)
     {
         $rate = Yii::$app->py_db->createCommand("SELECT ExchangeRate FROM [dbo].[B_CurrencyCode](nolock) WHERE CURRENCYCODE = '{$code}'")->queryOne();
-        return $rate ? $rate['ExchangeRate'] : 0;
+//        return $rate ? $rate['ExchangeRate'] : 0;
+        return $code == 'GBP' ? 8.5 : ($rate ? $rate['ExchangeRate'] : 0);
     }
 
     /**
