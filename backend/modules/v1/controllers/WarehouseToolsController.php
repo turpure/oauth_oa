@@ -283,6 +283,66 @@ class WarehouseToolsController extends AdminController
     }
 
 
+    /**
+     * @brief 打标统计
+     * @return array
+     */
+    public function actionMarkStatistics()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $data = ApiWarehouseTools::getLabelStatisticsData($condition, 1);
+            $personLabelData = $dateLabelData = [];
+            foreach ($data as $v){
+                $item = $v;
+                unset($item['flag']);
+                if($v['flag'] == 'time'){
+                    $dateLabelData[] = $item;
+                }else{
+                    $personLabelData[] = $item;
+                }
+            }
+            return [
+                'personLabelData' => $personLabelData,
+                'dateLabelData' => $dateLabelData,
+            ];
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * 打标统计导出
+     * Date: 2021-04-20 16:08
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionMarkStatisticsExport()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        $data = ApiWarehouseTools::getLabelStatisticsData($condition, 1);
+        $personData = $dateData = [];
+        foreach ($data as $v){
+            $item = $v;
+            unset($item['flag']);
+            if($v['flag'] == 'time'){
+                $dateData[] = $item;
+            }else{
+                $personData[] = $item;
+            }
+        }
+        $res = [
+            ['title' => ['打标人员', '打标SKU数量', '打标SKU种数'], 'name' => '人员数据', 'data' => $personData],
+            ['title' => ['日期', '打标SKU数量', '打标SKU种数'], 'name' => '时间数据', 'data' => $dateData],
+        ];
+        ExportTools::toExcelMultipleSheets('markStatistics', $res, 'Xlsx');
+    }
+
+
     #############################贴标工具#########################################
 
     /**
@@ -468,11 +528,20 @@ class WarehouseToolsController extends AdminController
     {
         try {
             $condition = Yii::$app->request->post()['condition'];
-            $personLabelData = ApiWarehouseTools::getLabelStatisticsData($condition);
-            $dateLabelData = ApiWarehouseTools::getLabelStatisticsData($condition, 1);
+            $data = ApiWarehouseTools::getLabelStatisticsData($condition);
+            $personData = $dateData = [];
+            foreach ($data as $v){
+                $item = $v;
+                unset($item['flag']);
+                if($v['flag'] == 'time'){
+                    $dateData[] = $item;
+                }else{
+                    $personData[] = $item;
+                }
+            }
             return [
-                'personLabelData' => $personLabelData,
-                'dateLabelData' => $dateLabelData,
+                'personLabelData' => $personData,
+                'dateLabelData' => $dateData,
             ];
         } catch (Exception $e) {
             return [
@@ -491,13 +560,22 @@ class WarehouseToolsController extends AdminController
     public function actionLabelStatisticsExport()
     {
         $condition = Yii::$app->request->post()['condition'];
-        $personData = ApiWarehouseTools::getLabelStatisticsData($condition);
-        $dateData = ApiWarehouseTools::getLabelStatisticsData($condition, 1);
-        $data = [
-            ['title' => ['贴标人员', '贴标SKU数量'], 'name' => '人员数据', 'data' => $personData],
-            ['title' => ['日期', '贴标SKU数量'], 'name' => '时间数据', 'data' => $dateData],
+        $data = ApiWarehouseTools::getLabelStatisticsData($condition);
+        $personData = $dateData = [];
+        foreach ($data as $v){
+            $item = $v;
+            unset($item['flag']);
+            if($v['flag'] == 'time'){
+                $dateData[] = $item;
+            }else{
+                $personData[] = $item;
+            }
+        }
+        $res = [
+            ['title' => ['贴标人员', '贴标SKU数量', '贴标SKU种数'], 'name' => '人员数据', 'data' => $personData],
+            ['title' => ['日期', '贴标SKU数量', '贴标SKU种数'], 'name' => '时间数据', 'data' => $dateData],
         ];
-        ExportTools::toExcelMultipleSheets('labelStatistics', $data, 'Xlsx');
+        ExportTools::toExcelMultipleSheets('labelStatistics', $res, 'Xlsx');
     }
 
     #############################上架工具#########################################
