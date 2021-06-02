@@ -1689,10 +1689,12 @@ class WarehouseToolsController extends AdminController
             $condition = Yii::$app->request->post('condition', []);
             $pageSize = $condition['pageSize'] ?: 20;
             $name = $condition['name'] ?: '';
+            $job = $condition['job'] ?: '';
             $beginDate = $condition['dateRange'][0] ?: '';
             $endDate = $condition['dateRange'][1] ?: '';
             $sql = "SELECT * FROM `warehouse_kpi_report` WHERE dt BETWEEN '{$beginDate}' AND '{$endDate}' ";
-            if ($name) $sql .= " AND `name`='{$name}'";
+            if ($name) $sql .= " AND `name` LIKE '%{$name}%'";
+            if ($job) $sql .= " AND `job` LIKE '%{$job}%'";
             $data = Yii::$app->db->createCommand($sql)->queryAll();
             return new ArrayDataProvider([
                 'allModels' => $data,
@@ -1700,7 +1702,9 @@ class WarehouseToolsController extends AdminController
                     'attributes' => ['dt', 'name', 'job', 'pur_in_package_num', 'marking_stock_order_num', 'marking_sku_num',
                         'labeling_sku_num', 'labeling_goods_num', 'pda_in_storage_sku_num', 'pda_in_storage_goods_num',
                         'pda_in_storage_location_num', 'single_sku_num', 'single_goods_num', 'single_location_num',
-                        'multi_sku_num', 'multi_goods_num', 'multi_location_num', 'update_date'],
+                        'multi_sku_num', 'multi_goods_num', 'multi_location_num',
+                        'pack_single_order_num','pack_single_goods_num','pack_multi_order_num','pack_multi_goods_num',
+                        'update_date'],
                     'defaultOrder' => [
                         'dt' => SORT_DESC,
                         'name' => SORT_ASC,
@@ -1730,14 +1734,16 @@ class WarehouseToolsController extends AdminController
     {
         $condition = Yii::$app->request->post('condition', []);
         $name = $condition['name'] ?: '';
+        $job = $condition['job'] ?: '';
         $beginDate = $condition['dateRange'][0] ?: '';
         $endDate = $condition['dateRange'][1] ?: '';
         $sql = "SELECT * FROM `warehouse_kpi_report` WHERE dt BETWEEN '{$beginDate}' AND '{$endDate}' ";
         if ($name) $sql .= " AND `name`='{$name}'";
+        if ($job) $sql .= " AND `job` LIKE '%{$job}%'";
         $data = Yii::$app->db->createCommand($sql)->queryAll();
         $title = ['id', '姓名', '日期', '职位', '扫描包裹数', '打标订单数', '打标SKU种数','贴标SKU种数','贴标产品数',
             '入库SKU种数','入库产品数','入库库位数','拣货单品SKU种数','拣货单品产品数','拣货单品库位数','拣货多品SKU种数',
-            '拣货多品产品数','拣货多品库位数','更新时间'];
+            '拣货多品产品数','拣货多品库位数','打包单品订单数','打包单品产品数','打包多品订单数','打包多品产品数','更新时间'];
         ExportTools::toExcelOrCsv('KPIreport', $data, 'Xls', $title);
 
     }
