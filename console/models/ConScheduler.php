@@ -268,6 +268,7 @@ class ConScheduler
             ['name','dt','job','pur_in_package_num','marking_stock_order_num','marking_sku_num','labeling_sku_num',
                 'labeling_goods_num', 'pda_in_storage_sku_num','pda_in_storage_goods_num','pda_in_storage_location_num',
                 'single_sku_num','single_goods_num','single_location_num','multi_sku_num','multi_goods_num','multi_location_num',
+                'pack_single_order_num','pack_single_goods_num','pack_multi_order_num','pack_multi_goods_num',
                 'update_date'],
             $dataQuery
         )->execute();

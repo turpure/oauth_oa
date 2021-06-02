@@ -437,7 +437,8 @@ class WarehouseToolsController extends AdminController
     {
         $condition = Yii::$app->request->post('condition', []);
         $pageSize = $condition['pageSize'] ?: 20;
-        $data = OauthLabelGoodsRate::find();
+        $goodsCode = $condition['goodsCode'] ?: 20;
+        $data = OauthLabelGoodsRate::find()->andFilterWhere(['goodsCode' => $goodsCode]);
         return new ActiveDataProvider([
             'query' => $data,
             'pagination' => [
