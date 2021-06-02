@@ -534,6 +534,7 @@ class WarehouseToolsController extends AdminController
                 $item = $v;
                 unset($item['flag']);
                 if($v['flag'] == 'time'){
+                    unset($item['job'], $item['rate']);
                     $dateData[] = $item;
                 }else{
                     $personData[] = $item;
@@ -566,13 +567,14 @@ class WarehouseToolsController extends AdminController
             $item = $v;
             unset($item['flag']);
             if($v['flag'] == 'time'){
+                unset($item['job'], $item['rate']);
                 $dateData[] = $item;
             }else{
                 $personData[] = $item;
             }
         }
         $res = [
-            ['title' => ['贴标人员', '贴标SKU数量', '贴标SKU种数'], 'name' => '人员数据', 'data' => $personData],
+            ['title' => ['贴标人员', '职位', '困难系数', '贴标SKU数量', '贴标SKU种数'], 'name' => '人员数据', 'data' => $personData],
             ['title' => ['日期', '贴标SKU数量', '贴标SKU种数'], 'name' => '时间数据', 'data' => $dateData],
         ];
         ExportTools::toExcelMultipleSheets('labelStatistics', $res, 'Xlsx');
