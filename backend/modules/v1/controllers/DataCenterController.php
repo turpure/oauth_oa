@@ -483,7 +483,7 @@ class DataCenterController extends AdminController
         $condition['dataType'] = 'developer';
         $data = ApiDataCenter::getStockTurnoverInfo($condition);
         $title = ['商品编码', '主图', '仓库', '商品名称', '开发员', '季节', '商品状态', '开发时间',
-            '库存数量', '库存金额', '类目', '子类目', '最后采购时间', '未售天数', '最近30天销量','库存周转'];
+            '库存数量', '库存金额', '类目', '子类目', '最后采购时间', '未售天数', '最近30天销量', '库存周转'];
         ExportTools::toExcelOrCsv('developerStockTurnover', $data, 'Xlsx', $title);
     }
 
@@ -556,8 +556,8 @@ class DataCenterController extends AdminController
             'allModels' => $data,
             'sort' => [
                 'attributes' => ['sku', 'storeName', 'skuName', 'salerName', 'season', 'goodsSkuStatus', 'createDate',
-                    'number', 'money', 'cate', 'subCate', 'thirtyStockNum', 'thirtyStockMoney','maxStorageAge',
-                    'sixtyStockNum', 'sixtyStockMoney','ninetyStockNum','ninetyStockMoney','moreStockNum','moreStockMoney'],
+                    'number', 'money', 'cate', 'subCate', 'thirtyStockNum', 'thirtyStockMoney', 'maxStorageAge',
+                    'sixtyStockNum', 'sixtyStockMoney', 'ninetyStockNum', 'ninetyStockMoney', 'moreStockNum', 'moreStockMoney'],
                 'defaultOrder' => [
                     'number' => SORT_DESC,
                 ]
@@ -591,8 +591,8 @@ class DataCenterController extends AdminController
                 '{$params['cate']}','{$params['subCate']}','{$params['maxStorageAge']}'";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         $title = ['SKU', '主图', '仓库', 'SKU名称', '开发员', '季节', 'SKU状态', '开发时间',
-            '库存数量', '库存金额', '类目', '子类目', '0-30天库存数量', '0-30天库存金额', '30-60天库存数量','30-60天库存金额',
-            '60-90天库存数量','60-90天库存金额','90天以上库存数量','90天以上库存金额','180天以上'];
+            '库存数量', '库存金额', '类目', '子类目', '0-30天库存数量', '0-30天库存金额', '30-60天库存数量', '30-60天库存金额',
+            '60-90天库存数量', '60-90天库存金额', '90天以上库存数量', '90天以上库存金额', '180天以上'];
         ExportTools::toExcelOrCsv('skuStorageAge', $data, 'Xlsx', $title);
     }
 
@@ -640,7 +640,7 @@ class DataCenterController extends AdminController
         $condition['dataType'] = 'priceProtection';
         $data = ApiDataCenter::getPriceProtectionInfo($condition);
         $title = ['产品编码', '主图', '仓库', '销售员', '商品名称', '商品状态', '类目', '子类目', '开发员', '开发时间',
-            '库存数量', '30天销量', '30天本人销量', '库存周转','本人销量占比'];
+            '库存数量', '30天销量', '30天本人销量', '库存周转', '本人销量占比'];
         ExportTools::toExcelOrCsv('priceProtection', $data, 'Xlsx', $title);
     }
 
@@ -662,7 +662,7 @@ class DataCenterController extends AdminController
             'allModels' => $data,
             'sort' => [
                 'attributes' => ['goodsCode', 'storeName', 'saler', 'goodsName', 'goodsStatus', 'cate', 'subCate',
-                    'salerName',  'CreateDate', 'number', 'soldNum',  'personSoldNum', 'turnoverDays', 'rate',
+                    'salerName', 'CreateDate', 'number', 'soldNum', 'personSoldNum', 'turnoverDays', 'rate',
                     'aveAmt', 'foulSaler', 'amt', 'foulSalerSoldNum'],
                 'defaultOrder' => [
                     'turnoverDays' => SORT_DESC,
@@ -688,8 +688,8 @@ class DataCenterController extends AdminController
         $condition = Yii::$app->request->post('condition', []);
         $condition['dataType'] = 'priceProtectionError';
         $data = ApiDataCenter::getPriceProtectionInfo($condition);
-        $title = ['ID','产品编码', '主图', '仓库', '平台', '销售员', '商品名称', '商品状态', '类目', '子类目', '开发员', '开发时间', '库存数量', '30天销量',
-            '30天本人销量', '库存周转','本人销量占比','本人3天均价($)','犯规销售员','3天犯规最低价格($)','犯规销售员近30天销量'];
+        $title = ['ID', '产品编码', '主图', '仓库', '平台', '销售员', '商品名称', '商品状态', '类目', '子类目', '开发员', '开发时间', '库存数量', '30天销量',
+            '30天本人销量', '库存周转', '本人销量占比', '本人3天均价($)', '犯规销售员', '3天犯规最低价格($)', '犯规销售员近30天销量'];
         ExportTools::toExcelOrCsv('priceProtectionError', $data, 'Xlsx', $title);
     }
 
@@ -1591,7 +1591,8 @@ class DataCenterController extends AdminController
 
     ################################供应商######################################
 
-    public function actionSuppliersProfit(){
+    public function actionSuppliersProfit()
+    {
         try {
             $condition = Yii::$app->request->post('condition', []);
             $pageSize = $condition['pageSize'] ?? 20;
@@ -1601,7 +1602,7 @@ class DataCenterController extends AdminController
                 'allModels' => $data,
                 'sort' => [
                     'attributes' => ['supplierName', 'personName', 'supplierCode', 'url', 'linkMan', 'mobile', 'address',
-                        'categoryName',  'categoryLevel', 'arrivalDays', 'memo',  'amount', 'money', 'qty', 'profitRmb',
+                        'categoryName', 'categoryLevel', 'arrivalDays', 'memo', 'amount', 'money', 'qty', 'profitRmb',
                         //'maxProfitRmb', 'profitAdd'
                     ],
                     'defaultOrder' => [
@@ -1612,7 +1613,7 @@ class DataCenterController extends AdminController
                     'pageSize' => $pageSize,
                 ],
             ]);
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
@@ -1629,17 +1630,19 @@ class DataCenterController extends AdminController
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
 
-    public function actionSuppliersProfitExport(){
+    public function actionSuppliersProfitExport()
+    {
         $condition = Yii::$app->request->post('condition', []);
         $condition['flag'] = 1;
         $data = ApiDataCenter::getSupplierProfit($condition);
         $title = ['供应商名称', '采购员', '编码', '网址', '联系人', '手机', '地址', '类别', '等级', '到货天数', '备注',
-            '采购总数量', '采购总金额(￥)','销量','毛利(￥)',  //'前3个月最高单月毛利(￥)','毛利增长(￥)'
+            '采购总数量', '采购总金额(￥)', '销量', '毛利(￥)',  //'前3个月最高单月毛利(￥)','毛利增长(￥)'
         ];
         ExportTools::toExcelOrCsv('suppliersProfit', $data, 'Xlsx', $title);
     }
 
-    public function actionSuppliersProfitDetail(){
+    public function actionSuppliersProfitDetail()
+    {
         try {
             $condition = Yii::$app->request->post('condition', []);
             $pageSize = $condition['pageSize'] ?? 20;
@@ -1657,7 +1660,7 @@ class DataCenterController extends AdminController
                     'pageSize' => $pageSize,
                 ],
             ]);
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
@@ -1674,18 +1677,21 @@ class DataCenterController extends AdminController
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
 
-    public function actionSuppliersProfitDetailExport(){
+    public function actionSuppliersProfitDetailExport()
+    {
         $condition = Yii::$app->request->post('condition', []);
         $data = ApiDataCenter::getSupplierProfitDetail($condition);
         $title = ['产品编码', '产品名称', '大类目', '小类目', '开发员', '采购员', '开发日期',
-            '采购总数量', '采购总金额(￥)','销量','毛利(￥)'];
+            '采购总数量', '采购总金额(￥)', '销量', '毛利(￥)'];
         ExportTools::toExcelOrCsv('suppliersProfitDetail', $data, 'Xlsx', $title);
     }
-    public function actionSuppliersProfitSummary(){
+
+    public function actionSuppliersProfitSummary()
+    {
         try {
             $condition = Yii::$app->request->post('condition', []);
             return ApiDataCenter::getSupplierProfitSummary($condition);
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
@@ -1701,7 +1707,8 @@ class DataCenterController extends AdminController
      * Author: henry
      * @return array|ArrayDataProvider
      */
-    public function actionSuppliersLevel(){
+    public function actionSuppliersLevel()
+    {
         try {
             $condition = Yii::$app->request->post('condition', []);
             $pageSize = $condition['pageSize'] ?? 20;
@@ -1709,8 +1716,8 @@ class DataCenterController extends AdminController
             return new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
-                    'attributes' => ['supplierID','supplierName','linkMan','mobile','address','categoryName',
-                            'supplierLevel','memo','LastPurchaseMoney'],
+                    'attributes' => ['supplierID', 'supplierName', 'linkMan', 'mobile', 'address', 'categoryName',
+                        'supplierLevel', 'memo', 'LastPurchaseMoney'],
                     'defaultOrder' => [
                         'LastPurchaseMoney' => SORT_DESC,
                     ]
@@ -1719,7 +1726,7 @@ class DataCenterController extends AdminController
                     'pageSize' => $pageSize,
                 ],
             ]);
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
@@ -1735,10 +1742,11 @@ class DataCenterController extends AdminController
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    public function actionSuppliersLevelExport(){
+    public function actionSuppliersLevelExport()
+    {
         $condition = Yii::$app->request->post('condition', []);
         $data = ApiDataCenter::getSupplierLevel($condition);
-        $title = ['供应商ID','供应商名称', '联系人', '手机', '地址', '类别', '等级', '备注', '上月采购金额'];
+        $title = ['供应商ID', '供应商名称', '联系人', '手机', '地址', '类别', '等级', '备注', '上月采购金额'];
         ExportTools::toExcelOrCsv('suppliersLevel', $data, 'Xlsx', $title);
     }
 
@@ -1748,12 +1756,13 @@ class DataCenterController extends AdminController
      * Author: henry
      * @return array
      */
-    public function actionSuppliersGoods(){
+    public function actionSuppliersGoods()
+    {
         try {
             $condition = Yii::$app->request->post('condition', []);
             $sql = "SELECT goodsCode,goodsName,purchaser,salerName FROM B_Goods WHERE SupplierID='{$condition['supplierID']}'";
             return Yii::$app->py_db->createCommand($sql)->queryAll();
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
@@ -1769,12 +1778,56 @@ class DataCenterController extends AdminController
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    public function actionSuppliersGoodsExport(){
+    public function actionSuppliersGoodsExport()
+    {
         $condition = Yii::$app->request->post('condition', []);
         $sql = "SELECT goodsCode,goodsName,purchaser,salerName FROM B_Goods WHERE SupplierID='{$condition['supplierID']}'";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-        $title = ['商品编码','商品名称', '采购员', '开发员'];
+        $title = ['商品编码', '商品名称', '采购员', '开发员'];
         ExportTools::toExcelOrCsv('suppliersGoods', $data, 'Xlsx', $title);
+    }
+
+    //////////////////////////////客服////////////////////////////////////////////
+
+    /**
+     * 账号发件数
+     * Date: 2021-06-03 18:03
+     * Author: henry
+     * @return mixed
+     */
+    public function actionSuffixEmail()
+    {
+        $condition = Yii::$app->request->post('condition', '');
+        $beginDate = $condition['dateRange'][0];
+        $endDate = $condition['dateRange'][1];
+        $suffix = $condition['suffix'];
+        $sql = "select suffix,sum(case when FolderID=1 then 1 else 0 end) AS repliedEmailNum
+                from M_eBayMessages m
+                LEFT JOIN (SELECT DISTINCT ebayuserid,NoteName AS suffix FROM S_PalSyncInfo) p ON p.ebayuserid = m.ebayuserid
+                WHERE CONVERT(VARCHAR(10),DateAdd(hour,8,ReceiveDate),121) between '{$beginDate}' and '{$endDate}' ";
+        if($suffix) $sql .= " AND suffix like '%{$suffix}%'";
+        $sql .= " GROUP BY suffix";
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
+    }
+
+    /**
+     * 账号邮件 回复时效
+     * Date: 2021-06-03 18:03
+     * Author: henry
+     * @return mixed
+     */
+    public function actionSuffixEmailRepliedRate()
+    {
+        $condition = Yii::$app->request->post('condition', '');
+        $beginDate = $condition['dateRange'][0];
+        $endDate = $condition['dateRange'][1];
+        $suffix = $condition['suffix'];
+        $sql = "select suffix,sum(case when FolderID=1 then 1 else 0 end) AS repliedEmailNum
+                from M_eBayMessages m
+                LEFT JOIN (SELECT DISTINCT ebayuserid,NoteName AS suffix FROM S_PalSyncInfo) p ON p.ebayuserid = m.ebayuserid
+                where CONVERT(VARCHAR(10),DateAdd(hour,8,ReceiveDate),121) between '{$beginDate}' and '{$endDate}'
+                GROUP BY suffix";
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
 
 

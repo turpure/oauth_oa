@@ -1214,8 +1214,9 @@ class ApiWarehouseTools
      * @return mixed
      */
     public static function getLabelStatisticsData($condition, $flag = 0){
-        $member = self::getWarehouseMember('label');
-        $userList = $condition['username'] ? : ArrayHelper::getColumn($member, 'PersonCode');
+//        $member = self::getWarehouseMember('label');
+//        $userList = $condition['username'] ? : ArrayHelper::getColumn($member, 'PersonCode');
+        $userList = $condition['username'] ? : [];
         $userList = implode(',', $userList);
         //获取数据
         $sql = "EXEC oauth_warehouse_tools_label_statistics '{$condition['dateRange'][0]}', 
