@@ -25,22 +25,23 @@ class ApiUk
         $arr = explode(',', $sku);
         $data = [];
         //try {
-            foreach ($arr as $v) {
-                if (strpos($v, '*') !== false) {
-                    $newSku = substr($v, 0, strpos($v, '*'));
-                    $skuNum = substr($v, strpos($v, '*') + 1, count($v));
-                } else {
-                    $newSku = $v;
-                    $skuNum = 1;
-                }
+        foreach ($arr as $v) {
+            if (strpos($v, '*') !== false) {
+                $newSku = substr($v, 0, strpos($v, '*'));
+                $skuNum = substr($v, strpos($v, '*') + 1, count($v));
+            } else {
+                $newSku = $v;
+                $skuNum = 1;
+            }
 //                var_dump($newSku);exit;
-                $priceSql = "SELECT max(costprice) FROM Y_R_tStockingWaring WHERE sku='{$newSku}' and costprice > 0 and storeName like '万邑通UK%'";
+            $priceSql = "SELECT max(costprice) FROM Y_R_tStockingWaring(nolock) WHERE sku='{$newSku}' and costprice > 0 and storeName like '万邑通UK%'";
+            $price = Yii::$app->py_db->createCommand($priceSql)->queryScalar();
+            if (!$price) {
+                $priceSql = "SELECT max(goodsPrice) FROM Y_R_tStockingWaring(nolock) WHERE sku='{$newSku}'";
                 $price = Yii::$app->py_db->createCommand($priceSql)->queryScalar();
-                if(!$price){
-                    $priceSql = "SELECT max(goodsPrice) FROM Y_R_tStockingWaring WHERE sku='{$newSku}'";
-                    $price = Yii::$app->py_db->createCommand($priceSql)->queryScalar();
-                }
-                $sql = "SELECT aa.SKU,aa.skuname,aa.goodscode,aa.CategoryName,aa.CreateDate,aa.price * " . $skuNum * $num . " as price,
+            }
+            if($price == null) $price = 0;
+            $sql = "SELECT aa.SKU,aa.skuname,aa.goodscode,aa.CategoryName,aa.CreateDate,aa.price * " . $skuNum * $num . " as price,
                            k.weight*1000*" . $skuNum * $num . " AS weight,
                           k.length,k.width,k.height*" . $skuNum * $num . " as height ," . $skuNum * $num . " AS num
                 FROM (    
@@ -56,10 +57,10 @@ class ApiUk
                     ) AS aa
                 LEFT JOIN UK_Storehouse_WeightAndSize(nolock) k ON aa.sku=k.sku
                 WHERE  aa.sku='{$newSku}'";
-                $res = Yii::$app->py_db->createCommand($sql)->queryOne();
-                $data[] = $res;
-            }
-            return $data;
+            $res = Yii::$app->py_db->createCommand($sql)->queryOne();
+            $data[] = $res;
+        }
+        return $data;
         /*} catch (Exception $e) {
             return [];
         }*/
@@ -85,12 +86,12 @@ class ApiUk
         } else if ($weight <= Yii::$app->params['w_uk_out_4']) {
             $data['out'] = Yii::$app->params['w_uk_out_fee_4'];
         } else {
-            $data['out'] = ceil(($weight - Yii::$app->params['w_uk_out_4'])/1000.0) * Yii::$app->params['w_uk_out_fee_5'];
+            $data['out'] = ceil(($weight - Yii::$app->params['w_uk_out_4']) / 1000.0) * Yii::$app->params['w_uk_out_fee_5'];
         }
 
         //获取运费,超重、超长、超宽、超高取快递方式Yodel - Packet Home Mini 否则取快递方式 Royal Mail - Untracked 48 Large Letter
         if ($weight > Yii::$app->params['w_uk_tran_4_3'] || $length > Yii::$app->params['len_uk_tran_4'] ||
-            $width + $height > Yii::$app->params['w_h_uk_tran_4'] || $length + 2*($width + $height) > Yii::$app->params['circum_uk_tran_4']) {
+            $width + $height > Yii::$app->params['w_h_uk_tran_4'] || $length + 2 * ($width + $height) > Yii::$app->params['circum_uk_tran_4']) {
             $data['name'] = '无法获取对应物流！';
             $data['cost'] = 0;
         } elseif ($weight > Yii::$app->params['w_uk_tran_3_6'] || $length > Yii::$app->params['len_uk_tran_3'] ||
@@ -146,11 +147,11 @@ class ApiUk
                 $data['cost'] = Yii::$app->params['w_uk_tran_fee_1_4'];
             }
         }
-        $data['costRmb'] = $data['cost'] * Yii::$app->params['poundRate'];
-        $data['outRmb'] = $data['out'] * Yii::$app->params['poundRate'];
+        $data['costRmb'] = round($data['cost'] * Yii::$app->params['poundRate'],2);
+        $data['outRmb'] = round($data['out'] * Yii::$app->params['poundRate'],2);
 
         $res[] = $data;
-        if($data['name'] != '无法获取对应物流！'){
+        if ($data['name'] != '无法获取对应物流！') {
             $item['out'] = $data['out'];
             $item['name'] = Yii::$app->params['transport_uk4'];
             //获取方式4的运费
@@ -161,8 +162,8 @@ class ApiUk
             } else {
                 $item['cost'] = Yii::$app->params['w_uk_tran_fee_4_3'];
             }
-            $item['costRmb'] = $item['cost'] * Yii::$app->params['poundRate'];
-            $item['outRmb'] = $data['out'] * Yii::$app->params['poundRate'];
+            $item['costRmb'] = round($item['cost'] * Yii::$app->params['poundRate'],2);
+            $item['outRmb'] = round($data['out'] * Yii::$app->params['poundRate'],2);
             $res[] = $item;
 //            var_dump($item);exit;
         }
@@ -177,25 +178,40 @@ class ApiUk
      */
     public static function getRate($params)
     {
-        $data['price'] = $params['price'] + $params['shippingPrice'];
+        $data['price'] = round($params['price'] + $params['shippingPrice'],2);
 
         //eBay交易费
         $data['eFee'] = $data['price'] * Yii::$app->params['eRate_uk'];
+        //广告费
+        $data['adFee'] = round($params['price'] * $params['adRate'] / 100, 2);
         //获取汇率
         $ukRate = ApiUkFic::getRateUkOrUs('GBP');//英镑汇率
         $usRate = ApiUkFic::getRateUkOrUs('USD');//美元汇率
         $newPrice = $data['price'] * $ukRate / $usRate;//英镑转化成美元
         //获取paypal交易费
-        if ($newPrice > 8) {
-            $data['pFee'] = $data['price'] * Yii::$app->params['bpRate_uk'] + Yii::$app->params['bpBasic_uk'];
+        if ($params['vatRate']) {
+            if ($newPrice > 8) {
+                $data['pFee'] = $data['price'] * Yii::$app->params['bpRate_uk'] + Yii::$app->params['bpBasic_uk'];
+            } else {
+                $data['pFee'] = $data['price'] * Yii::$app->params['spRate_uk'] + Yii::$app->params['spBasic_uk'];
+            }
+            $data['vatFee'] = round($data['price'] * (1 - 1 / (1 + $params['vatRate'] / 100)), 2);
+            $profit = $data['price'] - $params['price'] * $params['adRate'] / 100 -
+                $data['pFee'] - $data['eFee'] - $data['vatFee'] -
+                ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate ;
+            $data['rate'] = round($profit / ($data['price'] / (1 + $params['vatRate'] / 100)) * 100, 2);
         } else {
-            $data['pFee'] = $data['price'] * Yii::$app->params['spRate_uk'] + Yii::$app->params['spBasic_uk'];
+            $data['pFee'] = 0.36; //托管账号固定费用
+            $data['vatFee'] = round(($data['adFee'] + $data['eFee']) * 0.2, 2);
+            $profit = $data['price'] - $params['price'] * $params['adRate'] / 100 -
+                $data['pFee'] - $data['eFee'] - $data['vatFee'] -
+                ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate ;
+            $data['rate'] = round($profit / $data['price'] * 100, 2);
         }
 
+
         //计算毛利
-        $profit = $data['price'] * (1 - $params['vatRate']/100) * (1 - $params['adRate']/100) - $data['pFee'] - $data['eFee'] -
-            ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate +
-            $params['shippingPrice'] * (1 - $params['vatRate']/100) * $params['adRate']/100;
+
         $data['profit'] = round($profit, 2);
         $data['eFee'] = round($data['eFee'], 2);
         $data['pFee'] = round($data['pFee'], 2);
@@ -203,9 +219,7 @@ class ApiUk
 
         //计算毛利率
         $data['adRate'] = $params['adRate'];
-        $data['adFee'] = round($params['price'] * (1 - $params['vatRate']/100) * $params['adRate'] / 100,2);
-        $data['vatFee'] = round($data['price'] * $params['vatRate'] / 100,2);
-        $data['rate'] = round($profit / ($data['price'] * (1 - $params['vatRate']/100)) * 100, 2);
+
 
         return $data;
     }
@@ -221,40 +235,63 @@ class ApiUk
         $ukRate = ApiUkFic::getRateUkOrUs('GBP');//英镑汇率
         $usRate = ApiUkFic::getRateUkOrUs('USD');//美元汇率
 
-
-        //获取售价  使用小额paypal参数计算 和8美元比较，小于8则正确，否则使用大额参数再次计算获取售价
-        $price = ( ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate +
-                Yii::$app->params['spBasic_uk'] - $params['shippingPrice'] * $params['adRate']/100
-            ) / ( (1 - $params['rate']/100)*(1 - $params['vatRate']/100) - Yii::$app->params['eRate_uk'] -
-                Yii::$app->params['spRate_uk'] - $params['adRate']/100);
-
-        //获取paypal交易费
-        if ($price < 8 * $usRate / $ukRate) {
-            $pFee = $price * Yii::$app->params['spRate_uk'] + Yii::$app->params['spBasic_uk'];
+        // VAT 税率为0时取固定 pp费用
+        if ($params['vatRate']) {
+            //获取售价  使用小额paypal参数计算 和8美元比较，小于8则正确，否则使用大额参数再次计算获取售价
+            //var_dump($params['rate'] * (1 + $params['vatRate']/100)/100);exit;
+            $price = (
+                    ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate + Yii::$app->params['spBasic_uk']
+                    - $params['shippingPrice'] * ((1 - $params['rate']/100) / (1 + $params['vatRate'] / 100) -
+                        Yii::$app->params['spRate_uk'] - Yii::$app->params['eRate_uk'])
+                ) / (
+                    (1 - $params['rate']/100) / (1 + $params['vatRate'] / 100) -
+                    Yii::$app->params['eRate_uk'] - Yii::$app->params['spRate_uk'] - $params['adRate'] / 100
+                );
+//            var_dump($price);exit;
+            //获取paypal交易费
+            if ($price < 8 * $usRate / $ukRate) {
+                $data['pFee'] = ($price + $params['shippingPrice']) * Yii::$app->params['spRate_uk'] + Yii::$app->params['spBasic_uk'];
+            } else {
+                $price = (
+                        ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate + Yii::$app->params['bpBasic_uk']
+                        - $params['shippingPrice'] * ((1 - $params['rate']/100) / (1 + $params['vatRate'] / 100) -
+                            Yii::$app->params['bpRate_uk'] - Yii::$app->params['eRate_uk'])
+                    ) / (
+                        (1 - $params['rate']/100) / (1 + $params['vatRate'] / 100) -
+                        Yii::$app->params['eRate_uk'] - Yii::$app->params['bpRate_uk'] - $params['adRate'] / 100
+                    );
+                $data['pFee'] = ($price + $params['shippingPrice']) * Yii::$app->params['bpRate_uk'] + Yii::$app->params['bpBasic_uk'];
+            }
+            $data['price'] = round($price + $params['shippingPrice'], 2);
+            $data['eFee'] = round($data['price'] * Yii::$app->params['eRate_uk'],2);
+            $data['adFee'] = round($price * $params['adRate'] / 100, 2);
+            $data['vatFee'] = round($data['price'] * (1 - 1/(1 + $params['vatRate'] / 100)), 2);
         } else {
-            $price = (($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate +
-                    Yii::$app->params['bpBasic_uk'] - (1 - $params['vatRate']/100) * $params['shippingPrice'] * $params['adRate']/100
-                )/ ( (1 - $params['rate']/100 - $params['adRate']/100) * (1 - $params['vatRate']/100)
-                    - Yii::$app->params['eRate_uk'] - Yii::$app->params['bpRate_uk']);
-            $pFee = $price * Yii::$app->params['bpRate_uk'] + Yii::$app->params['bpBasic_uk'];
+            $data['pFee'] = 0.36;
+            $price = (
+                    ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate + $data['pFee'] -
+                    $params['shippingPrice'] * (1 - $params['rate']/100/(1 + $params['vatRate']/100) -
+                        1.2 * Yii::$app->params['eRate_uk'] )
+                ) / (
+                    1 - $params['rate']/100/(1 + $params['vatRate']/100) -
+                    1.2 * Yii::$app->params['eRate_uk'] - 1.2 * $params['adRate']/100
+                );
+            $data['price'] = round($price + $params['shippingPrice'], 2);
+            $data['eFee'] = round($data['price'] * Yii::$app->params['eRate_uk'],2);
+            $data['adFee'] = round($price * $params['adRate'] / 100, 2);
+            $data['vatFee'] = round(($data['eFee'] + $data['adFee']) * 0.2,2);
         }
-        //var_dump($price);exit;
-        //eBay交易费
-        $eFee = $price * Yii::$app->params['eRate_uk'];
 
         //计算毛利
-        $profit = $price * (1 - $params['vatRate']/100) * (1 - $params['adRate']/100) - $eFee - $pFee -
-            ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate +
-            $params['shippingPrice'] * (1 - $params['adRate']/100) * $params['adRate']/100;
-        $data['price'] = round($price, 2);
-        $data['eFee'] = round($eFee, 2);
-        $data['pFee'] = round($pFee, 2);
+        $profit = $data['price'] - $price * $params['adRate'] / 100 - $data['eFee'] - $data['pFee'] -
+            ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate - $data['vatFee'];
         $data['profit'] = round($profit, 2);
         $data['profitRmb'] = round($profit * $ukRate, 2);
         $data['rate'] = $params['rate'];
         $data['adRate'] = $params['adRate'];
-        $data['adFee'] = round(($price - $params['shippingPrice']) * (1 - $params['vatRate']/100) * $params['adRate'] / 100,2);
-        $data['vatFee'] = round($data['price'] * $params['vatRate'] / 100,2);
+
+//        var_dump($data['price'] + $params['shippingPrice']);exit;
+
         return $data;
 
     }

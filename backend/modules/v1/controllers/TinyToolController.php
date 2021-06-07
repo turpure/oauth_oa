@@ -1285,23 +1285,17 @@ class TinyToolController extends AdminController
      */
     public function actionStockSeller()
     {
+        $thisMonth = date('Y-m');
         $sql = "SELECT seller1,SUM(useNum) AS useNum,SUM(costMoney) AS costMoney,sum(30DaySellCount) AS 30DaySellCount,
                 ROUND(sum(30DaySellCount)/30,1) AS ave,sum(30DayCostMoney) AS 30DayCostMoney,ROUND(sum(30DayCostMoney)/30,4) AS aveCostMoney,
 			    CASE WHEN sum(30DaySellCount) = 0 AND SUM(useNum) > 0 THEN 10000 ELSE ROUND(SUM(useNum)*30/sum(30DaySellCount),1) END AS sellDays,
 			    CASE WHEN sum(30DayCostMoney) = 0 AND SUM(costMoney) > 0 THEN 10000 ELSE ROUND(SUM(costMoney)*30/sum(30DayCostMoney),1) END AS costMoneySellDays
                 FROM (
                         SELECT IFNULL(u.seller1,'无人') seller1,c.sku,useNum,c.costMoney,
-                        IFNULL(thirtySellCount,0) 30DaySellCount,IFNULL(co.costMoney,0) 30DayCostMoney
+                        IFNULL(thirtySellCount,0) 30DaySellCount,IFNULL(sellCostMoney,0) 30DayCostMoney
                         FROM `cache_stockWaringTmpData` c
-                        LEFT JOIN `cache_30DayOrderTmpData` co ON co.sku=c.sku AND co.storeName=c.storeName
                         INNER JOIN `cache_skuSeller` u ON u.goodsCode=c.goodsCode WHERE c.storeName IN ('万邑通UK','万邑通UK-MA仓','谷仓UK')
---                    UNION
---                        SELECT IFNULL(u.seller1,'无人') seller1,IFNULL(co.sku,'') sku,IFNULL(useNum,0) useNum,
---                        IFNULL(c.costMoney,0) costMoney,IFNULL(thirtySellCount,0) 30DaySellCount,
---                        IFNULL(co.costMoney,0) 30DayCostMoney
---                        FROM `cache_30DayOrderTmpData` co
---                        INNER JOIN `cache_skuSeller` u ON u.goodsCode=SUBSTR(co.sku,1,LENGTH(u.goodsCode))
---						LEFT JOIN `cache_stockWaringTmpData` c ON co.sku=c.sku WHERE c.sku IS NULL
+                        AND SUBSTRING(updateTime,1,7) = '{$thisMonth}' 
                 ) aa GROUP BY seller1;";
         try {
             return Yii::$app->db->createCommand($sql)->queryAll();

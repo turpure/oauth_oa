@@ -418,20 +418,23 @@ class ApiDataCenter
     {
         $saler = $condition['saler'] ?: [];
         $saler = is_array($saler) ? implode("','", $saler) : $saler;
+        $plat = $condition['plat'] ?? '';
         $foulSaler = $condition['foulSaler'] ?? '';
         $foulSaler = is_array($foulSaler) ? implode("','", $foulSaler) : $foulSaler;
         //var_dump($saler);
         //var_dump($foulSaler);exit;
         $goodsStatus = implode("','", $condition['goodsStatus'] ?: ['爆款', '旺款']);
         if ($condition['dataType'] == 'priceProtection') {
-            $sql = "SELECT DISTINCT goodsCode, mainImage, storeName, saler, goodsName, goodsStatus, cate, subCate,
+            $sql = "SELECT DISTINCT goodsCode, mainImage, storeName, plat, saler, goodsName, goodsStatus, cate, subCate,
                     salerName, createDate, `number`, soldNum, personSoldNum, turnoverDays, rate 
                     FROM `cache_priceProtectionData` WHERE 1=1 ";
+            if ($plat) $sql .= " AND plat IN ('{$plat}')";
             if ($goodsStatus) $sql .= " AND goodsStatus IN ('{$goodsStatus}')";
             if ($saler) $sql .= " AND saler IN ('{$saler}')";
         } elseif ($condition['dataType'] == 'priceProtectionError') {
-            $sql = "SELECT * FROM `cache_priceProtectionData` WHERE 1=1 ";
+            $sql = "SELECT * FROM `cache_priceProtectionData` WHERE IFNULL(foulSaler,'')<>'' ";
             if ($goodsStatus) $sql .= " AND goodsStatus IN ('{$goodsStatus}')";
+            if ($plat) $sql .= " AND plat IN ('{$plat}')";
             if ($saler) $sql .= " AND saler IN ('{$saler}')";
             if ($foulSaler) $sql .= " AND foulSaler IN ('{$foulSaler}')";
         } else {
@@ -552,10 +555,12 @@ class ApiDataCenter
      */
     public static function getSupplierLevel($condition)
     {
-        $sql = "SELECT s.nid AS supplierID,supplierName,linkMan,mobile,address,categoryName,bd.DictionaryName AS supplierLevel,s.memo
+        $sql = "SELECT s.nid AS supplierID,supplierName,linkMan,mobile,address,categoryName,
+                    bd.DictionaryName AS supplierLevel,s.memo,LastPurchaseMoney
 		FROM B_Supplier(nolock) s 
 		LEFT JOIN B_SupplierCats(nolock) sc ON Sc.nid=s.categoryID
-		LEFT JOIN B_Dictionary (nolock) bd ON s.categoryLevel = bd.NID AND bd.categoryID=32 WHERE 1=1 ";
+		LEFT JOIN B_Dictionary (nolock) bd ON s.categoryLevel = bd.NID AND bd.categoryID=32 
+		WHERE LastPurchaseMoney > 0";
         if ($condition['supplierName']) $sql .= " AND supplierName LIKE '%{$condition['supplierName']}%' ";
         if ($condition['linkMan']) $sql .= " AND linkMan LIKE '%{$condition['linkMan']}%' ";
         if ($condition['categoryName']) $sql .= " AND categoryName LIKE '%{$condition['categoryName']}%' ";

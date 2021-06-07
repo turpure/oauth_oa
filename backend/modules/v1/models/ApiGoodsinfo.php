@@ -2094,24 +2094,24 @@ class ApiGoodsinfo
             $row['BuyItNowPrice'] = $price;
 
             $row['ShippingDetails']['ExcludeShipToLocation'] = static::getEbayExcludeLocation($account);
-            $shippingInfo1['ShippingService'] = static::getShippingService($ebayInfo['inShippingMethod1']);
+            $shippingInfo1['ShippingService'] = static::getShippingService($ebayInfo['inShippingMethod1'], $ebayInfo['site']);
             $shippingInfo1['ShippingServiceCost'] = $ebayInfo['inFirstCost1'];
             $shippingInfo1['ShippingServiceAdditionalCost'] = $ebayInfo['inSuccessorCost1'];
             $shippingInfo1['ShippingServicePriority'] = 1;
-            $shippingInfo2['ShippingService'] = static::getShippingService($ebayInfo['inShippingMethod2']);
+            $shippingInfo2['ShippingService'] = static::getShippingService($ebayInfo['inShippingMethod2'], $ebayInfo['site']);
             $shippingInfo2['ShippingServiceCost'] = $ebayInfo['inFirstCost2'];
             $shippingInfo2['ShippingServiceAdditionalCost'] = $ebayInfo['inSuccessorCost2'];
             $shippingInfo2['ShippingServicePriority'] = 2;
-            $internationalShippingService1['ShippingService'] = static::getShippingService($ebayInfo['outShippingMethod1']);
+            $internationalShippingService1['ShippingService'] = static::getShippingService($ebayInfo['outShippingMethod1'], $ebayInfo['site']);
             $internationalShippingService1['ShippingServiceCost'] = $ebayInfo['outFirstCost1'];
             $internationalShippingService1['ShippingServiceAdditionalCost'] = $ebayInfo['outSuccessorCost1'];
             $internationalShippingService1['ShippingServicePriority'] = 1;
-            $internationalShippingService1['ShipToLocation'] = static::getShippingService($ebayInfo['outShippingMethod1']) ? 'Worldwide' : '';
-            $internationalShippingService2['ShippingService'] = static::getShippingService($ebayInfo['outShippingMethod2']);
+            $internationalShippingService1['ShipToLocation'] = static::getShippingService($ebayInfo['outShippingMethod1'], $ebayInfo['site']) ? 'Worldwide' : '';
+            $internationalShippingService2['ShippingService'] = static::getShippingService($ebayInfo['outShippingMethod2'], $ebayInfo['site']);
             $internationalShippingService2['ShippingServiceCost'] = $ebayInfo['outFirstCost2'];
             $internationalShippingService2['ShippingServiceAdditionalCost'] = $ebayInfo['outSuccessorCost2'];
             $internationalShippingService2['ShippingServicePriority'] = 2;
-            $internationalShippingService2['ShipToLocation'] = static::getShippingService($ebayInfo['outShippingMethod2']) ? 'Worldwide' : '';
+            $internationalShippingService2['ShipToLocation'] = static::getShippingService($ebayInfo['outShippingMethod2'], $ebayInfo['site']) ? 'Worldwide' : '';
             $row['ShippingDetails']['ShippingServiceOptions'] = [$shippingInfo1, $shippingInfo2];
             $row['ShippingDetails']['InternationalShippingServiceOption'] = [$internationalShippingService1, $internationalShippingService2];
             $ItemSpecifics = json_decode($ebayInfo['specifics'], true);
@@ -2847,20 +2847,20 @@ class ApiGoodsinfo
             $row['SubTitle'] = $ebayInfo['subTitle'];
             $row['BuyItNowPrice'] = $price;
             $row['UseMobile'] = '1';
-            $row['ShippingService1'] = static::getShippingService($ebayInfo['inShippingMethod1']);
+            $row['ShippingService1'] = static::getShippingService($ebayInfo['inShippingMethod1'], $ebayInfo['site']);
             $row['ShippingServiceCost1'] = $ebayInfo['inFirstCost1'];
             $row['ShippingServiceAdditionalCost1'] = $ebayInfo['inSuccessorCost1'];
-            $row['ShippingService2'] = static::getShippingService($ebayInfo['inShippingMethod2']);
+            $row['ShippingService2'] = static::getShippingService($ebayInfo['inShippingMethod2'], $ebayInfo['site']);
             $row['ShippingServiceCost2'] = $ebayInfo['inFirstCost2'];
             $row['ShippingServiceAdditionalCost2'] = $ebayInfo['inSuccessorCost2'];
-            $row['InternationalShippingService1'] = static::getShippingService($ebayInfo['outShippingMethod1']);
+            $row['InternationalShippingService1'] = static::getShippingService($ebayInfo['outShippingMethod1'], $ebayInfo['site']);
             $row['InternationalShippingServiceCost1'] = $ebayInfo['outFirstCost1'];
             $row['InternationalShippingServiceAdditionalCost1'] = $ebayInfo['outSuccessorCost1'];
-            $row['InternationalShipToLocation1'] = static::getShippingService($ebayInfo['outShippingMethod1']) ? 'Worldwide' : '';
-            $row['InternationalShippingService2'] = static::getShippingService($ebayInfo['outShippingMethod2']);
+            $row['InternationalShipToLocation1'] = static::getShippingService($ebayInfo['outShippingMethod1'], $ebayInfo['site']) ? 'Worldwide' : '';
+            $row['InternationalShippingService2'] = static::getShippingService($ebayInfo['outShippingMethod2'], $ebayInfo['site']);
             $row['InternationalShippingServiceCost2'] = $ebayInfo['outFirstCost2'];
             $row['InternationalShippingServiceAdditionalCost2'] = $ebayInfo['outSuccessorCost2'];
-            $row['InternationalShipToLocation2'] = static::getShippingService($ebayInfo['outShippingMethod2']) ? 'Worldwide' : '';
+            $row['InternationalShipToLocation2'] = static::getShippingService($ebayInfo['outShippingMethod2'], $ebayInfo['site']) ? 'Worldwide' : '';
             $row['DispatchTimeMax'] = $ebayInfo['prepareDay'];
             $row['ExcludeShipToLocation'] = static::getEbayExcludeLocation($ebayAccount);
             $row['IbayTemplate'] = $ebayAccount['ibayTemplate'];
@@ -3692,7 +3692,9 @@ class ApiGoodsinfo
                     $var[$option] = $sku['size'];
                     $value2[] = $sku['size'];
                 }
-                $var['price'] = $sku['price'];
+                //2021-05-18 调整
+//                $var['price'] = $sku['price'];
+                $var['price'] = $sku['msrp'];
                 //$row['compare_at_price'] = $sku['msrp'];
                 $var['weight'] = $sku['weight'];
                 $var['weight_unit'] = 'g';
@@ -4007,10 +4009,10 @@ class ApiGoodsinfo
      * @param $shippingMethod
      * @return string
      */
-    private static function getShippingService($shippingMethod)
+    private static function getShippingService($shippingMethod, $site)
     {
         if (!empty($shippingMethod)) {
-            $shippingService = OaShippingService::findOne(['servicesName' => $shippingMethod]);
+            $shippingService = OaShippingService::findOne(['servicesName' => $shippingMethod, 'site' => $site]);
             if ($shippingService !== null) {
                 return $shippingService->ibayShipping;
             }

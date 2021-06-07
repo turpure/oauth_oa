@@ -921,8 +921,11 @@ class ProductCenterTools
                 'color' => $sku['property1'],
                 'size' => $sku['property2'],
                 'inventory' => 10000,
-                'price' => $sku['retailPrice'],
-                'msrp' => $sku['retailPrice'] * 6,
+                //2021-05-18 调整
+//                'price' => $sku['retailPrice'],
+//                'msrp' => $sku['retailPrice'] * 6,
+                'price' => $sku['costPrice'],
+                'msrp' => $sku['retailPrice'],
                 'linkUrl' => $sku['linkUrl'],
                 'goodsSkuId' => $sku['goodsSkuId'],
                 'weight' => $sku['weight'],

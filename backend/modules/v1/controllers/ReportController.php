@@ -366,10 +366,10 @@ class ReportController extends AdminController
         $cond = $request['condition'];
         $condition = [
             'dateFlag' => $cond['dateType'],
-            'beginDate' => isset($cond['dateRange'][0]) ? $cond['dateRange'][0] :'',
-            'endDate' => isset($cond['dateRange'][1]) ? $cond['dateRange'][1] :'',
-            'devBeginDate' => isset($cond['devDateRange'][0]) ? $cond['devDateRange'][0] :'',
-            'devEndDate' => isset($cond['devDateRange'][1]) ? $cond['devDateRange'][1] :'',
+            'beginDate' => isset($cond['dateRange'][0]) ? $cond['dateRange'][0] : '',
+            'endDate' => isset($cond['dateRange'][1]) ? $cond['dateRange'][1] : '',
+            'devBeginDate' => isset($cond['devDateRange'][0]) ? $cond['devDateRange'][0] : '',
+            'devEndDate' => isset($cond['devDateRange'][1]) ? $cond['devDateRange'][1] : '',
             'sku' => $cond['sku'],
             'goodsName' => isset($cond['goodsName']) && $cond['goodsName'] ? $cond['goodsName'] : '',
             'salesman' => $cond['member'] ? implode(',', $cond['member']) : '',
@@ -397,8 +397,8 @@ class ReportController extends AdminController
             'dateFlag' => $cond['dateType'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'devBeginDate' => isset($cond['devDateRange'][0]) ? $cond['devDateRange'][0] :'',
-            'devEndDate' => isset($cond['devDateRange'][1]) ? $cond['devDateRange'][1] :'',
+            'devBeginDate' => isset($cond['devDateRange'][0]) ? $cond['devDateRange'][0] : '',
+            'devEndDate' => isset($cond['devDateRange'][1]) ? $cond['devDateRange'][1] : '',
             'sku' => $cond['sku'],
             'goodsName' => isset($cond['goodsName']) && $cond['goodsName'] ? $cond['goodsName'] : '',
             'salesman' => $cond['member'] ? implode(',', $cond['member']) : '',
@@ -483,9 +483,7 @@ class ReportController extends AdminController
                 'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 10,
             ];
             return ApiReport::getWishRefundDetails($condition);
-        }
-
-        catch (\Exception  $why) {
+        } catch (\Exception  $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
 
@@ -690,7 +688,6 @@ class ReportController extends AdminController
         return ApiReport::getDeadFee($condition);
     }
 
-
     /**
      * 其他死库明细
      * Date: 2019-01-04 10:21
@@ -712,7 +709,6 @@ class ReportController extends AdminController
         ];
         return ApiReport::getOtherDeadFee($condition);
     }
-
 
     /**
      * 杂费明细
@@ -742,6 +738,33 @@ class ReportController extends AdminController
 
     }
 
+    /**
+     * eBay托管费
+     * Date: 2021-04-27 13:38
+     * Author: henry
+     * @return array|ArrayDataProvider
+     * @throws \yii\db\Exception
+     */
+    public function actionTrusteeshipFee()
+    {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        $params = [
+            'platform' => isset($cond['plat']) ? $cond['plat'] : [],
+            'username' => isset($cond['member']) ? $cond['member'] : [],
+            'store' => isset($cond['account']) ? $cond['account'] : []
+        ];
+        $paramsFilter = Handler::paramsHandler($params);
+        $condition = [
+            'beginDate' => $cond['dateRange'][0],
+            'endDate' => $cond['dateRange'][1],
+            'suffix' => "'" . implode("','", $paramsFilter['store']) . "'",
+            'page' => isset($cond['page']) ? $cond['page'] : 1,
+            'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 10,
+        ];
+        return ApiReport::getTrusteeshipFee($condition);
+
+    }
 
     /** 导出excel表格
      * Date: 2019-04-12 16:10
@@ -808,6 +831,12 @@ class ReportController extends AdminController
                     'goodsCode', 'sku', 'goodsName', 'createDate', 'lastPurchaseDate', 'checkNumber', 'preCheckPrice', 'deadPrice', 'aftCheckPrice',
                     'suffixSalesNumber', 'totalNumber', 'amount', 'aveAmount'];
                 $data = $this->actionDeadFee()['provider']->getModels();
+                break;
+            case 'trusteeshipFee'://eBay托管费
+                $fileName = 'trusteeshipFee';
+                $title = ['账号简称', '费用类型', '金额(£)','金额(￥)', '原始币种', '费用时间', '销售员'];
+                $headers = ['suffix', 'fee_type', 'total', 'totalRmb', 'currency_code', 'fee_time', 'salesman'];
+                $data = $this->actionTrusteeshipFee()['provider']->getModels();
                 break;
             default://默认销售死库明细下载
                 $fileName = 'salesDeadFeeData';
@@ -919,8 +948,8 @@ class ReportController extends AdminController
             $request = Yii::$app->request->post();
             $condition = $request['condition'];
             $condition['pageSize'] = 100000;
-            $data =  ApiReport::getDevRateDeveloperGoodsProfit($condition)->allModels;
-            $title = ['开发员','销售额','销量','总利润','近三个月单月最高利润', '增长利润'];
+            $data = ApiReport::getDevRateDeveloperGoodsProfit($condition)->allModels;
+            $title = ['开发员', '销售额', '销量', '总利润', '近三个月单月最高利润', '增长利润'];
             ExportTools::toExcelOrCsv('dev-rate-developer-profit', $data, 'Xls', $title);
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
@@ -937,14 +966,13 @@ class ReportController extends AdminController
         try {
             $request = Yii::$app->request->post();
             $condition = $request['condition'];
-            $data =  ApiReport::exportDevRateGoodsProfit($condition);
-            $title = ['开发员','推荐人','商品编码', '商品名称','主图','开发日期', '商品状态',  '销量','销售额','总利润', '利润率(%)'];
+            $data = ApiReport::exportDevRateGoodsProfit($condition);
+            $title = ['开发员', '推荐人', '商品编码', '商品名称', '主图', '开发日期', '商品状态', '销量', '销售额', '总利润', '利润率(%)'];
             ExportTools::toExcelOrCsv('dev-rate-goods-profit', $data, 'Xls', $title);
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
     }
-
 
 
     /**
@@ -971,11 +999,10 @@ class ReportController extends AdminController
                 'pageSize' => isset($condition['pageSize']) ? $condition['pageSize'] : 10
             ];
             return ApiReport::getDevRateSuffixGoodsProfit($condition);
-        }
-        catch (\Exception $why) {
-        return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
 
-    }
+        }
 
     }
 
@@ -1001,15 +1028,15 @@ class ReportController extends AdminController
                 'queryType' => $paramsFilter['queryType'],
                 'store' => implode(',', $paramsFilter['store']),
                 'warehouse' => $condition['store'] ? implode(',', $condition['store']) : '',
+                'pageSize' => $condition['pageSize'] ?? 10000
             ];
             $data = ApiReport::getDevRateSuffixGoodsProfit($condition)->models;
-            $title = ['产品编码','产品名称','平台', '部门', '账号','销售员', '仓库','销量','销售额','总利润', '利润率(%)'];
+            $title = ['产品编码', '产品名称', '平台', '部门', '账号', '销售员', '仓库', '销量', '销售额', '总利润', '利润率(%)'];
             ExportTools::toExcelOrCsv('dev-profit', $data, 'Xls', $title);
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
     }
-
 
 
     /**
@@ -1026,6 +1053,7 @@ class ReportController extends AdminController
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
     }
+
     /**
      * @brief 清仓列表
      * @return mixed
@@ -1037,7 +1065,7 @@ class ReportController extends AdminController
             $condition = $request['condition'];
             $condition['pageSize'] = 100000;
             $data = ApiReport::getClearList($condition)->models;
-            $title = ['产品编码','产品状态','仓库','清仓计划','计划创建时间','产品名称','主图','主类目','子类目','库存数量','库存金额','开发员','销售员'];
+            $title = ['产品编码', '产品状态', '仓库', '清仓计划', '计划创建时间', '产品名称', '主图', '主类目', '子类目', '库存数量', '库存金额', '开发员', '销售员'];
             ExportTools::toExcelOrCsv('clear-list', $data, 'Xls', $title);
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
@@ -1085,7 +1113,6 @@ class ReportController extends AdminController
         }
 
     }
-
 
 
     /**
@@ -1157,7 +1184,6 @@ class ReportController extends AdminController
     }
 
 
-
     /**
      * @brief 历史利润走势
      * @return array
@@ -1184,6 +1210,6 @@ class ReportController extends AdminController
      */
     public function actionHistoryPlat()
     {
-        return ['eBay-义乌仓', 'eBay-海外仓', 'Wish', 'Aliexpress', 'Amazon', 'Joom', 'VOVA','Shopee','Shopify','Lazada'];
+        return ['eBay-义乌仓', 'eBay-海外仓', 'Wish', 'Aliexpress', 'Amazon', 'Joom', 'VOVA', 'Shopee', 'Shopify', 'Lazada'];
     }
 }

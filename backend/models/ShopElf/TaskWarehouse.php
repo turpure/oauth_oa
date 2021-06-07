@@ -1,13 +1,13 @@
 <?php
 
-namespace backend\models;
+namespace backend\models\ShopElf;
 
 use Yii;
 use yii\behaviors\TimestampBehavior;
 use yii\db\Expression;
 
 /**
- * This is the model class for table "task_sort".
+ * This is the model class for table "oauth_task_warehouse".
  *
  * @property string $id
  * @property string $user
@@ -23,7 +23,15 @@ class TaskWarehouse extends \yii\db\ActiveRecord
      */
     public static function tableName()
     {
-        return 'task_warehouse';
+        return 'oauth_task_warehouse';
+    }
+
+    /**
+     * @return \yii\db\Connection the database connection used by this AR class.
+     */
+    public static function getDb()
+    {
+        return Yii::$app->get('py_db');
     }
 
     public function behaviors()
@@ -35,7 +43,7 @@ class TaskWarehouse extends \yii\db\ActiveRecord
             'class' => TimestampBehavior::className(),
             'createdAtAttribute' => 'createdTime',
             'updatedAtAttribute' => 'updatedTime',
-            'value' => new Expression('NOW()'),
+            'value' => date('Y-m-d H:i:s'),
         ],];
     }
 

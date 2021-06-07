@@ -8,11 +8,15 @@
 namespace backend\modules\v1\models;
 
 use backend\models\OaCleanOffline;
+use backend\models\ShopElf\BGoods;
 use backend\models\ShopElf\BPerson;
 use backend\models\ShopElf\KCCurrentStock;
+use backend\models\ShopElf\OauthLabelGoodsRate;
+use backend\models\ShopElf\OauthLoadSkuError;
 use backend\models\TaskPick;
 use backend\models\TaskSort;
-use backend\models\TaskWarehouse;
+use backend\models\ShopElf\TaskWarehouse;
+use Codeception\Template\Api;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use backend\modules\v1\utils\ExportTools;
 use yii\data\ArrayDataProvider;
@@ -26,7 +30,165 @@ use backend\modules\v1\utils\Helper;
 
 class ApiWarehouseTools
 {
+    /**
+     * 包裹扫描日志
+     * @param $condition
+     * Date: 2021-04-30 10:18
+     * Author: henry
+     * @return ArrayDataProvider
+     * @throws Exception
+     */
+    public static function getPackageScanningLog($condition){
+        $username = $condition['username'];
+        $trackingNumber = $condition['trackingNumber'];
+        $pageSize = $condition['pageSize'] ?: 20;
+        $stockOrderNumber = $condition['stockOrderNumber'] ?: '';
+        $flag = $condition['flag'];
+        $begin = $condition['dateRange'][0];
+        $end = $condition['dateRange'][1] . " 23:59:59";
+        $sql = "SELECT id,trackingNumber,stockOrderNumber,username,flag,MAX(createdTime) AS createdTime 
+                FROM oauth_task_package_info 
+                WHERE createdTime BETWEEN '{$begin}' AND '{$end}' ";
+        if ($username) $sql .= " AND username LIKE '%{$username}%' ";
+        if ($trackingNumber) $sql .= " AND trackingNumber LIKE '%{$trackingNumber}%' ";
+        if ($stockOrderNumber) $sql .= " AND stockOrderNumber LIKE '%{$stockOrderNumber}%' ";
+        if (in_array($flag, ['0', '1', '2']) ) $sql .= " AND flag = '{$flag}' ";
 
+        $sql .= " GROUP BY id,trackingNumber,stockOrderNumber,username,flag ORDER BY MAX(createdTime) DESC";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $provider = new ArrayDataProvider([
+            'allModels' => $data,
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
+    }
+
+    /**
+     * 包裹扫描统计
+     * @param $condition
+     * Date: 2021-05-19 14:17
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
+    public static function getPackageScanningStatistics($condition){
+        $begin = $condition['dateRange'][0];
+        $end = $condition['dateRange'][1] . " 23:59:59";
+        $sql = "SELECT trackingNumber,stockOrderNumber,username,flag,CONVERT(VARCHAR(10), MAX(createdTime),121) AS createdTime 
+                FROM oauth_task_package_info 
+                WHERE createdTime BETWEEN '{$begin}' AND '{$end}' ";
+
+        $sql .= " GROUP BY trackingNumber,stockOrderNumber,username,flag";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $userList = array_unique(ArrayHelper::getColumn($data, 'username'));
+        $timeList = array_unique(ArrayHelper::getColumn($data, 'createdTime'));
+        sort($timeList);
+//        var_dump($userList);
+//        var_dump($timeList);exit;
+        $res = [];
+        foreach ($timeList as $time){
+            foreach ($userList as $user){
+                $item = [
+                    'dt' => $time,
+                    'username' => $user,
+                    'scanNum' => 0,
+                    'outOfStockNum' => 0,
+                    'num' => 0,
+                    'errorNum' => 0,
+                ];
+                foreach ($data as $v){
+                    if($v['createdTime'] == $time && $v['username'] == $user){
+                        $item['scanNum'] += 1;
+                        if($v['flag'] == 1) $item['outOfStockNum'] += 1;  //缺货
+                        if($v['flag'] == 0) $item['num'] += 1;            //正常
+                        if($v['flag'] == 2) $item['errorNum'] += 1;       //异常
+                    }
+                }
+                $res[] = $item;
+            }
+        }
+        return $res;
+    }
+
+    /**
+     * @brief 包裹扫描结果
+     * @param $condition
+     * @return array|bool
+     */
+    public static function getPackageScanningResult($condition){
+        if(!$condition['trackingNumber']){
+            return [
+                'code' => 400,
+                'message' => 'tracking number can not be empty!'
+            ];
+        }
+        $sql = "SELECT DISTINCT LogisticOrderNo,stockOrderNumber, ISNULL(b.goodsskuid,0) AS goodsskuid
+                      --   CASE WHEN COUNT(a.goodsskuID) = COUNT(DISTINCT b.goodsskuid) THEN 1 ELSE 0 END AS flag
+                FROM(
+                        SELECT LogisticOrderNo,sm.billNumber AS stockOrderNumber,d.goodsskuID
+                        FROM CG_StockOrderM (nolock) sm 
+                        LEFT JOIN CG_StockOrderD (nolock) d ON sm.nid = d.stockOrderNID
+                        WHERE LogisticOrderNo = '{$condition['trackingNumber']}'
+                ) a LEFT JOIN(
+                        SELECT sku,goodsskuid,SUM(l_qty) AS num
+                        FROM P_TradeDtUn (nolock) dt 
+                        LEFT JOIN P_TradeUn (nolock) t ON dt.tradeNID = t.NID
+                        WHERE t.FilterFlag = 1 AND orderTime BETWEEN DATEADD(dd, -90, CONVERT(VARCHAR(10),GETDATE(),121)) AND GETDATE()
+                        GROUP BY sku,goodsskuid
+                ) b ON a.goodsskuID=b.goodsskuid
+                ORDER BY ISNULL(b.goodsskuid,0) DESC ";
+        try {
+            $data = Yii::$app->py_db->createCommand($sql)->queryOne();
+            $row = [
+                'trackingNumber' => $condition['trackingNumber'],
+                'stockOrderNumber' => $data['stockOrderNumber'] ?? '',
+                'username' => $condition['username'],
+                'createdTime' => date('Y-m-d H:i:s'),
+                'flag' => $data ? ($data['goodsskuid'] > 0 ? 1 : 0) : 2,
+            ];
+            $res = Yii::$app->py_db->createCommand()->insert('oauth_task_package_info', $row)->execute();
+            if(!$res){
+                throw new Exception('Failed to save info!');
+            }
+            $data = ['flag' => $row['flag']];
+            return  $data;
+        } catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * @brief 包裹扫描删除
+     * @param $condition
+     * @return array|bool
+     */
+    public static function packageDelete($condition){
+        if(!$condition['id']){
+            return [
+                'code' => 400,
+                'message' => 'tracking id can not be empty!'
+            ];
+        }
+        try {
+            $res = Yii::$app->py_db->createCommand()->delete(
+                'oauth_task_package_info',
+                ['id' => $condition['id']])->execute();
+            if(!$res){
+                throw new Exception('Failed to mark info!');
+            }
+            return  true;
+        } catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
 
     /**
      * @brief 添加拣货任务
@@ -80,10 +242,24 @@ class ApiWarehouseTools
      * @brief 获取拣货人
      * @return array
      */
-    public static function getPickMember()
+    public static function getWarehouseMember($type)
     {
-        $ret = BPerson::find()
-            ->andWhere(['in', 'Duty', ['拣货', '拣货组长', '拣货-分拣']])->all();
+        $query = BPerson::find()->andWhere(['Used' => 0]);
+        if ($type == 'all'){
+            $data = $query->all();
+            return ArrayHelper::getColumn($data, 'PersonName');
+        } elseif ($type == 'packageScanning'){
+            $query->andWhere(['in', 'Duty', ['快递扫描']]);
+        }elseif ($type == 'load'){
+            $query->andWhere(['in', 'Duty', ['上架']]);
+        } elseif ($type == 'label'){
+            $query->andWhere(['in', 'Duty', ['打标', '贴标']]);
+            return $query->all();
+//            return ArrayHelper::map($ret, 'PersonCode','PersonName');
+        }else{
+            $query->andWhere(['in', 'Duty', ['拣货', '拣货组长', '拣货-分拣']]);
+        }
+        $ret = $query->all();
         return ArrayHelper::getColumn($ret, 'PersonName');
     }
 
@@ -93,7 +269,7 @@ class ApiWarehouseTools
      */
     public static function getSortMember()
     {
-        $identity = Yii::$app->request->get('type', '');
+        $identity = Yii::$app->request->get('type', 'warehouse');
 
         $query = BPerson::find();
         if ($identity == 'warehouse') {
@@ -227,6 +403,7 @@ class ApiWarehouseTools
                 $data['sku'] = $sheet->getCell("A" . $i)->getValue();
                 $data['creator'] = $userName;
                 $data['skuType'] = '导入';
+                if (!$data['sku']) break;
                 $cleanOffline = new OaCleanOffline();
                 $cleanOffline->setAttributes($data);
                 $cleanOffline->save();
@@ -513,13 +690,15 @@ class ApiWarehouseTools
 
     }
 
-    /** 获取拣货统计数据
+
+    /**
+     * 获取拣货统计数据
      * @param $condition
      * Date: 2019-08-23 16:16
      * Author: henry
      * @return mixed
      */
-    public static function getPickStatisticsData($condition)
+    public static function getPickStatisticsData($condition, $flag = 0)
     {
         /*$query = TaskPick::find()->select(new Expression("batchNumber,picker,date_format(MAX(createdTime),'%Y-%m-%d') AS createdTime"));
         $query = $query->andWhere(['<>', "IFNULL(batchNumber,'')", '']);
@@ -535,13 +714,109 @@ class ApiWarehouseTools
             Yii::$app->py_db->createCommand()->batchInsert('guest.oauth_taskPickTmp', ['batchNumber', 'picker', 'createdTime'], array_slice($list, ($i - 1) * $step, $step))->execute();
         }*/
         //获取数据
-        $sql = "EXEC guest.oauth_getPickStatisticsData '{$condition['createdTime'][0]}','{$condition['createdTime'][1]}'";
+        $sql = "EXEC guest.oauth_getPickStatisticsData '{$condition['dateRange'][0]}','{$condition['dateRange'][1]}','{$flag}'";
+
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
+    }
+
+    ///////////////////////////////上架工具//////////////////////////////////////////////////////
+
+
+    /**
+     * 获取异常SKU
+     * @param $condition
+     * Date: 2021-04-19 16:16
+     * Author: henry
+     * @return mixed
+     */
+    public static function getLoadErrorData($condition){
+        $beginDate = $condition['dateRange'][0];
+        $endDate = $condition['dateRange'][1] . ' 23:59:59';
+        //获取数据
+//        $sql = "SELECT SKU, recorder, createdDate FROM [dbo].[oauth_load_sku_error] WHERE createdDate BETWEEN '{$beginDate}' AND '{$endDate}'; ";
+        return OauthLoadSkuError::find()->andWhere(['BETWEEN','createdDate', $beginDate, $endDate])->all();
+    }
+
+    /**
+     * 获取上架完成度数据
+     * @param $condition
+     * Date: 2021-04-19 16:16
+     * Author: henry
+     * @return mixed
+     */
+    public static function getLoadRateData($condition){
+        //获取数据
+        $sql = "EXEC oauth_warehouse_tools_pda_loading_data 0, '{$condition['dateRange'][0]}','{$condition['dateRange'][1]}',
+        '{$condition['SKU']}','{$condition['isLoad']}','{$condition['isError']}','{$condition['isNew']}'";
+
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
+    }
+
+    /**
+     * 获取上架统计数据
+     * @param $condition
+     * Date: 2021-04-19 16:16
+     * Author: henry
+     * @return mixed
+     */
+    public static function getLoadListData($condition){
+
+        //获取数据
+        $sql = "EXEC oauth_warehouse_tools_pda_loading_data 1, '{$condition['dateRange'][0]}','{$condition['dateRange'][1]}'";
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
+    }
+
+    /**
+     * 获取上货统计数据
+     * @param $condition
+     * Date: 2021-04-19 16:16
+     * Author: henry
+     * @return mixed
+     */
+    public static function getLoadStatisticsData($condition, $flag = 0)
+    {
+        $user = $condition['scanUser'] ? : self::getWarehouseMember('load');
+        $scanUser = implode(',', $user);
+            //获取数据
+        $sql = "EXEC oauth_warehouse_tools_pda_loading_statistics '{$condition['dateRange'][0]}','{$condition['dateRange'][1]}',
+        '{$scanUser}','{$condition['sku']}','{$flag}'";
+
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
+    }
+
+    public static function getLoadStatisticsDetail($condition, $flag = 0){
+        $user = $condition['scanUser'] ? : self::getWarehouseMember('load');
+        $scanUser = implode("','", $user);
+        if ($flag == 0){
+            $sql = "SELECT locationName,sku,CONVERT(VARCHAR(10),ScanTime,121) AS scanTime,COUNT(sku) AS num
+                    FROM [dbo].[P_PdaScanLog](nolock)
+                    WHERE CONVERT(VARCHAR(10),ScanTime,121) BETWEEN '{$condition['dateRange'][0]}' AND '{$condition['dateRange'][1]} '
+                        AND scanUser IN ('{$scanUser}') ";
+            if (isset($condition['sku']) && $condition['sku']){
+                $sku = str_replace(',', "','", $condition['sku']);
+                $sql .= " AND sku IN ('{$sku}')";
+            }
+            $sql .= " GROUP BY locationName,sku,CONVERT(VARCHAR(10),ScanTime,121) ORDER BY CONVERT(VARCHAR(10),ScanTime,121) DESC";
+        }else{
+            $sql = "SELECT locationName,sku,scanUser,COUNT(sku) AS num
+                    FROM [dbo].[P_PdaScanLog](nolock)
+                    WHERE CONVERT(VARCHAR(10),ScanTime,121) BETWEEN '{$condition['dateRange'][0]}' AND '{$condition['dateRange'][1]}'
+                    AND scanUser IN ('{$scanUser}') ";
+            if (isset($condition['sku']) && $condition['sku']){
+                $sku = str_replace(',', "','", $condition['sku']);
+                $sql .= " AND sku IN ('{$sku}')";
+            }
+            $sql .= " GROUP BY locationName,sku,scanUser ORDER BY scanUser";
+        }
 
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
 
 
-    /** 获取拣货统计数据
+
+
+    /**
+     * 获取拣货统计数据
      * @param $condition
      * Date: 2019-08-23 16:16
      * Author: henry
@@ -609,7 +884,8 @@ class ApiWarehouseTools
         return $provider;
     }
 
-    /** 仓库仓位SKU对应表
+    /**
+     * 仓库仓位SKU对应表
      * @param $condition
      * Date: 2019-09-03 10:23
      * Author: henry
@@ -740,13 +1016,16 @@ class ApiWarehouseTools
     {
         $store = $condition['store'] ?: '义乌仓';
         $location = $condition['location'];
+        $address = $condition['address'] ?? '';
         $sql = "SELECT StoreName,sl.LocationName,gs.sku,skuName,goodsSkuStatus,cs.Number,g.createDate as devDate
                 FROM [dbo].[B_StoreLocation](nolock) sl
                 LEFT JOIN B_Store(nolock) s ON s.NID=sl.StoreID
                 LEFT JOIN B_GoodsSKU(nolock) gs ON sl.NID=gs.LocationID
                 LEFT JOIN B_Goods(nolock) g ON g.NID=gs.goodsID
                 LEFT JOIN KC_CurrentStock(nolock) cs ON gs.NID=cs.GoodsSKUID AND cs.StoreID=sl.StoreID  
-                WHERE s.StoreName='{$store}' AND sl.LocationName LIKE '%{$location}%'";
+                WHERE s.StoreName='{$store}' ";
+        if($location) $sql .= " AND sl.LocationName LIKE '%{$location}%' ";
+        if($address) $sql .= " AND sl.LocationName LIKE '{$address}%' ";
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
 
@@ -816,12 +1095,139 @@ class ApiWarehouseTools
         return $msg;
     }
 
-    public static function getDifferenceOrderRateData($condition){
-        $storeName = $condition['storeName'] ?: '';
-        $beginDate = $condition['dateRange'][0] ?: '';
-        $endDate = $condition['dateRange'][1] ?: '';
-        $sql = "EXEC oauth_warehouse_tools_difference_order_rate '{$storeName}','{$beginDate}','{$endDate}'";
+    /**
+     * getNotPickingTradeNum
+     * @param $condition
+     * Date: 2021-04-15 10:25
+     * Author: henry
+     * @return mixed
+     */
+    public static function getNotPickingTradeNum($condition){
+//        $beginDate = $condition['dateRange'][0] ?: '';
+//        $endDate = $condition['dateRange'][1] ?: '';
+        $beginDate = date('Y-m-d', strtotime('-60 days'));
+        $endDate = date('Y-m-d');
+        $sql = "SELECT COUNT (1) AS allcount FROM P_Trade (nolock) m
+                WHERE FilterFlag = 20 AND CONVERT(VARCHAR(10),dateadd(hh,8,ordertime),121) BETWEEN '{$beginDate}' AND '{$endDate}'";
+        return Yii::$app->py_db->createCommand($sql)->queryScalar();
+    }
+
+    ###########################贴标###############################
+
+    /**
+     * 贴标
+     * @param $condition
+     * Date: 2021-04-22 14:45
+     * Author: henry
+     * @return array|bool
+     * @throws Exception
+     */
+    public static function label($condition){
+        $batchNumber = $condition['batchNumber'];
+        $username = $condition['username'];
+        $updateTime = date('Y-m-d H:i:s');
+        $sql = "SELECT nid FROM CG_StockInM (nolock) WHERE BillNumber='{$batchNumber}' ";
+        $orderIdList = Yii::$app->py_db->createCommand($sql)->queryAll();
+//        var_dump($orderIdList);exit;
+        $tran = Yii::$app->py_db->beginTransaction();
+        try {
+            foreach ($orderIdList as $id){
+                $updateStockSql = "UPDATE CG_StockInM SET weigher='{$username}', weighingTime='{$updateTime}' WHERE NID = {$id['nid']}";
+                $logs = 'oauth-' . $username . ' ' . $updateTime . ' 修改称重信息';
+                $logSql = "INSERT INTO CG_StockLogs
+                            VALUES('采购入库单', {$id['nid']}, '{$username}', '{$logs}') ";
+                $update = Yii::$app->py_db->createCommand($updateStockSql)->execute();
+                $insert = Yii::$app->py_db->createCommand($logSql)->execute();
+                if(!$update || !$insert){
+                    throw new Exception("Failed to save info of '{$batchNumber}'");
+                }
+            }
+            $tran->commit();
+            return true;
+        }catch (Exception $e){
+            $tran->rollBack();
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * 贴标商品详情
+     * @param $condition
+     * Date: 2021-04-30 10:23
+     * Author: henry
+     * @return mixed
+     */
+    public static function getLabelDetail($condition){
+        $sql = "SELECT g.goodsCode,goodsName,gs.sku,skuName,amount,ISNULL(rate,1) AS rate 
+                FROM CG_StockInD (nolock) d 
+                LEFT JOIN CG_StockInM (nolock) m ON m.NID=d.stockInNID
+                LEFT JOIN B_Goods (nolock) g ON g.NID=d.goodsid
+                LEFT JOIN B_GoodsSKU (nolock) gs ON gs.NID=d.goodsSkuid
+                LEFT JOIN oauth_label_goods_rate (nolock) gr ON gr.goodsCode=g.goodsCode
+                WHERE BillNumber= '{$condition['batchNumber']}'";
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
+
+    public static function saveImportLabelGoods($file, $extension){
+        if($extension == '.xlsx'){
+            $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        }else{
+            $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+        }
+        $spreadsheet = $reader->load(\Yii::$app->basePath . $file);
+        $sheet = $spreadsheet->getSheet(0);
+        $highestRow = $sheet->getHighestRow(); // 取得总行数
+        try {
+            $result = [];
+            for ($i = 2; $i <= $highestRow; $i++) {
+                $goodsCode = (string) $sheet->getCell("A" . $i)->getValue();
+                $rate = (int) $sheet->getCell("B" . $i)->getValue();
+                if(!$goodsCode) break;
+                $model = OauthLabelGoodsRate::findOne(['goodsCode' => $goodsCode]);
+                if(!$model){
+                    $model = new OauthLabelGoodsRate();
+                    $model->creator = Yii::$app->user->identity->username;
+                }
+                $model->goodsCode = $goodsCode;
+                $model->rate = $rate;
+                if(!$model->save()){
+                    $result[] = "Failed to save info of '{$goodsCode}'";
+                }else{
+                    BGoods::updateAll(['PackingRatio' => $model->rate], ['GoodsCode' => $model->goodsCode]);
+                }
+            }
+            return $result;
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+
+
+    /** 获取贴标统计数据
+     * @param $condition
+     * Date: 2019-08-23 16:16
+     * Author: henry
+     * @return mixed
+     */
+    public static function getLabelStatisticsData($condition, $flag = 0){
+//        $member = self::getWarehouseMember('label');
+//        $userList = $condition['username'] ? : ArrayHelper::getColumn($member, 'PersonCode');
+        $userList = $condition['username'] ? : [];
+        $userList = implode(',', $userList);
+        //获取数据
+        $sql = "EXEC oauth_warehouse_tools_label_statistics '{$condition['dateRange'][0]}', 
+                    '{$condition['dateRange'][1]}', '{$userList}','{$flag}'";
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
+    }
+
+
+
 
 }

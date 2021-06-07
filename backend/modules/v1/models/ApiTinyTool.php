@@ -215,7 +215,13 @@ class ApiTinyTool
      */
     public static function getGoodsPicture($condition)
     {
+        $department = ArrayHelper::getValue($condition, 'department', '');
         $salerName = ArrayHelper::getValue($condition, 'salerName', '');
+
+        if($department){
+            $userList = ApiCondition::getDevelopersByDepartment($department);
+            $salerName = $salerName ? : implode("','", $userList);
+        }
         $possessMan1 = ArrayHelper::getValue($condition, 'possessMan1', '');
         $possessMan2 = ArrayHelper::getValue($condition, 'possessMan2', '');
         $beginDate = ArrayHelper::getValue($condition, 'beginDate', '') ?: '2015-06-01';
@@ -229,20 +235,9 @@ class ApiTinyTool
         $categoryName = ArrayHelper::getValue($condition, 'categoryName', '');
         $pageSize = ArrayHelper::getValue($condition, 'pageSize', 30);
         try {
-            $sql = "SELECT
-                        bg.possessman1,
-                        bg.SalerName AS developer,
-                        bg.GoodsCode,
-                        bg.GoodsName,
-                        bg.CreateDate,
-                        bgs.SKU,
-                        bgs.GoodsSKUStatus,
-                        bgs.BmpFileName,
-                        bg.LinkUrl,
-                        bg.Brand,
-                        bgc.CategoryParentName,
-                        bgc.CategoryName
-                    FROM b_goods AS bg
+            $sql = "SELECT bg.possessman1,bg.SalerName AS developer,bg.GoodsCode,bg.GoodsName,bg.CreateDate,bgs.SKU,
+                        bgs.GoodsSKUStatus,bgs.BmpFileName,bg.LinkUrl,bg.Brand,bgc.CategoryParentName,bgc.CategoryName
+                    FROM b_goods(nolock) AS bg
                     LEFT JOIN B_GoodsSKU(nolock) AS bgs ON bg.NID = bgs.GoodsID
                     LEFT JOIN B_GoodsCats(nolock) AS bgc ON bgc.NID = bg.GoodsCategoryID
                     LEFT JOIN B_Supplier(nolock) bs ON bs.NID = bg.SupplierID
@@ -252,7 +247,7 @@ class ApiTinyTool
             if ($supplierName) $sql .= " AND bs.SupplierName LIKE '%$supplierName%' ";
             if ($possessMan1) $sql .= " AND bg.possessman1 LIKE '$possessMan1%' ";
             if ($possessMan2) $sql .= " AND bg.possessman2 LIKE '$possessMan2%' ";
-            if ($salerName) $sql .= " AND bg.SalerName LIKE '$salerName%' ";
+            if ($salerName) $sql .= " AND bg.SalerName IN ('{$salerName}') ";
             if ($goodsName) {
                 foreach ($goodsName as $v) {
                     $sql .= " AND bg.GoodsName LIKE '%$v%' ";
@@ -1132,12 +1127,13 @@ class ApiTinyTool
         $username = Yii::$app->user->identity->username;
         $userArr = ApiUser::getUserList($username);
         $userList = implode("','", $userArr);
+        $thisMonth = date('Y-m');
 
         $sql = "SELECT c.goodsCode,c.sku,skuName,c.storeName,c.goodsStatus,c.salerName,createDate,costPrice,
                 c.costmoney,useNum,oceanNum,airNum,weight,
                 ss.seller1,ss.seller2,CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart ,
-                IFNULL(ca.threeSellCount,0) AS threeSellCount, IFNULL(ca.sevenSellCount,0) AS sevenSellCount, 
-                IFNULL(ca.fourteenSellCount,0) AS fourteenSellCount, IFNULL(ca.thirtySellCount,0) AS thirtySellCount,
+                IFNULL(threeSellCount,0) AS threeSellCount, IFNULL(sevenSellCount,0) AS sevenSellCount, 
+                IFNULL(fourteenSellCount,0) AS fourteenSellCount, IFNULL(thirtySellCount,0) AS thirtySellCount,
          CASE WHEN IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.4 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1 = 0 THEN 10000
          ELSE  round(ifnull(hopeUseNum,0)/(IFNULL(threeSellCount,0)/3*0.4 + IFNULL(sevenSellCount,0)/7*0.1 + IFNULL(fourteenSellCount,0)/14*0.4 + IFNULL(thirtySellCount,0)/30*0.1),0)
          END  AS turnoverDays
@@ -1149,12 +1145,13 @@ class ApiTinyTool
                 LEFT JOIN (
 					SELECT sku,storeName,SUM(num) airNum FROM cache_wyt_ukma_sku_not_in_store_num WHERE shipType='空运-普货' GROUP BY sku,storeName
 				) cw ON cw.sku=c.sku AND cw.storeName=c.storeName
-                LEFT JOIN cache_30DayOrderTmpData ca ON ca.sku=c.sku AND ca.storeName=c.storeName
                 LEFT JOIN `user` u ON u.username=ss.seller1
 				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
 				LEFT JOIN auth_department d ON d.id=dc.department_id
 				LEFT JOIN auth_department p ON p.id=d.parent
-				WHERE seller1 IN ('{$userList}') AND c.storeName IN ('万邑通UK', '万邑通UK-MA仓', '谷仓UK')";
+				WHERE seller1 IN ('{$userList}') AND c.storeName IN ('万邑通UK', '万邑通UK-MA仓', '谷仓UK')
+				AND SUBSTRING(updateTime,1,7) = '{$thisMonth}' 
+				";
         if ($goodsCode) {
             $sql .= " AND c.goodsCode LIKE '%{$goodsCode}%'";
         }
@@ -1220,16 +1217,16 @@ class ApiTinyTool
                 FROM P_Trade (nolock) m
                 LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
                 LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
-                WHERE FilterFlag IN (5,6) AND e.name LIKE '%万邑通%' AND 
+                WHERE FilterFlag IN (5,6) AND e.name LIKE '%万邑通%' AND ISNULL(TrackNo,'')='' AND 
                 l.name IN ('UKMA-Hermes - UK Standard 48', 'UKMA-Hermes - Standard 48 Claim',
                         'UKLE-Hermes - UK Standard 48', 'UKLE-Hermes - Standard 48 Claim') -- and m.nid=22937671 
                 ";
         //过滤偏远地区
         foreach ($doc as $k => $ele) {
             if ($k == 0) {
-                $sql .= " AND (SHIPTOZIP LIKE '{$ele['zipCode']}%'";
+                $sql .= " AND ( replace(SHIPTOZIP,' ','') LIKE '{$ele['zipCode']}%'";
             } else {
-                $sql .= " OR SHIPTOZIP LIKE '{$ele['zipCode']}%'";
+                $sql .= " OR replace(SHIPTOZIP,' ','') LIKE '{$ele['zipCode']}%'";
             }
             if ($k == count($doc) - 1) {
                 $sql .= ")";
@@ -1241,16 +1238,16 @@ class ApiTinyTool
                 FROM P_TradeUn (nolock) m
                 LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
                 LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
-                WHERE FilterFlag = 1 AND e.name LIKE '%万邑通%' 
+                WHERE FilterFlag = 1 AND e.name LIKE '%万邑通%' AND ISNULL(TrackNo,'')='' 
                 AND l.name IN ('UKMA-Hermes - UK Standard 48', 'UKMA-Hermes - Standard 48 Claim', 
                         'UKLE-Hermes - UK Standard 48', 'UKLE-Hermes - Standard 48 Claim')
                 ";
         //过滤偏远地区
         foreach ($doc as $k => $ele) {
             if ($k == 0) {
-                $sql .= " AND (SHIPTOZIP LIKE '{$ele['zipCode']}%'";
+                $sql .= " AND ( replace(SHIPTOZIP,' ','') LIKE '{$ele['zipCode']}%'";
             } else {
-                $sql .= " OR SHIPTOZIP LIKE '{$ele['zipCode']}%'";
+                $sql .= " OR replace(SHIPTOZIP,' ','') LIKE '{$ele['zipCode']}%'";
             }
             if ($k == count($doc) - 1) {
                 $sql .= ")";
@@ -1258,7 +1255,7 @@ class ApiTinyTool
         }
         //var_dump($sql);exit;
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-        //var_dump($data);exit;
+//        var_dump($data);exit;
         $transaction = BGoods::getDb()->beginTransaction();
         try {
             foreach ($data as $v) {

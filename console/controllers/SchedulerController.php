@@ -400,8 +400,8 @@ class SchedulerController extends Controller
      */
     public function actionWeightDiff()
     {
-        $beginDate = '2018-10-01';
-        $endDate = date('Y-m-d', strtotime('-1 day'));
+        $beginDate = '2021-01-01';
+        $endDate = date('Y-m-d');
         //print_r($endDate);exit;
         try {
             //获取开发人员毛利
@@ -992,7 +992,8 @@ class SchedulerController extends Controller
         }
     }
 
-    /**  获取仓库积分数据 并 计算 积分排行榜
+    /**
+     * 获取仓库积分数据 并 计算 积分排行榜
      * Date: 2020-03-27 11:12
      * Author: henry
      */
@@ -1003,6 +1004,22 @@ class SchedulerController extends Controller
             print date('Y-m-d H:i:s') . " INFO:success to get warehouse integral data \n";
         } catch (Exception $why) {
             print date('Y-m-d H:i:s') . " INFO:fail to get warehouse integral data because $why \n";
+        }
+    }
+
+    /**
+     * 获取仓库KPI数据
+     * Date: 2021-05-27 11:12
+     * Author: henry
+     */
+    public function actionWarehouseKpi($begin = '', $end = '')
+    {
+        try {
+            ConScheduler::getWarehouseKpiData($begin, $end);
+            print date('Y-m-d H:i:s') . " INFO:success to get warehouse integral data \n";
+        } catch (\Exception $e) {
+            echo date('Y-m-d H:i:s') . " fail to get warehouse KPI data because '{$e->getMessage()}'. \n";
+            //echo $e->getMessage();
         }
     }
 
@@ -1041,13 +1058,13 @@ class SchedulerController extends Controller
             for ($i = 0; $i < $max; $i++) {
                 Yii::$app->db->createCommand()->batchInsert('cache_priceProtectionData',
                     [
-                        'goodsCode', 'mainImage', 'storeName', 'saler', 'goodsName', 'goodsStatus', 'cate', 'subCate',
-                        'salerName', 'createDate', 'number', 'soldNum', 'personSoldNum', 'turnoverDays', 'rate',
+                        'goodsCode', 'mainImage', 'storeName', 'plat', 'saler', 'goodsName', 'goodsStatus', 'cate', 'subCate',
+                        'salerName', 'createDate', 'number', 'soldNum', 'personSoldNum', 'turnoverDays', 'rate', 'maxPrice',
                         'aveAmt', 'foulSaler', 'amt', 'foulSalerSoldNum', 'updateTime'
                     ],
                     array_slice($data, $i * $step, $step))->execute();
             }
-            echo date('Y-m-d H:i:s') . " Goods rights update successful!\n";
+            echo date('Y-m-d H:i:s') . " Get goods price protection data successful!\n";
         } catch (\Exception $e) {
             echo date('Y-m-d H:i:s') . " Get stock status data failed, cause of '{$e->getMessage()}'. \n";
             //echo $e->getMessage();
@@ -1086,7 +1103,9 @@ class SchedulerController extends Controller
         try {
             $lastBeginDate = date('Y-m-01', strtotime('last day of -1 month -1 day'));
             $lastEndDate = date('Y-m-t', strtotime('last day of -1 month -1 day'));
-            $sql = "oauth_data_center_update_supplier_level '{$lastBeginDate}' AND '{$lastEndDate}';";
+//            print($lastBeginDate);
+//            print($lastEndDate);
+            $sql = "oauth_data_center_update_supplier_level '{$lastBeginDate}','{$lastEndDate}';";
             $data = Yii::$app->py_db->createCommand($sql)->execute();
             echo date('Y-m-d H:i:s') . " Update supplier level successful!\n";
         } catch (\Exception $e) {
@@ -1094,6 +1113,26 @@ class SchedulerController extends Controller
             //echo $e->getMessage();
         }
 
+    }
+
+
+    public function actionClearDeadlockShopElf()
+    {
+        try {
+            $data = Yii::$app->py_db->createCommand("P_lockinfo 0,0")->queryAll();
+            foreach ($data as $v) {
+                if ($v['deadlock'] > 100) {
+                    Yii::$app->py_db->createCommand("P_lockinfo 1,0")->execute();
+                    echo date('Y-m-d H:i:s') . " Clear deadlock successful!\n";
+                }else{
+                    echo date('Y-m-d H:i:s') . " Processes with no deadlocks to clean up\n";
+                }
+                break;
+            }
+        } catch (\Exception $e) {
+            echo date('Y-m-d H:i:s') . " Clear deadlock failed, cause of '{$e->getMessage()}'. \n";
+            //echo $e->getMessage();
+        }
     }
 
 

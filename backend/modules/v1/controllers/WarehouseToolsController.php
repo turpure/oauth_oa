@@ -8,9 +8,15 @@
 namespace backend\modules\v1\controllers;
 
 
+use backend\models\ShopElf\BGoods;
+use backend\models\ShopElf\OauthLoadSkuError;
+use backend\models\ShopElf\OauthSysConfig;
+use backend\models\ShopElf\OauthLabelGoodsRate;
+use backend\modules\v1\models\ApiSettings;
 use backend\modules\v1\models\ApiWarehouseTools;
 use backend\modules\v1\utils\ExportTools;
 use Yii;
+use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\db\Exception;
 use yii\helpers\ArrayHelper;
@@ -19,13 +25,17 @@ class WarehouseToolsController extends AdminController
 {
     public $modelClass = 'backend\modules\v1\models\ApiWareHouseTools';
     public $serializer = [
-        'class' => 'yii\rest\Serializer',
+        'class' => 'backend\modules\v1\utils\PowerfulSerializer',
         'collectionEnvelope' => 'items',
     ];
+
     public function behaviors()
     {
         return parent::behaviors();
     }
+
+
+    ######################################拣货工具#########################################
 
     /**
      * @brief 拣货
@@ -43,7 +53,7 @@ class WarehouseToolsController extends AdminController
      */
     public function actionPickMember()
     {
-        return ApiWarehouseTools::getPickMember();
+        return ApiWarehouseTools::getWarehouseMember('pick');
     }
 
     /**
@@ -56,8 +66,10 @@ class WarehouseToolsController extends AdminController
         return ApiWarehouseTools::getScanningLog($condition);
     }
 
+    ######################################分拣#########################################
+
     /**
-     * @brief 拣货人
+     * @brief 分拣人
      * @return array
      */
     public function actionSortMember()
@@ -85,6 +97,8 @@ class WarehouseToolsController extends AdminController
         return ApiWarehouseTools::getSortLog($condition);
     }
 
+
+    ######################################线下清仓工具#########################################
 
     /**
      * @brief 线下清仓工具-SKU列表
@@ -169,6 +183,75 @@ class WarehouseToolsController extends AdminController
 
     }
 
+    #####################################包裹扫描工具##############################################
+    public function actionPackageScanningMember()
+    {
+        return ApiWarehouseTools::getWarehouseMember('packageScanning');
+    }
+
+    /**
+     * @brief 包裹扫描
+     * @return array|bool
+     */
+    public function actionPackageScanning()
+    {
+        $condition = Yii::$app->request->post('condition');
+        return ApiWarehouseTools::getPackageScanningResult($condition);
+    }
+
+    /**
+     * @brief 包裹删除
+     * @return array|bool
+     */
+    public function actionPackageDelete()
+    {
+        $condition = Yii::$app->request->post('condition');
+        return ApiWarehouseTools::packageDelete($condition);
+    }
+
+
+    /**
+     * 包裹扫描
+     * Date: 2021-05-07 14:35
+     * Author: henry
+     * @return ArrayDataProvider
+     * @throws Exception
+     */
+    public function actionPackageScanningLog()
+    {
+        $condition = Yii::$app->request->post('condition');
+        return ApiWarehouseTools::getPackageScanningLog($condition);
+    }
+
+    /**
+     * 包裹扫描统计
+     * Date: 2021-05-07 14:35
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
+    public function actionPackageScanningStatistics()
+    {
+        $condition = Yii::$app->request->post('condition');
+        $data = ApiWarehouseTools::getPackageScanningStatistics($condition);
+        $provider = new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['dt', 'username', 'scanNum', 'outOfStockNum', 'num', 'errorNum'],
+                'defaultOrder' => [
+                    'dt' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => 1000,
+            ],
+        ]);
+        return $provider->getModels();
+    }
+
+
+
+    ######################################入库工具#########################################
 
     /**
      * @brief 保存入库任务
@@ -200,15 +283,583 @@ class WarehouseToolsController extends AdminController
         return ApiWarehouseTools::warehouseLogExport($condition);
     }
 
+
     /**
-     * @brief 拣货统计
-     * @return \yii\data\ActiveDataProvider
+     * @brief 打标统计
+     * @return array
+     */
+    public function actionMarkStatistics()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $data = ApiWarehouseTools::getLabelStatisticsData($condition, 1);
+            $personLabelData = $dateLabelData = [];
+            foreach ($data as $v){
+                $item = $v;
+                unset($item['flag']);
+                if($v['flag'] == 'time'){
+                    $dateLabelData[] = $item;
+                }else{
+                    $personLabelData[] = $item;
+                }
+            }
+            return [
+                'personLabelData' => $personLabelData,
+                'dateLabelData' => $dateLabelData,
+            ];
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * 打标统计导出
+     * Date: 2021-04-20 16:08
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionMarkStatisticsExport()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        $data = ApiWarehouseTools::getLabelStatisticsData($condition, 1);
+        $personData = $dateData = [];
+        foreach ($data as $v){
+            $item = $v;
+            unset($item['flag']);
+            if($v['flag'] == 'time'){
+                $dateData[] = $item;
+            }else{
+                $personData[] = $item;
+            }
+        }
+        $res = [
+            ['title' => ['打标人员', '打标SKU数量', '打标SKU种数'], 'name' => '人员数据', 'data' => $personData],
+            ['title' => ['日期', '打标SKU数量', '打标SKU种数'], 'name' => '时间数据', 'data' => $dateData],
+        ];
+        ExportTools::toExcelMultipleSheets('markStatistics', $res, 'Xlsx');
+    }
+
+
+    #############################贴标工具#########################################
+
+    /**
+     * @brief 贴标人
+     * @return array
+     */
+    public function actionLabelMember()
+    {
+        return ApiWarehouseTools::getWarehouseMember('label');
+    }
+
+    /**
+     * 贴标设置
+     * Date: 2021-04-22 11:45
+     * Author: henry
+     * @return array|OauthSysConfig|bool|null
+     */
+    public function actionLabelSet()
+    {
+        try {
+            $request = Yii::$app->request;
+            if ($request->isGet) {
+                return OauthSysConfig::findOne(['name' => OauthSysConfig::LABEL_SET_SKU_NUM]);
+            } else {
+                $condition = $request->post('condition', []);
+                $model = OauthSysConfig::findOne(['name' => OauthSysConfig::LABEL_SET_SKU_NUM]);
+                if (!$model) {
+                    $model = new OauthSysConfig();
+                    $model->name = OauthSysConfig::LABEL_SET_SKU_NUM;
+                }
+                $model->value = $condition['value'];
+                $model->memo = $condition['memo'];
+                $model->creator = Yii::$app->user->identity->username;
+                if ($model->save()) {
+                    return true;
+                } else {
+                    throw new Exception("Failed to save setting info!");
+                }
+            }
+
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * @brief 贴标扫描
+     * @return array | bool
+     */
+    public function actionLabel()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            return ApiWarehouseTools::label($condition);
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * 明细
+     * Date: 2021-04-29 10:36
+     * Author: henry
+     * @return array|bool
+     */
+    public function actionLabelDetail()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            return ApiWarehouseTools::getLabelDetail($condition);
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * 贴标-- 商品难度系数
+     * Date: 2021-04-21 17:04
+     * Author: henry
+     * @return ActiveDataProvider
+     */
+    public function actionLabelGoodsRate()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $pageSize = $condition['pageSize'] ?: 20;
+        $goodsCode = $condition['goodsCode'] ?: '';
+        $data = OauthLabelGoodsRate::find()->andFilterWhere(['like', 'goodsCode', $goodsCode]);
+        return new ActiveDataProvider([
+            'query' => $data,
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+    }
+
+    /**
+     * 批量导入商品难度系数
+     * Date: 2021-04-30 10:21
+     * Author: henry
+     * @return array
+     */
+    public function actionImportLabelGoods()
+    {
+        $file = $_FILES['file'];
+
+        if (!$file) {
+            return ['code' => 400, 'message' => 'The file can not be empty!'];
+        }
+        //判断文件后缀
+        $extension = ApiSettings::get_extension($file['name']);
+        if (!in_array($extension, ['.xlsx', '.xls'])) return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' or 'xls'"];
+
+        //文件上传
+        $result = ApiSettings::file($file, 'labelGoods');
+        if (!$result) {
+            return ['code' => 400, 'message' => 'File upload failed'];
+        } else {
+            //获取上传excel文件的内容并保存
+            return ApiWarehouseTools::saveImportLabelGoods($result, $extension);
+        }
+    }
+
+    /**
+     * @brief 贴标-- 商品难度系数保存
+     * @return array | bool
+     */
+    public function actionLabelGoodsSave()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $id = $condition['id'] ?? '';
+            $model = OauthLabelGoodsRate::findOne(['id' => $id]);
+            if (!$model) {
+                $model = new OauthLabelGoodsRate();
+                $model->creator = Yii::$app->user->identity->username;
+            }
+            $model->setAttributes($condition);
+            if ($model->save()) {
+                BGoods::updateAll(['PackingRatio' => $model->rate], ['GoodsCode' => $model->goodsCode]);
+                return true;
+            } else {
+                throw new Exception("Failed to save info of '{$condition['goodsCode']}'");
+            }
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+
+    }
+
+    /**
+     * @brief 贴标-- 商品难度系数删除
+     * @return array | bool
+     */
+    public function actionLabelGoodsDelete()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $model = OauthLabelGoodsRate::findOne($condition['id']);
+            BGoods::updateAll(['PackingRatio' => null], ['GoodsCode' => $model->goodsCode]);
+            //OauthLabelGoodsRate::deleteAll(['id' => $condition['id']]);
+            $model->delete();
+            return true;
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * @brief 贴标统计
+     * @return array
+     */
+    public function actionLabelStatistics()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $data = ApiWarehouseTools::getLabelStatisticsData($condition);
+            $personData = $dateData = [];
+            foreach ($data as $v){
+                $item = $v;
+                unset($item['flag']);
+                if($v['flag'] == 'time'){
+                    unset($item['job'], $item['rate']);
+                    $dateData[] = $item;
+                }else{
+                    $personData[] = $item;
+                }
+            }
+            return [
+                'personLabelData' => $personData,
+                'dateLabelData' => $dateData,
+            ];
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Date: 2021-04-20 16:08
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionLabelStatisticsExport()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        $data = ApiWarehouseTools::getLabelStatisticsData($condition);
+        $personData = $dateData = [];
+        foreach ($data as $v){
+            $item = $v;
+            unset($item['flag']);
+            if($v['flag'] == 'time'){
+                unset($item['job'], $item['rate']);
+                $dateData[] = $item;
+            }else{
+                $personData[] = $item;
+            }
+        }
+        $res = [
+            ['title' => ['贴标人员', '职位', '困难系数', '贴标SKU数量', '贴标SKU种数'], 'name' => '人员数据', 'data' => $personData],
+            ['title' => ['日期', '贴标SKU数量', '贴标SKU种数'], 'name' => '时间数据', 'data' => $dateData],
+        ];
+        ExportTools::toExcelMultipleSheets('labelStatistics', $res, 'Xlsx');
+    }
+
+    #############################上架工具#########################################
+
+    /**
+     * 上架异常SKU列表
+     * Date: 2021-05-10 10:31
+     * Author: henry
+     * @return array|mixed
+     */
+    public function actionLoadError()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $pageSize = $condition['pageSize'] ?: 20;
+            $data = ApiWarehouseTools::getLoadErrorData($condition);
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => ['SKU', 'recorder', 'createdDate'],
+                    'defaultOrder' => [
+                        'createdDate' => SORT_DESC,
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * 上架异常SKU列表
+     * Date: 2021-05-10 10:31
+     * Author: henry
+     * @return array|bool
+     */
+    public function actionSaveSkuLoadError()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $query = OauthLoadSkuError::findOne($condition['id']);
+            $query = $query ?: new OauthLoadSkuError();
+            $query->SKU = $condition['SKU'];
+            $query->recorder = Yii::$app->user->identity->username;
+            $res = $query->save();
+            if (!$res) {
+                throw new \Exception('Failed save sku info!');
+            }
+            return true;
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * 上架完成度
+     * Date: 2021-05-10 10:31
+     * Author: henry
+     * @return array|mixed
+     */
+    public function actionLoadRate()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $pageSize = $condition['pageSize'] ?: 20;
+            $data = ApiWarehouseTools::getLoadRateData($condition);
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => ['warehouseMen', 'warehouseDate', 'SKU', 'loadMen', 'loadDate', 'isLoad', 'isError', 'isNew'],
+                    'defaultOrder' => [
+                        'warehouseDate' => SORT_DESC,
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * 上架统计列表
+     * Date: 2021-05-10 10:31
+     * Author: henry
+     * @return array|mixed
+     */
+    public function actionLoadList()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $pageSize = $condition['pageSize'] ?: 100;
+            $data = ApiWarehouseTools::getLoadListData($condition);
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => ['dt', 'totalNum', 'num', 'rate', 'oneDateNum', 'oneDateRate', 'errorNum', 'problemNum'],
+                    'defaultOrder' => [
+                        'dt' => SORT_DESC,
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+
+    /**
+     * @brief 上架人
+     * @return array
+     */
+    public function actionLoadMember()
+    {
+        return ApiWarehouseTools::getWarehouseMember('load');
+    }
+
+    /**
+     * 上货统计
+     * Date: 2021-04-19 10:31
+     * Author: henry
+     * @return array|mixed
+     */
+    public function actionLoadingStatistics()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $personLoadingData = ApiWarehouseTools::getLoadStatisticsData($condition);
+            $dateLoadingData = ApiWarehouseTools::getLoadStatisticsData($condition, 1);
+            return [
+                'personLoadingData' => $personLoadingData,
+                'dateLoadingData' => $dateLoadingData,
+            ];
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * actionLoadingPersonDetail
+     * Date: 2021-04-19 16:09
+     * Author: henry
+     * @return array
+     */
+    public function actionLoadingPersonDetail()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiWarehouseTools::getLoadStatisticsDetail($condition);
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+
+    }
+
+    /**
+     * actionLoadingDateDetail
+     * Date: 2021-04-19 16:10
+     * Author: henry
+     * @return array
+     */
+    public function actionLoadingDateDetail()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiWarehouseTools::getLoadStatisticsDetail($condition, 1);
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     *
+     * Date: 2021-04-20 16:08
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionLoadingStatisticsExport()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        $personLoadingData = ApiWarehouseTools::getLoadStatisticsData($condition);
+        $dateLoadingData = ApiWarehouseTools::getLoadStatisticsData($condition, 1);
+        $data = [
+            ['title' => ['日期', '上架数量'], 'name' => '时间数据', 'data' => $dateLoadingData],
+            ['title' => ['上架人员', '上架数量'], 'name' => '人员数据', 'data' => $personLoadingData],
+        ];
+        ExportTools::toExcelMultipleSheets('loadingStatistics', $data, 'Xlsx');
+    }
+
+
+    #############################拣货统计#########################################
+
+    /**
+     * 拣货统计
+     * Date: 2021-04-15 10:31
+     * Author: henry
+     * @return array|mixed
      */
     public function actionPickStatistics()
     {
-        $condition = Yii::$app->request->post()['condition'];
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $totalNotPickingNum = ApiWarehouseTools::getNotPickingTradeNum($condition);
+            $personPickingData = ApiWarehouseTools::getPickStatisticsData($condition);
+            $datePickingData = ApiWarehouseTools::getPickStatisticsData($condition, 1);
+            return [
+                'totalNotPickingNum' => $totalNotPickingNum,
+                'personPickingData' => $personPickingData,
+                'datePickingData' => $datePickingData,
+            ];
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
 
-        return ApiWarehouseTools::getPickStatisticsData($condition);
+    /**
+     * actionPersonPickingExport
+     * Date: 2021-04-15 11:52
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionPersonPickingExport()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        $personPickingData = ApiWarehouseTools::getPickStatisticsData($condition);
+        $title = ['拣货人', '单品拣货量', '多品拣货量', '总拣货量'];
+        ExportTools::toExcelOrCsv('PersonPickingData', $personPickingData, 'Xls', $title);
+    }
+
+    /**
+     * actionDatePickingExport
+     * Date: 2021-04-15 11:52
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionDatePickingExport()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        $datePickingData = ApiWarehouseTools::getPickStatisticsData($condition);
+        $title = ['拣货日期', '单品拣货量', '多品拣货量', '总拣货量'];
+        ExportTools::toExcelOrCsv('DatePickingData', $datePickingData, 'Xls', $title);
     }
 
 
@@ -325,11 +976,34 @@ class WarehouseToolsController extends AdminController
         $store = $cond['store'] ?: '义乌仓';
         $begin = $cond['dateRange'][0] ?? '';
         $end = $cond['dateRange'][1] ?? '';
-        $dailyData = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}'")->queryAll();
+        $totalNotPickingNum = ApiWarehouseTools::getNotPickingTradeNum($cond);
+        $data = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}'")->queryAll();
+        $dailyData = $packageData = $pickingData = [];
+        foreach ($data as &$v) {
+            $item = [
+                'singleNum' => $v['singleNum'],
+                'skuSingleNum' => $v['skuSingleNum'],
+                'multiNum' => $v['multiNum'],
+                'skuMultiNum' => $v['skuMultiNum'],
+                'totalNum' => $v['totalNum'],
+                'totalSkuNum' => $v['totalSkuNum'],
+                'skuTypeNum' => $v['skuTypeNum'],
+            ];
+            if ($v['flag'] == 'date') {
+                $item['dt'] = $v['name'];
+                $dailyData[] = $item;
+            } elseif ($v['flag'] == 'packageMen') {
+                $item['packageMen'] = $v['name'];
+                $packageData[] = $item;
+            } else {
+                $item['packingMen'] = $v['name'];
+                $pickingData[] = $item;
+            }
+        }
         $dailyDataPro = new ArrayDataProvider([
             'allModels' => $dailyData,
             'sort' => [
-                'attributes' => ['dt', 'singleNum', 'multiNum', 'totalNum'],
+                'attributes' => ['dt', 'singleNum', 'skuSingleNum', 'multiNum', 'skuMultiNum', 'totalNum', 'totalSkuNum'],
                 'defaultOrder' => [
                     'dt' => SORT_ASC,
                 ]
@@ -338,11 +1012,24 @@ class WarehouseToolsController extends AdminController
                 'pageSize' => 100,
             ],
         ]);
-        $packageData = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}', 1 ")->queryAll();
+
         $packageDataPro = new ArrayDataProvider([
             'allModels' => $packageData,
             'sort' => [
-                'attributes' => ['packageMen', 'singleNum', 'multiNum', 'totalNum'],
+                'attributes' => ['packageMen', 'singleNum', 'skuSingleNum', 'multiNum', 'skuMultiNum', 'totalNum', 'totalSkuNum'],
+                'defaultOrder' => [
+                    'singleNum' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => 100,
+            ],
+        ]);
+
+        $pickingDataPro = new ArrayDataProvider([
+            'allModels' => $pickingData,
+            'sort' => [
+                'attributes' => ['pickingMen', 'singleNum', 'skuSingleNum', 'multiNum', 'skuMultiNum', 'totalNum', 'totalSkuNum'],
                 'defaultOrder' => [
                     'singleNum' => SORT_DESC,
                 ]
@@ -352,8 +1039,10 @@ class WarehouseToolsController extends AdminController
             ],
         ]);
         return [
+            'totalNotPickingNum' => $totalNotPickingNum,
             'dailyData' => $dailyDataPro->getModels(),
             'packageData' => $packageDataPro->getModels(),
+            'pickingData' => $pickingDataPro->getModels(),
         ];
     }
 
@@ -370,8 +1059,15 @@ class WarehouseToolsController extends AdminController
         $store = $cond['store'] ?: '义乌仓';
         $begin = $cond['dateRange'][0] ?? '';
         $end = $cond['dateRange'][1] ?? '';
-        $dailyData = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}'")->queryAll();
-        $title = ['发货日期', '单品订单数', '多品订单数', '总订单数'];
+        $data = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}'")->queryAll();
+        $dailyData = [];
+        foreach ($data as $v) {
+            if ($v['flag'] == 'date') {
+                unset($v['flag']);
+                $dailyData[] = $v;
+            }
+        }
+        $title = ['发货日期', '单品订单数', '单品SKU数', '多品订单数', '多品SKU数', '总订单数', '总SKU数'];
         ExportTools::toExcelOrCsv('DailyDelivery', $dailyData, 'Xls', $title);
     }
 
@@ -388,9 +1084,41 @@ class WarehouseToolsController extends AdminController
         $store = $cond['store'] ?: '义乌仓';
         $begin = $cond['dateRange'][0] ?? '';
         $end = $cond['dateRange'][1] ?? '';
-        $dailyData = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}', 1")->queryAll();
-        $title = ['打包人员', '单品订单数', '多品订单数', '总订单数'];
+        $data = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}', 1")->queryAll();
+        $dailyData = [];
+        foreach ($data as $v) {
+            if ($v['flag'] == 'packageMen') {
+                unset($v['flag']);
+                $dailyData[] = $v;
+            }
+        }
+        $title = ['打包人员', '单品订单数', '单品SKU数', '多品订单数', '多品SKU数', '总订单数', '总SKU数'];
         ExportTools::toExcelOrCsv('PackageOrder', $dailyData, 'Xls', $title);
+    }
+
+    /** 打包定单量导出
+     * actionPositionDetail
+     * Date: 2021-02-23 13:33
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionPackingOrderExport()
+    {
+        $cond = Yii::$app->request->post('condition', []);
+        $store = $cond['store'] ?: '义乌仓';
+        $begin = $cond['dateRange'][0] ?? '';
+        $end = $cond['dateRange'][1] ?? '';
+        $data = Yii::$app->py_db->createCommand("Exec oauth_dailyDelivery '{$begin}','{$end}','{$store}', 1")->queryAll();
+        $dailyData = [];
+        foreach ($data as $v) {
+            if ($v['flag'] == 'packingMen') {
+                unset($v['flag']);
+                $dailyData[] = $v;
+            }
+        }
+        $title = ['拣货人员', '单品订单数', '单品SKU数', '多品订单数', '多品SKU数', '总订单数', '总SKU数'];
+        ExportTools::toExcelOrCsv('PackingOrder', $dailyData, 'Xls', $title);
     }
 
 
@@ -542,7 +1270,7 @@ class WarehouseToolsController extends AdminController
         return new ArrayDataProvider([
             'allModels' => $data,
             'sort' => [
-                'attributes' => ['StoreName','LocationName','skuNum', 'stockSkuNum'],
+                'attributes' => ['StoreName', 'LocationName', 'skuNum', 'stockSkuNum'],
                 'defaultOrder' => [
                     'stockSkuNum' => SORT_DESC,
                 ]
@@ -585,7 +1313,7 @@ class WarehouseToolsController extends AdminController
         return new ArrayDataProvider([
             'allModels' => $data,
             'sort' => [
-                'attributes' => ['sku', 'skuName', 'goodsskustatus', 'number', 'devDate', 'hasPurchaseOrder','reservationNum'],
+                'attributes' => ['sku', 'skuName', 'goodsskustatus', 'number', 'devDate', 'hasPurchaseOrder', 'reservationNum'],
                 'defaultOrder' => [
                     'number' => SORT_DESC,
                 ]
@@ -628,13 +1356,13 @@ class WarehouseToolsController extends AdminController
         $data = ApiWarehouseTools::getPositionDetailsView($cond);
         $includedData = $notIncludedData = $emptyStockData = [];
         foreach ($data as $k => $v) {
-            if ($v['number'] > 0){
+            if ($v['number'] > 0) {
                 if ($v['hasPurchaseOrder'] == '是' || $v['reservationNum'] > 0) {
                     $includedData[] = $v;
-                } else{
+                } else {
                     $notIncludedData[] = $v;
                 }
-            }else{
+            } else {
                 $emptyStockData[] = $v;
             }
 
@@ -668,7 +1396,7 @@ class WarehouseToolsController extends AdminController
         return new ArrayDataProvider([
             'allModels' => $data,
             'sort' => [
-                'attributes' => ['sku', 'skuName', 'goodsSkuStatus', 'Number', 'devDate'],
+                'attributes' => ['sku', 'LocationName', 'skuName', 'goodsSkuStatus', 'Number', 'devDate'],
                 'defaultOrder' => [
                     'Number' => SORT_DESC,
                 ]
@@ -770,7 +1498,8 @@ class WarehouseToolsController extends AdminController
      * Author: henry
      * @return array
      */
-    public function actionDifferenceOrderRate(){
+    public function actionDifferenceOrderRate()
+    {
         try {
             $condition = Yii::$app->request->post('condition', []);
             $storeName = $condition['storeName'] ?: '';
@@ -778,7 +1507,7 @@ class WarehouseToolsController extends AdminController
             $endDate = $condition['dateRange'][1] ?: '';
             $sql = "EXEC oauth_warehouse_tools_difference_order_rate '{$storeName}','{$beginDate}','{$endDate}'";
             return Yii::$app->py_db->createCommand($sql)->queryAll();
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
@@ -794,20 +1523,23 @@ class WarehouseToolsController extends AdminController
      * Author: henry
      * @return array|ArrayDataProvider
      */
-    public function actionStorageTimeRate(){
+    public function actionStorageTimeRate()
+    {
         try {
             $condition = Yii::$app->request->post('condition', []);
-            $pageSize = $condition['pageSize'] ? : 20;
+            $pageSize = $condition['pageSize'] ?: 20;
             $storeName = $condition['storeName'] ?: '';
             $beginDate = $condition['dateRange'][0] ?: '';
             $endDate = $condition['dateRange'][1] ?: '';
             $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}','{$storeName}'";
-            $data =  Yii::$app->py_db->createCommand($sql)->queryAll();
-            return new ArrayDataProvider([
+            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+            $totalNum = array_sum(ArrayHelper::getColumn($data, 'totalNum'));
+            $totalInNum = array_sum(ArrayHelper::getColumn($data, 'inNum'));
+            $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
-                    'attributes' => ['storeName', 'dt', 'totalNum','inNum','notInNum','notInRate','num','rate',
-                        'oneNum','oneRate','twoNum','twoRate','threeNum','threeRate','otherNum','otherRate'],
+                    'attributes' => ['storeName', 'dt', 'totalNum', 'inNum', 'notInNum', 'notInRate', 'num', 'rate',
+                        'oneNum', 'oneRate', 'twoNum', 'twoRate', 'threeNum', 'threeRate', 'otherNum', 'otherRate'],
                     'defaultOrder' => [
                         'storeName' => SORT_ASC,
                         'dt' => SORT_ASC,
@@ -817,7 +1549,61 @@ class WarehouseToolsController extends AdminController
                     'pageSize' => $pageSize,
                 ],
             ]);
-        }catch (Exception $e){
+            return [
+                'provider' => $provider,
+                'extra' => [
+                    'totalNum' => $totalNum,
+                    'totalInNum' => $totalInNum,
+                ]
+            ];
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * 入库时效2.0
+     * Date: 2021-03-19 14:33
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionStorageTimeRate2()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $pageSize = $condition['pageSize'] ?: 20;
+            $storeName = $condition['storeName'] ?: '';
+            $beginDate = $condition['dateRange'][0] ?: '';
+            $endDate = $condition['dateRange'][1] ?: '';
+            $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}','{$storeName}','2.0'";
+            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+            $totalNum = array_sum(ArrayHelper::getColumn($data, 'totalNum'));
+            $totalInNum = array_sum(ArrayHelper::getColumn($data, 'inNum'));
+            $provider = new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => ['storeName', 'dt', 'totalNum', 'inNum', 'notInNum', 'notInRate', 'num', 'rate',
+                        'oneNum', 'oneRate', 'twoNum', 'twoRate', 'threeNum', 'threeRate', 'otherNum', 'otherRate'],
+                    'defaultOrder' => [
+                        'storeName' => SORT_ASC,
+                        'dt' => SORT_ASC,
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+            return [
+                'provider' => $provider,
+                'extra' => [
+                    'totalNum' => $totalNum,
+                    'totalInNum' => $totalInNum,
+                ]
+            ];
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
@@ -832,20 +1618,21 @@ class WarehouseToolsController extends AdminController
      * Author: henry
      * @return array|ArrayDataProvider
      */
-    public function actionDeliverTimeRate(){
+    public function actionDeliverTimeRate()
+    {
         try {
             $condition = Yii::$app->request->post('condition', []);
-            $pageSize = $condition['pageSize'] ? : 20;
+            $pageSize = $condition['pageSize'] ?: 20;
             $storeName = $condition['storeName'] ?: '';
             $beginDate = $condition['dateRange'][0] ?: '';
             $endDate = $condition['dateRange'][1] ?: '';
             $sql = "EXEC oauth_warehouse_tools_deliver_time_rate '{$beginDate}','{$endDate}','{$storeName}'";
-            $data =  Yii::$app->py_db->createCommand($sql)->queryAll();
+            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             return new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
-                    'attributes' => ['dt','storeName', 'totalNum', 'deliverableNum','zeroNum','zeroRate',
-                        'oneNum','oneRate','twoNum','twoRate','threeNum','threeRate','otherNum','otherRate'],
+                    'attributes' => ['dt', 'storeName', 'totalNum', 'deliverableNum', 'zeroNum', 'zeroRate',
+                        'oneNum', 'oneRate', 'twoNum', 'twoRate', 'threeNum', 'threeRate', 'otherNum', 'otherRate'],
                     'defaultOrder' => [
                         'storeName' => SORT_ASC,
                         'dt' => SORT_ASC,
@@ -855,7 +1642,7 @@ class WarehouseToolsController extends AdminController
                     'pageSize' => $pageSize,
                 ],
             ]);
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
@@ -863,6 +1650,109 @@ class WarehouseToolsController extends AdminController
         }
     }
 
+    /**
+     * 发货时效2.0
+     * Date: 2021-03-19 14:33
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionDeliverTimeRate2()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $pageSize = $condition['pageSize'] ?: 20;
+            $storeName = $condition['storeName'] ?: '';
+            $beginDate = $condition['dateRange'][0] ?: '';
+            $endDate = $condition['dateRange'][1] ?: '';
+            $sql = "EXEC oauth_warehouse_tools_deliver_time_rate '{$beginDate}','{$endDate}','{$storeName}','2.0'";
+            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => ['dt', 'storeName', 'totalNum', 'deliverableNum', 'zeroNum', 'zeroRate',
+                        'oneNum', 'oneRate', 'twoNum', 'twoRate', 'threeNum', 'threeRate', 'otherNum', 'otherRate'],
+                    'defaultOrder' => [
+                        'storeName' => SORT_ASC,
+                        'dt' => SORT_ASC,
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /////////////////////////////////KPI////////////////////////////////////
+    public function actionKpiReport()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $pageSize = $condition['pageSize'] ?: 20;
+            $name = $condition['name'] ?: '';
+            $job = $condition['job'] ?: '';
+            $beginDate = $condition['dateRange'][0] ?: '';
+            $endDate = $condition['dateRange'][1] ?: '';
+            $sql = "SELECT * FROM `warehouse_kpi_report` WHERE dt BETWEEN '{$beginDate}' AND '{$endDate}' ";
+            if ($name) $sql .= " AND `name` LIKE '%{$name}%'";
+            if ($job) $sql .= " AND `job` LIKE '%{$job}%'";
+            $data = Yii::$app->db->createCommand($sql)->queryAll();
+            return new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'attributes' => ['dt', 'name', 'job', 'pur_in_package_num', 'marking_stock_order_num', 'marking_sku_num',
+                        'labeling_sku_num', 'labeling_goods_num', 'pda_in_storage_sku_num', 'pda_in_storage_goods_num',
+                        'pda_in_storage_location_num', 'single_sku_num', 'single_goods_num', 'single_location_num',
+                        'multi_sku_num', 'multi_goods_num', 'multi_location_num',
+                        'pack_single_order_num','pack_single_goods_num','pack_multi_order_num','pack_multi_goods_num',
+                        'update_date'],
+                    'defaultOrder' => [
+                        'dt' => SORT_DESC,
+                        'name' => SORT_ASC,
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * actionKpiExport
+     * Date: 2021-05-27 15:27
+     * Author: henry
+     * @throws Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionKpiExport()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $name = $condition['name'] ?: '';
+        $job = $condition['job'] ?: '';
+        $beginDate = $condition['dateRange'][0] ?: '';
+        $endDate = $condition['dateRange'][1] ?: '';
+        $sql = "SELECT * FROM `warehouse_kpi_report` WHERE dt BETWEEN '{$beginDate}' AND '{$endDate}' ";
+        if ($name) $sql .= " AND `name`='{$name}'";
+        if ($job) $sql .= " AND `job` LIKE '%{$job}%'";
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
+        $title = ['id', '姓名', '日期', '职位', '扫描包裹数', '打标订单数', '打标SKU种数','贴标SKU种数','贴标产品数',
+            '入库SKU种数','入库产品数','入库库位数','拣货单品SKU种数','拣货单品产品数','拣货单品库位数','拣货多品SKU种数',
+            '拣货多品产品数','拣货多品库位数','打包单品订单数','打包单品产品数','打包多品订单数','打包多品产品数','更新时间'];
+        ExportTools::toExcelOrCsv('KPIreport', $data, 'Xls', $title);
+
+    }
 
 
 }

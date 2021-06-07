@@ -248,4 +248,31 @@ class ConScheduler
 
     }
 
+    /**
+     * Date: 2020-03-27 10:54
+     * Author: henry
+     */
+    public static function getWarehouseKpiData($beginDate, $endDate){
+        $month = date('Y-m', strtotime('-1 days'));
+        if(!$beginDate) $beginDate = $month . '-01';
+        if(!$endDate) $endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
+        //$beginDate = '2020-07-01';
+        //$endDate = '2020-07-31';
+        $sql = "EXEC oauth_warehouse_tools_kpi_data '{$beginDate}','$endDate' ";
+        $dataQuery = Yii::$app->py_db->createCommand($sql)->queryAll();
+
+        //将数据保存到临时表中
+        Yii::$app->db->createCommand("DELETE FROM warehouse_kpi_report WHERE dt BETWEEN '{$beginDate}' AND '$endDate'")->execute();
+        Yii::$app->db->createCommand()->batchInsert(
+            'warehouse_kpi_report',
+            ['name','dt','job','pur_in_package_num','marking_stock_order_num','marking_sku_num','labeling_sku_num',
+                'labeling_goods_num', 'pda_in_storage_sku_num','pda_in_storage_goods_num','pda_in_storage_location_num',
+                'single_sku_num','single_goods_num','single_location_num','multi_sku_num','multi_goods_num','multi_location_num',
+                'pack_single_order_num','pack_single_goods_num','pack_multi_order_num','pack_multi_goods_num',
+                'update_date'],
+            $dataQuery
+        )->execute();
+
+    }
+
 }

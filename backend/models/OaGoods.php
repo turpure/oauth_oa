@@ -37,6 +37,14 @@ use Yii;
  * @property string $stockUp
  * @property int $mineId
  * @property string $recommendId
+ * @property string $packageSize
+ * @property string $volumeWeight
+ * @property string $keyWords
+ * @property string $lowestMarketPrice
+ * @property string $dailySalesNum
+ * @property string $hotTime
+ * @property string $stockNum
+ * @property string $goodsType
  */
 class OaGoods extends \yii\db\ActiveRecord
 {
@@ -55,9 +63,9 @@ class OaGoods extends \yii\db\ActiveRecord
     {
         return [
             [['createDate', 'updateDate'], 'safe'],
-            [['vendor1', 'vendor2', 'vendor3', 'origin2', 'origin3', 'origin1'], 'string'],
-            [['salePrice', 'hopeMonthProfit', 'hopeRate', 'hopeWeight', 'hopeCost'], 'number'],
-            [['hopeSale', 'catNid', 'bGoodsid', 'mineId'], 'integer'],
+            [['vendor1', 'vendor2', 'vendor3', 'origin2', 'origin3', 'origin1','packageSize','keyWords','hotTime','goodsType'], 'string'],
+            [['salePrice', 'hopeMonthProfit', 'hopeRate', 'hopeWeight', 'hopeCost','lowestMarketPrice','volumeWeight'], 'number'],
+            [['hopeSale', 'catNid', 'bGoodsid', 'mineId','stockNum','dailySalesNum'], 'integer'],
             [['cate', 'subCate'], 'string', 'max' => 50],
             [['devNum'], 'string', 'max' => 80],
             [['introducer', 'devStatus', 'checkStatus', 'developer', 'stockUp'], 'string', 'max' => 20],
