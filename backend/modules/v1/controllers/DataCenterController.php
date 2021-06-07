@@ -1805,10 +1805,33 @@ class DataCenterController extends AdminController
                 FROM M_eBayMessages m
                 LEFT JOIN (SELECT DISTINCT ebayuserid,NoteName AS suffix FROM S_PalSyncInfo) p ON p.ebayuserid = m.ebayuserid
                 -- INNER JOIN M_eBayMessagesR r ON r.messageID = m.MessageID
-                WHERE FolderID = 1 AND CONVERT(VARCHAR(10),DateAdd(hour,8,ReceiveDate),121) BETWEEN '{$beginDate}' AND '{$endDate}' ";
+                WHERE FolderID = 0 AND Replied=1 AND CONVERT(VARCHAR(10),DateAdd(hour,8,ReceiveDate),121) BETWEEN '{$beginDate}' AND '{$endDate}' ";
         if($suffix) $sql .= " AND suffix like '%{$suffix}%'";
         $sql .= " GROUP BY suffix";
         return Yii::$app->py_db->createCommand($sql)->queryAll();
+    }
+    /**
+     * 账号发件数
+     * Date: 2021-06-03 18:03
+     * Author: henry
+     * @return mixed
+     */
+    public function actionSuffixEmailExport()
+    {
+        $condition = Yii::$app->request->post('condition', '');
+        $beginDate = $condition['dateRange'][0];
+        $endDate = $condition['dateRange'][1];
+        $suffix = $condition['suffix'];
+        $sql = "SELECT suffix,count(1) AS repliedEmailNum
+                FROM M_eBayMessages m
+                LEFT JOIN (SELECT DISTINCT ebayuserid,NoteName AS suffix FROM S_PalSyncInfo) p ON p.ebayuserid = m.ebayuserid
+                -- INNER JOIN M_eBayMessagesR r ON r.messageID = m.MessageID
+                WHERE FolderID = 0 AND Replied=1 AND CONVERT(VARCHAR(10),DateAdd(hour,8,ReceiveDate),121) BETWEEN '{$beginDate}' AND '{$endDate}' ";
+        if($suffix) $sql .= " AND suffix like '%{$suffix}%'";
+        $sql .= " GROUP BY suffix";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $title = ['账号简称', '邮件发送量'];
+        ExportTools::toExcelOrCsv('repliedEmailNum', $data, 'Xlsx', $title);
     }
 
     /**
@@ -1823,13 +1846,26 @@ class DataCenterController extends AdminController
         $beginDate = $condition['dateRange'][0];
         $endDate = $condition['dateRange'][1];
         $suffix = $condition['suffix'];
-        $sql = "select suffix,sum(case when FolderID=1 then 1 else 0 end) AS repliedEmailNum
-                from M_eBayMessages m
-                LEFT JOIN (SELECT DISTINCT ebayuserid,NoteName AS suffix FROM S_PalSyncInfo) p ON p.ebayuserid = m.ebayuserid
-                where CONVERT(VARCHAR(10),DateAdd(hour,8,ReceiveDate),121) between '{$beginDate}' and '{$endDate}'
-                GROUP BY suffix";
+        $sql = "EXEC oauth_data_center_email_replied_rate '{$beginDate}','{$endDate}','{$suffix}'";
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
 
+    /**
+     * 账号邮件 回复时效
+     * Date: 2021-06-03 18:03
+     * Author: henry
+     * @return mixed
+     */
+    public function actionSuffixEmailRepliedRateExport()
+    {
+        $condition = Yii::$app->request->post('condition', '');
+        $beginDate = $condition['dateRange'][0];
+        $endDate = $condition['dateRange'][1];
+        $suffix = $condition['suffix'];
+        $sql = "EXEC oauth_data_center_email_replied_rate '{$beginDate}','{$endDate}','{$suffix}'";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $title = ['账号简称', '日期', '邮件接收量', '24小时内发件量'];
+        ExportTools::toExcelOrCsv('repliedEmailNum', $data, 'Xlsx', $title);
+    }
 
 }
