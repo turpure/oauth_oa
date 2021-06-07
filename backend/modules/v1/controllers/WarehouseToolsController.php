@@ -8,6 +8,7 @@
 namespace backend\modules\v1\controllers;
 
 
+use backend\models\ShopElf\BGoods;
 use backend\models\ShopElf\OauthLoadSkuError;
 use backend\models\ShopElf\OauthSysConfig;
 use backend\models\ShopElf\OauthLabelGoodsRate;
@@ -490,6 +491,7 @@ class WarehouseToolsController extends AdminController
             }
             $model->setAttributes($condition);
             if ($model->save()) {
+                BGoods::updateAll(['PackingRatio' => $model->rate], ['GoodsCode' => $model->goodsCode]);
                 return true;
             } else {
                 throw new Exception("Failed to save info of '{$condition['goodsCode']}'");
@@ -511,7 +513,10 @@ class WarehouseToolsController extends AdminController
     {
         try {
             $condition = Yii::$app->request->post('condition', []);
-            OauthLabelGoodsRate::deleteAll(['id' => $condition['id']]);
+            $model = OauthLabelGoodsRate::findOne($condition['id']);
+            BGoods::updateAll(['PackingRatio' => null], ['GoodsCode' => $model->goodsCode]);
+            //OauthLabelGoodsRate::deleteAll(['id' => $condition['id']]);
+            $model->delete();
             return true;
         } catch (Exception $e) {
             return [

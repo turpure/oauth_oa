@@ -8,6 +8,7 @@
 namespace backend\modules\v1\models;
 
 use backend\models\OaCleanOffline;
+use backend\models\ShopElf\BGoods;
 use backend\models\ShopElf\BPerson;
 use backend\models\ShopElf\KCCurrentStock;
 use backend\models\ShopElf\OauthLabelGoodsRate;
@@ -1194,6 +1195,8 @@ class ApiWarehouseTools
                 $model->rate = $rate;
                 if(!$model->save()){
                     $result[] = "Failed to save info of '{$goodsCode}'";
+                }else{
+                    BGoods::updateAll(['PackingRatio' => $model->rate], ['GoodsCode' => $model->goodsCode]);
                 }
             }
             return $result;
