@@ -1524,7 +1524,7 @@ class ApiReport
 
     public static function importClearList() {
         $fields = ['goodsCode', 'storeName'];
-        $planNumber = 'QC-' . (string)date('Y-m-d');
+        $planNumber = 'QC-' . (string)date('Y-m');
         try {
             if (Yii::$app->request->isPost ) {
                 $tmpName = $_FILES['file']['tmp_name'];
