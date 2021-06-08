@@ -256,20 +256,41 @@ class ConScheduler
         $month = date('Y-m', strtotime('-1 days'));
         if(!$beginDate) $beginDate = $month . '-01';
         if(!$endDate) $endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
+        $configArr = [];
+        $configSql = "SELECT * FROM `warehouse_integral_rate`";
+        $config = Yii::$app->db->createCommand($configSql)->queryAll();
+        foreach ($config as $v){
+            $configArr[$v['type']] = $v['rate'];
+        }
         //$beginDate = '2020-07-01';
         //$endDate = '2020-07-31';
         $sql = "EXEC oauth_warehouse_tools_kpi_data '{$beginDate}','$endDate' ";
         $dataQuery = Yii::$app->py_db->createCommand($sql)->queryAll();
-
+        foreach ($dataQuery as &$v){
+            $v['integral'] = $v['pur_in_package_num'] * $configArr['采购入库包裹'] +
+                $v['pur_in_package_num'] * $configArr['采购入库包裹'] +
+                $v['marking_stock_order_num'] * $configArr['打标入库包裹'] +
+                $v['marking_sku_num'] * $configArr['打标入库数量'] +
+                $v['labeling_order_num'] * $configArr['贴标入库包裹'] +
+                $v['labeling_sku_num'] * $configArr['贴标入库数量'] +
+                $v['pda_in_storage_sku_num'] * $configArr['PDA入库'] +
+                $v['multi_order_num'] * $configArr['拣货核单包裹'] +
+                ($v['single_sku_num'] + $v['multi_sku_num']) * $configArr['拣货SKU种数'] +
+                ($v['single_goods_num'] + $v['multi_goods_num']) * $configArr['拣货总数量'] +
+                $v['pack_single_order_num'] * $configArr['打包单品包裹'] +
+                $v['pack_multi_order_num'] * $configArr['打包核单包裹'] ;
+        }
         //将数据保存到临时表中
         Yii::$app->db->createCommand("DELETE FROM warehouse_kpi_report WHERE dt BETWEEN '{$beginDate}' AND '$endDate'")->execute();
         Yii::$app->db->createCommand()->batchInsert(
             'warehouse_kpi_report',
-            ['name','dt','job','pur_in_package_num','marking_stock_order_num','marking_sku_num','labeling_sku_num',
-                'labeling_goods_num', 'pda_in_storage_sku_num','pda_in_storage_goods_num','pda_in_storage_location_num',
-                'single_sku_num','single_goods_num','single_location_num','multi_sku_num','multi_goods_num','multi_location_num',
-                'pack_single_order_num','pack_single_goods_num','pack_multi_order_num','pack_multi_goods_num',
-                'update_date'],
+            ['name', 'dt', 'job', 'pur_in_package_num', 'marking_stock_order_num', 'marking_sku_num',
+                'labeling_sku_num', 'labeling_goods_num', 'labeling_order_num',
+                'pda_in_storage_sku_num', 'pda_in_storage_goods_num', 'pda_in_storage_location_num',
+                'single_sku_num', 'single_goods_num', 'single_location_num', 'single_order_num',
+                'multi_sku_num', 'multi_goods_num', 'multi_location_num', 'multi_order_num',
+                'pack_single_order_num', 'pack_single_goods_num', 'pack_multi_order_num', 'pack_multi_goods_num',
+                'integral', 'update_date'],
             $dataQuery
         )->execute();
 
