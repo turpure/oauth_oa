@@ -270,7 +270,8 @@ class ConScheduler
             $v['integral'] = $v['pur_in_package_num'] * $configArr['采购入库包裹'] +
                 $v['pur_in_package_num'] * $configArr['采购入库包裹'] +
                 $v['marking_stock_order_num'] * $configArr['打标入库包裹'] +
-                $v['marking_sku_num'] * $configArr['打标入库数量'] +
+//                $v['marking_sku_num'] * $configArr['打标入库数量'] +
+                $v['marking_goods_num'] * $configArr['打标入库数量'] +
                 $v['labeling_order_num'] * $configArr['贴标入库包裹'] +
                 $v['labeling_sku_num'] * $configArr['贴标入库数量'] +
                 $v['pda_in_storage_sku_num'] * $configArr['PDA入库'] +
@@ -291,7 +292,7 @@ class ConScheduler
                 'multi_sku_num', 'multi_goods_num', 'multi_location_num',
                 'pack_single_order_num', 'pack_single_goods_num', 'pack_multi_order_num', 'pack_multi_goods_num',
                 'update_date',
-                'labeling_order_num', 'single_order_num', 'multi_order_num', 'integral',
+                'marking_goods_num','labeling_order_num', 'single_order_num', 'multi_order_num', 'integral',
 
             ],
             $dataQuery
