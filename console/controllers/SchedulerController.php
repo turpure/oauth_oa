@@ -769,8 +769,11 @@ class SchedulerController extends Controller
                 for ($i = 0; $i < $max; $i++) {
                     Yii::$app->db->createCommand()->batchInsert('cache_stockWaringTmpData',
                         [
-                            'goodsCode', 'sku', 'skuName', 'storeName', 'goodsStatus', 'salerName', 'createDate', 'costPrice', 'useNum', 'costmoney',
-                            'notInStore', 'notInCostmoney', 'hopeUseNum', 'totalCostmoney', 'sellCount1', 'sellCount2', 'sellCount3', 'weight', 'updateTime'
+                            'goodsCode', 'sku', 'class', 'skuName', 'storeName', 'goodsStatus', 'salerName',
+                            'createDate', 'costPrice', 'useNum', 'costmoney', 'notInStore', 'notInCostmoney',
+                            'hopeUseNum', 'totalCostmoney', 'sellCount1', 'sellCount2', 'sellCount3', 'weight',
+                            'sellCostMoney' ,'threeSellCount','sevenSellCount','fourteenSellCount','thirtySellCount','trend',
+                            'updateTime' ,'updateMonth'
                         ],
                         array_slice($stockList, $i * $step, $step))->execute();
                 }
@@ -778,7 +781,7 @@ class SchedulerController extends Controller
 
 
             //插入30天销售数据
-            Yii::$app->db->createCommand("TRUNCATE TABLE cache_30DayOrderTmpData;")->execute();
+            /*Yii::$app->db->createCommand("TRUNCATE TABLE cache_30DayOrderTmpData;")->execute();
 
             $saleList = Yii::$app->py_db->createCommand("EXEC oauth_stockStatus")->queryAll();
             $max = ceil(count($saleList) / $step);
@@ -789,7 +792,7 @@ class SchedulerController extends Controller
                         'threeSellCount', 'sevenSellCount', 'fourteenSellCount', 'thirtySellCount', 'trend'
                     ],
                     array_slice($saleList, $i * $step, $step))->execute();
-            }
+            }*/
             //计算耗时
             $endTime = time();
             $diff = $endTime - $beginTime;
