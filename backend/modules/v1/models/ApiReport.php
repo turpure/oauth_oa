@@ -998,7 +998,8 @@ class ApiReport
     }
 
     public static function getTrusteeshipFee($condition){
-        $sql = "SELECT notename as suffix,fee_type,total,CONVERT(DECIMAL(6,2),total * ExchangeRate) AS totalRmb,currency_code,fee_time
+        $sql = "SELECT notename as suffix,fee_type,total,CONVERT(DECIMAL(6,2),total * ExchangeRate) AS totalRmb,
+                        currency_code,fee_time,orderId
                 FROM [dbo].[y_fee] LEFT JOIN B_CurrencyCode  ON currency_code=CURRENCYCODE
                 WHERE fee_type='CreditCard' AND 
                 CONVERT(varchar(10),fee_time,121)  BETWEEN '" . $condition['beginDate'] . "' and '" . $condition['endDate'] . "'";
