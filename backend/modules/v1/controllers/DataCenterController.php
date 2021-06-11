@@ -96,7 +96,8 @@ class DataCenterController extends AdminController
         }
     }
 
-    /** 仓库库存情况状态明细
+    /**
+     * 仓库库存情况状态明细
      * Date: 2019-06-14 15:11
      * Author: henry
      * @return array
@@ -125,13 +126,22 @@ class DataCenterController extends AdminController
                         SUM(sellCostMoney) AS 30DayCostmoney,
                         ROUND(SUM(sellCostMoney)/30,4) AS aveCostmoney
                         FROM (
-                            SELECT storeName,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
+                            SELECT storeName,class,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
                              FROM `cache_stockWaringTmpData` WHERE updateMonth = '{$month}' 
                             UNION
-                            SELECT storeName,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
+                            SELECT storeName,class,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
                              FROM `cache_stockWaringTmpDataBackup` WHERE updateMonth = '{$month}' 
                         ) a WHERE 1=1 ";
-        if (isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
+        if (isset($cond['storeName']) && $cond['storeName']) {
+            if ($cond['storeName'] == '万邑通UK海运'){
+                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW') AND class='海运' ";
+            }elseif ($cond['storeName'] == '万邑通UK空运'){
+                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW') AND class='空运' ";
+            }else{
+                $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
+            }
+        }
+
         $sql .= " GROUP BY storeName,CASE WHEN IFNULL(goodsStatus,'')='' THEN '无状态' ELSE goodsStatus END
                 ) aa ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
         try {
@@ -145,7 +155,8 @@ class DataCenterController extends AdminController
         }
     }
 
-    /** 仓库库存情况开发明细
+    /**
+     * 仓库库存情况开发明细
      * Date: 2019-06-14 15:11
      * Author: henry
      * @return array
@@ -173,13 +184,21 @@ class DataCenterController extends AdminController
                         SUM(sellCostMoney) AS 30DayCostmoney,
                         ROUND(SUM(sellCostMoney)/30,4) AS aveCostmoney
                         FROM (
-                            SELECT storeName,salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
+                            SELECT storeName,class,salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
                              FROM `cache_stockWaringTmpData` WHERE updateMonth = '{$month}' 
                             UNION
-                            SELECT storeName,salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
+                            SELECT storeName,class,salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
                              FROM `cache_stockWaringTmpDataBackup` WHERE updateMonth = '{$month}' 
                         ) a WHERE 1=1  ";
-        if (isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
+        if (isset($cond['storeName']) && $cond['storeName']) {
+            if ($cond['storeName'] == '万邑通UK海运'){
+                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW') AND class='海运' ";
+            }elseif ($cond['storeName'] == '万邑通UK空运'){
+                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW') AND class='空运' ";
+            }else{
+                $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
+            }
+        }
         $sql .= " GROUP BY storeName,CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END
                 ) aa ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
         try {
@@ -192,7 +211,8 @@ class DataCenterController extends AdminController
         }
     }
 
-    /** 部门库存情况
+    /**
+     * 部门库存情况
      * Date: 2019-06-14 15:11
      * Author: henry
      * @return array
@@ -243,7 +263,8 @@ class DataCenterController extends AdminController
     }
 
 
-    /** 部门库存情况状态明细
+    /**
+     * 部门库存情况状态明细
      * Date: 2019-06-14 15:11
      * Author: henry
      * @return array
@@ -298,7 +319,8 @@ class DataCenterController extends AdminController
         }
     }
 
-    /** 部门库存情况开发明细
+    /**
+     * 部门库存情况开发明细
      * Date: 2019-06-14 15:11
      * Author: henry
      * @return array
