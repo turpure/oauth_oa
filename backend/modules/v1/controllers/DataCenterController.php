@@ -85,40 +85,7 @@ class DataCenterController extends AdminController
     {
         $condition = Yii::$app->request->post('condition', []);
         $month = $condition['month'] ?? date('Y-m');
-        $sql = "SELECT aa.storeName,aa.useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
-                        IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
-                        CASE WHEN IFNULL(aveCostmoney,0)=0 AND IFNULL(totalCostmoney,0)<>0 THEN 10000 
-                              ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
-                FROM(
-                        SELECT CASE WHEN storeName='万邑通UK' THEN '万邑通UK' 
-                                    WHEN storeName='万邑通UK-MA仓' THEN '万邑通UK' 
-                                    WHEN storeName='金皖399' THEN '金皖399' 
-                                    WHEN storeName='谷仓UK中转' THEN '金皖399' 
-                                    WHEN storeName='万邑通UK-MA空运中转' THEN '金皖399' 
-                                    WHEN storeName='万邑通UK-MA海运中转' THEN '金皖399' 
-                                    ELSE storeName END storeName,
-                        SUM(useNum) AS useNum,
-                        SUM(costmoney) costmoney,
-                        SUM(notInStore) notInStore,
-                        SUM(notInCostmoney) notInCostmoney,
-                        SUM(hopeUseNum) hopeUseNum,
-                        SUM(totalCostmoney) totalCostmoney,
-                        SUM(sellCostMoney) AS 30DayCostmoney,
-                        ROUND(SUM(sellCostMoney)/30,4) AS aveCostmoney
-                        FROM (
-                            SELECT storeName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
-                            FROM `cache_stockWaringTmpData` WHERE updateMonth = '{$month}' 
-                            UNION
-                            SELECT storeName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
-                             FROM `cache_stockWaringTmpDataBackup` WHERE updateMonth = '{$month}' 
-                        ) a GROUP BY CASE WHEN storeName='万邑通UK' THEN '万邑通UK' 
-                                WHEN storeName='万邑通UK-MA仓' THEN '万邑通UK' 
-                                WHEN storeName='金皖399' THEN '金皖399' 
-                                WHEN storeName='谷仓UK中转' THEN '金皖399' 
-                                WHEN storeName='万邑通UK-MA空运中转' THEN '金皖399' 
-                                WHEN storeName='万邑通UK-MA海运中转' THEN '金皖399' 
-                                ELSE storeName END 
-                ) aa ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
+        $sql = "CALL data_center_stock_status('{$month}');";
         try {
             return Yii::$app->db->createCommand($sql)->queryAll();
         } catch (\Exception $e) {
