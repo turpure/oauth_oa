@@ -190,8 +190,10 @@ class ApiGoodsinfo
         if (isset($condition['picStatus'])) $query->andFilterWhere(['like', 'picStatus', $condition['picStatus']]);
         $query = static::completedStatusFilter($query, $condition);
         $query = static::forbidPlatFilter($query, $condition);
-        if(!is_array($condition['goodsStatus'])) $condition['goodsStatus'] = $condition['goodsStatus'] ? [$condition['goodsStatus']] : [];
-        if (isset($condition['goodsStatus'])) $query->andFilterWhere(['goodsStatus' => $condition['goodsStatus']]);
+        if (isset($condition['goodsStatus'])){
+            if(!is_array($condition['goodsStatus'])) $condition['goodsStatus'] = $condition['goodsStatus'] ? [$condition['goodsStatus']] : [];
+            $query->andFilterWhere(['goodsStatus' => $condition['goodsStatus']]);
+        }
         if (isset($condition['possessMan1'])) $query->andFilterWhere(['like', 'possessMan1', $condition['possessMan1']]);
         if (isset($condition['purchaser'])) $query->andFilterWhere(['like', 'purchaser', $condition['purchaser']]);
         if (isset($condition['introducer'])) $query->andFilterWhere(['like', 'introducer', $condition['introducer']]);
