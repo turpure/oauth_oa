@@ -1794,22 +1794,7 @@ class DataCenterController extends AdminController
                 FROM M_eBayMessages(nolock) m
                 LEFT JOIN (SELECT DISTINCT ebayuserid,NoteName AS suffix FROM S_PalSyncInfo(nolock)) p ON p.ebayuserid = m.ebayuserid
                 -- INNER JOIN M_eBayMessagesR r ON r.messageID = m.MessageID
-                WHERE FolderID = 0 AND Replied=1 AND CONVERT(VARCHAR(10),DateAdd(hour,8,ReplyTime),121) BETWEEN '{$beginDate}' AND '{$endDate}' 
-                AND messageSubject NOT LIKE '%share feedback on your recent eBay experience%' AND
-                    messageSubject NOT LIKE	'%留下和收到信用評價 SR%' AND 
-                    messageSubject NOT LIKE '%eBay 買家保障方案問題 SR%' AND
-                    messageSubject NOT LIKE '%就個案提出申訴 SR%' AND 
-                    messageSubject NOT LIKE '%有關 eBay 退貨需要採取的行動%' AND 
-                    messageSubject NOT LIKE '%你對物品的電郵查詢 %' AND 
-                    messageSubject NOT LIKE '%Action required for eBay return%' AND 
-                    messageSubject NOT LIKE '%Return SR%' AND 
-                    messageSubject NOT LIKE '%你對我們的表現滿意嗎%' AND 
-                    messageSubject NOT LIKE '%刊登已移除%' OR 
-                    messageSubject NOT LIKE '%新的欧盟增值税法规%' AND 
-                    messageSubject NOT LIKE '%VeRO%' AND 
-                    messageSubject NOT LIKE '%MC999%' AND 
-                    messageSubject NOT LIKE '%買家帳戶被盜用%' AND 
-                    messageSubject NOT LIKE '%账号联系评价审核统一回复%' ";
+                WHERE FolderID = 0 AND Replied=1 AND CONVERT(VARCHAR(10),DateAdd(hour,8,ReplyTime),121) BETWEEN '{$beginDate}' AND '{$endDate}' ";
         if($suffix) $sql .= " AND suffix like '%{$suffix}%'";
         $sql .= " GROUP BY suffix";
         return Yii::$app->py_db->createCommand($sql)->queryAll();
@@ -1830,22 +1815,7 @@ class DataCenterController extends AdminController
                 FROM M_eBayMessages m
                 LEFT JOIN (SELECT DISTINCT ebayuserid,NoteName AS suffix FROM S_PalSyncInfo) p ON p.ebayuserid = m.ebayuserid
                 -- INNER JOIN M_eBayMessagesR r ON r.messageID = m.MessageID
-                WHERE FolderID = 0 AND Replied=1 AND CONVERT(VARCHAR(10), ReplyTime, 121) BETWEEN '{$beginDate}' AND '{$endDate}' 
-                AND messageSubject NOT LIKE '%share feedback on your recent eBay experience%' AND
-                    messageSubject NOT LIKE	'%留下和收到信用評價 SR%' AND 
-                    messageSubject NOT LIKE '%eBay 買家保障方案問題 SR%' AND
-                    messageSubject NOT LIKE '%就個案提出申訴 SR%' AND 
-                    messageSubject NOT LIKE '%有關 eBay 退貨需要採取的行動%' AND 
-                    messageSubject NOT LIKE '%你對物品的電郵查詢 %' AND 
-                    messageSubject NOT LIKE '%Action required for eBay return%' AND 
-                    messageSubject NOT LIKE '%Return SR%' AND 
-                    messageSubject NOT LIKE '%你對我們的表現滿意嗎%' AND 
-                    messageSubject NOT LIKE '%刊登已移除%' OR 
-                    messageSubject NOT LIKE '%新的欧盟增值税法规%' AND 
-                    messageSubject NOT LIKE '%VeRO%' AND 
-                    messageSubject NOT LIKE '%MC999%' AND 
-                    messageSubject NOT LIKE '%買家帳戶被盜用%' AND 
-                    messageSubject NOT LIKE '%账号联系评价审核统一回复%' ";
+                WHERE FolderID = 0 AND Replied=1 AND CONVERT(VARCHAR(10), ReplyTime, 121) BETWEEN '{$beginDate}' AND '{$endDate}'  ";
         if($suffix) $sql .= " AND suffix like '%{$suffix}%'";
         $sql .= " GROUP BY suffix";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
