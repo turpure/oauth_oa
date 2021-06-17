@@ -1819,7 +1819,7 @@ class DataCenterController extends AdminController
         if($suffix) $sql .= " AND suffix like '%{$suffix}%'";
         $sql .= " GROUP BY suffix";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-        $title = ['账号简称', '邮件发送量'];
+        $title = ['账号简称', '回复客户邮件数量'];
         ExportTools::toExcelOrCsv('repliedEmailNum', $data, 'Xlsx', $title);
     }
 
@@ -1853,7 +1853,7 @@ class DataCenterController extends AdminController
         $suffix = $condition['suffix'];
         $sql = "EXEC oauth_data_center_email_replied_rate '{$beginDate}','{$endDate}','{$suffix}'";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-        $title = ['账号简称', '邮件接收量', '24小时内发件量'];
+        $title = ['账号简称', '接收客户邮件接收量', '24小时内邮件回复数量', '回复率'];
         ExportTools::toExcelOrCsv('repliedEmailNum', $data, 'Xlsx', $title);
     }
 
