@@ -682,6 +682,50 @@ class DataCenterController extends AdminController
         ExportTools::toExcelOrCsv('priceProtectionError', $data, 'Xlsx', $title);
     }
 
+    /**
+     * 亚马逊补货
+     * Date: 2021-06-17 17:18
+     * Author: henry
+     * @return ArrayDataProvider
+     */
+    public function actionAmazonReplenishment()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $pageSize = $condition['pageSize'] ?? 20;
+        $data = ApiDataCenter::getAmazonReplenishment($condition);
+        return new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['goodsCode', 'storeName', 'suffix', 'goodsName', 'goodsSKUStatus',
+                    'salerName', 'stockDays', 'stockNum', 'hopeUseNum'],
+                'defaultOrder' => [
+                    'stockNum' => SORT_ASC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+    }
+
+    /**
+     * 亚马逊补货导出
+     * Date: 2021-06-17 17:19
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionAmazonReplenishmentExport()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $data = ApiDataCenter::getAmazonReplenishment($condition);
+        $title = ['账号简称', '产品编码', 'SKU', '商品名称', '商品状态', '仓库', '发货仓库可用数量', '采购仓库可用数量', '采购仓库未审核采购数量',
+            '开发员', '采购员', '供应商', '商品单价', '商品平均单价', '重量',
+            '30天销量', '30天平均销量', '安全天数', '采购到货天数', '运输天数', '库存周转天数', '预计采购数量'];
+        ExportTools::toExcelOrCsv('AmazonReplenishment', $data, 'Xlsx', $title);
+    }
+
+
 
 /////////////////////////////其他//////////////////////////////////////
 
@@ -1856,5 +1900,11 @@ class DataCenterController extends AdminController
         $title = ['账号简称', '接收客户邮件接收量', '24小时内邮件回复数量', '回复率'];
         ExportTools::toExcelOrCsv('repliedEmailNum', $data, 'Xlsx', $title);
     }
+
+
+
+
+
+
 
 }

@@ -450,6 +450,25 @@ class ApiDataCenter
         return $data;
     }
 
+    /**
+     * 亚马逊补货
+     * @param $condition
+     * Date: 2021-06-17 17:15
+     * Author: henry
+     * @return mixed
+     */
+    public static function getAmazonReplenishment($condition)
+    {
+        $sql = "EXEC guest.amazon_virtual_warehouse_replenishment :sku,:suffix";
+        $params = [
+            ':suffix' => $condition['suffix'],
+            ':sku' => $condition['sku'],
+        ];
+        return Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+
+    }
+
+
 /////////////////////////////////////////供应商//////////////////////////////////////////////////
 
     /**
