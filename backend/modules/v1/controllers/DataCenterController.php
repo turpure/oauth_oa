@@ -692,7 +692,7 @@ class DataCenterController extends AdminController
      * Author: henry
      * @return ArrayDataProvider
      */
-    public function actionArrayDayList()
+    public function actionArrivalDayList()
     {
         $condition = Yii::$app->request->post('condition', []);
         $pageSize = $condition['pageSize'] ?? 20;
@@ -716,7 +716,7 @@ class DataCenterController extends AdminController
 
     }
 
-    public function actionArrayDaySet()
+    public function actionArrivalDaySet()
     {
         try {
             $condition = Yii::$app->request->post('condition', []);
