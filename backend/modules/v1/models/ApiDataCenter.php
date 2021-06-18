@@ -459,10 +459,18 @@ class ApiDataCenter
      */
     public static function getAmazonReplenishment($condition)
     {
-        $sql = "EXEC guest.amazon_virtual_warehouse_replenishment :sku,:suffix";
         $params = [
-            ':suffix' => $condition['suffix'],
+            'username' => isset($condition['saler']) ? $condition['saler'] : [],
+            'store' => isset($condition['suffix']) ? $condition['suffix'] : []
+        ];
+        $suffixFilter = Handler::paramsParse($params);
+        $sql = "EXEC guest.amazon_virtual_warehouse_replenishment :sku,:developer,:stockDaysDiff,:totalStockDaysDiff,:suffix";
+        $params = [
+            ':suffix' => implode(',', $suffixFilter),
             ':sku' => $condition['sku'],
+            ':developer' => $condition['developer'],
+            ':stockDaysDiff' => (int)$condition['stockDaysDiff'],
+            ':totalStockDaysDiff' => (int)$condition['totalStockDaysDiff'],
         ];
         return Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
 

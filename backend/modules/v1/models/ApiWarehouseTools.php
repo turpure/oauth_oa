@@ -106,7 +106,7 @@ class ApiWarehouseTools
                         if($v['flag'] == 2) $item['errorNum'] += 1;       //异常
                     }
                 }
-                $res[] = $item;
+                if($item['scanNum'] > 0) $res[] = $item;
             }
         }
         return $res;
