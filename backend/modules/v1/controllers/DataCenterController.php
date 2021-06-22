@@ -716,6 +716,21 @@ class DataCenterController extends AdminController
 
     }
 
+    public function actionArrivalDayDelete(){
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $ids = $condition['id'] ? : [];
+            $ids = is_array($ids) ?: [$ids];
+            OauthSysConfig::deleteAll(['id' => $ids]);
+            return true;
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
     public function actionArrivalDaySet()
     {
         try {
