@@ -465,6 +465,7 @@ class ApiDataCenter
             'store' => isset($condition['suffix']) ? $condition['suffix'] : []
         ];
         $suffixFilter = Handler::paramsParse($params);
+        //var_dump(implode(',', $suffixFilter));exit;
         $sql = "EXEC guest.amazon_virtual_warehouse_replenishment :sku,:developer,:stockDaysDiff,:totalStockDaysDiff,:suffix,:shippingType";
         $params = [
             ':suffix' => implode(',', $suffixFilter),
@@ -472,8 +473,9 @@ class ApiDataCenter
             ':developer' => $condition['developer'],
             ':stockDaysDiff' => (int)$condition['stockDaysDiff'],
             ':totalStockDaysDiff' => (int)$condition['totalStockDaysDiff'],
-            ':shippingType' => (int)$condition['shippingType'],
+            ':shippingType' => $condition['shippingType'],
         ];
+        //var_dump(Yii::$app->py_db->createCommand($sql)->bindValues($params)->getRawSql());exit;
         return Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
 
     }
