@@ -17,11 +17,18 @@ return [
     //'bpRate' => 0.0384, //paypal大额交易费率
     //'spRate' => 0.072, //paypal小额交易费率
 
-    'eRate' => 0.1, //eBay交易费率
+    'eRate' => 0.11, //eBay交易费率
+
+
     'bpRate' => 0.032, //paypal大额交易费率
     'spRate' => 0.06, //paypal小额交易费率
     'bpBasic' => 0.2, //paypal大额交易基准值（英镑）
     'spBasic' => 0.05, //paypal小额交易基准值（英镑）
+
+    // 托管 交易费
+    'ppFee' => 0.3,
+    //跨国交易费
+    'tradeFee' => 0.3,
 
     //欧速通-英伦速邮物流费参数(半追踪)
     'transport1' => '欧速通-英伦速邮',//物流名称

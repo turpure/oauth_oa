@@ -720,7 +720,7 @@ class DataCenterController extends AdminController
         try {
             $condition = Yii::$app->request->post('condition', []);
             $ids = $condition['id'] ? : [];
-            $ids = is_array($ids) ?: [$ids];
+            $ids = is_array($ids) ? $ids : [$ids];
             OauthSysConfig::deleteAll(['id' => $ids]);
             return true;
         } catch (Exception $e) {
