@@ -459,8 +459,9 @@ class ApiDataCenter
      */
     public static function getAmazonReplenishment($condition)
     {
+        $username = Yii::$app->user->identity->username;
         $params = [
-            'username' => isset($condition['saler']) ? $condition['saler'] : [],
+            'username' => isset($condition['saler']) ? $condition['saler'] : ApiUser::getUserList($username),
             'store' => isset($condition['suffix']) ? $condition['suffix'] : []
         ];
         $suffixFilter = Handler::paramsParse($params);
