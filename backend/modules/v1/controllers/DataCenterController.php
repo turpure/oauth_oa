@@ -706,7 +706,7 @@ class DataCenterController extends AdminController
             'sort' => [
                 'attributes' => ['name'],
                 'defaultOrder' => [
-                    'name' => SORT_DESC,
+                    'id' => SORT_DESC,
                 ]
             ],
             'pagination' => [
