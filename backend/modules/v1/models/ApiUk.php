@@ -307,10 +307,10 @@ class ApiUk
         //$data['vatFee'] = round(($data['eFee'] + $data['adFee']) * 0.2,2); //2021-06-23
         $data['vatFee'] = round($params['price'] * $params['vatRate'] / (100 + $params['vatRate']), 2);
         //跨国交易费
-        $data['tradeFee'] = round($data['price'] * Yii::$app->params['tradeFeeRate'], 2);
+        //$data['tradeFee'] = round($data['price'] * Yii::$app->params['tradeFeeRate'], 2);
 
         //计算毛利
-        $profit = $data['price'] - $price * $params['adRate'] / 100 - $data['eFee'] - $data['pFee'] - $data['tradeFee'] -
+        $profit = $data['price'] - $price * $params['adRate'] / 100 - $data['eFee'] - $data['pFee'] -
             ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate - $data['vatFee'];
         $data['profit'] = round($profit, 2);
         $data['profitRmb'] = round($profit * $ukRate, 2);
