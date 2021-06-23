@@ -212,7 +212,8 @@ class ApiUk
 //        }
 
         $data['pFee'] = 0.3; //托管账号固定费用
-        $data['vatFee'] = round(($data['adFee'] + $data['eFee']) * 0.2, 2);
+        //$data['vatFee'] = round(($data['adFee'] + $data['eFee']) * 0.2, 2);  //2021-06-23
+        $data['vatFee'] = round($params['price'] / 6, 2);
         $profit = $data['price'] - $params['price'] * $params['adRate'] / 100 -
             $data['pFee'] - $data['eFee'] - $data['vatFee'] - $data['tradeFee'] -
             ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate ;
@@ -303,7 +304,8 @@ class ApiUk
         $data['price'] = round($price + $params['shippingPrice'], 2);
         $data['eFee'] = round($data['price'] * Yii::$app->params['eRate_uk'],2);
         $data['adFee'] = round($price * $params['adRate'] / 100, 2);
-        $data['vatFee'] = round(($data['eFee'] + $data['adFee']) * 0.2,2);
+        //$data['vatFee'] = round(($data['eFee'] + $data['adFee']) * 0.2,2); //2021-06-23
+        $data['vatFee'] = round($params['price'] / 6, 2);
         //跨国交易费
         $data['tradeFee'] = round($data['price'] * Yii::$app->params['tradeFeeRate'], 2);
 
