@@ -292,7 +292,7 @@ class ApiUk
 //            $data['vatFee'] = round(($data['eFee'] + $data['adFee']) * 0.2,2);
 //        }
 
-        $data['pFee'] = 0.36;
+        $data['pFee'] = 0.3;
         $price = (
                 ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate + $data['pFee'] -
                 $params['shippingPrice'] * (1 - $params['rate']/100/(1 + $params['vatRate']/100) -
