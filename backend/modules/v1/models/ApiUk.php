@@ -305,7 +305,7 @@ class ApiUk
         $data['eFee'] = round($data['price'] * Yii::$app->params['eRate_uk'],2);
         $data['adFee'] = round($price * $params['adRate'] / 100, 2);
         //$data['vatFee'] = round(($data['eFee'] + $data['adFee']) * 0.2,2); //2021-06-23
-        $data['vatFee'] = round($params['price'] * $params['vatRate'] / (100 + $params['vatRate']), 2);
+        $data['vatFee'] = round($price * $params['vatRate'] / (100 + $params['vatRate']), 2);
         //跨国交易费
         //$data['tradeFee'] = round($data['price'] * Yii::$app->params['tradeFeeRate'], 2);
 
