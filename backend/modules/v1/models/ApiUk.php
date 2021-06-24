@@ -182,8 +182,7 @@ class ApiUk
 
         //eBay交易费
         $data['eFee'] = $data['price'] * Yii::$app->params['eRate_uk'];
-        //跨国交易费
-        $data['tradeFee'] = $data['price'] * Yii::$app->params['tradeFeeRate'];
+
         //广告费
         $data['adFee'] = round($params['price'] * $params['adRate'] / 100, 2);
         //获取汇率
@@ -214,9 +213,12 @@ class ApiUk
         $data['pFee'] = 0.3; //托管账号固定费用
         //$data['vatFee'] = round(($data['adFee'] + $data['eFee']) * 0.2, 2);  //2021-06-23
         if ($params['vatRate']) {
+            //跨国交易费
+            $data['tradeFee'] = $data['price'] * Yii::$app->params['tradeFeeRate'];
             $data['vatFee'] = round($params['price'] * $params['vatRate'] / (100 + $params['vatRate']), 2);
         }else{
             $data['vatFee'] = round(($data['eFee'] + $data['pFee']) * 0.2,2);
+            $data['tradeFee'] = 0;
         }
 
         $profit = $data['price'] - $params['price'] * $params['adRate'] / 100 -
