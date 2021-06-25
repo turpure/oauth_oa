@@ -1772,6 +1772,44 @@ class WarehouseToolsController extends AdminController
         ExportTools::toExcelOrCsv('deliverTimeRate2.0', $data, 'Xls', $title);
     }
 
+    /**
+     * 发货时效详情
+     * Date: 2021-06-25 17:12
+     * Author: henry
+     * @return mixed
+     */
+    public function actionDeliverTimeRateDetail()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $version = $condition['version'] ?: '1.0';
+        $opDate = $condition['opDate'] ?: '';
+        $pageSize = $condition['pageSize'] ?: 20;
+        if($version == '1.0'){
+            $sql = "SELECT * FROM [dbo].[oauth_cache_trade_id_history] WHERE storeName='义乌仓' 
+                        AND CONVERT(VARCHAR(10),operateTime,121)='{$opDate}';";
+        }else{
+            $sql = "SELECT * FROM [dbo].[oauth_cache_trade_id_history] WHERE storeName='义乌仓' 
+                        AND CONVERT(VARCHAR(10),dateADD(mi,990,operateTime),121)='{$opDate}';";
+        }
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        return new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['tradeNid', 'orderTime', 'scanningDate', 'operateTime', 'storeName', 'closingDate','filterFlag'],
+                'defaultOrder' => [
+                    'tradeNid' => SORT_ASC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+
+    }
+
+
+
+
     /////////////////////////////////KPI////////////////////////////////////
     public function actionKpiReport()
     {
