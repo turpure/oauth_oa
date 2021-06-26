@@ -1803,7 +1803,7 @@ class WarehouseToolsController extends AdminController
         $opDate = $condition['opDate'] ?: '';
         $pageSize = $condition['pageSize'] ?: 20;
 
-        $sql = "SELECT tradeNid,orderTime,scanningDate,storeName,closingDate,
+        $sql = "SELECT tradeNid,orderTime,operateTime,scanningDate,storeName,closingDate,
                         CASE WHEN FilterFlag = 5 THEN '等待派单'
                                 WHEN FilterFlag = 6 THEN '已派单'
                                 WHEN FilterFlag = 20 THEN  '未拣货'
