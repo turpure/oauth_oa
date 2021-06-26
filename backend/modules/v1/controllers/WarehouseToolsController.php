@@ -1757,7 +1757,25 @@ class WarehouseToolsController extends AdminController
      * Author: henry
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
-     */
+    AND (m.FilterFlag = 5) THEN '等待派单'
+    WHEN (m.Orig = 0) AND (m.FilterFlag = 6) AND (l.eub = 1) THEN '派至E邮宝'
+    WHEN (m.Orig = 0)AND (m.FilterFlag = 6)AND (l.eub = 2) THEN '派至E线下邮宝'
+    WHEN (m.Orig = 0)AND (m.FilterFlag = 6)AND (l.eub = 3) THEN '派4PX独立帐户'
+    WHEN (m.Orig = 0)AND ((m.FilterFlag = 6)AND (l.eub = 4)) THEN  '派至非E邮宝'
+    WHEN (m.Orig = 0)AND (m.FilterFlag = 20) THEN  '未拣货'
+    WHEN (m.Orig = 0)AND (m.FilterFlag = 22) THEN  '未核单'
+    WHEN (m.Orig = 0)AND (m.FilterFlag = 24) THEN  '未包装'
+    WHEN (m.Orig = 0)AND (m.FilterFlag = 40) THEN  '待发货'
+    WHEN (m.Orig = 0)AND (m.FilterFlag = 26) THEN  '订单缺货(仓库)'
+    WHEN (m.Orig = 0)AND (m.FilterFlag = 28) THEN  '缺货待包装'
+    WHEN (m.Orig = 0)AND (m.FilterFlag = 100) THEN  '已发货'
+    WHEN m.Orig = 1 THEN  '已归档'
+    WHEN m.Orig = 3 THEN '异常已归档'
+    WHEN (m.Orig = 2)AND (m.FilterFlag = 0) THEN '等待付款'
+    WHEN (m.Orig = 2)AND (m.FilterFlag = 1) THEN  '订单缺货'
+    WHEN (m.Orig = 2)AND (m.FilterFlag = 2) THEN  '订单退货'
+    WHEN (m.Orig = 2)AND (m.FilterFlag = 3) THEN '订单取消'
+    WHEN (m.Orig = 2)AND (m.FilterFlag = 4) THEN '其它异常单'*/
     public function actionDeliverTimeRate2Export()
     {
         $condition = Yii::$app->request->post('condition', []);
@@ -1784,12 +1802,29 @@ class WarehouseToolsController extends AdminController
         $version = $condition['version'] ?: '1.0';
         $opDate = $condition['opDate'] ?: '';
         $pageSize = $condition['pageSize'] ?: 20;
+
+        $sql = "SELECT tradeNid,orderTime,scanningDate,storeName,closingDate,
+                        CASE WHEN FilterFlag = 5 THEN '等待派单'
+                                WHEN FilterFlag = 6 THEN '已派单'
+                                WHEN FilterFlag = 20 THEN  '未拣货'
+                                WHEN FilterFlag = 22 THEN  '未核单'
+                                WHEN FilterFlag = 24 THEN  '未包装'
+                                WHEN FilterFlag = 40 THEN  '待发货'
+                                WHEN FilterFlag = 26 THEN  '订单缺货(仓库)'
+                                WHEN FilterFlag = 28 THEN  '缺货待包装'
+                                WHEN FilterFlag = 100 THEN  '已发货'
+                                WHEN FilterFlag = 200 THEN  '已归档'
+                                WHEN FilterFlag = 0 THEN '等待付款'
+                                WHEN FilterFlag = 1 THEN  '订单缺货'
+                                WHEN FilterFlag = 2 THEN  '订单退货'
+                                WHEN FilterFlag = 3 THEN '订单取消'
+                                WHEN FilterFlag = 4 THEN '其它异常单'
+                        END AS FilterFlag
+                         FROM [dbo].[oauth_cache_trade_id_history] WHERE storeName='义乌仓' ";
         if($version == '1.0'){
-            $sql = "SELECT * FROM [dbo].[oauth_cache_trade_id_history] WHERE storeName='义乌仓' 
-                        AND CONVERT(VARCHAR(10),operateTime,121)='{$opDate}';";
+            $sql .= " AND CONVERT(VARCHAR(10),operateTime,121)='{$opDate}';";
         }else{
-            $sql = "SELECT * FROM [dbo].[oauth_cache_trade_id_history] WHERE storeName='义乌仓' 
-                        AND CONVERT(VARCHAR(10),dateADD(mi,990,operateTime),121)='{$opDate}';";
+            $sql .= " AND CONVERT(VARCHAR(10),dateADD(mi,990,operateTime),121)='{$opDate}';";
         }
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         return new ArrayDataProvider([
