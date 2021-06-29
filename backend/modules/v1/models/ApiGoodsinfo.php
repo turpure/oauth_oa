@@ -4322,7 +4322,8 @@ class ApiGoodsinfo
     {
         $sql = "SELECT * FROM (
                     SELECT 	CASE WHEN SUBSTR(store,1,5) = 'Joom0' THEN 'Joom'
-					    WHEN SUBSTR(store,6,1) + 0 = 0 THEN SUBSTR(store,1,6) 
+					    -- WHEN SUBSTR(store,6,1) + 0 = 0 THEN SUBSTR(store,1,6) 
+					    WHEN SUBSTR(store,1,5) = 'JoomZ' THEN SUBSTR(store,1,6)
 						WHEN SUBSTR(store,5,1) + 0 = 0 THEN SUBSTR(store,1,5) 
 						ELSE store END AS suffix,s.platform ,
                         MAX(CASE WHEN ifnull(pd.department,'')<>'' THEN IFNULL(pd.department,'其他') ELSE IFNULL(d.department,'其他') END) AS depart
@@ -4334,7 +4335,8 @@ class ApiGoodsinfo
                     LEFT JOIN `auth_department` pd ON pd.id=d.parent
                     WHERE s.platform = 'Joom'
                     GROUP BY CASE WHEN SUBSTR(store,1,5) = 'Joom0' THEN 'Joom'
-		 		        WHEN SUBSTR(store,6,1) + 0 = 0 THEN SUBSTR(store,1,6) 
+		 		        -- WHEN SUBSTR(store,6,1) + 0 = 0 THEN SUBSTR(store,1,6) 
+		 		        WHEN SUBSTR(store,1,5) = 'JoomZ' THEN SUBSTR(store,1,6)
 						WHEN SUBSTR(store,5,1) + 0 = 0 THEN SUBSTR(store,1,5)  ELSE store END,s.platform 
                 ) aa WHERE suffix in (SELECT joomName FROM proCenter.oa_joomSuffix)
                 UNION ALL
