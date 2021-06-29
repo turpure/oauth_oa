@@ -1822,7 +1822,67 @@ class WarehouseToolsController extends AdminController
                                 WHEN FilterFlag = 4 THEN '其它异常单'
                         END AS FilterFlag
                          FROM [dbo].[oauth_cache_trade_id_history] WHERE storeName='义乌仓' ";
-        if($version == '1.0'){
+        if($version == '2.0'){
+            $sql .= " AND CONVERT(VARCHAR(10),dateADD(mi,990,operateTime),121)='{$opDate}' ";
+            if ($flag == 0){
+                $sql .= " AND DATEDIFF(
+                                dd,
+                                (CASE WHEN ISNULL(scanningDate,'')='' OR
+											CONVERT(VARCHAR(10),DATEADD(mi, 990, operateTime),121) <= CONVERT(VARCHAR(10),scanningDate,121) )
+									THEN CONVERT(VARCHAR(10),DATEADD(mi, 990, operateTime),121)
+									ELSE CONVERT(VARCHAR(10),operateTime,121) END\
+								),
+                                (CASE WHEN ISNULL(scanningDate,'')<>'' THEN scanningDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag IN (100,200) THEN closingDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag = 40 AND ISNULL(closingDate,'')<>'' THEN operateTime
+                                    ELSE '' END
+                                 ))<>0 ";
+            }elseif ($flag == 1){
+                $sql .= " AND DATEDIFF(
+                                dd,
+                                (CASE WHEN ISNULL(scanningDate,'')='' OR
+											CONVERT(VARCHAR(10),DATEADD(mi, 990, operateTime),121) <= CONVERT(VARCHAR(10),scanningDate,121) )
+									THEN CONVERT(VARCHAR(10),DATEADD(mi, 990, operateTime),121)
+									ELSE CONVERT(VARCHAR(10),operateTime,121) END
+								),
+                                (CASE WHEN ISNULL(scanningDate,'')<>'' THEN scanningDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag IN (100,200) THEN closingDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag = 40 AND ISNULL(closingDate,'')<>'' THEN operateTime
+                                    ELSE '' END
+                                 )) NOT IN (0,1) ";
+            }elseif ($flag == 2){
+                $sql .= " AND DATEDIFF(
+                                dd,
+                                (CASE WHEN ISNULL(scanningDate,'')='' OR
+											CONVERT(VARCHAR(10),DATEADD(mi, 990, operateTime),121) <= CONVERT(VARCHAR(10),scanningDate,121) )
+									THEN CONVERT(VARCHAR(10),DATEADD(mi, 990, operateTime),121)
+									ELSE CONVERT(VARCHAR(10),operateTime,121) END
+								),
+                                (CASE WHEN ISNULL(scanningDate,'')<>'' THEN scanningDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag IN (100,200) THEN closingDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag = 40 AND ISNULL(closingDate,'')<>'' THEN operateTime
+                                    ELSE '' END
+                                 )) NOT IN (0,1,2) ";
+            }elseif ($flag == 3){
+                $sql .= " AND DATEDIFF(
+                                dd,
+                                (CASE WHEN ISNULL(scanningDate,'')='' OR
+											CONVERT(VARCHAR(10),DATEADD(mi, 990, operateTime),121) <= CONVERT(VARCHAR(10),scanningDate,121) )
+									THEN CONVERT(VARCHAR(10),DATEADD(mi, 990, operateTime),121)
+									ELSE CONVERT(VARCHAR(10),operateTime,121) END
+								),
+                                (CASE WHEN ISNULL(scanningDate,'')<>'' THEN scanningDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag IN (100,200) THEN closingDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag = 40 AND ISNULL(closingDate,'')<>'' THEN operateTime
+                                    ELSE '' END
+                                 )) NOT IN (0,1,2,3) ";
+            }else{
+                $sql .= " AND (CASE WHEN ISNULL(scanningDate,'')<>'' THEN scanningDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag IN (100,200) THEN closingDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag = 40 AND ISNULL(closingDate,'')<>'' THEN operateTime
+                                    ELSE '' END) = '' ";
+            }
+        }else{
             $sql .= " AND CONVERT(VARCHAR(10),operateTime,121)='{$opDate}' ";
             if ($flag == 0){
                 $sql .= " AND DATEDIFF(dd,operateTime,
@@ -1858,8 +1918,6 @@ class WarehouseToolsController extends AdminController
                                     WHEN ISNULL(scanningDate,'')='' AND filterFlag = 40 AND ISNULL(closingDate,'')<>'' THEN operateTime
                                     ELSE '' END) = '' ";
             }
-        }else{
-            $sql .= " AND CONVERT(VARCHAR(10),dateADD(mi,990,operateTime),121)='{$opDate}' ";
         }
 
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
