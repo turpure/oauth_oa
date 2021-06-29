@@ -795,9 +795,9 @@ class DataCenterController extends AdminController
     {
         $condition = Yii::$app->request->post('condition', []);
         $data = ApiDataCenter::getAmazonReplenishment($condition);
-        $title = ['账号简称', '产品编码', 'SKU', '商品名称', '商品状态', '仓库', '发货仓库可用数量', '采购仓库可用数量',
+        $title = ['账号简称', '销售员', '产品编码', 'SKU', '商品名称', '商品状态', '仓库', '发货仓库可用数量', '采购仓库可用数量',
             '采购仓库未审核采购数量', '开发员', '采购员', '供应商', '商品单价', '商品平均单价', '重量', '10天销量', '20天销量',
-            '30天销量', '日均销量', '走势', '安全天数', '采购到货天数', '运输天数', '总库存周转天数', '海外仓库存周转天数',
+            '30天销量', '日均销量', '走势', '安全天数', '采购到货天数', '运输方式', '运输天数', '总库存周转天数', '海外仓库存周转天数',
             '总库存周转天数差', '海外仓库存周转天数差', '建议采购数量', '建议调拨数量', '建议调拨总重量'];
         ExportTools::toExcelOrCsv('AmazonReplenishment', $data, 'Xlsx', $title);
     }
