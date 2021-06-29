@@ -1227,6 +1227,134 @@ class ApiWarehouseTools
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
 
+    /** 获取贴标统计数据
+     * @param $condition
+     * Date: 2019-08-23 16:16
+     * Author: henry
+     * @return mixed
+     */
+    public static function getDeliverTimeRateDetail($condition){
+        $flag = $condition['flag'] ?: 0;
+        $version = $condition['version'] ?: '1.0';
+        $opDate = $condition['opDate'] ?: '';
+        $sql = "SELECT tradeNid,orderTime,operateTime,scanningDate,storeName,closingDate,
+                        CASE WHEN FilterFlag = 5 THEN '等待派单'
+                                WHEN FilterFlag = 6 THEN '已派单'
+                                WHEN FilterFlag = 20 THEN  '未拣货'
+                                WHEN FilterFlag = 22 THEN  '未核单'
+                                WHEN FilterFlag = 24 THEN  '未包装'
+                                WHEN FilterFlag = 40 THEN  '待发货'
+                                WHEN FilterFlag = 26 THEN  '订单缺货(仓库)'
+                                WHEN FilterFlag = 28 THEN  '缺货待包装'
+                                WHEN FilterFlag = 100 THEN  '已发货'
+                                WHEN FilterFlag = 200 THEN  '已归档'
+                                WHEN FilterFlag = 0 THEN '等待付款'
+                                WHEN FilterFlag = 1 THEN  '订单缺货'
+                                WHEN FilterFlag = 2 THEN  '订单退货'
+                                WHEN FilterFlag = 3 THEN '订单取消'
+                                WHEN FilterFlag = 4 THEN '其它异常单'
+                        END AS FilterFlag
+                         FROM [dbo].[oauth_cache_trade_id_history] WHERE storeName='义乌仓' ";
+        if($version == '2.0'){
+            $sql .= " AND CONVERT(VARCHAR(10),dateADD(mi,990,operateTime),121)='{$opDate}' ";
+            if ($flag == 0){
+                $sql .= " AND DATEDIFF(
+                                dd,
+                                (CASE WHEN ISNULL(scanningDate,'')='' OR
+											CONVERT(VARCHAR(10),DATEADD(mi, 990, operateTime),121) <= CONVERT(VARCHAR(10),scanningDate,121) 
+									THEN CONVERT(VARCHAR(10),DATEADD(mi, 990, operateTime),121)
+									ELSE CONVERT(VARCHAR(10),operateTime,121) END
+								),
+                                (CASE WHEN ISNULL(scanningDate,'')<>'' THEN scanningDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag IN (100,200) THEN closingDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag = 40 AND ISNULL(closingDate,'')<>'' THEN operateTime
+                                    ELSE '' END
+                                 ))<>0 ";
+            }elseif ($flag == 1){
+                $sql .= " AND DATEDIFF(
+                                dd,
+                                (CASE WHEN ISNULL(scanningDate,'')='' OR
+											CONVERT(VARCHAR(10),DATEADD(mi, 990, operateTime),121) <= CONVERT(VARCHAR(10),scanningDate,121) 
+									THEN CONVERT(VARCHAR(10),DATEADD(mi, 990, operateTime),121)
+									ELSE CONVERT(VARCHAR(10),operateTime,121) END
+								),
+                                (CASE WHEN ISNULL(scanningDate,'')<>'' THEN scanningDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag IN (100,200) THEN closingDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag = 40 AND ISNULL(closingDate,'')<>'' THEN operateTime
+                                    ELSE '' END
+                                 )) NOT IN (0,1) ";
+            }elseif ($flag == 2){
+                $sql .= " AND DATEDIFF(
+                                dd,
+                                (CASE WHEN ISNULL(scanningDate,'')='' OR
+											CONVERT(VARCHAR(10),DATEADD(mi, 990, operateTime),121) <= CONVERT(VARCHAR(10),scanningDate,121) 
+									THEN CONVERT(VARCHAR(10),DATEADD(mi, 990, operateTime),121)
+									ELSE CONVERT(VARCHAR(10),operateTime,121) END
+								),
+                                (CASE WHEN ISNULL(scanningDate,'')<>'' THEN scanningDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag IN (100,200) THEN closingDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag = 40 AND ISNULL(closingDate,'')<>'' THEN operateTime
+                                    ELSE '' END
+                                 )) NOT IN (0,1,2) ";
+            }elseif ($flag == 3){
+                $sql .= " AND DATEDIFF(
+                                dd,
+                                (CASE WHEN ISNULL(scanningDate,'')='' OR
+											CONVERT(VARCHAR(10),DATEADD(mi, 990, operateTime),121) <= CONVERT(VARCHAR(10),scanningDate,121) 
+									THEN CONVERT(VARCHAR(10),DATEADD(mi, 990, operateTime),121)
+									ELSE CONVERT(VARCHAR(10),operateTime,121) END
+								),
+                                (CASE WHEN ISNULL(scanningDate,'')<>'' THEN scanningDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag IN (100,200) THEN closingDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag = 40 AND ISNULL(closingDate,'')<>'' THEN operateTime
+                                    ELSE '' END
+                                 )) NOT IN (0,1,2,3) ";
+            }else{
+                $sql .= " AND (CASE WHEN ISNULL(scanningDate,'')<>'' THEN scanningDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag IN (100,200) THEN closingDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag = 40 AND ISNULL(closingDate,'')<>'' THEN operateTime
+                                    ELSE '' END) = '' ";
+            }
+        }else{
+            $sql .= " AND CONVERT(VARCHAR(10),operateTime,121)='{$opDate}' ";
+            if ($flag == 0){
+                $sql .= " AND DATEDIFF(dd,operateTime,
+                                (CASE WHEN ISNULL(scanningDate,'')<>'' THEN scanningDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag IN (100,200) THEN closingDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag = 40 AND ISNULL(closingDate,'')<>'' THEN operateTime
+                                    ELSE '' END
+                                 ))<>0 ";
+            }elseif ($flag == 1){
+                $sql .= " AND DATEDIFF(dd,operateTime,
+                                (CASE WHEN ISNULL(scanningDate,'')<>'' THEN scanningDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag IN (100,200) THEN closingDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag = 40 AND ISNULL(closingDate,'')<>'' THEN operateTime
+                                    ELSE '' END
+                                 )) NOT IN (0,1) ";
+            }elseif ($flag == 2){
+                $sql .= " AND DATEDIFF(dd,operateTime,
+                                (CASE WHEN ISNULL(scanningDate,'')<>'' THEN scanningDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag IN (100,200) THEN closingDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag = 40 AND ISNULL(closingDate,'')<>'' THEN operateTime
+                                    ELSE '' END
+                                 )) NOT IN (0,1,2) ";
+            }elseif ($flag == 3){
+                $sql .= " AND DATEDIFF(dd,operateTime,
+                                (CASE WHEN ISNULL(scanningDate,'')<>'' THEN scanningDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag IN (100,200) THEN closingDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag = 40 AND ISNULL(closingDate,'')<>'' THEN operateTime
+                                    ELSE '' END
+                                 )) NOT IN (0,1,2,3) ";
+            }else{
+                $sql .= " AND (CASE WHEN ISNULL(scanningDate,'')<>'' THEN scanningDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag IN (100,200) THEN closingDate
+                                    WHEN ISNULL(scanningDate,'')='' AND filterFlag = 40 AND ISNULL(closingDate,'')<>'' THEN operateTime
+                                    ELSE '' END) = '' ";
+            }
+        }
+
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
+    }
 
 
 
