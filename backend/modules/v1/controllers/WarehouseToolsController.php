@@ -337,8 +337,8 @@ class WarehouseToolsController extends AdminController
             }
         }
         $res = [
-            ['title' => ['打标人员', '打标SKU数量', '打标SKU种数'], 'name' => '人员数据', 'data' => $personData],
-            ['title' => ['日期', '打标SKU数量', '打标SKU种数'], 'name' => '时间数据', 'data' => $dateData],
+            ['title' => ['打标人员', '打标SKU数量', '打标SKU种数', '打标包裹数'], 'name' => '人员数据', 'data' => $personData],
+            ['title' => ['日期', '打标SKU数量', '打标SKU种数', '打标包裹数'], 'name' => '时间数据', 'data' => $dateData],
         ];
         ExportTools::toExcelMultipleSheets('markStatistics', $res, 'Xlsx');
     }
