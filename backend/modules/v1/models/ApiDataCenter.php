@@ -460,17 +460,20 @@ class ApiDataCenter
     public static function getAmazonReplenishment($condition)
     {
         $username = Yii::$app->user->identity->username;
+        $suffix = isset($condition['suffix']) && $condition['suffix'] ? (is_array($condition['suffix']) ? $condition['suffix'] : [$condition['suffix']]) : [];
         $params = [
             'username' => isset($condition['saler']) ? $condition['saler'] : ApiUser::getUserList($username),
-            'store' => isset($condition['suffix']) ? $condition['suffix'] : []
+            'store' => $suffix
         ];
         $suffixFilter = Handler::paramsParse($params);
         //var_dump(implode(',', $suffixFilter));exit;
-        $sql = "EXEC guest.amazon_virtual_warehouse_replenishment :sku,:developer,:stockDaysDiff,:totalStockDaysDiff,:suffix,:shippingType";
+        $sql = "EXEC guest.amazon_virtual_warehouse_replenishment :sku,:developer,:stockDaysDiff,
+                        :totalStockDaysDiff,:suffix,:storeName,:shippingType";
         $params = [
             ':suffix' => implode(',', $suffixFilter),
             ':sku' => $condition['sku'],
             ':developer' => $condition['developer'],
+            ':storeName' => $condition['storeName'],
             ':stockDaysDiff' => (int)$condition['stockDaysDiff'],
             ':totalStockDaysDiff' => (int)$condition['totalStockDaysDiff'],
             ':shippingType' => $condition['shippingType'],
