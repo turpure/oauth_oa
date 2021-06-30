@@ -473,7 +473,7 @@ class ApiDataCenter
             ':suffix' => implode(',', $suffixFilter),
             ':sku' => $condition['sku'],
             ':developer' => $condition['developer'],
-            ':storeName' => $condition['storeName'],
+            ':storeName' => isset($condition['storeName']) ? : '',
             ':stockDaysDiff' => (int)$condition['stockDaysDiff'],
             ':totalStockDaysDiff' => (int)$condition['totalStockDaysDiff'],
             ':shippingType' => $condition['shippingType'],
