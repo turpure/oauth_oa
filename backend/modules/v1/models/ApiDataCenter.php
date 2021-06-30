@@ -473,12 +473,12 @@ class ApiDataCenter
             ':suffix' => implode(',', $suffixFilter),
             ':sku' => $condition['sku'],
             ':developer' => $condition['developer'],
-            ':storeName' => isset($condition['storeName']) ? : '',
+            ':storeName' => isset($condition['storeName']) ?? '',
             ':stockDaysDiff' => (int)$condition['stockDaysDiff'],
             ':totalStockDaysDiff' => (int)$condition['totalStockDaysDiff'],
             ':shippingType' => $condition['shippingType'],
         ];
-        //var_dump(Yii::$app->py_db->createCommand($sql)->bindValues($params)->getRawSql());exit;
+//        var_dump(Yii::$app->py_db->createCommand($sql)->bindValues($params)->getRawSql());exit;
         return Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
 
     }
