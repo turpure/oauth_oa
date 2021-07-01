@@ -1212,4 +1212,30 @@ class ReportController extends AdminController
     {
         return ['eBay-义乌仓', 'eBay-海外仓', 'Wish', 'Aliexpress', 'Amazon', 'Joom', 'VOVA', 'Shopee', 'Shopify', 'Lazada'];
     }
+
+    /**
+     * 采购账期
+     * Date: 2021-07-01 13:27
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    public function actionPurchaseAccountPeriod()
+    {
+        $beginDate = date('Y-m-01', strtotime('-4 month'));
+        $sql = "SELECT dt,purchaser,SUM(orderMoney) AS orderMoney
+                FROM (
+                    SELECT p.personName AS purchaser,CONVERT(VARCHAR(7),c.AudieDate,121) AS dt,
+                                orderMoney = (SELECT SUM (ISNULL(allmoney, 0)) FROM	CG_StockInD (nolock) WHERE	StockInNID = c.nid)
+                    FROM [dbo].[CG_StockInM] c
+                    LEFT JOIN B_Person (nolock) p ON p.NID = C.salerID
+                    LEFT JOIN B_Dictionary(nolock) d ON d.NID= C.BalanceID
+                    WHERE BillType = 1 AND p.used = 0 AND c.AudieDate >= '{$beginDate}' AND dictionaryName IN('账期付款','线下交易') 
+                                AND c.SupplierID<>35383 AND ISNULL(personName,'')<>''
+                ) aa GROUP BY dt,purchaser ORDER BY purchaser,dt ";
+        return Yii::$app->py_db->createCommand($sql)->queryAll();
+    }
+
+
+
 }
