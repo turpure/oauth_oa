@@ -1233,7 +1233,20 @@ class ReportController extends AdminController
                     WHERE BillType = 1 AND p.used = 0 AND c.AudieDate >= '{$beginDate}' AND dictionaryName IN('账期付款','线下交易') 
                                 AND c.SupplierID<>35383 AND ISNULL(personName,'')<>''
                 ) aa GROUP BY dt,purchaser ORDER BY purchaser,dt ";
-        return Yii::$app->py_db->createCommand($sql)->queryAll();
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $purchaserList = array_unique(ArrayHelper::getColumn($data,'purchaser'));
+        $res = [];
+        foreach ($purchaserList as $val){
+            $item['purchaser'] = $val;
+            foreach ($data as $v){
+                if($val == $v['purchaser']){
+                    unset($v['purchaser']);
+                    $item['value'][] = $v;
+                }
+            }
+            $res[]= $item;
+        }
+        return  $res;
     }
 
 
