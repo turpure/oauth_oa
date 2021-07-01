@@ -900,15 +900,13 @@ class DataCenterController extends AdminController
             ];
             $params = Handler::paramsFilter($queryParams);
             if (!$params['store']) return [];
-            //print_r($params);exit;
             $condition = [
-                'store' => $params['account'] ? implode(',', $params['account']) : '',
+                'store' => $params['store'] ? implode(',', $params['store']) : '',
                 'trendId' => $cond['trendId'],
                 'beginDate' => $cond['dateRange'][0],
                 'endDate' => $cond['dateRange'][1]
             ];
             $data = ApiDataCenter::getWeightDiffData($condition);
-//        if (!$data) return $data;
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
