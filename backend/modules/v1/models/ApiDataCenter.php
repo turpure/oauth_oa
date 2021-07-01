@@ -152,15 +152,8 @@ class ApiDataCenter
             $sql .= " AND cw.trendId IN ('{$tradeId}')";
         };
         if ($condition['beginDate'] && $condition['endDate']) $sql .= " AND cw.orderCloseDate BETWEEN '{$condition['beginDate']}' AND '{$condition['endDate']}'";
-        $con = Yii::$app->db;
-        try {
-            return $con->createCommand($sql)->queryAll();
-        } catch (\Exception $why) {
-            return [
-                'code' => 400,
-                'message' => $why->getMessage()
-            ];
-        }
+        return Yii::$app->db->createCommand($sql)->queryAll();
+
     }
 
 

@@ -716,10 +716,11 @@ class DataCenterController extends AdminController
 
     }
 
-    public function actionArrivalDayDelete(){
+    public function actionArrivalDayDelete()
+    {
         try {
             $condition = Yii::$app->request->post('condition', []);
-            $ids = $condition['id'] ? : [];
+            $ids = $condition['id'] ?: [];
             $ids = is_array($ids) ? $ids : [$ids];
             OauthSysConfig::deleteAll(['id' => $ids]);
             return true;
@@ -887,38 +888,46 @@ class DataCenterController extends AdminController
      */
     public function actionWeightDiff()
     {
-        $request = Yii::$app->request->post();
-        $cond = $request['condition'];
-        $queryParams = [
-            'department' => $cond['department'],
-            'secDepartment' => $cond['secDepartment'],
-            'platform' => $cond['plat'],
-            'username' => $cond['member'],
-            'store' => $cond['account']
-        ];
-        $params = Handler::paramsFilter($queryParams);
-        if (!$params['store']) return [];
-        //print_r($params);exit;
-        $condition = [
-            'store' => $params['store'] ? implode(',', $params['store']) : '',
-            'trendId' => $cond['trendId'],
-            'beginDate' => $cond['dateRange'][0],
-            'endDate' => $cond['dateRange'][1]
-        ];
-        $data = ApiDataCenter::getWeightDiffData($condition);
-        if (!$data) return $data;
-        $provider = new ArrayDataProvider([
-            'allModels' => $data,
-            'sort' => [
-                'defaultOrder' => ['weightDiff' => SORT_DESC],
-                'attributes' => ['trendId', 'department', 'secDepartment', 'suffix', 'platform', 'username', 'profit',
-                    'orderWeight', 'skuWeight', 'weightDiff', 'orderCloseDate'],
-            ],
-            'pagination' => [
-                'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
-            ],
-        ]);
-        return $provider;
+        try {
+            $request = Yii::$app->request->post();
+            $cond = $request['condition'];
+            $queryParams = [
+                'department' => $cond['department'],
+                'secDepartment' => $cond['secDepartment'],
+                'platform' => $cond['plat'],
+                'username' => $cond['member'],
+                'store' => $cond['account']
+            ];
+            $params = Handler::paramsFilter($queryParams);
+            if (!$params['store']) return [];
+            //print_r($params);exit;
+            $condition = [
+                'store' => $params['account'] ? implode(',', $params['account']) : '',
+                'trendId' => $cond['trendId'],
+                'beginDate' => $cond['dateRange'][0],
+                'endDate' => $cond['dateRange'][1]
+            ];
+            $data = ApiDataCenter::getWeightDiffData($condition);
+//        if (!$data) return $data;
+            $provider = new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'defaultOrder' => ['weightDiff' => SORT_DESC],
+                    'attributes' => ['trendId', 'department', 'secDepartment', 'suffix', 'platform', 'username', 'profit',
+                        'orderWeight', 'skuWeight', 'weightDiff', 'orderCloseDate'],
+                ],
+                'pagination' => [
+                    'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
+                ],
+            ]);
+
+            return $provider;
+        } catch (\Exception $why) {
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
+        }
     }
 
 
