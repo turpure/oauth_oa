@@ -1237,7 +1237,7 @@ class ApiWarehouseTools
         $flag = $condition['flag'] ?: 0;
         $version = $condition['version'] ?: '1.0';
         $opDate = $condition['opDate'] ?: '';
-        $sql = "SELECT tradeNid,orderTime,operateTime,scanningDate,storeName,closingDate,
+        $sql = "SELECT tradeNid,orderTime,operateTime,scanningDate,storeName,closingDate,updateTime,
                         CASE WHEN FilterFlag = 5 THEN '等待派单'
                                 WHEN FilterFlag = 6 THEN '已派单'
                                 WHEN FilterFlag = 20 THEN  '未拣货'

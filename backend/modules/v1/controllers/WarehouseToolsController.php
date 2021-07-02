@@ -1829,7 +1829,7 @@ class WarehouseToolsController extends AdminController
         $condition = Yii::$app->request->post('condition', []);
 
         $data = ApiWarehouseTools::getDeliverTimeRateDetail($condition);
-        $title = ['订单编号', '交易日期', '操作日期', '核单日期', '发货仓库', '发货日期', '订单状态'];
+        $title = ['订单编号', '交易日期', '操作日期', '核单日期', '发货仓库', '发货日期', '更新时间', '订单状态'];
         ExportTools::toExcelOrCsv('deliverTimeRateDetail', $data, 'Xls', $title);
     }
 

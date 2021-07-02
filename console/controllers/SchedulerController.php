@@ -1086,6 +1086,7 @@ class SchedulerController extends Controller
     {
         try {
             $beginDate = '2021-01-01';
+            $beginDate = date('Y-m-01', strtotime('last day of -2 month -1 day'));
             $endDate = date('Y-m-d', strtotime('-1 days'));
             $sql = "EXEC oauth_warehouse_tools_deliver_trade_backup '{$beginDate}','{$endDate}';";
             $data = Yii::$app->py_db->createCommand($sql)->execute();
