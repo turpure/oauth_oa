@@ -1237,6 +1237,7 @@ class ReportController extends AdminController
         $purchaserList = array_unique(ArrayHelper::getColumn($data,'purchaser'));
         $res = [];
         foreach ($purchaserList as $val){
+            $item = [];
             $item['purchaser'] = $val;
             foreach ($data as $v){
                 if($val == $v['purchaser']){
