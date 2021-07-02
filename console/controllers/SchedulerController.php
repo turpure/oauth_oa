@@ -251,7 +251,8 @@ class SchedulerController extends Controller
                     'ppebayusSix', 'ppebayznSix', 'inpackagefeermbSix', 'expressfarermbSix', 'devofflinefeeSix', 'devOpeFeeSix',
                     'netprofitSix', 'netrateSix', 'timegroupTwe', 'salemoneyrmbusTwe', 'salemoneyrmbznTwe', 'costmoneyrmbTwe',
                     'ppebayusTwe', 'ppebayznTwe', 'inpackagefeermbTwe', 'expressfarermbTwe', 'devofflinefeeTwe', 'devOpeFeeTwe',
-                    'netprofitTwe', 'netrateTwe', 'salemoneyrmbtotal', 'netprofittotal', 'netratetotal', 'devRate', 'devRate1', 'devRate5', 'devRate7', 'type'],
+                    'netprofitTwe', 'netrateTwe', 'salemoneyrmbtotal', 'netprofittotal', 'netratetotal',
+                    'devRate', 'devRate1', 'devRate5', 'devRate7', 'type', 'updateTime'],
                 $devData)->execute();
 
 
@@ -281,7 +282,7 @@ class SchedulerController extends Controller
                         'inpackagemoney','storename','refund','refundrate','diefeeZn','insertionFee',
                         'saleOpeFeeZn','grossprofit','grossprofitRate'],
                     $lastProfit)->execute();*/
-                $v = array_merge($v, ['month' => 'last']);
+                $v = array_merge($v, ['month' => 'last', 'updateTime' => $endDate]);
                 Yii::$app->db->createCommand()->insert('cache_salerProfitTmp', $v)->execute();
             }
 
@@ -290,7 +291,7 @@ class SchedulerController extends Controller
             $sqlParams[':endDate'] = $endDate;
             $thisProfit = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
             foreach ($thisProfit as &$v) {
-                $v = array_merge($v, ['month' => 'this']);
+                $v = array_merge($v, ['month' => 'this', 'updateTime' => $endDate]);
                 Yii::$app->db->createCommand()->insert('cache_salerProfitTmp', $v)->execute();
             }
 
@@ -497,7 +498,7 @@ class SchedulerController extends Controller
             ];
             $lastProfit = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
             foreach ($lastProfit as &$v) {
-                $v = array_merge($v, ['month' => 'last']);
+                $v = array_merge($v, ['month' => 'last', 'updateTime' => $endDate]);
                 Yii::$app->db->createCommand()->insert('cache_salerProfitTmp', $v)->execute();
             }
 
@@ -506,7 +507,7 @@ class SchedulerController extends Controller
             $sqlParams[':endDate'] = $endDate;
             $thisProfit = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
             foreach ($thisProfit as &$v) {
-                $v = array_merge($v, ['month' => 'this']);
+                $v = array_merge($v, ['month' => 'this', 'updateTime' => $endDate]);
                 Yii::$app->db->createCommand()->insert('cache_salerProfitTmp', $v)->execute();
             }
 
