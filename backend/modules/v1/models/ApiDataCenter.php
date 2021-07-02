@@ -180,8 +180,9 @@ class ApiDataCenter
             }
             if ($nidList) {
                 foreach ($nidList as $value) {
-                    $res = Yii::$app->py_db->createCommand("EXEC P_Fr_CalcShippingCostByNid {$value}")->execute();
-                    if ($res === false) {
+                    $res1 = Yii::$app->py_db->createCommand("EXEC P_Fr_CalcShippingCostByNid {$value}")->execute();
+                    $res2 = Yii::$app->py_db->createCommand("EXEC P_Fr_CalcShippingCostByNidSend {$value}")->execute();
+                    if ($res1 === false || $res2 === false) {
                         $transaction->rollBack();
                     }
                     $re = Yii::$app->db->createCommand("UPDATE cache_weightDiff SET flag=1 WHERE trendId={$value}")->execute();
