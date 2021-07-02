@@ -834,8 +834,8 @@ class ReportController extends AdminController
                 break;
             case 'trusteeshipFee'://eBay托管费
                 $fileName = 'trusteeshipFee';
-                $title = ['账号简称', '费用类型', '金额(£)','金额(￥)', '原始币种', '费用时间', '销售员'];
-                $headers = ['suffix', 'fee_type', 'total', 'totalRmb', 'currency_code', 'fee_time', 'salesman'];
+                $title = ['账号简称', '订单编号', '费用类型', '金额(£)','金额(￥)', '原始币种', '费用时间', '销售员'];
+                $headers = ['suffix', 'orderId', 'fee_type', 'total', 'totalRmb', 'currency_code', 'fee_time', 'salesman'];
                 $data = $this->actionTrusteeshipFee()['provider']->getModels();
                 break;
             default://默认销售死库明细下载
