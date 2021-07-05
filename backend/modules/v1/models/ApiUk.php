@@ -225,7 +225,12 @@ class ApiUk
         $profit = $data['price'] - $params['price'] * $params['adRate'] / 100 -
             $data['pFee'] - $data['eFee'] - $data['vatFee'] - $data['tradeFee'] -
             ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate ;
-        $data['rate'] = round($profit * 1.2/ $data['price'] * 100, 2);
+
+        if ($params['vatRate']) {
+            $data['rate'] = round($profit * 1.2/ $data['price'] * 100, 2);
+        }else{
+            $data['rate'] = round($profit / $data['price'] * 100, 2);
+        }
 
 
         //计算毛利
