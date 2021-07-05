@@ -215,7 +215,8 @@ class ApiUk
         if ($params['vatRate']) {
             //跨国交易费
             $data['tradeFee'] = $data['price'] * Yii::$app->params['tradeFeeRate'];
-            $data['vatFee'] = round($params['price'] * $params['vatRate'] / (100 + $params['vatRate']), 2);
+            //$data['vatFee'] = round($params['price'] * $params['vatRate'] / (100 + $params['vatRate']), 2);
+            $data['vatFee'] = round($data['price'] * $params['vatRate'] / (100 + $params['vatRate']), 2);
         }else{
             $data['vatFee'] = round(($data['eFee'] + $data['pFee']) * 0.2,2);
             $data['tradeFee'] = 0;
