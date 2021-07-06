@@ -2098,10 +2098,10 @@ class ApiReport
 
                 }
             }
-            $item['totalRate'] = 1 + $item['numA']*0.1 - $item['numC']*0.05 - $item['numD']*0.1;
+            $item['totalRate'] = round(1 + $item['numA']*0.1 - $item['numC']*0.05 - $item['numD']*0.1,2);
             $data[] = $item;
         }
-        $totalRate = ArrayHelper::getColumn($query,'totalRate');
+        $totalRate = ArrayHelper::getColumn($data,'totalRate');
         array_multisort($totalRate,SORT_DESC, $data);
         foreach ($data as $k => &$v){
             $v['totalSort'] = $k + 1;
