@@ -2068,8 +2068,8 @@ class ApiReport
         $name = isset($condition['name']) ? $condition['name'] : '';
         $depart = isset($condition['depart']) ? $condition['depart'] : '';
         $plat = isset($condition['plat']) ? $condition['plat'] : '';
-        $beginMonth = isset($condition['dateRange'][0]) ? $condition['month'][0] : '';
-        $endMonth = isset($condition['dateRange'][1]) ? $condition['month'][1] : '';
+        $beginMonth = isset($condition['dateRange'][0]) ? $condition['dateRange'][0] : '';
+        $endMonth = isset($condition['dateRange'][1]) ? $condition['dateRange'][1] : '';
         $query = (new yii\db\Query())//->select('*')
         ->from('cache_kpi_saler_and_dev_tmp_data')
             ->andFilterWhere(['between', 'month', $beginMonth, $endMonth])
