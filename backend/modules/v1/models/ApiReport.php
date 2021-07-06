@@ -2078,10 +2078,11 @@ class ApiReport
             ->andFilterWhere(['=', 'plat', $plat])
             ->orderBy('name,month')->all();
         $userList = array_unique(ArrayHelper::getColumn($query,'name'));
-        $res = [];
+        $data = [];
         foreach ($userList as $user){
             $item = [];
             $item['name'] = $user;
+            $item['numA'] = $item['numB'] = $item['numC'] = $item['numD'] = $item['totalRate'] = $item['totalSort'] = 0;
             foreach ($query as $v){
                 if($v['name'] == $user){
                     $item['depart'] = $v['depart'];
@@ -2090,11 +2091,22 @@ class ApiReport
                         'month' => $v['month'],
                         'rank' => $v['rank'],
                     ];
+                    if($v['rank'] == 'A') $item['numA'] += 1;
+                    if($v['rank'] == 'B') $item['numB'] += 1;
+                    if($v['rank'] == 'C') $item['numC'] += 1;
+                    if($v['rank'] == 'D') $item['numD'] += 1;
+
                 }
             }
-            $res[] = $item;
+            $item['totalRate'] = 1 + $item['numA']*0.1 - $item['numC']*0.05 - $item['numD']*0.1;
+            $data[] = $item;
         }
-        return $res;
+        $totalRate = ArrayHelper::getColumn($query,'totalRate');
+        array_multisort($totalRate,SORT_DESC, $data);
+        foreach ($data as $k => &$v){
+            $v['totalSort'] = $k + 1;
+        }
+        return $data;
     }
 
 }
