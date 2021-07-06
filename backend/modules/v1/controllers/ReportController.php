@@ -1250,6 +1250,31 @@ class ReportController extends AdminController
         return  $res;
     }
 
+    /**
+     * 运营KPI
+     * Date: 2021-07-06 13:27
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    public function actionOperatorKpi()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiReport::getOperatorKpi($condition);
+    }
+
+    /**
+     * 运营KPI历史数据
+     * Date: 2021-07-06 13:27
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    public function actionOperatorKpiHistory()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiReport::getOperatorKpiHistory($condition);
+    }
 
 
 }

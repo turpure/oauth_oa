@@ -2034,4 +2034,50 @@ class ApiReport
         $ret = Yii::$app->db->createCommand($sql)->bindValues([':plat' => $plat])->queryScalar();
         return $ret;
     }
+
+    /**
+     * 运营KPI 数据
+     * @param $condition
+     * Date: 2021-07-06 9:19
+     * Author: henry
+     * @return array
+     */
+    public static function getOperatorKpi($condition){
+        $name = isset($condition['name']) ? $condition['name'] : '';
+        $depart = isset($condition['depart']) ? $condition['depart'] : '';
+        $plat = isset($condition['plat']) ? $condition['plat'] : '';
+        $month = isset($condition['month']) ? $condition['month'] : '';
+        $query = (new yii\db\Query())//->select('*')
+            ->from('cache_kpi_saler_and_dev_tmp_data')
+            ->andFilterWhere(['=', 'name', $name])
+            ->andFilterWhere(['=', 'depart', $depart])
+            ->andFilterWhere(['=', 'plat', $plat])
+            ->andFilterWhere(['=', 'month', $month])
+            ->orderBy('sort')->all();
+        return $query;
+    }
+
+    /**
+     * 运营KPI 数据
+     * @param $condition
+     * Date: 2021-07-06 9:19
+     * Author: henry
+     * @return array
+     */
+    public static function getOperatorKpiHistory($condition){
+        $name = isset($condition['name']) ? $condition['name'] : '';
+        $depart = isset($condition['depart']) ? $condition['depart'] : '';
+        $plat = isset($condition['plat']) ? $condition['plat'] : '';
+        $beginMonth = isset($condition['dateRange'][0]) ? $condition['month'][0] : '';
+        $endMonth = isset($condition['dateRange'][1]) ? $condition['month'][1] : '';
+        $query = (new yii\db\Query())//->select('*')
+        ->from('cache_kpi_saler_and_dev_tmp_data')
+            ->andFilterWhere(['between', 'month', $beginMonth, $endMonth])
+            ->andFilterWhere(['=', 'name', $name])
+            ->andFilterWhere(['=', 'depart', $depart])
+            ->andFilterWhere(['=', 'plat', $plat])
+            ->orderBy('sort')->all();
+        return $query;
+    }
+
 }
