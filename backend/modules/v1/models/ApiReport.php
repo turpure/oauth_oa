@@ -2076,8 +2076,25 @@ class ApiReport
             ->andFilterWhere(['=', 'name', $name])
             ->andFilterWhere(['=', 'depart', $depart])
             ->andFilterWhere(['=', 'plat', $plat])
-            ->orderBy('sort')->all();
-        return $query;
+            ->orderBy('name,month')->all();
+        $userList = array_unique(ArrayHelper::getColumn($query,'name'));
+        $res = [];
+        foreach ($userList as $user){
+            $item = [];
+            $item['name'] = $user;
+            foreach ($query as $v){
+                if($v['name'] == $user){
+                    $item['depart'] = $v['depart'];
+                    $item['hireDate'] = $v['hireDate'];
+                    $item['value'][] = [
+                        'month' => $v['month'],
+                        'rank' => $v['rank'],
+                    ];
+                }
+            }
+            $res[] = $item;
+        }
+        return $res;
     }
 
 }
