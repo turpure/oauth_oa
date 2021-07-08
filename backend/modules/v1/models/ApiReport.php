@@ -2078,23 +2078,31 @@ class ApiReport
             ->andFilterWhere(['=', 'plat', $plat])
             ->orderBy('name,month')->all();
         $userList = array_unique(ArrayHelper::getColumn($query,'name'));
+        $dateList = array_unique(ArrayHelper::getColumn($query,'month'));
+        $row = [];
+        foreach ($dateList as $v){
+            $row[] = ['month' => $v, 'rank' => ''];
+        }
+//        var_dump($row);exit;
         $data = [];
         foreach ($userList as $user){
             $item = [];
             $item['name'] = $user;
             $item['numA'] = $item['numB'] = $item['numC'] = $item['numD'] = $item['totalRate'] = $item['totalSort'] = 0;
+            $item['value'] = $row;
             foreach ($query as $v){
                 if($v['name'] == $user){
                     $item['depart'] = $v['depart'];
                     $item['hireDate'] = $v['hireDate'];
-                    $item['value'][] = [
-                        'month' => $v['month'],
-                        'rank' => $v['rank'],
-                    ];
-                    if($v['rank'] == 'A') $item['numA'] += 1;
-                    if($v['rank'] == 'B') $item['numB'] += 1;
-                    if($v['rank'] == 'C') $item['numC'] += 1;
-                    if($v['rank'] == 'D') $item['numD'] += 1;
+                    foreach ($item['value'] as &$value){
+                        if ($value['month'] == $v['month'] && $v['month'] >= substr($v['hireDate'],0,7)){
+                            $value['rank'] = $v['rank'];
+                        }
+                    }
+                    if($v['rank'] == 'A' && $v['month'] >= substr($v['hireDate'],0,7)) $item['numA'] += 1;
+                    if($v['rank'] == 'B' && $v['month'] >= substr($v['hireDate'],0,7)) $item['numB'] += 1;
+                    if($v['rank'] == 'C' && $v['month'] >= substr($v['hireDate'],0,7)) $item['numC'] += 1;
+                    if($v['rank'] == 'D' && $v['month'] >= substr($v['hireDate'],0,7)) $item['numD'] += 1;
 
                 }
             }
