@@ -482,7 +482,7 @@ class ApiMine
                 $ret[] = $row;
             }
         }
-        ExportTools::toExcelOrCsv('test-joom',$ret,'Csv');
+        ExportTools::toExcelOrCsv('test-joom',$ret,'Xls');
     }
 
 

@@ -429,23 +429,57 @@ class WarehouseToolsController extends AdminController
     }
 
     /**
-     * 贴标-- 商品难度系数
-     * Date: 2021-04-21 17:04
-     * Author: henry
-     * @return ActiveDataProvider
-     */
+ * 贴标-- 商品难度系数
+ * Date: 2021-04-21 17:04
+ * Author: henry
+ * @return ArrayDataProvider
+ */
     public function actionLabelGoodsRate()
     {
         $condition = Yii::$app->request->post('condition', []);
         $pageSize = $condition['pageSize'] ?: 20;
-        $goodsCode = $condition['goodsCode'] ?: '';
-        $data = OauthLabelGoodsRate::find()->andFilterWhere(['like', 'goodsCode', $goodsCode]);
-        return new ActiveDataProvider([
-            'query' => $data,
+        $goodsCode = $condition['goodsCode'] ?? '';
+        $purchaser = $condition['purchaser'] ?? '';
+        //$data = OauthLabelGoodsRate::find()->andFilterWhere(['like', 'goodsCode', $goodsCode]);
+        $sql = "SELECT a.id,a.goodsCode,a.rate,g.purchaser FROM oauth_label_goods_rate a
+                LEFT JOIN B_Goods g ON a.goodsCode=g.GoodsCode WHERE 1=1 ";
+        if ($goodsCode) $sql .= " AND a.goodsCode LIKE '%{$goodsCode}%'";
+        if ($purchaser) $sql .= " AND g.purchaser LIKE '%{$purchaser}%'";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        return new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['goodsCode', 'rate', 'purchaser'],
+                'defaultOrder' => [
+                    'rate' => SORT_DESC,
+                ]
+            ],
             'pagination' => [
                 'pageSize' => $pageSize,
             ],
         ]);
+    }
+
+    /**
+     * 贴标-- 商品难度系数 导出
+     * Date: 2021-07-08 11:48
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionLabelGoodsRateExport()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $goodsCode = $condition['goodsCode'] ?? '';
+        $purchaser = $condition['purchaser'] ?? '';
+        //$data = OauthLabelGoodsRate::find()->andFilterWhere(['like', 'goodsCode', $goodsCode]);
+        $sql = "SELECT a.goodsCode,a.rate,g.purchaser FROM oauth_label_goods_rate a
+                LEFT JOIN B_Goods g ON a.goodsCode=g.GoodsCode WHERE 1=1 ";
+        if ($goodsCode) $sql .= " AND a.goodsCode LIKE '%{$goodsCode}%'";
+        if ($purchaser) $sql .= " AND g.purchaser LIKE '%{$purchaser}%'";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $title = ['商品编码', '困难系数', '采购员'];
+        ExportTools::toExcelOrCsv('labelGoodsRate', $data, 'Xlsx', $title);
     }
 
     /**
