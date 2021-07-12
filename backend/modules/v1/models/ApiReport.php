@@ -2058,7 +2058,7 @@ class ApiReport
     }
 
     /**
-     * 运营KPI 数据
+     * 运营KPI 历史数据
      * @param $condition
      * Date: 2021-07-06 9:19
      * Author: henry
@@ -2116,5 +2116,6 @@ class ApiReport
         }
         return $data;
     }
+
 
 }

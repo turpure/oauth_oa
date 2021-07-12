@@ -1264,6 +1264,24 @@ class ReportController extends AdminController
     }
 
     /**
+     * 运营KPI导出
+     * Date: 2021-07-12 13:49
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionOperatorKpiExport()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        $data = ApiReport::getOperatorKpi($condition);
+        $title = ['ID', '月份', '姓名', '部门', '入职时间', '入职时长（月）', '平台', '毛利', '毛利得分', '毛利排名', '毛利排名得分',
+            '毛利绝对值增长', '毛利绝对值增长得分', '毛利百分比增长', '毛利百分比增长得分', '销售额绝对值增长', '销售额绝对值增长得分',
+            '销售额百分比增长', '销售额百分比增长得分', '入职时间系数', '业绩指标总得分', '合作度', '积极性', '执行力', '工作态度总得分',
+            '新人培训', '挑战专项加分', '扣分项', '综合得分', '综合排名', '评价等级', '更新时间'];
+        ExportTools::toExcelOrCsv('operatorKpi', $data, 'Xlsx', $title);
+    }
+
+    /**
      * 运营KPI历史数据
      * Date: 2021-07-06 13:27
      * Author: henry
@@ -1276,5 +1294,34 @@ class ReportController extends AdminController
         return ApiReport::getOperatorKpiHistory($condition);
     }
 
+    /**
+     * 运营KPI历史数据导出
+     * Date: 2021-07-12 13:49
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionOperatorKpiHistoryExport()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        $data = ApiReport::getOperatorKpiHistory($condition);
+        $out = [];
+        foreach ($data as $v){
+            $item['姓名'] = $v['name'];
+            $item['部门'] = $v['depart'];
+            $item['入职日期'] = $v['hireDate'];
+            foreach ($v['value'] as $val){
+                $item['评价等级-'.$val['month']] = $val['rank'];
+            }
+            $item['计数-A'] = $v['numA'];
+            $item['计数-B'] = $v['numB'];
+            $item['计数-C'] = $v['numC'];
+            $item['计数-D'] = $v['numD'];
+            $item['综合比例'] = $v['totalRate'];
+            $item['综合排名'] = $v['totalSort'];
+            $out[] = $item;
+        }
+        ExportTools::toExcelOrCsv('operatorKpi', $out, 'Xlsx');
+    }
 
 }
