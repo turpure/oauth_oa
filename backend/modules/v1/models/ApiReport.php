@@ -8,18 +8,12 @@
 namespace backend\modules\v1\models;
 
 use backend\models\OauthClearPlan;
-use backend\models\OauthClearPlanDetail;
 use backend\modules\v1\utils\ExportTools;
-use backend\modules\v1\utils\Helper;
 use Yii;
 use yii\data\ArrayDataProvider;
-use yii\data\SqlDataProvider;
-use yii\db\ActiveQuery;
 use yii\db\Exception;
-use yii\db\Query;
 use yii\helpers\ArrayHelper;
 use backend\models\ShopElf\BDictionary;
-use yii\data\ActiveDataProvider;
 
 class ApiReport
 {
@@ -2047,9 +2041,14 @@ class ApiReport
         $depart = isset($condition['depart']) ? $condition['depart'] : '';
         $plat = isset($condition['plat']) ? $condition['plat'] : '';
         $month = isset($condition['month']) ? $condition['month'] : '';
+        //获取当前用户信息
+        $username = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($username);
+//        var_dump($userList);exit;
         $query = (new yii\db\Query())//->select('*')
             ->from('cache_kpi_saler_and_dev_tmp_data')
             ->andFilterWhere(['=', 'name', $name])
+            ->andFilterWhere(['in', 'name', $userList])
             ->andFilterWhere(['=', 'depart', $depart])
             ->andFilterWhere(['=', 'plat', $plat])
             ->andFilterWhere(['=', 'month', $month])
@@ -2074,10 +2073,14 @@ class ApiReport
         $plat = isset($condition['plat']) ? $condition['plat'] : '';
         $beginMonth = isset($condition['dateRange'][0]) ? $condition['dateRange'][0] : '';
         $endMonth = isset($condition['dateRange'][1]) ? $condition['dateRange'][1] : '';
+        //获取当前用户信息
+        $username = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($username);
         $query = (new yii\db\Query())//->select('*')
         ->from('cache_kpi_saler_and_dev_tmp_data')
             ->andFilterWhere(['between', 'month', $beginMonth, $endMonth])
             ->andFilterWhere(['=', 'name', $name])
+            ->andFilterWhere(['in', 'name', $userList])
             ->andFilterWhere(['=', 'depart', $depart])
             ->andFilterWhere(['=', 'plat', $plat])
             ->orderBy('name,month')->all();
