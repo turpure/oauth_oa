@@ -2106,7 +2106,7 @@ class ApiReport
 
                 }
             }
-            $item['totalRate'] = round(1 + $item['numA']*0.1 - $item['numC']*0.05 - $item['numD']*0.1,2);
+            $item['totalRate'] = round((1 + $item['numA']*0.1 - $item['numC']*0.05 - $item['numD']*0.1) * 100,2);
             $data[] = $item;
         }
         $totalRate = ArrayHelper::getColumn($data,'totalRate');
