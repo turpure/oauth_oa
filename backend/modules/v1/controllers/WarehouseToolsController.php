@@ -429,11 +429,11 @@ class WarehouseToolsController extends AdminController
     }
 
     /**
- * 贴标-- 商品难度系数
- * Date: 2021-04-21 17:04
- * Author: henry
- * @return ArrayDataProvider
- */
+     * 贴标-- 商品难度系数
+     * Date: 2021-04-21 17:04
+     * Author: henry
+     * @return ArrayDataProvider
+     */
     public function actionLabelGoodsRate()
     {
         $condition = Yii::$app->request->post('condition', []);
@@ -711,6 +711,20 @@ class WarehouseToolsController extends AdminController
                 'message' => $e->getMessage(),
             ];
         }
+    }
+
+    /**
+     * 上架完成度
+     * Date: 2021-05-10 10:31
+     * Author: henry
+     * @return array|mixed
+     */
+    public function actionLoadRateExport()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        $data = ApiWarehouseTools::getLoadRateData($condition);
+        $title = ['入库人', '入库时间', 'SKU', '上架人', '上架时间', '上架完成', '是否异常', '是否新品'];
+        ExportTools::toExcelOrCsv('storageTimeRate', $data, 'Xls', $title);
     }
 
     /**
@@ -1791,25 +1805,25 @@ class WarehouseToolsController extends AdminController
      * Author: henry
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
-    AND (m.FilterFlag = 5) THEN '等待派单'
-    WHEN (m.Orig = 0) AND (m.FilterFlag = 6) AND (l.eub = 1) THEN '派至E邮宝'
-    WHEN (m.Orig = 0)AND (m.FilterFlag = 6)AND (l.eub = 2) THEN '派至E线下邮宝'
-    WHEN (m.Orig = 0)AND (m.FilterFlag = 6)AND (l.eub = 3) THEN '派4PX独立帐户'
-    WHEN (m.Orig = 0)AND ((m.FilterFlag = 6)AND (l.eub = 4)) THEN  '派至非E邮宝'
-    WHEN (m.Orig = 0)AND (m.FilterFlag = 20) THEN  '未拣货'
-    WHEN (m.Orig = 0)AND (m.FilterFlag = 22) THEN  '未核单'
-    WHEN (m.Orig = 0)AND (m.FilterFlag = 24) THEN  '未包装'
-    WHEN (m.Orig = 0)AND (m.FilterFlag = 40) THEN  '待发货'
-    WHEN (m.Orig = 0)AND (m.FilterFlag = 26) THEN  '订单缺货(仓库)'
-    WHEN (m.Orig = 0)AND (m.FilterFlag = 28) THEN  '缺货待包装'
-    WHEN (m.Orig = 0)AND (m.FilterFlag = 100) THEN  '已发货'
-    WHEN m.Orig = 1 THEN  '已归档'
-    WHEN m.Orig = 3 THEN '异常已归档'
-    WHEN (m.Orig = 2)AND (m.FilterFlag = 0) THEN '等待付款'
-    WHEN (m.Orig = 2)AND (m.FilterFlag = 1) THEN  '订单缺货'
-    WHEN (m.Orig = 2)AND (m.FilterFlag = 2) THEN  '订单退货'
-    WHEN (m.Orig = 2)AND (m.FilterFlag = 3) THEN '订单取消'
-    WHEN (m.Orig = 2)AND (m.FilterFlag = 4) THEN '其它异常单'*/
+     * AND (m.FilterFlag = 5) THEN '等待派单'
+     * WHEN (m.Orig = 0) AND (m.FilterFlag = 6) AND (l.eub = 1) THEN '派至E邮宝'
+     * WHEN (m.Orig = 0)AND (m.FilterFlag = 6)AND (l.eub = 2) THEN '派至E线下邮宝'
+     * WHEN (m.Orig = 0)AND (m.FilterFlag = 6)AND (l.eub = 3) THEN '派4PX独立帐户'
+     * WHEN (m.Orig = 0)AND ((m.FilterFlag = 6)AND (l.eub = 4)) THEN  '派至非E邮宝'
+     * WHEN (m.Orig = 0)AND (m.FilterFlag = 20) THEN  '未拣货'
+     * WHEN (m.Orig = 0)AND (m.FilterFlag = 22) THEN  '未核单'
+     * WHEN (m.Orig = 0)AND (m.FilterFlag = 24) THEN  '未包装'
+     * WHEN (m.Orig = 0)AND (m.FilterFlag = 40) THEN  '待发货'
+     * WHEN (m.Orig = 0)AND (m.FilterFlag = 26) THEN  '订单缺货(仓库)'
+     * WHEN (m.Orig = 0)AND (m.FilterFlag = 28) THEN  '缺货待包装'
+     * WHEN (m.Orig = 0)AND (m.FilterFlag = 100) THEN  '已发货'
+     * WHEN m.Orig = 1 THEN  '已归档'
+     * WHEN m.Orig = 3 THEN '异常已归档'
+     * WHEN (m.Orig = 2)AND (m.FilterFlag = 0) THEN '等待付款'
+     * WHEN (m.Orig = 2)AND (m.FilterFlag = 1) THEN  '订单缺货'
+     * WHEN (m.Orig = 2)AND (m.FilterFlag = 2) THEN  '订单退货'
+     * WHEN (m.Orig = 2)AND (m.FilterFlag = 3) THEN '订单取消'
+     * WHEN (m.Orig = 2)AND (m.FilterFlag = 4) THEN '其它异常单'*/
     public function actionDeliverTimeRate2Export()
     {
         $condition = Yii::$app->request->post('condition', []);
@@ -1840,7 +1854,7 @@ class WarehouseToolsController extends AdminController
         return new ArrayDataProvider([
             'allModels' => $data,
             'sort' => [
-                'attributes' => ['tradeNid', 'orderTime', 'scanningDate', 'operateTime', 'storeName', 'closingDate','filterFlag'],
+                'attributes' => ['tradeNid', 'orderTime', 'scanningDate', 'operateTime', 'storeName', 'closingDate', 'filterFlag'],
                 'defaultOrder' => [
                     'tradeNid' => SORT_ASC,
                 ]
@@ -1859,14 +1873,14 @@ class WarehouseToolsController extends AdminController
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    public function actionDeliverTimeRateDetailExport(){
+    public function actionDeliverTimeRateDetailExport()
+    {
         $condition = Yii::$app->request->post('condition', []);
 
         $data = ApiWarehouseTools::getDeliverTimeRateDetail($condition);
         $title = ['订单编号', '交易日期', '操作日期', '核单日期', '发货仓库', '发货日期', '更新时间', '订单状态'];
         ExportTools::toExcelOrCsv('deliverTimeRateDetail', $data, 'Xls', $title);
     }
-
 
 
     /////////////////////////////////KPI////////////////////////////////////

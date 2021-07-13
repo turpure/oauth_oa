@@ -775,7 +775,8 @@ class ApiWarehouseTools
      */
     public static function getLoadStatisticsData($condition, $flag = 0)
     {
-        $user = $condition['scanUser'] ? : self::getWarehouseMember('load');
+//        $user = $condition['scanUser'] ? : self::getWarehouseMember('load');
+        $user = $condition['scanUser'] ? : [];
         $scanUser = implode(',', $user);
             //获取数据
         $sql = "EXEC oauth_warehouse_tools_pda_loading_statistics '{$condition['dateRange'][0]}','{$condition['dateRange'][1]}',
