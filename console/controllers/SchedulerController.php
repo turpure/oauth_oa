@@ -1082,7 +1082,7 @@ class SchedulerController extends Controller
      * Date: 2021-03-29 8:49
      * Author: henry
      */
-    public function actionFetchDeliverTimeData()
+    public function actionFetchDeliverTimeData($begin = '', $end = '')
     {
         try {
             $beginDate = '2021-01-01';
@@ -1097,6 +1097,33 @@ class SchedulerController extends Controller
         }
 
     }
+
+    /**
+     * 入库时效备份数据（已发货已归档数据，操作日志处理）
+     * Date: 2021-03-29 8:49
+     * Author: henry
+     */
+    public function actionFetchStorageTimeData($beginDate = '', $endDate = '')
+    {
+        try {
+            if(!$beginDate || !$endDate){
+                $beginDate = date('Y-m-d', strtotime('-5 day'));
+                $endDate = date('Y-m-d');
+            }
+            $flag = ['1.0', '2.0'];
+            foreach ($flag as $v){
+                $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}','义乌仓','{$v}';";
+                Yii::$app->py_db->createCommand($sql)->execute();
+                echo date('Y-m-d H:i:s') . " Goods deliver time data successful for version $v !\n";
+            }
+        } catch (\Exception $e) {
+            echo date('Y-m-d H:i:s') . " Get deliver time data failed, cause of '{$e->getMessage()}'. \n";
+            //echo $e->getMessage();
+        }
+
+    }
+
+
 
     /**
      * 每月更新供应商等级
