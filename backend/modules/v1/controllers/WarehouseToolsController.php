@@ -1590,17 +1590,17 @@ class WarehouseToolsController extends AdminController
             $total['totalNum'] = $totalNum;
             $total['totalInNum'] = $totalInNum;
             $total['num'] = array_sum(ArrayHelper::getColumn($data, 'num'));
-            $total['rate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'num')) * 1.0 / $totalNum, 4) : 0;
+            $total['rate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'num')) * 100.0 / $totalNum, 2) : 0;
             $total['oneNum'] = array_sum(ArrayHelper::getColumn($data, 'oneNum'));
-            $total['oneRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'oneNum')) * 1.0 / $totalNum, 4) : 0;
+            $total['oneRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'oneNum')) * 100.0 / $totalNum, 2) : 0;
             $total['twoNum'] = array_sum(ArrayHelper::getColumn($data, 'twoNum'));
-            $total['twoRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'twoNum')) * 1.0 / $totalNum, 4) : 0;
+            $total['twoRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'twoNum')) * 100.0 / $totalNum, 2) : 0;
             $total['threeNum'] = array_sum(ArrayHelper::getColumn($data, 'threeNum'));
-            $total['threeRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'threeNum')) * 1.0 / $totalNum, 4) : 0;
+            $total['threeRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'threeNum')) * 100.0 / $totalNum, 2) : 0;
             $total['otherNum'] = array_sum(ArrayHelper::getColumn($data, 'otherNum'));
-            $total['otherRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'otherNum')) * 1.0 / $totalNum, 4) : 0;
+            $total['otherRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'otherNum')) * 100.0 / $totalNum, 2) : 0;
             $total['notInNum'] = array_sum(ArrayHelper::getColumn($data, 'notInNum'));
-            $total['notInRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'notInNum')) * 1.0 / $totalNum, 4) : 0;
+            $total['notInRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'notInNum')) * 100.0 / $totalNum, 2) : 0;
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
@@ -1645,6 +1645,14 @@ class WarehouseToolsController extends AdminController
                     WHERE dt BETWEEN '{$beginDate}' AND '{$endDate}' AND flag = '1.0' ";
         if ($storeName) $sql .= " AND storeName = '{$storeName}' ";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        foreach ($data as &$v){
+            $v['rate'] = round($v['rate']*100,2) . '%';
+            $v['oneRate'] = round($v['oneRate']*100,2) . '%';
+            $v['twoRate'] = round($v['twoRate']*100,2) . '%';
+            $v['threeRate'] = round($v['threeRate']*100,2) . '%';
+            $v['otherRate'] = round($v['otherRate']*100,2) . '%';
+            $v['notInRate'] = round($v['notInRate']*100,2) . '%';
+        }
         $title = ['仓库', '扫描日期', '扫描数量', '当天入库数', '当天入库率', '1天内入库数', '1天内入库率',
             '2天内入库数', '2天内入库率', '3天内入库数', '3天内入库率', '3天以上入库数', '3天以上入库率', '未入库数', '未入库率'
         ];
@@ -1676,17 +1684,17 @@ class WarehouseToolsController extends AdminController
             $total['totalNum'] = $totalNum;
             $total['totalInNum'] = $totalInNum;
             $total['num'] = array_sum(ArrayHelper::getColumn($data, 'num'));
-            $total['rate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'num')) * 1.0 / $totalNum, 4) : 0;
+            $total['rate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'num')) * 100.0 / $totalNum, 2) : 0;
             $total['oneNum'] = array_sum(ArrayHelper::getColumn($data, 'oneNum'));
-            $total['oneRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'oneNum')) * 1.0 / $totalNum, 4) : 0;
+            $total['oneRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'oneNum')) * 100.0 / $totalNum, 2) : 0;
             $total['twoNum'] = array_sum(ArrayHelper::getColumn($data, 'twoNum'));
-            $total['twoRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'twoNum')) * 1.0 / $totalNum, 4) : 0;
+            $total['twoRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'twoNum')) * 100.0 / $totalNum, 2) : 0;
             $total['threeNum'] = array_sum(ArrayHelper::getColumn($data, 'threeNum'));
-            $total['threeRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'threeNum')) * 1.0 / $totalNum, 4) : 0;
+            $total['threeRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'threeNum')) * 100.0 / $totalNum, 2) : 0;
             $total['otherNum'] = array_sum(ArrayHelper::getColumn($data, 'otherNum'));
-            $total['otherRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'otherNum')) * 1.0 / $totalNum, 4) : 0;
+            $total['otherRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'otherNum')) * 100.0 / $totalNum, 2) : 0;
             $total['notInNum'] = array_sum(ArrayHelper::getColumn($data, 'notInNum'));
-            $total['notInRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'notInNum')) * 1.0 / $totalNum, 4) : 0;
+            $total['notInRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'notInNum')) * 100.0 / $totalNum, 2) : 0;
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
@@ -1731,6 +1739,14 @@ class WarehouseToolsController extends AdminController
                     WHERE dt BETWEEN '{$beginDate}' AND '{$endDate}' AND flag = '2.0' ";
         if ($storeName) $sql .= " AND storeName = '{$storeName}' ";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        foreach ($data as &$v){
+            $v['rate'] = round($v['rate']*100,2) . '%';
+            $v['oneRate'] = round($v['oneRate']*100,2) . '%';
+            $v['twoRate'] = round($v['twoRate']*100,2) . '%';
+            $v['threeRate'] = round($v['threeRate']*100,2) . '%';
+            $v['otherRate'] = round($v['otherRate']*100,2) . '%';
+            $v['notInRate'] = round($v['notInRate']*100,2) . '%';
+        }
         $title = ['仓库', '扫描日期', '扫描数量', '当天入库数', '当天入库率', '1天内入库数', '1天内入库率',
             '2天内入库数', '2天内入库率', '3天内入库数', '3天内入库率', '3天以上入库数', '3天以上入库率', '未入库数', '未入库率'
         ];
@@ -1760,19 +1776,19 @@ class WarehouseToolsController extends AdminController
             $total['deliverableNum'] = array_sum(ArrayHelper::getColumn($data, 'deliverableNum'));
             $total['zeroNum'] = array_sum(ArrayHelper::getColumn($data, 'zeroNum'));
             $total['zeroRate'] = round(array_sum(ArrayHelper::getColumn($data, 'zeroNum'))
-                * 1.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 4);
+                * 100.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 2);
             $total['oneNum'] = array_sum(ArrayHelper::getColumn($data, 'oneNum'));
             $total['oneRate'] = round(array_sum(ArrayHelper::getColumn($data, 'oneNum'))
-                * 1.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 4);
+                * 100.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 2);
             $total['twoNum'] = array_sum(ArrayHelper::getColumn($data, 'twoNum'));
             $total['twoRate'] = round(array_sum(ArrayHelper::getColumn($data, 'twoNum'))
-                * 1.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 4);
+                * 100.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 2);
             $total['threeNum'] = array_sum(ArrayHelper::getColumn($data, 'threeNum'));
             $total['threeRate'] = round(array_sum(ArrayHelper::getColumn($data, 'threeNum'))
-                * 1.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 4);
+                * 100.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 2);
             $total['otherNum'] = array_sum(ArrayHelper::getColumn($data, 'otherNum'));
             $total['otherRate'] = round(array_sum(ArrayHelper::getColumn($data, 'otherNum'))
-                * 1.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 4);
+                * 100.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 2);
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
@@ -1838,19 +1854,19 @@ class WarehouseToolsController extends AdminController
             $total['deliverableNum'] = array_sum(ArrayHelper::getColumn($data, 'deliverableNum'));
             $total['zeroNum'] = array_sum(ArrayHelper::getColumn($data, 'zeroNum'));
             $total['zeroRate'] = round(array_sum(ArrayHelper::getColumn($data, 'zeroNum'))
-                * 1.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 4);
+                * 100.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 2);
             $total['oneNum'] = array_sum(ArrayHelper::getColumn($data, 'oneNum'));
             $total['oneRate'] = round(array_sum(ArrayHelper::getColumn($data, 'oneNum'))
-                * 1.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 4);
+                * 100.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 2);
             $total['twoNum'] = array_sum(ArrayHelper::getColumn($data, 'twoNum'));
             $total['twoRate'] = round(array_sum(ArrayHelper::getColumn($data, 'twoNum'))
-                * 1.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 4);
+                * 100.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 2);
             $total['threeNum'] = array_sum(ArrayHelper::getColumn($data, 'threeNum'));
             $total['threeRate'] = round(array_sum(ArrayHelper::getColumn($data, 'threeNum'))
-                * 1.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 4);
+                * 100.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 2);
             $total['otherNum'] = array_sum(ArrayHelper::getColumn($data, 'otherNum'));
             $total['otherRate'] = round(array_sum(ArrayHelper::getColumn($data, 'otherNum'))
-                * 1.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 4);
+                * 100.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 2);
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
