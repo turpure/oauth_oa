@@ -208,8 +208,8 @@ class ProductCenterTools
                 $filename = explode('_', $sku->sku)[0] . '.jpg';
                 $remote_file = '/' . $filename;
                 $local_file = $tmpDir . $filename;
-                var_dump($local_file);
                 $ret = static::DownloadImage($url, $local_file);
+                var_dump($local_file);
                 var_dump($ret);
                 if (!$ret) {
                     throw new \Exception('failure1');
@@ -1444,7 +1444,6 @@ class ProductCenterTools
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 //        curl_setopt ($ch, CURLOPT_PROXY, '127.0.0.1:1080');
         $raw = curl_exec($ch);
-        var_dump($raw);
         if (!$raw) {
             return false;
         }
