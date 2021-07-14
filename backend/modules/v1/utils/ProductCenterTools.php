@@ -210,11 +210,11 @@ class ProductCenterTools
                 $local_file = $tmpDir . $filename;
                 $ret = static::DownloadImage($url, $local_file);
                 if (!$ret) {
-                    throw new \Exception('failure');
+                    throw new \Exception('failure1');
                 }
                 Yii::$app->ftp->put($local_file, $remote_file, $mode, $asynchronous);
                 if (!unlink($local_file)) {
-                    throw new \Exception('failure');
+                    throw new \Exception('failure2');
                 }
             }
         }
