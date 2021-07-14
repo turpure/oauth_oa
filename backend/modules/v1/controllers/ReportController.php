@@ -1291,8 +1291,16 @@ class ReportController extends AdminController
      */
     public function actionOperatorKpiHistory()
     {
-        $condition = Yii::$app->request->post()['condition'];
-        return ApiReport::getOperatorKpiHistory($condition);
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiReport::getOperatorKpiHistory($condition);
+        }catch (\Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+
     }
 
     /**
