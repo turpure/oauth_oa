@@ -1718,7 +1718,26 @@ class WarehouseToolsController extends AdminController
             $endDate = $condition['dateRange'][1] ?: '';
             $sql = "EXEC oauth_warehouse_tools_deliver_time_rate '{$beginDate}','{$endDate}','{$storeName}'";
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-            return new ArrayDataProvider([
+
+            $total['storeName'] = $storeName;
+            $total['totalNum'] = array_sum(ArrayHelper::getColumn($data, 'totalNum'));
+            $total['deliverableNum'] = array_sum(ArrayHelper::getColumn($data, 'deliverableNum'));
+            $total['zeroNum'] = array_sum(ArrayHelper::getColumn($data, 'zeroNum'));
+            $total['zeroRate'] = round(array_sum(ArrayHelper::getColumn($data, 'zeroNum'))
+                * 1.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 4);
+            $total['oneNum'] = array_sum(ArrayHelper::getColumn($data, 'oneNum'));
+            $total['oneRate'] = round(array_sum(ArrayHelper::getColumn($data, 'oneNum'))
+                * 1.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 4);
+            $total['twoNum'] = array_sum(ArrayHelper::getColumn($data, 'twoNum'));
+            $total['twoRate'] = round(array_sum(ArrayHelper::getColumn($data, 'twoNum'))
+                * 1.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 4);
+            $total['threeNum'] = array_sum(ArrayHelper::getColumn($data, 'threeNum'));
+            $total['threeRate'] = round(array_sum(ArrayHelper::getColumn($data, 'threeNum'))
+                * 1.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 4);
+            $total['otherNum'] = array_sum(ArrayHelper::getColumn($data, 'otherNum'));
+            $total['otherRate'] = round(array_sum(ArrayHelper::getColumn($data, 'otherNum'))
+                * 1.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 4);
+            $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
                     'attributes' => ['dt', 'storeName', 'totalNum', 'deliverableNum', 'zeroNum', 'zeroRate',
@@ -1732,6 +1751,7 @@ class WarehouseToolsController extends AdminController
                     'pageSize' => $pageSize,
                 ],
             ]);
+            return ['provider' => $provider, 'extra' => $total];
         } catch (Exception $e) {
             return [
                 'code' => 400,
@@ -1777,7 +1797,25 @@ class WarehouseToolsController extends AdminController
             $endDate = $condition['dateRange'][1] ?: '';
             $sql = "EXEC oauth_warehouse_tools_deliver_time_rate '{$beginDate}','{$endDate}','{$storeName}','2.0'";
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-            return new ArrayDataProvider([
+            $total['storeName'] = $storeName;
+            $total['totalNum'] = array_sum(ArrayHelper::getColumn($data, 'totalNum'));
+            $total['deliverableNum'] = array_sum(ArrayHelper::getColumn($data, 'deliverableNum'));
+            $total['zeroNum'] = array_sum(ArrayHelper::getColumn($data, 'zeroNum'));
+            $total['zeroRate'] = round(array_sum(ArrayHelper::getColumn($data, 'zeroNum'))
+                * 1.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 4);
+            $total['oneNum'] = array_sum(ArrayHelper::getColumn($data, 'oneNum'));
+            $total['oneRate'] = round(array_sum(ArrayHelper::getColumn($data, 'oneNum'))
+                * 1.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 4);
+            $total['twoNum'] = array_sum(ArrayHelper::getColumn($data, 'twoNum'));
+            $total['twoRate'] = round(array_sum(ArrayHelper::getColumn($data, 'twoNum'))
+                * 1.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 4);
+            $total['threeNum'] = array_sum(ArrayHelper::getColumn($data, 'threeNum'));
+            $total['threeRate'] = round(array_sum(ArrayHelper::getColumn($data, 'threeNum'))
+                * 1.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 4);
+            $total['otherNum'] = array_sum(ArrayHelper::getColumn($data, 'otherNum'));
+            $total['otherRate'] = round(array_sum(ArrayHelper::getColumn($data, 'otherNum'))
+                * 1.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 4);
+            $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
                     'attributes' => ['dt', 'storeName', 'totalNum', 'deliverableNum', 'zeroNum', 'zeroRate',
@@ -1791,6 +1829,7 @@ class WarehouseToolsController extends AdminController
                     'pageSize' => $pageSize,
                 ],
             ]);
+            return ['provider' => $provider, 'extra' => $total];
         } catch (Exception $e) {
             return [
                 'code' => 400,
