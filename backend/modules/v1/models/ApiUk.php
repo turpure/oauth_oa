@@ -218,7 +218,7 @@ class ApiUk
             //$data['vatFee'] = round($params['price'] * $params['vatRate'] / (100 + $params['vatRate']), 2);
             $data['vatFee'] = round($data['price'] * $params['vatRate'] / (100 + $params['vatRate']), 2);
         }else{
-            $data['vatFee'] = round(($data['eFee'] + $data['pFee']) * 0.2,2);
+            $data['vatFee'] = round(($data['eFee'] + $data['pFee'] + $params['price'] * $params['adRate'] / 100) * 0.2,2);
             $data['tradeFee'] = 0;
         }
 
