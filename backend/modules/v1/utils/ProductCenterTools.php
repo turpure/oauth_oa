@@ -209,8 +209,8 @@ class ProductCenterTools
                 $remote_file = '/' . $filename;
                 $local_file = $tmpDir . $filename;
                 $ret = static::DownloadImage($url, $local_file);
-                var_dump($local_file);
-                var_dump($ret);
+//                var_dump($local_file);
+//                var_dump($ret);
                 if (!$ret) {
                     throw new \Exception('failure1');
                 }
