@@ -2108,10 +2108,10 @@ class ApiReport
                             $value['rank'] = $v['flag'] == '正式' ? $v['rank'] : ($v['flag'] == '试用' ? ('试用-'.$v['rank']) : '');
                         }
                     }
-                    if($v['rank'] == 'A') $v['flag'] == '正式' ? ($item['numA'] += 1) : ($v['testNumA'] += 1);
-                    if($v['rank'] == 'B') $v['flag'] == '正式' ? ($item['numB'] += 1) : ($v['testNumB'] += 1);
-                    if($v['rank'] == 'C') $v['flag'] == '正式' ? ($item['numC'] += 1) : ($v['testNumC'] += 1);
-                    if($v['rank'] == 'D') $v['flag'] == '正式' ? ($item['numD'] += 1) : ($v['testNumD'] += 1);
+                    if($v['rank'] == 'A') $v['flag'] == '正式' ? ($item['numA'] += 1) : ($item['testNumA'] += 1);
+                    if($v['rank'] == 'B') $v['flag'] == '正式' ? ($item['numB'] += 1) : ($item['testNumB'] += 1);
+                    if($v['rank'] == 'C') $v['flag'] == '正式' ? ($item['numC'] += 1) : ($item['testNumC'] += 1);
+                    if($v['rank'] == 'D') $v['flag'] == '正式' ? ($item['numD'] += 1) : ($item['testNumD'] += 1);
 
                 }
             }
