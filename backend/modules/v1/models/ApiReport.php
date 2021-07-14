@@ -2095,7 +2095,9 @@ class ApiReport
         foreach ($userList as $user){
             $item = [];
             $item['name'] = $user;
-            $item['numA'] = $item['numB'] = $item['numC'] = $item['numD'] = $item['totalRate'] = $item['totalSort'] = 0;
+            $item['numA'] = $item['numB'] = $item['numC'] = $item['numD'] =
+            $item['testNumA'] = $item['testNumB'] = $item['testNumC'] = $item['testNumD'] =
+            $item['totalRate'] = $item['totalSort'] = 0;
             $item['value'] = $row;
             foreach ($query as $v){
                 if($v['name'] == $user){
@@ -2103,13 +2105,13 @@ class ApiReport
                     $item['hireDate'] = $v['hireDate'];
                     foreach ($item['value'] as &$value){
                         if ($value['month'] == $v['month'] && $v['month'] >= substr($v['hireDate'],0,7)){
-                            $value['rank'] = $v['rank'];
+                            $value['rank'] = $v['flag'] == '正式' ? $v['rank'] : ($v['flag'] == '试用' ? ('试用-'.$v['rank']) : '');
                         }
                     }
-                    if($v['rank'] == 'A' && $v['month'] >= substr($v['hireDate'],0,7)) $item['numA'] += 1;
-                    if($v['rank'] == 'B' && $v['month'] >= substr($v['hireDate'],0,7)) $item['numB'] += 1;
-                    if($v['rank'] == 'C' && $v['month'] >= substr($v['hireDate'],0,7)) $item['numC'] += 1;
-                    if($v['rank'] == 'D' && $v['month'] >= substr($v['hireDate'],0,7)) $item['numD'] += 1;
+                    if($v['rank'] == 'A') $v['flag'] == '正式' ? $item['numA'] += 1 : $v['testNumA'] += 1;
+                    if($v['rank'] == 'B') $v['flag'] == '正式' ? $item['numB'] += 1 : $v['testNumB'] += 1;
+                    if($v['rank'] == 'C') $v['flag'] == '正式' ? $item['numC'] += 1 : $v['testNumC'] += 1;
+                    if($v['rank'] == 'D') $v['flag'] == '正式' ? $item['numD'] += 1 : $v['testNumD'] += 1;
 
                 }
             }
