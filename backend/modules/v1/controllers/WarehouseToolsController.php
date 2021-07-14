@@ -1587,7 +1587,8 @@ class WarehouseToolsController extends AdminController
             $totalNum = array_sum(ArrayHelper::getColumn($data, 'totalNum'));
             $totalInNum = array_sum(ArrayHelper::getColumn($data, 'totalNum')) -
                 array_sum(ArrayHelper::getColumn($data, 'notInNum'));
-            $total['totalNum'] = array_sum(ArrayHelper::getColumn($data, 'totalNum'));
+            $total['totalNum'] = $totalNum;
+            $total['totalInNum'] = $totalInNum;
             $total['num'] = array_sum(ArrayHelper::getColumn($data, 'num'));
             $total['rate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'num')) * 1.0 / $totalNum, 4) : 0;
             $total['oneNum'] = array_sum(ArrayHelper::getColumn($data, 'oneNum'));
@@ -1614,11 +1615,7 @@ class WarehouseToolsController extends AdminController
             ]);
             return [
                 'provider' => $provider,
-                'extra' => [
-                    'total' => $total,
-                    'totalNum' => $totalNum,
-                    'totalInNum' => $totalInNum,
-                ]
+                'extra' => $total
             ];
         } catch (Exception $e) {
             return [
@@ -1674,7 +1671,8 @@ class WarehouseToolsController extends AdminController
             $totalNum = array_sum(ArrayHelper::getColumn($data, 'totalNum'));
             $totalInNum = array_sum(ArrayHelper::getColumn($data, 'totalNum'))
                 - array_sum(ArrayHelper::getColumn($data, 'notInNum'));
-            $total['totalNum'] = array_sum(ArrayHelper::getColumn($data, 'totalNum'));
+            $total['totalNum'] = $totalNum;
+            $total['totalInNum'] = $totalInNum;
             $total['num'] = array_sum(ArrayHelper::getColumn($data, 'num'));
             $total['rate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'num')) * 1.0 / $totalNum, 4) : 0;
             $total['oneNum'] = array_sum(ArrayHelper::getColumn($data, 'oneNum'));
@@ -1701,11 +1699,7 @@ class WarehouseToolsController extends AdminController
             ]);
             return [
                 'provider' => $provider,
-                'extra' => [
-                    'total' => $total,
-                    'totalNum' => $totalNum,
-                    'totalInNum' => $totalInNum,
-                ]
+                'extra' => $total
             ];
         } catch (Exception $e) {
             return [
