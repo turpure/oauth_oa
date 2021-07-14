@@ -33,6 +33,7 @@ use \mdm\admin\models\Position;
                     'Mercado' => 'Mercado',
                     '1688' => '1688',
                     'Fyndiq' => 'Fyndiq',
+                    'Joybuy' => 'Joybuy',
                 ],
                 'options' => ['placeholder' => '--请选择销售平台--'],
                 'pluginOptions' => [

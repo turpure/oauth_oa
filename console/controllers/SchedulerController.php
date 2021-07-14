@@ -251,7 +251,8 @@ class SchedulerController extends Controller
                     'ppebayusSix', 'ppebayznSix', 'inpackagefeermbSix', 'expressfarermbSix', 'devofflinefeeSix', 'devOpeFeeSix',
                     'netprofitSix', 'netrateSix', 'timegroupTwe', 'salemoneyrmbusTwe', 'salemoneyrmbznTwe', 'costmoneyrmbTwe',
                     'ppebayusTwe', 'ppebayznTwe', 'inpackagefeermbTwe', 'expressfarermbTwe', 'devofflinefeeTwe', 'devOpeFeeTwe',
-                    'netprofitTwe', 'netrateTwe', 'salemoneyrmbtotal', 'netprofittotal', 'netratetotal', 'devRate', 'devRate1', 'devRate5', 'devRate7', 'type'],
+                    'netprofitTwe', 'netrateTwe', 'salemoneyrmbtotal', 'netprofittotal', 'netratetotal',
+                    'devRate', 'devRate1', 'devRate5', 'devRate7', 'type', 'updateTime'],
                 $devData)->execute();
 
 
@@ -281,7 +282,7 @@ class SchedulerController extends Controller
                         'inpackagemoney','storename','refund','refundrate','diefeeZn','insertionFee',
                         'saleOpeFeeZn','grossprofit','grossprofitRate'],
                     $lastProfit)->execute();*/
-                $v = array_merge($v, ['month' => 'last']);
+                $v = array_merge($v, ['month' => 'last', 'updateTime' => $endDate]);
                 Yii::$app->db->createCommand()->insert('cache_salerProfitTmp', $v)->execute();
             }
 
@@ -290,7 +291,7 @@ class SchedulerController extends Controller
             $sqlParams[':endDate'] = $endDate;
             $thisProfit = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
             foreach ($thisProfit as &$v) {
-                $v = array_merge($v, ['month' => 'this']);
+                $v = array_merge($v, ['month' => 'this', 'updateTime' => $endDate]);
                 Yii::$app->db->createCommand()->insert('cache_salerProfitTmp', $v)->execute();
             }
 
@@ -497,7 +498,7 @@ class SchedulerController extends Controller
             ];
             $lastProfit = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
             foreach ($lastProfit as &$v) {
-                $v = array_merge($v, ['month' => 'last']);
+                $v = array_merge($v, ['month' => 'last', 'updateTime' => $endDate]);
                 Yii::$app->db->createCommand()->insert('cache_salerProfitTmp', $v)->execute();
             }
 
@@ -506,7 +507,7 @@ class SchedulerController extends Controller
             $sqlParams[':endDate'] = $endDate;
             $thisProfit = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
             foreach ($thisProfit as &$v) {
-                $v = array_merge($v, ['month' => 'this']);
+                $v = array_merge($v, ['month' => 'this', 'updateTime' => $endDate]);
                 Yii::$app->db->createCommand()->insert('cache_salerProfitTmp', $v)->execute();
             }
 
@@ -769,8 +770,11 @@ class SchedulerController extends Controller
                 for ($i = 0; $i < $max; $i++) {
                     Yii::$app->db->createCommand()->batchInsert('cache_stockWaringTmpData',
                         [
-                            'goodsCode', 'sku', 'skuName', 'storeName', 'goodsStatus', 'salerName', 'createDate', 'costPrice', 'useNum', 'costmoney',
-                            'notInStore', 'notInCostmoney', 'hopeUseNum', 'totalCostmoney', 'sellCount1', 'sellCount2', 'sellCount3', 'weight', 'updateTime'
+                            'goodsCode', 'sku', 'class', 'skuName', 'storeName', 'goodsStatus', 'salerName',
+                            'createDate', 'costPrice', 'useNum', 'costmoney', 'notInStore', 'notInCostmoney',
+                            'hopeUseNum', 'totalCostmoney', 'sellCount1', 'sellCount2', 'sellCount3', 'weight',
+                            'sellCostMoney' ,'threeSellCount','sevenSellCount','fourteenSellCount','thirtySellCount','trend',
+                            'updateTime' ,'updateMonth'
                         ],
                         array_slice($stockList, $i * $step, $step))->execute();
                 }
@@ -778,7 +782,7 @@ class SchedulerController extends Controller
 
 
             //插入30天销售数据
-            Yii::$app->db->createCommand("TRUNCATE TABLE cache_30DayOrderTmpData;")->execute();
+            /*Yii::$app->db->createCommand("TRUNCATE TABLE cache_30DayOrderTmpData;")->execute();
 
             $saleList = Yii::$app->py_db->createCommand("EXEC oauth_stockStatus")->queryAll();
             $max = ceil(count($saleList) / $step);
@@ -789,7 +793,7 @@ class SchedulerController extends Controller
                         'threeSellCount', 'sevenSellCount', 'fourteenSellCount', 'thirtySellCount', 'trend'
                     ],
                     array_slice($saleList, $i * $step, $step))->execute();
-            }
+            }*/
             //计算耗时
             $endTime = time();
             $diff = $endTime - $beginTime;
@@ -1078,11 +1082,12 @@ class SchedulerController extends Controller
      * Date: 2021-03-29 8:49
      * Author: henry
      */
-    public function actionFetchDeliverTimeData()
+    public function actionFetchDeliverTimeData($begin = '', $end = '')
     {
         try {
             $beginDate = '2021-01-01';
-            $endDate = date('Y-m-d', strtotime('-1 days'));
+            $beginDate = date('Y-m-01', strtotime('last day of -2 month -1 day'));
+            $endDate = date('Y-m-d');
             $sql = "EXEC oauth_warehouse_tools_deliver_trade_backup '{$beginDate}','{$endDate}';";
             $data = Yii::$app->py_db->createCommand($sql)->execute();
             echo date('Y-m-d H:i:s') . " Goods deliver time data successful!\n";
@@ -1092,6 +1097,33 @@ class SchedulerController extends Controller
         }
 
     }
+
+    /**
+     * 入库时效备份数据（已发货已归档数据，操作日志处理）
+     * Date: 2021-03-29 8:49
+     * Author: henry
+     */
+    public function actionFetchStorageTimeData($beginDate = '', $endDate = '')
+    {
+        try {
+            if(!$beginDate || !$endDate){
+                $beginDate = date('Y-m-d', strtotime('-5 day'));
+                $endDate = date('Y-m-d');
+            }
+            $flag = ['1.0', '2.0'];
+            foreach ($flag as $v){
+                $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}','义乌仓','{$v}';";
+                Yii::$app->py_db->createCommand($sql)->execute();
+                echo date('Y-m-d H:i:s') . " Goods deliver time data successful for version $v !\n";
+            }
+        } catch (\Exception $e) {
+            echo date('Y-m-d H:i:s') . " Get deliver time data failed, cause of '{$e->getMessage()}'. \n";
+            //echo $e->getMessage();
+        }
+
+    }
+
+
 
     /**
      * 每月更新供应商等级

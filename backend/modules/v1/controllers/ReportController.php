@@ -834,8 +834,8 @@ class ReportController extends AdminController
                 break;
             case 'trusteeshipFee'://eBay托管费
                 $fileName = 'trusteeshipFee';
-                $title = ['账号简称', '费用类型', '金额(£)','金额(￥)', '原始币种', '费用时间', '销售员'];
-                $headers = ['suffix', 'fee_type', 'total', 'totalRmb', 'currency_code', 'fee_time', 'salesman'];
+                $title = ['账号简称', '订单编号', '费用类型', '金额(£)','金额(￥)', '原始币种', '费用时间', '销售员'];
+                $headers = ['suffix', 'orderId', 'fee_type', 'total', 'totalRmb', 'currency_code', 'fee_time', 'salesman'];
                 $data = $this->actionTrusteeshipFee()['provider']->getModels();
                 break;
             default://默认销售死库明细下载
@@ -1212,4 +1212,116 @@ class ReportController extends AdminController
     {
         return ['eBay-义乌仓', 'eBay-海外仓', 'Wish', 'Aliexpress', 'Amazon', 'Joom', 'VOVA', 'Shopee', 'Shopify', 'Lazada'];
     }
+
+    /**
+     * 采购账期
+     * Date: 2021-07-01 13:27
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    public function actionPurchaseAccountPeriod()
+    {
+        $beginDate = date('Y-m-01', strtotime('-4 month'));
+        $sql = "SELECT dt,purchaser,SUM(orderMoney) AS orderMoney
+                FROM (
+                    SELECT p.personName AS purchaser,CONVERT(VARCHAR(7),c.AudieDate,121) AS dt,
+                                orderMoney = (SELECT SUM (ISNULL(allmoney, 0)) FROM	CG_StockInD (nolock) WHERE	StockInNID = c.nid)
+                    FROM [dbo].[CG_StockInM] c
+                    LEFT JOIN B_Person (nolock) p ON p.NID = C.salerID
+                    LEFT JOIN B_Dictionary(nolock) d ON d.NID= C.BalanceID
+                    WHERE BillType = 1 AND p.used = 0 AND c.AudieDate >= '{$beginDate}' AND dictionaryName IN('账期付款','线下交易') 
+                                AND c.SupplierID<>35383 AND ISNULL(personName,'')<>''
+                ) aa GROUP BY dt,purchaser ORDER BY purchaser,dt ";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $purchaserList = array_unique(ArrayHelper::getColumn($data,'purchaser'));
+        $res = [];
+        foreach ($purchaserList as $val){
+            $item = [];
+            $item['purchaser'] = $val;
+            foreach ($data as $v){
+                if($val == $v['purchaser']){
+                    unset($v['purchaser']);
+                    $item['value'][] = $v;
+                }
+            }
+            $res[]= $item;
+        }
+        return  $res;
+    }
+
+    /**
+     * 运营KPI
+     * Date: 2021-07-06 13:27
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    public function actionOperatorKpi()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiReport::getOperatorKpi($condition);
+    }
+
+    /**
+     * 运营KPI导出
+     * Date: 2021-07-12 13:49
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionOperatorKpiExport()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        $data = ApiReport::getOperatorKpi($condition);
+        $title = ['ID', '月份', '姓名', '部门', '入职时间', '入职时长（月）', '平台', '毛利', '毛利得分', '毛利排名', '毛利排名得分',
+            '毛利绝对值增长', '毛利绝对值增长得分', '毛利百分比增长(%)', '毛利百分比增长得分', '销售额绝对值增长', '销售额绝对值增长得分',
+            '销售额百分比增长(%)', '销售额百分比增长得分', '入职时间系数', '业绩指标总得分', '合作度', '积极性', '执行力', '工作态度总得分',
+            '新人培训', '挑战专项加分', '扣分项', '综合得分', '综合排名', '评价等级', '更新时间'];
+        ExportTools::toExcelOrCsv('operatorKpi', $data, 'Xlsx', $title);
+    }
+
+    /**
+     * 运营KPI历史数据
+     * Date: 2021-07-06 13:27
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    public function actionOperatorKpiHistory()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiReport::getOperatorKpiHistory($condition);
+    }
+
+    /**
+     * 运营KPI历史数据导出
+     * Date: 2021-07-12 13:49
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionOperatorKpiHistoryExport()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        $data = ApiReport::getOperatorKpiHistory($condition);
+        $out = [];
+        foreach ($data as $v){
+            $item['姓名'] = $v['name'];
+            $item['部门'] = $v['depart'];
+            $item['入职日期'] = $v['hireDate'];
+            foreach ($v['value'] as $val){
+                $item['评价等级-'.$val['month']] = $val['rank'];
+            }
+            $item['计数-A'] = $v['numA'];
+            $item['计数-B'] = $v['numB'];
+            $item['计数-C'] = $v['numC'];
+            $item['计数-D'] = $v['numD'];
+            $item['综合比例'] = $v['totalRate'];
+            $item['综合排名'] = $v['totalSort'];
+            $out[] = $item;
+        }
+        ExportTools::toExcelOrCsv('operatorKpi', $out, 'Xlsx');
+    }
+
 }

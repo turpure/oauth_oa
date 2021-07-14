@@ -1212,12 +1212,12 @@ class ApiTinyTool
         $id = Yii::$app->py_db->createCommand("select nid from B_LogisticWay WHERE name LIKE 'UKLE-Royal Mail - Tracked 48 Parcel%'")->queryScalar();
         $maId = Yii::$app->py_db->createCommand("select nid from B_LogisticWay WHERE name LIKE 'UKMA-Royal Mail - Tracked 48 Parcel%'")->queryScalar();
 
-        //正常单 偏远地区修改物流方式
-        $sql = "SELECT m.nid,totalWeight,l.name,'normal' AS type ,SUBSTRING(l.name,1,4) AS method
+        //待派单 偏远地区修改物流方式
+        $sql = "SELECT m.nid,totalWeight,l.name,'P_TradeLogs' AS tableLogs,'P_Trade' AS tableName,SUBSTRING(l.name,1,4) AS method
                 FROM P_Trade (nolock) m
                 LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
                 LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
-                WHERE FilterFlag IN (5,6) AND e.name LIKE '%万邑通%' AND ISNULL(TrackNo,'')='' AND 
+                WHERE FilterFlag IN (4,5,6) AND e.name LIKE '%万邑通%' AND ISNULL(TrackNo,'')='' AND 
                 l.name IN ('UKMA-Hermes - UK Standard 48', 'UKMA-Hermes - Standard 48 Claim',
                         'UKLE-Hermes - UK Standard 48', 'UKLE-Hermes - Standard 48 Claim') -- and m.nid=22937671 
                 ";
@@ -1229,16 +1229,37 @@ class ApiTinyTool
                 $sql .= " OR replace(SHIPTOZIP,' ','') LIKE '{$ele['zipCode']}%'";
             }
             if ($k == count($doc) - 1) {
-                $sql .= ")";
+                $sql .= ") ";
+            }
+        }
+        //已派单 偏远地区修改物流方式
+        $sql .= " union all 
+                SELECT m.nid,totalWeight,l.name,'P_TradeWaitLogs' AS tableLogs,'P_TradeWait' AS tableName,SUBSTRING(l.name,1,4) AS method
+                FROM P_TradeWait (nolock) m
+                LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
+                LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
+                WHERE FilterFlag IN (4,5,6) AND e.name LIKE '%万邑通%' AND ISNULL(TrackNo,'')='' AND 
+                l.name IN ('UKMA-Hermes - UK Standard 48', 'UKMA-Hermes - Standard 48 Claim',
+                        'UKLE-Hermes - UK Standard 48', 'UKLE-Hermes - Standard 48 Claim') -- and m.nid=22937671 
+                ";
+        //过滤偏远地区
+        foreach ($doc as $k => $ele) {
+            if ($k == 0) {
+                $sql .= " AND ( replace(SHIPTOZIP,' ','') LIKE '{$ele['zipCode']}%'";
+            } else {
+                $sql .= " OR replace(SHIPTOZIP,' ','') LIKE '{$ele['zipCode']}%'";
+            }
+            if ($k == count($doc) - 1) {
+                $sql .= ") ";
             }
         }
         //缺货单 偏远地区修改物流方式
         $sql .= " union all 
-                SELECT m.nid,totalWeight,l.name,'stock' as type,SUBSTRING(l.name,1,4) AS method 
+                SELECT m.nid,totalWeight,l.name,'P_TradeUnLogs' AS tableLogs,'P_TradeUn' AS tableName,SUBSTRING(l.name,1,4) AS method 
                 FROM P_TradeUn (nolock) m
                 LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
                 LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
-                WHERE FilterFlag = 1 AND e.name LIKE '%万邑通%' AND ISNULL(TrackNo,'')='' 
+                WHERE FilterFlag IN (1,4) AND e.name LIKE '%万邑通%' AND ISNULL(TrackNo,'')='' 
                 AND l.name IN ('UKMA-Hermes - UK Standard 48', 'UKMA-Hermes - Standard 48 Claim', 
                         'UKLE-Hermes - UK Standard 48', 'UKLE-Hermes - Standard 48 Claim')
                 ";
@@ -1255,11 +1276,11 @@ class ApiTinyTool
         }
         //var_dump($sql);exit;
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-//        var_dump($data);exit;
         $transaction = BGoods::getDb()->beginTransaction();
         try {
             foreach ($data as $v) {
-                $table = $v['type'] == 'normal' ? 'p_trade' : 'p_tradeUn';
+                $table = $v['tableName'];
+                $tableLogs = $v['tableLogs'];
                 if ($v['method'] == 'UKLE') {
                     $logicsWayNID = $id;
                     $logicsWay = 'UKLE-Royal Mail - Tracked 48 Parcel';
@@ -1273,9 +1294,11 @@ class ApiTinyTool
                 if (!$res) {
                     throw new Exception('Failed to update logics way of order ' . $v['nid']);
                 }
-                $logs = $username . '  ' . date('Y-m-d H:i:s') . ' 物流方式 ' . $v['name'] . ' 手动更改为 ' . $logicsWay;
-                Yii::$app->py_db->createCommand()->insert('P_TradeLogs', [
+//                $logs = $username . '  ' . date('Y-m-d H:i:s') . ' 物流方式 ' . $v['name'] . ' 手动更改为 ' . $logicsWay;
+                $logs = ' 物流方式 ' . $v['name'] . ' 手动更改为 ' . $logicsWay;
+                Yii::$app->py_db->createCommand()->insert($tableLogs, [
                     'TradeNID' => $v['nid'],
+                    'OpDate' => date('Y-m-d H:i:s'),
                     'Operator' => $username,
                     'Logs' => $logs
                 ])->execute();

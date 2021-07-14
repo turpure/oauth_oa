@@ -152,15 +152,8 @@ class ApiDataCenter
             $sql .= " AND cw.trendId IN ('{$tradeId}')";
         };
         if ($condition['beginDate'] && $condition['endDate']) $sql .= " AND cw.orderCloseDate BETWEEN '{$condition['beginDate']}' AND '{$condition['endDate']}'";
-        $con = Yii::$app->db;
-        try {
-            return $con->createCommand($sql)->queryAll();
-        } catch (\Exception $why) {
-            return [
-                'code' => 400,
-                'message' => $why->getMessage()
-            ];
-        }
+        return Yii::$app->db->createCommand($sql)->queryAll();
+
     }
 
 
@@ -187,8 +180,9 @@ class ApiDataCenter
             }
             if ($nidList) {
                 foreach ($nidList as $value) {
-                    $res = Yii::$app->py_db->createCommand("EXEC P_Fr_CalcShippingCostByNid {$value}")->execute();
-                    if ($res === false) {
+                    $res1 = Yii::$app->py_db->createCommand("EXEC P_Fr_CalcShippingCostByNid {$value}")->execute();
+                    $res2 = Yii::$app->py_db->createCommand("EXEC P_Fr_CalcShippingCostByNidSend {$value}")->execute();
+                    if ($res1 === false || $res2 === false) {
                         $transaction->rollBack();
                     }
                     $re = Yii::$app->db->createCommand("UPDATE cache_weightDiff SET flag=1 WHERE trendId={$value}")->execute();
@@ -449,6 +443,40 @@ class ApiDataCenter
         $data = Yii::$app->db->createCommand($sql)->queryAll();
         return $data;
     }
+
+    /**
+     * 亚马逊补货
+     * @param $condition
+     * Date: 2021-06-17 17:15
+     * Author: henry
+     * @return mixed
+     */
+    public static function getAmazonReplenishment($condition)
+    {
+        $username = Yii::$app->user->identity->username;
+        $suffix = isset($condition['suffix']) && $condition['suffix'] ? (is_array($condition['suffix']) ? $condition['suffix'] : [$condition['suffix']]) : [];
+        $params = [
+            'username' => isset($condition['saler']) ? $condition['saler'] : ApiUser::getUserList($username),
+            'store' => $suffix
+        ];
+        $suffixFilter = Handler::paramsParse($params);
+        //var_dump(implode(',', $suffixFilter));exit;
+        $sql = "EXEC guest.amazon_virtual_warehouse_replenishment :sku,:developer,:stockDaysDiff,
+                        :totalStockDaysDiff,:suffix,:storeName,:shippingType";
+        $params = [
+            ':suffix' => implode(',', $suffixFilter),
+            ':sku' => $condition['sku'],
+            ':developer' => $condition['developer'],
+            ':storeName' => $condition['storeName'] ?? '',
+            ':stockDaysDiff' => (int)$condition['stockDaysDiff'],
+            ':totalStockDaysDiff' => (int)$condition['totalStockDaysDiff'],
+            ':shippingType' => $condition['shippingType'],
+        ];
+//        var_dump(Yii::$app->py_db->createCommand($sql)->bindValues($params)->getRawSql());exit;
+        return Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
+
+    }
+
 
 /////////////////////////////////////////供应商//////////////////////////////////////////////////
 

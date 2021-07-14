@@ -190,7 +190,10 @@ class ApiGoodsinfo
         if (isset($condition['picStatus'])) $query->andFilterWhere(['like', 'picStatus', $condition['picStatus']]);
         $query = static::completedStatusFilter($query, $condition);
         $query = static::forbidPlatFilter($query, $condition);
-        if (isset($condition['goodsStatus'])) $query->andFilterWhere(['like', 'goodsStatus', $condition['goodsStatus']]);
+        if (isset($condition['goodsStatus'])){
+            if(!is_array($condition['goodsStatus'])) $condition['goodsStatus'] = $condition['goodsStatus'] ? [$condition['goodsStatus']] : [];
+            $query->andFilterWhere(['goodsStatus' => $condition['goodsStatus']]);
+        }
         if (isset($condition['possessMan1'])) $query->andFilterWhere(['like', 'possessMan1', $condition['possessMan1']]);
         if (isset($condition['purchaser'])) $query->andFilterWhere(['like', 'purchaser', $condition['purchaser']]);
         if (isset($condition['introducer'])) $query->andFilterWhere(['like', 'introducer', $condition['introducer']]);
@@ -4319,7 +4322,10 @@ class ApiGoodsinfo
     {
         $sql = "SELECT * FROM (
                     SELECT 	CASE WHEN SUBSTR(store,1,5) = 'Joom0' THEN 'Joom'
-					    WHEN platform = 'Joom' THEN SUBSTR(store,1,5) ELSE store END AS suffix,s.platform ,
+					    -- WHEN SUBSTR(store,6,1) + 0 = 0 THEN SUBSTR(store,1,6) 
+					    WHEN SUBSTR(store,1,5) = 'JoomZ' THEN SUBSTR(store,1,6)
+						WHEN SUBSTR(store,5,1) + 0 = 0 THEN SUBSTR(store,1,5) 
+						ELSE store END AS suffix,s.platform ,
                         MAX(CASE WHEN ifnull(pd.department,'')<>'' THEN IFNULL(pd.department,'其他') ELSE IFNULL(d.department,'其他') END) AS depart
                     FROM `auth_store` s 
                     LEFT JOIN `auth_store_child` sc ON s.id=sc.store_id
@@ -4329,7 +4335,9 @@ class ApiGoodsinfo
                     LEFT JOIN `auth_department` pd ON pd.id=d.parent
                     WHERE s.platform = 'Joom'
                     GROUP BY CASE WHEN SUBSTR(store,1,5) = 'Joom0' THEN 'Joom'
-		 		        WHEN platform = 'Joom' THEN SUBSTR(store,1,5) ELSE store END,s.platform 
+		 		        -- WHEN SUBSTR(store,6,1) + 0 = 0 THEN SUBSTR(store,1,6) 
+		 		        WHEN SUBSTR(store,1,5) = 'JoomZ' THEN SUBSTR(store,1,6)
+						WHEN SUBSTR(store,5,1) + 0 = 0 THEN SUBSTR(store,1,5)  ELSE store END,s.platform 
                 ) aa WHERE suffix in (SELECT joomName FROM proCenter.oa_joomSuffix)
                 UNION ALL
                 SELECT 	store AS suffix,s.platform ,

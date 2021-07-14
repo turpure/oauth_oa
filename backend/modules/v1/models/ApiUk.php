@@ -182,6 +182,7 @@ class ApiUk
 
         //eBay交易费
         $data['eFee'] = $data['price'] * Yii::$app->params['eRate_uk'];
+
         //广告费
         $data['adFee'] = round($params['price'] * $params['adRate'] / 100, 2);
         //获取汇率
@@ -189,23 +190,45 @@ class ApiUk
         $usRate = ApiUkFic::getRateUkOrUs('USD');//美元汇率
         $newPrice = $data['price'] * $ukRate / $usRate;//英镑转化成美元
         //获取paypal交易费
+//        if ($params['vatRate']) {
+//            if ($newPrice > 8) {
+//                $data['pFee'] = $data['price'] * Yii::$app->params['bpRate_uk'] + Yii::$app->params['bpBasic_uk'];
+//            } else {
+//                $data['pFee'] = $data['price'] * Yii::$app->params['spRate_uk'] + Yii::$app->params['spBasic_uk'];
+//            }
+//            $data['vatFee'] = round($data['price'] * (1 - 1 / (1 + $params['vatRate'] / 100)), 2);
+//            $profit = $data['price'] - $params['price'] * $params['adRate'] / 100 -
+//                $data['pFee'] - $data['eFee'] - $data['vatFee'] -
+//                ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate ;
+//            $data['rate'] = round($profit / ($data['price'] / (1 + $params['vatRate'] / 100)) * 100, 2);
+//        } else {
+//            $data['pFee'] = 0.36; //托管账号固定费用
+//            $data['vatFee'] = round(($data['adFee'] + $data['eFee']) * 0.2, 2);
+//            $profit = $data['price'] - $params['price'] * $params['adRate'] / 100 -
+//                $data['pFee'] - $data['eFee'] - $data['vatFee'] -
+//                ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate ;
+//            $data['rate'] = round($profit / $data['price'] * 100, 2);
+//        }
+
+        $data['pFee'] = 0.3; //托管账号固定费用
+        //$data['vatFee'] = round(($data['adFee'] + $data['eFee']) * 0.2, 2);  //2021-06-23
         if ($params['vatRate']) {
-            if ($newPrice > 8) {
-                $data['pFee'] = $data['price'] * Yii::$app->params['bpRate_uk'] + Yii::$app->params['bpBasic_uk'];
-            } else {
-                $data['pFee'] = $data['price'] * Yii::$app->params['spRate_uk'] + Yii::$app->params['spBasic_uk'];
-            }
-            $data['vatFee'] = round($data['price'] * (1 - 1 / (1 + $params['vatRate'] / 100)), 2);
-            $profit = $data['price'] - $params['price'] * $params['adRate'] / 100 -
-                $data['pFee'] - $data['eFee'] - $data['vatFee'] -
-                ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate ;
-            $data['rate'] = round($profit / ($data['price'] / (1 + $params['vatRate'] / 100)) * 100, 2);
-        } else {
-            $data['pFee'] = 0.36; //托管账号固定费用
-            $data['vatFee'] = round(($data['adFee'] + $data['eFee']) * 0.2, 2);
-            $profit = $data['price'] - $params['price'] * $params['adRate'] / 100 -
-                $data['pFee'] - $data['eFee'] - $data['vatFee'] -
-                ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate ;
+            //跨国交易费
+            $data['tradeFee'] = $data['price'] * Yii::$app->params['tradeFeeRate'];
+            //$data['vatFee'] = round($params['price'] * $params['vatRate'] / (100 + $params['vatRate']), 2);
+            $data['vatFee'] = round($data['price'] * $params['vatRate'] / (100 + $params['vatRate']), 2);
+        }else{
+            $data['vatFee'] = round(($data['eFee'] + $data['pFee'] + $params['price'] * $params['adRate'] / 100) * 0.2,2);
+            $data['tradeFee'] = 0;
+        }
+
+        $profit = $data['price'] - $params['price'] * $params['adRate'] / 100 -
+            $data['pFee'] - $data['eFee'] - $data['vatFee'] - $data['tradeFee'] -
+            ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate ;
+
+        if ($params['vatRate']) {
+            $data['rate'] = round($profit * 1.2/ $data['price'] * 100, 2);
+        }else{
             $data['rate'] = round($profit / $data['price'] * 100, 2);
         }
 
@@ -215,6 +238,7 @@ class ApiUk
         $data['profit'] = round($profit, 2);
         $data['eFee'] = round($data['eFee'], 2);
         $data['pFee'] = round($data['pFee'], 2);
+        $data['tradeFee'] = round($data['tradeFee'], 2);
         $data['profitRmb'] = round($profit * $ukRate, 2);
 
         //计算毛利率
@@ -236,51 +260,68 @@ class ApiUk
         $usRate = ApiUkFic::getRateUkOrUs('USD');//美元汇率
 
         // VAT 税率为0时取固定 pp费用
-        if ($params['vatRate']) {
-            //获取售价  使用小额paypal参数计算 和8美元比较，小于8则正确，否则使用大额参数再次计算获取售价
-            //var_dump($params['rate'] * (1 + $params['vatRate']/100)/100);exit;
-            $price = (
-                    ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate + Yii::$app->params['spBasic_uk']
-                    - $params['shippingPrice'] * ((1 - $params['rate']/100) / (1 + $params['vatRate'] / 100) -
-                        Yii::$app->params['spRate_uk'] - Yii::$app->params['eRate_uk'])
-                ) / (
-                    (1 - $params['rate']/100) / (1 + $params['vatRate'] / 100) -
-                    Yii::$app->params['eRate_uk'] - Yii::$app->params['spRate_uk'] - $params['adRate'] / 100
-                );
-//            var_dump($price);exit;
-            //获取paypal交易费
-            if ($price < 8 * $usRate / $ukRate) {
-                $data['pFee'] = ($price + $params['shippingPrice']) * Yii::$app->params['spRate_uk'] + Yii::$app->params['spBasic_uk'];
-            } else {
-                $price = (
-                        ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate + Yii::$app->params['bpBasic_uk']
-                        - $params['shippingPrice'] * ((1 - $params['rate']/100) / (1 + $params['vatRate'] / 100) -
-                            Yii::$app->params['bpRate_uk'] - Yii::$app->params['eRate_uk'])
-                    ) / (
-                        (1 - $params['rate']/100) / (1 + $params['vatRate'] / 100) -
-                        Yii::$app->params['eRate_uk'] - Yii::$app->params['bpRate_uk'] - $params['adRate'] / 100
-                    );
-                $data['pFee'] = ($price + $params['shippingPrice']) * Yii::$app->params['bpRate_uk'] + Yii::$app->params['bpBasic_uk'];
-            }
-            $data['price'] = round($price + $params['shippingPrice'], 2);
-            $data['eFee'] = round($data['price'] * Yii::$app->params['eRate_uk'],2);
-            $data['adFee'] = round($price * $params['adRate'] / 100, 2);
-            $data['vatFee'] = round($data['price'] * (1 - 1/(1 + $params['vatRate'] / 100)), 2);
-        } else {
-            $data['pFee'] = 0.36;
-            $price = (
-                    ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate + $data['pFee'] -
-                    $params['shippingPrice'] * (1 - $params['rate']/100/(1 + $params['vatRate']/100) -
-                        1.2 * Yii::$app->params['eRate_uk'] )
-                ) / (
-                    1 - $params['rate']/100/(1 + $params['vatRate']/100) -
-                    1.2 * Yii::$app->params['eRate_uk'] - 1.2 * $params['adRate']/100
-                );
-            $data['price'] = round($price + $params['shippingPrice'], 2);
-            $data['eFee'] = round($data['price'] * Yii::$app->params['eRate_uk'],2);
-            $data['adFee'] = round($price * $params['adRate'] / 100, 2);
-            $data['vatFee'] = round(($data['eFee'] + $data['adFee']) * 0.2,2);
-        }
+//        if ($params['vatRate']) {
+//            //获取售价  使用小额paypal参数计算 和8美元比较，小于8则正确，否则使用大额参数再次计算获取售价
+//            //var_dump($params['rate'] * (1 + $params['vatRate']/100)/100);exit;
+//            $price = (
+//                    ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate + Yii::$app->params['spBasic_uk']
+//                    - $params['shippingPrice'] * ((1 - $params['rate']/100) / (1 + $params['vatRate'] / 100) -
+//                        Yii::$app->params['spRate_uk'] - Yii::$app->params['eRate_uk'])
+//                ) / (
+//                    (1 - $params['rate']/100) / (1 + $params['vatRate'] / 100) -
+//                    Yii::$app->params['eRate_uk'] - Yii::$app->params['spRate_uk'] - $params['adRate'] / 100
+//                );
+////            var_dump($price);exit;
+//            //获取paypal交易费
+//            if ($price < 8 * $usRate / $ukRate) {
+//                $data['pFee'] = ($price + $params['shippingPrice']) * Yii::$app->params['spRate_uk'] + Yii::$app->params['spBasic_uk'];
+//            } else {
+//                $price = (
+//                        ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate + Yii::$app->params['bpBasic_uk']
+//                        - $params['shippingPrice'] * ((1 - $params['rate']/100) / (1 + $params['vatRate'] / 100) -
+//                            Yii::$app->params['bpRate_uk'] - Yii::$app->params['eRate_uk'])
+//                    ) / (
+//                        (1 - $params['rate']/100) / (1 + $params['vatRate'] / 100) -
+//                        Yii::$app->params['eRate_uk'] - Yii::$app->params['bpRate_uk'] - $params['adRate'] / 100
+//                    );
+//                $data['pFee'] = ($price + $params['shippingPrice']) * Yii::$app->params['bpRate_uk'] + Yii::$app->params['bpBasic_uk'];
+//            }
+//            $data['price'] = round($price + $params['shippingPrice'], 2);
+//            $data['eFee'] = round($data['price'] * Yii::$app->params['eRate_uk'],2);
+//            $data['adFee'] = round($price * $params['adRate'] / 100, 2);
+//            $data['vatFee'] = round($data['price'] * (1 - 1/(1 + $params['vatRate'] / 100)), 2);
+//        } else {
+//            $data['pFee'] = 0.36;
+//            $price = (
+//                    ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate + $data['pFee'] -
+//                    $params['shippingPrice'] * (1 - $params['rate']/100/(1 + $params['vatRate']/100) -
+//                        1.2 * Yii::$app->params['eRate_uk'] )
+//                ) / (
+//                    1 - $params['rate']/100/(1 + $params['vatRate']/100) -
+//                    1.2 * Yii::$app->params['eRate_uk'] - 1.2 * $params['adRate']/100
+//                );
+//            $data['price'] = round($price + $params['shippingPrice'], 2);
+//            $data['eFee'] = round($data['price'] * Yii::$app->params['eRate_uk'],2);
+//            $data['adFee'] = round($price * $params['adRate'] / 100, 2);
+//            $data['vatFee'] = round(($data['eFee'] + $data['adFee']) * 0.2,2);
+//        }
+
+        $data['pFee'] = 0.3;
+        $price = (
+                ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate + $data['pFee'] -
+                $params['shippingPrice'] * (1 - $params['rate']/100/(1 + $params['vatRate']/100) -
+                    1.2 * Yii::$app->params['eRate_uk'] )
+            ) / (
+                1 - $params['rate']/100/(1 + $params['vatRate']/100) -
+                1.2 * Yii::$app->params['eRate_uk'] - 1.2 * $params['adRate']/100
+            );
+        $data['price'] = round($price + $params['shippingPrice'], 2);
+        $data['eFee'] = round($data['price'] * Yii::$app->params['eRate_uk'],2);
+        $data['adFee'] = round($price * $params['adRate'] / 100, 2);
+        //$data['vatFee'] = round(($data['eFee'] + $data['adFee']) * 0.2,2); //2021-06-23
+        $data['vatFee'] = round($price * $params['vatRate'] / (100 + $params['vatRate']), 2);
+        //跨国交易费
+        //$data['tradeFee'] = round($data['price'] * Yii::$app->params['tradeFeeRate'], 2);
 
         //计算毛利
         $profit = $data['price'] - $price * $params['adRate'] / 100 - $data['eFee'] - $data['pFee'] -

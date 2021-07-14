@@ -8,6 +8,7 @@
 namespace backend\modules\v1\controllers;
 
 
+use backend\models\ShopElf\OauthSysConfig;
 use backend\models\ShopElf\YPayPalStatus;
 use backend\models\ShopElf\YPayPalStatusLogs;
 use backend\models\ShopElf\YPayPalToken;
@@ -85,40 +86,7 @@ class DataCenterController extends AdminController
     {
         $condition = Yii::$app->request->post('condition', []);
         $month = $condition['month'] ?? date('Y-m');
-        $sql = "SELECT aa.storeName,aa.useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
-                        IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
-                        CASE WHEN IFNULL(aveCostmoney,0)=0 AND IFNULL(totalCostmoney,0)<>0 THEN 10000 
-                              ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
-                FROM(
-                        SELECT CASE WHEN storeName='万邑通UK' THEN '万邑通UK' 
-                                    WHEN storeName='万邑通UK-MA仓' THEN '万邑通UK' 
-                                    WHEN storeName='金皖399' THEN '金皖399' 
-                                    WHEN storeName='谷仓UK中转' THEN '金皖399' 
-                                    WHEN storeName='万邑通UK-MA空运中转' THEN '金皖399' 
-                                    WHEN storeName='万邑通UK-MA海运中转' THEN '金皖399' 
-                                    ELSE storeName END storeName,
-                        SUM(useNum) AS useNum,
-                        SUM(costmoney) costmoney,
-                        SUM(notInStore) notInStore,
-                        SUM(notInCostmoney) notInCostmoney,
-                        SUM(hopeUseNum) hopeUseNum,
-                        SUM(totalCostmoney) totalCostmoney,
-                        SUM(sellCostMoney) AS 30DayCostmoney,
-                        ROUND(SUM(sellCostMoney)/30,4) AS aveCostmoney
-                        FROM (
-                            SELECT storeName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
-                            FROM `cache_stockWaringTmpData` WHERE updateMonth = '{$month}' 
-                            UNION
-                            SELECT storeName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
-                             FROM `cache_stockWaringTmpDataBackup` WHERE updateMonth = '{$month}' 
-                        ) a GROUP BY CASE WHEN storeName='万邑通UK' THEN '万邑通UK' 
-                                WHEN storeName='万邑通UK-MA仓' THEN '万邑通UK' 
-                                WHEN storeName='金皖399' THEN '金皖399' 
-                                WHEN storeName='谷仓UK中转' THEN '金皖399' 
-                                WHEN storeName='万邑通UK-MA空运中转' THEN '金皖399' 
-                                WHEN storeName='万邑通UK-MA海运中转' THEN '金皖399' 
-                                ELSE storeName END 
-                ) aa ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
+        $sql = "CALL data_center_stock_status('{$month}');";
         try {
             return Yii::$app->db->createCommand($sql)->queryAll();
         } catch (\Exception $e) {
@@ -129,7 +97,8 @@ class DataCenterController extends AdminController
         }
     }
 
-    /** 仓库库存情况状态明细
+    /**
+     * 仓库库存情况状态明细
      * Date: 2019-06-14 15:11
      * Author: henry
      * @return array
@@ -158,13 +127,22 @@ class DataCenterController extends AdminController
                         SUM(sellCostMoney) AS 30DayCostmoney,
                         ROUND(SUM(sellCostMoney)/30,4) AS aveCostmoney
                         FROM (
-                            SELECT storeName,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
+                            SELECT storeName,class,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
                              FROM `cache_stockWaringTmpData` WHERE updateMonth = '{$month}' 
                             UNION
-                            SELECT storeName,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
+                            SELECT storeName,class,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
                              FROM `cache_stockWaringTmpDataBackup` WHERE updateMonth = '{$month}' 
                         ) a WHERE 1=1 ";
-        if (isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
+        if (isset($cond['storeName']) && $cond['storeName']) {
+            if ($cond['storeName'] == '万邑通UK海运') {
+                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW') AND class='海运' ";
+            } elseif ($cond['storeName'] == '万邑通UK空运') {
+                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW') AND class='空运' ";
+            } else {
+                $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
+            }
+        }
+
         $sql .= " GROUP BY storeName,CASE WHEN IFNULL(goodsStatus,'')='' THEN '无状态' ELSE goodsStatus END
                 ) aa ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
         try {
@@ -178,7 +156,8 @@ class DataCenterController extends AdminController
         }
     }
 
-    /** 仓库库存情况开发明细
+    /**
+     * 仓库库存情况开发明细
      * Date: 2019-06-14 15:11
      * Author: henry
      * @return array
@@ -206,13 +185,21 @@ class DataCenterController extends AdminController
                         SUM(sellCostMoney) AS 30DayCostmoney,
                         ROUND(SUM(sellCostMoney)/30,4) AS aveCostmoney
                         FROM (
-                            SELECT storeName,salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
+                            SELECT storeName,class,salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
                              FROM `cache_stockWaringTmpData` WHERE updateMonth = '{$month}' 
                             UNION
-                            SELECT storeName,salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
+                            SELECT storeName,class,salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
                              FROM `cache_stockWaringTmpDataBackup` WHERE updateMonth = '{$month}' 
                         ) a WHERE 1=1  ";
-        if (isset($cond['storeName']) && $cond['storeName']) $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
+        if (isset($cond['storeName']) && $cond['storeName']) {
+            if ($cond['storeName'] == '万邑通UK海运') {
+                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW') AND class='海运' ";
+            } elseif ($cond['storeName'] == '万邑通UK空运') {
+                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW') AND class='空运' ";
+            } else {
+                $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
+            }
+        }
         $sql .= " GROUP BY storeName,CASE WHEN IFNULL(salerName,'')='' THEN '无人' ELSE salerName END
                 ) aa ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
         try {
@@ -225,7 +212,8 @@ class DataCenterController extends AdminController
         }
     }
 
-    /** 部门库存情况
+    /**
+     * 部门库存情况
      * Date: 2019-06-14 15:11
      * Author: henry
      * @return array
@@ -276,7 +264,8 @@ class DataCenterController extends AdminController
     }
 
 
-    /** 部门库存情况状态明细
+    /**
+     * 部门库存情况状态明细
      * Date: 2019-06-14 15:11
      * Author: henry
      * @return array
@@ -331,7 +320,8 @@ class DataCenterController extends AdminController
         }
     }
 
-    /** 部门库存情况开发明细
+    /**
+     * 部门库存情况开发明细
      * Date: 2019-06-14 15:11
      * Author: henry
      * @return array
@@ -694,6 +684,127 @@ class DataCenterController extends AdminController
     }
 
 
+    /////////////////////////////亚马逊补货/////////////////////////////////////////////////
+
+    /**
+     * actionArrayDayList
+     * Date: 2021-06-18 16:05
+     * Author: henry
+     * @return ArrayDataProvider
+     */
+    public function actionArrivalDayList()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $pageSize = $condition['pageSize'] ?? 20;
+        $name = $condition['name'] ?? '';
+        $data = OauthSysConfig::find()
+            ->andFilterWhere(['>', 'id', 1])
+            ->andFilterWhere(['like', 'name', $name])
+            ->asArray()->all();
+        return new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['id', 'name'],
+                'defaultOrder' => [
+                    'id' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+
+    }
+
+    public function actionArrivalDayDelete()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $ids = $condition['id'] ?: [];
+            $ids = is_array($ids) ? $ids : [$ids];
+            OauthSysConfig::deleteAll(['id' => $ids]);
+            return true;
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function actionArrivalDaySet()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $name = $condition['name'] ?? '';
+            $model = OauthSysConfig::findOne(['name' => $name]);
+            if (!$model) {
+                $model = new OauthSysConfig();
+            }
+            $model->name = $name;
+            $model->value = $condition['value'];
+            $model->memo = $condition['memo'];
+            $model->creator = Yii::$app->user->identity->username;
+            if ($model->save()) {
+                return true;
+            } else {
+                throw new Exception("Failed to save setting info!");
+            }
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * 亚马逊补货
+     * Date: 2021-06-17 17:18
+     * Author: henry
+     * @return ArrayDataProvider
+     */
+    public function actionAmazonReplenishment()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $pageSize = $condition['pageSize'] ?? 20;
+        $data = ApiDataCenter::getAmazonReplenishment($condition);
+        return new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['goodsCode', 'storeName', 'suffix', 'goodsName', 'goodsSKUStatus', 'hopeUseNumNotInStore',
+                    'salerName', 'totalStockDays', 'stockDays', 'stockNum', 'hopeUseNum', 'hopeUseNum7', 'goodsPrice', 'costprice',
+                    'weight', 'salesAmount30', 'salesAmount20', 'salesAmount10', 'totalStockDaysDiff', 'stockDaysDiff', 'stockWeight'],
+                'defaultOrder' => [
+                    'stockNum' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+    }
+
+    /**
+     * 亚马逊补货导出
+     * Date: 2021-06-17 17:19
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionAmazonReplenishmentExport()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $data = ApiDataCenter::getAmazonReplenishment($condition);
+        $title = ['账号简称', '销售员', '产品编码', 'SKU', '商品名称', '商品状态', '仓库', '发货仓库可用数量', '采购仓库可用数量',
+            '采购仓库未审核采购数量', '开发员', '采购员', '供应商', '商品单价', '商品平均单价', '重量', '10天销量', '20天销量',
+            '30天销量', '日均销量', '走势', '安全天数', '采购到货天数', '运输方式', '运输天数', '总库存周转天数', '海外仓库存周转天数',
+            '总库存周转天数差', '海外仓库存周转天数差', '建议采购数量', '建议调拨数量', '建议调拨总重量'];
+        ExportTools::toExcelOrCsv('AmazonReplenishment', $data, 'Xlsx', $title);
+    }
+
+
+
 /////////////////////////////其他//////////////////////////////////////
 
     /**
@@ -777,38 +888,44 @@ class DataCenterController extends AdminController
      */
     public function actionWeightDiff()
     {
-        $request = Yii::$app->request->post();
-        $cond = $request['condition'];
-        $queryParams = [
-            'department' => $cond['department'],
-            'secDepartment' => $cond['secDepartment'],
-            'platform' => $cond['plat'],
-            'username' => $cond['member'],
-            'store' => $cond['account']
-        ];
-        $params = Handler::paramsFilter($queryParams);
-        if (!$params['store']) return [];
-        //print_r($params);exit;
-        $condition = [
-            'store' => $params['store'] ? implode(',', $params['store']) : '',
-            'trendId' => $cond['trendId'],
-            'beginDate' => $cond['dateRange'][0],
-            'endDate' => $cond['dateRange'][1]
-        ];
-        $data = ApiDataCenter::getWeightDiffData($condition);
-        if (!$data) return $data;
-        $provider = new ArrayDataProvider([
-            'allModels' => $data,
-            'sort' => [
-                'defaultOrder' => ['weightDiff' => SORT_DESC],
-                'attributes' => ['trendId', 'department', 'secDepartment', 'suffix', 'platform', 'username', 'profit',
-                    'orderWeight', 'skuWeight', 'weightDiff', 'orderCloseDate'],
-            ],
-            'pagination' => [
-                'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
-            ],
-        ]);
-        return $provider;
+        try {
+            $request = Yii::$app->request->post();
+            $cond = $request['condition'];
+            $queryParams = [
+                'department' => $cond['department'],
+                'secDepartment' => $cond['secDepartment'],
+                'platform' => $cond['plat'],
+                'username' => $cond['member'],
+                'store' => $cond['account']
+            ];
+            $params = Handler::paramsFilter($queryParams);
+            if (!$params['store']) return [];
+            $condition = [
+                'store' => $params['store'] ? implode(',', $params['store']) : '',
+                'trendId' => $cond['trendId'],
+                'beginDate' => $cond['dateRange'][0],
+                'endDate' => $cond['dateRange'][1]
+            ];
+            $data = ApiDataCenter::getWeightDiffData($condition);
+            $provider = new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => [
+                    'defaultOrder' => ['weightDiff' => SORT_DESC],
+                    'attributes' => ['trendId', 'department', 'secDepartment', 'suffix', 'platform', 'username', 'profit',
+                        'orderWeight', 'skuWeight', 'weightDiff', 'orderCloseDate'],
+                ],
+                'pagination' => [
+                    'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
+                ],
+            ]);
+
+            return $provider;
+        } catch (\Exception $why) {
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
+        }
     }
 
 
@@ -1805,11 +1922,12 @@ class DataCenterController extends AdminController
                 FROM M_eBayMessages(nolock) m
                 LEFT JOIN (SELECT DISTINCT ebayuserid,NoteName AS suffix FROM S_PalSyncInfo(nolock)) p ON p.ebayuserid = m.ebayuserid
                 -- INNER JOIN M_eBayMessagesR r ON r.messageID = m.MessageID
-                WHERE FolderID = 0 AND Replied=1 AND CONVERT(VARCHAR(10),DateAdd(hour,8,ReceiveDate),121) BETWEEN '{$beginDate}' AND '{$endDate}' ";
-        if($suffix) $sql .= " AND suffix like '%{$suffix}%'";
+                WHERE FolderID = 0 AND Replied=1 AND CONVERT(VARCHAR(10),DateAdd(hour,8,ReplyTime),121) BETWEEN '{$beginDate}' AND '{$endDate}' ";
+        if ($suffix) $sql .= " AND suffix like '%{$suffix}%'";
         $sql .= " GROUP BY suffix";
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
+
     /**
      * 账号发件数
      * Date: 2021-06-03 18:03
@@ -1826,11 +1944,11 @@ class DataCenterController extends AdminController
                 FROM M_eBayMessages m
                 LEFT JOIN (SELECT DISTINCT ebayuserid,NoteName AS suffix FROM S_PalSyncInfo) p ON p.ebayuserid = m.ebayuserid
                 -- INNER JOIN M_eBayMessagesR r ON r.messageID = m.MessageID
-                WHERE FolderID = 0 AND Replied=1 AND CONVERT(VARCHAR(10),DateAdd(hour,8,ReceiveDate),121) BETWEEN '{$beginDate}' AND '{$endDate}' ";
-        if($suffix) $sql .= " AND suffix like '%{$suffix}%'";
+                WHERE FolderID = 0 AND Replied=1 AND CONVERT(VARCHAR(10), ReplyTime, 121) BETWEEN '{$beginDate}' AND '{$endDate}'  ";
+        if ($suffix) $sql .= " AND suffix like '%{$suffix}%'";
         $sql .= " GROUP BY suffix";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-        $title = ['账号简称', '邮件发送量'];
+        $title = ['账号简称', '回复客户邮件数量'];
         ExportTools::toExcelOrCsv('repliedEmailNum', $data, 'Xlsx', $title);
     }
 
@@ -1864,8 +1982,9 @@ class DataCenterController extends AdminController
         $suffix = $condition['suffix'];
         $sql = "EXEC oauth_data_center_email_replied_rate '{$beginDate}','{$endDate}','{$suffix}'";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-        $title = ['账号简称', '日期', '邮件接收量', '24小时内发件量'];
+        $title = ['账号简称', '接收客户邮件接收量', '24小时内邮件回复数量', '回复率'];
         ExportTools::toExcelOrCsv('repliedEmailNum', $data, 'Xlsx', $title);
     }
+
 
 }

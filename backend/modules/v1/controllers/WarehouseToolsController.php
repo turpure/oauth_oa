@@ -294,12 +294,12 @@ class WarehouseToolsController extends AdminController
             $condition = Yii::$app->request->post()['condition'];
             $data = ApiWarehouseTools::getLabelStatisticsData($condition, 1);
             $personLabelData = $dateLabelData = [];
-            foreach ($data as $v){
+            foreach ($data as $v) {
                 $item = $v;
                 unset($item['flag']);
-                if($v['flag'] == 'time'){
+                if ($v['flag'] == 'time') {
                     $dateLabelData[] = $item;
-                }else{
+                } else {
                     $personLabelData[] = $item;
                 }
             }
@@ -327,18 +327,18 @@ class WarehouseToolsController extends AdminController
         $condition = Yii::$app->request->post()['condition'];
         $data = ApiWarehouseTools::getLabelStatisticsData($condition, 1);
         $personData = $dateData = [];
-        foreach ($data as $v){
+        foreach ($data as $v) {
             $item = $v;
             unset($item['flag']);
-            if($v['flag'] == 'time'){
+            if ($v['flag'] == 'time') {
                 $dateData[] = $item;
-            }else{
+            } else {
                 $personData[] = $item;
             }
         }
         $res = [
-            ['title' => ['打标人员', '打标SKU数量', '打标SKU种数'], 'name' => '人员数据', 'data' => $personData],
-            ['title' => ['日期', '打标SKU数量', '打标SKU种数'], 'name' => '时间数据', 'data' => $dateData],
+            ['title' => ['打标人员', '打标SKU数量', '打标SKU种数', '打标包裹数'], 'name' => '人员数据', 'data' => $personData],
+            ['title' => ['日期', '打标SKU数量', '打标SKU种数', '打标包裹数'], 'name' => '时间数据', 'data' => $dateData],
         ];
         ExportTools::toExcelMultipleSheets('markStatistics', $res, 'Xlsx');
     }
@@ -432,20 +432,54 @@ class WarehouseToolsController extends AdminController
      * 贴标-- 商品难度系数
      * Date: 2021-04-21 17:04
      * Author: henry
-     * @return ActiveDataProvider
+     * @return ArrayDataProvider
      */
     public function actionLabelGoodsRate()
     {
         $condition = Yii::$app->request->post('condition', []);
         $pageSize = $condition['pageSize'] ?: 20;
-        $goodsCode = $condition['goodsCode'] ?: '';
-        $data = OauthLabelGoodsRate::find()->andFilterWhere(['like', 'goodsCode', $goodsCode]);
-        return new ActiveDataProvider([
-            'query' => $data,
+        $goodsCode = $condition['goodsCode'] ?? '';
+        $purchaser = $condition['purchaser'] ?? '';
+        //$data = OauthLabelGoodsRate::find()->andFilterWhere(['like', 'goodsCode', $goodsCode]);
+        $sql = "SELECT a.id,a.goodsCode,a.rate,g.purchaser FROM oauth_label_goods_rate a
+                LEFT JOIN B_Goods g ON a.goodsCode=g.GoodsCode WHERE 1=1 ";
+        if ($goodsCode) $sql .= " AND a.goodsCode LIKE '%{$goodsCode}%'";
+        if ($purchaser) $sql .= " AND g.purchaser LIKE '%{$purchaser}%'";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        return new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['goodsCode', 'rate', 'purchaser'],
+                'defaultOrder' => [
+                    'rate' => SORT_DESC,
+                ]
+            ],
             'pagination' => [
                 'pageSize' => $pageSize,
             ],
         ]);
+    }
+
+    /**
+     * 贴标-- 商品难度系数 导出
+     * Date: 2021-07-08 11:48
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionLabelGoodsRateExport()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $goodsCode = $condition['goodsCode'] ?? '';
+        $purchaser = $condition['purchaser'] ?? '';
+        //$data = OauthLabelGoodsRate::find()->andFilterWhere(['like', 'goodsCode', $goodsCode]);
+        $sql = "SELECT a.goodsCode,a.rate,g.purchaser FROM oauth_label_goods_rate a
+                LEFT JOIN B_Goods g ON a.goodsCode=g.GoodsCode WHERE 1=1 ";
+        if ($goodsCode) $sql .= " AND a.goodsCode LIKE '%{$goodsCode}%'";
+        if ($purchaser) $sql .= " AND g.purchaser LIKE '%{$purchaser}%'";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $title = ['商品编码', '困难系数', '采购员'];
+        ExportTools::toExcelOrCsv('labelGoodsRate', $data, 'Xlsx', $title);
     }
 
     /**
@@ -536,13 +570,13 @@ class WarehouseToolsController extends AdminController
             $condition = Yii::$app->request->post()['condition'];
             $data = ApiWarehouseTools::getLabelStatisticsData($condition);
             $personData = $dateData = [];
-            foreach ($data as $v){
+            foreach ($data as $v) {
                 $item = $v;
                 unset($item['flag']);
-                if($v['flag'] == 'time'){
+                if ($v['flag'] == 'time') {
                     unset($item['job'], $item['rate']);
                     $dateData[] = $item;
-                }else{
+                } else {
                     $personData[] = $item;
                 }
             }
@@ -569,13 +603,13 @@ class WarehouseToolsController extends AdminController
         $condition = Yii::$app->request->post()['condition'];
         $data = ApiWarehouseTools::getLabelStatisticsData($condition);
         $personData = $dateData = [];
-        foreach ($data as $v){
+        foreach ($data as $v) {
             $item = $v;
             unset($item['flag']);
-            if($v['flag'] == 'time'){
+            if ($v['flag'] == 'time') {
                 unset($item['job'], $item['rate']);
                 $dateData[] = $item;
-            }else{
+            } else {
                 $personData[] = $item;
             }
         }
@@ -677,6 +711,20 @@ class WarehouseToolsController extends AdminController
                 'message' => $e->getMessage(),
             ];
         }
+    }
+
+    /**
+     * 上架完成度
+     * Date: 2021-05-10 10:31
+     * Author: henry
+     * @return array|mixed
+     */
+    public function actionLoadRateExport()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        $data = ApiWarehouseTools::getLoadRateData($condition);
+        $title = ['入库人', '入库时间', 'SKU', '上架人', '上架时间', '上架完成', '是否异常', '是否新品'];
+        ExportTools::toExcelOrCsv('storageTimeRate', $data, 'Xls', $title);
     }
 
     /**
@@ -1531,14 +1579,32 @@ class WarehouseToolsController extends AdminController
             $storeName = $condition['storeName'] ?: '';
             $beginDate = $condition['dateRange'][0] ?: '';
             $endDate = $condition['dateRange'][1] ?: '';
-            $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}','{$storeName}'";
+            $sql = "SELECT storeName, dt, totalNum, num, rate,oneNum, oneRate, twoNum, twoRate, 
+                        threeNum, threeRate, otherNum, otherRate, notInNum, notInRate FROM oauth_in_storage_time_rate_data 
+                    WHERE dt BETWEEN '{$beginDate}' AND '{$endDate}' AND flag = '1.0' ";
+            if ($storeName) $sql .= " AND storeName = '{$storeName}' ";
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             $totalNum = array_sum(ArrayHelper::getColumn($data, 'totalNum'));
-            $totalInNum = array_sum(ArrayHelper::getColumn($data, 'inNum'));
+            $totalInNum = array_sum(ArrayHelper::getColumn($data, 'totalNum')) -
+                array_sum(ArrayHelper::getColumn($data, 'notInNum'));
+            $total['totalNum'] = $totalNum;
+            $total['totalInNum'] = $totalInNum;
+            $total['num'] = array_sum(ArrayHelper::getColumn($data, 'num'));
+            $total['rate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'num')) * 100.0 / $totalNum, 2) : 0;
+            $total['oneNum'] = array_sum(ArrayHelper::getColumn($data, 'oneNum'));
+            $total['oneRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'oneNum')) * 100.0 / $totalNum, 2) : 0;
+            $total['twoNum'] = array_sum(ArrayHelper::getColumn($data, 'twoNum'));
+            $total['twoRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'twoNum')) * 100.0 / $totalNum, 2) : 0;
+            $total['threeNum'] = array_sum(ArrayHelper::getColumn($data, 'threeNum'));
+            $total['threeRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'threeNum')) * 100.0 / $totalNum, 2) : 0;
+            $total['otherNum'] = array_sum(ArrayHelper::getColumn($data, 'otherNum'));
+            $total['otherRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'otherNum')) * 100.0 / $totalNum, 2) : 0;
+            $total['notInNum'] = array_sum(ArrayHelper::getColumn($data, 'notInNum'));
+            $total['notInRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'notInNum')) * 100.0 / $totalNum, 2) : 0;
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
-                    'attributes' => ['storeName', 'dt', 'totalNum', 'inNum', 'notInNum', 'notInRate', 'num', 'rate',
+                    'attributes' => ['storeName', 'dt', 'totalNum', 'notInNum', 'notInRate', 'num', 'rate',
                         'oneNum', 'oneRate', 'twoNum', 'twoRate', 'threeNum', 'threeRate', 'otherNum', 'otherRate'],
                     'defaultOrder' => [
                         'storeName' => SORT_ASC,
@@ -1551,10 +1617,7 @@ class WarehouseToolsController extends AdminController
             ]);
             return [
                 'provider' => $provider,
-                'extra' => [
-                    'totalNum' => $totalNum,
-                    'totalInNum' => $totalInNum,
-                ]
+                'extra' => $total
             ];
         } catch (Exception $e) {
             return [
@@ -1562,6 +1625,38 @@ class WarehouseToolsController extends AdminController
                 'message' => $e->getMessage()
             ];
         }
+    }
+
+    /**
+     * 入库时效导出
+     * Date: 2021-06-09 9:30
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionStorageTimeRateExport()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $storeName = $condition['storeName'] ?: '';
+        $beginDate = $condition['dateRange'][0] ?: '';
+        $endDate = $condition['dateRange'][1] ?: '';
+        $sql = "SELECT storeName, dt, totalNum, num, rate, oneNum, oneRate, twoNum, twoRate, 
+                        threeNum, threeRate, otherNum, otherRate, notInNum, notInRate FROM oauth_in_storage_time_rate_data 
+                    WHERE dt BETWEEN '{$beginDate}' AND '{$endDate}' AND flag = '1.0' ";
+        if ($storeName) $sql .= " AND storeName = '{$storeName}' ";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        foreach ($data as &$v){
+            $v['rate'] = round($v['rate']*100,2) . '%';
+            $v['oneRate'] = round($v['oneRate']*100,2) . '%';
+            $v['twoRate'] = round($v['twoRate']*100,2) . '%';
+            $v['threeRate'] = round($v['threeRate']*100,2) . '%';
+            $v['otherRate'] = round($v['otherRate']*100,2) . '%';
+            $v['notInRate'] = round($v['notInRate']*100,2) . '%';
+        }
+        $title = ['仓库', '扫描日期', '扫描数量', '当天入库数', '当天入库率', '1天内入库数', '1天内入库率',
+            '2天内入库数', '2天内入库率', '3天内入库数', '3天内入库率', '3天以上入库数', '3天以上入库率', '未入库数', '未入库率'
+        ];
+        ExportTools::toExcelOrCsv('storageTimeRate', $data, 'Xls', $title);
     }
 
     /**
@@ -1578,14 +1673,32 @@ class WarehouseToolsController extends AdminController
             $storeName = $condition['storeName'] ?: '';
             $beginDate = $condition['dateRange'][0] ?: '';
             $endDate = $condition['dateRange'][1] ?: '';
-            $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}','{$storeName}','2.0'";
+            $sql = "SELECT storeName, dt, totalNum, num, rate,oneNum, oneRate, twoNum, twoRate, 
+                        threeNum, threeRate, otherNum, otherRate, notInNum, notInRate FROM oauth_in_storage_time_rate_data 
+                    WHERE dt BETWEEN '{$beginDate}' AND '{$endDate}' AND flag = '2.0' ";
+            if ($storeName) $sql .= " AND storeName = '{$storeName}' ";
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             $totalNum = array_sum(ArrayHelper::getColumn($data, 'totalNum'));
-            $totalInNum = array_sum(ArrayHelper::getColumn($data, 'inNum'));
+            $totalInNum = array_sum(ArrayHelper::getColumn($data, 'totalNum'))
+                - array_sum(ArrayHelper::getColumn($data, 'notInNum'));
+            $total['totalNum'] = $totalNum;
+            $total['totalInNum'] = $totalInNum;
+            $total['num'] = array_sum(ArrayHelper::getColumn($data, 'num'));
+            $total['rate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'num')) * 100.0 / $totalNum, 2) : 0;
+            $total['oneNum'] = array_sum(ArrayHelper::getColumn($data, 'oneNum'));
+            $total['oneRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'oneNum')) * 100.0 / $totalNum, 2) : 0;
+            $total['twoNum'] = array_sum(ArrayHelper::getColumn($data, 'twoNum'));
+            $total['twoRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'twoNum')) * 100.0 / $totalNum, 2) : 0;
+            $total['threeNum'] = array_sum(ArrayHelper::getColumn($data, 'threeNum'));
+            $total['threeRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'threeNum')) * 100.0 / $totalNum, 2) : 0;
+            $total['otherNum'] = array_sum(ArrayHelper::getColumn($data, 'otherNum'));
+            $total['otherRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'otherNum')) * 100.0 / $totalNum, 2) : 0;
+            $total['notInNum'] = array_sum(ArrayHelper::getColumn($data, 'notInNum'));
+            $total['notInRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'notInNum')) * 100.0 / $totalNum, 2) : 0;
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
-                    'attributes' => ['storeName', 'dt', 'totalNum', 'inNum', 'notInNum', 'notInRate', 'num', 'rate',
+                    'attributes' => ['storeName', 'dt', 'totalNum', 'notInNum', 'notInRate', 'num', 'rate',
                         'oneNum', 'oneRate', 'twoNum', 'twoRate', 'threeNum', 'threeRate', 'otherNum', 'otherRate'],
                     'defaultOrder' => [
                         'storeName' => SORT_ASC,
@@ -1598,10 +1711,7 @@ class WarehouseToolsController extends AdminController
             ]);
             return [
                 'provider' => $provider,
-                'extra' => [
-                    'totalNum' => $totalNum,
-                    'totalInNum' => $totalInNum,
-                ]
+                'extra' => $total
             ];
         } catch (Exception $e) {
             return [
@@ -1609,6 +1719,38 @@ class WarehouseToolsController extends AdminController
                 'message' => $e->getMessage()
             ];
         }
+    }
+
+    /**
+     * 入库时效2.0导出
+     * Date: 2021-06-09 9:40
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionStorageTimeRate2Export()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $storeName = $condition['storeName'] ?: '';
+        $beginDate = $condition['dateRange'][0] ?: '';
+        $endDate = $condition['dateRange'][1] ?: '';
+        $sql = "SELECT storeName, dt, totalNum, num, rate, oneNum, oneRate, twoNum, twoRate, 
+                        threeNum, threeRate, otherNum, otherRate, notInNum, notInRate FROM oauth_in_storage_time_rate_data 
+                    WHERE dt BETWEEN '{$beginDate}' AND '{$endDate}' AND flag = '2.0' ";
+        if ($storeName) $sql .= " AND storeName = '{$storeName}' ";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        foreach ($data as &$v){
+            $v['rate'] = round($v['rate']*100,2) . '%';
+            $v['oneRate'] = round($v['oneRate']*100,2) . '%';
+            $v['twoRate'] = round($v['twoRate']*100,2) . '%';
+            $v['threeRate'] = round($v['threeRate']*100,2) . '%';
+            $v['otherRate'] = round($v['otherRate']*100,2) . '%';
+            $v['notInRate'] = round($v['notInRate']*100,2) . '%';
+        }
+        $title = ['仓库', '扫描日期', '扫描数量', '当天入库数', '当天入库率', '1天内入库数', '1天内入库率',
+            '2天内入库数', '2天内入库率', '3天内入库数', '3天内入库率', '3天以上入库数', '3天以上入库率', '未入库数', '未入库率'
+        ];
+        ExportTools::toExcelOrCsv('storageTimeRate2.0', $data, 'Xls', $title);
     }
 
 
@@ -1628,7 +1770,26 @@ class WarehouseToolsController extends AdminController
             $endDate = $condition['dateRange'][1] ?: '';
             $sql = "EXEC oauth_warehouse_tools_deliver_time_rate '{$beginDate}','{$endDate}','{$storeName}'";
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-            return new ArrayDataProvider([
+
+            $total['storeName'] = $storeName;
+            $total['totalNum'] = array_sum(ArrayHelper::getColumn($data, 'totalNum'));
+            $total['deliverableNum'] = array_sum(ArrayHelper::getColumn($data, 'deliverableNum'));
+            $total['zeroNum'] = array_sum(ArrayHelper::getColumn($data, 'zeroNum'));
+            $total['zeroRate'] = round(array_sum(ArrayHelper::getColumn($data, 'zeroNum'))
+                * 100.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 2);
+            $total['oneNum'] = array_sum(ArrayHelper::getColumn($data, 'oneNum'));
+            $total['oneRate'] = round(array_sum(ArrayHelper::getColumn($data, 'oneNum'))
+                * 100.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 2);
+            $total['twoNum'] = array_sum(ArrayHelper::getColumn($data, 'twoNum'));
+            $total['twoRate'] = round(array_sum(ArrayHelper::getColumn($data, 'twoNum'))
+                * 100.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 2);
+            $total['threeNum'] = array_sum(ArrayHelper::getColumn($data, 'threeNum'));
+            $total['threeRate'] = round(array_sum(ArrayHelper::getColumn($data, 'threeNum'))
+                * 100.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 2);
+            $total['otherNum'] = array_sum(ArrayHelper::getColumn($data, 'otherNum'));
+            $total['otherRate'] = round(array_sum(ArrayHelper::getColumn($data, 'otherNum'))
+                * 100.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 2);
+            $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
                     'attributes' => ['dt', 'storeName', 'totalNum', 'deliverableNum', 'zeroNum', 'zeroRate',
@@ -1642,12 +1803,34 @@ class WarehouseToolsController extends AdminController
                     'pageSize' => $pageSize,
                 ],
             ]);
+            return ['provider' => $provider, 'extra' => $total];
         } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
             ];
         }
+    }
+
+    /**
+     * 发货时效导出
+     * Date: 2021-06-09 9:42
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionDeliverTimeRateExport()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $storeName = $condition['storeName'] ?: '';
+        $beginDate = $condition['dateRange'][0] ?: '';
+        $endDate = $condition['dateRange'][1] ?: '';
+        $sql = "EXEC oauth_warehouse_tools_deliver_time_rate '{$beginDate}','{$endDate}','{$storeName}'";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $title = ['日期', '仓库', '订单数量', '可发货数量', '当天发货数', '当天发货率', '1天内发货数', '1天内发货率',
+            '2天内发货数', '2天内发货率', '3天内发货数', '3天内发货率', '未发货数', '未发货率'
+        ];
+        ExportTools::toExcelOrCsv('deliverTimeRate', $data, 'Xls', $title);
     }
 
     /**
@@ -1666,7 +1849,25 @@ class WarehouseToolsController extends AdminController
             $endDate = $condition['dateRange'][1] ?: '';
             $sql = "EXEC oauth_warehouse_tools_deliver_time_rate '{$beginDate}','{$endDate}','{$storeName}','2.0'";
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-            return new ArrayDataProvider([
+            $total['storeName'] = $storeName;
+            $total['totalNum'] = array_sum(ArrayHelper::getColumn($data, 'totalNum'));
+            $total['deliverableNum'] = array_sum(ArrayHelper::getColumn($data, 'deliverableNum'));
+            $total['zeroNum'] = array_sum(ArrayHelper::getColumn($data, 'zeroNum'));
+            $total['zeroRate'] = round(array_sum(ArrayHelper::getColumn($data, 'zeroNum'))
+                * 100.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 2);
+            $total['oneNum'] = array_sum(ArrayHelper::getColumn($data, 'oneNum'));
+            $total['oneRate'] = round(array_sum(ArrayHelper::getColumn($data, 'oneNum'))
+                * 100.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 2);
+            $total['twoNum'] = array_sum(ArrayHelper::getColumn($data, 'twoNum'));
+            $total['twoRate'] = round(array_sum(ArrayHelper::getColumn($data, 'twoNum'))
+                * 100.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 2);
+            $total['threeNum'] = array_sum(ArrayHelper::getColumn($data, 'threeNum'));
+            $total['threeRate'] = round(array_sum(ArrayHelper::getColumn($data, 'threeNum'))
+                * 100.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 2);
+            $total['otherNum'] = array_sum(ArrayHelper::getColumn($data, 'otherNum'));
+            $total['otherRate'] = round(array_sum(ArrayHelper::getColumn($data, 'otherNum'))
+                * 100.0 / array_sum(ArrayHelper::getColumn($data, 'deliverableNum')), 2);
+            $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
                     'attributes' => ['dt', 'storeName', 'totalNum', 'deliverableNum', 'zeroNum', 'zeroRate',
@@ -1680,6 +1881,7 @@ class WarehouseToolsController extends AdminController
                     'pageSize' => $pageSize,
                 ],
             ]);
+            return ['provider' => $provider, 'extra' => $total];
         } catch (Exception $e) {
             return [
                 'code' => 400,
@@ -1687,6 +1889,90 @@ class WarehouseToolsController extends AdminController
             ];
         }
     }
+
+    /**
+     * 发货时效2.0导出
+     * Date: 2021-06-09 9:45
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     * AND (m.FilterFlag = 5) THEN '等待派单'
+     * WHEN (m.Orig = 0) AND (m.FilterFlag = 6) AND (l.eub = 1) THEN '派至E邮宝'
+     * WHEN (m.Orig = 0)AND (m.FilterFlag = 6)AND (l.eub = 2) THEN '派至E线下邮宝'
+     * WHEN (m.Orig = 0)AND (m.FilterFlag = 6)AND (l.eub = 3) THEN '派4PX独立帐户'
+     * WHEN (m.Orig = 0)AND ((m.FilterFlag = 6)AND (l.eub = 4)) THEN  '派至非E邮宝'
+     * WHEN (m.Orig = 0)AND (m.FilterFlag = 20) THEN  '未拣货'
+     * WHEN (m.Orig = 0)AND (m.FilterFlag = 22) THEN  '未核单'
+     * WHEN (m.Orig = 0)AND (m.FilterFlag = 24) THEN  '未包装'
+     * WHEN (m.Orig = 0)AND (m.FilterFlag = 40) THEN  '待发货'
+     * WHEN (m.Orig = 0)AND (m.FilterFlag = 26) THEN  '订单缺货(仓库)'
+     * WHEN (m.Orig = 0)AND (m.FilterFlag = 28) THEN  '缺货待包装'
+     * WHEN (m.Orig = 0)AND (m.FilterFlag = 100) THEN  '已发货'
+     * WHEN m.Orig = 1 THEN  '已归档'
+     * WHEN m.Orig = 3 THEN '异常已归档'
+     * WHEN (m.Orig = 2)AND (m.FilterFlag = 0) THEN '等待付款'
+     * WHEN (m.Orig = 2)AND (m.FilterFlag = 1) THEN  '订单缺货'
+     * WHEN (m.Orig = 2)AND (m.FilterFlag = 2) THEN  '订单退货'
+     * WHEN (m.Orig = 2)AND (m.FilterFlag = 3) THEN '订单取消'
+     * WHEN (m.Orig = 2)AND (m.FilterFlag = 4) THEN '其它异常单'*/
+    public function actionDeliverTimeRate2Export()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $storeName = $condition['storeName'] ?: '';
+        $beginDate = $condition['dateRange'][0] ?: '';
+        $endDate = $condition['dateRange'][1] ?: '';
+        $sql = "EXEC oauth_warehouse_tools_deliver_time_rate '{$beginDate}','{$endDate}','{$storeName}','2.0'";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $title = ['日期', '仓库', '订单数量', '可发货数量', '当天发货数', '当天发货率', '1天内发货数', '1天内发货率',
+            '2天内发货数', '2天内发货率', '3天内发货数', '3天内发货率', '未发货数', '未发货率'
+        ];
+        ExportTools::toExcelOrCsv('deliverTimeRate2.0', $data, 'Xls', $title);
+    }
+
+    /**
+     * 发货时效详情
+     * Date: 2021-06-25 17:12
+     * Author: henry
+     * @return mixed
+     */
+    public function actionDeliverTimeRateDetail()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+
+        $pageSize = $condition['pageSize'] ?: 20;
+
+        $data = ApiWarehouseTools::getDeliverTimeRateDetail($condition);
+        return new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['tradeNid', 'orderTime', 'scanningDate', 'operateTime', 'storeName', 'closingDate', 'filterFlag'],
+                'defaultOrder' => [
+                    'tradeNid' => SORT_ASC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+
+    }
+
+    /**
+     * actionDeliverTimeRateDetailExport
+     * Date: 2021-06-29 10:39
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionDeliverTimeRateDetailExport()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+
+        $data = ApiWarehouseTools::getDeliverTimeRateDetail($condition);
+        $title = ['订单编号', '交易日期', '操作日期', '核单日期', '发货仓库', '发货日期', '更新时间', '订单状态'];
+        ExportTools::toExcelOrCsv('deliverTimeRateDetail', $data, 'Xls', $title);
+    }
+
 
     /////////////////////////////////KPI////////////////////////////////////
     public function actionKpiReport()
@@ -1705,12 +1991,16 @@ class WarehouseToolsController extends AdminController
             return new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => [
-                    'attributes' => ['dt', 'name', 'job', 'pur_in_package_num', 'marking_stock_order_num', 'marking_sku_num',
-                        'labeling_sku_num', 'labeling_goods_num', 'pda_in_storage_sku_num', 'pda_in_storage_goods_num',
-                        'pda_in_storage_location_num', 'single_sku_num', 'single_goods_num', 'single_location_num',
+                    'attributes' => ['dt', 'name', 'job', 'pur_in_package_num',
+                        'marking_stock_order_num', 'marking_sku_num', 'labeling_sku_num', 'labeling_goods_num',
+                        'pda_in_storage_sku_num', 'pda_in_storage_goods_num', 'pda_in_storage_location_num',
+                        'single_sku_num', 'single_goods_num', 'single_location_num',
                         'multi_sku_num', 'multi_goods_num', 'multi_location_num',
-                        'pack_single_order_num','pack_single_goods_num','pack_multi_order_num','pack_multi_goods_num',
-                        'update_date'],
+                        'pack_single_order_num', 'pack_single_goods_num', 'pack_multi_order_num', 'pack_multi_goods_num',
+                        'update_date',
+                        'labeling_order_num', 'single_order_num', 'multi_order_num', 'integral',
+
+                    ],
                     'defaultOrder' => [
                         'dt' => SORT_DESC,
                         'name' => SORT_ASC,
@@ -1747,9 +2037,11 @@ class WarehouseToolsController extends AdminController
         if ($name) $sql .= " AND `name`='{$name}'";
         if ($job) $sql .= " AND `job` LIKE '%{$job}%'";
         $data = Yii::$app->db->createCommand($sql)->queryAll();
-        $title = ['id', '姓名', '日期', '职位', '扫描包裹数', '打标订单数', '打标SKU种数','贴标SKU种数','贴标产品数',
-            '入库SKU种数','入库产品数','入库库位数','拣货单品SKU种数','拣货单品产品数','拣货单品库位数','拣货多品SKU种数',
-            '拣货多品产品数','拣货多品库位数','打包单品订单数','打包单品产品数','打包多品订单数','打包多品产品数','更新时间'];
+        $title = ['id', '姓名', '日期', '职位', '扫描包裹数', '打标订单数', '打标SKU种数', '贴标SKU种数', '贴标产品数',
+            '入库SKU种数', '入库产品数', '入库库位数', '拣货单品SKU种数', '拣货单品产品数', '拣货单品库位数', '拣货多品SKU种数',
+            '拣货多品产品数', '拣货多品库位数', '打包单品订单数', '打包单品产品数', '打包多品订单数', '打包多品产品数', '更新时间',
+            '打标产品数', '贴标订单数', '拣货单品订单数', '拣货多品订单数', '积分'
+        ];
         ExportTools::toExcelOrCsv('KPIreport', $data, 'Xls', $title);
 
     }

@@ -648,7 +648,8 @@ class TinyToolController extends AdminController
 //========================================================
     //海外仓补货
 
-    /** UK虚拟仓补货
+    /**
+     * UK虚拟仓补货
      * Date: 2019-05-28 16:31
      * Author: henry
      * @return array|ArrayDataProvider
@@ -686,7 +687,8 @@ class TinyToolController extends AdminController
 
     }
 
-    /** AU真仓补货
+    /**
+     * AU真仓补货
      * Date: 2019-05-29 8:40
      * Author: henry
      * @return array|ArrayDataProvider
@@ -725,7 +727,8 @@ class TinyToolController extends AdminController
         }
     }
 
-    /** AU真仓补货
+    /**
+     * AU真仓补货
      * Date: 2019-05-29 8:40
      * Author: henry
      * @return array|ArrayDataProvider
@@ -769,7 +772,8 @@ class TinyToolController extends AdminController
     }
 
 
-    /** eBayUK虚拟海外仓补货
+    /**
+     * eBayUK虚拟海外仓补货
      * Date: 2019-08-01 16:40
      * Author: henry
      * @return array|ArrayDataProvider

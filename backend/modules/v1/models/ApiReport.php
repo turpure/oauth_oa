@@ -8,18 +8,12 @@
 namespace backend\modules\v1\models;
 
 use backend\models\OauthClearPlan;
-use backend\models\OauthClearPlanDetail;
 use backend\modules\v1\utils\ExportTools;
-use backend\modules\v1\utils\Helper;
 use Yii;
 use yii\data\ArrayDataProvider;
-use yii\data\SqlDataProvider;
-use yii\db\ActiveQuery;
 use yii\db\Exception;
-use yii\db\Query;
 use yii\helpers\ArrayHelper;
 use backend\models\ShopElf\BDictionary;
-use yii\data\ActiveDataProvider;
 
 class ApiReport
 {
@@ -998,7 +992,8 @@ class ApiReport
     }
 
     public static function getTrusteeshipFee($condition){
-        $sql = "SELECT notename as suffix,fee_type,total,CONVERT(DECIMAL(6,2),total * ExchangeRate) AS totalRmb,currency_code,fee_time
+        $sql = "SELECT notename as suffix,fee_type,total,CONVERT(DECIMAL(6,2),total * ExchangeRate) AS totalRmb,
+                        currency_code,fee_time,orderId
                 FROM [dbo].[y_fee] LEFT JOIN B_CurrencyCode  ON currency_code=CURRENCYCODE
                 WHERE fee_type='CreditCard' AND 
                 CONVERT(varchar(10),fee_time,121)  BETWEEN '" . $condition['beginDate'] . "' and '" . $condition['endDate'] . "'";
@@ -2033,4 +2028,102 @@ class ApiReport
         $ret = Yii::$app->db->createCommand($sql)->bindValues([':plat' => $plat])->queryScalar();
         return $ret;
     }
+
+    /**
+     * 运营KPI 数据
+     * @param $condition
+     * Date: 2021-07-06 9:19
+     * Author: henry
+     * @return array
+     */
+    public static function getOperatorKpi($condition){
+        $name = isset($condition['name']) ? $condition['name'] : '';
+        $depart = isset($condition['depart']) ? $condition['depart'] : '';
+        $plat = isset($condition['plat']) ? $condition['plat'] : '';
+        $month = isset($condition['month']) ? $condition['month'] : '';
+        //获取当前用户信息
+        $username = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($username);
+//        var_dump($userList);exit;
+        $query = (new yii\db\Query())//->select('*')
+            ->from('cache_kpi_saler_and_dev_tmp_data')
+            ->andFilterWhere(['=', 'name', $name])
+            ->andFilterWhere(['in', 'name', $userList])
+            ->andFilterWhere(['=', 'depart', $depart])
+            ->andFilterWhere(['=', 'plat', $plat])
+            ->andFilterWhere(['=', 'month', $month])
+            ->orderBy('sort')->all();
+        foreach ($query as &$v){
+            $v['profitRate'] .= '%';
+            $v['salesRate'] .= '%';
+        }
+        return $query;
+    }
+
+    /**
+     * 运营KPI 历史数据
+     * @param $condition
+     * Date: 2021-07-06 9:19
+     * Author: henry
+     * @return array
+     */
+    public static function getOperatorKpiHistory($condition){
+        $name = isset($condition['name']) ? $condition['name'] : '';
+        $depart = isset($condition['depart']) ? $condition['depart'] : '';
+        $plat = isset($condition['plat']) ? $condition['plat'] : '';
+        $beginMonth = isset($condition['dateRange'][0]) ? $condition['dateRange'][0] : '';
+        $endMonth = isset($condition['dateRange'][1]) ? $condition['dateRange'][1] : '';
+        //获取当前用户信息
+        $username = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($username);
+        $query = (new yii\db\Query())//->select('*')
+        ->from('cache_kpi_saler_and_dev_tmp_data')
+            ->andFilterWhere(['between', 'month', $beginMonth, $endMonth])
+            ->andFilterWhere(['=', 'name', $name])
+            ->andFilterWhere(['in', 'name', $userList])
+            ->andFilterWhere(['=', 'depart', $depart])
+            ->andFilterWhere(['=', 'plat', $plat])
+            ->orderBy('name,month')->all();
+        $userList = array_unique(ArrayHelper::getColumn($query,'name'));
+        $dateList = array_unique(ArrayHelper::getColumn($query,'month'));
+        $row = [];
+        foreach ($dateList as $v){
+            $row[] = ['month' => $v, 'rank' => ''];
+        }
+//        var_dump($row);exit;
+        $data = [];
+        foreach ($userList as $user){
+            $item = [];
+            $item['name'] = $user;
+            $item['numA'] = $item['numB'] = $item['numC'] = $item['numD'] = $item['totalRate'] = $item['totalSort'] = 0;
+            $item['value'] = $row;
+            foreach ($query as $v){
+                if($v['name'] == $user){
+                    $item['depart'] = $v['depart'];
+                    $item['hireDate'] = $v['hireDate'];
+                    foreach ($item['value'] as &$value){
+                        if ($value['month'] == $v['month'] && $v['month'] >= substr($v['hireDate'],0,7)){
+                            $value['rank'] = $v['rank'];
+                        }
+                    }
+                    if($v['rank'] == 'A' && $v['month'] >= substr($v['hireDate'],0,7)) $item['numA'] += 1;
+                    if($v['rank'] == 'B' && $v['month'] >= substr($v['hireDate'],0,7)) $item['numB'] += 1;
+                    if($v['rank'] == 'C' && $v['month'] >= substr($v['hireDate'],0,7)) $item['numC'] += 1;
+                    if($v['rank'] == 'D' && $v['month'] >= substr($v['hireDate'],0,7)) $item['numD'] += 1;
+
+                }
+            }
+            $item['totalRate'] = round((1 + $item['numA']*0.1 - $item['numC']*0.05 - $item['numD']*0.1) * 100,2);
+            $data[] = $item;
+        }
+        $totalRate = ArrayHelper::getColumn($data,'totalRate');
+        array_multisort($totalRate,SORT_DESC, $data);
+        foreach ($data as $k => &$v){
+            $v['totalSort'] = ($k + 1) . '/' . count($totalRate);
+            $v['totalRate'] .= '%';
+        }
+        return $data;
+    }
+
+
 }
