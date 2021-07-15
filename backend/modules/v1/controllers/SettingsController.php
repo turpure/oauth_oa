@@ -511,9 +511,96 @@ class SettingsController extends AdminController
 
     ////////////////////////////////////运营KPI参数设置/////////////////////////////////////////////
 
+    /**
+     * KPI公共参数列表
+     * Date: 2021-07-15 9:52
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
     public function actionKpiParams()
     {
+        return Yii::$app->db->createCommand("SELECT * FROM `oauth_operator_kpi_config`;")->queryAll();
+    }
 
+    /**
+     * KPI公共参数修改
+     * Date: 2021-07-15 9:56
+     * Author: henry
+     * @return int
+     * @throws Exception
+     */
+    public function actionKpiParamsSet()
+    {
+        $condition = Yii::$app->request->post('condition');
+        $id = $condition['id'];
+        return Yii::$app->db->createCommand()->update('oauth_operator_kpi_config',$condition,['id' => $id])->execute();
+    }
+
+    /**
+     * 其他分数项列表
+     * Date: 2021-07-15 9:52
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
+    public function actionKpiExtraScore()
+    {
+        $condition = Yii::$app->request->post('condition');
+        $month = $condition['month'];
+        $name = $condition['name'];
+        $sql = "SELECT * FROM `oauth_operator_kpi_other_score` WHERE 1=1 ";
+        if($month) $sql .= " AND month = '{$month}'";
+        if($name) $sql .= " AND month = '{$name}'";
+        return Yii::$app->db->createCommand($sql)->queryAll();
+    }
+
+    /**
+     * 其他分数项设置
+     * Date: 2021-07-15 9:52
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
+    public function actionKpiExtraScoreSet()
+    {
+        $condition = Yii::$app->request->post('condition');
+        $id = $condition['id'] ?? 0;
+        $condition['updateTime'] = date('Y-m-d H:i:s');
+        if($id){
+            return Yii::$app->db->createCommand()->update('oauth_operator_kpi_other_score',$condition,['id' => $id])->execute();
+        }else{
+            unset($condition['id']);
+            return Yii::$app->db->createCommand()->insert('oauth_operator_kpi_other_score',$condition)->execute();
+        }
+    }
+
+    /**
+     * 其他分数项设置-- 批量导入
+     * Date: 2021-07-15 9:52
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
+    public function actionKpiExtraScoreImport()
+    {
+        $file = $_FILES['file'];
+        if (!$file) {
+            return ['code' => 400, 'message' => 'The file can not be empty!'];
+        }
+        //判断文件后缀
+        $extension = ApiSettings::get_extension($file['name']);
+        if ($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
+
+        //文件上传
+        $result = ApiSettings::file($file, 'kpiExtra');
+        if (!$result) {
+            return ['code' => 400, 'message' => 'File upload failed'];
+        } else {
+            //获取上传excel文件的内容并保存
+            $res = ApiSettings::saveKpiExtraData($result, ApiSettings::DEVELOP, ApiSettings::OPERATE_FEE);
+            if ($res !== true) return ['code' => 400, 'message' => $res];
+        }
     }
 
 

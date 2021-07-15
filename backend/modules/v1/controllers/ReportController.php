@@ -1368,6 +1368,10 @@ class ReportController extends AdminController
             $item['计数-B'] = $v['numB'];
             $item['计数-C'] = $v['numC'];
             $item['计数-D'] = $v['numD'];
+            $item['计数-试用-A'] = $v['testNumA'];
+            $item['计数-试用-B'] = $v['testNumB'];
+            $item['计数-试用-C'] = $v['testNumC'];
+            $item['计数-试用-D'] = $v['testNumD'];
             $item['综合比例'] = $v['totalRate'];
             $item['综合排名'] = $v['totalSort'];
             $out[] = $item;

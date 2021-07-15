@@ -2105,13 +2105,17 @@ class ApiReport
                     $item['hireDate'] = $v['hireDate'];
                     foreach ($item['value'] as &$value){
                         if ($value['month'] == $v['month'] && $v['month'] >= substr($v['hireDate'],0,7)){
-                            $value['rank'] = $v['flag'] == '正式' ? $v['rank'] : ($v['flag'] == '试用' ? ('试用-'.$v['rank']) : '');
+                            $value['rank'] = $v['rank'];
                         }
                     }
-                    if($v['rank'] == 'A') $v['flag'] == '正式' ? ($item['numA'] += 1) : ($item['testNumA'] += 1);
-                    if($v['rank'] == 'B') $v['flag'] == '正式' ? ($item['numB'] += 1) : ($item['testNumB'] += 1);
-                    if($v['rank'] == 'C') $v['flag'] == '正式' ? ($item['numC'] += 1) : ($item['testNumC'] += 1);
-                    if($v['rank'] == 'D') $v['flag'] == '正式' ? ($item['numD'] += 1) : ($item['testNumD'] += 1);
+                    if($v['rank'] == 'A') $item['numA'] += 1;
+                    if($v['rank'] == 'B') $item['numB'] += 1;
+                    if($v['rank'] == 'C') $item['numC'] += 1;
+                    if($v['rank'] == 'D') $item['numD'] += 1;
+                    if($v['rank'] == '试用-A') $item['testNumA'] += 1;
+                    if($v['rank'] == '试用-B') $item['testNumB'] += 1;
+                    if($v['rank'] == '试用-C') $item['testNumC'] += 1;
+                    if($v['rank'] == '试用-D') $item['testNumD'] += 1;
 
                 }
             }
