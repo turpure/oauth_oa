@@ -548,7 +548,7 @@ class SettingsController extends AdminController
     {
         $condition = Yii::$app->request->post('condition');
         $month = $condition['month'];
-        $name = $condition['name'];
+        $name = $condition['username'];
         $sql = "SELECT * FROM `oauth_operator_kpi_other_score` WHERE 1=1 ";
         if ($month) $sql .= " AND month = '{$month}'";
         if ($name) $sql .= " AND month = '{$name}'";
