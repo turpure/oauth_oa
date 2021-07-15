@@ -2112,10 +2112,10 @@ class ApiReport
                     if($v['rank'] == 'B') $item['numB'] += 1;
                     if($v['rank'] == 'C') $item['numC'] += 1;
                     if($v['rank'] == 'D') $item['numD'] += 1;
-                    if($v['rank'] == '试用-A') $item['testNumA'] += 1;
-                    if($v['rank'] == '试用-B') $item['testNumB'] += 1;
-                    if($v['rank'] == '试用-C') $item['testNumC'] += 1;
-                    if($v['rank'] == '试用-D') $item['testNumD'] += 1;
+                    if($v['rank'] == '保护期-A') $item['testNumA'] += 1;
+                    if($v['rank'] == '保护期-B') $item['testNumB'] += 1;
+                    if($v['rank'] == '保护期-C') $item['testNumC'] += 1;
+                    if($v['rank'] == '保护期-D') $item['testNumD'] += 1;
 
                 }
             }

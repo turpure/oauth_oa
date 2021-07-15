@@ -534,7 +534,7 @@ class SettingsController extends AdminController
     {
         $condition = Yii::$app->request->post('condition');
         $id = $condition['id'];
-        return Yii::$app->db->createCommand()->update('oauth_operator_kpi_config',$condition,['id' => $id])->execute();
+        return Yii::$app->db->createCommand()->update('oauth_operator_kpi_config', $condition, ['id' => $id])->execute();
     }
 
     /**
@@ -550,8 +550,8 @@ class SettingsController extends AdminController
         $month = $condition['month'];
         $name = $condition['name'];
         $sql = "SELECT * FROM `oauth_operator_kpi_other_score` WHERE 1=1 ";
-        if($month) $sql .= " AND month = '{$month}'";
-        if($name) $sql .= " AND month = '{$name}'";
+        if ($month) $sql .= " AND month = '{$month}'";
+        if ($name) $sql .= " AND month = '{$name}'";
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
 
@@ -567,11 +567,11 @@ class SettingsController extends AdminController
         $condition = Yii::$app->request->post('condition');
         $id = $condition['id'] ?? 0;
         $condition['updateTime'] = date('Y-m-d H:i:s');
-        if($id){
-            return Yii::$app->db->createCommand()->update('oauth_operator_kpi_other_score',$condition,['id' => $id])->execute();
-        }else{
+        if ($id) {
+            return Yii::$app->db->createCommand()->update('oauth_operator_kpi_other_score', $condition, ['id' => $id])->execute();
+        } else {
             unset($condition['id']);
-            return Yii::$app->db->createCommand()->insert('oauth_operator_kpi_other_score',$condition)->execute();
+            return Yii::$app->db->createCommand()->insert('oauth_operator_kpi_other_score', $condition)->execute();
         }
     }
 
@@ -584,22 +584,29 @@ class SettingsController extends AdminController
      */
     public function actionKpiExtraScoreImport()
     {
-        $file = $_FILES['file'];
-        if (!$file) {
-            return ['code' => 400, 'message' => 'The file can not be empty!'];
-        }
-        //判断文件后缀
-        $extension = ApiSettings::get_extension($file['name']);
-        if ($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
+        try {
+            $file = $_FILES['file'];
+            if (!$file) {
+                throw new Exception('The upload file can not be empty!');
+            }
+            //判断文件后缀
+            $extension = ApiSettings::get_extension($file['name']);
+            if ($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
 
-        //文件上传
-        $result = ApiSettings::file($file, 'kpiExtra');
-        if (!$result) {
-            return ['code' => 400, 'message' => 'File upload failed'];
-        } else {
-            //获取上传excel文件的内容并保存
-            $res = ApiSettings::saveKpiExtraData($result, ApiSettings::DEVELOP, ApiSettings::OPERATE_FEE);
-            if ($res !== true) return ['code' => 400, 'message' => $res];
+            //文件上传
+            $result = ApiSettings::file($file, 'kpiExtra');
+            if (!$result) {
+                throw new Exception('File upload failed!');
+            } else {
+                //获取上传excel文件的内容并保存
+                $res = ApiSettings::saveKpiExtraData($result, ApiSettings::DEVELOP, ApiSettings::OPERATE_FEE);
+                if ($res !== true) return ['code' => 400, 'message' => $res];
+            }
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
         }
     }
 
