@@ -1442,15 +1442,17 @@ class ProductCenterTools
         curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt ($ch, CURLOPT_URL, $url);
+
         $i = 0;
+        $ret = false;
         while($i<4) {
             $i++;
             $raw = curl_exec($ch);
             if (!$raw) {
-                return false;
+                continue;
             }
             else {
+                $ret = true;
                 break;
             }
         }
@@ -1461,7 +1463,7 @@ class ProductCenterTools
         $fp = fopen($filename, 'x');
         fwrite($fp, $raw);
         fclose($fp);
-        return true;
+        return $ret;
     }
 
 
