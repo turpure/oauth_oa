@@ -351,9 +351,38 @@ class ApiSettings
     }
 
 
-    public static function saveKpiExtraData($file, $fileName, $fileSize){
+    public static function saveKpiExtraData($file)
+    {
+        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        //$reader->setLoadSheetsOnly(["Sheet 1"]);
+        $spreadsheet = $reader->load(Yii::$app->basePath . $file);
+        $sheet = $spreadsheet->getSheet(0);
+        $highestRow = $sheet->getHighestRow(); // 取得总行数
+        for ($i = 2; $i <= $highestRow; $i++) {
+            $data['month'] = $sheet->getCell("A" . $i)->getValue();
+            $data['username'] = $sheet->getCell("B" . $i)->getValue();
+            $data['cooperateScore'] = $sheet->getCell("C" . $i)->getValue() ?: 0;
+            $data['activityScore'] = $sheet->getCell("D" . $i)->getValue() ?: 0;
+            $data['executiveScore'] = $sheet->getCell("E" . $i)->getValue() ?: 0;
+            $data['otherTrainingScore'] = $sheet->getCell("F" . $i)->getValue() ?: 0;
+            $data['otherChallengeScore'] = $sheet->getCell("G" . $i)->getValue() ?: 0;
+            $data['otherDeductionScore'] = $sheet->getCell("H" . $i)->getValue() ?: 0;
+            $data['isHaveOldAccount'] = $sheet->getCell("I" . $i)->getValue() ?: 'N';
+            $data['updateTime'] = date('Y-m-d H:i:s');
+            //print_r($data['name']);exit;
+            if (!$data['name'] && !$data['month']) break;//取到数据为空时跳出循环
 
+            $sql = "SELECT * FROM oauth_operator_kpi_other_score WHERE username = '{$data['username']}' AND month = '{$data['month']}' ";
+            $res = Yii::$app->db->createCommand($sql)->queryOne();
+            if($res) {
+                Yii::$app->db->createCommand()->update('oauth_operator_kpi_other_score', $data, ['name' => $data['username'], 'month' => $data['month']])->execute();
+            }else{
+                Yii::$app->db->createCommand()->insert('oauth_operator_kpi_other_score', $data)->execute();
+            }
+        }
+        return true;
     }
+
     public static function saveIntegralData($file, $fileName, $fileSize)
     {
         $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
@@ -432,10 +461,11 @@ class ApiSettings
 
     }
 
-    public static function saveProductData($file, $extension){
-        if($extension = '.xls'){
+    public static function saveProductData($file, $extension)
+    {
+        if ($extension = '.xls') {
             $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
-        }else{
+        } else {
             $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
         }
         $spreadsheet = $reader->load(Yii::$app->basePath . $file);
@@ -454,14 +484,14 @@ class ApiSettings
                 $skuQuery = OaWishGoodsSku::findOne(['sku' => $sku]);
                 $skuQuery->fyndiqPrice = (float)$fyndiqPrice;
                 $skuQuery->fyndiqMsrp = (float)$fyndiqMsrp;
-                if(!$skuQuery->save()){
+                if (!$skuQuery->save()) {
                     $erors[] = 'Failed to save price info of SKU ' . $sku;
                     break;
                 }
                 $query = OaWishGoods::findOne(['infoId' => $skuQuery->infoId]);
                 if ((int)$fyndiqCategory) $query->fyndiqCategoryId = (int)$fyndiqCategory;
                 if ((string)$fyndiqTitle) $query->fyndiqTitle = (string)$fyndiqTitle;
-                if(!$query->save()){
+                if (!$query->save()) {
                     $erors[] = 'Failed to save title or category info of SKU ' . $sku;
                 }
             }

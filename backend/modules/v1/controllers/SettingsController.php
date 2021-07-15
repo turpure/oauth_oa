@@ -557,19 +557,26 @@ class SettingsController extends AdminController
 
     /**
      * 其他分数项设置
-     * Date: 2021-07-15 16:46
+     * Date: 2021-07-15 17:32
      * Author: henry
-     * @return int
+     * @return array|int
      * @throws Exception
      */
     public function actionKpiExtraScoreSet()
     {
         $condition = Yii::$app->request->post('condition');
         $id = $condition['id'] ?? 0;
+        $name = $condition['username'] ?? '';
+        $month = $condition['month'] ?? '';
+        if(!$name && !$month) return ['code' => 400, 'message' => 'Month and username can not be empty at the same time!'];
         $condition['updateTime'] = date('Y-m-d H:i:s');
+        $sql = "SELECT * FROM oauth_operator_kpi_other_score WHERE username = '{$name}' AND month = '{$month}' ";
+        $res = Yii::$app->db->createCommand($sql)->queryOne();
         if ($id) {
             return Yii::$app->db->createCommand()->update('oauth_operator_kpi_other_score', $condition, ['id' => $id])->execute();
-        } else {
+        } elseif($res) {
+            return Yii::$app->db->createCommand()->update('oauth_operator_kpi_other_score', $condition, ['name' => $name, 'month' => $month])->execute();
+        }else{
             unset($condition['id']);
             return Yii::$app->db->createCommand()->insert('oauth_operator_kpi_other_score', $condition)->execute();
         }
@@ -585,7 +592,7 @@ class SettingsController extends AdminController
     public function actionKpiExtraScoreDelete()
     {
         $condition = Yii::$app->request->post('condition');
-        $id = $condition['id'] ?? 0;
+        $id = $condition['id'] ?? [];
         return Yii::$app->db->createCommand()->delete('oauth_operator_kpi_other_score', ['id' => $id])->execute();
     }
 
@@ -605,7 +612,7 @@ class SettingsController extends AdminController
             }
             //判断文件后缀
             $extension = ApiSettings::get_extension($file['name']);
-            if ($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
+            if (!in_array($extension, ['.Xls', '.xls'])) return ['code' => 400, 'message' => "File format error,please upload files in 'Xls' format"];
 
             //文件上传
             $result = ApiSettings::file($file, 'kpiExtra');
@@ -613,7 +620,7 @@ class SettingsController extends AdminController
                 throw new Exception('File upload failed!');
             } else {
                 //获取上传excel文件的内容并保存
-                $res = ApiSettings::saveKpiExtraData($result, ApiSettings::DEVELOP, ApiSettings::OPERATE_FEE);
+                $res = ApiSettings::saveKpiExtraData($result);
                 if ($res !== true) return ['code' => 400, 'message' => $res];
             }
         } catch (\Exception $e) {
