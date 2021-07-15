@@ -557,9 +557,9 @@ class SettingsController extends AdminController
 
     /**
      * 其他分数项设置
-     * Date: 2021-07-15 9:52
+     * Date: 2021-07-15 16:46
      * Author: henry
-     * @return array
+     * @return int
      * @throws Exception
      */
     public function actionKpiExtraScoreSet()
@@ -573,6 +573,20 @@ class SettingsController extends AdminController
             unset($condition['id']);
             return Yii::$app->db->createCommand()->insert('oauth_operator_kpi_other_score', $condition)->execute();
         }
+    }
+
+    /**
+     * 其他分数项删除
+     * Date: 2021-07-15 16:46
+     * Author: henry
+     * @return int
+     * @throws Exception
+     */
+    public function actionKpiExtraScoreDelete()
+    {
+        $condition = Yii::$app->request->post('condition');
+        $id = $condition['id'] ?? 0;
+        return Yii::$app->db->createCommand()->delete('oauth_operator_kpi_other_score', ['id' => $id])->execute();
     }
 
     /**
