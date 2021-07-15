@@ -1443,9 +1443,16 @@ class ProductCenterTools
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 //        curl_setopt ($ch, CURLOPT_PROXY, '127.0.0.1:1080');
-        $raw = curl_exec($ch);
-        if (!$raw) {
-            return false;
+        $i = 0;
+        while($i<4) {
+            $i++;
+            $raw = curl_exec($ch);
+            if (!$raw) {
+                return false;
+            }
+            else {
+                break;
+            }
         }
         curl_close($ch);
         if (file_exists($filename)) {
