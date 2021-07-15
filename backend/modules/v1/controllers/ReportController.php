@@ -1251,6 +1251,42 @@ class ReportController extends AdminController
     }
 
     /**
+     * 采购账期导出
+     * Date: 2021-07-15 8:43
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionPurchaseAccountPeriodExport()
+    {
+        $beginDate = date('Y-m-01', strtotime('-4 month'));
+        $sql = "SELECT dt,purchaser,SUM(orderMoney) AS orderMoney
+                FROM (
+                    SELECT p.personName AS purchaser,CONVERT(VARCHAR(7),c.AudieDate,121) AS dt,
+                                orderMoney = (SELECT SUM (ISNULL(allmoney, 0)) FROM	CG_StockInD (nolock) WHERE	StockInNID = c.nid)
+                    FROM [dbo].[CG_StockInM] c
+                    LEFT JOIN B_Person (nolock) p ON p.NID = C.salerID
+                    LEFT JOIN B_Dictionary(nolock) d ON d.NID= C.BalanceID
+                    WHERE BillType = 1 AND p.used = 0 AND c.AudieDate >= '{$beginDate}' AND dictionaryName IN('账期付款','线下交易') 
+                                AND c.SupplierID<>35383 AND ISNULL(personName,'')<>''
+                ) aa GROUP BY dt,purchaser ORDER BY purchaser,dt ";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $purchaserList = array_unique(ArrayHelper::getColumn($data,'purchaser'));
+        $res = [];
+        foreach ($purchaserList as $val){
+            $item = [];
+            $item['采购员'] = $val;
+            foreach ($data as $v){
+                if($val == $v['purchaser']){
+                    $item['账期-'.$v['dt']] = $v['orderMoney'];
+                }
+            }
+            $res[]= $item;
+        }
+        ExportTools::toExcelOrCsv('purchaseAccountPeriod', $res, 'Xlsx');
+    }
+
+    /**
      * 运营KPI
      * Date: 2021-07-06 13:27
      * Author: henry
