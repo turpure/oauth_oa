@@ -1442,7 +1442,7 @@ class ProductCenterTools
         curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-//        curl_setopt ($ch, CURLOPT_PROXY, '127.0.0.1:1080');
+        curl_setopt ($ch, CURLOPT_URL, $url);
         $i = 0;
         while($i<4) {
             $i++;
