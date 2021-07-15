@@ -509,5 +509,12 @@ class SettingsController extends AdminController
         }
     }
 
+    ////////////////////////////////////运营KPI参数设置/////////////////////////////////////////////
+
+    public function actionKpiParams()
+    {
+
+    }
+
 
 }

@@ -1213,6 +1213,8 @@ class ReportController extends AdminController
         return ['eBay-义乌仓', 'eBay-海外仓', 'Wish', 'Aliexpress', 'Amazon', 'Joom', 'VOVA', 'Shopee', 'Shopify', 'Lazada'];
     }
 
+    ////////////////////////////////////采购账期/////////////////////////////////////////////
+
     /**
      * 采购账期
      * Date: 2021-07-01 13:27
@@ -1285,6 +1287,10 @@ class ReportController extends AdminController
         }
         ExportTools::toExcelOrCsv('purchaseAccountPeriod', $res, 'Xlsx');
     }
+
+
+    ////////////////////////////////////运营KPI/////////////////////////////////////////////
+
 
     /**
      * 运营KPI
