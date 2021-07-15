@@ -1563,6 +1563,33 @@ class WarehouseToolsController extends AdminController
         }
     }
 
+    /**
+     * 每日差异单比例导出
+     * Date: 2021-07-15 9:24
+     * Author: henry
+     * @return array
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionDifferenceOrderRateExport()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $storeName = $condition['storeName'] ?: '';
+            $beginDate = $condition['dateRange'][0] ?: '';
+            $endDate = $condition['dateRange'][1] ?: '';
+            $sql = "EXEC oauth_warehouse_tools_difference_order_rate '{$storeName}','{$beginDate}','{$endDate}'";
+            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+            $title = ['仓库','发货时间','拣货SKU种数','异常SKU种数','异常比例'];
+            ExportTools::toExcelOrCsv('differenceOrderRate', $data, 'Xls', $title);
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
     /////////////////////////////////入库时效////////////////////////////////////
 
     /**

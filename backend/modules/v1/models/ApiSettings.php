@@ -351,6 +351,9 @@ class ApiSettings
     }
 
 
+    public static function saveKpiExtraData($file, $fileName, $fileSize){
+
+    }
     public static function saveIntegralData($file, $fileName, $fileSize)
     {
         $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();

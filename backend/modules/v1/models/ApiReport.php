@@ -2052,7 +2052,7 @@ class ApiReport
             ->andFilterWhere(['=', 'depart', $depart])
             ->andFilterWhere(['=', 'plat', $plat])
             ->andFilterWhere(['=', 'month', $month])
-            ->orderBy('sort')->all();
+            ->orderBy('flag ,sort')->all();
         foreach ($query as &$v){
             $v['profitRate'] .= '%';
             $v['salesRate'] .= '%';
@@ -2095,7 +2095,9 @@ class ApiReport
         foreach ($userList as $user){
             $item = [];
             $item['name'] = $user;
-            $item['numA'] = $item['numB'] = $item['numC'] = $item['numD'] = $item['totalRate'] = $item['totalSort'] = 0;
+            $item['numA'] = $item['numB'] = $item['numC'] = $item['numD'] =
+            $item['testNumA'] = $item['testNumB'] = $item['testNumC'] = $item['testNumD'] =
+            $item['totalRate'] = $item['totalSort'] = 0;
             $item['value'] = $row;
             foreach ($query as $v){
                 if($v['name'] == $user){
@@ -2106,14 +2108,18 @@ class ApiReport
                             $value['rank'] = $v['rank'];
                         }
                     }
-                    if($v['rank'] == 'A' && $v['month'] >= substr($v['hireDate'],0,7)) $item['numA'] += 1;
-                    if($v['rank'] == 'B' && $v['month'] >= substr($v['hireDate'],0,7)) $item['numB'] += 1;
-                    if($v['rank'] == 'C' && $v['month'] >= substr($v['hireDate'],0,7)) $item['numC'] += 1;
-                    if($v['rank'] == 'D' && $v['month'] >= substr($v['hireDate'],0,7)) $item['numD'] += 1;
+                    if($v['rank'] == 'A') $item['numA'] += 1;
+                    if($v['rank'] == 'B') $item['numB'] += 1;
+                    if($v['rank'] == 'C') $item['numC'] += 1;
+                    if($v['rank'] == 'D') $item['numD'] += 1;
+                    if($v['rank'] == '试用-A') $item['testNumA'] += 1;
+                    if($v['rank'] == '试用-B') $item['testNumB'] += 1;
+                    if($v['rank'] == '试用-C') $item['testNumC'] += 1;
+                    if($v['rank'] == '试用-D') $item['testNumD'] += 1;
 
                 }
             }
-            $item['totalRate'] = round((1 + $item['numA']*0.1 - $item['numC']*0.05 - $item['numD']*0.1) * 100,2);
+            $item['totalRate'] = round((1 + $item['numA']*0.1 + $item['testNumA']*0.1 - $item['numC']*0.05 - $item['numD']*0.1) * 100,2);
             $data[] = $item;
         }
         $totalRate = ArrayHelper::getColumn($data,'totalRate');
