@@ -2083,9 +2083,10 @@ class ApiReport
             ->andFilterWhere(['in', 'name', $userList])
             ->andFilterWhere(['=', 'depart', $depart])
             ->andFilterWhere(['=', 'plat', $plat])
-            ->orderBy('name,month')->all();
+            ->orderBy('name, month')->all();
         $userList = array_unique(ArrayHelper::getColumn($query,'name'));
         $dateList = array_unique(ArrayHelper::getColumn($query,'month'));
+        sort($dateList);
         $row = [];
         foreach ($dateList as $v){
             $row[] = ['month' => $v, 'rank' => ''];
