@@ -547,7 +547,7 @@ class SettingsController extends AdminController
         $id = $condition['id'];
         $type = $condition['type'];
         if ($type == '权重'){
-            $sql = "UPDATE `oauth_operator_kpi_config` SET typeWeight={$condition['typeWeight']} WHERE name = '{$condition['name']}'";
+            $sql = "UPDATE `oauth_operator_kpi_config` SET typeWeight={$condition['typeWeight']} WHERE `name` = '{$condition['name']}'";
             return Yii::$app->db->createCommand($sql)->execute();
         }else{
             return Yii::$app->db->createCommand()->update('oauth_operator_kpi_config', $condition, ['id' => $id])->execute();
