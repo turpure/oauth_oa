@@ -1353,7 +1353,7 @@ class ReportController extends AdminController
             $item['扣分项'] = $v['otherDeductionScore'];
             $res[] = $item;
         }
-        ExportTools::toExcelOrCsv('operatorKpi', $data, 'Xlsx');
+        ExportTools::toExcelOrCsv('operatorKpi', $res, 'Xlsx');
     }
 
     /**
