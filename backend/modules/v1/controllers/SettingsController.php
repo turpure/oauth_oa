@@ -566,9 +566,15 @@ class SettingsController extends AdminController
         $condition = Yii::$app->request->post('condition');
         $month = $condition['month'];
         $name = $condition['username'];
-        $sql = "SELECT * FROM `oauth_operator_kpi_other_score` WHERE 1=1 ";
-        if ($month) $sql .= " AND month = '{$month}'";
-        if ($name) $sql .= " AND username = '{$name}'";
+        $sql = "SELECT id,b.username,IFNULL(`month`,'{$month}') AS `month`,cooperateScore,activityScore,executiveScore,
+                        otherTrainingScore,otherChallengeScore,otherDeductionScore,isHaveOldAccount,updateTime 
+                FROM (
+                        SELECT DISTINCT u.username FROM `user` u
+                        LEFT JOIN auth_assignment a ON a.user_id=u.id
+                        WHERE u.`status`=10 AND a.item_name IN ('产品销售','产品开发')
+                                AND NOT EXISTS(SELECT * FROM oauth_operator_kpi_filter_member WHERE username=u.username)
+                ) b left Join oauth_operator_kpi_other_score s ON s.username=b.username AND s.month = '{$month}' WHERE 1=1 ";
+        if ($name) $sql .= " AND b.username = '{$name}'";
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
 
