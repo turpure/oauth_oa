@@ -369,12 +369,12 @@ class ApiSettings
             $data['isHaveOldAccount'] = $sheet->getCell("I" . $i)->getValue() ?: 'N';
             $data['updateTime'] = date('Y-m-d H:i:s');
 
-            if (!$data['name'] && !$data['month']) break;//取到数据为空时跳出循环
+            if (!$data['username'] && !$data['month']) break;//取到数据为空时跳出循环
 
             $sql = "SELECT * FROM oauth_operator_kpi_other_score WHERE username = '{$data['username']}' AND `month` = '{$data['month']}' ";
             $res = Yii::$app->db->createCommand($sql)->queryOne();
             if($res) {
-                Yii::$app->db->createCommand()->update('oauth_operator_kpi_other_score', $data, ['name' => $data['username'], 'month' => $data['month']])->execute();
+                Yii::$app->db->createCommand()->update('oauth_operator_kpi_other_score', $data, ['username' => $data['username'], 'month' => $data['month']])->execute();
             }else{
                 Yii::$app->db->createCommand()->insert('oauth_operator_kpi_other_score', $data)->execute();
             }

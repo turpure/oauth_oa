@@ -690,7 +690,7 @@ class SettingsController extends AdminController
      */
     public function actionKpiExtraScoreImport()
     {
-//        try {
+        try {
             $file = $_FILES['file'];
             if (!$file) {
                 throw new Exception('The upload file can not be empty!');
@@ -708,12 +708,12 @@ class SettingsController extends AdminController
                 $res = ApiSettings::saveKpiExtraData($result);
                 if ($res !== true) return ['code' => 400, 'message' => $res];
             }
-        /*} catch (\Exception $e) {
+        } catch (\Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
             ];
-        }*/
+        }
     }
 
 
