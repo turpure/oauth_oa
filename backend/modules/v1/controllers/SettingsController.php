@@ -12,6 +12,7 @@ use backend\models\ShopElf\BSupplier;
 use backend\modules\v1\models\ApiCondition;
 use backend\modules\v1\models\ApiSettings;
 use backend\modules\v1\models\ApiUser;
+use backend\modules\v1\utils\ExportTools;
 use yii\db\Exception;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
@@ -588,6 +589,55 @@ class SettingsController extends AdminController
         if ($name) $sql .= " AND b.username IN '{$name}'";
         if ($userList) $sql .= " AND b.username = '{$userList}'";
         return Yii::$app->db->createCommand($sql)->queryAll();
+    }
+
+    /**
+     * 其他分数项列表导出
+     * Date: 2021-07-19 16:15
+     * Author: henry
+     * @throws Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionKpiExtraScoreExport()
+    {
+        $condition = Yii::$app->request->post('condition');
+        $month = $condition['month'];
+        $name = isset($condition['username']) ? $condition['username'] : '';
+        $depart = isset($condition['depart']) ? $condition['depart'] : '';
+        $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
+        if(!$name && $depart){
+            $name = ApiCondition::getUserByDepart($depart, $secDepartment);
+            $name = implode("','", $name);
+        }
+        //获取当前用户信息
+        $username = Yii::$app->user->identity->username;
+        $userList = implode("','", ApiUser::getUserList($username));
+        $sql = "SELECT id,b.username,IFNULL(`month`,'{$month}') AS `month`,cooperateScore,activityScore,executiveScore,
+                        otherTrainingScore,otherChallengeScore,otherDeductionScore,isHaveOldAccount,updateTime 
+                FROM (
+                        SELECT DISTINCT u.username FROM `user` u
+                        LEFT JOIN auth_assignment a ON a.user_id=u.id
+                        WHERE u.`status`=10 AND a.item_name IN ('产品销售','产品开发')
+                                AND NOT EXISTS(SELECT * FROM oauth_operator_kpi_filter_member WHERE username=u.username)
+                ) b left Join oauth_operator_kpi_other_score s ON s.username=b.username AND s.month = '{$month}' WHERE 1=1 ";
+        if ($name) $sql .= " AND b.username IN '{$name}'";
+        if ($userList) $sql .= " AND b.username = '{$userList}'";
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
+        $res = [];
+        foreach ($data as $v){
+            $item['月份'] = $v['month'];
+            $item['姓名'] = $v['username'];
+            $item['合作度'] = $v['cooperateScore'];
+            $item['积极性'] = $v['activityScore'];
+            $item['执行力'] = $v['executiveScore'];
+            $item['新人培训'] = $v['otherTrainingScore'];
+            $item['挑战专项加分'] = $v['otherChallengeScore'];
+            $item['扣分项'] = $v['otherDeductionScore'];
+            $item['是否新人接手老账号'] = $v['isHaveOldAccount'];
+            $res[] = $item;
+        }
+        ExportTools::toExcelOrCsv('operatorKpiSettings', $res, 'Xlsx');
     }
 
     /**
