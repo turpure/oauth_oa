@@ -144,7 +144,7 @@ class ApiCondition
      * 根据用户部门获取用户
      * @return array
      */
-    public static function getUserByDepart($secDepart)
+    public static function getUserByDepart($depart, $secDepart = '')
     {
         $sql = "SELECT u.username,u.canStockUp,a.item_name,p.department as parent, d.department
             FROM `user` u
@@ -153,7 +153,8 @@ class ApiCondition
             left Join auth_department p ON p.id=d.parent
             left Join auth_assignment a ON a.user_id=u.id
             WHERE u.`status`=10 ";
-        if ($secDepart) $sql .= "AND d.department = '{$secDepart}'";
+        if ($depart) $sql .= "AND (p.department = '{$depart}' OR d.department LIKE '{$depart}%') ";
+        if ($secDepart) $sql .= "AND d.department = '{$secDepart}' ";
         $data = Yii::$app->db->createCommand($sql)->queryAll();
         return ArrayHelper::getColumn($data, 'username');
     }

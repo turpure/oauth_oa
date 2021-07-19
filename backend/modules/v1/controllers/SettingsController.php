@@ -9,7 +9,9 @@ namespace backend\modules\v1\controllers;
 
 use backend\models\ShopElf\BDictionary;
 use backend\models\ShopElf\BSupplier;
+use backend\modules\v1\models\ApiCondition;
 use backend\modules\v1\models\ApiSettings;
+use backend\modules\v1\models\ApiUser;
 use yii\db\Exception;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
@@ -565,7 +567,16 @@ class SettingsController extends AdminController
     {
         $condition = Yii::$app->request->post('condition');
         $month = $condition['month'];
-        $name = $condition['username'];
+        $name = isset($condition['username']) ? $condition['username'] : '';
+        $depart = isset($condition['depart']) ? $condition['depart'] : '';
+        $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
+        if(!$name && $depart){
+            $name = ApiCondition::getUserByDepart($depart, $secDepartment);
+            $name = implode("','", $name);
+        }
+        //获取当前用户信息
+        $username = Yii::$app->user->identity->username;
+        $userList = implode("','", ApiUser::getUserList($username));
         $sql = "SELECT id,b.username,IFNULL(`month`,'{$month}') AS `month`,cooperateScore,activityScore,executiveScore,
                         otherTrainingScore,otherChallengeScore,otherDeductionScore,isHaveOldAccount,updateTime 
                 FROM (
@@ -574,7 +585,8 @@ class SettingsController extends AdminController
                         WHERE u.`status`=10 AND a.item_name IN ('产品销售','产品开发')
                                 AND NOT EXISTS(SELECT * FROM oauth_operator_kpi_filter_member WHERE username=u.username)
                 ) b left Join oauth_operator_kpi_other_score s ON s.username=b.username AND s.month = '{$month}' WHERE 1=1 ";
-        if ($name) $sql .= " AND b.username = '{$name}'";
+        if ($name) $sql .= " AND b.username IN '{$name}'";
+        if ($userList) $sql .= " AND b.username = '{$userList}'";
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
 

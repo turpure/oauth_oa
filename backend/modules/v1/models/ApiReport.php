@@ -2038,14 +2038,14 @@ class ApiReport
      */
     public static function getOperatorKpi($condition){
         $name = isset($condition['name']) ? $condition['name'] : [];
+        $name = $name ? [$name] : [];
         $depart = isset($condition['depart']) ? $condition['depart'] : '';
         $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
         $plat = isset($condition['plat']) ? $condition['plat'] : '';
         $month = isset($condition['month']) ? $condition['month'] : '';
-        if(!$name && $secDepartment){
-            $name = ApiCondition::getUserByDepart($secDepartment);
+        if(!$name && $depart){
+            $name = ApiCondition::getUserByDepart($depart, $secDepartment);
         }
-        $name = $name ? (is_array($name) ? $name : [$name]) : [];
         //获取当前用户信息
         $username = Yii::$app->user->identity->username;
         $userList = ApiUser::getUserList($username);
@@ -2074,15 +2074,15 @@ class ApiReport
      */
     public static function getOperatorKpiHistory($condition){
         $name = isset($condition['name']) ? $condition['name'] : '';
+        $name = $name ? [$name] : [];
         $depart = isset($condition['depart']) ? $condition['depart'] : '';
         $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
         $plat = isset($condition['plat']) ? $condition['plat'] : '';
         $beginMonth = isset($condition['dateRange'][0]) ? $condition['dateRange'][0] : '';
         $endMonth = isset($condition['dateRange'][1]) ? $condition['dateRange'][1] : '';
-        if(!$name && $secDepartment){
-            $name = ApiCondition::getUserByDepart($secDepartment);
+        if(!$name && $depart){
+            $name = ApiCondition::getUserByDepart($depart, $secDepartment);
         }
-        $name = $name ? (is_array($name) ? $name : [$name]) : [];
         //获取当前用户信息
         $username = Yii::$app->user->identity->username;
         $userList = ApiUser::getUserList($username);
