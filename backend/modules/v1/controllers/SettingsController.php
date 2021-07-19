@@ -536,7 +536,7 @@ class SettingsController extends AdminController
 
     /**
      * KPI公共参数修改
-     * Date: 2021-07-15 9:56
+     * Date: 2021-07-19 13:27
      * Author: henry
      * @return int
      * @throws Exception
@@ -545,7 +545,13 @@ class SettingsController extends AdminController
     {
         $condition = Yii::$app->request->post('condition');
         $id = $condition['id'];
-        return Yii::$app->db->createCommand()->update('oauth_operator_kpi_config', $condition, ['id' => $id])->execute();
+        $type = $condition['type'];
+        if ($type == '权重'){
+            $sql = "UPDATE `oauth_operator_kpi_config` SET typeWeight={$condition['typeWeight']} WHERE name = '{$condition['name']}'";
+            return Yii::$app->db->createCommand($sql)->execute();
+        }else{
+            return Yii::$app->db->createCommand()->update('oauth_operator_kpi_config', $condition, ['id' => $id])->execute();
+        }
     }
 
     /**
