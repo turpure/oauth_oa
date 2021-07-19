@@ -1316,12 +1316,45 @@ class ReportController extends AdminController
     {
         $condition = Yii::$app->request->post()['condition'];
         $data = ApiReport::getOperatorKpi($condition);
-        $title = ['ID', '月份', '姓名', '部门', '入职时间', '入职时长（月）', '保护期（入职90天内）', '平台', '平台人数',
-            '毛利', '毛利得分', '毛利排名', '毛利排名得分', '毛利绝对值增长', '毛利绝对值增长得分', '毛利百分比增长(%)',
-            '毛利百分比增长得分', '销售额绝对值增长', '销售额绝对值增长得分', '销售额百分比增长(%)', '销售额百分比增长得分',
-            '入职时间系数', '业绩指标总得分', '合作度', '积极性', '执行力', '工作态度总得分', '新人培训', '挑战专项加分',
-            '扣分项', '综合得分', '总人数', '综合排名', '评价等级', '更新时间'];
-        ExportTools::toExcelOrCsv('operatorKpi', $data, 'Xlsx', $title);
+        $res = [];
+        foreach ($data as &$v){
+            $item['姓名'] = $v['name'];
+            $item['月份'] = $v['month'];
+            $item['部门'] = $v['depart'];
+            $item['角色'] = $v['plat'];
+            $item['入职时间'] = $v['hireDate'];
+            $item['入职时长（月）'] = $v['hireMonth'];
+            $item['保护期（入职90天内）'] = $v['flag'];
+            $item['综合排名'] = $v['sort'] . '/' . $v['totalNum'];
+            $item['综合得分'] = $v['totalScore'];
+            $item['评价等级'] = $v['rank'];
+            $item['更新时间'] = $v['updateTime'];
+            $item['开发12月毛利'] = $v['profitTwo'];
+            $item['毛利排名'] = $v['profitSort'] . '/' . $v['platNum'];
+            $item['毛利排名得分'] = $v['profitSortScore'];
+            $item['毛利值'] = $v['profit'];
+            $item['毛利值得分'] = $v['profitScore'];
+            $item['毛利绝对值增长'] = $v['profitAdd'];
+            $item['毛利绝对值增长得分'] = $v['profitAddScore'];
+            $item['毛利百分比增长(%)'] = $v['profitRate'] . '%';
+            $item['毛利百分比增长得分'] = $v['profitRateScore'];
+            $item['销售额绝对值增长'] = $v['salesAdd'];
+            $item['销售额绝对值增长得分'] = $v['salesAddScore'];
+            $item['销售额百分比增长(%)'] = $v['salesRate'] . '%';
+            $item['销售额百分比增长得分'] = $v['salesRateScore'];
+            $item['入职时间系数'] = $v['userHireRate'];
+            $item['业绩指标总得分'] = $v['achieveTotalScore'];
+            $item['合作度'] = $v['cooperateScore'];
+            $item['积极性'] = $v['activityScore'];
+            $item['执行力'] = $v['executiveScore'];
+            $item['工作态度总得分'] = $v['workingTotalScore'];
+            $item['新人培训'] = $v['otherTrainingScore'];
+            $item['挑战专项加分'] = $v['otherChallengeScore'];
+            $item['扣分项'] = $v['otherDeductionScore'];
+            $res[] = $item;
+        }
+        var_dump($res);exit;
+        ExportTools::toExcelOrCsv('operatorKpi', $data, 'Xlsx');
     }
 
     /**

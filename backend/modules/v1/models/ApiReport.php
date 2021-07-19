@@ -2057,7 +2057,7 @@ class ApiReport
             ->andFilterWhere(['=', 'depart', $depart])
             ->andFilterWhere(['=', 'plat', $plat])
             ->andFilterWhere(['=', 'month', $month])
-            ->orderBy('flag ,sort')->all();
+            ->orderBy('totalScore DESC')->all();
         foreach ($query as &$v){
             $v['profitRate'] .= '%';
             $v['salesRate'] .= '%';
