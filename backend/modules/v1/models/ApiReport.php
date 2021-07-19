@@ -2037,17 +2037,22 @@ class ApiReport
      * @return array
      */
     public static function getOperatorKpi($condition){
-        $name = isset($condition['name']) ? $condition['name'] : '';
+        $name = isset($condition['name']) ? $condition['name'] : [];
         $depart = isset($condition['depart']) ? $condition['depart'] : '';
+        $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
         $plat = isset($condition['plat']) ? $condition['plat'] : '';
         $month = isset($condition['month']) ? $condition['month'] : '';
+        if(!$name && $secDepartment){
+            $name = ApiCondition::getUserByDepart($secDepartment);
+        }
+        $name = $name ? (is_array($name) ? $name : [$name]) : [];
         //获取当前用户信息
         $username = Yii::$app->user->identity->username;
         $userList = ApiUser::getUserList($username);
 //        var_dump($userList);exit;
         $query = (new yii\db\Query())//->select('*')
             ->from('cache_kpi_saler_and_dev_tmp_data')
-            ->andFilterWhere(['=', 'name', $name])
+            ->andFilterWhere(['in', 'name', $name])
             ->andFilterWhere(['in', 'name', $userList])
             ->andFilterWhere(['=', 'depart', $depart])
             ->andFilterWhere(['=', 'plat', $plat])
@@ -2070,16 +2075,21 @@ class ApiReport
     public static function getOperatorKpiHistory($condition){
         $name = isset($condition['name']) ? $condition['name'] : '';
         $depart = isset($condition['depart']) ? $condition['depart'] : '';
+        $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
         $plat = isset($condition['plat']) ? $condition['plat'] : '';
         $beginMonth = isset($condition['dateRange'][0]) ? $condition['dateRange'][0] : '';
         $endMonth = isset($condition['dateRange'][1]) ? $condition['dateRange'][1] : '';
+        if(!$name && $secDepartment){
+            $name = ApiCondition::getUserByDepart($secDepartment);
+        }
+        $name = $name ? (is_array($name) ? $name : [$name]) : [];
         //获取当前用户信息
         $username = Yii::$app->user->identity->username;
         $userList = ApiUser::getUserList($username);
         $query = (new yii\db\Query())//->select('*')
         ->from('cache_kpi_saler_and_dev_tmp_data')
             ->andFilterWhere(['between', 'month', $beginMonth, $endMonth])
-            ->andFilterWhere(['=', 'name', $name])
+            ->andFilterWhere(['in', 'name', $name])
             ->andFilterWhere(['in', 'name', $userList])
             ->andFilterWhere(['=', 'depart', $depart])
             ->andFilterWhere(['=', 'plat', $plat])

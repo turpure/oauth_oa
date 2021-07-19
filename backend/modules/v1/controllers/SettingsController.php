@@ -520,7 +520,18 @@ class SettingsController extends AdminController
      */
     public function actionKpiParams()
     {
-        return Yii::$app->db->createCommand("SELECT * FROM `oauth_operator_kpi_config`;")->queryAll();
+        $condition = Yii::$app->request->post('condition');
+        $type = $condition['type'];
+        if ($type == '评级'){
+            return Yii::$app->db->createCommand("SELECT * FROM `oauth_operator_kpi_config` WHERE type = '评级';")->queryAll();
+        }elseif ($type == '入职时间系数'){
+            return Yii::$app->db->createCommand("SELECT * FROM `oauth_operator_kpi_config` WHERE type = '入职时间系数';")->queryAll();
+        }elseif ($type == '业绩指标'){
+            return Yii::$app->db->createCommand("SELECT * FROM `oauth_operator_kpi_config` WHERE type = '业绩指标';")->queryAll();
+        }else{
+            $sql = "SELECT DISTINCT typeWeight,name FROM `oauth_operator_kpi_config` WHERE type NOT IN ('评级', '入职时间系数');";
+            return Yii::$app->db->createCommand($sql)->queryAll();
+        }
     }
 
     /**

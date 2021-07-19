@@ -140,6 +140,24 @@ class ApiCondition
         return $plat;
     }
 
+    /**
+     * 根据用户部门获取用户
+     * @return array
+     */
+    public static function getUserByDepart($secDepart)
+    {
+        $sql = "SELECT u.username,u.canStockUp,a.item_name,p.department as parent, d.department
+            FROM `user` u
+            left Join auth_department_child dc ON dc.user_id=u.id
+            left Join auth_department d ON d.id=dc.department_id
+            left Join auth_department p ON p.id=d.parent
+            left Join auth_assignment a ON a.user_id=u.id
+            WHERE u.`status`=10 ";
+        if ($secDepart) $sql .= "AND d.department = '{$secDepart}'";
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
+        return ArrayHelper::getColumn($data, 'username');
+    }
+
 
     /**
      * 获取用户管理的销售员列表
