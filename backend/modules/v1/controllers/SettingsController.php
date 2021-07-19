@@ -637,7 +637,7 @@ class SettingsController extends AdminController
             $item['是否新人接手老账号'] = $v['isHaveOldAccount'];
             $res[] = $item;
         }
-        ExportTools::toExcelOrCsv('operatorKpiSettings', $res, 'Xlsx');
+        ExportTools::toExcelOrCsv('operatorKpiSettings', $res, 'Xls');
     }
 
     /**

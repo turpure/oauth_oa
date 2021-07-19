@@ -353,8 +353,7 @@ class ApiSettings
 
     public static function saveKpiExtraData($file)
     {
-        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
-        //$reader->setLoadSheetsOnly(["Sheet 1"]);
+        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
         $spreadsheet = $reader->load(Yii::$app->basePath . $file);
         $sheet = $spreadsheet->getSheet(0);
         $highestRow = $sheet->getHighestRow(); // 取得总行数
@@ -369,10 +368,10 @@ class ApiSettings
             $data['otherDeductionScore'] = $sheet->getCell("H" . $i)->getValue() ?: 0;
             $data['isHaveOldAccount'] = $sheet->getCell("I" . $i)->getValue() ?: 'N';
             $data['updateTime'] = date('Y-m-d H:i:s');
-            //print_r($data['name']);exit;
+
             if (!$data['name'] && !$data['month']) break;//取到数据为空时跳出循环
 
-            $sql = "SELECT * FROM oauth_operator_kpi_other_score WHERE username = '{$data['username']}' AND month = '{$data['month']}' ";
+            $sql = "SELECT * FROM oauth_operator_kpi_other_score WHERE username = '{$data['username']}' AND `month` = '{$data['month']}' ";
             $res = Yii::$app->db->createCommand($sql)->queryOne();
             if($res) {
                 Yii::$app->db->createCommand()->update('oauth_operator_kpi_other_score', $data, ['name' => $data['username'], 'month' => $data['month']])->execute();
