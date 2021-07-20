@@ -1393,6 +1393,8 @@ class ReportController extends AdminController
             $item['姓名'] = $v['name'];
             $item['部门'] = $v['depart'];
             $item['入职日期'] = $v['hireDate'];
+            $item['综合比例'] = $v['totalRate'];
+            $item['综合排名'] = $v['totalSort'];
             foreach ($v['value'] as $val){
                 $item['评价等级-'.$val['month']] = $val['rank'];
             }
@@ -1404,8 +1406,6 @@ class ReportController extends AdminController
             $item['计数-保护期-B'] = $v['testNumB'];
             $item['计数-保护期-C'] = $v['testNumC'];
             $item['计数-保护期-D'] = $v['testNumD'];
-            $item['综合比例'] = $v['totalRate'];
-            $item['综合排名'] = $v['totalSort'];
             $out[] = $item;
         }
         ExportTools::toExcelOrCsv('operatorKpi', $out, 'Xlsx');
