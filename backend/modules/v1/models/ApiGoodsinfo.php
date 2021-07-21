@@ -1302,7 +1302,7 @@ class ApiGoodsinfo
             $ele['附加图12'] = $extraImages[12] ?? '';
 
             # Package
-            $ele['Package'] = '1 X ' . json_decode($ele['必须关键词'])[0];
+            $ele['Package'] = '1 * ' . json_decode($ele['必须关键词'])[0];
 
             # 短描述
             $ele['短描述'] = $goodsInfo[$ele['商品编码']]['shortDescription'];
