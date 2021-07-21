@@ -1149,7 +1149,7 @@ class ApiTinyTool
 				LEFT JOIN auth_department_child dc ON dc.user_id=u.id
 				LEFT JOIN auth_department d ON d.id=dc.department_id
 				LEFT JOIN auth_department p ON p.id=d.parent
-				WHERE seller1 IN ('{$userList}') AND c.storeName IN ('万邑通UK', '万邑通UK-MA仓', '谷仓UK')
+				WHERE seller1 IN ('{$userList}') AND c.storeName IN ('万邑通UK', '万邑通UK-MA仓', '谷仓UK', '万邑通UKTW')
 				AND SUBSTRING(updateTime,1,7) = '{$thisMonth}' 
 				";
         if ($goodsCode) {
