@@ -311,7 +311,7 @@ class ApiCondition
             left Join auth_department d ON d.id=dc.department_id
             left Join auth_department p ON p.id=d.parent
             WHERE u.`status`=10 AND username='{$username}'";
-        $depart = Yii::$app->db->createCommand($departSql)->queryAll();
+        $depart = Yii::$app->db->createCommand($departSql)->queryOne();
         if($depart && $depart['depart'] == '七部'){
             $sql = "select StoreName from  B_store(nolock) WHERE Memo='七部' ORDER BY CASE WHEN StoreName='义乌仓' THEN 0 ELSE 1 end,StoreName";
         }else{
