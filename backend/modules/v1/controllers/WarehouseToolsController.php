@@ -1600,50 +1600,11 @@ class WarehouseToolsController extends AdminController
     public function actionStorageTimeRateDetail(){
         try {
             $condition = Yii::$app->request->post('condition', []);
-            $pageSize = $condition['pageSize'] ?: 20;
-            $storeName = $condition['storeName'] ?: '';
-            $beginDate = $condition['dateRange'][0] ?: '';
-            $endDate = $condition['dateRange'][1] ?: '';
-            $sql = "SELECT storeName, dt, totalNum, num, rate,oneNum, oneRate, twoNum, twoRate, 
-                        threeNum, threeRate, otherNum, otherRate, notInNum, notInRate FROM oauth_in_storage_time_rate_data 
-                    WHERE dt BETWEEN '{$beginDate}' AND '{$endDate}' AND flag = '1.0' ";
-            if ($storeName) $sql .= " AND storeName = '{$storeName}' ";
-            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-            $totalNum = array_sum(ArrayHelper::getColumn($data, 'totalNum'));
-            $totalInNum = array_sum(ArrayHelper::getColumn($data, 'totalNum')) -
-                array_sum(ArrayHelper::getColumn($data, 'notInNum'));
-            $total['totalNum'] = $totalNum;
-            $total['totalInNum'] = $totalInNum;
-            $total['num'] = array_sum(ArrayHelper::getColumn($data, 'num'));
-            $total['rate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'num')) * 100.0 / $totalNum, 2) : 0;
-            $total['oneNum'] = array_sum(ArrayHelper::getColumn($data, 'oneNum'));
-            $total['oneRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'oneNum')) * 100.0 / $totalNum, 2) : 0;
-            $total['twoNum'] = array_sum(ArrayHelper::getColumn($data, 'twoNum'));
-            $total['twoRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'twoNum')) * 100.0 / $totalNum, 2) : 0;
-            $total['threeNum'] = array_sum(ArrayHelper::getColumn($data, 'threeNum'));
-            $total['threeRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'threeNum')) * 100.0 / $totalNum, 2) : 0;
-            $total['otherNum'] = array_sum(ArrayHelper::getColumn($data, 'otherNum'));
-            $total['otherRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'otherNum')) * 100.0 / $totalNum, 2) : 0;
-            $total['notInNum'] = array_sum(ArrayHelper::getColumn($data, 'notInNum'));
-            $total['notInRate'] = $totalNum ? round(array_sum(ArrayHelper::getColumn($data, 'notInNum')) * 100.0 / $totalNum, 2) : 0;
-            $provider = new ArrayDataProvider([
-                'allModels' => $data,
-                'sort' => [
-                    'attributes' => ['storeName', 'dt', 'totalNum', 'notInNum', 'notInRate', 'num', 'rate',
-                        'oneNum', 'oneRate', 'twoNum', 'twoRate', 'threeNum', 'threeRate', 'otherNum', 'otherRate'],
-                    'defaultOrder' => [
-                        'storeName' => SORT_ASC,
-                        'dt' => SORT_ASC,
-                    ]
-                ],
-                'pagination' => [
-                    'pageSize' => $pageSize,
-                ],
-            ]);
-            return [
-                'provider' => $provider,
-                'extra' => $total
-            ];
+            $beginDate = $condition['dt'] ?: '';
+            $flag = $condition['flag'] ?: 0;
+            $version = $condition['version'] ?: '1.0';
+            $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate_detail '{$beginDate}', {$flag} , '{$version}' ";
+            return Yii::$app->py_db->createCommand($sql)->queryAll();
         } catch (Exception $e) {
             return [
                 'code' => 400,
