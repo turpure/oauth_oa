@@ -9,7 +9,10 @@ namespace backend\modules\v1\controllers;
 
 use backend\models\ShopElf\BDictionary;
 use backend\models\ShopElf\BSupplier;
+use backend\modules\v1\models\ApiCondition;
 use backend\modules\v1\models\ApiSettings;
+use backend\modules\v1\models\ApiUser;
+use backend\modules\v1\utils\ExportTools;
 use yii\db\Exception;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
@@ -520,12 +523,23 @@ class SettingsController extends AdminController
      */
     public function actionKpiParams()
     {
-        return Yii::$app->db->createCommand("SELECT * FROM `oauth_operator_kpi_config`;")->queryAll();
+        $condition = Yii::$app->request->post('condition');
+        $type = $condition['type'];
+        if ($type == '评级'){
+            return Yii::$app->db->createCommand("SELECT * FROM `oauth_operator_kpi_config` WHERE type = '评级';")->queryAll();
+        }elseif ($type == '入职时间系数'){
+            return Yii::$app->db->createCommand("SELECT * FROM `oauth_operator_kpi_config` WHERE type = '入职时间系数';")->queryAll();
+        }elseif ($type == '业绩指标'){
+            return Yii::$app->db->createCommand("SELECT * FROM `oauth_operator_kpi_config` WHERE type = '业绩指标';")->queryAll();
+        }else{
+            $sql = "SELECT DISTINCT typeWeight,name FROM `oauth_operator_kpi_config` WHERE type NOT IN ('评级', '入职时间系数');";
+            return Yii::$app->db->createCommand($sql)->queryAll();
+        }
     }
 
     /**
      * KPI公共参数修改
-     * Date: 2021-07-15 9:56
+     * Date: 2021-07-19 13:27
      * Author: henry
      * @return int
      * @throws Exception
@@ -533,8 +547,14 @@ class SettingsController extends AdminController
     public function actionKpiParamsSet()
     {
         $condition = Yii::$app->request->post('condition');
-        $id = $condition['id'];
-        return Yii::$app->db->createCommand()->update('oauth_operator_kpi_config',$condition,['id' => $id])->execute();
+        $type = $condition['type'];
+        if ($type == '权重'){
+            $sql = "UPDATE `oauth_operator_kpi_config` SET typeWeight={$condition['typeWeight']} WHERE `name` = '{$condition['name']}'";
+            return Yii::$app->db->createCommand($sql)->execute();
+        }else{
+            $id = $condition['id'];
+            return Yii::$app->db->createCommand()->update('oauth_operator_kpi_config', $condition, ['id' => $id])->execute();
+        }
     }
 
     /**
@@ -548,31 +568,117 @@ class SettingsController extends AdminController
     {
         $condition = Yii::$app->request->post('condition');
         $month = $condition['month'];
-        $name = $condition['name'];
-        $sql = "SELECT * FROM `oauth_operator_kpi_other_score` WHERE 1=1 ";
-        if($month) $sql .= " AND month = '{$month}'";
-        if($name) $sql .= " AND month = '{$name}'";
+        $name = isset($condition['username']) ? $condition['username'] : '';
+        $depart = isset($condition['depart']) ? $condition['depart'] : '';
+        $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
+        if(!$name && $depart){
+            $name = ApiCondition::getUserByDepart($depart, $secDepartment);
+            $name = implode("','", $name);
+        }
+        //获取当前用户信息
+        $username = Yii::$app->user->identity->username;
+        $userList = implode("','", ApiUser::getUserList($username));
+        $sql = "SELECT id,b.username,IFNULL(`month`,'{$month}') AS `month`,cooperateScore,activityScore,executiveScore,
+                        otherTrainingScore,otherChallengeScore,otherDeductionScore,isHaveOldAccount,updateTime 
+                FROM (
+                        SELECT DISTINCT u.username FROM `user` u
+                        LEFT JOIN auth_assignment a ON a.user_id=u.id
+                        WHERE u.`status`=10 AND a.item_name IN ('产品销售','产品开发')
+                                AND NOT EXISTS(SELECT * FROM oauth_operator_kpi_filter_member WHERE username=u.username)
+                ) b left Join oauth_operator_kpi_other_score s ON s.username=b.username AND s.month = '{$month}' WHERE 1=1 ";
+        if ($name) $sql .= " AND b.username IN ('{$name}') ";
+        if ($userList) $sql .= " AND b.username IN ('{$userList}') ";
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
 
     /**
-     * 其他分数项设置
-     * Date: 2021-07-15 9:52
+     * 其他分数项列表导出
+     * Date: 2021-07-19 16:15
      * Author: henry
-     * @return array
+     * @throws Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionKpiExtraScoreExport()
+    {
+        $condition = Yii::$app->request->post('condition');
+        $month = $condition['month'];
+        $name = isset($condition['username']) ? $condition['username'] : '';
+        $depart = isset($condition['depart']) ? $condition['depart'] : '';
+        $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
+        if(!$name && $depart){
+            $name = ApiCondition::getUserByDepart($depart, $secDepartment);
+            $name = implode("','", $name);
+        }
+        //获取当前用户信息
+        $username = Yii::$app->user->identity->username;
+        $userList = implode("','", ApiUser::getUserList($username));
+        $sql = "SELECT id,b.username,IFNULL(`month`,'{$month}') AS `month`,cooperateScore,activityScore,executiveScore,
+                        otherTrainingScore,otherChallengeScore,otherDeductionScore,isHaveOldAccount,updateTime 
+                FROM (
+                        SELECT DISTINCT u.username FROM `user` u
+                        LEFT JOIN auth_assignment a ON a.user_id=u.id
+                        WHERE u.`status`=10 AND a.item_name IN ('产品销售','产品开发')
+                                AND NOT EXISTS(SELECT * FROM oauth_operator_kpi_filter_member WHERE username=u.username)
+                ) b left Join oauth_operator_kpi_other_score s ON s.username=b.username AND s.month = '{$month}' WHERE 1=1 ";
+        if ($name) $sql .= " AND b.username IN ('{$name}') ";
+        if ($userList) $sql .= " AND b.username IN ('{$userList}') ";
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
+        $res = [];
+        foreach ($data as $v){
+            $item['月份'] = $v['month'];
+            $item['姓名'] = $v['username'];
+            $item['合作度'] = $v['cooperateScore'];
+            $item['积极性'] = $v['activityScore'];
+            $item['执行力'] = $v['executiveScore'];
+            $item['新人培训'] = $v['otherTrainingScore'];
+            $item['挑战专项加分'] = $v['otherChallengeScore'];
+            $item['扣分项'] = $v['otherDeductionScore'];
+            $item['是否新人接手老账号'] = $v['isHaveOldAccount'];
+            $res[] = $item;
+        }
+        ExportTools::toExcelOrCsv('operatorKpiSettings', $res, 'Xls');
+    }
+
+    /**
+     * 其他分数项设置
+     * Date: 2021-07-15 17:32
+     * Author: henry
+     * @return array|int
      * @throws Exception
      */
     public function actionKpiExtraScoreSet()
     {
         $condition = Yii::$app->request->post('condition');
         $id = $condition['id'] ?? 0;
+        $name = $condition['username'] ?? '';
+        $month = $condition['month'] ?? '';
+        if(!$name && !$month) return ['code' => 400, 'message' => 'Month and username can not be empty at the same time!'];
         $condition['updateTime'] = date('Y-m-d H:i:s');
-        if($id){
-            return Yii::$app->db->createCommand()->update('oauth_operator_kpi_other_score',$condition,['id' => $id])->execute();
+        $sql = "SELECT * FROM oauth_operator_kpi_other_score WHERE username = '{$name}' AND month = '{$month}' ";
+        $res = Yii::$app->db->createCommand($sql)->queryOne();
+        if ($id) {
+            return Yii::$app->db->createCommand()->update('oauth_operator_kpi_other_score', $condition, ['id' => $id])->execute();
+        } elseif($res) {
+            return Yii::$app->db->createCommand()->update('oauth_operator_kpi_other_score', $condition, ['name' => $name, 'month' => $month])->execute();
         }else{
             unset($condition['id']);
-            return Yii::$app->db->createCommand()->insert('oauth_operator_kpi_other_score',$condition)->execute();
+            return Yii::$app->db->createCommand()->insert('oauth_operator_kpi_other_score', $condition)->execute();
         }
+    }
+
+    /**
+     * 其他分数项删除
+     * Date: 2021-07-15 16:46
+     * Author: henry
+     * @return int
+     * @throws Exception
+     */
+    public function actionKpiExtraScoreDelete()
+    {
+        $condition = Yii::$app->request->post('condition');
+        $id = $condition['id'] ?? [];
+        return Yii::$app->db->createCommand()->delete('oauth_operator_kpi_other_score', ['id' => $id])->execute();
     }
 
     /**
@@ -584,22 +690,29 @@ class SettingsController extends AdminController
      */
     public function actionKpiExtraScoreImport()
     {
-        $file = $_FILES['file'];
-        if (!$file) {
-            return ['code' => 400, 'message' => 'The file can not be empty!'];
-        }
-        //判断文件后缀
-        $extension = ApiSettings::get_extension($file['name']);
-        if ($extension != '.xlsx') return ['code' => 400, 'message' => "File format error,please upload files in 'xlsx' format"];
+        try {
+            $file = $_FILES['file'];
+            if (!$file) {
+                throw new Exception('The upload file can not be empty!');
+            }
+            //判断文件后缀
+            $extension = ApiSettings::get_extension($file['name']);
+            if (!in_array($extension, ['.Xls', '.xls'])) return ['code' => 400, 'message' => "File format error,please upload files in 'Xls' format"];
 
-        //文件上传
-        $result = ApiSettings::file($file, 'kpiExtra');
-        if (!$result) {
-            return ['code' => 400, 'message' => 'File upload failed'];
-        } else {
-            //获取上传excel文件的内容并保存
-            $res = ApiSettings::saveKpiExtraData($result, ApiSettings::DEVELOP, ApiSettings::OPERATE_FEE);
-            if ($res !== true) return ['code' => 400, 'message' => $res];
+            //文件上传
+            $result = ApiSettings::file($file, 'kpiExtra');
+            if (!$result) {
+                throw new Exception('File upload failed!');
+            } else {
+                //获取上传excel文件的内容并保存
+                $res = ApiSettings::saveKpiExtraData($result);
+                if ($res !== true) return ['code' => 400, 'message' => $res];
+            }
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
         }
     }
 

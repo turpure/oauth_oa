@@ -1244,7 +1244,9 @@ class OaGoodsinfoController extends AdminController
 
     public function actionSyncShopifyCollection(){
         try {
-            $sql = "SELECT apikey,password,hostname FROM [dbo].[S_ShopifySyncInfo] where LocalFlag=0";
+            $sql = "SELECT apikey,password,hostname FROM [dbo].[S_ShopifySyncInfo] where LocalFlag=0 
+                    -- and hostname = 'naiveroo'
+                        ";
             $accounts = Yii::$app->py_db->createCommand($sql)->queryAll();
             //$header = ['Content-Type' => 'application/json', 'X-Shopify-Access-Token' => $account['password']];
             $out = $err = [];

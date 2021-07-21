@@ -140,6 +140,25 @@ class ApiCondition
         return $plat;
     }
 
+    /**
+     * 根据用户部门获取用户
+     * @return array
+     */
+    public static function getUserByDepart($depart, $secDepart = '')
+    {
+        $sql = "SELECT u.username,u.canStockUp,a.item_name,p.department as parent, d.department
+            FROM `user` u
+            left Join auth_department_child dc ON dc.user_id=u.id
+            left Join auth_department d ON d.id=dc.department_id
+            left Join auth_department p ON p.id=d.parent
+            left Join auth_assignment a ON a.user_id=u.id
+            WHERE u.`status`=10 ";
+        if ($depart) $sql .= "AND (p.department = '{$depart}' OR d.department LIKE '{$depart}%') ";
+        if ($secDepart) $sql .= "AND d.department = '{$secDepart}' ";
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
+        return ArrayHelper::getColumn($data, 'username');
+    }
+
 
     /**
      * 获取用户管理的销售员列表
@@ -285,7 +304,19 @@ class ApiCondition
      */
     public static function getStore()
     {
-        $sql = "select StoreName from  B_store(nolock) ORDER BY CASE WHEN StoreName='义乌仓' THEN 0 ELSE 1 end,StoreName";
+        $username = Yii::$app->user->identity->username;
+        $departSql = "SELECT CASE WHEN IFNULL(p.department,'')='' THEN d.department ELSE p.department END AS depart
+            FROM `user` u
+            left Join auth_department_child dc ON dc.user_id=u.id
+            left Join auth_department d ON d.id=dc.department_id
+            left Join auth_department p ON p.id=d.parent
+            WHERE u.`status`=10 AND username='{$username}'";
+        $depart = Yii::$app->db->createCommand($departSql)->queryOne();
+        if($depart && $depart['depart'] == '七部'){
+            $sql = "select StoreName from  B_store(nolock) WHERE Memo='七部' ORDER BY CASE WHEN StoreName='义乌仓' THEN 0 ELSE 1 end,StoreName";
+        }else{
+            $sql = "select StoreName from  B_store(nolock) ORDER BY CASE WHEN StoreName='义乌仓' THEN 0 ELSE 1 end,StoreName";
+        }
         $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
         return ArrayHelper::getColumn($ret,'StoreName');
     }

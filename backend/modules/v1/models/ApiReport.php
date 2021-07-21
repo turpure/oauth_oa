@@ -2037,22 +2037,27 @@ class ApiReport
      * @return array
      */
     public static function getOperatorKpi($condition){
-        $name = isset($condition['name']) ? $condition['name'] : '';
+        $name = isset($condition['name']) ? $condition['name'] : [];
+        $name = $name ? [$name] : [];
         $depart = isset($condition['depart']) ? $condition['depart'] : '';
+        $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
         $plat = isset($condition['plat']) ? $condition['plat'] : '';
         $month = isset($condition['month']) ? $condition['month'] : '';
+        if(!$name && $depart){
+            $name = ApiCondition::getUserByDepart($depart, $secDepartment);
+        }
         //获取当前用户信息
         $username = Yii::$app->user->identity->username;
         $userList = ApiUser::getUserList($username);
 //        var_dump($userList);exit;
         $query = (new yii\db\Query())//->select('*')
             ->from('cache_kpi_saler_and_dev_tmp_data')
-            ->andFilterWhere(['=', 'name', $name])
+            ->andFilterWhere(['in', 'name', $name])
             ->andFilterWhere(['in', 'name', $userList])
             ->andFilterWhere(['=', 'depart', $depart])
             ->andFilterWhere(['=', 'plat', $plat])
             ->andFilterWhere(['=', 'month', $month])
-            ->orderBy('flag ,sort')->all();
+            ->orderBy('totalScore DESC')->all();
         foreach ($query as &$v){
             $v['profitRate'] .= '%';
             $v['salesRate'] .= '%';
@@ -2069,23 +2074,29 @@ class ApiReport
      */
     public static function getOperatorKpiHistory($condition){
         $name = isset($condition['name']) ? $condition['name'] : '';
+        $name = $name ? [$name] : [];
         $depart = isset($condition['depart']) ? $condition['depart'] : '';
+        $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
         $plat = isset($condition['plat']) ? $condition['plat'] : '';
         $beginMonth = isset($condition['dateRange'][0]) ? $condition['dateRange'][0] : '';
         $endMonth = isset($condition['dateRange'][1]) ? $condition['dateRange'][1] : '';
+        if(!$name && $depart){
+            $name = ApiCondition::getUserByDepart($depart, $secDepartment);
+        }
         //获取当前用户信息
         $username = Yii::$app->user->identity->username;
         $userList = ApiUser::getUserList($username);
         $query = (new yii\db\Query())//->select('*')
         ->from('cache_kpi_saler_and_dev_tmp_data')
             ->andFilterWhere(['between', 'month', $beginMonth, $endMonth])
-            ->andFilterWhere(['=', 'name', $name])
+            ->andFilterWhere(['in', 'name', $name])
             ->andFilterWhere(['in', 'name', $userList])
             ->andFilterWhere(['=', 'depart', $depart])
             ->andFilterWhere(['=', 'plat', $plat])
-            ->orderBy('name,month')->all();
+            ->orderBy('name, month')->all();
         $userList = array_unique(ArrayHelper::getColumn($query,'name'));
         $dateList = array_unique(ArrayHelper::getColumn($query,'month'));
+        sort($dateList);
         $row = [];
         foreach ($dateList as $v){
             $row[] = ['month' => $v, 'rank' => ''];
@@ -2112,10 +2123,10 @@ class ApiReport
                     if($v['rank'] == 'B') $item['numB'] += 1;
                     if($v['rank'] == 'C') $item['numC'] += 1;
                     if($v['rank'] == 'D') $item['numD'] += 1;
-                    if($v['rank'] == '试用-A') $item['testNumA'] += 1;
-                    if($v['rank'] == '试用-B') $item['testNumB'] += 1;
-                    if($v['rank'] == '试用-C') $item['testNumC'] += 1;
-                    if($v['rank'] == '试用-D') $item['testNumD'] += 1;
+                    if($v['rank'] == '保护期-A') $item['testNumA'] += 1;
+                    if($v['rank'] == '保护期-B') $item['testNumB'] += 1;
+                    if($v['rank'] == '保护期-C') $item['testNumC'] += 1;
+                    if($v['rank'] == '保护期-D') $item['testNumD'] += 1;
 
                 }
             }

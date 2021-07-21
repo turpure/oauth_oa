@@ -1591,6 +1591,27 @@ class WarehouseToolsController extends AdminController
     }
 
     /////////////////////////////////入库时效////////////////////////////////////
+    /**
+     * 入库时效详情
+     * Date: 2021-07-19 14:33
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionStorageTimeRateDetail(){
+        try {
+            $condition = Yii::$app->request->post('condition', []);
+            $beginDate = $condition['dt'] ?: '';
+            $flag = $condition['flag'] ?: 0;
+            $version = $condition['version'] ?: '1.0';
+            $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate_detail '{$beginDate}', {$flag} , '{$version}' ";
+            return Yii::$app->py_db->createCommand($sql)->queryAll();
+        } catch (Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
 
     /**
      * 入库时效
