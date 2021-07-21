@@ -304,7 +304,19 @@ class ApiCondition
      */
     public static function getStore()
     {
-        $sql = "select StoreName from  B_store(nolock) ORDER BY CASE WHEN StoreName='义乌仓' THEN 0 ELSE 1 end,StoreName";
+        $username = Yii::$app->user->identity->username;
+        $departSql = "SELECT CASE WHEN IFNULL(p.department,'')='' THEN d.department ELSE p.department END AS depart
+            FROM `user` u
+            left Join auth_department_child dc ON dc.user_id=u.id
+            left Join auth_department d ON d.id=dc.department_id
+            left Join auth_department p ON p.id=d.parent
+            WHERE u.`status`=10 AND username='{$username}'";
+        $depart = Yii::$app->db->createCommand($departSql)->queryAll();
+        if($depart && $depart['depart'] == '七部'){
+            $sql = "select StoreName from  B_store(nolock) WHERE Memo='七部' ORDER BY CASE WHEN StoreName='义乌仓' THEN 0 ELSE 1 end,StoreName";
+        }else{
+            $sql = "select StoreName from  B_store(nolock) ORDER BY CASE WHEN StoreName='义乌仓' THEN 0 ELSE 1 end,StoreName";
+        }
         $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
         return ArrayHelper::getColumn($ret,'StoreName');
     }
