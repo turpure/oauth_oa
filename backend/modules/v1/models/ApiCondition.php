@@ -227,6 +227,8 @@ class ApiCondition
                 ->distinct()
                 ->all();
             $account = array_unique(array_merge($account, $check_account), SORT_REGULAR);
+            $account_name = ArrayHelper::getColumn($account,'store');
+            array_multisort($account_name,SORT_ASC, $account);
         }
         return $account;
     }
