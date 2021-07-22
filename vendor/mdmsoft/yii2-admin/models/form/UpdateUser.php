@@ -5,6 +5,7 @@ namespace mdm\admin\models\form;
 use backend\models\AuthAssignment;
 use mdm\admin\models\Department;
 use mdm\admin\models\DepartmentChild;
+use mdm\admin\models\StoreChildCheck;
 use Yii;
 use mdm\admin\models\User;
 use mdm\admin\models\StoreChild;
@@ -26,6 +27,7 @@ class UpdateUser extends Model
     public $child_depart;
     public $position;
     public $store;
+    public $check_store;
     public $mapPersons;
     public $mapWarehouse;
     public $mapPlat;
@@ -34,6 +36,7 @@ class UpdateUser extends Model
     public $username;
     private $_position;
     private $_store;
+    private $_check_store;
     private $_role;
 
     /**
@@ -68,9 +71,11 @@ class UpdateUser extends Model
         }
         $this->_position = ArrayHelper::getColumn(ArrayHelper::toArray(PositionChild::find()->where(['user_id' => $userid])->all()), 'position_id');
         $this->_store = ArrayHelper::getColumn(ArrayHelper::toArray(StoreChild::find()->where(['user_id' => $userid])->all()), 'store_id');
+        $this->_check_store = ArrayHelper::getColumn(ArrayHelper::toArray(StoreChildCheck::find()->where(['user_id' => $userid])->all()), 'store_id');
         $this->_role = ArrayHelper::getColumn(ArrayHelper::toArray(AdminAuthAssignment::find()->where(['user_id' => $userid])->all()), 'item_name');
         $this->position = $this->_position;
         $this->store = $this->_store;
+        $this->check_store = $this->_check_store;
         if (!$this->username) {
             throw new InvalidParamException('cannot find user name');
         }
@@ -87,7 +92,7 @@ class UpdateUser extends Model
             [['user_id'], 'integer'],
             [['department', 'child_depart'], 'string'],
             [['department',], 'required'],
-            [['store', 'position', 'mapPersons', 'mapWarehouse', 'role'], 'safe'],
+            [['store', 'check_store', 'position', 'mapPersons', 'mapWarehouse', 'role'], 'safe'],
             [['mapPlat'], 'requiredByRule', 'skipOnEmpty' => false, 'skipOnError' => false],
         ];
     }
@@ -121,6 +126,7 @@ class UpdateUser extends Model
             }
             $this->position = !empty($this->position) ? $this->position : [];
             $this->store = !empty($this->store) ? $this->store : [];
+            $this->check_store = !empty($this->check_store) ? $this->check_store : [];
 
             $DepartmentChild = DepartmentChild::find()->where(['user_id' => $userid])->one();
             $DepartmentChild = $DepartmentChild ? $DepartmentChild : new DepartmentChild();
@@ -129,10 +135,18 @@ class UpdateUser extends Model
             $DepartmentChild->department_id = $this->child_depart ?: $this->department;
 
 
-            // 增改删店铺
+            // 增改删所属店铺
             StoreChild::deleteAll(['store_id' => $this->store]);
             foreach ($this->store as $sto) {
                 $child = new StoreChild();
+                $child->user_id = $this->user_id;
+                $child->store_id = $sto;
+                $child->save();
+            }
+            // 增改删查看店铺
+            StoreChildCheck::deleteAll(['store_id' => $this->store]);
+            foreach ($this->check_store as $sto) {
+                $child = new StoreChildCheck();
                 $child->user_id = $this->user_id;
                 $child->store_id = $sto;
                 $child->save();
@@ -221,7 +235,8 @@ class UpdateUser extends Model
     {
         return [
             'department' => '部门',
-            'store' => '店铺',
+            'store' => '所属店铺',
+            'check_store' => '查看店铺',
             'position' => '职位',
             'mapPersons' => '对应销售',
             'mapPlat' => '销售平台',

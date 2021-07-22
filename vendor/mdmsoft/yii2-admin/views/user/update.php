@@ -95,7 +95,17 @@ $controllerId = $this->context->uniqueId . '/';
             ]) ?>
             <?= $form->field($model, 'store')->widget(Select2::classname(), [
                 'data' => ArrayHelper::map(Store::find()->all(), 'id', 'store'),
-                'options' => ['placeholder' => '--如果是销售请选择店铺--',
+                'options' => ['placeholder' => '--如果是销售请选择所属店铺--',
+                    'multiple' => true,
+                ],
+                'pluginOptions' => [
+                    'allowClear' => true
+                ],
+            ]) ?>
+
+            <?= $form->field($model, 'check_store')->widget(Select2::classname(), [
+                'data' => ArrayHelper::map(Store::find()->all(), 'id', 'store'),
+                'options' => ['placeholder' => '--如果是销售请选择所属店铺--',
                     'multiple' => true,
                 ],
                 'pluginOptions' => [

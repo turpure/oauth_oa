@@ -208,6 +208,7 @@ class ApiCondition
             //获取所属部门人员列表
             $users = self::getUsers();
             $users = ArrayHelper::getColumn($users, 'id');
+            //所属人所属店铺
             $account = (new Query())
                 ->select('as.id,store,platform')
                 ->from('auth_store_child asc')
@@ -216,6 +217,16 @@ class ApiCondition
                 ->orderBy('store')
                 ->distinct()
                 ->all();
+            //所属人可查看店铺
+            $check_account = (new Query())
+                ->select('as.id,store,platform')
+                ->from('auth_store_child_check asc')
+                ->leftJoin('auth_store as', 'as.id=asc.store_id')
+                ->where(['in', 'user_id', $users])
+                ->orderBy('store')
+                ->distinct()
+                ->all();
+            $account = array_unique(array_merge($account, $check_account), SORT_REGULAR);
         }
         return $account;
     }

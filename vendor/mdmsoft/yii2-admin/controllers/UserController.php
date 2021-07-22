@@ -3,6 +3,10 @@
 namespace mdm\admin\controllers;
 
 use mdm\admin\models\Department;
+use mdm\admin\models\DepartmentChild;
+use mdm\admin\models\PositionChild;
+use mdm\admin\models\StoreChild;
+use mdm\admin\models\StoreChildCheck;
 use Yii;
 use mdm\admin\models\form\Login;
 use mdm\admin\models\form\PasswordResetRequest;
@@ -180,6 +184,10 @@ class UserController extends Controller
      */
     public function actionDelete($id)
     {
+        StoreChild::deleteAll(['user_id' => $id]);
+        StoreChildCheck::deleteAll(['user_id' => $id]);
+        PositionChild::deleteAll(['user_id' => $id]);
+        DepartmentChild::deleteAll(['user_id' => $id]);
         $this->findModel($id)->delete();
 
         return $this->redirect(['index']);

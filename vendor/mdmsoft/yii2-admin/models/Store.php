@@ -13,6 +13,7 @@ use yii\behaviors\TimestampBehavior;
 class Store extends ActiveRecord
 {
     public $username;
+    public $check_username;
 
     /**
      * {@inheritdoc}
@@ -46,6 +47,7 @@ class Store extends ActiveRecord
             'platform' => '平台',
             'used' => '停用',
             'username' => '归属人',
+            'check_username' => '查看人',
             ];
     }
 

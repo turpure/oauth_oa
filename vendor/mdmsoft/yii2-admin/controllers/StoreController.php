@@ -9,6 +9,8 @@ namespace mdm\admin\controllers;
 use backend\modules\v1\models\ApiTool;
 use common\models\User;
 use mdm\admin\models\StoreChild;
+use mdm\admin\models\StoreChildCheck;
+use yii\helpers\ArrayHelper;
 use yii\web\Controller;
 use Yii;
 use mdm\admin\models\searchs\StoreSearch;
@@ -46,6 +48,16 @@ class StoreController extends Controller
             $storeChildModel->store_id = $model->id;
             $storeChildModel->user_id = $post['Store']['username'];
             $storeChildModel->save();
+
+            $check_username =  $post['Store']['check_username'] ? : [];
+            foreach ($check_username as $v){
+                $checkModel = new StoreChildCheck();
+                $checkModel->store_id = $model->id;
+                $checkModel->user_id = $v;
+                $checkModel->save();
+            }
+
+
             $this->redirect('index');
         }
 
@@ -66,13 +78,29 @@ class StoreController extends Controller
             $storeChildModel->store_id = $model->id;
             $storeChildModel->user_id = $post['Store']['username'];
             $storeChildModel->save();
+
+            //删除店铺原有查看人
+            StoreChildCheck::deleteAll(['store_id' => $model->id]);
+            $check_username =  $post['Store']['check_username'] ? : [];
+            foreach ($check_username as $v){
+                $storeCheckModel = new StoreChildCheck();
+                $storeCheckModel->store_id = $model->id;
+                $storeCheckModel->user_id = $v;
+                $storeCheckModel->save();
+            }
+
+
             $this->redirect('index');
         }
         $user = StoreChild::find()
             ->join('INNER JOIN', 'user u' ,'u.id=user_id')
             ->where(['store_id' => $id, 'u.status' => User::STATUS_ACTIVE])->one();
+        $check_user = StoreChildCheck::find()
+            ->join('INNER JOIN', 'user u' ,'u.id=user_id')
+            ->where(['store_id' => $id, 'u.status' => User::STATUS_ACTIVE])->all();
 
         $model->username = $user ? $user['user_id'] : 0;
+        $model->check_username = ArrayHelper::getColumn($check_user, 'user_id');
         return $this->render('update', [
             'model' => $model
         ]);
@@ -80,8 +108,9 @@ class StoreController extends Controller
 
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
         StoreChild::deleteAll(['store_id' => $id]);
+        StoreChildCheck::deleteAll(['store_id' => $id]);
+        $this->findModel($id)->delete();
 
         return $this->redirect(['index']);
     }

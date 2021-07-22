@@ -49,6 +49,16 @@ use \mdm\admin\models\Position;
                     'allowClear' => true
                 ],
             ]) ?>
+
+            <?= $form->field($model, 'check_username')->widget(Select2::classname(), [
+                'data' => Position::getPositionUser('销售'),
+                'options' => ['placeholder' => '--请选择查看人--',
+                    'multiple' => true,
+                ],
+                'pluginOptions' => [
+                    'allowClear' => true
+                ],
+            ]) ?>
             <?php if (!$model->isNewRecord) echo $form->field($model, 'used', [])->checkbox() ?>
 
         </div>
