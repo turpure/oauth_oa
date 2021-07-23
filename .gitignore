@@ -18,8 +18,9 @@ nbproject
 Thumbs.db
 
 # composer vendor dir
-!/vendor/mdmsoft/
 /vendor/*
+!/vendor/mdmsoft/
+
 /backend/uploads/*
 # composer itself is not needed
 vagrant/composer.phar

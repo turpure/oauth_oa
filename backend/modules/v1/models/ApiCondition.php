@@ -246,6 +246,12 @@ class ApiCondition
         $dataScope = User::findOne($userId)['dataScope'];
         if($dataScope == 'all') $flag = true;
 
+        // 账号归属人和账号查看人的子查询
+        $query = (new Query())->select('store_id,user_id')->from(['u' => 'auth_store_child']);
+        $checkQuery = (new Query())->select('store_id,user_id')->from(['u' => 'auth_store_child_check']);
+        $subQuery = $query->union($checkQuery, true);
+
+
         //if ($role === AuthAssignment::ACCOUNT_ADMIN) {
         if (in_array(AuthAssignment::ACCOUNT_ADMIN,$role) !== false || $flag == true) {
             $users = (new Query())->select("u.id,username,p.position,d.department as department,d.id as department_id,	
