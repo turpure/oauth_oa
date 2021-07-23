@@ -1851,6 +1851,7 @@ class ApiGoodsinfo
             $row['name'] = $title;
             $row['inventory'] = $wishInfo['inventory'];
             $row['price'] = $variantInfo['price'];
+            $row['weight'] = $variantInfo['weight'];
             $row['msrp'] = $variantInfo['msrp'];
             $row['shipping'] = $variantInfo['shipping'];
             $row['shipping_time'] = '7-21';
@@ -3497,6 +3498,7 @@ class ApiGoodsinfo
         try {
             $price = ArrayHelper::getColumn($wishSku, 'price');
             $shippingPrice = ArrayHelper::getColumn($wishSku, 'shipping');
+
             $msrp = ArrayHelper::getColumn($wishSku, 'msrp');
             $len = count($price);
             $totalPrice = [];
@@ -3595,6 +3597,10 @@ class ApiGoodsinfo
                 }
 
             }
+            // 最大的SKU重量为产品重量
+            $weight = ArrayHelper::getColumn($wishSku, 'weight');
+            $weight = max($weight);
+            $ret['weight'] = $weight;
             return $ret;
         } catch (\Exception $why) {
             return ['variant' => '', 'price' => '', 'shipping' => '',
