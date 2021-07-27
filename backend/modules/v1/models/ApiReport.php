@@ -2030,6 +2030,52 @@ class ApiReport
     }
 
     /**
+     * 采购账期 数据
+     * @param $condition
+     * Date: 2021-07-06 9:19
+     * Author: henry
+     * @return array
+     */
+    public static function getPurchaseAccountPeriod(){
+        $beginDate = date('Y-m-01', strtotime('-4 month'));
+        $sql = "SELECT dt,purchaser,SUM(orderMoney) AS orderMoney
+                FROM (
+                    SELECT p.personName AS purchaser,CONVERT(VARCHAR(7),c.AudieDate,121) AS dt,
+                                orderMoney = (SELECT SUM (ISNULL(allmoney, 0)) FROM	CG_StockInD (nolock) WHERE	StockInNID = c.nid)
+                    FROM [dbo].[CG_StockInM] c
+                    LEFT JOIN B_Person (nolock) p ON p.NID = C.salerID
+                    LEFT JOIN B_Dictionary(nolock) d ON d.NID= C.BalanceID
+                    WHERE BillType = 1 AND p.used = 0 AND c.AudieDate >= '{$beginDate}' AND dictionaryName IN('账期付款','线下交易') 
+                                AND c.SupplierID<>35383 AND ISNULL(personName,'')<>'' AND StoreID IN(2,7,36)
+                ) aa GROUP BY dt,purchaser ORDER BY purchaser,dt ";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $purchaserList = array_unique(ArrayHelper::getColumn($data,'purchaser'));
+        $dateList = array_unique(ArrayHelper::getColumn($data,'dt'));
+        sort($dateList);
+        $row = [];
+        foreach ($dateList as $v){
+            $row[] = ['dt' => $v, 'orderMoney' => 0];
+        }
+
+        $res = [];
+        foreach ($purchaserList as $val){
+            $item = [];
+            $item['purchaser'] = $val;
+            $item['value'] = $row;
+            foreach ($data as $v){
+                foreach ($item['value'] as &$value){
+                    if ($value['dt'] == $v['dt'] && $v['purchaser'] == $val){
+                        $value['orderMoney'] = $v['orderMoney'];
+                    }
+                }
+            }
+            $res[]= $item;
+        }
+        return  $res;
+    }
+
+
+    /**
      * 运营KPI 数据
      * @param $condition
      * Date: 2021-07-06 9:19
