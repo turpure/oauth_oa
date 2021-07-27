@@ -1298,7 +1298,7 @@ class TinyToolController extends AdminController
                         SELECT IFNULL(u.seller1,'无人') seller1,c.sku,useNum,c.costMoney,
                         IFNULL(thirtySellCount,0) 30DaySellCount,IFNULL(sellCostMoney,0) 30DayCostMoney
                         FROM `cache_stockWaringTmpData` c
-                        INNER JOIN `cache_skuSeller` u ON u.goodsCode=c.goodsCode WHERE c.storeName IN ('万邑通UK','万邑通UK-MA仓','谷仓UK')
+                        INNER JOIN `cache_skuSeller` u ON u.goodsCode=c.goodsCode WHERE c.storeName IN ('万邑通UK','万邑通UK-MA仓','谷仓UK', '万邑通UKTW')
                         AND SUBSTRING(updateTime,1,7) = '{$thisMonth}' 
                 ) aa GROUP BY seller1;";
         try {
