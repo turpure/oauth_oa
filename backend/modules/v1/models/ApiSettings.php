@@ -357,6 +357,7 @@ class ApiSettings
         $spreadsheet = $reader->load(Yii::$app->basePath . $file);
         $sheet = $spreadsheet->getSheet(0);
         $highestRow = $sheet->getHighestRow(); // 取得总行数
+        $errArr = [];
         for ($i = 2; $i <= $highestRow; $i++) {
             $data['month'] = $sheet->getCell("A" . $i)->getValue();
             $data['username'] = $sheet->getCell("B" . $i)->getValue();
@@ -371,6 +372,12 @@ class ApiSettings
 
             if (!$data['username'] && !$data['month']) break;//取到数据为空时跳出循环
 
+            $user_sql = "SELECT created_at FROM `user` WHERE username = '{$data['username']}'";
+            $hireDate = Yii::$app->db->createCommand($user_sql)->queryScalar();
+            if (strtotime($data['month']) > $hireDate + 12 * 24 * 3600 && $data['isHaveOldAccount'] == 'Y') {
+                $errArr[] = "The isHaveOldAccount(是否新人接手老账号) value for user '{$data['username']}' can not be set to 'Y', because his/she hiredate is more than 12 months!";
+            }
+
             $sql = "SELECT * FROM oauth_operator_kpi_other_score WHERE username = '{$data['username']}' AND `month` = '{$data['month']}' ";
             $res = Yii::$app->db->createCommand($sql)->queryOne();
             if($res) {
@@ -379,7 +386,7 @@ class ApiSettings
                 Yii::$app->db->createCommand()->insert('oauth_operator_kpi_other_score', $data)->execute();
             }
         }
-        return true;
+        return $errArr;
     }
 
     public static function saveIntegralData($file, $fileName, $fileSize)

@@ -525,13 +525,13 @@ class SettingsController extends AdminController
     {
         $condition = Yii::$app->request->post('condition');
         $type = $condition['type'];
-        if ($type == '评级'){
+        if ($type == '评级') {
             return Yii::$app->db->createCommand("SELECT * FROM `oauth_operator_kpi_config` WHERE type = '评级';")->queryAll();
-        }elseif ($type == '入职时间系数'){
+        } elseif ($type == '入职时间系数') {
             return Yii::$app->db->createCommand("SELECT * FROM `oauth_operator_kpi_config` WHERE type = '入职时间系数';")->queryAll();
-        }elseif ($type == '业绩指标'){
+        } elseif ($type == '业绩指标') {
             return Yii::$app->db->createCommand("SELECT * FROM `oauth_operator_kpi_config` WHERE type = '业绩指标';")->queryAll();
-        }else{
+        } else {
             $sql = "SELECT DISTINCT typeWeight,name FROM `oauth_operator_kpi_config` WHERE type NOT IN ('评级', '入职时间系数');";
             return Yii::$app->db->createCommand($sql)->queryAll();
         }
@@ -548,10 +548,10 @@ class SettingsController extends AdminController
     {
         $condition = Yii::$app->request->post('condition');
         $type = $condition['type'];
-        if ($type == '权重'){
+        if ($type == '权重') {
             $sql = "UPDATE `oauth_operator_kpi_config` SET typeWeight={$condition['typeWeight']} WHERE `name` = '{$condition['name']}'";
             return Yii::$app->db->createCommand($sql)->execute();
-        }else{
+        } else {
             $id = $condition['id'];
             return Yii::$app->db->createCommand()->update('oauth_operator_kpi_config', $condition, ['id' => $id])->execute();
         }
@@ -571,7 +571,7 @@ class SettingsController extends AdminController
         $name = isset($condition['username']) ? $condition['username'] : '';
         $depart = isset($condition['depart']) ? $condition['depart'] : '';
         $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
-        if(!$name && $depart){
+        if (!$name && $depart) {
             $name = ApiCondition::getUserByDepart($depart, $secDepartment);
             $name = implode("','", $name);
         }
@@ -606,7 +606,7 @@ class SettingsController extends AdminController
         $name = isset($condition['username']) ? $condition['username'] : '';
         $depart = isset($condition['depart']) ? $condition['depart'] : '';
         $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
-        if(!$name && $depart){
+        if (!$name && $depart) {
             $name = ApiCondition::getUserByDepart($depart, $secDepartment);
             $name = implode("','", $name);
         }
@@ -625,7 +625,7 @@ class SettingsController extends AdminController
         if ($userList) $sql .= " AND b.username IN ('{$userList}') ";
         $data = Yii::$app->db->createCommand($sql)->queryAll();
         $res = [];
-        foreach ($data as $v){
+        foreach ($data as $v) {
             $item['月份'] = $v['month'];
             $item['姓名'] = $v['username'];
             $item['合作度'] = $v['cooperateScore'];
@@ -653,15 +653,23 @@ class SettingsController extends AdminController
         $id = $condition['id'] ?? 0;
         $name = $condition['username'] ?? '';
         $month = $condition['month'] ?? '';
-        if(!$name && !$month) return ['code' => 400, 'message' => 'Month and username can not be empty at the same time!'];
+        if (!$name && !$month) return ['code' => 400, 'message' => 'Month and username can not be empty at the same time!'];
+        $user_sql = "SELECT created_at FROM `user` WHERE username = '{$name}'";
+        $hireDate = Yii::$app->db->createCommand($user_sql)->queryScalar();
+        if (strtotime($month) > $hireDate + 12 * 24 * 3600 && $condition['isHaveOldAccount'] == 'Y') {
+            return [
+                'code' => 400,
+                'message' => "The isHaveOldAccount(是否新人接手老账号) value for user '{$name}' can not be set to 'Y', because his/she hiredate is more than 12 months!"
+            ];
+        }
         $condition['updateTime'] = date('Y-m-d H:i:s');
         $sql = "SELECT * FROM oauth_operator_kpi_other_score WHERE username = '{$name}' AND month = '{$month}' ";
         $res = Yii::$app->db->createCommand($sql)->queryOne();
         if ($id) {
             return Yii::$app->db->createCommand()->update('oauth_operator_kpi_other_score', $condition, ['id' => $id])->execute();
-        } elseif($res) {
+        } elseif ($res) {
             return Yii::$app->db->createCommand()->update('oauth_operator_kpi_other_score', $condition, ['name' => $name, 'month' => $month])->execute();
-        }else{
+        } else {
             unset($condition['id']);
             return Yii::$app->db->createCommand()->insert('oauth_operator_kpi_other_score', $condition)->execute();
         }
@@ -706,7 +714,8 @@ class SettingsController extends AdminController
             } else {
                 //获取上传excel文件的内容并保存
                 $res = ApiSettings::saveKpiExtraData($result);
-                if ($res !== true) return ['code' => 400, 'message' => $res];
+//                if ($res !== true) return ['code' => 400, 'message' => $res];
+                return $res;
             }
         } catch (\Exception $e) {
             return [
