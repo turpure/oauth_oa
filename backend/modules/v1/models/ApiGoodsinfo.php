@@ -1809,28 +1809,43 @@ class ApiGoodsinfo
      * @param $id
      * @param $type
      * @param $completeStatus
+     * @param $accounts
      * @return array
      * @throws \Exception
      */
-    public static function preExportWishData($id, $type = '',$completeStatus='')
+    public static function preExportWishData($id, $type = '',$completeStatus='',$accounts='')
     {
+        # 是否有指定状态
         if(!empty($completeStatus)) {
-            $goods = OaGoodsinfo::find()->where(['id' => $id])->andWhere(['like','completeStatus',$completeStatus])->asArray()->one();
-            if(empty($goods)) {
+            $checkGoods = OaGoodsinfo::find()->where(['id' => $id])->andWhere(['like','completeStatus',$completeStatus])->asArray()->one();
+            if(empty($checkGoods)) {
                 throw new \Exception('请先完善产品！');
             }
         }
+
+
+
 
         $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
         $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
         $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
         $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
-        $wishAccounts = OaWishSuffix::find()->where(['like', 'parentCategory', $goods['cate']])
-            ->orWhere(["IFNULL(parentCategory,'')" => '']);
-        if (!$type) {
-            $wishAccounts->andWhere(['isIbay' => 0]);
+
+        # 是否指定店铺
+        $wishAccounts = [];
+        if(!empty($accounts)) {
+            $wishAccounts = explode(',' , $accounts);
         }
-        $wishAccounts = $wishAccounts->asArray()->all();
+        else {
+            $wishAccountsQuery = OaWishSuffix::find()->where(['like', 'parentCategory', $goods['cate']])
+                ->orWhere(["IFNULL(parentCategory,'')" => '']);
+            if (!$type) {
+                $wishAccountsQuery->andWhere(['isIbay' => 0]);
+            }
+            $wishAccounts = $wishAccountsQuery->asArray()->all();
+        }
+
+
         $keyWords = static::preKeywords($wishInfo);
 
         $row = [
