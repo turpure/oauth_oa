@@ -2112,6 +2112,42 @@ class ApiReport
     }
 
     /**
+     * 运营KPI其他平台 数据
+     * @param $condition
+     * Date: 2021-07-06 9:19
+     * Author: henry
+     * @return array
+     */
+    public static function getOperatorKpiOther($condition){
+        $name = isset($condition['name']) ? $condition['name'] : [];
+        $name = $name ? [$name] : [];
+        $depart = isset($condition['depart']) ? $condition['depart'] : '';
+        $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
+        $plat = isset($condition['plat']) ? $condition['plat'] : '';
+        $month = isset($condition['month']) ? $condition['month'] : '';
+        if(!$name && $depart){
+            $name = ApiCondition::getUserByDepart($depart, $secDepartment);
+        }
+        //获取当前用户信息
+        $username = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($username);
+//        var_dump($userList);exit;
+        $query = (new yii\db\Query())//->select('*')
+            ->from('cache_kpi_saler_and_dev_tmp_data_other_plat')
+            ->andFilterWhere(['in', 'name', $name])
+            ->andFilterWhere(['in', 'name', $userList])
+            ->andFilterWhere(['=', 'depart', $depart])
+            ->andFilterWhere(['=', 'plat', $plat])
+            ->andFilterWhere(['=', 'month', $month])
+            ->orderBy('totalScore DESC')->all();
+        foreach ($query as &$v){
+            $v['profitRate'] .= '%';
+            $v['salesRate'] .= '%';
+        }
+        return $query;
+    }
+
+    /**
      * 运营KPI 历史数据
      * @param $condition
      * Date: 2021-07-06 9:19
