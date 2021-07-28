@@ -617,6 +617,7 @@ class SettingsController extends AdminController
         $id = $condition['id'] ?? 0;
         $name = $condition['username'] ?? '';
         $month = $condition['month'] ?? '';
+        if (isset($condition['hireMonth'])) unset($condition['hireMonth']);
         if (!$name && !$month) return ['code' => 400, 'message' => 'Month and username can not be empty at the same time!'];
         $user_sql = "SELECT created_at FROM `user` WHERE username = '{$name}'";
         $hireDate = Yii::$app->db->createCommand($user_sql)->queryScalar();
