@@ -1815,7 +1815,7 @@ class ApiGoodsinfo
     public static function preExportWishData($id, $type = '',$completeStatus='')
     {
         if(!empty($completeStatus)) {
-            $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->andWhere(['like','completeStatus',$complateStatus])->asArray()->one();
+            $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->andWhere(['like','completeStatus',$completeStatus])->asArray()->one();
             if(empty($wishInfo)) {
                 throw new \Exception('请先完善产品！');
             }
