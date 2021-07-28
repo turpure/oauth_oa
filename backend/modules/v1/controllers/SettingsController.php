@@ -578,10 +578,12 @@ class SettingsController extends AdminController
         //获取当前用户信息
         $username = Yii::$app->user->identity->username;
         $userList = implode("','", ApiUser::getUserList($username));
-        $sql = "SELECT id,b.username,IFNULL(`month`,'{$month}') AS `month`,cooperateScore,activityScore,executiveScore,
+        $sql = "SELECT id,b.username,IFNULL(`month`,'{$month}') AS `month`,
+                        TIMESTAMPDIFF(MONTH,FROM_UNIXTIME(created_at,'%Y-%m-%d'),CONCAT(IFNULL(`month`,'2021-06'),'-01')) + 1 AS hireMonth,
+                        cooperateScore,activityScore,executiveScore,
                         otherTrainingScore,otherChallengeScore,otherDeductionScore,isHaveOldAccount,updateTime 
                 FROM (
-                        SELECT DISTINCT u.username FROM `user` u
+                        SELECT DISTINCT u.username,u.created_at FROM `user` u
                         LEFT JOIN auth_assignment a ON a.user_id=u.id
                         WHERE u.`status`=10 AND a.item_name IN ('产品销售','产品开发')
                                 AND NOT EXISTS(SELECT * FROM oauth_operator_kpi_filter_member WHERE username=u.username)
@@ -613,10 +615,12 @@ class SettingsController extends AdminController
         //获取当前用户信息
         $username = Yii::$app->user->identity->username;
         $userList = implode("','", ApiUser::getUserList($username));
-        $sql = "SELECT id,b.username,IFNULL(`month`,'{$month}') AS `month`,cooperateScore,activityScore,executiveScore,
+        $sql = "SELECT id,b.username,IFNULL(`month`,'{$month}') AS `month`,
+                        TIMESTAMPDIFF(MONTH,FROM_UNIXTIME(created_at,'%Y-%m-%d'),CONCAT(IFNULL(`month`,'2021-06'),'-01')) + 1 AS hireMonth,
+                        cooperateScore,activityScore,executiveScore,
                         otherTrainingScore,otherChallengeScore,otherDeductionScore,isHaveOldAccount,updateTime 
                 FROM (
-                        SELECT DISTINCT u.username FROM `user` u
+                        SELECT DISTINCT u.username,u.created_at FROM `user` u
                         LEFT JOIN auth_assignment a ON a.user_id=u.id
                         WHERE u.`status`=10 AND a.item_name IN ('产品销售','产品开发')
                                 AND NOT EXISTS(SELECT * FROM oauth_operator_kpi_filter_member WHERE username=u.username)
@@ -628,6 +632,7 @@ class SettingsController extends AdminController
         foreach ($data as $v) {
             $item['月份'] = $v['month'];
             $item['姓名'] = $v['username'];
+            $item['入职时长'] = $v['hireMonth'];
             $item['合作度'] = $v['cooperateScore'];
             $item['积极性'] = $v['activityScore'];
             $item['执行力'] = $v['executiveScore'];

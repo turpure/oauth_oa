@@ -361,13 +361,13 @@ class ApiSettings
         for ($i = 2; $i <= $highestRow; $i++) {
             $data['month'] = $sheet->getCell("A" . $i)->getValue();
             $data['username'] = $sheet->getCell("B" . $i)->getValue();
-            $data['cooperateScore'] = $sheet->getCell("C" . $i)->getValue() ?: 0;
-            $data['activityScore'] = $sheet->getCell("D" . $i)->getValue() ?: 0;
-            $data['executiveScore'] = $sheet->getCell("E" . $i)->getValue() ?: 0;
-            $data['otherTrainingScore'] = $sheet->getCell("F" . $i)->getValue() ?: 0;
-            $data['otherChallengeScore'] = $sheet->getCell("G" . $i)->getValue() ?: 0;
-            $data['otherDeductionScore'] = $sheet->getCell("H" . $i)->getValue() ?: 0;
-            $data['isHaveOldAccount'] = $sheet->getCell("I" . $i)->getValue() ?: 'N';
+            $data['cooperateScore'] = $sheet->getCell("D" . $i)->getValue() ?: 0;
+            $data['activityScore'] = $sheet->getCell("E" . $i)->getValue() ?: 0;
+            $data['executiveScore'] = $sheet->getCell("F" . $i)->getValue() ?: 0;
+            $data['otherTrainingScore'] = $sheet->getCell("G" . $i)->getValue() ?: 0;
+            $data['otherChallengeScore'] = $sheet->getCell("H" . $i)->getValue() ?: 0;
+            $data['otherDeductionScore'] = $sheet->getCell("I" . $i)->getValue() ?: 0;
+            $data['isHaveOldAccount'] = $sheet->getCell("J" . $i)->getValue() ?: 'N';
             $data['updateTime'] = date('Y-m-d H:i:s');
 
             if (!$data['username'] && !$data['month']) break;//取到数据为空时跳出循环
