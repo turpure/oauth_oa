@@ -1807,12 +1807,22 @@ class ApiGoodsinfo
     /**
      * @brief wish模板预处理
      * @param $id
+     * @param $type
+     * @param $completeStatus
      * @return array
      * @throws \Exception
      */
-    public static function preExportWishData($id, $type = '')
+    public static function preExportWishData($id, $type = '',$completeStatus='')
     {
-        $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
+        if(!empty($completeStatus)) {
+            $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->andWhere(['like','completeStatus',$complateStatus])->asArray()->one();
+            if(empty($wishInfo)) {
+                throw new \Exception('请先完善产品！');
+            }
+        }
+        else {
+            $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
+        }
         $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
         $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
         $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
