@@ -1832,18 +1832,19 @@ class ApiGoodsinfo
         $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
 
         # 是否指定店铺
-        $wishAccounts = [];
         if(!empty($accounts)) {
-            $wishAccounts = explode(',' , $accounts);
+            $accounts = explode(',' , $accounts);
+            $wishAccountsQuery = OaWishSuffix::find()->andWhere(['or',['like', 'parentCategory', $goods['cate']],["IFNULL(parentCategory,'')" => '']])
+                ->andWhere(['in','suffix', $accounts]);
         }
         else {
             $wishAccountsQuery = OaWishSuffix::find()->where(['like', 'parentCategory', $goods['cate']])
                 ->orWhere(["IFNULL(parentCategory,'')" => '']);
-            if (!$type) {
-                $wishAccountsQuery->andWhere(['isIbay' => 0]);
-            }
-            $wishAccounts = $wishAccountsQuery->asArray()->all();
         }
+        if (!$type) {
+            $wishAccountsQuery->andWhere(['isIbay' => 0]);
+        }
+        $wishAccounts = $wishAccountsQuery->asArray()->all();
 
 
         $keyWords = static::preKeywords($wishInfo);
