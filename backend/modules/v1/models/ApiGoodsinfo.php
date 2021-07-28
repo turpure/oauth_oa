@@ -1835,7 +1835,7 @@ class ApiGoodsinfo
         if(!empty($accounts)) {
             $accounts = explode(',' , $accounts);
             $wishAccountsQuery = OaWishSuffix::find()->andWhere(['or',['like', 'parentCategory', $goods['cate']],["IFNULL(parentCategory,'')" => '']])
-                ->andWhere(['in','suffix', $accounts]);
+                ->andWhere(['in','shortName', $accounts]);
         }
         else {
             $wishAccountsQuery = OaWishSuffix::find()->where(['like', 'parentCategory', $goods['cate']])
