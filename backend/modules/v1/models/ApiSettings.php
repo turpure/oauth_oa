@@ -350,6 +350,41 @@ class ApiSettings
         return $res;
     }
 
+    /**
+     * getKpiExtraScore
+     * @param $condition
+     * Date: 2021-07-28 9:47
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    public static function getKpiExtraScore($condition)
+    {
+        $month = $condition['month'];
+        $name = isset($condition['username']) ? $condition['username'] : '';
+        $depart = isset($condition['depart']) ? $condition['depart'] : '';
+        $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
+        if (!$name && $depart) {
+            $name = ApiCondition::getUserByDepart($depart, $secDepartment);
+            $name = implode("','", $name);
+        }
+        //获取当前用户信息
+        $username = Yii::$app->user->identity->username;
+        $userList = implode("','", ApiUser::getUserList($username));
+        $sql = "SELECT id,b.username,IFNULL(`month`,'{$month}') AS `month`,
+                        TIMESTAMPDIFF(MONTH,FROM_UNIXTIME(created_at,'%Y-%m-%d'),CONCAT(IFNULL(`month`,'{$month}'),'-01')) + 1 AS hireMonth,
+                        cooperateScore,activityScore,executiveScore,
+                        otherTrainingScore,otherChallengeScore,otherDeductionScore,isHaveOldAccount,updateTime 
+                FROM (
+                        SELECT DISTINCT u.username,u.created_at FROM `user` u
+                        LEFT JOIN auth_assignment a ON a.user_id=u.id
+                        WHERE u.`status`=10 AND a.item_name IN ('产品销售','产品开发')
+                                AND NOT EXISTS(SELECT * FROM oauth_operator_kpi_filter_member WHERE username=u.username)
+                ) b left Join oauth_operator_kpi_other_score s ON s.username=b.username AND s.month = '{$month}' WHERE 1=1 ";
+        if ($name) $sql .= " AND b.username IN ('{$name}') ";
+        if ($userList) $sql .= " AND b.username IN ('{$userList}') ";
+        return Yii::$app->db->createCommand($sql)->queryAll();
+    }
 
     public static function saveKpiExtraData($file)
     {

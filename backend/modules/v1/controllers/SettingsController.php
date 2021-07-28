@@ -566,31 +566,13 @@ class SettingsController extends AdminController
      */
     public function actionKpiExtraScore()
     {
-        $condition = Yii::$app->request->post('condition');
-        $month = $condition['month'];
-        $name = isset($condition['username']) ? $condition['username'] : '';
-        $depart = isset($condition['depart']) ? $condition['depart'] : '';
-        $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
-        if (!$name && $depart) {
-            $name = ApiCondition::getUserByDepart($depart, $secDepartment);
-            $name = implode("','", $name);
+        try {
+            $condition = Yii::$app->request->post('condition');
+            return ApiSettings::getKpiExtraScore($condition);
+        } catch (\Exception  $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
-        //获取当前用户信息
-        $username = Yii::$app->user->identity->username;
-        $userList = implode("','", ApiUser::getUserList($username));
-        $sql = "SELECT id,b.username,IFNULL(`month`,'{$month}') AS `month`,
-                        TIMESTAMPDIFF(MONTH,FROM_UNIXTIME(created_at,'%Y-%m-%d'),CONCAT(IFNULL(`month`,'2021-06'),'-01')) + 1 AS hireMonth,
-                        cooperateScore,activityScore,executiveScore,
-                        otherTrainingScore,otherChallengeScore,otherDeductionScore,isHaveOldAccount,updateTime 
-                FROM (
-                        SELECT DISTINCT u.username,u.created_at FROM `user` u
-                        LEFT JOIN auth_assignment a ON a.user_id=u.id
-                        WHERE u.`status`=10 AND a.item_name IN ('产品销售','产品开发')
-                                AND NOT EXISTS(SELECT * FROM oauth_operator_kpi_filter_member WHERE username=u.username)
-                ) b left Join oauth_operator_kpi_other_score s ON s.username=b.username AND s.month = '{$month}' WHERE 1=1 ";
-        if ($name) $sql .= " AND b.username IN ('{$name}') ";
-        if ($userList) $sql .= " AND b.username IN ('{$userList}') ";
-        return Yii::$app->db->createCommand($sql)->queryAll();
+
     }
 
     /**
@@ -604,30 +586,7 @@ class SettingsController extends AdminController
     public function actionKpiExtraScoreExport()
     {
         $condition = Yii::$app->request->post('condition');
-        $month = $condition['month'];
-        $name = isset($condition['username']) ? $condition['username'] : '';
-        $depart = isset($condition['depart']) ? $condition['depart'] : '';
-        $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
-        if (!$name && $depart) {
-            $name = ApiCondition::getUserByDepart($depart, $secDepartment);
-            $name = implode("','", $name);
-        }
-        //获取当前用户信息
-        $username = Yii::$app->user->identity->username;
-        $userList = implode("','", ApiUser::getUserList($username));
-        $sql = "SELECT id,b.username,IFNULL(`month`,'{$month}') AS `month`,
-                        TIMESTAMPDIFF(MONTH,FROM_UNIXTIME(created_at,'%Y-%m-%d'),CONCAT(IFNULL(`month`,'2021-06'),'-01')) + 1 AS hireMonth,
-                        cooperateScore,activityScore,executiveScore,
-                        otherTrainingScore,otherChallengeScore,otherDeductionScore,isHaveOldAccount,updateTime 
-                FROM (
-                        SELECT DISTINCT u.username,u.created_at FROM `user` u
-                        LEFT JOIN auth_assignment a ON a.user_id=u.id
-                        WHERE u.`status`=10 AND a.item_name IN ('产品销售','产品开发')
-                                AND NOT EXISTS(SELECT * FROM oauth_operator_kpi_filter_member WHERE username=u.username)
-                ) b left Join oauth_operator_kpi_other_score s ON s.username=b.username AND s.month = '{$month}' WHERE 1=1 ";
-        if ($name) $sql .= " AND b.username IN ('{$name}') ";
-        if ($userList) $sql .= " AND b.username IN ('{$userList}') ";
-        $data = Yii::$app->db->createCommand($sql)->queryAll();
+        $data = ApiSettings::getKpiExtraScore($condition);
         $res = [];
         foreach ($data as $v) {
             $item['月份'] = $v['month'];
