@@ -1807,21 +1807,46 @@ class ApiGoodsinfo
     /**
      * @brief wish模板预处理
      * @param $id
+     * @param $type
+     * @param $completeStatus
+     * @param $accounts
      * @return array
      * @throws \Exception
      */
-    public static function preExportWishData($id, $type = '')
+    public static function preExportWishData($id, $type = '',$completeStatus='',$accounts='')
     {
+        # 是否有指定状态
+        if(!empty($completeStatus)) {
+            $checkGoods = OaGoodsinfo::find()->where(['id' => $id])->andWhere(['like','completeStatus',$completeStatus])->asArray()->one();
+            if(empty($checkGoods)) {
+                throw new \Exception('请先完善产品！');
+            }
+        }
+
+
+
+
         $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
         $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
         $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
         $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
-        $wishAccounts = OaWishSuffix::find()->where(['like', 'parentCategory', $goods['cate']])
-            ->orWhere(["IFNULL(parentCategory,'')" => '']);
-        if (!$type) {
-            $wishAccounts->andWhere(['isIbay' => 0]);
+
+        # 是否指定店铺
+        if(!empty($accounts)) {
+            $accounts = explode(',' , $accounts);
+            $wishAccountsQuery = OaWishSuffix::find()->andWhere(['or',['like', 'parentCategory', $goods['cate']],["IFNULL(parentCategory,'')" => '']])
+                ->andWhere(['in','shortName', $accounts]);
         }
-        $wishAccounts = $wishAccounts->asArray()->all();
+        else {
+            $wishAccountsQuery = OaWishSuffix::find()->where(['like', 'parentCategory', $goods['cate']])
+                ->orWhere(["IFNULL(parentCategory,'')" => '']);
+        }
+        if (!$type) {
+            $wishAccountsQuery->andWhere(['isIbay' => 0]);
+        }
+        $wishAccounts = $wishAccountsQuery->asArray()->all();
+
+
         $keyWords = static::preKeywords($wishInfo);
 
         $row = [
@@ -1851,6 +1876,7 @@ class ApiGoodsinfo
             $row['name'] = $title;
             $row['inventory'] = $wishInfo['inventory'];
             $row['price'] = $variantInfo['price'];
+            $row['weight'] = $variantInfo['weight'];
             $row['msrp'] = $variantInfo['msrp'];
             $row['shipping'] = $variantInfo['shipping'];
             $row['shipping_time'] = '7-21';
@@ -3497,6 +3523,7 @@ class ApiGoodsinfo
         try {
             $price = ArrayHelper::getColumn($wishSku, 'price');
             $shippingPrice = ArrayHelper::getColumn($wishSku, 'shipping');
+
             $msrp = ArrayHelper::getColumn($wishSku, 'msrp');
             $len = count($price);
             $totalPrice = [];
@@ -3595,6 +3622,10 @@ class ApiGoodsinfo
                 }
 
             }
+            // 最大的SKU重量为产品重量
+            $weight = ArrayHelper::getColumn($wishSku, 'weight');
+            $weight = max($weight);
+            $ret['weight'] = $weight;
             return $ret;
         } catch (\Exception $why) {
             return ['variant' => '', 'price' => '', 'shipping' => '',

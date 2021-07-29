@@ -890,7 +890,8 @@ class OaGoodsinfoController extends AdminController
             $condition = $request->post()['condition'];
             $infoId = $condition['id'];
             $type = isset($condition['type']) ? $condition['type'] : '';
-            $ret = ApiGoodsinfo::preExportWishData($infoId, $type);
+            $accounts = isset($condition['accounts']) ? $condition['accounts'] : '';
+            $ret = ApiGoodsinfo::preExportWishData($infoId, $type,$completeStatus='wish', $accounts);
             foreach ($ret['data'] as &$row) {
                 $row['extra_images'] = str_replace("\n", '|', $row['extra_images']);
                 $row['variants'] = json_decode($row['variants'], true);
