@@ -973,7 +973,7 @@ class WarehouseToolsController extends AdminController
     {
         $condition = Yii::$app->request->post()['condition'];
         $condition['pageSize'] = 100000;
-        $title = ['SKU', '仓库', '库位', '操作人', '类型', '操作时间'];
+        $title = ['SKU', '仓库', '库位', '操作人', '类型', '操作时间', '是否新品'];
         $dataProvider = ApiWarehouseTools::getWareSkuData($condition);
         $data = $dataProvider->getModels();
         if ($data) {
