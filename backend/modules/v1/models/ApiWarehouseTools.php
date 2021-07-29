@@ -902,7 +902,8 @@ class ApiWarehouseTools
                         CASE WHEN charindex('->',ll.person) > 0 THEN SUBSTRING(ll.person,1,charindex('->',person) - 1) 
                             ELSE ll.person END AS person, 
                         CASE WHEN charindex('->',ll.person) > 0 THEN 'PDA' 
-                              ELSE '' END AS type,changeTime
+                              ELSE '' END AS type,changeTime,
+                        CASE WHEN ISNULL(OldLocation,'') = '' THEN '新品' ELSE '老品' END AS flag
                 FROM [dbo].[B_GoodsSKULocation] gsl
                 INNER JOIN B_GoodsSKU gs ON gs.NID=gsl.GoodsSKUID
                 LEFT JOIN B_Store s ON s.NID=gsl.StoreID
