@@ -48,6 +48,7 @@ use backend\models\User;
 use backend\modules\v1\services\Logger;
 use backend\modules\v1\services\shopify\ShopifyServices;
 use backend\modules\v1\utils\Helper;
+use backend\modules\v1\utils\WishExportDataUtils;
 use mdm\admin\models\Store;
 use yii\data\ActiveDataProvider;
 use backend\modules\v1\utils\ProductCenterTools;
@@ -1824,8 +1825,6 @@ class ApiGoodsinfo
         }
 
 
-
-
         $wishInfo = OaWishgoods::find()->where(['infoId' => $id])->asArray()->one();
         $wishSku = OaWishgoodsSku::find()->where(['infoId' => $id])->asArray()->all();
         $goodsInfo = OaGoodsinfo::find()->where(['id' => $id])->asArray()->one();
@@ -1891,6 +1890,7 @@ class ApiGoodsinfo
             $row['local_price'] = $variantInfo['local_price'];
             $row['local_shippingfee'] = $variantInfo['local_shippingfee'];
             $row['local_currency'] = $variantInfo['local_currency'];
+            $row['country_shipping_prices'] = WishExportDataUtils::getEuropeFreightTemplate($variantInfo['local_price'],$variantInfo['local_currency'],$variantInfo['local_shippingfee'],$variantInfo['weight']);
             $out[] = $row;
         }
         $ret['data'] = $out;
