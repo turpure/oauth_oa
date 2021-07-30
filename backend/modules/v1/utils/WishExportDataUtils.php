@@ -174,9 +174,9 @@ class WishExportDataUtils
     }
 }
 
-$price = 104.29;
-$currencyCode = 'CNY';
-$freight = 6.95;
-$weight = 200;
-$wanted = WishExportDataUtils::getEuropeFreightTemplate($price,$currencyCode, $freight, $weight);
-var_dump($wanted);
+//$price = 104.29;
+//$currencyCode = 'CNY';
+//$freight = 6.95;
+//$weight = 200;
+//$wanted = WishExportDataUtils::getEuropeFreightTemplate($price,$currencyCode, $freight, $weight);
+//var_dump($wanted);
