@@ -46,7 +46,7 @@ class ApiWarehouseTools
         $flag = $condition['flag'];
         $begin = $condition['dateRange'][0];
         $end = $condition['dateRange'][1] . " 23:59:59";
-        $sql = "SELECT id,trackingNumber,stockOrderNumber,username,flag,MAX(createdTime) AS createdTime 
+        $sql = "SELECT trackingNumber,stockOrderNumber,username,flag,MAX(createdTime) AS createdTime 
                 FROM oauth_task_package_info 
                 WHERE createdTime BETWEEN '{$begin}' AND '{$end}' ";
         if ($username) $sql .= " AND username LIKE '%{$username}%' ";
@@ -54,7 +54,7 @@ class ApiWarehouseTools
         if ($stockOrderNumber) $sql .= " AND stockOrderNumber LIKE '%{$stockOrderNumber}%' ";
         if (in_array($flag, ['0', '1', '2']) ) $sql .= " AND flag = '{$flag}' ";
 
-        $sql .= " GROUP BY id,trackingNumber,stockOrderNumber,username,flag ORDER BY MAX(createdTime) DESC";
+        $sql .= " GROUP BY trackingNumber,stockOrderNumber,username,flag ORDER BY MAX(createdTime) DESC";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         $provider = new ArrayDataProvider([
             'allModels' => $data,
@@ -168,16 +168,16 @@ class ApiWarehouseTools
      * @return array|bool
      */
     public static function packageDelete($condition){
-        if(!$condition['id']){
+        if(!$condition['trackingNumber']){
             return [
                 'code' => 400,
-                'message' => 'tracking id can not be empty!'
+                'message' => 'tracking number can not be empty!'
             ];
         }
         try {
             $res = Yii::$app->py_db->createCommand()->delete(
                 'oauth_task_package_info',
-                ['id' => $condition['id']])->execute();
+                ['trackingNumber' => $condition['trackingNumber']])->execute();
             if(!$res){
                 throw new Exception('Failed to mark info!');
             }
