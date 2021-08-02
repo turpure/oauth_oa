@@ -177,7 +177,7 @@ class ApiWarehouseTools
         try {
             $res = Yii::$app->py_db->createCommand()->delete(
                 'oauth_task_package_info',
-                ['id' => $condition['trackingNumber']])->execute();
+                ['trackingNumber' => $condition['id']])->execute();
             if(!$res){
                 throw new Exception('Failed to mark info!');
             }
