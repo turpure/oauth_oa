@@ -168,7 +168,7 @@ class ApiWarehouseTools
      * @return array|bool
      */
     public static function packageDelete($condition){
-        if(!$condition['trackingNumber']){
+        if(!$condition['id']){
             return [
                 'code' => 400,
                 'message' => 'tracking number can not be empty!'
@@ -177,7 +177,7 @@ class ApiWarehouseTools
         try {
             $res = Yii::$app->py_db->createCommand()->delete(
                 'oauth_task_package_info',
-                ['trackingNumber' => $condition['trackingNumber']])->execute();
+                ['id' => $condition['trackingNumber']])->execute();
             if(!$res){
                 throw new Exception('Failed to mark info!');
             }
