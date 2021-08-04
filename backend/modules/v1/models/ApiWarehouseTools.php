@@ -9,6 +9,7 @@ namespace backend\modules\v1\models;
 
 use backend\models\OaCleanOffline;
 use backend\models\ShopElf\BGoods;
+use backend\models\ShopElf\BGoodsSku;
 use backend\models\ShopElf\BPerson;
 use backend\models\ShopElf\KCCurrentStock;
 use backend\models\ShopElf\OauthLabelGoodsRate;
@@ -586,6 +587,12 @@ class ApiWarehouseTools
             'sku' => $condition['sku'],
             'number' => isset($condition['number']) ? $condition['number'] : 1,
             'scanningMan' => Yii::$app->user->identity->username,
+        ];
+
+        $sku = BGoodsSku::findOne(['SKU' => $condition['sku']]);
+        if(!$sku) return [
+            'code' => 400,
+            'message' => 'SKU is incorrect!'
         ];
 
         $task = new TaskWarehouse();
