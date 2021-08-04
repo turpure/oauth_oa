@@ -1005,7 +1005,7 @@ class SchedulerController extends Controller
     {
         try {
             ConScheduler::getWarehouseIntegralData($begin, $end);
-            print date('Y-m-d H:i:s') . " INFO:success to get warehouse integral data \n";
+            print date('Y-m-d H:i:s') . " INFO:success to get warehouse integral data of $end\n";
         } catch (Exception $why) {
             print date('Y-m-d H:i:s') . " INFO:fail to get warehouse integral data because $why \n";
         }
@@ -1020,7 +1020,7 @@ class SchedulerController extends Controller
     {
         try {
             ConScheduler::getWarehouseKpiData($begin, $end);
-            print date('Y-m-d H:i:s') . " INFO:success to get warehouse integral data \n";
+            print date('Y-m-d H:i:s') . " INFO:success to get warehouse integral data of $end \n";
         } catch (\Exception $e) {
             echo date('Y-m-d H:i:s') . " fail to get warehouse KPI data because '{$e->getMessage()}'. \n";
             //echo $e->getMessage();
