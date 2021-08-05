@@ -1545,7 +1545,8 @@ class ProductCenterTools
 //        $urlArr = explode('/', $goodsUrl);
 //        $urlLastStr = end($urlArr);
 //        $goodsId = explode('.', $urlLastStr)[0];
-        $goodsId = end(explode('/', $urlArr[0]));
+        $urlArr2 = explode('/', $urlArr[0]);
+        $goodsId = end($urlArr2);
 
         $infoId = $data['ID'];
         $oauth = new AgentProductSimpleGet($data['AliasName']);
