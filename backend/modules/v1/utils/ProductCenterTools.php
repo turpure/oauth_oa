@@ -1541,9 +1541,11 @@ class ProductCenterTools
     public static function syncGoodsInfoFrom1688($k, $data)
     {
         $goodsUrl = $data['LinkUrl'];
-        $urlArr = explode('/', $goodsUrl);
-        $urlLastStr = end($urlArr);
-        $goodsId = explode('.', $urlLastStr)[0];
+        $urlArr = explode('.html', $goodsUrl);
+//        $urlArr = explode('/', $goodsUrl);
+//        $urlLastStr = end($urlArr);
+//        $goodsId = explode('.', $urlLastStr)[0];
+        $goodsId = end(explode('/', $urlArr[0]));
 
         $infoId = $data['ID'];
         $oauth = new AgentProductSimpleGet($data['AliasName']);
@@ -1606,7 +1608,7 @@ class ProductCenterTools
             }
 
         }else{
-            throw new Exception($ret['error_message'] ?? ($ret['exception'] ?? 'token error'));
+            throw new Exception($ret['error_message'] ?? ($ret['exception'] ?? ($ret['errMsg'] ?? 'token error')));
         }
 
     }
