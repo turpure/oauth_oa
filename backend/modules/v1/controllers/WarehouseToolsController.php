@@ -12,6 +12,7 @@ use backend\models\ShopElf\BGoods;
 use backend\models\ShopElf\OauthLoadSkuError;
 use backend\models\ShopElf\OauthSysConfig;
 use backend\models\ShopElf\OauthLabelGoodsRate;
+use backend\models\ShopElf\TaskWarehouse;
 use backend\modules\v1\models\ApiSettings;
 use backend\modules\v1\models\ApiWarehouseTools;
 use backend\modules\v1\utils\ExportTools;
@@ -271,6 +272,23 @@ class WarehouseToolsController extends AdminController
     {
         $condition = Yii::$app->request->post()['condition'];
         return ApiWarehouseTools::getWarehouseLog($condition);
+    }
+
+
+    public function actionWarehouseLogDel()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $id = $condition['id'] ?? 0;
+            TaskWarehouse::deleteAll(['id' => $id]);
+            return true;
+        }catch (Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+
     }
 
     /**

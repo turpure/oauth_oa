@@ -277,10 +277,10 @@ class OaDataController extends AdminController
         $request = Yii::$app->request->post();
         $cond = $request['condition'];
         $condition = [
-            'plat' => $cond['plat'],
-            'suffix' => $cond['suffix'],
-            'goodsCode' => $cond['goodsCode'],
-            'warehouse' => $cond['warehouse'],
+            'plat' => $cond['plat']  ?: '',
+            'suffix' => $cond['suffix'] ?: '',
+            'goodsCode' => $cond['goodsCode']  ?: '',
+            'warehouse' => $cond['warehouse']  ?: '',
             'orderBeginDate' => $cond['orderDate'][0],
             'orderEndDate' => $cond['orderDate'][1],
         ];
