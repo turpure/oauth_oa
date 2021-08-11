@@ -1304,11 +1304,11 @@ class ReportController extends AdminController
             $item['毛利值得分'] = $v['profitScore'];
             $item['毛利绝对值增长'] = $v['profitAdd'];
             $item['毛利绝对值增长得分'] = $v['profitAddScore'];
-            $item['毛利百分比增长(%)'] = $v['profitRate'] . '%';
+            $item['毛利百分比增长(%)'] = $v['profitRate'];
             $item['毛利百分比增长得分'] = $v['profitRateScore'];
             $item['销售额绝对值增长'] = $v['salesAdd'];
             $item['销售额绝对值增长得分'] = $v['salesAddScore'];
-            $item['销售额百分比增长(%)'] = $v['salesRate'] . '%';
+            $item['销售额百分比增长(%)'] = $v['salesRate'];
             $item['销售额百分比增长得分'] = $v['salesRateScore'];
             $item['入职时间系数'] = $v['userHireRate'];
             $item['业绩指标总得分'] = $v['achieveTotalScore'];
@@ -1421,11 +1421,11 @@ class ReportController extends AdminController
             $item['毛利值得分'] = $v['profitScore'];
             $item['毛利绝对值增长'] = $v['profitAdd'];
             $item['毛利绝对值增长得分'] = $v['profitAddScore'];
-            $item['毛利百分比增长(%)'] = $v['profitRate'] . '%';
+            $item['毛利百分比增长(%)'] = $v['profitRate'];
             $item['毛利百分比增长得分'] = $v['profitRateScore'];
             $item['销售额绝对值增长'] = $v['salesAdd'];
             $item['销售额绝对值增长得分'] = $v['salesAddScore'];
-            $item['销售额百分比增长(%)'] = $v['salesRate'] . '%';
+            $item['销售额百分比增长(%)'] = $v['salesRate'];
             $item['销售额百分比增长得分'] = $v['salesRateScore'];
             $item['入职时间系数'] = $v['userHireRate'];
             $item['业绩指标总得分'] = $v['achieveTotalScore'];
