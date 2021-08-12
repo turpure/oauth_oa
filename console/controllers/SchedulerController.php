@@ -1181,4 +1181,24 @@ class SchedulerController extends Controller
 //        $this->actionWarehouseIntegral();
     }
 
+
+    //////////////////////////////////////////////////////////////////////////
+    /**
+     * 计算 昨日 收益
+     * Date: 2021-08-05 11:12
+     * Author: henry
+     */
+    public function actionIncomeGet()
+    {
+        try {
+            $sql = "CALL u_fund.income_calculate;";
+            Yii::$app->db->createCommand($sql)->execute();
+            print date('Y-m-d H:i:s') . " INFO:success to get income \n";
+        } catch (\Exception $e) {
+            echo date('Y-m-d H:i:s') . " fail to get income because '{$e->getMessage()}'. \n";
+            echo $e->getMessage();
+        }
+    }
+
+
 }
