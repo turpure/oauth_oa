@@ -1211,6 +1211,7 @@ class ApiTinyTool
         $doc = Yii::$app->db->createCommand('select * from cache_order_zip_code')->queryAll();
         $id = Yii::$app->py_db->createCommand("select nid from B_LogisticWay WHERE name LIKE 'UKLE-Royal Mail - Tracked 48 Parcel%'")->queryScalar();
         $maId = Yii::$app->py_db->createCommand("select nid from B_LogisticWay WHERE name LIKE 'UKMA-Royal Mail - Tracked 48 Parcel%'")->queryScalar();
+        $twId = Yii::$app->py_db->createCommand("select nid from B_LogisticWay WHERE name LIKE 'UKTW-Royal Mail - Tracked 48 Parcel%'")->queryScalar();
 
         //待派单 偏远地区修改物流方式
         $sql = "SELECT m.nid,totalWeight,l.name,'P_TradeLogs' AS tableLogs,'P_Trade' AS tableName,SUBSTRING(l.name,1,4) AS method
@@ -1219,6 +1220,7 @@ class ApiTinyTool
                 LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
                 WHERE FilterFlag IN (4,5,6) AND e.name LIKE '%万邑通%' AND ISNULL(TrackNo,'')='' AND 
                 l.name IN ('UKMA-Hermes - UK Standard 48', 'UKMA-Hermes - Standard 48 Claim',
+                        'UKTW-Hermes - UK Standard 48', 'UKTW-Hermes - Standard 48 Claim',
                         'UKLE-Hermes - UK Standard 48', 'UKLE-Hermes - Standard 48 Claim') -- and m.nid=22937671 
             UNION
                 SELECT m.nid,totalWeight,l.name,'P_TradeWaitLogs' AS tableLogs,'P_TradeWait' AS tableName,SUBSTRING(l.name,1,4) AS method
@@ -1270,6 +1272,7 @@ class ApiTinyTool
                 LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
                 WHERE FilterFlag IN (1,4) AND e.name LIKE '%万邑通%' AND ISNULL(TrackNo,'')='' 
                 AND l.name IN ('UKMA-Hermes - UK Standard 48', 'UKMA-Hermes - Standard 48 Claim', 
+                        'UKTW-Hermes - UK Standard 48', 'UKTW-Hermes - Standard 48 Claim',
                         'UKLE-Hermes - UK Standard 48', 'UKLE-Hermes - Standard 48 Claim')
                 ";
         //过滤偏远地区
@@ -1294,6 +1297,10 @@ class ApiTinyTool
                     $logicsWayNID = $id;
                     $logicsWay = 'UKLE-Royal Mail - Tracked 48 Parcel';
                     $shipFee = self::getOrderShipFee($v, $id);
+                } elseif($v['method'] == 'UKTW') {
+                    $logicsWayNID = $twId;
+                    $logicsWay = 'UKTW-Royal Mail - Tracked 48 Parcel';
+                    $shipFee = self::getOrderShipFee($v, $twId);
                 } else {
                     $logicsWayNID = $maId;
                     $logicsWay = 'UKMA-Royal Mail - Tracked 48 Parcel';
