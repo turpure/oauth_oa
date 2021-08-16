@@ -431,6 +431,8 @@ class ReportController extends AdminController
         return ApiReport::getIntroduceReport($condition);
     }
 
+    ##################### 退款分析-开始 ##################################
+
     /**
      * suffix refund details
      * @return array|ArrayDataProvider
@@ -457,6 +459,32 @@ class ReportController extends AdminController
         return ApiReport::getRefundDetails($condition);
     }
 
+    /**
+     * ebay托管后的退款
+     *
+     * @return array|ArrayDataProvider
+     * @throws \yii\db\Exception
+     */
+    public function actionEbayRefund()
+    {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        $params = [
+            'platform' => isset($cond['plat']) ? $cond['plat'] : [],
+            'username' => isset($cond['member']) ? $cond['member'] : [],
+            'store' => isset($cond['account']) ? $cond['account'] : []
+        ];
+        $paramsFilter = Handler::paramsHandler($params);
+        $condition = [
+            'type' => $cond['type'],
+            'beginDate' => $cond['dateRange'][0],
+            'endDate' => $cond['dateRange'][1],
+            'suffix' => $paramsFilter['store'],
+            'page' => isset($cond['page']) ? $cond['page'] : 1,
+            'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 10,
+        ];
+        return ApiReport::getEbayRefundDetails($condition);
+    }
 
     /**
      * suffix wish refund details
