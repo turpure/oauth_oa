@@ -1222,15 +1222,6 @@ class ApiTinyTool
                 l.name IN ('UKMA-Hermes - UK Standard 48', 'UKMA-Hermes - Standard 48 Claim',
                         'UKTW-Hermes - UK Standard 48', 'UKTW-Hermes - Standard 48 Claim',
                         'UKLE-Hermes - UK Standard 48', 'UKLE-Hermes - Standard 48 Claim') -- and m.nid=22937671 
-            UNION
-                SELECT m.nid,totalWeight,l.name,'P_TradeWaitLogs' AS tableLogs,'P_TradeWait' AS tableName,SUBSTRING(l.name,1,4) AS method
-                FROM P_TradeWait (nolock) m
-                LEFT JOIN T_express (nolock) e ON e.nid = m.expressnid
-                LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
-                WHERE FilterFlag IN (4,5,6) AND e.name LIKE '%万邑通%' AND ISNULL(TrackNo,'')='' AND 
-                l.name IN ('UKMA-Hermes - UK Standard 48', 'UKMA-Hermes - Standard 48 Claim',
-                        'UKLE-Hermes - UK Standard 48', 'UKLE-Hermes - Standard 48 Claim')
-                
                 ";
         //过滤偏远地区
         foreach ($doc as $k => $ele) {
@@ -1251,6 +1242,7 @@ class ApiTinyTool
                 LEFT JOIN B_LogisticWay (nolock) l ON l.nid = m.logicsWayNID 
                 WHERE FilterFlag IN (4,5,6) AND e.name LIKE '%万邑通%' AND ISNULL(TrackNo,'')='' AND 
                 l.name IN ('UKMA-Hermes - UK Standard 48', 'UKMA-Hermes - Standard 48 Claim',
+                        'UKTW-Hermes - UK Standard 48', 'UKTW-Hermes - Standard 48 Claim',
                         'UKLE-Hermes - UK Standard 48', 'UKLE-Hermes - Standard 48 Claim') -- and m.nid=22937671 
                 ";
         //过滤偏远地区
