@@ -1221,7 +1221,7 @@ class ApiTinyTool
                 WHERE FilterFlag IN (4,5,6) AND e.name LIKE '%万邑通%' AND ISNULL(TrackNo,'')='' AND 
                 l.name IN ('UKMA-Hermes - UK Standard 48', 'UKMA-Hermes - Standard 48 Claim',
                         'UKTW-Hermes - UK Standard 48', 'UKTW-Hermes - Standard 48 Claim',
-                        'UKLE-Hermes - UK Standard 48', 'UKLE-Hermes - Standard 48 Claim') -- and m.nid=22937671 
+                        'UKLE-Hermes - UK Standard 48', 'UKLE-Hermes - Standard 48 Claim')  and m.nid=33295357 
                 ";
         //过滤偏远地区
         foreach ($doc as $k => $ele) {
@@ -1243,7 +1243,7 @@ class ApiTinyTool
                 WHERE FilterFlag IN (4,5,6) AND e.name LIKE '%万邑通%' AND ISNULL(TrackNo,'')='' AND 
                 l.name IN ('UKMA-Hermes - UK Standard 48', 'UKMA-Hermes - Standard 48 Claim',
                         'UKTW-Hermes - UK Standard 48', 'UKTW-Hermes - Standard 48 Claim',
-                        'UKLE-Hermes - UK Standard 48', 'UKLE-Hermes - Standard 48 Claim') -- and m.nid=22937671 
+                        'UKLE-Hermes - UK Standard 48', 'UKLE-Hermes - Standard 48 Claim')  and m.nid=33295357 
                 ";
         //过滤偏远地区
         foreach ($doc as $k => $ele) {
@@ -1265,7 +1265,7 @@ class ApiTinyTool
                 WHERE FilterFlag IN (1,4) AND e.name LIKE '%万邑通%' AND ISNULL(TrackNo,'')='' 
                 AND l.name IN ('UKMA-Hermes - UK Standard 48', 'UKMA-Hermes - Standard 48 Claim', 
                         'UKTW-Hermes - UK Standard 48', 'UKTW-Hermes - Standard 48 Claim',
-                        'UKLE-Hermes - UK Standard 48', 'UKLE-Hermes - Standard 48 Claim')
+                        'UKLE-Hermes - UK Standard 48', 'UKLE-Hermes - Standard 48 Claim')  and m.nid=33295357 
                 ";
         //过滤偏远地区
         foreach ($doc as $k => $ele) {
@@ -1278,8 +1278,8 @@ class ApiTinyTool
                 $sql .= ")";
             }
         }
-        //var_dump($sql);exit;
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        //var_dump($data);exit;
         $transaction = BGoods::getDb()->beginTransaction();
         try {
             foreach ($data as $v) {
