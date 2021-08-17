@@ -909,7 +909,7 @@ class WarehouseToolsController extends AdminController
     {
         $condition = Yii::$app->request->post()['condition'];
         $personPickingData = ApiWarehouseTools::getPickStatisticsData($condition);
-        $title = ['拣货人', '单品拣货量', '多品拣货量', '总拣货量'];
+        $title = ['拣货人', '单品拣货量', '多品拣货量', '总拣货量', '单品订单数', '多品订单数', '总订单数'];
         ExportTools::toExcelOrCsv('PersonPickingData', $personPickingData, 'Xls', $title);
     }
 

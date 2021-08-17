@@ -1403,7 +1403,7 @@ class ApiGoodsinfo
                                 WHERE name LIKE 'shopee-SLS上海(" . $site['site'] . "%' ORDER BY BeginWeight,BeginMoneyGoods";
                 $expressInfo[$site['site']] = Yii::$app->py_db->createCommand($logisticSql)->queryAll();
                 # 售价信息
-                $profitRate = 0.2; //毛利率
+                $profitRate = 0.3; //毛利率
                 $ele['价格'] = static::getGoodsSalePrice($ele, $site, $packageInfo, $expressInfo, $profitRate, 'shopee');
 //                var_dump($expressInfo);exit;
                 unset($ele['id'], $ele['成本价'], $ele['包装规格']);
