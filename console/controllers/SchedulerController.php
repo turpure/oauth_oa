@@ -7,6 +7,7 @@
 
 namespace console\controllers;
 
+use backend\models\EbayRefund;
 use backend\modules\v1\models\ApiReport;
 use backend\modules\v1\models\ApiSettings;
 use backend\modules\v1\models\ApiUk;
@@ -1179,6 +1180,59 @@ class SchedulerController extends Controller
         $this->actionSalesAmt();
 //        $this->actionSite();
 //        $this->actionWarehouseIntegral();
+    }
+
+    //////////////////////////////////eBay托管后的新退款 和 店铺杂费////////////////////////////////////////
+
+    public static function actionSyncNewEbayRefund(){
+        $beginDate = date('Y-m-01');
+        $endDate = date('Y-m-d', strtotime('-1 days')) . ' 23:59:59';
+        //按订单汇总退款
+        $query = EbayRefund::find()
+            ->andFilterWhere(['transactionDate' => ['$gte' => $beginDate, '$lte' => $endDate]])
+            ->asArray()->all();
+        $versionArr = ArrayHelper::getColumn($query, 'orderId');
+        $version = implode(',', $versionArr);
+
+        $sql = "EXEC get_ebay_new_refund_order '{$version}' ";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+//        var_dump($data);exit;
+        foreach ($query as $v){
+
+
+            $item['refMonth'] = substr($v['transactionDate'],0,7);
+            $item['refund'] = $v['amountValue'];
+            $item['suffix'] = $v['suffix'];
+            $item['currencyCode'] = $v['currency'];
+            $item['refundTime'] = $v['transactionDate'];
+            foreach ($data as $order){
+                if($v['orderId'] == $order['version']){
+                    $item['dateDelta'] = $v["transactionDate"];
+                    $item['expressWay'] = $order['expressWay'];
+                    $item['goodsCode'] = $order['goodsCode'];
+                    $item['goodsName'] = $order['goodsName'
+                    ];
+                    $item['goodsSku'] = $order['goodsSku'];
+                    $item['mergeBillId'] = $order['expressWay'];
+                    $item['orderCountry'] = $order['orderCountry'];
+                    $item['orderId'] = $order['orderId'];
+                    $item['orderTime'] = $order['orderTime'];
+                    $item['platform'] = $order['platform'];
+                    $item['refundId'] = $order['refundId'];
+                    $item['refundZn'] = $v['amountValue'] * $order['exchangeRate'];
+//                $item['salesman'] = $order['salesman'];
+                    $item['storeName'] = $order['storeName'];
+                    $item['tradeId'] = $order['NID'];
+                    unset($order);
+                    break;
+                }
+            }
+            var_dump($item);exit;
+            var_dump(count($data));
+        }
+
+
+
     }
 
 

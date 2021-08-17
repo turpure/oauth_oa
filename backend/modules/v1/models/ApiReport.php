@@ -843,40 +843,56 @@ class ApiReport
 
     public static function getEbayRefundDetails($condition)
     {
-        //美元汇率
-        $rate = ApiUkFic::getRateUkOrUs('USD');
-        $exchangeRate = ApiSettings::getExchangeRate();
         //按订单汇总退款
         $query = EbayRefund::find()
 //            ->select(["currency as currencyCode", "amountValue as refund", "transactionDate as refundTime", "suffix"])
             ->andWhere(['suffix' => $condition['suffix']])
             ->andFilterWhere(['transactionDate' => ['$gte' => $condition['beginDate'], '$lte' => $condition['endDate']]])
             ->asArray()->all();
-//        var_dump($data);exit;
+        $versionArr = ArrayHelper::getColumn($query, 'orderId');
+        $version = implode(',', $versionArr);
+        var_dump($version);exit;
         $data = [];
         foreach ($query as $v){
-            var_dump($v['transactionDate']);exit;
+            $sql = "SELECT DISTINCT m.NID,m.orderTime,ISNULL(l.name,'') AS expressWay,s.storeName, MAX(d.sku) AS goodsSku,
+                            bg.goodsCode,bg.goodsName,bdc.FitCode AS platform,c.countryznName AS orderCountry,
+                            m.shipToCountryCode,bc.exchangeRate
+                    FROM P_TradeUn (nolock) as m
+                    LEFT JOIN P_TradeDtUn (nolock) as d ON m.nid=d.tradeNId
+                    LEFT JOIN dbo.b_goodsSku as bgs on d.sku=bgs.sku
+                    LEFT JOIN dbo.b_goods as bg on bg.nid=bgs.goodsid
+                    LEFT JOIN dbo.B_Store as s on s.nid=d.storeid
+                    LEFT JOIN dbo.B_CurrencyCode as bc with(nolock) on bc.currencyCode = m.currencyCode	
+                    LEFT JOIN dbo.B_Dictionary as bdc on m.suffix=bdc.dictionaryName AND bdc.categoryID=12
+                    LEFT JOIN dbo.B_LogisticWay(nolock) l on l.NID = m.logicsWayNID
+                    LEFT JOIN dbo.B_Country c on c.countryCode = m.shipToCountryCode
+                    WHERE  filterFlag <> 3 AND VERSION = '{$v['orderId']}' 
+                    GROUP BY 
+                    m.NID,m.ORDERTIME,ISNULL(l.name,''),s.storename,m.shipToCountryCode,m.currencyCode,
+                    bg.goodscode,bg.goodsname,bdc.FitCode,c.countryznName";
+            $order = Yii::$app->py_db->createCommand($sql)->queryOne();
+            if(!$order) break;
             $item = [];
             $item['currencyCode'] = $v['currency'];
-            $item['dateDelta'] = "4";
-            $item['expressWay'] = "燕文专线追踪小包(普货)";
-            $item['goodsCode'] = "9G0890";
-            $item['goodsName'] = "茶盏";
-            $item['goodsSku'] = "9G089001";
-            $item['mergeBillId'] = "33051917";
-            $item['orderCountry'] = "日本";
-            $item['orderId'] = "3SM79253BY9415122";
-            $item['orderTime'] = "2021-08-07 11:10:00";
-            $item['platform'] = "Shopify";
-            $item['refMonth'] = "2021-08";
-            $item['refund'] = $v['amountValue'];
-            $item['refundId'] = "ebay-17494577";
-            $item['refundTime'] = "2021-08-11 01:43:19";
-            $item['refundZn'] = "315.42000000";
-            $item['salesman'] = "梁玉双";
-            $item['storeName'] = "义乌仓";
+            $item['dateDelta'] = "0";
+            $item['expressWay'] = $order['expressWay'];
+            $item['goodsCode'] = $order['goodsCode'];
+            $item['goodsName'] = $order['goodsName'];
+            $item['goodsSku'] = $order['goodsSku'];
+            $item['mergeBillId'] = $order['expressWay'];
+            $item['orderCountry'] = $order['orderCountry'];
+            $item['orderId'] = $order['expressWay'];
+            $item['orderTime'] = $order['expressWay'];
+            $item['platform'] = $order['expressWay'];
+            $item['refMonth'] = $order['expressWay'];
+            $item['refund'] = $order['expressWay'];
+            $item['refundId'] = $order['expressWay'];
+            $item['refundTime'] = $v['transactionDate'];
+            $item['refundZn'] = $v['amountValue'] * $order['exchangeRate'];
+            $item['salesman'] = $order['salesman'];
+            $item['storeName'] = $order['storeName'];
             $item['suffix'] = $v['suffix'];
-            $item['tradeId'] = "33051917";
+            $item['tradeId'] = $order['NID'];
         }
 
 

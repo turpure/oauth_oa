@@ -106,14 +106,14 @@ class ApiPurchaseTool
             $sql = "SELECT billNumber,note,'caigoueasy' AS account
                 FROM cg_stockorderm  AS cm WITH(nolock)
                 LEFT JOIN S_AlibabaCGInfo AS info WITH(nolock) ON Cm.AliasName1688 = info.AliasName
-                where checkflag=0 AND datediff(day,makedate,getdate())<4
+                where checkflag=0 AND datediff(day,makedate,getdate())<4 
                 AND isnull(note,'') != '' -- and billNumber='CGD-2020-08-04-0207'
                 Union
                 SELECT billNumber,note,'caigoueasy' as account
                 FROM cg_stockorderm  AS cm WITH(nolock)
                 LEFT JOIN S_AlibabaCGInfo AS info WITH(nolock) ON Cm.AliasName1688 = info.AliasName
                 WHERE alibabaorderid ='' AND DATEDIFF(dd, MakeDate, GETDATE()) BETWEEN 0 AND 4
-                AND CheckFlag=1 AND Archive=0 AND InFlag=0 AND isnull(note,'') != '' ";
+                AND CheckFlag=1 AND Archive=0 AND InFlag=0 AND isnull(note,'') != ''  ";
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             foreach ($data as &$val) {
                 $val['orderId'] = '';
@@ -133,7 +133,8 @@ class ApiPurchaseTool
                 LEFT JOIN CG_StockOrderM  AS cm WITH(nolock) ON cd.stockordernid = cm.nid  
                 LEFT JOIN S_AlibabaCGInfo AS info WITH(nolock) ON Cm.AliasName1688 = info.AliasName  
                 LEFT JOIN B_GoodsSKU AS g WITH(nolock) ON cd.goodsskuid = g.nid  
-                WHERE  CheckFlag=1 And inflag=0 ANd Archive=0 AND MakeDate > '{$someDays}'  AND isnull(loginId,'') LIKE 'caigoueasy%'  
+                WHERE  CheckFlag=1 And inflag=0 ANd Archive=0 AND MakeDate > '{$someDays}'  
+                AND isnull(loginId,'') LIKE 'caigoueasy%' AND logisticsStatus <> '等待买家付款'  
                 -- AND BillNumber = 'CGD-2020-07-13-2761' 
                 AND StoreID IN (2,7,36) AND ABS(OrderMoney - alibabamoney) > 0.1 ORDER BY MakeDate";
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
