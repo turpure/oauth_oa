@@ -479,7 +479,7 @@ class ReportController extends AdminController
             'type' => $cond['type'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'suffix' => $paramsFilter['store'],
+            'suffix' => "'" . implode("','", $paramsFilter['store']) . "'",
             'page' => isset($cond['page']) ? $cond['page'] : 1,
             'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 10,
         ];

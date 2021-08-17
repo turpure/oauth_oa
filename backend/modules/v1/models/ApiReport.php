@@ -843,69 +843,41 @@ class ApiReport
 
     public static function getEbayRefundDetails($condition)
     {
-        //按订单汇总退款
-        $query = EbayRefund::find()
-//            ->select(["currency as currencyCode", "amountValue as refund", "transactionDate as refundTime", "suffix"])
-            ->andWhere(['suffix' => $condition['suffix']])
-            ->andFilterWhere(['transactionDate' => ['$gte' => $condition['beginDate'], '$lte' => $condition['endDate']]])
-            ->asArray()->all();
-        $versionArr = ArrayHelper::getColumn($query, 'orderId');
-        $version = implode(',', $versionArr);
-        var_dump($version);exit;
-        $data = [];
-        foreach ($query as $v){
-            $sql = "SELECT DISTINCT m.NID,m.orderTime,ISNULL(l.name,'') AS expressWay,s.storeName, MAX(d.sku) AS goodsSku,
-                            bg.goodsCode,bg.goodsName,bdc.FitCode AS platform,c.countryznName AS orderCountry,
-                            m.shipToCountryCode,bc.exchangeRate
-                    FROM P_TradeUn (nolock) as m
-                    LEFT JOIN P_TradeDtUn (nolock) as d ON m.nid=d.tradeNId
-                    LEFT JOIN dbo.b_goodsSku as bgs on d.sku=bgs.sku
-                    LEFT JOIN dbo.b_goods as bg on bg.nid=bgs.goodsid
-                    LEFT JOIN dbo.B_Store as s on s.nid=d.storeid
-                    LEFT JOIN dbo.B_CurrencyCode as bc with(nolock) on bc.currencyCode = m.currencyCode	
-                    LEFT JOIN dbo.B_Dictionary as bdc on m.suffix=bdc.dictionaryName AND bdc.categoryID=12
-                    LEFT JOIN dbo.B_LogisticWay(nolock) l on l.NID = m.logicsWayNID
-                    LEFT JOIN dbo.B_Country c on c.countryCode = m.shipToCountryCode
-                    WHERE  filterFlag <> 3 AND VERSION = '{$v['orderId']}' 
-                    GROUP BY 
-                    m.NID,m.ORDERTIME,ISNULL(l.name,''),s.storename,m.shipToCountryCode,m.currencyCode,
-                    bg.goodscode,bg.goodsname,bdc.FitCode,c.countryznName";
-            $order = Yii::$app->py_db->createCommand($sql)->queryOne();
-            if(!$order) break;
-            $item = [];
-            $item['currencyCode'] = $v['currency'];
-            $item['dateDelta'] = "0";
-            $item['expressWay'] = $order['expressWay'];
-            $item['goodsCode'] = $order['goodsCode'];
-            $item['goodsName'] = $order['goodsName'];
-            $item['goodsSku'] = $order['goodsSku'];
-            $item['mergeBillId'] = $order['expressWay'];
-            $item['orderCountry'] = $order['orderCountry'];
-            $item['orderId'] = $order['expressWay'];
-            $item['orderTime'] = $order['expressWay'];
-            $item['platform'] = $order['expressWay'];
-            $item['refMonth'] = $order['expressWay'];
-            $item['refund'] = $order['expressWay'];
-            $item['refundId'] = $order['expressWay'];
-            $item['refundTime'] = $v['transactionDate'];
-            $item['refundZn'] = $v['amountValue'] * $order['exchangeRate'];
-            $item['salesman'] = $order['salesman'];
-            $item['storeName'] = $order['storeName'];
-            $item['suffix'] = $v['suffix'];
-            $item['tradeId'] = $order['NID'];
+        $rate = ApiUkFic::getRateUkOrUs('USD');
+        $sql = "SELECT rd.*, u.username AS salesman 
+                FROM (
+                    SELECT MAX(refMonth) AS refMonth, MAX(dateDelta) as dateDelta, MAX(suffix) AS suffix,
+                    MAX(goodsName) AS goodsName,MAX(goodsCode) AS goodsCode,MAX(goodsSku) AS goodsSku, 
+                    MAX(tradeId) AS tradeId,orderId,mergeBillId,MAX(storeName) AS storeName, MAX(refund) AS refund, 
+				    MAX(currencyCode) AS currencyCode,MAX(refundTime) AS refundTime, MAX(orderTime) AS orderTime, 
+				    MAX(orderCountry) AS orderCountry,MAX(platform) AS platform,MAX(expressWay) AS expressWay,
+				    refundId,MAX(refundZn) AS refundZn
+                    FROM `cache_refund_details_ebay_new` 
+                    WHERE refundTime between '{$condition['beginDate']}' AND '" . $condition['endDate'] . " 23:59:59" . "' 
+                          AND IFNULL(platform,'')<>'' 
+                    GROUP BY refundId,OrderId,mergeBillId,refund,refundTime
+                ) rd 
+                LEFT JOIN auth_store s ON s.store=rd.suffix
+                LEFT JOIN auth_store_child sc ON sc.store_id=s.id
+                LEFT JOIN user u ON sc.user_id=u.id WHERE u.status=10 ";
+        if ($condition['suffix']) {
+            $sql .= 'AND suffix IN (' . $condition['suffix'] . ') ';
         }
-
+        $sql .= 'ORDER BY refund DESC,goodsSku ASC';
+//        $data = Yii::$app->db->createCommand($sql)->getRawSql();
+//        var_dump($data);exit;
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
 
         try {
-            $provider = new ActiveDataProvider([
+            $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'pagination' => [
                     'pageSize' => $condition['pageSize'],
                 ],
             ]);
-//            $totalRefundZn = round(array_sum(ArrayHelper::getColumn($data, 'refundZn')), 2);
-//            $totalRefundUs = round(array_sum(ArrayHelper::getColumn($data, 'refund')), 2);
-            return ['provider' => $provider, 'extra' => ['totalRefundZn' => 0, 'totalRefundUs' => 0]];
+            $totalRefundZn = round(array_sum(ArrayHelper::getColumn($data, 'refundZn')), 2);
+            $totalRefundUs = round($totalRefundZn/$rate, 2);
+            return ['provider' => $provider, 'extra' => ['totalRefundZn' => $totalRefundZn, 'totalRefundUs' => $totalRefundUs]];
         } catch (\Exception $why) {
             return [
                 'code' => 400,

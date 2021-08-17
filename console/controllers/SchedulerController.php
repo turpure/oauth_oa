@@ -1184,51 +1184,55 @@ class SchedulerController extends Controller
 
     //////////////////////////////////eBay托管后的新退款 和 店铺杂费////////////////////////////////////////
 
-    public static function actionSyncNewEbayRefund(){
-        $beginDate = date('Y-m-01');
-        $endDate = date('Y-m-d', strtotime('-1 days')) . ' 23:59:59';
+    public static function actionSyncNewEbayRefund($beginDate = '', $endDate = ''){
+        if (!$beginDate && !$endDate){
+            $beginDate = date('Y-m-01');
+            $endDate = date('Y-m-d', strtotime('-1 days')) . ' 23:59:59';
+        }
+        $del_sql = "DELETE FROM cache_refund_details_ebay_new WHERE refundTime BETWEEN '{$beginDate}' AND '{$endDate}'";
+        Yii::$app->db->createCommand($del_sql)->execute();
+
         //按订单汇总退款
         $query = EbayRefund::find()
             ->andFilterWhere(['transactionDate' => ['$gte' => $beginDate, '$lte' => $endDate]])
             ->asArray()->all();
         $versionArr = ArrayHelper::getColumn($query, 'orderId');
         $version = implode(',', $versionArr);
-
         $sql = "EXEC get_ebay_new_refund_order '{$version}' ";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-//        var_dump($data);exit;
         foreach ($query as $v){
-
-
-            $item['refMonth'] = substr($v['transactionDate'],0,7);
-            $item['refund'] = $v['amountValue'];
-            $item['suffix'] = $v['suffix'];
-            $item['currencyCode'] = $v['currency'];
-            $item['refundTime'] = $v['transactionDate'];
-            foreach ($data as $order){
+            foreach ($data as $k => $order){
                 if($v['orderId'] == $order['version']){
-                    $item['dateDelta'] = $v["transactionDate"];
+                    $item['refMonth'] = substr($v['transactionDate'],0,7);
+                    $item['refund'] = $v['amountValue'];
+                    $item['suffix'] = $v['suffix'];
+                    $item['currencyCode'] = $v['currency'];
+                    $item['refundTime'] = date('Y-m-d H:i:s',strtotime($v['transactionDate']));;
+                    $item['refundId'] = $v['transactionId'];
+                    $item['orderId'] = $v['orderId'];
+                    $item['dateDelta'] = floor((strtotime($v['transactionDate']) - strtotime($order['orderTime']))/24/3600);
                     $item['expressWay'] = $order['expressWay'];
                     $item['goodsCode'] = $order['goodsCode'];
-                    $item['goodsName'] = $order['goodsName'
-                    ];
-                    $item['goodsSku'] = $order['goodsSku'];
-                    $item['mergeBillId'] = $order['expressWay'];
+                    $item['goodsName'] = $order['goodsName'];
+                    $item['goodsSku'] = $order['sku'];
+                    $item['mergeBillId'] = $order['mergeBillId'];
                     $item['orderCountry'] = $order['orderCountry'];
-                    $item['orderId'] = $order['orderId'];
                     $item['orderTime'] = $order['orderTime'];
                     $item['platform'] = $order['platform'];
-                    $item['refundId'] = $order['refundId'];
+                    $item['orderId'] = $order['orderId'];
                     $item['refundZn'] = $v['amountValue'] * $order['exchangeRate'];
-//                $item['salesman'] = $order['salesman'];
                     $item['storeName'] = $order['storeName'];
                     $item['tradeId'] = $order['NID'];
-                    unset($order);
+//                    var_dump($item);exit;
+
+                    Yii::$app->db->createCommand()->insert('cache_refund_details_ebay_new',$item)->execute();
+
+                    unset($data[$k]);
                     break;
                 }
             }
-            var_dump($item);exit;
-            var_dump(count($data));
+//            var_dump($item);exit;
+//            var_dump(count($data));
         }
 
 
@@ -1246,6 +1250,11 @@ class SchedulerController extends Controller
     {
         try {
             $sql = "CALL u_fund.income_calculate;";
+
+
+
+
+
             Yii::$app->db->createCommand($sql)->execute();
             print date('Y-m-d H:i:s') . " INFO:success to get income \n";
         } catch (\Exception $e) {
