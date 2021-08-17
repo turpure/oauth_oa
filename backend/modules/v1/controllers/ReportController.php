@@ -504,7 +504,8 @@ class ReportController extends AdminController
         $condition = [
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'suffix' => "'" . implode("','", $paramsFilter['store']) . "'",
+            //'suffix' => "'" . implode("','", $paramsFilter['store']) . "'",
+            'suffix' => implode("','", $paramsFilter['store']),
             'page' => isset($cond['page']) ? $cond['page'] : 1,
             'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 10,
         ];
@@ -901,7 +902,7 @@ class ReportController extends AdminController
                 $headers = ['refMonth', 'suffix', 'salesman', 'goodsName', 'goodsCode', 'goodsSku',
                     'tradeId', 'orderId', 'mergeBillId', 'storeName', 'refund', 'refundZn', 'refundTime', 'orderTime',
                     'orderCountry', 'platform', 'expressWay'];
-                $data = $this->action()['provider']->getModels();
+                $data = $this->actionEbayRefund()['provider']->getModels();
                 break;
             default://默认销售死库明细下载
                 $fileName = 'salesDeadFeeData';

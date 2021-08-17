@@ -8,6 +8,7 @@
 namespace backend\modules\v1\models;
 
 use backend\models\EbayRefund;
+use backend\models\EbayStoreFee;
 use backend\models\OauthClearPlan;
 use backend\modules\v1\utils\ExportTools;
 use MongoDB\BSON\UTCDateTime;
@@ -904,7 +905,13 @@ class ApiReport
      */
     public static function getEbayStoreFee($condition)
     {
+        $beginDate = $condition['beginDate'];
+        $endDate = $condition['endDate'];
         $rate = ApiUkFic::getRateUkOrUs('USD');
+        $data = EbayStoreFee::find()
+            ->andFilterWhere(['suffix' => ['$gte' => $beginDate, '$lte' => $endDate]])
+            ->andFilterWhere(['transactionDate' => ['$gte' => $beginDate, '$lte' => $endDate]])
+            ->asArray()->all();
         $sql = "SELECT rd.*, u.username AS salesman 
                 FROM (
                     SELECT MAX(refMonth) AS refMonth, MAX(dateDelta) as dateDelta, MAX(suffix) AS suffix,
