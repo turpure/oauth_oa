@@ -476,7 +476,6 @@ class ReportController extends AdminController
         ];
         $paramsFilter = Handler::paramsHandler($params);
         $condition = [
-            'type' => $cond['type'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
             'suffix' => "'" . implode("','", $paramsFilter['store']) . "'",
@@ -485,6 +484,34 @@ class ReportController extends AdminController
         ];
         return ApiReport::getEbayRefundDetails($condition);
     }
+
+    /**
+     * ebay托管后的店铺杂费
+     *
+     * @return array|ArrayDataProvider
+     * @throws \yii\db\Exception
+     */
+    public function actionEbayStoreFee()
+    {
+        $request = Yii::$app->request->post();
+        $cond = $request['condition'];
+        $params = [
+            'platform' => isset($cond['plat']) ? $cond['plat'] : [],
+            'username' => isset($cond['member']) ? $cond['member'] : [],
+            'store' => isset($cond['account']) ? $cond['account'] : []
+        ];
+        $paramsFilter = Handler::paramsHandler($params);
+        $condition = [
+            'beginDate' => $cond['dateRange'][0],
+            'endDate' => $cond['dateRange'][1],
+            'suffix' => "'" . implode("','", $paramsFilter['store']) . "'",
+            'page' => isset($cond['page']) ? $cond['page'] : 1,
+            'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 10,
+        ];
+        return ApiReport::getEbayStoreFee($condition);
+    }
+
+
 
     /**
      * suffix wish refund details
@@ -865,6 +892,16 @@ class ReportController extends AdminController
                 $title = ['账号简称', '订单编号', '费用类型', '金额(£)','金额(￥)', '原始币种', '费用时间', '销售员'];
                 $headers = ['suffix', 'orderId', 'fee_type', 'total', 'totalRmb', 'currency_code', 'fee_time', 'salesman'];
                 $data = $this->actionTrusteeshipFee()['provider']->getModels();
+                break;
+            case 'ebayRefund'://eBay托管后退款
+                $fileName = 'ebayRefund';
+                $title = ['退款月份', '账号简称', '销售员', '商品名称', '商品编码', 'SKU',
+                    '交易单号', '店铺单号', '合并单号', '仓库', '退款金额(原始币种)', '退款金额(￥)', '退款时间', '交易时间',
+                    '国家', '平台', '物流方式',];
+                $headers = ['refMonth', 'suffix', 'salesman', 'goodsName', 'goodsCode', 'goodsSku',
+                    'tradeId', 'orderId', 'mergeBillId', 'storeName', 'refund', 'refundZn', 'refundTime', 'orderTime',
+                    'orderCountry', 'platform', 'expressWay'];
+                $data = $this->action()['provider']->getModels();
                 break;
             default://默认销售死库明细下载
                 $fileName = 'salesDeadFeeData';

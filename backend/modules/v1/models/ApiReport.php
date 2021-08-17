@@ -768,7 +768,7 @@ class ApiReport
         }
     }
 
-    /**
+    /** 托管前退款
      * @param $condition
      * @return array|ArrayDataProvider
      */
@@ -841,6 +841,14 @@ class ApiReport
         }
     }
 
+    /** 托管后退款
+     * getEbayRefundDetails
+     * @param $condition
+     * Date: 2021-08-17 17:54
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
     public static function getEbayRefundDetails($condition)
     {
         $rate = ApiUkFic::getRateUkOrUs('USD');
@@ -886,6 +894,58 @@ class ApiReport
         }
     }
 
+    /** 托管后店铺杂费
+     * getEbayRefundDetails
+     * @param $condition
+     * Date: 2021-08-17 17:54
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
+    public static function getEbayStoreFee($condition)
+    {
+        $rate = ApiUkFic::getRateUkOrUs('USD');
+        $sql = "SELECT rd.*, u.username AS salesman 
+                FROM (
+                    SELECT MAX(refMonth) AS refMonth, MAX(dateDelta) as dateDelta, MAX(suffix) AS suffix,
+                    MAX(goodsName) AS goodsName,MAX(goodsCode) AS goodsCode,MAX(goodsSku) AS goodsSku, 
+                    MAX(tradeId) AS tradeId,orderId,mergeBillId,MAX(storeName) AS storeName, MAX(refund) AS refund, 
+				    MAX(currencyCode) AS currencyCode,MAX(refundTime) AS refundTime, MAX(orderTime) AS orderTime, 
+				    MAX(orderCountry) AS orderCountry,MAX(platform) AS platform,MAX(expressWay) AS expressWay,
+				    refundId,MAX(refundZn) AS refundZn
+                    FROM `cache_refund_details_ebay_new` 
+                    WHERE refundTime between '{$condition['beginDate']}' AND '" . $condition['endDate'] . " 23:59:59" . "' 
+                          AND IFNULL(platform,'')<>'' 
+                    GROUP BY refundId,OrderId,mergeBillId,refund,refundTime
+                ) rd 
+                LEFT JOIN auth_store s ON s.store=rd.suffix
+                LEFT JOIN auth_store_child sc ON sc.store_id=s.id
+                LEFT JOIN user u ON sc.user_id=u.id WHERE u.status=10 ";
+        if ($condition['suffix']) {
+            $sql .= 'AND suffix IN (' . $condition['suffix'] . ') ';
+        }
+        $sql .= 'ORDER BY refund DESC,goodsSku ASC';
+//        $data = Yii::$app->db->createCommand($sql)->getRawSql();
+//        var_dump($data);exit;
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
+
+        try {
+            $provider = new ArrayDataProvider([
+                'allModels' => $data,
+                'pagination' => [
+                    'pageSize' => $condition['pageSize'],
+                ],
+            ]);
+            $totalRefundZn = round(array_sum(ArrayHelper::getColumn($data, 'refundZn')), 2);
+            $totalRefundUs = round($totalRefundZn/$rate, 2);
+            return ['provider' => $provider, 'extra' => ['totalRefundZn' => $totalRefundZn, 'totalRefundUs' => $totalRefundUs]];
+        } catch (\Exception $why) {
+            return [
+                'code' => 400,
+                'message' => $why->getMessage()
+            ];
+        }
+    }
 
     /**
      * wish 退款明细
