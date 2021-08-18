@@ -885,7 +885,7 @@ class ApiReport
                 ],
             ]);
             $totalRefundZn = round(array_sum(ArrayHelper::getColumn($data, 'refundZn')), 2);
-            $totalRefundUs = round($totalRefundZn/$rate, 2);
+            $totalRefundUs = round($totalRefundZn / $rate, 2);
             return ['provider' => $provider, 'extra' => ['totalRefundZn' => $totalRefundZn, 'totalRefundUs' => $totalRefundUs]];
         } catch (\Exception $why) {
             return [
@@ -907,45 +907,58 @@ class ApiReport
     {
         $beginDate = $condition['beginDate'];
         $endDate = $condition['endDate'];
-        $rate = ApiUkFic::getRateUkOrUs('USD');
-        $data = EbayStoreFee::find()
-            ->andFilterWhere(['suffix' => ['$gte' => $beginDate, '$lte' => $endDate]])
-            ->andFilterWhere(['transactionDate' => ['$gte' => $beginDate, '$lte' => $endDate]])
-            ->asArray()->all();
-        $sql = "SELECT rd.*, u.username AS salesman 
-                FROM (
-                    SELECT MAX(refMonth) AS refMonth, MAX(dateDelta) as dateDelta, MAX(suffix) AS suffix,
-                    MAX(goodsName) AS goodsName,MAX(goodsCode) AS goodsCode,MAX(goodsSku) AS goodsSku, 
-                    MAX(tradeId) AS tradeId,orderId,mergeBillId,MAX(storeName) AS storeName, MAX(refund) AS refund, 
-				    MAX(currencyCode) AS currencyCode,MAX(refundTime) AS refundTime, MAX(orderTime) AS orderTime, 
-				    MAX(orderCountry) AS orderCountry,MAX(platform) AS platform,MAX(expressWay) AS expressWay,
-				    refundId,MAX(refundZn) AS refundZn
-                    FROM `cache_refund_details_ebay_new` 
-                    WHERE refundTime between '{$condition['beginDate']}' AND '" . $condition['endDate'] . " 23:59:59" . "' 
-                          AND IFNULL(platform,'')<>'' 
-                    GROUP BY refundId,OrderId,mergeBillId,refund,refundTime
-                ) rd 
-                LEFT JOIN auth_store s ON s.store=rd.suffix
-                LEFT JOIN auth_store_child sc ON sc.store_id=s.id
-                LEFT JOIN user u ON sc.user_id=u.id WHERE u.status=10 ";
-        if ($condition['suffix']) {
-            $sql .= 'AND suffix IN (' . $condition['suffix'] . ') ';
+        $suffix = $condition['suffix'];
+        $usRate = ApiUkFic::getRateUkOrUs('USD');
+        $gbpRate = ApiUkFic::getRateUkOrUs('GBP');
+        $data = EbayStoreFee::getCollection()->aggregate([
+            [
+                '$match' => [
+                    'suffix' => ['$in' => array_values($suffix)],
+                    'transactionDate' => ['$gte' => $beginDate, '$lte' => $endDate]
+                ]
+            ],
+            [
+                '$group' => [
+                    '_id' => ['suffix' => '$suffix', 'currency' => '$currency'],
+                    'sum' => ['$sum' => ['$toDouble' => '$amountValue']]
+                ]
+            ],
+            [
+                '$project' => [
+                    '_id' => 0, 'suffix' => '$_id.suffix', 'currency' => '$_id.currency', 'sum' => '$sum'
+                ]
+            ]
+        ]);
+        $suffixArr = ArrayHelper::getColumn($data, 'suffix');
+        $res = [];
+        foreach ($suffixArr as $v) {
+            $sql = "SELECT username FROM `user` u
+                    LEFT JOIN auth_store_child l ON l.user_id = u.id
+                    LEFT JOIN auth_store s ON l.store_id = s.id
+                    WHERE s.store = '{$v}' ";
+            $item['salerman'] = Yii::$app->db->createCommand($sql)->queryScalar();
+            $item['suffix'] = $v;
+            $item['valueZn'] = 0;
+            foreach ($data as $val){
+//                var_dump($val['sum']);exit;
+                if($v == $val['suffix']){
+                    $item['valueZn'] += $val['sum'] * ($val['currency'] == 'USD' ? $usRate : ($val['currency'] == 'GBP' ? $gbpRate : ApiUkFic::getRateUkOrUs($val['currency'])));
+                }
+            }
+            $item['valueZn'] = round($item['valueZn'],2);
+            $res[] = $item;
         }
-        $sql .= 'ORDER BY refund DESC,goodsSku ASC';
-//        $data = Yii::$app->db->createCommand($sql)->getRawSql();
-//        var_dump($data);exit;
-        $data = Yii::$app->db->createCommand($sql)->queryAll();
-
         try {
             $provider = new ArrayDataProvider([
-                'allModels' => $data,
+                'allModels' => $res,
                 'pagination' => [
                     'pageSize' => $condition['pageSize'],
                 ],
             ]);
-            $totalRefundZn = round(array_sum(ArrayHelper::getColumn($data, 'refundZn')), 2);
-            $totalRefundUs = round($totalRefundZn/$rate, 2);
-            return ['provider' => $provider, 'extra' => ['totalRefundZn' => $totalRefundZn, 'totalRefundUs' => $totalRefundUs]];
+//            $totalRefundZn = round(array_sum(ArrayHelper::getColumn($data, 'refundZn')), 2);
+//            $totalRefundUs = round($totalRefundZn/$rate, 2);
+//            return ['provider' => $provider, 'extra' => ['totalRefundZn' => $totalRefundZn, 'totalRefundUs' => $totalRefundUs]];
+            return $provider;
         } catch (\Exception $why) {
             return [
                 'code' => 400,
@@ -1371,7 +1384,7 @@ class ApiReport
         list($devBeginDate, $devEndDate) = isset($condition['devDateRange']) && $condition['devDateRange'] ? $condition['devDateRange'] : ['', ''];
         $dateFlag = $condition['dateType'];
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-        $sql = 'call report_devRateDeveloperGoodsProfitAPI (:developer,:goodsStatus, :beginDate, 
+        $sql = 'call report_devRateDeveloperGoodsProfitAPI (:developer,:goodsStatus, :beginDate,
         :endDate, :dateFlag, :devBeginDate, :devEndDate, :homeGreatProfit, :overseaGreatProfit)';
         $params = [':developer' => implode(',', $developer),
             ':goodsStatus' => implode(',', $goodsStatus),
@@ -1572,7 +1585,7 @@ class ApiReport
         $sql = 'select  cp.goodsCode, bg.goodsStatus, bs.storeName, cp.planNumber,cp.createdTime,goodsName, (select top 1 bmpFileName from b_goodsSku(nolock)  where goodsId= bg.nid) as img, bc.categoryParentName,bc.categoryName,
             stockNumber, stockMoney,
             bg.salername as developer, cp.sellers as seller
-            from  oauth_clearPlan(nolock) as cp 
+            from  oauth_clearPlan(nolock) as cp
             LEFT JOIN b_goods(nolock) as bg on   cp.goodsCode = bg.goodsCode
             LEFT JOIN b_goodsCats(nolock) as bc on bg.goodsCategoryId = bc.nid
             LEFT JOIN (select storeId, goodsId, sum(number) as stockNumber,sum(money) as stockMoney  from   KC_CurrentStock(nolock) as kcs GROUP BY kcs.storeId, kcs.goodsId)  as ks on ks.goodsid = bg.nid
