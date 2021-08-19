@@ -1247,7 +1247,7 @@ class ApiWarehouseTools
         $opDate = $condition['opDate'] ?: '';
         $sql = "SELECT * FROM (
                     SELECT tradeNid,orderTime,operateTime,
-                    CASE WHEN filterFlag IN (100,200) AND scanningDate < operateTime THEN closingDate 
+                    CASE WHEN filterFlag IN (100,200) AND convert(varchar(10),ISNULL(scanningDate,''),121) < convert(varchar(10),operateTime,121) THEN closingDate 
                         WHEN ISNULL(scanningDate,'')<>'' THEN scanningDate
 		                WHEN ISNULL(scanningDate,'')='' AND filterFlag = 40 AND ISNULL(closingDate,'')<>'' THEN operateTime
 		                ELSE '' END AS scanningDate,
