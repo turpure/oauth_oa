@@ -89,7 +89,7 @@ class ApiPurchaseTool
         $message = [];
         foreach ($data as &$val) {
             // 获取 1688单号
-            $val['orderId'] = $item = '';
+            $val['orderId'] = '';
             preg_match_all('/\d+/', $val['note'], $matches);
             foreach ($matches[0] as $v) {
                 if (strlen($v) > 10) {
@@ -116,10 +116,11 @@ class ApiPurchaseTool
                     $model->alibabaorderid = $val['orderId'];
                     $model->AudieDate = date('Y-m-d H:i:s');
                     if ($model->save()) {
-                        $log = $username . ' ' . date('Y-m-d H:i:s') . ' 审核订单';
+                        $log = 'ur_center ' . date('Y-m-d H:i:s') . ' 审核订单';
                         $logSql = "INSERT INTO CG_StockLogs(OrderType,OrderNID,Operator,Logs) VALUES('采购订单', {$model->NID}, 'ur_center','{$log}')";
                         Yii::$app->py_db->createCommand($logSql)->execute();
                     }
+                    $item = '';
                 } else {
                     $item = 'Quantity is not same of order ' . $val['orderId'];
                 }
