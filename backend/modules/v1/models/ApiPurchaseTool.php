@@ -71,7 +71,50 @@ class ApiPurchaseTool
 
     ///////////////////////////自动审核/同步差额///////////////////////////////
 
-    /** 审核采购订单
+    /**自动审核
+     * autoCheckPurchaseOrder
+     * Date: 2021-08-20 11:36
+     * Author: henry
+     * @return bool
+     */
+    public static function autoCheckPurchaseOrder(){
+        $sql = "SELECT BillNumber,note,'caigoueasy' AS account
+                FROM cg_stockorderm  AS cm WITH(nolock)
+                LEFT JOIN S_AlibabaCGInfo AS info WITH(nolock) ON Cm.AliasName1688 = info.AliasName
+                where checkflag=0 AND datediff(day,makedate,getdate())<4 
+                AND isnull(note,'') != '' -- AND billNumber='CGD-2021-08-19-2245' ";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+//        var_dump($data);exit;
+        $aaa = [];
+        foreach ($data as &$val) {
+            $val['orderId'] = '';
+            preg_match_all('/\d+/', $val['note'], $matches);
+            foreach ($matches[0] as $v) {
+                if (strlen($v) > 10) {
+                    $val['orderId'] = $v;
+                    break;
+                }
+            }
+            $orderInfo = self::getOrderDetails($val);
+            if ($orderInfo['order']) {
+                $username = Yii::$app->user->identity->username;
+                $model = CGStockOrderM::findOne(['BillNumber' => $val['BillNumber']]);
+                $model->CheckFlag = 1;
+                $model->Audier = $username;
+                $model->AudieDate = date('Y-m-d H:i:s');
+                if($model->save()){
+                    $log = $username . ' ' . date('Y-m-d H:i:s') . ' 审核订单';
+                    $logSql = "INSERT INTO CG_StockLogs(OrderType,OrderNID,Operator,Logs) VALUES('采购订单', {$model->NID}, '{$username}','{$log}')";
+                    Yii::$app->py_db->createCommand($logSql)->execute();
+                }
+            }
+        }
+        return true;
+    }
+
+
+
+    /** 审核采购订单/同步差额
      * Date: 2020-08-04 13:49
      * Author: henry
      * @return array
@@ -134,7 +177,7 @@ class ApiPurchaseTool
                 LEFT JOIN S_AlibabaCGInfo AS info WITH(nolock) ON Cm.AliasName1688 = info.AliasName  
                 LEFT JOIN B_GoodsSKU AS g WITH(nolock) ON cd.goodsskuid = g.nid  
                 WHERE  CheckFlag=1 And inflag=0 ANd Archive=0 AND MakeDate > '{$someDays}'  
-                AND isnull(loginId,'') LIKE 'caigoueasy%' AND logisticsStatus <> '等待买家付款'  
+                AND isnull(loginId,'') LIKE 'caigoueasy%' AND ISNULL(logisticsStatus,'') NOT IN ('', '等待买家付款')  
                 -- AND BillNumber = 'CGD-2020-07-13-2761' 
                 AND StoreID IN (2,7,36) AND ABS(OrderMoney - alibabamoney) > 0.1 ORDER BY MakeDate";
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();

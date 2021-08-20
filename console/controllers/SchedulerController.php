@@ -1235,8 +1235,7 @@ class SchedulerController extends Controller
 //            var_dump(count($data));
         }
 
-
-
+        print date('Y-m-d H:i:s') . " INFO:success to sync ebay refund \n";
     }
 
 

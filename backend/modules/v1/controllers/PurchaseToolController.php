@@ -90,7 +90,8 @@ class PurchaseToolController extends AdminController
     public function actionChecking()
     {
         try {
-            return ApiPurchaseTool::checkPurchaseOrder();
+//            return ApiPurchaseTool::checkPurchaseOrder();
+            return ApiPurchaseTool::autoCheckPurchaseOrder();
         } catch (Exception $e) {
             return [
                 'code' => 400,
