@@ -89,7 +89,7 @@ class ApiPurchaseTool
         $message = [];
         foreach ($data as &$val) {
             // 获取 1688单号
-            $val['orderId'] = '';
+            $val['orderId'] = $item = '';
             preg_match_all('/\d+/', $val['note'], $matches);
             foreach ($matches[0] as $v) {
                 if (strlen($v) > 10) {
@@ -105,7 +105,7 @@ class ApiPurchaseTool
                             FROM cg_stockorderd  AS sd WITH(nolock) 
                             LEFT JOIN cg_stockorderm  AS cgsm WITH(nolock) ON sd.stockordernid= cgsm.nid 
                             WHERE note LIKE '%{$val['orderId']}%' AND cgsm.checkflag = 0 
-                            GROUP BY cgsm.billNumber ";
+                            GROUP BY cgsm.BillNumber ";
                 $ret = Yii::$app->py_db->createCommand($searchSql)->queryOne();
                 if (!$ret) {
                     $item = 'No need to check ' . $val['orderId'];
@@ -126,7 +126,7 @@ class ApiPurchaseTool
             } else {
                 $item = $orderInfo['message'];
             }
-            $message[] = $item;
+            if($item) $message[] = $item;
         }
         return $message;
     }
