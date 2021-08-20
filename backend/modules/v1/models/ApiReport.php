@@ -919,32 +919,35 @@ class ApiReport
             ],
             [
                 '$group' => [
-                    '_id' => ['suffix' => '$suffix', 'currency' => '$currency'],
+                    '_id' => ['suffix' => '$suffix', 'currency' => '$currency', 'feeType' => '$feeType'],
                     'sum' => ['$sum' => ['$toDouble' => '$amountValue']]
                 ]
             ],
             [
                 '$project' => [
-                    '_id' => 0, 'suffix' => '$_id.suffix', 'currency' => '$_id.currency', 'sum' => '$sum'
+                    '_id' => 0, 'suffix' => '$_id.suffix', 'currency' => '$_id.currency', 'feeType' => '$_id.feeType', 'sum' => '$sum'
                 ]
             ]
         ]);
         $suffixArr = ArrayHelper::getColumn($data, 'suffix');
         $res = [];
-        foreach ($suffixArr as $v) {
+        foreach ($data as $v) {
             $sql = "SELECT username FROM `user` u
                     LEFT JOIN auth_store_child l ON l.user_id = u.id
                     LEFT JOIN auth_store s ON l.store_id = s.id
-                    WHERE s.store = '{$v}' ";
+                    WHERE s.store = '{$v['suffix']}' ";
             $item['salerman'] = Yii::$app->db->createCommand($sql)->queryScalar();
-            $item['suffix'] = $v;
-            $item['valueZn'] = 0;
-            foreach ($data as $val){
-//                var_dump($val['sum']);exit;
-                if($v == $val['suffix']){
-                    $item['valueZn'] += $val['sum'] * ($val['currency'] == 'USD' ? $usRate : ($val['currency'] == 'GBP' ? $gbpRate : ApiUkFic::getRateUkOrUs($val['currency'])));
-                }
-            }
+            $item['suffix'] = $v['suffix'];
+            $item['feeType'] = $v['feeType'];
+            $item['currency'] = $v['currency'];
+            $item['value'] = $v['sum'];
+            $item['valueZn'] = $v['sum'] * ($v['currency'] == 'USD' ? $usRate : ($v['currency'] == 'GBP' ? $gbpRate : ApiUkFic::getRateUkOrUs($v['currency'])));
+//            foreach ($data as $val){
+////                var_dump($val['sum']);exit;
+//                if($v == $val['suffix']){
+//                    $item['valueZn'] += $val['sum'] * ($val['currency'] == 'USD' ? $usRate : ($val['currency'] == 'GBP' ? $gbpRate : ApiUkFic::getRateUkOrUs($val['currency'])));
+//                }
+//            }
             $item['valueZn'] = round($item['valueZn'],2);
             $res[] = $item;
         }
