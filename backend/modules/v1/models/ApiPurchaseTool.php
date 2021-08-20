@@ -113,12 +113,12 @@ class ApiPurchaseTool
                 if ($ret && $ret['total_amt'] == $orderInfo['order']['qty']) {
                     $model = CGStockOrderM::findOne(['BillNumber' => $val['BillNumber']]);
                     $model->CheckFlag = 1;
-                    $model->Audier = 'ur_cleaner';
+                    $model->Audier = 'ur_center';
                     $model->alibabaorderid = $val['orderId'];
                     $model->AudieDate = date('Y-m-d H:i:s');
                     if ($model->save()) {
                         $log = $username . ' ' . date('Y-m-d H:i:s') . ' 审核订单';
-                        $logSql = "INSERT INTO CG_StockLogs(OrderType,OrderNID,Operator,Logs) VALUES('采购订单', {$model->NID}, 'ur_cleaner','{$log}')";
+                        $logSql = "INSERT INTO CG_StockLogs(OrderType,OrderNID,Operator,Logs) VALUES('采购订单', {$model->NID}, 'ur_center','{$log}')";
                         Yii::$app->py_db->createCommand($logSql)->execute();
                     }
                 } else {
