@@ -101,7 +101,7 @@ class ApiPurchaseTool
             $orderInfo = self::getOrderDetails($val);
             if ($orderInfo['order']) {
                 // 判断 采购单和1688 单数量是否一致
-                $searchSql = "SELECT cgsm.billNumber,sum(sd.amount) total_amt
+                $searchSql = "SELECT cgsm.BillNumber,sum(sd.amount) total_amt
                             FROM cg_stockorderd  AS sd WITH(nolock) 
                             LEFT JOIN cg_stockorderm  AS cgsm WITH(nolock) ON sd.stockordernid= cgsm.nid 
                             WHERE note LIKE '%{$val['orderId']}%' AND cgsm.checkflag = 0 
@@ -109,8 +109,7 @@ class ApiPurchaseTool
                 $ret = Yii::$app->py_db->createCommand($searchSql)->queryOne();
                 if (!$ret) {
                     $item = 'No need to check ' . $val['orderId'];
-                }
-                if ($ret && $ret['total_amt'] == $orderInfo['order']['qty']) {
+                }elseif ($ret['total_amt'] == $orderInfo['order']['qty']) {
                     $model = CGStockOrderM::findOne(['BillNumber' => $val['BillNumber']]);
                     $model->CheckFlag = 1;
                     $model->Audier = 'ur_center';
