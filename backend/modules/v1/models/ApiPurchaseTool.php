@@ -77,16 +77,18 @@ class ApiPurchaseTool
      * Author: henry
      * @return bool
      */
-    public static function autoCheckPurchaseOrder(){
+    public static function autoCheckPurchaseOrder()
+    {
         $sql = "SELECT BillNumber,note,'caigoueasy' AS account
                 FROM cg_stockorderm  AS cm WITH(nolock)
                 LEFT JOIN S_AlibabaCGInfo AS info WITH(nolock) ON Cm.AliasName1688 = info.AliasName
                 where checkflag=0 AND datediff(day,makedate,getdate())<4 
-                AND isnull(note,'') != '' -- AND billNumber='CGD-2021-08-19-2245' ";
+                AND isnull(note,'') != '' --  AND billNumber='CGD-2021-08-20-0491' ";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
 //        var_dump($data);exit;
-        $aaa = [];
+        $message = [];
         foreach ($data as &$val) {
+            // 获取 1688单号
             $val['orderId'] = '';
             preg_match_all('/\d+/', $val['note'], $matches);
             foreach ($matches[0] as $v) {
@@ -95,23 +97,40 @@ class ApiPurchaseTool
                     break;
                 }
             }
+            // 获取1688订单信息
             $orderInfo = self::getOrderDetails($val);
             if ($orderInfo['order']) {
-                $username = Yii::$app->user->identity->username;
-                $model = CGStockOrderM::findOne(['BillNumber' => $val['BillNumber']]);
-                $model->CheckFlag = 1;
-                $model->Audier = $username;
-                $model->AudieDate = date('Y-m-d H:i:s');
-                if($model->save()){
-                    $log = $username . ' ' . date('Y-m-d H:i:s') . ' 审核订单';
-                    $logSql = "INSERT INTO CG_StockLogs(OrderType,OrderNID,Operator,Logs) VALUES('采购订单', {$model->NID}, '{$username}','{$log}')";
-                    Yii::$app->py_db->createCommand($logSql)->execute();
+                // 判断 采购单和1688 单数量是否一致
+                $searchSql = "SELECT cgsm.billNumber,sum(sd.amount) total_amt
+                            FROM cg_stockorderd  AS sd WITH(nolock) 
+                            LEFT JOIN cg_stockorderm  AS cgsm WITH(nolock) ON sd.stockordernid= cgsm.nid 
+                            WHERE note LIKE '%{$val['orderId']}%' AND cgsm.checkflag = 0 
+                            GROUP BY cgsm.billNumber ";
+                $ret = Yii::$app->py_db->createCommand($searchSql)->queryOne();
+                if (!$ret) {
+                    $item = 'No need to check ' . $val['orderId'];
                 }
+                if ($ret && $ret['total_amt'] == $orderInfo['order']['qty']) {
+                    $model = CGStockOrderM::findOne(['BillNumber' => $val['BillNumber']]);
+                    $model->CheckFlag = 1;
+                    $model->Audier = 'ur_cleaner';
+                    $model->alibabaorderid = $val['orderId'];
+                    $model->AudieDate = date('Y-m-d H:i:s');
+                    if ($model->save()) {
+                        $log = $username . ' ' . date('Y-m-d H:i:s') . ' 审核订单';
+                        $logSql = "INSERT INTO CG_StockLogs(OrderType,OrderNID,Operator,Logs) VALUES('采购订单', {$model->NID}, 'ur_cleaner','{$log}')";
+                        Yii::$app->py_db->createCommand($logSql)->execute();
+                    }
+                } else {
+                    $item = 'Quantity is not same of order ' . $val['orderId'];
+                }
+            } else {
+                $item = $orderInfo['message'];
             }
+            $message[] = $item;
         }
-        return true;
+        return $message;
     }
-
 
 
     /** 审核采购订单/同步差额
@@ -169,7 +188,7 @@ class ApiPurchaseTool
                 }
             }
         } else {
-            $someDays = date('Y-m-d',strtotime('-7 day'));
+            $someDays = date('Y-m-d', strtotime('-7 day'));
             $sql = "SELECT DISTINCT billNumber,alibabaOrderid AS orderId,case when loginId like 'caigoueasy%' then 
                  'caigoueasy' else loginId end  AS account ,MakeDate 
                 FROM CG_StockOrderD  AS cd WITH(nolock)  
@@ -206,6 +225,7 @@ class ApiPurchaseTool
         $base_url = $oauth->get_request_url($params);
         $ret = Helper::curlRequest($base_url, [], [], 'GET');
         $message = $info = '';
+
         if (isset($ret['success'])) {
             if ($ret['success'] == 'true') {
                 $out['orderId'] = $data['orderId'];
@@ -244,10 +264,10 @@ class ApiPurchaseTool
             FROM cg_stockorderd  AS sd WITH(nolock) 
             LEFT JOIN cg_stockorderm  AS cgsm WITH(nolock) ON sd.stockordernid= cgsm.nid 
             LEFT JOIN b_goodssku  AS gs ON sd.goodsskuid= gs.nid ";
-        if($check){
+        if ($check) {
             $orderId = '%' . $orderInfo['orderId'] . '%';
             $searchSql .= "WHERE note LIKE '{$orderId}' AND cgsm.checkflag = 0 ";
-        }else{
+        } else {
             $orderId = $orderInfo['orderId'];
             $searchSql .= "WHERE alibabaOrderid = '{$orderId}' ";
         }
@@ -293,13 +313,13 @@ class ApiPurchaseTool
         ];
         // 平均订单差额$key
         $aveMoney = ($orderMoney - $totalCostMoney) / $qty;
-        if($check){
+        if ($check) {
             $str = " 审核订单";
             $updateSql = "update cg_stockorderM set checkflag =1,isSubmit=1,is1688Order=1,audiedate=getdate(),
                         audier=:audier,ordermoney=:ordermoney,alibabaorderid=:alibabaorderid,
                         expressFee=:expressFee, alibabamoney=:alibabamoney where billNumber = :billNumber";
             $updateParams[':audier'] = $audier;
-        }else{
+        } else {
             $str = " 同步1688差额";
             $updateSql = "update cg_stockorderM set ordermoney=:ordermoney,alibabaorderid=:alibabaorderid,
                         expressFee=:expressFee, alibabamoney=:alibabamoney where billNumber = :billNumber";
