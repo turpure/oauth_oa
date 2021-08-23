@@ -932,6 +932,7 @@ class ApiReport
 //        $suffixArr = ArrayHelper::getColumn($data, 'sum');
 //        var_dump($suffixArr);exit;
         $res = [];
+        $totalFeeUs = $totalFeeGbp = 0;
         foreach ($data as $v) {
             $sql = "SELECT username FROM `user` u
                     LEFT JOIN auth_store_child l ON l.user_id = u.id
@@ -942,13 +943,17 @@ class ApiReport
             $item['feeType'] = $v['feeType'];
             $item['currency'] = $v['currency'];
             $item['value'] = $v['sum'];
-            $item['valueZn'] = $v['sum'] * ($v['currency'] == 'USD' ? $usRate : ($v['currency'] == 'GBP' ? $gbpRate : ApiUkFic::getRateUkOrUs($v['currency'])));
-//            foreach ($data as $val){
-////                var_dump($val['sum']);exit;
-//                if($v == $val['suffix']){
-//                    $item['valueZn'] += $val['sum'] * ($val['currency'] == 'USD' ? $usRate : ($val['currency'] == 'GBP' ? $gbpRate : ApiUkFic::getRateUkOrUs($val['currency'])));
-//                }
-//            }
+
+//            $item['valueZn'] = $v['sum'] * ($v['currency'] == 'USD' ? $usRate : ($v['currency'] == 'GBP' ? $gbpRate : ApiUkFic::getRateUkOrUs($v['currency'])));
+            if ($v['currency'] == 'USD'){
+                $item['valueZn'] =  $v['sum'] * $usRate;
+                $totalFeeUs += $v['sum'];
+            }elseif ($v['currency'] == 'GBP'){
+                $item['valueZn'] =  $v['sum'] * $gbpRate;
+                $totalFeeGbp += $v['sum'];
+            }else{
+                $item['valueZn'] =  $v['sum'] * ApiUkFic::getRateUkOrUs($v['currency']);
+            }
             $item['valueZn'] = round($item['valueZn'],2);
             $res[] = $item;
         }
@@ -960,8 +965,8 @@ class ApiReport
                 ],
             ]);
             $totalFeeZn = round(array_sum(ArrayHelper::getColumn($data, 'sum')), 2);
-            $totalFeeUs = round($totalFeeZn/$usRate, 2);
-            $totalFeeGbp = round($totalFeeZn/$gbpRate, 2);
+            $totalFeeUs = round($totalFeeUs, 2);
+            $totalFeeGbp = round($totalFeeGbp, 2);
             return ['provider' => $provider, 'extra' => ['totalFeeZn' => $totalFeeZn, 'totalFeeUs' => $totalFeeUs, 'totalFeeGbp' => $totalFeeGbp]];
         } catch (\Exception $why) {
             return [
