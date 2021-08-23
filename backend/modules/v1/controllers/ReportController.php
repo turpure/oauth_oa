@@ -906,9 +906,9 @@ class ReportController extends AdminController
                 break;
             case 'ebayStoreFee'://eBay托管后店铺杂费
                 $fileName = 'ebayStoreFee';
-                $title = ['销售员', '账号简称', '金额(￥)'];
-                $headers = ['salerman', 'suffix', 'valueZn'];
-                $data = $this->actionEbayStoreFee()->getModels();
+                $title = ['销售员', '账号简称', '费用类型', '币种', '原始币种金额', '人民币金额(￥)'];
+                $headers = ['salerman', 'suffix', 'feeType', 'currency', 'value', 'valueZn'];
+                $data = $this->actionEbayStoreFee()->getModels()['provider'];
                 break;
             default://默认销售死库明细下载
                 $fileName = 'salesDeadFeeData';

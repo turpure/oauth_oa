@@ -929,7 +929,8 @@ class ApiReport
                 ]
             ]
         ]);
-        $suffixArr = ArrayHelper::getColumn($data, 'suffix');
+//        $suffixArr = ArrayHelper::getColumn($data, 'sum');
+//        var_dump($suffixArr);exit;
         $res = [];
         foreach ($data as $v) {
             $sql = "SELECT username FROM `user` u
@@ -958,10 +959,9 @@ class ApiReport
                     'pageSize' => $condition['pageSize'],
                 ],
             ]);
-//            $totalRefundZn = round(array_sum(ArrayHelper::getColumn($data, 'refundZn')), 2);
-//            $totalRefundUs = round($totalRefundZn/$rate, 2);
-//            return ['provider' => $provider, 'extra' => ['totalRefundZn' => $totalRefundZn, 'totalRefundUs' => $totalRefundUs]];
-            return $provider;
+            $totalFeeZn = round(array_sum(ArrayHelper::getColumn($data, 'sum')), 2);
+            $totalFeeUs = round($totalFeeZn/$usRate, 2);
+            return ['provider' => $provider, 'extra' => ['totalFeeZn' => $totalFeeZn, 'totalFeeUs' => $totalFeeUs]];
         } catch (\Exception $why) {
             return [
                 'code' => 400,
