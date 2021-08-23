@@ -961,7 +961,8 @@ class ApiReport
             ]);
             $totalFeeZn = round(array_sum(ArrayHelper::getColumn($data, 'sum')), 2);
             $totalFeeUs = round($totalFeeZn/$usRate, 2);
-            return ['provider' => $provider, 'extra' => ['totalFeeZn' => $totalFeeZn, 'totalFeeUs' => $totalFeeUs]];
+            $totalFeeGbp = round($totalFeeZn/$gbpRate, 2);
+            return ['provider' => $provider, 'extra' => ['totalFeeZn' => $totalFeeZn, 'totalFeeUs' => $totalFeeUs, 'totalFeeGbp' => $totalFeeGbp]];
         } catch (\Exception $why) {
             return [
                 'code' => 400,
