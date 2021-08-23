@@ -131,7 +131,7 @@ class ApiWarehouseTools
                         SELECT LogisticOrderNo,sm.billNumber AS stockOrderNumber,d.goodsskuID
                         FROM CG_StockOrderM (nolock) sm 
                         LEFT JOIN CG_StockOrderD (nolock) d ON sm.nid = d.stockOrderNID
-                        WHERE LogisticOrderNo = '{$condition['trackingNumber']}'
+                        WHERE LogisticOrderNo LIKE '%{$condition['trackingNumber']}%'
                 ) a LEFT JOIN(
                         SELECT sku,goodsskuid,SUM(l_qty) AS num
                         FROM P_TradeDtUn (nolock) dt 
