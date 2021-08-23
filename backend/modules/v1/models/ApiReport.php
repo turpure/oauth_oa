@@ -964,7 +964,7 @@ class ApiReport
                     'pageSize' => $condition['pageSize'],
                 ],
             ]);
-            $totalFeeZn = round(array_sum(ArrayHelper::getColumn($data, 'sum')), 2);
+            $totalFeeZn = round(array_sum(ArrayHelper::getColumn($res, 'valueZn')), 2);
             $totalFeeUs = round($totalFeeUs, 2);
             $totalFeeGbp = round($totalFeeGbp, 2);
             return ['provider' => $provider, 'extra' => ['totalFeeZn' => $totalFeeZn, 'totalFeeUs' => $totalFeeUs, 'totalFeeGbp' => $totalFeeGbp]];
