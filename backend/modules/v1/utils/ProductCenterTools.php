@@ -956,7 +956,7 @@ class ProductCenterTools
             'goodsId' => $goodsInfo['goodsId'],
             'location' => 'Shanghai',
             'country' => 'CN',
-            'postCode' => '',
+            'postCode' => '200000',
             'prepareDay' => 10,
             'site' => '0',
             'listedCate' => '',
