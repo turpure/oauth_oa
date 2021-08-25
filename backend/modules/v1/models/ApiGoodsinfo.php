@@ -253,8 +253,10 @@ class ApiGoodsinfo
      */
     public static function deleteAttributeById($id)
     {
+
         $ret = OaGoodsinfo::deleteAll(['id' => $id]);
         if ($ret) {
+            OaGoodsSku::deleteAll(['infoId' => $id]);
             return true;
         }
         return [
@@ -4379,7 +4381,7 @@ class ApiGoodsinfo
                 LEFT JOIN `auth_department_child` dc ON u.id=dc.user_id
                 LEFT JOIN `auth_department` d ON d.id=dc.department_id
                 LEFT JOIN `auth_department` pd ON pd.id=d.parent
-                WHERE s.platform NOT in  ('Joom', 'Amazon') ";
+                WHERE s.platform NOT in  ('Joom', 'Amazon') order by platform,suffix";
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
 
