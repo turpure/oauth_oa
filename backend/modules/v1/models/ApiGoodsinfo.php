@@ -2805,7 +2805,7 @@ class ApiGoodsinfo
                 'Site' => '', 'Selleruserid' => '', 'ListingType' => '', 'Category1' => '', 'Category2' => '',
                 'Condition' => '', 'ConditionBewrite' => '', 'Quantity' => '', 'LotSize' => '', 'Duration' => '',
                 'ReservePrice' => '', 'BestOffer' => '', 'BestOfferAutoAcceptPrice' => '', 'BestOfferAutoRefusedPrice' => '',
-                'AcceptPayment' => '', 'PayPalEmailAddress' => '', 'Location' => '', 'LocationCountry' => '',
+                'AcceptPayment' => '', 'PayPalEmailAddress' => '', 'Location' => '', 'LocationCountry' => '','PostalCode' => '',
                 'ReturnsAccepted' => '', 'RefundOptions' => '', 'ReturnsWithin' => '', 'ReturnPolicyShippingCostPaidBy' => '',
                 'ReturnPolicyDescription' => '', 'GalleryType' => '', 'Bold' => '', 'PrivateListing' => '',
                 'HitCounter' => '', 'sku' => '', 'PictureURL' => '', 'Title' => '', 'SubTitle' => '', 'IbayCategory' => '',
@@ -2866,6 +2866,7 @@ class ApiGoodsinfo
             $row['PayPalEmailAddress'] = $payPal;
             $row['Location'] = $ebayInfo['location'];
             $row['LocationCountry'] = $ebayInfo['country'];
+            $row['PostalCode'] = $ebayInfo['postCode'];
             $row['ReturnsAccepted'] = '1';
             $row['RefundOptions'] = 'MoneyBack';
             $row['ReturnsWithin'] = 'Days_30';
