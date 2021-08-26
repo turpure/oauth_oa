@@ -1046,6 +1046,7 @@ class ReportController extends AdminController
         }
     }
 
+    ////////////////////////////////////清仓列表//////////////////////////////////////
 
     /**
      * 开发汇率下账号产品利润-- 此处只考虑清仓计划里面的产品
@@ -1110,7 +1111,7 @@ class ReportController extends AdminController
         }
     }
 
-    ////////////////////////////////////清仓列表//////////////////////////////////////
+
 
     /**
      * @brief 清仓列表
@@ -1187,6 +1188,69 @@ class ReportController extends AdminController
     }
 
     ////////////////////////////////////海外仓清仓列表//////////////////////////////////////
+
+    /**
+     * 开发汇率下账号产品利润-- 此处只考虑清仓计划里面的产品
+     * @return array
+     */
+    public function actionEbayClearSkuProfit()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $params = [
+                'platform' => isset($condition['plat']) ? $condition['plat'] : [],
+                'username' => isset($condition['member']) ? $condition['member'] : [],
+                'store' => isset($condition['account']) ? $condition['account'] : []
+            ];
+            $paramsFilter = Handler::paramsHandler($params);
+            $condition = [
+                'dateType' => $condition['dateType'] ?: 0,
+                'beginDate' => $condition['dateRange'][0],
+                'endDate' => $condition['dateRange'][1],
+                'queryType' => $paramsFilter['queryType'],
+                'store' => implode(',', $paramsFilter['store']),
+                'warehouse' => $condition['store'] ? implode(',', $condition['store']) : '',
+                'pageSize' => isset($condition['pageSize']) ? $condition['pageSize'] : 10
+            ];
+            return ApiReport::getEbayClearSkuProfit($condition);
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => 400];
+
+        }
+
+    }
+
+
+    /**
+     * @brief 导出开发利润
+     * @return array
+     */
+    public function actionExportEbayClearSkuProfit()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $params = [
+                'platform' => isset($cond['plat']) ? $condition['plat'] : [],
+                'username' => isset($cond['member']) ? $condition['member'] : [],
+                'store' => isset($cond['account']) ? $condition['account'] : []
+            ];
+            $paramsFilter = Handler::paramsHandler($params);
+            $condition = [
+                'dateType' => $condition['dateType'] ?: 0,
+                'beginDate' => $condition['dateRange'][0],
+                'endDate' => $condition['dateRange'][1],
+                'queryType' => $paramsFilter['queryType'],
+                'store' => implode(',', $paramsFilter['store']),
+                'warehouse' => $condition['store'] ? implode(',', $condition['store']) : '',
+                'pageSize' => $condition['pageSize'] ?? 10000
+            ];
+            $data = ApiReport::EbayClearSkuProfit($condition)->models;
+            $title = ['产品编码', '产品名称', '平台', '部门', '账号', '销售员', '仓库', '销量', '销售额', '总利润', '利润率(%)'];
+            ExportTools::toExcelOrCsv('dev-profit', $data, 'Xls', $title);
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => 400];
+        }
+    }
 
     /**
      * @brief 清仓列表

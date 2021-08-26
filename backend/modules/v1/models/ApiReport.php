@@ -1557,19 +1557,64 @@ class ApiReport
 
     ////////////////////////////////////////海外仓清仓列表//////////////////////////////////////////////////
 
+
+    /**
+     * @brief 获取开发汇率账号产品利润
+     * @param $condition
+     * @return mixed
+     * @throws \Exception
+     */
+
+    public static function getEbayClearSkuProfit($condition)
+    {
+        $sql = 'call  report_devRateEbayClearSkuProfitAPI(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse);';
+        $sqlParams = [
+            ':dateType' => $condition['dateType'],
+            ':beginDate' => $condition['beginDate'],
+            ':endDate' => $condition['endDate'],
+            ':queryType' => $condition['queryType'],
+            ':store' => $condition['store'],
+            ':warehouse' => $condition['warehouse'],
+        ];
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $ret = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
+        $clearGoodsList = static::currentEbayClearList();
+        $data = [];
+        if (!empty($clearGoodsList)) {
+            foreach ($ret as $row) {
+                if (in_array($row['sku'], $clearGoodsList, true)) {
+                    $data[] = $row;
+                }
+            }
+        }
+        $provider = new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => ['attributes' =>
+                [
+                    'sold', 'salemoney', 'grossprofit', 'grossprofitRate'
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
+    }
+
+
     /**
      * 清仓计划里面的商品编码
      * @return array
      */
     private static function currentEbayClearList()
     {
-        $sql = 'select goodsCode from oauth_clearPlan where isRemoved = 0';
+        $sql = 'select sku from oauth_clearPlanEbay where isRemoved = 0';
         $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
         $data = [];
         if (empty($ret)) {
             return $data;
         }
-        return ArrayHelper::getColumn($ret, 'goodsCode');
+        return ArrayHelper::getColumn($ret, 'sku');
     }
 
 
