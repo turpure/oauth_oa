@@ -785,14 +785,15 @@ class ApiReport
         if ($condition['type'] === 'order') {
             $sql = 'SELECT rd.*,refund* (case when s.platform=' . "'Wish'" . ' and ows.localCurrency=' . "'CNY'" . ' then ' . $wishSalerRate . ' else ' . $rate . " end)   AS refundZn,u.username AS salesman 
                 FROM (
-                    SELECT MAX(refMonth) AS refMonth, MAX(dateDelta) as dateDelta, MAX(suffix) AS suffix,MAX(goodsName) AS goodsName,MAX(goodsCode) AS goodsCode,
-				    MAX(goodsSku) AS goodsSku, MAX(tradeId) AS tradeId,orderId,mergeBillId,MAX(storeName) AS storeName,
-				    MAX(refund) AS refund, MAX(currencyCode) AS currencyCode,MAX(refundTime) AS refundTime,
-				    MAX(orderTime) AS orderTime, MAX(orderCountry) AS orderCountry,MAX(platform) AS platform,MAX(expressWay) AS expressWay,refundId
+                    SELECT MAX(refMonth) AS refMonth, MAX(dateDelta) as dateDelta, MAX(suffix) AS suffix,
+                    MAX(goodsName) AS goodsName,MAX(goodsCode) AS goodsCode,MAX(goodsSku) AS goodsSku, 
+				    MAX(tradeId) AS tradeId,orderId,mergeBillId,MAX(storeName) AS storeName,MAX(refund) AS refund, 
+				    MAX(currencyCode) AS currencyCode,MAX(refundTime) AS refundTime,MAX(orderTime) AS orderTime, 
+				    MAX(orderCountry) AS orderCountry,MAX(platform) AS platform,MAX(expressWay) AS expressWay,refundId,type
                     FROM `cache_refund_details` 
                     WHERE refundTime between '{$condition['beginDate']}' AND '" . $condition['endDate'] . " 23:59:59" . "' 
                           AND IFNULL(platform,'')<>'' 
-                    GROUP BY refundId,OrderId,mergeBillId,refund,refundTime
+                    GROUP BY refundId,OrderId,mergeBillId,refund,refundTime,type
                 ) rd 
                 left join  proCenter.oa_wishSuffix as ows on ows.shortName =  rd.suffix
                 LEFT JOIN auth_store s ON s.store=rd.suffix
@@ -853,17 +854,19 @@ class ApiReport
     public static function getEbayRefundDetails($condition)
     {
         $rate = ApiUkFic::getRateUkOrUs('USD');
-        $sql = "SELECT rd.*, u.username AS salesman 
+        $sql = "SELECT rd.*, refund * {$rate} AS refundZn,u.username AS salesman 
                 FROM (
                     SELECT MAX(refMonth) AS refMonth, MAX(dateDelta) as dateDelta, MAX(suffix) AS suffix,
                     MAX(goodsName) AS goodsName,MAX(goodsCode) AS goodsCode,MAX(goodsSku) AS goodsSku, 
                     MAX(tradeId) AS tradeId,orderId,mergeBillId,MAX(storeName) AS storeName, MAX(refund) AS refund, 
 				    MAX(currencyCode) AS currencyCode,MAX(refundTime) AS refundTime, MAX(orderTime) AS orderTime, 
 				    MAX(orderCountry) AS orderCountry,MAX(platform) AS platform,MAX(expressWay) AS expressWay,
-				    refundId,MAX(refundZn) AS refundZn
-                    FROM `cache_refund_details_ebay_new` 
+				    refundId
+				    -- ,MAX(refundZn) AS refundZn
+                    -- FROM `cache_refund_details_ebay_new` 
+                    FROM `cache_refund_details` 
                     WHERE refundTime between '{$condition['beginDate']}' AND '" . $condition['endDate'] . " 23:59:59" . "' 
-                          AND IFNULL(platform,'')<>'' 
+                          AND IFNULL(platform,'')='eBay' and type = '托管后'
                     GROUP BY refundId,OrderId,mergeBillId,refund,refundTime
                 ) rd 
                 LEFT JOIN auth_store s ON s.store=rd.suffix

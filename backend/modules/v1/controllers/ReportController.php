@@ -1245,7 +1245,7 @@ class ReportController extends AdminController
                 'pageSize' => $condition['pageSize'] ?? 10000
             ];
             $data = ApiReport::EbayClearSkuProfit($condition)->models;
-            $title = ['产品编码', '产品名称', '平台', '部门', '账号', '销售员', '仓库', '销量', '销售额', '总利润', '利润率(%)'];
+            $title = ['SKU', '产品编码', '产品名称', '平台', '部门', '账号', '销售员', '仓库', '销量', '销售额', '总利润', '利润率(%)'];
             ExportTools::toExcelOrCsv('dev-profit', $data, 'Xls', $title);
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => 400];
