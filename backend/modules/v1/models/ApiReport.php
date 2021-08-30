@@ -1842,7 +1842,7 @@ class ApiReport
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    public static function exportClearListTemplate($condition)
+    public static function exportClearListTemplate()
     {
         $fileName = 'clear-products-template';
         $titles = ['商品编码', '仓库名称'];

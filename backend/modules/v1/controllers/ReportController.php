@@ -1306,9 +1306,7 @@ class ReportController extends AdminController
     public function actionExportEbayClearTemplate()
     {
         try {
-            $request = Yii::$app->request->post();
-            $condition = $request['condition'];
-            ApiReport::exportClearListTemplate($condition);
+            ApiReport::exportEbayClearListTemplate();
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => 400];
         }
