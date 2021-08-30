@@ -1729,10 +1729,10 @@ class ApiReport
         $errArr = [];
         for ($i = 2; $i <= $highestRow; $i++) {
             $data['sku'] = $sheet->getCell("A" . $i)->getValue();
-            $data['seller'] = $sheet->getCell("B" . $i)->getValue();
+            $data['sellers'] = $sheet->getCell("B" . $i)->getValue();
             $data['createdTime'] = date('Y-m-d H:i:s');
             $data['planNumber'] = $planNumber;
-            $data['isRemove'] = 0;
+            $data['isRemoved'] = 0;
 
             if (!$data['sku'] && !$data['seller']) break;//取到数据为空时跳出循环
 //            var_dump($data);exit;
