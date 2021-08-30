@@ -1694,7 +1694,7 @@ class ApiReport
         $fileName = 'ebay-clear-products-template';
         $titles = ['sku', '销售员'];
         $data = [['sku' => 'UK-A000305', '销售员' => 'AAA']];
-        ExportTools::toExcelOrCsv($fileName, $data, 'xls', $titles);
+        ExportTools::toExcelOrCsv($fileName, $data, 'Xls', $titles);
 
     }
 
