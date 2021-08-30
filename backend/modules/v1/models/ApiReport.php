@@ -1712,7 +1712,7 @@ class ApiReport
             } else {
                 //获取上传excel文件的内容并保存
                 $res = static::saveEbayClearProduct($result);
-                if ($res !== true) return ['code' => 400, 'message' => $res];
+                return $res;
             }
         }
         return ['上传成功'];
