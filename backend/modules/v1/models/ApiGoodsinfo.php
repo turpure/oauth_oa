@@ -1613,8 +1613,8 @@ class ApiGoodsinfo
             }
         }
         foreach ($raw as $ele) {
-            if (strpos($ele, ':') !== false || strpos($ele, '：' !== false)) {
-                if (strpos($ele, 'Package included') !== false) {
+            if (stripos($ele, ':') !== false || stripos($ele, '：') !== false) {
+                if (stripos($ele, 'Package included') !== false) {
                     $ele = str_replace("\n", '', $ele);
                     $tag .= '<li>' . $ele . '</li>';
                     $i++;
