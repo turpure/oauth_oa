@@ -1294,7 +1294,7 @@ class ReportController extends AdminController
         try {
             return ApiReport::importEbayClearList();
         } catch (\Exception $why) {
-            return ['message' => 400, 'code' => 400];
+            return ['message' => $why->getMessage(), 'code' => 400];
         }
     }
 

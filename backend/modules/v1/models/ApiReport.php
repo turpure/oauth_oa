@@ -1703,7 +1703,7 @@ class ApiReport
         if (Yii::$app->request->isPost) {
             //判断文件后缀
             $extension = ApiSettings::get_extension($_FILES['file']['name']);
-            if ($extension != '.xls') return ['code' => 400, 'message' => "File format error,please upload files in 'xls' format"];
+            if (strtolower($extension) != '.xls') return ['code' => 400, 'message' => "File format error,please upload files in 'xls' format"];
 
             //文件上传
             $result = ApiSettings::file($_FILES['file'], 'ebayClearList');
@@ -1728,6 +1728,7 @@ class ApiReport
         $highestRow = $sheet->getHighestRow(); // 取得总行数
         $errArr = [];
         for ($i = 2; $i <= $highestRow; $i++) {
+            var_dump(111);exit;
             $data['sku'] = $sheet->getCell("A" . $i)->getValue();
             $data['seller'] = $sheet->getCell("B" . $i)->getValue();
             $data['createdTime'] = date('Y-m-d H:i:s');
@@ -1735,7 +1736,7 @@ class ApiReport
             $data['isRemove'] = 0;
 
             if (!$data['sku'] && !$data['seller']) break;//取到数据为空时跳出循环
-            var_dump($data);exit;
+//            var_dump($data);exit;
             $sql = "SELECT sku FROM oauth_clearPlanEbay WHERE sku = '{$data['sku']}'";
             $res = Yii::$app->py_db->createCommand($sql)->queryOne();
             if ($res) {
