@@ -1728,7 +1728,6 @@ class ApiReport
         $highestRow = $sheet->getHighestRow(); // 取得总行数
         $errArr = [];
         for ($i = 2; $i <= $highestRow; $i++) {
-            var_dump(111);exit;
             $data['sku'] = $sheet->getCell("A" . $i)->getValue();
             $data['seller'] = $sheet->getCell("B" . $i)->getValue();
             $data['createdTime'] = date('Y-m-d H:i:s');
