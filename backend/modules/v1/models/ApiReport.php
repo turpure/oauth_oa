@@ -1689,7 +1689,7 @@ class ApiReport
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    public static function exportEbayClearListTemplate($condition)
+    public static function exportEbayClearListTemplate()
     {
         $fileName = 'ebay-clear-products-template';
         $titles = ['sku', '销售员'];
