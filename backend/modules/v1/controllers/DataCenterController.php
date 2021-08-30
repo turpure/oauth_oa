@@ -226,12 +226,12 @@ class DataCenterController extends AdminController
         }
         $cond = $request->post('condition');
         $month = $cond['month'] ?? date('Y-m');
-        $sql = "SELECT IFNULL(depart,'无部门') AS depart,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
+        $sql = "SELECT case when IFNULL(depart,'')='' then '无部门' else depart end AS depart,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
                         IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
                         CASE WHEN IFNULL(aveCostmoney,0)=0 AND totalCostmoney>0 THEN 10000 ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
                 FROM(
                         SELECT 
-                        CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END as depart,
+                        CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE IFNULL(d.department,'') END as depart,
                         SUM(useNum) AS useNum,
                         SUM(costmoney) costmoney,
                         SUM(notInStore) notInStore,
@@ -251,7 +251,7 @@ class DataCenterController extends AdminController
 						LEFT JOIN auth_department_child dc ON dc.user_id=u.id
 					  	LEFT JOIN auth_department d ON d.id=dc.department_id
 						LEFT JOIN auth_department p ON p.id=d.parent
-                        GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE d.department END
+                        GROUP BY CASE WHEN IFNULL(p.department,'')<>'' THEN p.department ELSE IFNULL(d.department,'') END
                 ) aa ORDER BY IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) DESC;";
         try {
             return Yii::$app->db->createCommand($sql)->queryAll();

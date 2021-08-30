@@ -98,7 +98,7 @@ class ReportController extends AdminController
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
             'seller' => $cond['member'] ? implode(',', $cond['member']) : '',
-            'flag' => 0
+            'flag' => 1
         ];
         $ret = ApiReport::getDevelopReport($condition);
         return $ret;

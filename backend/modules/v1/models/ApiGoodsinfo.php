@@ -1174,7 +1174,6 @@ class ApiGoodsinfo
      */
     public static function preExportLazada($ids, $accounts)
     {
-
         $data = static::_preExportLazada($ids);
         $out = ['name' => $data['name']];
         $row_data = [];

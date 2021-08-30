@@ -69,7 +69,7 @@ class ApiReport
             ':flag' => isset($condition['flag']) && $condition['flag'] ? $condition['flag'] : 0,
         ];
         try {
-            //return $con->createCommand($sql)->bindValues($params)->queryAll();
+//            return $con->createCommand($sql)->bindValues($params)->getRawSql();
             $list = $con->createCommand($sql)->bindValues($params)->queryAll();
             //获取现有开发以及部门
             $userList = self::getAllDeveloper();
@@ -1642,7 +1642,7 @@ class ApiReport
         }
         $sql = 'SELECT  cp.sku,bgs.goodsSkuStatus,bs.storeName,cp.planNumber,cp.createdTime,skuName,
                 bgs.bmpFileName AS img,bc.categoryParentName,bc.categoryName,number AS stockNumber,money AS stockMoney,
-                bg.salername AS developer,cp.sellers AS seller
+                bg.salername AS developer -- ,cp.sellers AS seller
             FROM  oauth_clearPlanEbay(nolock) AS cp
             LEFT JOIN b_goodsSku(nolock) AS bgs ON   cp.sku = bgs.sku
             LEFT JOIN b_goods(nolock) AS bg ON   bg.NID = bgs.goodsID
@@ -1692,8 +1692,8 @@ class ApiReport
     public static function exportEbayClearListTemplate()
     {
         $fileName = 'ebay-clear-products-template';
-        $titles = ['sku', '销售员'];
-        $data = [['sku' => 'UK-A000305', '销售员' => 'AAA']];
+        $titles = ['sku'];
+        $data = [['sku' => 'UK-A000305']];
         ExportTools::toExcelOrCsv($fileName, $data, 'Xls', $titles);
 
     }
@@ -1720,7 +1720,6 @@ class ApiReport
 
     public static function saveEbayClearProduct($file)
     {
-        $fields = ['sku', 'sellers'];
         $planNumber = 'EBAY-QC-' . (string)date('Y-m');
         $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
         $spreadsheet = $reader->load(Yii::$app->basePath . $file);
@@ -1729,12 +1728,12 @@ class ApiReport
         $errArr = [];
         for ($i = 2; $i <= $highestRow; $i++) {
             $data['sku'] = $sheet->getCell("A" . $i)->getValue();
-            $data['sellers'] = $sheet->getCell("B" . $i)->getValue();
+            //$data['sellers'] = $sheet->getCell("B" . $i)->getValue();
             $data['createdTime'] = date('Y-m-d H:i:s');
             $data['planNumber'] = $planNumber;
             $data['isRemoved'] = 0;
 
-            if (!$data['sku'] && !$data['seller']) break;//取到数据为空时跳出循环
+            if (!$data['sku']) break;//取到数据为空时跳出循环
 //            var_dump($data);exit;
             $sql = "SELECT sku FROM oauth_clearPlanEbay WHERE sku = '{$data['sku']}'";
             $res = Yii::$app->py_db->createCommand($sql)->queryOne();
