@@ -1283,7 +1283,7 @@ class ReportController extends AdminController
         try {
             $cond = Yii::$app->request->post()['condition'];
             $condition = [
-                'dateFlag' => $cond['dateType'],
+                'dateType' => $cond['dateType'],
                 'beginDate' => $cond['dateRange'][0],
                 'endDate' => $cond['dateRange'][1],
                 'developer' => $cond['member'] ? implode(',', $cond['member']) : '',
