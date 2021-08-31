@@ -1579,7 +1579,7 @@ class ApiReport
         $provider = new ArrayDataProvider([
             'allModels' => $data,
             'sort' => [
-                'attributes' => ['develop', 'sold', 'saleMoney', 'profit', 'profitRate']
+                'attributes' => ['develop', 'sold', 'costMoney', 'saleMoney', 'profit', 'profitRate']
             ],
             'pagination' => [
                 'pageSize' => $pageSize,
@@ -1606,6 +1606,8 @@ class ApiReport
             ':warehouse' => $condition['warehouse'],
         ];
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+//        $ret = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->getRawSql();
+//        var_dump($ret);exit;
         $ret = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
         $clearGoodsList = static::currentEbayClearList();
         $data = [];
@@ -1620,7 +1622,7 @@ class ApiReport
             'allModels' => $data,
             'sort' => ['attributes' =>
                 [
-                    'sold', 'salemoney', 'grossprofit', 'grossprofitRate'
+                    'sold', 'costmoney', 'salemoney', 'grossprofit', 'grossprofitRate'
                 ]
             ],
             'pagination' => [

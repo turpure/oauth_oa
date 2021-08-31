@@ -1244,7 +1244,7 @@ class ReportController extends AdminController
                 'pageSize' => $condition['pageSize'] ?? 10000
             ];
             $data = ApiReport::getEbayClearSkuProfit($condition)->models;
-            $title = ['SKU', '产品编码', '产品名称', '平台', '部门', '账号', '销售员', '仓库', '销量', '销售额', '总利润', '利润率(%)'];
+            $title = ['SKU', '产品编码', '产品名称', '平台', '部门', '销售员', '销量', '成本', '销售额', '总利润', '利润率(%)'];
             ExportTools::toExcelOrCsv('ebay-clear-profit', $data, 'Xls', $title);
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => 400];
@@ -1289,7 +1289,7 @@ class ReportController extends AdminController
                 'developer' => $cond['member'] ? implode(',', $cond['member']) : '',
             ];
             $data = ApiReport::getEbayClearDevProfit($condition)->models;
-            $title = ['开发员', '销量', '销售额', '总利润', '利润率(%)'];
+            $title = ['SKU', '产品编码', '产品名称', '开发员', '销量', '成本', '销售额', '总利润', '利润率(%)'];
             ExportTools::toExcelOrCsv('ebay-clear-profit', $data, 'Xls', $title);
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => 400];
