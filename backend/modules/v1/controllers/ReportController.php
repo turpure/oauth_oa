@@ -98,7 +98,7 @@ class ReportController extends AdminController
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
             'seller' => $cond['member'] ? implode(',', $cond['member']) : '',
-            'flag' => 1
+            'flag' => 0
         ];
         $ret = ApiReport::getDevelopReport($condition);
         return $ret;
@@ -1220,9 +1220,8 @@ class ReportController extends AdminController
 
     }
 
-
     /**
-     * @brief 导出开发利润
+     * @brief 导出开发利润销售表
      * @return array
      */
     public function actionExportEbayClearSkuProfit()
@@ -1253,6 +1252,54 @@ class ReportController extends AdminController
     }
 
     /**
+     * 开发汇率下开发利润-- 此处只考虑清仓计划里面的产品
+     * @return array
+     */
+    public function actionEbayClearDevProfit()
+    {
+        try {
+            $cond = Yii::$app->request->post()['condition'];
+            $condition = [
+                'dateFlag' => $cond['dateType'],
+                'beginDate' => $cond['dateRange'][0],
+                'endDate' => $cond['dateRange'][1],
+                'developer' => $cond['member'] ? implode(',', $cond['member']) : '',
+            ];
+            return ApiReport::getEbayClearDevProfit($condition);
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => 400];
+
+        }
+
+    }
+
+
+    /**
+     * @brief 导出开发利润
+     * @return array
+     */
+    public function actionExportEbayClearDevProfit()
+    {
+        try {
+            $cond = Yii::$app->request->post()['condition'];
+            $condition = [
+                'dateFlag' => $cond['dateType'],
+                'beginDate' => $cond['dateRange'][0],
+                'endDate' => $cond['dateRange'][1],
+                'developer' => $cond['member'] ? implode(',', $cond['member']) : '',
+            ];
+            $data = ApiReport::getEbayClearDevProfit($condition)->models;
+            $title = ['开发员', '销量', '销售额', '总利润', '利润率(%)'];
+            ExportTools::toExcelOrCsv('ebay-clear-profit', $data, 'Xls', $title);
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => 400];
+        }
+    }
+
+
+
+
+    /**
      * @brief 清仓列表
      * @return mixed
      */
@@ -1278,8 +1325,8 @@ class ReportController extends AdminController
             $condition = $request['condition'];
             $condition['pageSize'] = 100000;
             $data = ApiReport::getEbayClearList($condition)->models;
-            $title = ['SKU', 'SKU状态', '仓库', '清仓计划', '计划创建时间', 'SKU名称', '主图', '主类目', '子类目', '库存数量', '库存金额', '开发员', '销售员'];
-            ExportTools::toExcelOrCsv('clear-list', $data, 'Xls', $title);
+            $title = ['SKU', 'SKU状态', '仓库', '清仓计划', '计划创建时间', 'SKU名称', '主图', '主类目', '子类目', '库存数量', '库存金额', '开发员'];
+            ExportTools::toExcelOrCsv('ebay-clear-list', $data, 'Xls', $title);
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => 400];
         }

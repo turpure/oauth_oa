@@ -1559,7 +1559,34 @@ class ApiReport
     }
 
     ////////////////////////////////////////海外仓清仓列表//////////////////////////////////////////////////
-
+    /**
+     * @brief 获取开发汇率开发利润
+     * @param $condition
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getEbayClearDevProfit($condition)
+    {
+        $sql = 'call  report_devRateEbayClearDeveloperProfitAPI(:dateType,:beginDate,:endDate,:developer);';
+        $sqlParams = [
+            ':dateType' => $condition['dateType'],
+            ':beginDate' => $condition['beginDate'],
+            ':endDate' => $condition['endDate'],
+            ':developer' => $condition['developer'],
+        ];
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $data = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
+        $provider = new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['develop', 'sold', 'saleMoney', 'profit', 'profitRate']
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
+    }
 
     /**
      * @brief 获取开发汇率账号产品利润
@@ -1567,7 +1594,6 @@ class ApiReport
      * @return mixed
      * @throws \Exception
      */
-
     public static function getEbayClearSkuProfit($condition)
     {
         $sql = 'call  report_devRateEbayClearSkuProfitAPI(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse);';
@@ -1603,7 +1629,6 @@ class ApiReport
         ]);
         return $provider;
     }
-
 
     /**
      * 清仓计划里面的商品编码
