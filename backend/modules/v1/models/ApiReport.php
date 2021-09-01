@@ -1667,7 +1667,7 @@ class ApiReport
         if (!is_array($sellers)) {
             throw new Exception('sellers should be an array');
         }
-        $sql = 'SELECT  cp.sku,bgs.goodsSkuStatus,bs.storeName,cp.planNumber,cp.createdTime,skuName,
+        $sql = "SELECT  cp.sku,bgs.goodsSkuStatus,bs.storeName,cp.planNumber,cp.createdTime,skuName,
                 bgs.bmpFileName AS img,bc.categoryParentName,bc.categoryName,number AS stockNumber,money AS stockMoney,
                 bg.salername AS developer -- ,cp.sellers AS seller
             FROM  oauth_clearPlanEbay(nolock) AS cp
@@ -1675,7 +1675,9 @@ class ApiReport
             LEFT JOIN b_goods(nolock) AS bg ON   bg.NID = bgs.goodsID
             LEFT JOIN b_goodsCats(nolock) AS bc ON bg.goodsCategoryId = bc.nid
             LEFT JOIN KC_CurrentStock(nolock) AS ks ON ks.goodsskuid = bgs.nid
-            LEFT JOIN b_store(nolock) AS bs ON bs.nid = ks.storeId WHERE cp.isRemoved = 0 ';
+            LEFT JOIN b_store(nolock) AS bs ON bs.nid = ks.storeId 
+            WHERE cp.isRemoved = 0 AND number > 0 
+            AND bs.StoreName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW','谷仓UK') ";
         if (!empty($stores)) {
             $stores = implode("','", $stores);
             $sql .= " and bs.StoreName in ('" . $stores . "')";

@@ -95,8 +95,8 @@ class SchedulerController extends Controller
     public function actionSite()
     {
         $beginDate = '2021-09-01';//date('Y-m-d', strtotime('-30 days'));
-        //$endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
-        $endDate = '2021-09-01';//昨天时间
+        $endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
+//        $endDate = '2021-09-01';//昨天时间
         $dateRate = round(((strtotime($endDate) - strtotime($beginDate)) / 24 / 3600 + 1) * 100 / 122, 2);
         //print_r($dateRate);exit;
         try {
@@ -124,7 +124,7 @@ class SchedulerController extends Controller
                 Yii::$app->db->createCommand()->update(
                     'site_target_all',
                     [
-                        'amt' => $value['netprofittotal'] + $lastProfit,
+                        'profit' => $value['netprofitZero'] + $value['netprofitSix'] + $lastProfit,
                         'rate' => $basic != 0 ? round(($value['netprofitZero'] + $value['netprofitSix'] + $lastProfit) * 100.0 / $basic, 2) : 0,
                         'high_rate' => $high != 0 ? round(($value['netprofitZero'] + $value['netprofitSix'] + $lastProfit) * 100.0 / $high, 2) : 0,
                         'date_rate' => $dateRate,
