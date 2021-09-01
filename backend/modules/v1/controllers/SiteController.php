@@ -84,7 +84,9 @@ class SiteController extends AdminController
 				CASE WHEN SUM(high) = 0 OR SUM(profit) <= 0 THEN 0 ELSE ROUND(SUM(profit) * 100.0/ SUM(high),2) END AS high_rate
                 FROM site_target_all st 
                 LEFT JOIN `site_target_level` l ON l.`level`=st.`level` AND  l.`role`=st.`role`
-	            WHERE st.role = '销售' 	GROUP BY depart ORDER BY rate DESC";
+	            WHERE st.role = '销售' 	";
+            if($search) $sql .= " AND depart like '%{$search}%' ";
+            $sql .= " GROUP BY depart ORDER BY rate DESC";
         }else{
             $sql = "SELECT u.avatar,l.basic,basic_bonus,high_level,high,high_bonus,high_vacation,st.*
                 FROM site_target_all st 
