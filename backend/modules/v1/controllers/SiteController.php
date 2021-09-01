@@ -80,18 +80,20 @@ class SiteController extends AdminController
         if ($role == '部门'){
             $sql = "SELECT depart,SUM(basic) AS basic,SUM(high) AS high,SUM(basic_bonus) AS basic_bonus,SUM(high_bonus) AS high_bonus,
 				SUM(profit) AS profit,MAX(date_rate) AS date_rate,
-				CASE WHEN SUM(basic) = 0 OR SUM(profit) <= 0 THEN 0 ELSE ROUND(SUM(profit) * 100.0/ SUM(basic),2) END AS rate,
-				CASE WHEN SUM(high) = 0 OR SUM(profit) <= 0 THEN 0 ELSE ROUND(SUM(profit) * 100.0/ SUM(high),2) END AS high_rate
+				CASE WHEN SUM(l.basic) = 0 OR SUM(profit) <= 0 THEN 0 ELSE ROUND(SUM(profit) * 100.0/ SUM(l.basic),2) END AS rate,
+				CASE WHEN SUM(hl.high) = 0 OR SUM(profit) <= 0 THEN 0 ELSE ROUND(SUM(profit) * 100.0/ SUM(hl.high),2) END AS high_rate
                 FROM site_target_all st 
                 LEFT JOIN `site_target_level` l ON l.`level`=st.`level` AND  l.`role`=st.`role`
+                LEFT JOIN `site_target_level` hl ON hl.`high_level`=st.`high_level` AND  hl.`role`=st.`role`
 	            WHERE st.role = '销售' 	";
             if($search) $sql .= " AND depart like '%{$search}%' ";
             $sql .= " GROUP BY depart ORDER BY rate DESC";
         }else{
-            $sql = "SELECT u.avatar,l.basic,basic_bonus,high_level,high,high_bonus,high_vacation,st.*
+            $sql = "SELECT u.avatar,l.basic,l.basic_bonus,hl.high,hl.high_bonus,hl.high_vacation,st.*
                 FROM site_target_all st 
                 LEFT JOIN `user` u ON st.username=u.username 
                 LEFT JOIN `site_target_level` l ON l.`level`=st.`level` AND  l.`role`=st.`role`
+                LEFT JOIN `site_target_level` hl ON hl.`high_level`=st.`high_level` AND  hl.`role`=st.`role`
 				WHERE display<>1 ";
             if($role) $sql .= " AND st.role='{$role}' ";
             if($search) $sql .= " AND ( st.username like '%{$search}%' OR depart like '%{$search}%') ";
