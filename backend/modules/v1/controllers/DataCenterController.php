@@ -76,11 +76,47 @@ class DataCenterController extends AdminController
     }
 
 
-    /** 仓库库存情况
+    /** 一部海外仓库存
      * Date: 2019-06-14 14:20
      * Author: henry
      * @return array
      * @throws \yii\db\Exception
+     */
+    public function actionOverseaStockStatus()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $month = $condition['month'] ?? date('Y-m');
+        $sql = "SELECT CASE WHEN IFNULL(class,'')='海运' THEN '万邑通UK海运' ELSE '万邑通UK空运' END AS storeName,
+				SUM(useNum) AS useNum,
+				SUM(costmoney) costmoney,
+				SUM(notInStore) notInStore,
+				SUM(notInCostmoney) notInCostmoney,
+				SUM(hopeUseNum) hopeUseNum,
+				SUM(totalCostmoney) totalCostmoney,
+				SUM(sellCostMoney) AS 30DayCostmoney
+                FROM (
+                        SELECT SKU,storeName,class,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
+                        FROM `cache_stockWaringTmpData` WHERE updateMonth = '{$month}' 
+                        UNION
+                        SELECT SKU,storeName,class,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
+                         FROM `cache_stockWaringTmpDataBackup` WHERE updateMonth = '{$month}'  
+                ) a WHERE storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW') AND class IN ('海运', '空运')
+                GROUP BY CASE WHEN IFNULL(class,'')='海运' THEN '万邑通UK海运' ELSE '万邑通UK空运' END";
+        try {
+            return Yii::$app->db->createCommand($sql)->queryAll();
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * 仓库库存情况
+     * Date: 2021-09-01 9:16
+     * Author: henry
+     * @return array
      */
     public function actionStockStatus()
     {
@@ -96,6 +132,7 @@ class DataCenterController extends AdminController
             ];
         }
     }
+
 
     /**
      * 仓库库存情况状态明细
