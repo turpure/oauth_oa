@@ -77,10 +77,11 @@ class SiteController extends AdminController
         $username = Yii::$app->user->identity->username;
         $role = Yii::$app->request->get('role','销售');
         $search = Yii::$app->request->get('search','');
-        $sql = "SELECT u.avatar,st.*,CASE WHEN amt-target>0 AND role='销售' THEN floor((amt-target)/2000)*100
-                WHEN role='开发' AND amt-target>0 THEN floor((amt-target)/5000)*100
-                ELSE 0 END AS rxtraBonus FROM site_targetAll st 
-                LEFT JOIN `user` u ON st.username=u.username WHERE display<>1 ";
+        $sql = "SELECT u.avatar,l.basic,high,st.*
+                FROM site_target_all st 
+                LEFT JOIN `user` u ON st.username=u.username 
+                LEFT JOIN `site_target_level` l ON l.`level`=st.`level` AND  l.`role`=st.`role`
+				WHERE display<>1";
         if($role) $sql .= " AND role='{$role}' ";
         if($search) $sql .= " AND ( st.username like '%{$search}%' OR depart like '%{$search}%') ";
         $sql .= " ORDER BY st.username='{$username}' DESC, `order` ASC";
