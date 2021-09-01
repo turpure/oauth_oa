@@ -86,6 +86,9 @@ class DataCenterController extends AdminController
     {
         $condition = Yii::$app->request->post('condition', []);
         $month = $condition['month'] ?? date('Y-m');
+        $count = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpData where updateMonth = '{$month}' ")->queryScalar();
+        if(!$count) $month = date('Y-m', strtotime('-1 days'));
+
         $sql = "SELECT CASE WHEN IFNULL(class,'')='海运' THEN '万邑通UK海运' ELSE '万邑通UK空运' END AS storeName,
 				SUM(useNum) AS useNum,
 				SUM(costmoney) costmoney,
@@ -123,6 +126,9 @@ class DataCenterController extends AdminController
     {
         $condition = Yii::$app->request->post('condition', []);
         $month = $condition['month'] ?? date('Y-m');
+        $count = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpData where updateMonth = '{$month}' ")->queryScalar();
+        if(!$count) $month = date('Y-m', strtotime('-1 days'));
+
         $sql = "CALL data_center_stock_status('{$month}');";
         try {
             return Yii::$app->db->createCommand($sql)->queryAll();
@@ -149,6 +155,8 @@ class DataCenterController extends AdminController
         }
         $cond = $request->post('condition');
         $month = $cond['month'] ?? date('Y-m');
+        $count = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpData where updateMonth = '{$month}' ")->queryScalar();
+        if(!$count) $month = date('Y-m', strtotime('-1 days'));
 
         $sql = "SELECT aa.storeName,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,
                     hopeUseNum,totalCostmoney,IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
@@ -208,6 +216,9 @@ class DataCenterController extends AdminController
         }
         $cond = $request->post('condition');
         $month = $cond['month'] ?? date('Y-m');
+        $count = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpData where updateMonth = '{$month}' ")->queryScalar();
+        if(!$count) $month = date('Y-m', strtotime('-1 days'));
+
         $sql = "SELECT aa.storeName,salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
                         IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
                         CASE WHEN IFNULL(aveCostmoney,0)=0 AND totalCostmoney>0 THEN 10000 ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
@@ -264,6 +275,13 @@ class DataCenterController extends AdminController
         }
         $cond = $request->post('condition');
         $month = $cond['month'] ?? date('Y-m');
+        $count = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpData where updateMonth = '{$month}' ")->queryScalar();
+        if(!$count) $month = date('Y-m', strtotime('-1 days'));
+
+
+        $count = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpData where updateMonth = '{$month}' ")->queryScalar();
+        if(!$count) $month = date('Y-m', strtotime('-1 days'));
+
         $sql = "SELECT case when IFNULL(depart,'')='' then '无部门' else depart end AS depart,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
                         IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
                         CASE WHEN IFNULL(aveCostmoney,0)=0 AND totalCostmoney>0 THEN 10000 ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
@@ -316,6 +334,9 @@ class DataCenterController extends AdminController
         }
         $cond = $request->post('condition');
         $month = $cond['month'] ?? date('Y-m');
+        $count = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpData where updateMonth = '{$month}' ")->queryScalar();
+        if(!$count) $month = date('Y-m', strtotime('-1 days'));
+
         $sql = "SELECT IFNULL(depart,'无部门') AS depart,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,
                         hopeUseNum,totalCostmoney,IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
                         CASE WHEN IFNULL(aveCostmoney,0)=0 AND totalCostmoney>0 THEN 10000 ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
@@ -372,6 +393,9 @@ class DataCenterController extends AdminController
         }
         $cond = $request->post('condition');
         $month = $cond['month'] ?? date('Y-m');
+        $count = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpData where updateMonth = '{$month}' ")->queryScalar();
+        if(!$count) $month = date('Y-m', strtotime('-1 days'));
+
         $sql = "SELECT IFNULL(depart,'无部门') AS depart,aa.salerName,useNum,costmoney,notInStore,notInCostmoney,
                         hopeUseNum,totalCostmoney,IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
                         CASE WHEN IFNULL(aveCostmoney,0)=0 AND totalCostmoney>0 THEN 10000 ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
