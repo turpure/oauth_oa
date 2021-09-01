@@ -101,7 +101,7 @@ class DataCenterController extends AdminController
                 FROM (
                         SELECT SKU,storeName,class,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
                         FROM `cache_stockWaringTmpData` WHERE updateMonth = '{$month}' 
-                        UNION
+                        UNION ALL 
                         SELECT SKU,storeName,class,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
                          FROM `cache_stockWaringTmpDataBackup` WHERE updateMonth = '{$month}'  
                 ) a WHERE storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW') AND class IN ('海运', '空运')
@@ -175,7 +175,7 @@ class DataCenterController extends AdminController
                         FROM (
                             SELECT storeName,class,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
                              FROM `cache_stockWaringTmpData` WHERE updateMonth = '{$month}' 
-                            UNION
+                            UNION ALL 
                             SELECT storeName,class,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
                              FROM `cache_stockWaringTmpDataBackup` WHERE updateMonth = '{$month}' 
                         ) a WHERE 1=1 ";
@@ -236,7 +236,7 @@ class DataCenterController extends AdminController
                         FROM (
                             SELECT storeName,class,salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
                              FROM `cache_stockWaringTmpData` WHERE updateMonth = '{$month}' 
-                            UNION
+                            UNION ALL 
                             SELECT storeName,class,salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
                              FROM `cache_stockWaringTmpDataBackup` WHERE updateMonth = '{$month}' 
                         ) a WHERE 1=1  ";
@@ -278,10 +278,6 @@ class DataCenterController extends AdminController
         $count = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpData where updateMonth = '{$month}' ")->queryScalar();
         if(!$count) $month = date('Y-m', strtotime('-1 days'));
 
-
-        $count = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpData where updateMonth = '{$month}' ")->queryScalar();
-        if(!$count) $month = date('Y-m', strtotime('-1 days'));
-
         $sql = "SELECT case when IFNULL(depart,'')='' then '无部门' else depart end AS depart,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
                         IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
                         CASE WHEN IFNULL(aveCostmoney,0)=0 AND totalCostmoney>0 THEN 10000 ELSE IFNULL(ROUND(totalCostmoney/aveCostmoney,1),0) END AS sellDays
@@ -299,7 +295,7 @@ class DataCenterController extends AdminController
                         FROM (
                             SELECT storeName,salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
                              FROM `cache_stockWaringTmpData` WHERE updateMonth = '{$month}' 
-                            UNION
+                            UNION ALL 
                             SELECT storeName,salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
                              FROM `cache_stockWaringTmpDataBackup` WHERE updateMonth = '{$month}' 
                         ) c
@@ -355,7 +351,7 @@ class DataCenterController extends AdminController
                         FROM (
                             SELECT storeName,salerName,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
                              FROM `cache_stockWaringTmpData` WHERE updateMonth = '{$month}' 
-                            UNION
+                            UNION ALL 
                             SELECT storeName,salerName,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
                              FROM `cache_stockWaringTmpDataBackup` WHERE updateMonth = '{$month}' 
                         ) c
@@ -414,7 +410,7 @@ class DataCenterController extends AdminController
                         FROM (
                             SELECT storeName,salerName,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
                              FROM `cache_stockWaringTmpData` WHERE updateMonth = '{$month}' 
-                            UNION
+                            UNION ALL 
                             SELECT storeName,salerName,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
                              FROM `cache_stockWaringTmpDataBackup` WHERE updateMonth = '{$month}' 
                         ) c
