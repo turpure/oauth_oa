@@ -82,7 +82,7 @@ class SiteController extends AdminController
                 LEFT JOIN `user` u ON st.username=u.username 
                 LEFT JOIN `site_target_level` l ON l.`level`=st.`level` AND  l.`role`=st.`role`
 				WHERE display<>1";
-        if($role) $sql .= " AND role='{$role}' ";
+        if($role) $sql .= " AND st.role='{$role}' ";
         if($search) $sql .= " AND ( st.username like '%{$search}%' OR depart like '%{$search}%') ";
         $sql .= " ORDER BY st.username='{$username}' DESC, `order` ASC";
         $query = \Yii::$app->db->createCommand($sql)->queryAll();
@@ -110,13 +110,12 @@ class SiteController extends AdminController
      */
     public function actionSales()
     {
-
         $username = Yii::$app->user->identity->username;
-        $sql = "SELECT st.username,u.avatar,st.bonus,st.vacationDays,
-                CASE WHEN role='销售' AND amt-target>0 THEN floor((amt-target)/2000)*100 
-                     WHEN role='开发' AND amt-target>0 THEN floor((amt-target)/5000)*100 
+        /*$sql = "SELECT st.username,u.avatar,st.bonus,st.vacationDays,
+                CASE WHEN role='销售' AND amt-target>0 THEN floor((amt-target)/2000)*100
+                     WHEN role='开发' AND amt-target>0 THEN floor((amt-target)/5000)*100
                     ELSE 0 END AS rxtraBonus
-                FROM site_targetAll st
+                FROM site_target_all st
                 LEFT JOIN `user` u ON st.username=u.username
                 WHERE display<>1 AND rate>=100
                 ORDER BY st.username='{$username}' DESC,rate DESC";
@@ -127,17 +126,17 @@ class SiteController extends AdminController
 
         $vacationDaysUsedNum = Yii::$app->db->createCommand("SELECT sum(vacationDays) AS vacationDays FROM site_targetAll WHERE role<>'部门' AND display<>1 AND rate>=100")->queryOne();
         $vacationDaysAllNum = Yii::$app->db->createCommand("SELECT sum(vacationDays) AS vacationDays FROM site_targetAll WHERE role<>'部门' AND display<>1")->queryOne();
-        $dateRate = Yii::$app->db->createCommand("SELECT dateRate FROM site_targetAll limit 1")->queryScalar();
+        $dateRate = Yii::$app->db->createCommand("SELECT dateRate FROM site_targetAll limit 1")->queryScalar();*/
 
         return [
-            'list' => $query,
-            'dateRate' => $dateRate,
-            'bonusAllNum' => $bonusAllNum['bonus'],
-            'bonusUsedNum' => $bonusUsedNum['bonus'],
-            'bonusUnUsedNum' => $bonusAllNum['bonus'] - $bonusUsedNum['bonus'],
-            'vacationDaysAllNum' => $vacationDaysAllNum['vacationDays'],
-            'vacationDaysUsedNum' => $vacationDaysUsedNum['vacationDays'],
-            'vacationDaysUnUsedNum' => $vacationDaysAllNum['vacationDays'] - $vacationDaysUsedNum['vacationDays'],
+            'list' => [],
+            'dateRate' => 0,
+            'bonusAllNum' => 0,
+            'bonusUsedNum' => 0,
+            'bonusUnUsedNum' => 0,
+            'vacationDaysAllNum' => 0,
+            'vacationDaysUsedNum' => 0,
+            'vacationDaysUnUsedNum' => 0,
         ];
     }
 
