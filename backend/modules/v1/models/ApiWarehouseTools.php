@@ -615,10 +615,10 @@ class ApiWarehouseTools
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $fieldsFilter = ['like' => ['logisticsNo', 'user', 'sku'], 'equal' => ['number']];
-        $timeFilter = ['updatedTime'];
+        $timeFilter = ['createdTime', 'updatedTime'];
         $query = TaskWarehouse::find();
         $query = Helper::generateFilter($query, $fieldsFilter, $condition);
-        $query = Helper::timeFilter($query, $timeFilter, $condition);
+        $query = Helper::timeFilter($query, $timeFilter, $condition, 'mssql');
         $query->orderBy('id DESC');
         $provider = new ActiveDataProvider([
             'query' => $query,
