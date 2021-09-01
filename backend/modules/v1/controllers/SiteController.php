@@ -77,21 +77,32 @@ class SiteController extends AdminController
         $username = Yii::$app->user->identity->username;
         $role = Yii::$app->request->get('role','销售');
         $search = Yii::$app->request->get('search','');
-        $sql = "SELECT u.avatar,l.basic,basic_bonus,high_level,high,high_bonus,high_vacation,st.*
+        if ($role == '部门'){
+            $sql = "SELECT depart,SUM(basic) AS basic,SUM(high) AS high,SUM(basic_bonus) AS basic_bonus,SUM(high_bonus) AS high_bonus,
+				SUM(profit) AS profit,MAX(date_rate) AS date_rate,
+				CASE WHEN SUM(basic) = 0 OR SUM(profit) <= 0 THEN 0 ELSE ROUND(SUM(profit) * 100.0/ SUM(basic),2) END AS rate,
+				CASE WHEN SUM(high) = 0 OR SUM(profit) <= 0 THEN 0 ELSE ROUND(SUM(profit) * 100.0/ SUM(high),2) END AS high_rate
+                FROM site_target_all st 
+                LEFT JOIN `site_target_level` l ON l.`level`=st.`level` AND  l.`role`=st.`role`
+	            WHERE st.role = '销售' 	GROUP BY depart ORDER BY rate DESC";
+        }else{
+            $sql = "SELECT u.avatar,l.basic,basic_bonus,high_level,high,high_bonus,high_vacation,st.*
                 FROM site_target_all st 
                 LEFT JOIN `user` u ON st.username=u.username 
                 LEFT JOIN `site_target_level` l ON l.`level`=st.`level` AND  l.`role`=st.`role`
-				WHERE display<>1";
-        if($role) $sql .= " AND st.role='{$role}' ";
-        if($search) $sql .= " AND ( st.username like '%{$search}%' OR depart like '%{$search}%') ";
-        $sql .= " ORDER BY st.username='{$username}' DESC, `order` ASC";
+				WHERE display<>1 ";
+            if($role) $sql .= " AND st.role='{$role}' ";
+            if($search) $sql .= " AND ( st.username like '%{$search}%' OR depart like '%{$search}%') ";
+            $sql .= " ORDER BY st.username='{$username}' DESC, `rate` DESC";
+        }
+
         $query = \Yii::$app->db->createCommand($sql)->queryAll();
         $data = new ArrayDataProvider([
             'allModels' => $query,
             'sort' => [
                 'attributes' => [
-                    'username', 'depart', 'role', 'target', 'bonus','vacationDays',
-                    'amt','rate','dateRate','order','rxtraBonus'
+                    'username', 'depart', 'role', 'basic', 'basic_bonus', 'high', 'high_bonus', 'high_vacation',
+                    'profit', 'rate', 'high_rate', 'date_rate', 'order'
                 ],
             ],
             'pagination' => [
