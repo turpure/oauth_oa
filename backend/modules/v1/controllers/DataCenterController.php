@@ -93,7 +93,8 @@ class DataCenterController extends AdminController
 				SUM(notInCostmoney) notInCostmoney,
 				SUM(hopeUseNum) hopeUseNum,
 				SUM(totalCostmoney) totalCostmoney,
-				SUM(sellCostMoney) AS 30DayCostmoney
+				SUM(sellCostMoney) AS 30DayCostmoney,
+				CASE WHEN SUM(IFNULL(sellCostMoney,0)) = 0 THEN 0 ELSE ROUND(SUM(totalCostmoney)*30/SUM(IFNULL(sellCostMoney,0)),1) END AS sellDays
                 FROM (
                         SELECT SKU,storeName,class,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
                         FROM `cache_stockWaringTmpData` WHERE updateMonth = '{$month}' 
