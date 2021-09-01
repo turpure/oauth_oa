@@ -77,7 +77,7 @@ class SiteController extends AdminController
         $username = Yii::$app->user->identity->username;
         $role = Yii::$app->request->get('role','销售');
         $search = Yii::$app->request->get('search','');
-        $sql = "SELECT u.avatar,l.basic,high,st.*
+        $sql = "SELECT u.avatar,l.basic,basic_bonus,high_level,high,high_bonus,high_vacation,st.*
                 FROM site_target_all st 
                 LEFT JOIN `user` u ON st.username=u.username 
                 LEFT JOIN `site_target_level` l ON l.`level`=st.`level` AND  l.`role`=st.`role`

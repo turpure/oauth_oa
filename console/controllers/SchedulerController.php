@@ -94,26 +94,15 @@ class SchedulerController extends Controller
      */
     public function actionSite()
     {
-        $beginDate = '2020-12-01';//date('Y-m-d', strtotime('-30 days'));
+        $beginDate = '2021-09-01';//date('Y-m-d', strtotime('-30 days'));
         //$endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
-        $endDate = '2020-12-31';//昨天时间
+        $endDate = '2021-09-01';//昨天时间
         $dateRate = round(((strtotime($endDate) - strtotime($beginDate)) / 24 / 3600 + 1) * 100 / 122, 2);
         //print_r($dateRate);exit;
         try {
 
-            //获取开发备份数据
-            /*$month =  Yii::$app->db->createCommand("SELECT max(month) month FROM site_targetAllBackupData WHERE role='开发'")->queryScalar();
-            if($month){
-                $thisYear = date('Y',strtotime($month));
-                $thisMonth = date('m',strtotime($month));
-                if($thisMonth == 12){
-                    $beginDate = ($thisYear + 1) . '-' . '01-01';
-                }else{
-                    $beginDate = $thisYear . '-' . ($thisMonth + 1) . '-' .'01';
-                }
-            }*/
             //更新开发目标完成度
-            $seller = Yii::$app->db->createCommand("SELECT distinct username FROM site_targetAll WHERE role='开发'")->queryAll();
+            $seller = Yii::$app->db->createCommand("SELECT distinct username FROM site_target_all WHERE role='开发'")->queryAll();
             $condition = [
                 'dateFlag' => 1,
                 'beginDate' => $beginDate,
@@ -123,16 +112,22 @@ class SchedulerController extends Controller
             ];
             $devList = ApiReport::getDevelopReport($condition);
             foreach ($devList as $value) {
-                $targetSql = "SELECT IFNULL(target,0) AS target FROM site_targetAll WHERE role='开发' and username='{$value['salernameZero']}'";
-                $target = Yii::$app->db->createCommand($targetSql)->queryScalar();
-                $backupSql = "SELECT sum(profitZn) AS profitZn FROM site_targetAllBackupData WHERE role='开发' and username='{$value['salernameZero']}' GROUP BY username";
+                $targetSql = "SELECT IFNULL(basic,0) AS basic,IFNULL(high,0) AS high FROM site_target_all t
+                            LEFT JOIN site_target_level l ON l.`level`=t.`level` AND l.role=t.role 
+                            WHERE t.role='开发' and username='{$value['salernameZero']}' ";
+                $target = Yii::$app->db->createCommand($targetSql)->queryOne();
+                $basic = $target['basic'] ?? 0;
+                $high = $target['high'] ?? 0;
+                $backupSql = "SELECT sum(profit_zn) AS profit_zn FROM site_target_all_backup_data 
+                            WHERE role='开发' and username='{$value['salernameZero']}' GROUP BY username";
                 $lastProfit = Yii::$app->db->createCommand($backupSql)->queryScalar();
                 Yii::$app->db->createCommand()->update(
-                    'site_targetAll',
+                    'site_target_all',
                     [
                         'amt' => $value['netprofittotal'] + $lastProfit,
-                        'rate' => $target != 0 ? round(($value['netprofittotal'] + $lastProfit) * 100.0 / $target, 2) : 0,
-                        'dateRate' => $dateRate,
+                        'rate' => $basic != 0 ? round(($value['netprofitZero'] + $value['netprofitSix'] + $lastProfit) * 100.0 / $basic, 2) : 0,
+                        'high_rate' => $high != 0 ? round(($value['netprofitZero'] + $value['netprofitSix'] + $lastProfit) * 100.0 / $high, 2) : 0,
+                        'date_rate' => $dateRate,
                         'updatetime' => $endDate
                     ],
                     ['role' => '开发', 'username' => $value['salernameZero']]
