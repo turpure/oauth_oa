@@ -105,8 +105,8 @@ class SiteController extends AdminController
             'allModels' => $query,
             'sort' => [
                 'attributes' => [
-                    'username', 'depart', 'role', 'basic', 'basic_bonus', 'high', 'high_bonus', 'high_vacation',
-                    'profit', 'rate', 'high_rate', 'date_rate', 'order'
+                    'username', 'depart', 'role', 'level', 'high_level', 'basic', 'basic_bonus', 'high', 'high_bonus',
+                    'high_vacation', 'profit', 'rate', 'high_rate', 'date_rate', 'order'
                 ],
             ],
             'pagination' => [
