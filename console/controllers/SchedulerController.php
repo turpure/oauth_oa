@@ -1174,7 +1174,7 @@ class SchedulerController extends Controller
         $this->actionProfit();
         $this->actionSalesRanking();
         $this->actionSalesAmt();
-//        $this->actionSite();
+        $this->actionSite();
 //        $this->actionWarehouseIntegral();
     }
 
