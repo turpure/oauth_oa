@@ -2454,7 +2454,8 @@ class ApiGoodsinfo
         $row = [
             'Parent Unique ID' => '', '*Product Name' => '', 'Description' => '', '*Tags' => '', '*Unique ID' => '', 'Color' => '',
             'Size' => '', '*Quantity' => '', '*Price' => '', '*MSRP' => '', '*Shipping' => '', 'Shipping weight' => '',
-            'Shipping Time(enter without " ", just the estimated days )' => '', '*Product Main Image URL' => '',
+            //'Shipping Time(enter without " ", just the estimated days )' => '',
+            '*Product Main Image URL' => '',
             'Variant Main Image URL' => '', 'Extra Image URL' => '', 'Extra Image URL 1' => '', 'Extra Image URL 2' => '',
             'Extra Image URL 3' => '', 'Extra Image URL 4' => '', 'Extra Image URL 5' => '', 'Extra Image URL 6' => '',
             'Extra Image URL 7' => '', 'Extra Image URL 8' => '', 'Extra Image URL 9' => '', 'Dangerous Kind' => '',
@@ -2497,7 +2498,7 @@ class ApiGoodsinfo
                     $row['*MSRP'] = ($sku['joomPrice'] + $sku['joomShipping']) * 5;
                     $row['*Shipping'] = $sku['joomShipping'];
                     $row['Shipping weight'] = (float)$sku['weight'] * 1.0 / 1000;
-                    $row['Shipping Time(enter without " ", just the estimated days )'] = '15-45';
+                    //$row['Shipping Time(enter without " ", just the estimated days )'] = '15-45';
                     $row['*Product Main Image URL'] = $imageInfo['mainImage'];
                     $row['Variant Main Image URL'] = str_replace('/10023/', '/' . $joomAccounts['imgCode'] . '/', $sku['linkUrl']);
                     $row['Extra Image URL'] = $imageInfo['extraImages'][0];
