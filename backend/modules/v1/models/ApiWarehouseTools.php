@@ -273,11 +273,13 @@ class ApiWarehouseTools
         $identity = Yii::$app->request->get('type', 'warehouse');
 
         if ($identity == 'warehouse') {
-            $query = BPerson::find()->select('PersonName');
+            $query = BPerson::find();//->select('PersonName');
             $ret = $query->andWhere(['in', 'Duty', ['入库分拣', '快递扫描']])->asArray()->all();
             $ret2 = TaskWarehouse::find()->select('user AS PersonName')
                 ->andWhere(['>', 'createdTime', date('Y-m-d',strtotime('-7 days'))])->distinct()->asArray()->all();
-            return array_values(array_unique(array_merge($ret, $ret2), SORT_REGULAR));
+            $name = ArrayHelper::getColumn($ret, 'PersonName');
+            $name2 = ArrayHelper::getColumn($ret2, 'PersonName');
+            return array_values(array_unique(array_merge($name, $name2)));
         } else {
             $query = BPerson::find();
             $ret = $query->andWhere(['in', 'Duty', ['多品分拣']])->all();
