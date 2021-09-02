@@ -275,11 +275,15 @@ class ApiWarehouseTools
         $query = BPerson::find();
         if ($identity == 'warehouse') {
             $ret = $query->andWhere(['in', 'Duty', ['入库分拣', '快递扫描']])->all();
+            $ret2 = TaskWarehouse::find()->andWhere(['>', 'createdTime', date('Y-m-d',strtotime('-7 days'))])->asArray()->all();
+            $name = ArrayHelper::getColumn($ret, 'PersonName');
+            $name2 = ArrayHelper::getColumn($ret2, 'user');
+            return array_unique(array_merge($name, $name2));
         } else {
             $ret = $query->andWhere(['in', 'Duty', ['多品分拣']])->all();
 //            $ret = $query->andWhere(['in', 'Duty', ['拣货', '拣货组长', '拣货-分拣']])->all();
+            return ArrayHelper::getColumn($ret, 'PersonName');
         }
-        return ArrayHelper::getColumn($ret, 'PersonName');
     }
 
     /**
