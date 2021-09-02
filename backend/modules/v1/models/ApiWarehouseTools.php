@@ -272,14 +272,14 @@ class ApiWarehouseTools
     {
         $identity = Yii::$app->request->get('type', 'warehouse');
 
-        $query = BPerson::find();
         if ($identity == 'warehouse') {
-            $ret = $query->andWhere(['in', 'Duty', ['入库分拣', '快递扫描']])->all();
-            $ret2 = TaskWarehouse::find()->andWhere(['>', 'createdTime', date('Y-m-d',strtotime('-7 days'))])->asArray()->all();
-            $name = ArrayHelper::getColumn($ret, 'PersonName');
-            $name2 = ArrayHelper::getColumn($ret2, 'user');
-            return array_unique(array_merge($name, $name2));
+            $query = BPerson::find()->select('PersonName');
+            $ret = $query->andWhere(['in', 'Duty', ['入库分拣', '快递扫描']])->asArray()->all();
+            $ret2 = TaskWarehouse::find()->select('user AS PersonName')
+                ->andWhere(['>', 'createdTime', date('Y-m-d',strtotime('-7 days'))])->distinct()->asArray()->all();
+            return array_values(array_unique(array_merge($ret, $ret2), SORT_REGULAR));
         } else {
+            $query = BPerson::find();
             $ret = $query->andWhere(['in', 'Duty', ['多品分拣']])->all();
 //            $ret = $query->andWhere(['in', 'Duty', ['拣货', '拣货组长', '拣货-分拣']])->all();
             return ArrayHelper::getColumn($ret, 'PersonName');
