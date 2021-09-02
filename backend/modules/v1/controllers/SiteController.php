@@ -89,7 +89,8 @@ class SiteController extends AdminController
             if($search) $sql .= " AND depart like '%{$search}%' ";
             $sql .= " GROUP BY depart ORDER BY rate DESC";
         }else{
-            $sql = "SELECT u.avatar,l.basic,l.basic_bonus,hl.high,hl.high_bonus,hl.high_vacation,st.*
+            $sql = "SELECT u.avatar,l.basic,l.basic_bonus,hl.high,hl.high_bonus,hl.high_vacation,st.*,
+                    SUBSTR(st.`level`,2) AS b_l,SUBSTR(st.`high_level`,2) AS h_l 
                 FROM site_target_all st 
                 LEFT JOIN `user` u ON st.username=u.username 
                 LEFT JOIN `site_target_level` l ON l.`level`=st.`level` AND  l.`role`=st.`role`
@@ -105,7 +106,7 @@ class SiteController extends AdminController
             'allModels' => $query,
             'sort' => [
                 'attributes' => [
-                    'username', 'depart', 'role', 'level', 'high_level', 'basic', 'basic_bonus', 'high', 'high_bonus',
+                    'username', 'depart', 'role', 'b_l', 'h_l', 'basic', 'basic_bonus', 'high', 'high_bonus',
                     'high_vacation', 'profit', 'rate', 'high_rate', 'date_rate', 'order'
                 ],
             ],
