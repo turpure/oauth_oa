@@ -78,7 +78,7 @@ class SiteController extends AdminController
         $role = Yii::$app->request->get('role','销售');
         $search = Yii::$app->request->get('search','');
         if ($role == '部门'){
-            $sql = "SELECT depart,SUM(basic) AS basic,SUM(high) AS high,SUM(basic_bonus) AS basic_bonus,SUM(high_bonus) AS high_bonus,
+            $sql = "SELECT depart,SUM(l.basic) AS basic,SUM(hl.high) AS high,SUM(l.basic_bonus) AS basic_bonus,SUM(hl.high_bonus) AS high_bonus,
 				SUM(profit) AS profit,MAX(date_rate) AS date_rate,
 				CASE WHEN SUM(l.basic) = 0 OR SUM(profit) <= 0 THEN 0 ELSE ROUND(SUM(profit) * 100.0/ SUM(l.basic),2) END AS rate,
 				CASE WHEN SUM(hl.high) = 0 OR SUM(profit) <= 0 THEN 0 ELSE ROUND(SUM(profit) * 100.0/ SUM(hl.high),2) END AS high_rate

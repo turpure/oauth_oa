@@ -112,10 +112,11 @@ class SchedulerController extends Controller
             ];
             $devList = ApiReport::getDevelopReport($condition);
             foreach ($devList as $value) {
-                $targetSql = "SELECT IFNULL(basic,0) AS basic,IFNULL(high,0) AS high FROM site_target_all t
+                $basicSql = "SELECT IFNULL(l.basic,0) AS basic,IFNULL(hl.high,0) AS high FROM site_target_all t
                             LEFT JOIN site_target_level l ON l.`level`=t.`level` AND l.role=t.role 
+                            LEFT JOIN site_target_level hl ON hl.`level`=t.`level` AND hl.role=t.role 
                             WHERE t.role='开发' and username='{$value['salernameZero']}' ";
-                $target = Yii::$app->db->createCommand($targetSql)->queryOne();
+                $target = Yii::$app->db->createCommand($basicSql)->queryOne();
                 $basic = $target['basic'] ?? 0;
                 $high = $target['high'] ?? 0;
                 $backupSql = "SELECT sum(profit_zn) AS profit_zn FROM site_target_all_backup_data 
