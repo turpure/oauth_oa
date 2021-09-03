@@ -1109,7 +1109,8 @@ class SchedulerController extends Controller
             }
             $flag = ['1.0', '2.0'];
             foreach ($flag as $v){
-                $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}','义乌仓','{$v}';";
+//                $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}','义乌仓','{$v}';";
+                $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}';";
                 Yii::$app->py_db->createCommand($sql)->execute();
                 echo date('Y-m-d H:i:s') . " Goods deliver time data successful for version $v !\n";
             }
