@@ -1104,16 +1104,18 @@ class SchedulerController extends Controller
     {
         try {
             if(!$beginDate || !$endDate){
-                $beginDate = date('Y-m-d', strtotime('-5 day'));
+                $beginDate = date('Y-m-d', strtotime('-3 day'));
                 $endDate = date('Y-m-d');
             }
-            $flag = ['1.0', '2.0'];
+            $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}';";
+            Yii::$app->py_db->createCommand($sql)->execute();
+            echo date('Y-m-d H:i:s') . " Goods deliver time data successful !\n";
+            /*$flag = ['1.0', '2.0'];
             foreach ($flag as $v){
-//                $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}','义乌仓','{$v}';";
-                $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}';";
+                $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}','义乌仓','{$v}';";
                 Yii::$app->py_db->createCommand($sql)->execute();
                 echo date('Y-m-d H:i:s') . " Goods deliver time data successful for version $v !\n";
-            }
+            }*/
         } catch (\Exception $e) {
             echo date('Y-m-d H:i:s') . " Get deliver time data failed, cause of '{$e->getMessage()}'. \n";
             //echo $e->getMessage();
