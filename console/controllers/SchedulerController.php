@@ -1107,6 +1107,7 @@ class SchedulerController extends Controller
                 $beginDate = date('Y-m-d', strtotime('-3 day'));
                 $endDate = date('Y-m-d');
             }
+//            var_dump($beginDate,$endDate);exit;
             $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}';";
             Yii::$app->py_db->createCommand($sql)->execute();
             echo date('Y-m-d H:i:s') . " Goods deliver time data successful !\n";

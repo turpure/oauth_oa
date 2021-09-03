@@ -1619,14 +1619,27 @@ class WarehouseToolsController extends AdminController
         try {
             $condition = Yii::$app->request->post('condition', []);
             $beginDate = $condition['dt'] ?: '';
-            $flag = $condition['flag'] ?: 0;
+            $endDate = $beginDate . " 23:59:59";
+            $flag = $condition['flag'] ?: 0;  //-- 0  当天 ， 1 一天内 ， 2 两天内 ，3 三天内 ， 4 三天以上 ， 5 未入库
             $version = $condition['version'] ?: '1.0';
 //            $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate_detail '{$beginDate}', {$flag} , '{$version}' ";
-            $sql = "SELECT * FROM oauth_in_storage_time_rate_data_copy
+            if ($flag == 5 || $flag == 4){
+                $sql = "SELECT * FROM oauth_in_storage_time_rate_data_copy
                     WHERE CASE WHEN '{$version}' = '1.0' THEN CONVERT(VARCHAR(10),OPDate,121)
-					            ELSE CONVERT(VARCHAR(10),DATEADD(hh, 9, OPDate),121) END = '{$beginDate}'
-					 AND trackingNo NOT IN (SELECT trackingNo FROM oauth_in_storage_time_rate_data_copy WHERE DATEDIFF(dd, OPDate, audieDate) BETWEEN -10 AND {$flag})
-				OR (DATEDIFF(dd, OPDate, audieDate) > {$flag} AND ISNULL(audieDate,'') = '' ) ";
+					    ELSE CONVERT(VARCHAR(10),DATEADD(hh, 9, OPDate),121) END BETWEEN '{$beginDate}' AND '{$endDate}'
+					AND ISNULL(audieDate,'') = '' ";
+            }else{
+                $sql = "SELECT * FROM oauth_in_storage_time_rate_data_copy
+                    WHERE CASE WHEN '{$version}' = '1.0' THEN CONVERT(VARCHAR(10),OPDate,121)
+					    ELSE CONVERT(VARCHAR(10),DATEADD(hh, 9, OPDate),121) END BETWEEN '{$beginDate}' AND '{$endDate}'
+					AND trackingNo NOT IN (
+                        SELECT DISTINCT trackingNo FROM oauth_in_storage_time_rate_data_copy 
+                        WHERE CASE WHEN '{$version}' = '1.0' THEN CONVERT(VARCHAR(10),OPDate,121)
+					        ELSE CONVERT(VARCHAR(10),DATEADD(hh, 9, OPDate),121) END BETWEEN '{$beginDate}' AND '{$endDate}'
+						AND CONVERT(VARCHAR(10),audieDate,121) BETWEEN CONVERT(VARCHAR(10),DATEADD(dd, -10, '{$beginDate}'),121) 
+						AND CONVERT(VARCHAR(10),DATEADD(dd, {$flag}, '{$beginDate}'),121)    
+					) ";
+            }
             return Yii::$app->py_db->createCommand($sql)->queryAll();
         } catch (Exception $e) {
             return [
