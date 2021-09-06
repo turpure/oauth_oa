@@ -383,7 +383,7 @@ class ApiSettings
                                     SELECT * FROM oauth_operator_kpi_filter_member 
                                     WHERE username=u.username AND (IFNULL(begin_month,'') = '' OR begin_month < '{$month}'))
                 ) b left Join oauth_operator_kpi_other_score s ON s.username=b.username AND s.month = '{$month}' 
-                WHERE 1=1 AND CONCAT(IFNULL(`month`,'{$month}'),'-01') > FROM_UNIXTIME(created_at,'%Y-%m-01') ";
+                WHERE 1=1 AND CONCAT(IFNULL(`month`,'{$month}'),'-01') >= FROM_UNIXTIME(created_at,'%Y-%m-01') ";
         if ($name) $sql .= " AND b.username IN ('{$name}') ";
         if ($userList) $sql .= " AND b.username IN ('{$userList}') ";
         return Yii::$app->db->createCommand($sql)->queryAll();
