@@ -379,7 +379,7 @@ class ApiSettings
                         SELECT DISTINCT u.username,u.created_at FROM `user` u
                         LEFT JOIN auth_assignment a ON a.user_id=u.id
                         WHERE u.`status`=10 AND a.item_name IN ('产品销售','产品开发')
-                                AND NOT EXISTS(SELECT * FROM oauth_operator_kpi_filter_member WHERE username=u.username)
+                                AND NOT EXISTS(SELECT * FROM oauth_operator_kpi_filter_member WHERE username=u.username )
                 ) b left Join oauth_operator_kpi_other_score s ON s.username=b.username AND s.month = '{$month}' WHERE 1=1 ";
         if ($name) $sql .= " AND b.username IN ('{$name}') ";
         if ($userList) $sql .= " AND b.username IN ('{$userList}') ";
