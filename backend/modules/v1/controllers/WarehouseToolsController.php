@@ -458,11 +458,13 @@ class WarehouseToolsController extends AdminController
         $pageSize = $condition['pageSize'] ?: 20;
         $goodsCode = $condition['goodsCode'] ?? '';
         $purchaser = $condition['purchaser'] ?? '';
+        $rate = isset($condition['rate']) && $condition['rate'] ?: 0;
         //$data = OauthLabelGoodsRate::find()->andFilterWhere(['like', 'goodsCode', $goodsCode]);
         $sql = "SELECT a.id,a.goodsCode,a.rate,g.purchaser FROM oauth_label_goods_rate a
                 LEFT JOIN B_Goods g ON a.goodsCode=g.GoodsCode WHERE 1=1 ";
         if ($goodsCode) $sql .= " AND a.goodsCode LIKE '%{$goodsCode}%'";
         if ($purchaser) $sql .= " AND g.purchaser LIKE '%{$purchaser}%'";
+        if ($rate) $sql .= " AND a.rate = '{$rate}'";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         return new ArrayDataProvider([
             'allModels' => $data,
