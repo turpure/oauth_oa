@@ -152,14 +152,30 @@ class TestController extends AdminController
 
     public function actionTest3()
     {
-        $base_url = 'http://openapi.winit.com.cn/openapi/service';
+        $base_url = Yii::$app->params['wyt']['base_url'];
         $action = 'winit.wh.inbound.getOrderDetail';
         $data = [
-            'orderNo' => 'WI23199174',
-            'isIncludePackage' => 'N',
+            'orderNo' => 'WI24011751',
+            'isIncludePackage' => 'Y',
         ];
         $params = WytServices::get_request_par($data, $action);
         $res = Helper::request($base_url, json_encode($params));
+//        return $res;
+        if($res[0] == 200 ){
+            if($res[1]['code'] == '0'){
+                return $res[1]['data'];
+            }else{
+                return [
+                    'code' => 400,
+                    'message' => $res[1]['msg']
+                ];
+            }
+        }else{
+            return [
+                'code' => 400,
+                'message' => 'request error'
+            ];
+        }
 
         var_dump($res);exit;
     }

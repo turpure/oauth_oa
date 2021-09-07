@@ -78,16 +78,16 @@ class SiteController extends AdminController
         $role = Yii::$app->request->get('role','销售');
         $search = Yii::$app->request->get('search','');
         if ($role == '部门'){
-            $sql = "SELECT depart,SUM(l.basic) AS basic,SUM(hl.high) AS high,SUM(l.basic_bonus) AS basic_bonus,SUM(hl.high_bonus) AS high_bonus,
+            $sql = "SELECT st.depart,MAX(IFNULL(l.basic,0)) AS basic,MAX(IFNULL(l.high,0)) AS high,
+                MAX(IFNULL(l.basic_bonus,0)) AS basic_bonus,MAX(IFNULL(l.high_bonus,0)) AS high_bonus,
 				SUM(profit) AS profit,MAX(date_rate) AS date_rate,
-				CASE WHEN SUM(l.basic) = 0 OR SUM(profit) <= 0 THEN 0 ELSE ROUND(SUM(profit) * 100.0/ SUM(l.basic),2) END AS rate,
-				CASE WHEN SUM(hl.high) = 0 OR SUM(profit) <= 0 THEN 0 ELSE ROUND(SUM(profit) * 100.0/ SUM(hl.high),2) END AS high_rate
+				CASE WHEN MAX(IFNULL(l.basic,0)) = 0 OR SUM(profit) <= 0 THEN 0 ELSE ROUND(SUM(profit) * 100.0/ MAX(IFNULL(l.basic,0)),2) END AS rate,
+				CASE WHEN MAX(IFNULL(l.high,0)) = 0 OR SUM(profit) <= 0 THEN 0 ELSE ROUND(SUM(profit) * 100.0/ MAX(IFNULL(l.high,0)),2) END AS high_rate
                 FROM site_target_all st 
-                LEFT JOIN `site_target_level` l ON l.`level`=st.`level` AND  l.`role`=st.`role`
-                LEFT JOIN `site_target_level` hl ON hl.`high_level`=st.`high_level` AND  hl.`role`=st.`role`
+                LEFT JOIN `site_target_level_depart` l ON l.`depart`=st.`depart`
 	            WHERE st.role = '销售' 	";
-            if($search) $sql .= " AND depart like '%{$search}%' ";
-            $sql .= " GROUP BY depart ORDER BY rate DESC";
+            if($search) $sql .= " AND st.depart like '%{$search}%' ";
+            $sql .= " GROUP BY st.depart ORDER BY rate DESC";
         }else{
             $sql = "SELECT u.avatar,l.basic,l.basic_bonus,hl.high,hl.high_bonus,hl.high_vacation,st.*,
                     SUBSTR(st.`level`,2) AS b_l,SUBSTR(st.`high_level`,2) AS h_l 
