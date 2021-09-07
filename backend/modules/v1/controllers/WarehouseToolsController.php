@@ -2125,7 +2125,7 @@ class WarehouseToolsController extends AdminController
         $beginDate = $condition['dateRange'][0] ?: '';
         $endDate = $condition['dateRange'][1] ?: '';
         $sql = "SELECT * FROM `warehouse_kpi_report` WHERE dt BETWEEN '{$beginDate}' AND '{$endDate}' ";
-        if ($name) $sql .= " AND `name`='{$name}'";
+        if ($name) $sql .= " AND `name` LIKE '%{$name}%'";
         if ($job) $sql .= " AND `job` LIKE '%{$job}%'";
         $data = Yii::$app->db->createCommand($sql)->queryAll();
         $title = ['id', '姓名', '日期', '职位', '扫描包裹数', '打标订单数', '打标SKU种数', '贴标SKU种数', '贴标产品数',
