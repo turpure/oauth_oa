@@ -20,6 +20,7 @@ namespace backend\modules\v1\controllers;
 
 use backend\models\OaFyndiqSuffix;
 use backend\models\ShopElf\BGoods;
+use backend\modules\v1\services\WytServices;
 use backend\modules\v1\utils\ExportTools;
 use backend\modules\v1\utils\Helper;
 use Yii;
@@ -151,32 +152,16 @@ class TestController extends AdminController
 
     public function actionTest3()
     {
-        $step = 60000;
-        for ($i = 0; ; $i++) {
-            $index = $step*$i;
-            $sql = " SELECT TOP $step * FROM (
-                
-            SELECT row_number() OVER(ORDER BY a.sku ) AS rowid, ISNULL(a.locationname,'') AS locationname ,
-                a.sku,a.skuname,a.number,a.reservationnum,a.createdate,a.goodsstatus,
-                 ISNULL((SELECT SUM(l_qty) FROM dbo.p_tradedt(nolock) dt
-                                LEFT JOIN p_trade(nolock) t ON dt.tradeNID=t.NID WHERE dt.goodsSkuID = a.goodsSkuID AND ordertime >= dateadd(DAY ,- 30, getdate())  ),0) AS '30天销量'
-            FROM dbo.Y_R_tStockingWaring(nolock) a
-            GROUP BY a.locationname,a.sku,a.skuname,a.NUMber,a.reservationnum,a.CreateDate,a.goodsstatus,goodsSkuID
-        ) a WHERE rowid > $index
-        ";
-            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-            if(count($data) > 0){
-                $name = 'SKU-Info--20210524--' .(string) $i . '--';
-                $title = ['rowid', '库位', 'SKU', 'SKU名称', '库存数量', '占用数量', '开发日期', '状态', '30天销量'];
-                ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
-            }else{
-                break;
-            }
+        $base_url = 'http://openapi.winit.com.cn/openapi/service';
+        $action = 'winit.wh.inbound.getOrderDetail';
+        $data = [
+            'orderNo' => 'WI23199174',
+            'isIncludePackage' => 'N',
+        ];
+        $params = WytServices::get_request_par($data, $action);
+        $res = Helper::request($base_url, json_encode($params));
 
-
-        }
-
-//        var_dump($h);exit;
+        var_dump($res);exit;
     }
 
 

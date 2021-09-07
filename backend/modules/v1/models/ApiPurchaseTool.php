@@ -197,7 +197,7 @@ class ApiPurchaseTool
                 LEFT JOIN B_GoodsSKU AS g WITH(nolock) ON cd.goodsskuid = g.nid  
                 WHERE  CheckFlag=1 And inflag=0 ANd Archive=0 AND MakeDate > '{$someDays}'  
                 AND isnull(loginId,'') LIKE 'caigoueasy%' AND ISNULL(logisticsStatus,'') NOT IN ('', '等待买家付款')  
-                -- AND BillNumber = 'CGD-2020-07-13-2761' 
+                --  AND BillNumber = 'CGD-2021-08-30-0536' 
                 AND StoreID IN (2,7,36) AND ABS(OrderMoney - alibabamoney) > 0.1 ORDER BY MakeDate";
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         }
@@ -330,8 +330,8 @@ class ApiPurchaseTool
             from cg_stockorderd  as cgd LEFT JOIN B_goodsSku as gs on cgd.goodsskuid = gs.nid 
             LEFT JOIN cg_stockorderm as cgm on cgd.stockordernid= cgm.nid where billnumber='{$billNumber}'";
         $checkSql = "P_CG_UpdateStockOutOfByStockOrder '{$billNumber}'";
-        $log = 'ur_cleaner ' . date('Y-m-d H:i:s') . $str;
-        $logSql = "INSERT INTO CG_StockLogs(OrderType,OrderNID,Operator,Logs) VALUES('采购订单', {$orderInfo['nid']}, 'ur_cleaner','{$log}')";
+        $log = 'ur_center ' . date('Y-m-d H:i:s') . $str;
+        $logSql = "INSERT INTO CG_StockLogs(OrderType,OrderNID,Operator,Logs) VALUES('采购订单', {$orderInfo['nid']}, 'ur_center','{$log}')";
 
         $trans = CGStockOrderM::getDb()->beginTransaction();
         try {

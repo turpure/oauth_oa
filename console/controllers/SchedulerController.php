@@ -94,26 +94,15 @@ class SchedulerController extends Controller
      */
     public function actionSite()
     {
-        $beginDate = '2020-12-01';//date('Y-m-d', strtotime('-30 days'));
-        //$endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
-        $endDate = '2020-12-31';//昨天时间
+        $beginDate = '2021-09-01';//date('Y-m-d', strtotime('-30 days'));
+        $endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
+//        $endDate = '2021-09-01';//昨天时间
         $dateRate = round(((strtotime($endDate) - strtotime($beginDate)) / 24 / 3600 + 1) * 100 / 122, 2);
         //print_r($dateRate);exit;
         try {
 
-            //获取开发备份数据
-            /*$month =  Yii::$app->db->createCommand("SELECT max(month) month FROM site_targetAllBackupData WHERE role='开发'")->queryScalar();
-            if($month){
-                $thisYear = date('Y',strtotime($month));
-                $thisMonth = date('m',strtotime($month));
-                if($thisMonth == 12){
-                    $beginDate = ($thisYear + 1) . '-' . '01-01';
-                }else{
-                    $beginDate = $thisYear . '-' . ($thisMonth + 1) . '-' .'01';
-                }
-            }*/
             //更新开发目标完成度
-            $seller = Yii::$app->db->createCommand("SELECT distinct username FROM site_targetAll WHERE role='开发'")->queryAll();
+            $seller = Yii::$app->db->createCommand("SELECT distinct username FROM site_target_all WHERE role='开发'")->queryAll();
             $condition = [
                 'dateFlag' => 1,
                 'beginDate' => $beginDate,
@@ -123,16 +112,23 @@ class SchedulerController extends Controller
             ];
             $devList = ApiReport::getDevelopReport($condition);
             foreach ($devList as $value) {
-                $targetSql = "SELECT IFNULL(target,0) AS target FROM site_targetAll WHERE role='开发' and username='{$value['salernameZero']}'";
-                $target = Yii::$app->db->createCommand($targetSql)->queryScalar();
-                $backupSql = "SELECT sum(profitZn) AS profitZn FROM site_targetAllBackupData WHERE role='开发' and username='{$value['salernameZero']}' GROUP BY username";
+                $basicSql = "SELECT IFNULL(l.basic,0) AS basic,IFNULL(hl.high,0) AS high FROM site_target_all t
+                            LEFT JOIN site_target_level l ON l.`level`=t.`level` AND l.role=t.role 
+                            LEFT JOIN site_target_level hl ON hl.`level`=t.`level` AND hl.role=t.role 
+                            WHERE t.role='开发' and username='{$value['salernameZero']}' ";
+                $target = Yii::$app->db->createCommand($basicSql)->queryOne();
+                $basic = $target['basic'] ?? 0;
+                $high = $target['high'] ?? 0;
+                $backupSql = "SELECT sum(profit_zn) AS profit_zn FROM site_target_all_backup_data 
+                            WHERE role='开发' and username='{$value['salernameZero']}' GROUP BY username";
                 $lastProfit = Yii::$app->db->createCommand($backupSql)->queryScalar();
                 Yii::$app->db->createCommand()->update(
-                    'site_targetAll',
+                    'site_target_all',
                     [
-                        'amt' => $value['netprofittotal'] + $lastProfit,
-                        'rate' => $target != 0 ? round(($value['netprofittotal'] + $lastProfit) * 100.0 / $target, 2) : 0,
-                        'dateRate' => $dateRate,
+                        'profit' => $value['netprofitZero'] + $value['netprofitSix'] + $lastProfit,
+                        'rate' => $basic != 0 ? round(($value['netprofitZero'] + $value['netprofitSix'] + $lastProfit) * 100.0 / $basic, 2) : 0,
+                        'high_rate' => $high != 0 ? round(($value['netprofitZero'] + $value['netprofitSix'] + $lastProfit) * 100.0 / $high, 2) : 0,
+                        'date_rate' => $dateRate,
                         'updatetime' => $endDate
                     ],
                     ['role' => '开发', 'username' => $value['salernameZero']]
@@ -1108,15 +1104,19 @@ class SchedulerController extends Controller
     {
         try {
             if(!$beginDate || !$endDate){
-                $beginDate = date('Y-m-d', strtotime('-5 day'));
+                $beginDate = date('Y-m-d', strtotime('-3 day'));
                 $endDate = date('Y-m-d');
             }
-            $flag = ['1.0', '2.0'];
+//            var_dump($beginDate,$endDate);exit;
+            $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}';";
+            Yii::$app->py_db->createCommand($sql)->execute();
+            echo date('Y-m-d H:i:s') . " Goods deliver time data successful !\n";
+            /*$flag = ['1.0', '2.0'];
             foreach ($flag as $v){
                 $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}','义乌仓','{$v}';";
                 Yii::$app->py_db->createCommand($sql)->execute();
                 echo date('Y-m-d H:i:s') . " Goods deliver time data successful for version $v !\n";
-            }
+            }*/
         } catch (\Exception $e) {
             echo date('Y-m-d H:i:s') . " Get deliver time data failed, cause of '{$e->getMessage()}'. \n";
             //echo $e->getMessage();
@@ -1178,7 +1178,7 @@ class SchedulerController extends Controller
         $this->actionProfit();
         $this->actionSalesRanking();
         $this->actionSalesAmt();
-//        $this->actionSite();
+        $this->actionSite();
 //        $this->actionWarehouseIntegral();
     }
 

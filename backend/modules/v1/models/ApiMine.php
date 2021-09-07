@@ -460,7 +460,7 @@ class ApiMine
                     '*MSRP' => $var['msrPrice'],
                     '*Shipping' => $var['shipping'],
                     'Shipping weight' => $var['shippingWeight'],
-                    'Shipping Time(enter without " ", just the estimated days )' => $var['shippingTime'],
+                    //'Shipping Time(enter without " ", just the estimated days )' => $var['shippingTime'],
                     '*Product Main Image URL' => $images['mainImage'],
                     'Variant Main Image URL' => $var['varMainImage'],
                     'Extra Image URL' => $images['extraImage1'],

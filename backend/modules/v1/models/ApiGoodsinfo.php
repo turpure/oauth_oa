@@ -253,8 +253,10 @@ class ApiGoodsinfo
      */
     public static function deleteAttributeById($id)
     {
+
         $ret = OaGoodsinfo::deleteAll(['id' => $id]);
         if ($ret) {
+            OaGoodsSku::deleteAll(['infoId' => $id]);
             return true;
         }
         return [
@@ -1172,7 +1174,6 @@ class ApiGoodsinfo
      */
     public static function preExportLazada($ids, $accounts)
     {
-
         $data = static::_preExportLazada($ids);
         $out = ['name' => $data['name']];
         $row_data = [];
@@ -1611,8 +1612,8 @@ class ApiGoodsinfo
             }
         }
         foreach ($raw as $ele) {
-            if (strpos($ele, ':') !== false || strpos($ele, '：' !== false)) {
-                if (strpos($ele, 'Package included') !== false) {
+            if (stripos($ele, ':') !== false || stripos($ele, '：') !== false) {
+                if (stripos($ele, 'Package included') !== false) {
                     $ele = str_replace("\n", '', $ele);
                     $tag .= '<li>' . $ele . '</li>';
                     $i++;
@@ -2453,7 +2454,8 @@ class ApiGoodsinfo
         $row = [
             'Parent Unique ID' => '', '*Product Name' => '', 'Description' => '', '*Tags' => '', '*Unique ID' => '', 'Color' => '',
             'Size' => '', '*Quantity' => '', '*Price' => '', '*MSRP' => '', '*Shipping' => '', 'Shipping weight' => '',
-            'Shipping Time(enter without " ", just the estimated days )' => '', '*Product Main Image URL' => '',
+            //'Shipping Time(enter without " ", just the estimated days )' => '',
+            '*Product Main Image URL' => '',
             'Variant Main Image URL' => '', 'Extra Image URL' => '', 'Extra Image URL 1' => '', 'Extra Image URL 2' => '',
             'Extra Image URL 3' => '', 'Extra Image URL 4' => '', 'Extra Image URL 5' => '', 'Extra Image URL 6' => '',
             'Extra Image URL 7' => '', 'Extra Image URL 8' => '', 'Extra Image URL 9' => '', 'Dangerous Kind' => '',
@@ -2496,7 +2498,7 @@ class ApiGoodsinfo
                     $row['*MSRP'] = ($sku['joomPrice'] + $sku['joomShipping']) * 5;
                     $row['*Shipping'] = $sku['joomShipping'];
                     $row['Shipping weight'] = (float)$sku['weight'] * 1.0 / 1000;
-                    $row['Shipping Time(enter without " ", just the estimated days )'] = '15-45';
+                    //$row['Shipping Time(enter without " ", just the estimated days )'] = '15-45';
                     $row['*Product Main Image URL'] = $imageInfo['mainImage'];
                     $row['Variant Main Image URL'] = str_replace('/10023/', '/' . $joomAccounts['imgCode'] . '/', $sku['linkUrl']);
                     $row['Extra Image URL'] = $imageInfo['extraImages'][0];
@@ -4380,7 +4382,7 @@ class ApiGoodsinfo
                 LEFT JOIN `auth_department_child` dc ON u.id=dc.user_id
                 LEFT JOIN `auth_department` d ON d.id=dc.department_id
                 LEFT JOIN `auth_department` pd ON pd.id=d.parent
-                WHERE s.platform NOT in  ('Joom', 'Amazon') ";
+                WHERE s.platform NOT in  ('Joom', 'Amazon') order by platform,suffix";
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
 

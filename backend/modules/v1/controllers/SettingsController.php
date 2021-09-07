@@ -621,7 +621,7 @@ class SettingsController extends AdminController
         if (!$name && !$month) return ['code' => 400, 'message' => 'Month and username can not be empty at the same time!'];
         $user_sql = "SELECT created_at FROM `user` WHERE username = '{$name}'";
         $hireDate = Yii::$app->db->createCommand($user_sql)->queryScalar();
-        if (strtotime($month) > $hireDate + 12 * 24 * 3600 && $condition['isHaveOldAccount'] == 'Y') {
+        if (strtotime($month) > $hireDate + 12 * 30 * 24 * 3600 && $condition['isHaveOldAccount'] == 'Y') {
             return [
                 'code' => 400,
                 'message' => "The isHaveOldAccount(是否新人接手老账号) value for user '{$name}' can not be set to 'Y', because his/she hiredate is more than 12 months!"
@@ -633,7 +633,8 @@ class SettingsController extends AdminController
         if ($id) {
             return Yii::$app->db->createCommand()->update('oauth_operator_kpi_other_score', $condition, ['id' => $id])->execute();
         } elseif ($res) {
-            return Yii::$app->db->createCommand()->update('oauth_operator_kpi_other_score', $condition, ['name' => $name, 'month' => $month])->execute();
+            unset($condition['id']);
+            return Yii::$app->db->createCommand()->update('oauth_operator_kpi_other_score', $condition, ['username' => $name, 'month' => $month])->execute();
         } else {
             unset($condition['id']);
             return Yii::$app->db->createCommand()->insert('oauth_operator_kpi_other_score', $condition)->execute();

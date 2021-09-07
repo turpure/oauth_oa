@@ -272,14 +272,20 @@ class ApiWarehouseTools
     {
         $identity = Yii::$app->request->get('type', 'warehouse');
 
-        $query = BPerson::find();
         if ($identity == 'warehouse') {
-            $ret = $query->andWhere(['in', 'Duty', ['入库分拣', '快递扫描']])->all();
+            $query = BPerson::find();//->select('PersonName');
+            $ret = $query->andWhere(['in', 'Duty', ['入库分拣', '快递扫描']])->asArray()->all();
+            $ret2 = TaskWarehouse::find()->select('user AS PersonName')
+                ->andWhere(['>', 'createdTime', date('Y-m-d',strtotime('-7 days'))])->distinct()->asArray()->all();
+            $name = ArrayHelper::getColumn($ret, 'PersonName');
+            $name2 = ArrayHelper::getColumn($ret2, 'PersonName');
+            return array_values(array_unique(array_merge($name, $name2)));
         } else {
+            $query = BPerson::find();
             $ret = $query->andWhere(['in', 'Duty', ['多品分拣']])->all();
 //            $ret = $query->andWhere(['in', 'Duty', ['拣货', '拣货组长', '拣货-分拣']])->all();
+            return ArrayHelper::getColumn($ret, 'PersonName');
         }
-        return ArrayHelper::getColumn($ret, 'PersonName');
     }
 
     /**
@@ -615,10 +621,10 @@ class ApiWarehouseTools
     {
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $fieldsFilter = ['like' => ['logisticsNo', 'user', 'sku'], 'equal' => ['number']];
-        $timeFilter = ['updatedTime'];
+        $timeFilter = ['createdTime', 'updatedTime'];
         $query = TaskWarehouse::find();
         $query = Helper::generateFilter($query, $fieldsFilter, $condition);
-        $query = Helper::timeFilter($query, $timeFilter, $condition);
+        $query = Helper::timeFilter($query, $timeFilter, $condition, 'mssql');
         $query->orderBy('id DESC');
         $provider = new ActiveDataProvider([
             'query' => $query,

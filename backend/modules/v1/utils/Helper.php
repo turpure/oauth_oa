@@ -213,6 +213,11 @@ class Helper
 //                'Content-Length: ' . strlen($jsonStr)
             )
         );
+        //如果用的协议是https则打开下面这个注释
+        if(strpos($url,'https:') !== false){
+            curl_setopt ( $ch, CURLOPT_SSL_VERIFYPEER, false );
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        }
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);

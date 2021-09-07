@@ -69,7 +69,7 @@ class ApiReport
             ':flag' => isset($condition['flag']) && $condition['flag'] ? $condition['flag'] : 0,
         ];
         try {
-            //return $con->createCommand($sql)->bindValues($params)->queryAll();
+//            return $con->createCommand($sql)->bindValues($params)->getRawSql();
             $list = $con->createCommand($sql)->bindValues($params)->queryAll();
             //获取现有开发以及部门
             $userList = self::getAllDeveloper();
@@ -785,14 +785,15 @@ class ApiReport
         if ($condition['type'] === 'order') {
             $sql = 'SELECT rd.*,refund* (case when s.platform=' . "'Wish'" . ' and ows.localCurrency=' . "'CNY'" . ' then ' . $wishSalerRate . ' else ' . $rate . " end)   AS refundZn,u.username AS salesman 
                 FROM (
-                    SELECT MAX(refMonth) AS refMonth, MAX(dateDelta) as dateDelta, MAX(suffix) AS suffix,MAX(goodsName) AS goodsName,MAX(goodsCode) AS goodsCode,
-				    MAX(goodsSku) AS goodsSku, MAX(tradeId) AS tradeId,orderId,mergeBillId,MAX(storeName) AS storeName,
-				    MAX(refund) AS refund, MAX(currencyCode) AS currencyCode,MAX(refundTime) AS refundTime,
-				    MAX(orderTime) AS orderTime, MAX(orderCountry) AS orderCountry,MAX(platform) AS platform,MAX(expressWay) AS expressWay,refundId
+                    SELECT MAX(refMonth) AS refMonth, MAX(dateDelta) as dateDelta, MAX(suffix) AS suffix,
+                    MAX(goodsName) AS goodsName,MAX(goodsCode) AS goodsCode,MAX(goodsSku) AS goodsSku, 
+				    MAX(tradeId) AS tradeId,orderId,mergeBillId,MAX(storeName) AS storeName,MAX(refund) AS refund, 
+				    MAX(currencyCode) AS currencyCode,MAX(refundTime) AS refundTime,MAX(orderTime) AS orderTime, 
+				    MAX(orderCountry) AS orderCountry,MAX(platform) AS platform,MAX(expressWay) AS expressWay,refundId,type
                     FROM `cache_refund_details` 
                     WHERE refundTime between '{$condition['beginDate']}' AND '" . $condition['endDate'] . " 23:59:59" . "' 
                           AND IFNULL(platform,'')<>'' 
-                    GROUP BY refundId,OrderId,mergeBillId,refund,refundTime
+                    GROUP BY refundId,OrderId,mergeBillId,refund,refundTime,type
                 ) rd 
                 left join  proCenter.oa_wishSuffix as ows on ows.shortName =  rd.suffix
                 LEFT JOIN auth_store s ON s.store=rd.suffix
@@ -853,17 +854,19 @@ class ApiReport
     public static function getEbayRefundDetails($condition)
     {
         $rate = ApiUkFic::getRateUkOrUs('USD');
-        $sql = "SELECT rd.*, u.username AS salesman 
+        $sql = "SELECT rd.*, refund * {$rate} AS refundZn,u.username AS salesman 
                 FROM (
                     SELECT MAX(refMonth) AS refMonth, MAX(dateDelta) as dateDelta, MAX(suffix) AS suffix,
                     MAX(goodsName) AS goodsName,MAX(goodsCode) AS goodsCode,MAX(goodsSku) AS goodsSku, 
                     MAX(tradeId) AS tradeId,orderId,mergeBillId,MAX(storeName) AS storeName, MAX(refund) AS refund, 
 				    MAX(currencyCode) AS currencyCode,MAX(refundTime) AS refundTime, MAX(orderTime) AS orderTime, 
 				    MAX(orderCountry) AS orderCountry,MAX(platform) AS platform,MAX(expressWay) AS expressWay,
-				    refundId,MAX(refundZn) AS refundZn
-                    FROM `cache_refund_details_ebay_new` 
+				    refundId
+				    -- ,MAX(refundZn) AS refundZn
+                    -- FROM `cache_refund_details_ebay_new` 
+                    FROM `cache_refund_details` 
                     WHERE refundTime between '{$condition['beginDate']}' AND '" . $condition['endDate'] . " 23:59:59" . "' 
-                          AND IFNULL(platform,'')<>'' 
+                          AND IFNULL(platform,'')='eBay' and type = '托管后'
                     GROUP BY refundId,OrderId,mergeBillId,refund,refundTime
                 ) rd 
                 LEFT JOIN auth_store s ON s.store=rd.suffix
@@ -945,16 +948,16 @@ class ApiReport
             $item['value'] = $v['sum'];
 
 //            $item['valueZn'] = $v['sum'] * ($v['currency'] == 'USD' ? $usRate : ($v['currency'] == 'GBP' ? $gbpRate : ApiUkFic::getRateUkOrUs($v['currency'])));
-            if ($v['currency'] == 'USD'){
-                $item['valueZn'] =  $v['sum'] * $usRate;
+            if ($v['currency'] == 'USD') {
+                $item['valueZn'] = $v['sum'] * $usRate;
                 $totalFeeUs += $v['sum'];
-            }elseif ($v['currency'] == 'GBP'){
-                $item['valueZn'] =  $v['sum'] * $gbpRate;
+            } elseif ($v['currency'] == 'GBP') {
+                $item['valueZn'] = $v['sum'] * $gbpRate;
                 $totalFeeGbp += $v['sum'];
-            }else{
-                $item['valueZn'] =  $v['sum'] * ApiUkFic::getRateUkOrUs($v['currency']);
+            } else {
+                $item['valueZn'] = $v['sum'] * ApiUkFic::getRateUkOrUs($v['currency']);
             }
-            $item['valueZn'] = round($item['valueZn'],2);
+            $item['valueZn'] = round($item['valueZn'], 2);
             $res[] = $item;
         }
         try {
@@ -1555,6 +1558,225 @@ class ApiReport
         return $provider;
     }
 
+    ////////////////////////////////////////海外仓清仓列表//////////////////////////////////////////////////
+    /**
+     * @brief 获取开发汇率开发利润
+     * @param $condition
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getEbayClearDevProfit($condition)
+    {
+        $sql = 'call  report_devRateEbayClearDeveloperProfitAPI(:dateType,:beginDate,:endDate,:developer);';
+        $sqlParams = [
+            ':dateType' => $condition['dateType'],
+            ':beginDate' => $condition['beginDate'],
+            ':endDate' => $condition['endDate'],
+            ':developer' => $condition['developer'],
+        ];
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $data = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
+        $provider = new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['develop', 'sold', 'costMoney', 'saleMoney', 'profit', 'profitRate']
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
+    }
+
+    /**
+     * @brief 获取开发汇率账号产品利润
+     * @param $condition
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getEbayClearSkuProfit($condition)
+    {
+        $sql = 'call  report_devRateEbayClearSkuProfitAPI(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse);';
+        $sqlParams = [
+            ':dateType' => $condition['dateType'],
+            ':beginDate' => $condition['beginDate'],
+            ':endDate' => $condition['endDate'],
+            ':queryType' => $condition['queryType'],
+            ':store' => $condition['store'],
+            ':warehouse' => $condition['warehouse'],
+        ];
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+//        $ret = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->getRawSql();
+//        var_dump($ret);exit;
+        $ret = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
+        $clearGoodsList = static::currentEbayClearList();
+        $data = [];
+        if (!empty($clearGoodsList)) {
+            foreach ($ret as $row) {
+                if (in_array($row['sku'], $clearGoodsList, true)) {
+                    $data[] = $row;
+                }
+            }
+        }
+        $provider = new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => ['attributes' =>
+                [
+                    'sold', 'costmoney', 'salemoney', 'grossprofit', 'grossprofitRate'
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
+    }
+
+    /**
+     * 清仓计划里面的商品编码
+     * @return array
+     */
+    private static function currentEbayClearList()
+    {
+        $sql = 'select sku from oauth_clearPlanEbay where isRemoved = 0';
+        $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $data = [];
+        if (empty($ret)) {
+            return $data;
+        }
+        return ArrayHelper::getColumn($ret, 'sku');
+    }
+
+
+    /**
+     * 返回清仓列表
+     * @param $condition
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getEbayClearList($condition)
+    {
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $stores = isset($condition['stores']) ? $condition['stores'] : [];
+        $goodsStatus = isset($condition['goodsStatus']) ? $condition['goodsStatus'] : [];
+        $sku = isset($condition['sku']) ? $condition['sku'] : '';
+        $sellers = isset($condition['sellers']) ? $condition['sellers'] : [];
+        if (!is_array($stores)) {
+            throw new Exception('stores should be an array');
+        }
+        if (!is_array($sellers)) {
+            throw new Exception('sellers should be an array');
+        }
+        $sql = "SELECT  cp.sku,bgs.goodsSkuStatus,bs.storeName,cp.planNumber,cp.createdTime,skuName,
+                bgs.bmpFileName AS img,bc.categoryParentName,bc.categoryName,number AS stockNumber,money AS stockMoney,
+                bg.salername AS developer -- ,cp.sellers AS seller
+            FROM  oauth_clearPlanEbay(nolock) AS cp
+            LEFT JOIN b_goodsSku(nolock) AS bgs ON   cp.sku = bgs.sku
+            LEFT JOIN b_goods(nolock) AS bg ON   bg.NID = bgs.goodsID
+            LEFT JOIN b_goodsCats(nolock) AS bc ON bg.goodsCategoryId = bc.nid
+            LEFT JOIN KC_CurrentStock(nolock) AS ks ON ks.goodsskuid = bgs.nid
+            LEFT JOIN b_store(nolock) AS bs ON bs.nid = ks.storeId 
+            WHERE cp.isRemoved = 0 AND number > 0 
+            AND bs.StoreName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW','谷仓UK') ";
+        if (!empty($stores)) {
+            $stores = implode("','", $stores);
+            $sql .= " and bs.StoreName in ('" . $stores . "')";
+        }
+        if (!empty($goodsStatus)) {
+            $goodsStatus = implode("','", $goodsStatus);
+            $sql .= " and bgs.goodsSkuStatus in ('" . $goodsStatus . "')";
+        }
+
+        if (!empty($sellers)) {
+            $sellers[] = 'all';
+            $sellers = implode("','", $sellers);
+            $sql .= " and cp.sellers in ('" . $sellers . "') ";
+        }
+
+        if (!empty($sku)) {
+            $sql .= " and cp.sku LIKE '%" . $sku . "%' ";
+        }
+        $query = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $provider = new ArrayDataProvider([
+            'allModels' => $query,
+            'sort' => ['attributes' =>
+                [
+                    'stockNumber', 'stockMoney',
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
+
+    }
+
+    /**
+     * 清仓产品导入模板
+     * @param $condition
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public static function exportEbayClearListTemplate()
+    {
+        $fileName = 'ebay-clear-products-template';
+        $titles = ['sku'];
+        $data = [['sku' => 'UK-A000305']];
+        ExportTools::toExcelOrCsv($fileName, $data, 'Xls', $titles);
+
+    }
+
+    public static function importEbayClearList()
+    {
+        if (Yii::$app->request->isPost) {
+            //判断文件后缀
+            $extension = ApiSettings::get_extension($_FILES['file']['name']);
+            if (strtolower($extension) != '.xls') return ['code' => 400, 'message' => "File format error,please upload files in 'xls' format"];
+
+            //文件上传
+            $result = ApiSettings::file($_FILES['file'], 'ebayClearList');
+            if (!$result) {
+                return ['code' => 400, 'message' => 'File upload failed'];
+            } else {
+                //获取上传excel文件的内容并保存
+                $res = static::saveEbayClearProduct($result);
+                return $res;
+            }
+        }
+        return ['上传成功'];
+    }
+
+    public static function saveEbayClearProduct($file)
+    {
+        $planNumber = 'EBAY-QC-' . (string)date('Y-m');
+        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+        $spreadsheet = $reader->load(Yii::$app->basePath . $file);
+        $sheet = $spreadsheet->getSheet(0);
+        $highestRow = $sheet->getHighestRow(); // 取得总行数
+        $errArr = [];
+        for ($i = 2; $i <= $highestRow; $i++) {
+            $data['sku'] = $sheet->getCell("A" . $i)->getValue();
+            //$data['sellers'] = $sheet->getCell("B" . $i)->getValue();
+            $data['createdTime'] = date('Y-m-d H:i:s');
+            $data['planNumber'] = $planNumber;
+            $data['isRemoved'] = 0;
+
+            if (!$data['sku']) break;//取到数据为空时跳出循环
+//            var_dump($data);exit;
+            $sql = "SELECT sku FROM oauth_clearPlanEbay WHERE sku = '{$data['sku']}'";
+            $res = Yii::$app->py_db->createCommand($sql)->queryOne();
+            if ($res) {
+                Yii::$app->py_db->createCommand()->update('oauth_clearPlanEbay', $data, ['sku' => $data['sku']])->execute();
+            } else {
+                Yii::$app->py_db->createCommand()->insert('oauth_clearPlanEbay', $data)->execute();
+            }
+        }
+        return $errArr;
+    }
+
+
+////////////////////////////////////////清仓列表//////////////////////////////////////////////////
 
     /**
      * 清仓计划里面的商品编码
@@ -1648,7 +1870,7 @@ class ApiReport
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    public static function exportClearListTemplate($condition)
+    public static function exportClearListTemplate()
     {
         $fileName = 'clear-products-template';
         $titles = ['商品编码', '仓库名称'];

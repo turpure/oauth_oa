@@ -540,7 +540,7 @@ class ReportController extends AdminController
             ];
             return ApiReport::getWishRefundDetails($condition);
         } catch (\Exception  $why) {
-            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+            return ['code' => 400, 'message' => $why->getMessage()];
         }
 
     }
@@ -575,7 +575,7 @@ class ReportController extends AdminController
             $out['unit'] = '￥';
             return $out;
         } catch (\Exception $why) {
-            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+            return ['message' => $why->getMessage(), 'code' => 400];
         }
 
     }
@@ -611,7 +611,7 @@ class ReportController extends AdminController
             $out['unit'] = '￥';
             return $out;
         } catch (\Exception $why) {
-            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+            return ['message' => $why->getMessage(), 'code' => 400];
         }
 
     }
@@ -647,7 +647,7 @@ class ReportController extends AdminController
             $out['unit'] = '次';
             return $out;
         } catch (\Exception $why) {
-            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+            return ['message' => $why->getMessage(), 'code' => 400];
         }
     }
 
@@ -683,7 +683,7 @@ class ReportController extends AdminController
             $out['unit'] = '次';
             return $out;
         } catch (\Exception $why) {
-            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+            return ['message' => $why->getMessage(), 'code' => 400];
         }
     }
 
@@ -698,7 +698,7 @@ class ReportController extends AdminController
             $condition = Yii::$app->request->post()['condition'];
             return ApiReport::getRefundExpressRate($condition);
         } catch (\Exception $why) {
-            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+            return ['message' => $why->getMessage(), 'code' => 400];
         }
     }
 
@@ -708,7 +708,7 @@ class ReportController extends AdminController
             $condition = Yii::$app->request->post()['condition'];
             return ApiReport::getRefundSuffixRate($condition);
         } catch (\Exception $why) {
-            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+            return ['message' => $why->getMessage(), 'code' => 400];
         }
     }
 
@@ -838,10 +838,10 @@ class ReportController extends AdminController
                 $fileName = 'refundOrderData';
                 $title = ['退款月份', '账号简称', '销售员', '商品名称', '商品编码', 'SKU',
                     '交易单号', '店铺单号', '合并单号', '仓库', '退款金额(原始币种)', '退款金额(￥)', '退款时间', '交易时间',
-                    '国家', '平台', '物流方式',];
+                    '国家', '平台', '物流方式', '是否托管'];
                 $headers = ['refMonth', 'suffix', 'salesman', 'goodsName', 'goodsCode', 'goodsSku',
                     'tradeId', 'orderId', 'mergeBillId', 'storeName', 'refund', 'refundZn', 'refundTime', 'orderTime',
-                    'orderCountry', 'platform', 'expressWay'];
+                    'orderCountry', 'platform', 'expressWay', 'type'];
                 $data = $this->actionRefund()['provider']->getModels();
                 break;
             case 'wishOrder':
@@ -959,7 +959,7 @@ class ReportController extends AdminController
             $condition = $request['condition'];
             return ApiReport::getDevLimit($condition);
         } catch (\Exception $why) {
-            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+            return ['message' => $why->getMessage(), 'code' => 400];
         }
     }
 
@@ -974,7 +974,7 @@ class ReportController extends AdminController
             $condition = $request['condition'];
             return ApiReport::getDevGoodsProfit($condition);
         } catch (\Exception $why) {
-            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+            return ['message' => $why->getMessage(), 'code' => 400];
         }
     }
 
@@ -989,7 +989,7 @@ class ReportController extends AdminController
             $condition = $request['condition'];
             return ApiReport::getDevRateGoodsProfit($condition);
         } catch (\Exception $why) {
-            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+            return ['message' => $why->getMessage(), 'code' => 400];
         }
     }
 
@@ -1005,7 +1005,7 @@ class ReportController extends AdminController
             $condition = $request['condition'];
             return ApiReport::getDevRateDeveloperGoodsProfit($condition);
         } catch (\Exception $why) {
-            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+            return ['message' => $why->getMessage(), 'code' => 400];
         }
     }
 
@@ -1024,7 +1024,7 @@ class ReportController extends AdminController
             $title = ['开发员', '销售额', '销量', '总利润', '近三个月单月最高利润', '增长利润'];
             ExportTools::toExcelOrCsv('dev-rate-developer-profit', $data, 'Xls', $title);
         } catch (\Exception $why) {
-            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+            return ['message' => $why->getMessage(), 'code' => 400];
         }
     }
 
@@ -1042,10 +1042,11 @@ class ReportController extends AdminController
             $title = ['开发员', '推荐人', '商品编码', '商品名称', '主图', '开发日期', '商品状态', '销量', '销售额', '总利润', '利润率(%)'];
             ExportTools::toExcelOrCsv('dev-rate-goods-profit', $data, 'Xls', $title);
         } catch (\Exception $why) {
-            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+            return ['message' => $why->getMessage(), 'code' => 400];
         }
     }
 
+    ////////////////////////////////////清仓列表//////////////////////////////////////
 
     /**
      * 开发汇率下账号产品利润-- 此处只考虑清仓计划里面的产品
@@ -1072,7 +1073,7 @@ class ReportController extends AdminController
             ];
             return ApiReport::getDevRateSuffixGoodsProfit($condition);
         } catch (\Exception $why) {
-            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+            return ['message' => $why->getMessage(), 'code' => 400];
 
         }
 
@@ -1106,9 +1107,10 @@ class ReportController extends AdminController
             $title = ['产品编码', '产品名称', '平台', '部门', '账号', '销售员', '仓库', '销量', '销售额', '总利润', '利润率(%)'];
             ExportTools::toExcelOrCsv('dev-profit', $data, 'Xls', $title);
         } catch (\Exception $why) {
-            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+            return ['message' => $why->getMessage(), 'code' => 400];
         }
     }
+
 
 
     /**
@@ -1122,7 +1124,7 @@ class ReportController extends AdminController
             $condition = $request['condition'];
             return ApiReport::getClearList($condition);
         } catch (\Exception $why) {
-            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+            return ['message' => $why->getMessage(), 'code' => 400];
         }
     }
 
@@ -1140,7 +1142,7 @@ class ReportController extends AdminController
             $title = ['产品编码', '产品状态', '仓库', '清仓计划', '计划创建时间', '产品名称', '主图', '主类目', '子类目', '库存数量', '库存金额', '开发员', '销售员'];
             ExportTools::toExcelOrCsv('clear-list', $data, 'Xls', $title);
         } catch (\Exception $why) {
-            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+            return ['message' => $why->getMessage(), 'code' => 400];
         }
     }
 
@@ -1155,7 +1157,7 @@ class ReportController extends AdminController
 //            $condition = $request['condition'];
             return ApiReport::importClearList();
         } catch (\Exception $why) {
-            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+            return ['message' => $why->getMessage(), 'code' => 400];
         }
     }
 
@@ -1171,17 +1173,199 @@ class ReportController extends AdminController
             $condition = $request['condition'];
             ApiReport::exportClearListTemplate($condition);
         } catch (\Exception $why) {
-            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+            return ['message' => $why->getMessage(), 'code' => 400];
         }
     }
-
 
     public function actionTruncateClearList()
     {
         try {
             ApiReport::truncateClearList();
         } catch (\Exception $why) {
-            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+            return ['message' => $why->getMessage(), 'code' => 400];
+        }
+
+    }
+
+    ////////////////////////////////////海外仓清仓列表//////////////////////////////////////
+
+    /**
+     * 开发汇率下账号产品利润-- 此处只考虑清仓计划里面的产品
+     * @return array
+     */
+    public function actionEbayClearSkuProfit()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $params = [
+                'platform' => isset($condition['plat']) ? $condition['plat'] : [],
+                'username' => isset($condition['member']) ? $condition['member'] : [],
+                'store' => isset($condition['account']) ? $condition['account'] : []
+            ];
+            $paramsFilter = Handler::paramsHandler($params);
+            $condition = [
+                'dateType' => $condition['dateType'] ?: 0,
+                'beginDate' => $condition['dateRange'][0],
+                'endDate' => $condition['dateRange'][1],
+                'queryType' => $paramsFilter['queryType'],
+                'store' => implode(',', $paramsFilter['store']),
+                'warehouse' => $condition['store'] ? implode(',', $condition['store']) : '',
+                'pageSize' => isset($condition['pageSize']) ? $condition['pageSize'] : 10
+            ];
+            return ApiReport::getEbayClearSkuProfit($condition);
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => 400];
+
+        }
+
+    }
+
+    /**
+     * @brief 导出开发利润销售表
+     * @return array
+     */
+    public function actionExportEbayClearSkuProfit()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $params = [
+                'platform' => isset($cond['plat']) ? $condition['plat'] : [],
+                'username' => isset($cond['member']) ? $condition['member'] : [],
+                'store' => isset($cond['account']) ? $condition['account'] : []
+            ];
+            $paramsFilter = Handler::paramsHandler($params);
+            $condition = [
+                'dateType' => $condition['dateType'] ?: 0,
+                'beginDate' => $condition['dateRange'][0],
+                'endDate' => $condition['dateRange'][1],
+                'queryType' => $paramsFilter['queryType'],
+                'store' => implode(',', $paramsFilter['store']),
+                'warehouse' => $condition['store'] ? implode(',', $condition['store']) : '',
+                'pageSize' => $condition['pageSize'] ?? 10000
+            ];
+            $data = ApiReport::getEbayClearSkuProfit($condition)->models;
+            $title = ['SKU', '产品编码', '产品名称', '平台', '部门', '销售员', '销量', '成本', '销售额', '总利润', '利润率(%)'];
+            ExportTools::toExcelOrCsv('ebay-clear-profit', $data, 'Xls', $title);
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => 400];
+        }
+    }
+
+    /**
+     * 开发汇率下开发利润-- 此处只考虑清仓计划里面的产品
+     * @return array
+     */
+    public function actionEbayClearDevProfit()
+    {
+        try {
+            $cond = Yii::$app->request->post()['condition'];
+            $condition = [
+                'dateType' => $cond['dateType'],
+                'beginDate' => $cond['dateRange'][0],
+                'endDate' => $cond['dateRange'][1],
+                'developer' => $cond['member'] ? implode(',', $cond['member']) : '',
+            ];
+            return ApiReport::getEbayClearDevProfit($condition);
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => 400];
+
+        }
+
+    }
+
+
+    /**
+     * @brief 导出开发利润
+     * @return array
+     */
+    public function actionExportEbayClearDevProfit()
+    {
+        try {
+            $cond = Yii::$app->request->post()['condition'];
+            $condition = [
+                'dateType' => $cond['dateType'],
+                'beginDate' => $cond['dateRange'][0],
+                'endDate' => $cond['dateRange'][1],
+                'developer' => $cond['member'] ? implode(',', $cond['member']) : '',
+            ];
+            $data = ApiReport::getEbayClearDevProfit($condition)->models;
+            $title = ['SKU', '产品编码', '产品名称', '开发员', '销量', '成本', '销售额', '总利润', '利润率(%)'];
+            ExportTools::toExcelOrCsv('ebay-clear-profit', $data, 'Xls', $title);
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => 400];
+        }
+    }
+
+
+
+
+    /**
+     * @brief 清仓列表
+     * @return mixed
+     */
+    public function actionEbayClearList()
+    {
+        try {
+            $request = Yii::$app->request->post();
+            $condition = $request['condition'];
+            return ApiReport::getEbayClearList($condition);
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => 400];
+        }
+    }
+
+    /**
+     * @brief 清仓列表导出
+     * @return mixed
+     */
+    public function actionExportEbayClearList()
+    {
+        try {
+            $request = Yii::$app->request->post();
+            $condition = $request['condition'];
+            $condition['pageSize'] = 100000;
+            $data = ApiReport::getEbayClearList($condition)->models;
+            $title = ['SKU', 'SKU状态', '仓库', '清仓计划', '计划创建时间', 'SKU名称', '主图', '主类目', '子类目', '库存数量', '库存金额', '开发员'];
+            ExportTools::toExcelOrCsv('ebay-clear-list', $data, 'Xls', $title);
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => 400];
+        }
+    }
+
+    /**
+     * @brief 清仓列表导入
+     * @return mixed
+     */
+    public function actionImportEbayClearList()
+    {
+        try {
+            return ApiReport::importEbayClearList();
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => 400];
+        }
+    }
+
+
+    /**
+     * @brief 清仓列表模板
+     * @return mixed
+     */
+    public function actionExportEbayClearTemplate()
+    {
+        try {
+            ApiReport::exportEbayClearListTemplate();
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => 400];
+        }
+    }
+
+
+    public function actionTruncateEbayClearList()
+    {
+        try {
+            Yii::$app->py_db->createCommand()->update('oauth_clearPlanEbay',['isRemoved' => 1])->execute();
+        } catch (\Exception $why) {
+            return ['message' => $why->getMessage(), 'code' => 400];
         }
 
     }
@@ -1203,7 +1387,7 @@ class ReportController extends AdminController
                 'Joom利润(￥)', 'Amazon销量', 'Amazon利润(￥)', '时间类型(0交易时间，1发货时间)', '时间'];
             ExportTools::toExcelOrCsv('dev-profit', $data, 'Xls', $title);
         } catch (\Exception $why) {
-            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+            return ['message' => $why->getMessage(), 'code' => 400];
         }
     }
 
@@ -1219,7 +1403,7 @@ class ReportController extends AdminController
             return ApiReport::getDevGoodsProfitDetail($condition);
 
         } catch (\Exception $why) {
-            return ['message' => $why->getMessage(), 'code' => $why->getCode()];
+            return ['message' => $why->getMessage(), 'code' => 400];
         }
     }
 
