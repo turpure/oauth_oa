@@ -633,7 +633,8 @@ class SettingsController extends AdminController
         if ($id) {
             return Yii::$app->db->createCommand()->update('oauth_operator_kpi_other_score', $condition, ['id' => $id])->execute();
         } elseif ($res) {
-            return Yii::$app->db->createCommand()->update('oauth_operator_kpi_other_score', $condition, ['name' => $name, 'month' => $month])->execute();
+            unset($condition['id']);
+            return Yii::$app->db->createCommand()->update('oauth_operator_kpi_other_score', $condition, ['username' => $name, 'month' => $month])->execute();
         } else {
             unset($condition['id']);
             return Yii::$app->db->createCommand()->insert('oauth_operator_kpi_other_score', $condition)->execute();
