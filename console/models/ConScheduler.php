@@ -273,7 +273,8 @@ class ConScheduler
 //                $v['marking_sku_num'] * $configArr['打标入库数量'] +
                 $v['marking_goods_num'] * $configArr['打标入库数量'] +
                 $v['labeling_order_num'] * $configArr['贴标入库包裹'] +
-                $v['labeling_sku_num'] * $configArr['贴标入库数量'] +
+//                $v['labeling_sku_num'] * $configArr['贴标入库数量'] +
+                $v['labeling_goods_num'] * $configArr['贴标入库数量'] +
                 $v['pda_in_storage_sku_num'] * $configArr['PDA入库'] +
                 $v['multi_order_num'] * $configArr['拣货核单包裹'] +
                 ($v['single_sku_num'] + $v['multi_sku_num']) * $configArr['拣货SKU种数'] +
