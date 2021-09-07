@@ -458,7 +458,8 @@ class WarehouseToolsController extends AdminController
         $pageSize = $condition['pageSize'] ?: 20;
         $goodsCode = $condition['goodsCode'] ?? '';
         $purchaser = $condition['purchaser'] ?? '';
-        $rate = isset($condition['rate']) && $condition['rate'] ?: 0;
+        $rate = isset($condition['rate']) && $condition['rate'] ? $condition['rate'] : 0;
+//        var_dump($rate);exit();
         //$data = OauthLabelGoodsRate::find()->andFilterWhere(['like', 'goodsCode', $goodsCode]);
         $sql = "SELECT a.id,a.goodsCode,a.rate,g.purchaser FROM oauth_label_goods_rate a
                 LEFT JOIN B_Goods g ON a.goodsCode=g.GoodsCode WHERE 1=1 ";

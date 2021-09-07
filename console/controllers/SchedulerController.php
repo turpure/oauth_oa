@@ -136,8 +136,11 @@ class SchedulerController extends Controller
             }
 
             //更新销售和部门目标完成度
-            $exchangeRate = ApiUkFic::getRateUkOrUs('USD');//美元汇率
-            $sql = "CALL oauth_siteTargetAll($exchangeRate)";
+//            $exchangeRate = ApiUkFic::getRateUkOrUs('USD');//美元汇率
+            $rate = ApiSettings::getExchangeRate();
+            $exchangeRate = $rate['salerRate']; //销售汇率
+            $wishExchangeRate = $rate['wishSalerRate']; //wish销售汇率
+            $sql = "CALL oauth_siteTargetAll($exchangeRate, $wishExchangeRate)";
             Yii::$app->db->createCommand($sql)->execute();
 
             print date('Y-m-d H:i:s') . " INFO:success to get data of target completion!\n";
