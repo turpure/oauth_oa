@@ -129,7 +129,7 @@ class OverseasController extends AdminController
     public function actionSyncWytOrder(){
         try {
             $condition = Yii::$app->request->post()['condition'];
-            $nid = isset($condition['nid']) && $condition['nid'] ? $condition['nid'] : 0;
+            $nid = isset($condition['NID']) && $condition['NID'] ? $condition['NID'] : 0;
             $model = KCStockChangeM::findOne(['NID' => $nid]);
             $wytInNo = $model['Memo'];
             if(!$wytInNo) {
