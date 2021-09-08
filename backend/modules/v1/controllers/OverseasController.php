@@ -129,9 +129,7 @@ class OverseasController extends AdminController
     public function actionSyncWytOrder(){
         try {
             $condition = Yii::$app->request->post()['condition'];
-            $nid = isset($condition['NID']) && $condition['NID'] ? $condition['NID'] : 0;
-            $model = KCStockChangeM::findOne(['NID' => $nid]);
-            $wytInNo = $model['Memo'];
+            $wytInNo = isset($condition['Memo']) && $condition['Memo'] ? $condition['Memo'] : '';
             if(!$wytInNo) {
                 throw new Exception('万邑通单号不能为空!');
             }
