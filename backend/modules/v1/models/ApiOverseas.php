@@ -287,80 +287,6 @@ class ApiOverseas
         }
     }
 
-    /**
-     * 计算调拨单头程运费
-     * 按包裹体积计算SKU 头程运费
-     * @param $condition
-     * Date: 2021-04-25 17:32
-     * Author: henry
-     * @return bool
-     * @throws Exception
-     */
-    public static function saveStockFreight($stockChangeNID)
-    {
-        $order = KCStockChangeM::findOne(['NID' => $stockChangeNID]);
-        $wytInNo = $order['Memo'];
-        $totalFreight = $order['HeadFreight'];
-        $wytPackageInfo = self::getWytPackageInfo($wytInNo);
-        // 计算每个包裹的运费
-        $packageList = self::getWytPackageFreight($wytPackageInfo['packageList'], $totalFreight);
-        //计算单个SKU体积
-        $skuVolumeList = [];
-        foreach ($wytPackageInfo['merchandiseList'] as $v) {
-            $skuVolumeList[$v['merchandiseCode']] = $v['actualLength'] * $v['actualWidth'] * $v['actualHeight'];
-        }
-        //计算每个SKU分摊的运费 并保存数据
-        $tran = \Yii::$app->py_db->beginTransaction();
-        try {
-            foreach ($wytPackageInfo['merchandiseList'] as $v) {
-                $sku = $v['merchandiseCode'];
-                $qty = $v['actualQuantity'];
-//                var_dump($sku);
-                $totalSkuFreight = $totalSkuQty = 0;
-                foreach ($packageList as $package) {
-                    $packageSkuList = ArrayHelper::getColumn($package['merchandiseList'], 'merchandiseCode');
-                    $packageSkuCount = count($packageSkuList);
-                    if (in_array($sku, $packageSkuList)) {
-                        //包裹只有一个SKU
-                        if ($packageSkuCount == 1) {
-                            $totalSkuFreight += $package['packageFreight'];
-                            foreach ($package['merchandiseList'] as $v) {
-                                $totalSkuQty += $v['actualQuantity'];
-                            }
-                        } //包裹有多个SKU
-                        else {
-                            list($kuFreight, $skuQty) = self::getWytPackageSkuFreight($package['merchandiseList'], $skuVolumeList, $sku, $package['packageFreight']);
-                            $totalSkuFreight += $kuFreight;
-                            $totalSkuQty += $skuQty;
-                        }
-                    } else {
-                        continue;
-                    }
-                    // 判断SKU 数量
-                    if($qty == $totalSkuQty){
-                        break;
-                    }
-                }
-                $goodsSku = BGoodsSku::findOne(['SKU' => $sku]);
-//                $res = KCStockChangeD::updateAll(['HeadFreight' => $totalSkuFreight], ['StockChangeNID' => $stockChangeNID, 'GoodsSKUID' => $goodsSku['NID']]);
-                $model = KCStockChangeD::findOne(['StockChangeNID' => $stockChangeNID, 'GoodsSKUID' => $goodsSku['NID']]);
-                var_dump($model);
-                $model->HeadFreight = $totalSkuFreight;
-                $res = $model->save();
-                if(!$res){
-//                    var_dump($sku);
-                    var_dump($model->getErrors());exit;
-                    throw new Exception('Failed to save sku head freight info!');
-                }
-            }
-            $tran->commit();
-            return true;
-        } catch (Exception $e) {
-            $tran->rollBack();
-            throw new Exception($e->getMessage());
-        }
-
-    }
 
     /**
      * 更新调拨单 入库价格
@@ -471,7 +397,18 @@ class ApiOverseas
         }
     }
 
+    /**
+     * 保存万邑通入库单包裹信息
+     * @param $packageList
+     * @param $wytInNo
+     * Date: 2021-09-08 9:52
+     * Author: henry
+     * @return bool
+     * @throws Exception
+     */
     public static function saveWytPackageInfo($packageList, $wytInNo){
+        // 删除已有万邑通 订单信息
+        OauthStockChangeWytPackageInfo::deleteAll(['wyt_in_no' => $wytInNo]);
         $tran = \Yii::$app->py_db->beginTransaction();
         try {
             foreach ($packageList['packageList'] as $package){
@@ -488,10 +425,7 @@ class ApiOverseas
                     $params['sku'] = $v['merchandiseCode'];
                     $params['quantity'] = $v['actualQuantity'];
                     $params['update_time'] = date('Y-m-d H:i:s');
-                    $model = OauthStockChangeWytPackageInfo::findOne(['wyt_in_no' => $wytInNo, 'sku' => $v['merchandiseCode']]);
-                    if(!$model){
-                        $model = new OauthStockChangeWytPackageInfo();
-                    }
+                    $model = new OauthStockChangeWytPackageInfo();
                     $model->setAttributes($params);
                     if(!$model->save()){
                         throw new Exception('Failed to save stock change package info!');
@@ -506,53 +440,9 @@ class ApiOverseas
         }
     }
 
-    /**
-     * 计算万邑通订单 单个包裹运费
-     * @param $packageList  万邑通入库单包裹列表
-     * @param $totalFreight 万邑通入库单总运费
-     * Date: 2021-09-06 18:03
-     * Author: henry
-     * @return mixed
-     */
-    public static function getWytPackageFreight($packageList, $totalFreight)
-    {
-        $totalVolume = 0;
-        foreach ($packageList as $v) {
-            $totalVolume += $v['length'] * $v['width'] * $v['height'];
-        }
-        foreach ($packageList as &$v) {
-            $volume = $v['length'] * $v['width'] * $v['height'];
-//            $v['packageFreight'] = round($volume * 1.0 * $totalFreight/ $totalVolume,4);
-            $v['packageFreight'] = $volume * 1.0 * $totalFreight / $totalVolume;
-        }
-        return $packageList;
-    }
 
-    /**
-     * 计算SKU 在单一包裹中的的运费（按体积占比计算）
-     * @param $packageSkuList 包裹中SKU列表
-     * @param $skuVolumeList  订单中所有SKU的体积列表
-     * @param $sku            要计算的SKU
-     * @param $packageFreight 包裹的总运费
-     * Date: 2021-09-06 18:09
-     * Author: henry
-     * @return false|float|int|array
-     */
-    public static function getWytPackageSkuFreight($packageSkuList, $skuVolumeList, $sku, $packageFreight)
-    {
-        $totalSkuVolume = $skuFreight = $skuQty = 0;
-        foreach ($packageSkuList as $v) {
-            $totalSkuVolume += $skuVolumeList[$v['merchandiseCode']];
-        }
-        foreach ($packageSkuList as $v) {
-            if ($v['merchandiseCode'] == $sku) {
-                $skuFreight = $skuVolumeList[$v['merchandiseCode']] * $v['actualQuantity'] * $packageFreight / $totalSkuVolume;
-                $skuQty = $v['actualQuantity'];
-                break;
-            }
-        }
-        return [$skuFreight, $skuQty];
-    }
+
+
 
 
 }

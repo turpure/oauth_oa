@@ -126,9 +126,9 @@ class OverseasController extends AdminController
 
     /**
      * 创建/编辑调拨单
-     * Date: 2021-04-22 18:00
+     * Date: 2021-09-08 9:53
      * Author: henry
-     * @return array | bool
+     * @return array|int
      */
     public function actionSaveStockChange()
     {
@@ -137,8 +137,8 @@ class OverseasController extends AdminController
             $stockChangeNID = ApiOverseas::saveStockChange($condition);
 //            $stockChangeNID = $condition['basicInfo']['NID'];
             $wytInNo = $condition['basicInfo']['Memo'];
-            ApiOverseas::getWytPackageInfo($wytInNo);
-//            ApiOverseas::saveStockFreight($stockChangeNID);
+            $res = ApiOverseas::getWytPackageInfo($wytInNo);
+//            return  $res;
             return ApiOverseas::updateStockChangeInPrice($stockChangeNID);
         } catch (\Exception $e) {
             return [

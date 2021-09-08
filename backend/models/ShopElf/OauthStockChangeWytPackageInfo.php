@@ -10,7 +10,7 @@ use Yii;
  * @property int $id
  * @property string $wyt_in_no
  * @property string $package_no
- * @property string $seller_case_no
+ * @property int $seller_case_no
  * @property string $length
  * @property string $width
  * @property string $height
@@ -43,8 +43,8 @@ class OauthStockChangeWytPackageInfo extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['quantity'], 'integer'],
-            [['wyt_in_no', 'package_no', 'seller_case_no', 'sku'], 'string'],
+            [['quantity', 'seller_case_no'], 'integer'],
+            [['wyt_in_no', 'package_no', 'sku'], 'string'],
             [['length', 'width', 'height', 'weight'], 'number'],
             [['update_time'], 'safe'],
         ];
