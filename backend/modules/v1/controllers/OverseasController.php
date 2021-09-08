@@ -7,6 +7,7 @@
 
 namespace backend\modules\v1\controllers;
 
+use backend\models\ShopElf\KCStockChangeM;
 use backend\modules\v1\models\ApiMine;
 use backend\modules\v1\models\ApiOverseas;
 use backend\modules\v1\models\ApiSettings;
@@ -15,6 +16,7 @@ use backend\modules\v1\utils\AttributeInfoTools;
 use Codeception\Template\Api;
 use Yii;
 use yii\data\ArrayDataProvider;
+use yii\db\Exception;
 
 class OverseasController extends AdminController
 {
@@ -124,6 +126,24 @@ class OverseasController extends AdminController
 
     }
 
+    public function actionSyncWytOrder(){
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $nid = isset($condition['nid']) && $condition['nid'] ? $condition['nid'] : 0;
+            $model = KCStockChangeM::findOne(['NID' => $nid]);
+            $wytInNo = $model['Memo'];
+            if(!$wytInNo) {
+                throw new Exception('万邑通单号不能为空!');
+            }
+            return ApiOverseas::getWytPackageInfo($wytInNo);
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
     /**
      * 创建/编辑调拨单
      * Date: 2021-09-08 9:53
@@ -136,8 +156,8 @@ class OverseasController extends AdminController
             $condition = Yii::$app->request->post()['condition'];
             $stockChangeNID = ApiOverseas::saveStockChange($condition);
 //            $stockChangeNID = $condition['basicInfo']['NID'];
-            $wytInNo = $condition['basicInfo']['Memo'];
-            $res = ApiOverseas::getWytPackageInfo($wytInNo);
+//            $wytInNo = $condition['basicInfo']['Memo'];
+//            $res = ApiOverseas::getWytPackageInfo($wytInNo);
 //            return  $res;
             return ApiOverseas::updateStockChangeInPrice($stockChangeNID);
         } catch (\Exception $e) {
