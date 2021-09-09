@@ -502,7 +502,7 @@ class WarehouseToolsController extends AdminController
         if ($rate) $sql .= " AND a.rate = '{$rate}'";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         $title = ['商品编码', '困难系数', '采购员'];
-        ExportTools::toExcelOrCsv('labelGoodsRate', $data, 'Xls', $title);
+        ExportTools::toExcelOrCsv('labelGoodsRate', $data, 'Xlsx', $title);
     }
 
     /**
