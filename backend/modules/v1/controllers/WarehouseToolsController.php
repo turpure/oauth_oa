@@ -493,11 +493,13 @@ class WarehouseToolsController extends AdminController
         $condition = Yii::$app->request->post('condition', []);
         $goodsCode = $condition['goodsCode'] ?? '';
         $purchaser = $condition['purchaser'] ?? '';
+        $rate = isset($condition['rate']) && $condition['rate'] ? $condition['rate'] : 0;
         //$data = OauthLabelGoodsRate::find()->andFilterWhere(['like', 'goodsCode', $goodsCode]);
         $sql = "SELECT a.goodsCode,a.rate,g.purchaser FROM oauth_label_goods_rate a
                 LEFT JOIN B_Goods g ON a.goodsCode=g.GoodsCode WHERE 1=1 ";
         if ($goodsCode) $sql .= " AND a.goodsCode LIKE '%{$goodsCode}%'";
         if ($purchaser) $sql .= " AND g.purchaser LIKE '%{$purchaser}%'";
+        if ($rate) $sql .= " AND a.rate = '{$rate}'";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         $title = ['商品编码', '困难系数', '采购员'];
         ExportTools::toExcelOrCsv('labelGoodsRate', $data, 'Xlsx', $title);
