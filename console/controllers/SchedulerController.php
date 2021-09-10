@@ -100,9 +100,10 @@ class SchedulerController extends Controller
         $dateRate = round(((strtotime($endDate) - strtotime($beginDate)) / 24 / 3600 + 1) * 100 / 122, 2);
         //print_r($dateRate);exit;
         try {
-
+            //删除开发目标数据
+            Yii::$app->db->createCommand("TRUNCATE TABLE site_target_all;")->execute();
             //更新开发目标完成度
-            $seller = Yii::$app->db->createCommand("SELECT distinct username FROM site_target_all WHERE role='开发'")->queryAll();
+            $seller = Yii::$app->db->createCommand("SELECT distinct username FROM site_target_user WHERE role='开发'")->queryAll();
             $condition = [
                 'dateFlag' => 1,
                 'beginDate' => $beginDate,
@@ -112,7 +113,7 @@ class SchedulerController extends Controller
             ];
             $devList = ApiReport::getDevelopReport($condition);
             foreach ($devList as $value) {
-                $basicSql = "SELECT IFNULL(l.basic,0) AS basic,IFNULL(hl.high,0) AS high FROM site_target_all t
+                $basicSql = "SELECT t.*,IFNULL(l.basic,0) AS basic,IFNULL(hl.high,0) AS high FROM site_target_user t
                             LEFT JOIN site_target_level l ON l.`level`=t.`level` AND l.role=t.role 
                             LEFT JOIN site_target_level hl ON hl.`level`=t.`level` AND hl.role=t.role 
                             WHERE t.role='开发' and username='{$value['salernameZero']}' ";
@@ -122,16 +123,20 @@ class SchedulerController extends Controller
                 $backupSql = "SELECT sum(profit_zn) AS profit_zn FROM site_target_all_backup_data 
                             WHERE role='开发' and username='{$value['salernameZero']}' GROUP BY username";
                 $lastProfit = Yii::$app->db->createCommand($backupSql)->queryScalar();
-                Yii::$app->db->createCommand()->update(
+                Yii::$app->db->createCommand()->insert(
                     'site_target_all',
                     [
+                        'username' => $target['username'],
+                        'depart' => $target['depart'],
+                        'role' => $target['role'],
+                        'level' => $target['level'],
+                        'high_level' => $target['high_level'],
                         'profit' => $value['netprofitZero'] + $value['netprofitSix'] + $lastProfit,
                         'rate' => $basic != 0 ? round(($value['netprofitZero'] + $value['netprofitSix'] + $lastProfit) * 100.0 / $basic, 2) : 0,
                         'high_rate' => $high != 0 ? round(($value['netprofitZero'] + $value['netprofitSix'] + $lastProfit) * 100.0 / $high, 2) : 0,
                         'date_rate' => $dateRate,
                         'updatetime' => $endDate
-                    ],
-                    ['role' => '开发', 'username' => $value['salernameZero']]
+                    ]
                 )->execute();
             }
 
