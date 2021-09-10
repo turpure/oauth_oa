@@ -7,6 +7,7 @@
 
 namespace backend\modules\v1\utils;
 
+use backend\models\OaDataMine;
 use backend\models\OaGoods;
 use backend\models\OaGoods1688;
 use backend\models\OaGoodsinfo;
@@ -142,8 +143,7 @@ class ProductCenterTools
     public static function finishPicture($infoId)
     {
         $res = self::saveAttributeToPlat($infoId);
-        //var_dump($res);exit;
-        //update oa-goodsInfo status
+
         $pictureInfo = Oagoodsinfo::findOne(['id' => $infoId]);
         $pictureInfo->setAttributes(
             [
@@ -158,7 +158,29 @@ class ProductCenterTools
                 'message' => 'failed'
             ];
         }
+        // 如果是采集商品，就标记成开发完成
+        $mid = $pictureInfo->mid;
+
+        if(empty($mid)) {
+            return true;
+        }
+        $dataMine = OaDataMine::findOne(['id' => $mid]);
+        if($dataMine === null) {
+            return true;
+        }
+        $devStatus = $dataMine->devStatus;
+        if($devStatus !== '开发中') {
+            return true;
+        }
+        $dataMine->setAttributes(['devStatus' =>'已开发']);
+        if (!$dataMine->save()) {
+            return [
+                'code' => 409,
+                'message' => 'failed'
+            ];
+        }
         return true;
+
     }
 
     /**
