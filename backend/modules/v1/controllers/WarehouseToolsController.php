@@ -75,7 +75,9 @@ class WarehouseToolsController extends AdminController
      */
     public function actionSortMember()
     {
-        return ApiWarehouseTools::getSortMember();
+//        $identity = Yii::$app->request->get('type', 'sort');
+//        return ApiWarehouseTools::getSortMember($identity);
+        return ApiWarehouseTools::getWarehouseMember('sort');
     }
 
     /**
@@ -253,6 +255,11 @@ class WarehouseToolsController extends AdminController
 
 
     ######################################入库工具#########################################
+    public function actionWarehousingMember()
+    {
+        return ApiWarehouseTools::getWarehouseMember('warehousing');
+    }
+
 
     /**
      * @brief 保存入库任务

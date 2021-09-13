@@ -256,8 +256,17 @@ class ApiWarehouseTools
         } elseif ($type == 'label'){
             $query->andWhere(['in', 'Duty', ['打标', '贴标']]);
             return $query->all();
-//            return ArrayHelper::map($ret, 'PersonCode','PersonName');
-        }else{
+        }elseif($type == 'warehousing'){  //入库
+            $ret = $query->andWhere(['in', 'Duty', ['入库分拣', '快递扫描']])->asArray()->all();
+            $ret2 = TaskWarehouse::find()->select('user AS PersonName')
+                ->andWhere(['>', 'createdTime', date('Y-m-d',strtotime('-7 days'))])
+                ->distinct()->asArray()->all();
+            $name = ArrayHelper::getColumn($ret, 'PersonName');
+            $name2 = ArrayHelper::getColumn($ret2, 'PersonName');
+            return array_values(array_unique(array_merge($name, $name2)));
+        }elseif($type == 'sort'){  //多品分拣
+            $query->andWhere(['Like', 'memo', '多品分拣']);
+        } else{
             $query->andWhere(['in', 'Duty', ['拣货', '拣货组长', '拣货-分拣']]);
         }
         $ret = $query->all();
@@ -268,10 +277,9 @@ class ApiWarehouseTools
      * @brief 获取分拣人
      * @return array
      */
-    public static function getSortMember()
+    /*
+    public static function getSortMember($identity = 'warehouse')
     {
-        $identity = Yii::$app->request->get('type', 'warehouse');
-
         if ($identity == 'warehouse') {
             $query = BPerson::find();//->select('PersonName');
             $ret = $query->andWhere(['in', 'Duty', ['入库分拣', '快递扫描']])->asArray()->all();
@@ -282,11 +290,12 @@ class ApiWarehouseTools
             return array_values(array_unique(array_merge($name, $name2)));
         } else {
             $query = BPerson::find();
-            $ret = $query->andWhere(['in', 'Duty', ['多品分拣']])->all();
+            $ret = $query->andWhere(['in', 'Duty', ['多品分拣']])
+                ->orWhere(['LIKE', 'Memo', '多品分拣'])->all();
 //            $ret = $query->andWhere(['in', 'Duty', ['拣货', '拣货组长', '拣货-分拣']])->all();
             return ArrayHelper::getColumn($ret, 'PersonName');
         }
-    }
+    }*/
 
     /**
      * @brief 拣货扫描记录
