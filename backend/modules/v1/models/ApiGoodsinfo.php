@@ -1185,7 +1185,7 @@ class ApiGoodsinfo
             $postfix = $ret['postfix'];
             $at .= "'s Shop ";
             foreach ($rows as $row) {
-                $row['产品标题（英文）1'] = '"<p>Welcome to ' . $at . ' <br> <br></p>' . substr($row['产品标题（英文）1'], 1);
+                $row['产品标题（英文）1'] = $ret['accountName'] . ' ' . substr($row['产品标题（英文）1'], 1);
                 $row['长描述'] = '"<p>Welcome to ' . $at . ' <br> <br></p>' . substr($row['长描述'], 1);
                 $row['SKU'] .= $postfix;
                 $row['关联SKU'] .= $postfix;
