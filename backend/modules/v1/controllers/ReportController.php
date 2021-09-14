@@ -1382,9 +1382,10 @@ class ReportController extends AdminController
             $condition = $request['condition'];
             $condition['pageSize'] = 100000;
             $data = ApiReport::getDevGoodsProfit($condition)->models;
-            $title = ['开发员', '推荐人', '产品编码', '产品名称', '产品图片', '开发日期', '产品状态', '销量', '销售额(￥)', '总利润(￥)', '利润率',
-                'eBay销量', 'eBay利润(￥)', 'Wish销量', 'Wish利润(￥)', 'SMT销量', 'SMT利润(￥)', 'Joom销量',
-                'Joom利润(￥)', 'Amazon销量', 'Amazon利润(￥)', '时间类型(0交易时间，1发货时间)', '时间'];
+            $title = ['开发员', '推荐人', '产品编码', '产品名称', '产品图片', '开发日期', '产品状态', '销量', '销售额(￥)',
+                '总利润(￥)', '利润率', 'eBay销量', 'eBay利润(￥)', 'Wish销量', 'Wish利润(￥)', 'SMT销量', 'SMT利润(￥)',
+                'Joom销量', 'Joom利润(￥)', 'Amazon销量', 'Amazon利润(￥)', 'VOVA销量', 'VOVA利润(￥)',
+                'Lazada销量', 'Lazada利润(￥)', '时间类型(0交易时间，1发货时间)', '时间'];
             ExportTools::toExcelOrCsv('dev-profit', $data, 'Xls', $title);
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => 400];
