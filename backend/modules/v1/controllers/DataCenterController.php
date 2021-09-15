@@ -87,7 +87,8 @@ class DataCenterController extends AdminController
         $condition = Yii::$app->request->post('condition', []);
         $month = isset($condition['month']) && $condition['month'] ? $condition['month'] : date('Y-m');
         $count = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpData where updateMonth = '{$month}' ")->queryScalar();
-        if(!$count) $month = date('Y-m', strtotime('-1 days'));
+        $count2 = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpDataBackup where updateMonth = '{$month}' ")->queryScalar();
+        if(!$count && !$count2) $month = date('Y-m', strtotime('-1 days'));
 
         $sql = "SELECT CASE WHEN IFNULL(class,'')='海运' THEN '万邑通UK海运' ELSE '万邑通UK空运' END AS storeName,
 				SUM(useNum) AS useNum,
@@ -127,8 +128,8 @@ class DataCenterController extends AdminController
         $condition = Yii::$app->request->post('condition', []);
         $month = isset($condition['month']) && $condition['month'] ? $condition['month'] : date('Y-m');
         $count = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpData where updateMonth = '{$month}' ")->queryScalar();
-        if(!$count) $month = date('Y-m', strtotime('-1 days'));
-
+        $count2 = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpDataBackup where updateMonth = '{$month}' ")->queryScalar();
+        if(!$count && !$count2) $month = date('Y-m', strtotime('-1 days'));
         $sql = "CALL data_center_stock_status('{$month}');";
         try {
             return Yii::$app->db->createCommand($sql)->queryAll();
@@ -156,7 +157,8 @@ class DataCenterController extends AdminController
         $condition = $request->post('condition');
         $month = isset($condition['month']) && $condition['month'] ? $condition['month'] : date('Y-m');
         $count = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpData where updateMonth = '{$month}' ")->queryScalar();
-        if(!$count) $month = date('Y-m', strtotime('-1 days'));
+        $count2 = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpDataBackup where updateMonth = '{$month}' ")->queryScalar();
+        if(!$count && !$count2) $month = date('Y-m', strtotime('-1 days'));
 
         $sql = "SELECT aa.storeName,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,
                     hopeUseNum,totalCostmoney,IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
@@ -217,7 +219,8 @@ class DataCenterController extends AdminController
         $cond = $request->post('condition');
         $month = isset($cond['month']) && $cond['month'] ? $cond['month'] : date('Y-m');
         $count = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpData where updateMonth = '{$month}' ")->queryScalar();
-        if(!$count) $month = date('Y-m', strtotime('-1 days'));
+        $count2 = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpDataBackup where updateMonth = '{$month}' ")->queryScalar();
+        if(!$count && !$count2) $month = date('Y-m', strtotime('-1 days'));
 
         $sql = "SELECT aa.storeName,salerName,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
                         IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
@@ -276,7 +279,8 @@ class DataCenterController extends AdminController
         $cond = $request->post('condition');
         $month = isset($cond['month']) && $cond['month'] ? $cond['month'] : date('Y-m');
         $count = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpData where updateMonth = '{$month}' ")->queryScalar();
-        if(!$count) $month = date('Y-m', strtotime('-1 days'));
+        $count2 = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpDataBackup where updateMonth = '{$month}' ")->queryScalar();
+        if(!$count && !$count2) $month = date('Y-m', strtotime('-1 days'));
 
         $sql = "SELECT case when IFNULL(depart,'')='' then '无部门' else depart end AS depart,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,
                         IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
@@ -331,7 +335,8 @@ class DataCenterController extends AdminController
         $cond = $request->post('condition');
         $month = isset($cond['month']) && $cond['month'] ? $cond['month'] : date('Y-m');
         $count = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpData where updateMonth = '{$month}' ")->queryScalar();
-        if(!$count) $month = date('Y-m', strtotime('-1 days'));
+        $count2 = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpDataBackup where updateMonth = '{$month}' ")->queryScalar();
+        if(!$count && !$count2) $month = date('Y-m', strtotime('-1 days'));
 
         $sql = "SELECT IFNULL(depart,'无部门') AS depart,goodsStatus,useNum,costmoney,notInStore,notInCostmoney,
                         hopeUseNum,totalCostmoney,IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
@@ -390,7 +395,8 @@ class DataCenterController extends AdminController
         $cond = $request->post('condition');
         $month = isset($cond['month']) && $cond['month'] ? $cond['month'] : date('Y-m');
         $count = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpData where updateMonth = '{$month}' ")->queryScalar();
-        if(!$count) $month = date('Y-m', strtotime('-1 days'));
+        $count2 = Yii::$app->db->createCommand("select count(1) FROM cache_stockWaringTmpDataBackup where updateMonth = '{$month}' ")->queryScalar();
+        if(!$count && !$count2) $month = date('Y-m', strtotime('-1 days'));
 
         $sql = "SELECT IFNULL(depart,'无部门') AS depart,aa.salerName,useNum,costmoney,notInStore,notInCostmoney,
                         hopeUseNum,totalCostmoney,IFNULL(30DayCostmoney,0) AS 30DayCostmoney,
