@@ -2407,7 +2407,7 @@ class ApiReport
                     LEFT JOIN B_Person (nolock) p ON p.NID = C.salerID
                     LEFT JOIN B_Dictionary(nolock) d ON d.NID= C.BalanceID
                     WHERE BillType = 1 AND p.used = 0 AND c.AudieDate >= '{$beginDate}' AND dictionaryName IN('账期付款','线下交易') 
-                                AND c.SupplierID<>35383 AND ISNULL(personName,'')<>'' AND StoreID IN(2,7,36)
+                                AND c.SupplierID<>35383 AND ISNULL(personName,'')<>'' AND StoreID IN(2,7,36,13)
                 ) aa GROUP BY dt,purchaser ORDER BY purchaser,dt ";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         $purchaserList = array_unique(ArrayHelper::getColumn($data, 'purchaser'));
