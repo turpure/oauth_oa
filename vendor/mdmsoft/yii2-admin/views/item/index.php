@@ -1,7 +1,6 @@
 <?php
 
 use yii\helpers\Html;
-use yii\helpers\Url;
 use yii\grid\GridView;
 use mdm\admin\components\RouteRule;
 use mdm\admin\components\Configs;
@@ -44,18 +43,7 @@ unset($rules[RouteRule::RULE_NAME]);
                 'attribute' => 'description',
                 'label' => Yii::t('rbac-admin', 'Description'),
             ],
-            [
-                'class' => 'yii\grid\ActionColumn',
-                'template' => '{view} {update} {delete}',
-                'buttons' => [
-                    'view' => function ($url, $model, $key) {
-                        return Html::a('<span class="glyphicon glyphicon-eye-open"></span>',
-                            Url::to($url),
-                            ['type' => 'button', 'title' => '分配权限', 'aria-label' => '分配权限']);
-                    },
-
-                ],
-            ],
+            ['class' => 'yii\grid\ActionColumn',],
         ],
     ])
     ?>

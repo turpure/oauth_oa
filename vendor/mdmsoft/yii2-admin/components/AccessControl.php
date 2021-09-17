@@ -6,7 +6,6 @@ use yii\web\ForbiddenHttpException;
 use yii\base\Module;
 use Yii;
 use yii\web\User;
-use common\models\User as RestUser;
 use yii\di\Instance;
 
 /**
@@ -48,9 +47,6 @@ class AccessControl extends \yii\base\ActionFilter
     {
         if (!$this->_user instanceof User) {
             $this->_user = Instance::ensure($this->_user, User::className());
-//            $token = Yii::$app->request->get()['token'];
-//            $user = RestUser::findIdentityByAccessToken($token);
-//            $this->_user = $this->_user->setIdentity($user);
         }
         return $this->_user;
     }

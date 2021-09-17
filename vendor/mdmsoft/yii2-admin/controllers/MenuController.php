@@ -93,7 +93,7 @@ class MenuController extends Controller
             $model->parent_name = $model->menuParent->name;
         }
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-//            Helper::invalidate();
+            Helper::invalidate();
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('update', [

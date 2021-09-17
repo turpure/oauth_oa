@@ -25,7 +25,6 @@ use yii\db\Query;
 class Menu extends \yii\db\ActiveRecord
 {
     public $parent_name;
-    public $type;
 
     /**
      * @inheritdoc
@@ -58,12 +57,8 @@ class Menu extends \yii\db\ActiveRecord
                 'range' => static::find()->select(['name'])->column(),
                 'message' => 'Menu "{value}" not found.'],
             [['parent', 'route', 'data', 'order'], 'default'],
-            [['type'], 'default', 'value' => 0],
             [['parent'], 'filterParent', 'when' => function() {
                 return !$this->isNewRecord;
-            }],
-            [['tabParentId'], 'filter',  'filter' => function() {
-                return $this->type ? $this->parent : 0;
             }],
             [['order'], 'integer'],
             [['route'], 'in',
@@ -100,9 +95,7 @@ class Menu extends \yii\db\ActiveRecord
             'id' => Yii::t('rbac-admin', 'ID'),
             'name' => Yii::t('rbac-admin', 'Name'),
             'parent' => Yii::t('rbac-admin', 'Parent'),
-            'tabParentId' => Yii::t('rbac-admin', 'Tab Parent Id'),
             'parent_name' => Yii::t('rbac-admin', 'Parent Name'),
-            'type' => Yii::t('rbac-admin', 'Type'),
             'route' => Yii::t('rbac-admin', 'Route'),
             'order' => Yii::t('rbac-admin', 'Order'),
             'data' => Yii::t('rbac-admin', 'Data'),

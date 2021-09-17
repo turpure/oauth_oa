@@ -2,28 +2,23 @@
 
 namespace mdm\admin\controllers;
 
-use mdm\admin\models\Department;
-use mdm\admin\models\DepartmentChild;
-use mdm\admin\models\PositionChild;
-use mdm\admin\models\StoreChild;
-use mdm\admin\models\StoreChildCheck;
-use Yii;
+use mdm\admin\components\UserStatus;
+use mdm\admin\models\form\ChangePassword;
 use mdm\admin\models\form\Login;
 use mdm\admin\models\form\PasswordResetRequest;
 use mdm\admin\models\form\ResetPassword;
 use mdm\admin\models\form\Signup;
-use mdm\admin\models\form\CreateUser;
-use mdm\admin\models\form\UpdateUser;
-use mdm\admin\models\form\ChangePassword;
-use mdm\admin\models\User;
 use mdm\admin\models\searchs\User as UserSearch;
+use mdm\admin\models\User;
+use Yii;
 use yii\base\InvalidParamException;
+use yii\base\UserException;
+use yii\filters\VerbFilter;
+use yii\mail\BaseMailer;
 use yii\web\BadRequestHttpException;
 use yii\web\Controller;
-use yii\filters\VerbFilter;
 use yii\web\NotFoundHttpException;
-use yii\base\UserException;
-use yii\mail\BaseMailer;
+
 /**
  * User controller
  */
@@ -43,7 +38,6 @@ class UserController extends Controller
                     'delete' => ['post'],
                     'logout' => ['post'],
                     'activate' => ['post'],
-                    'auto-signup' => ['post'],
                 ],
             ],
         ];
@@ -70,31 +64,10 @@ class UserController extends Controller
      */
     public function afterAction($action, $result)
     {
-        $method = $action->actionMethod;
-        if($action->actionMethod === 'actionAutoSignup') {
-            \Yii::$app->response->format = "json";
-//            $result = parent::afterAction($action, $result);
-            $data['code'] = isset($result['code']) ? $result['code'] : 200;
-            $data['message'] = isset($result['message']) ? $result['message'] : '操作成功';
-            if ($result === null) {
-                $result = [];
-            }
-            if ($data['code'] == 200 && (is_array($result))) {
-                $data['data'] = $result;
-            }
-            if ($result === false) {
-                $data['code'] = 400;
-                $data['message'] = '操作失败';
-            }
-            return $data;
+        if ($this->_oldMailPath !== null) {
+            Yii::$app->getMailer()->setViewPath($this->_oldMailPath);
         }
-        else{
-            if ($this->_oldMailPath !== null) {
-                Yii::$app->getMailer()->setViewPath($this->_oldMailPath);
-            }
-            return parent::afterAction($action, $result);
-        }
-
+        return parent::afterAction($action, $result);
     }
 
     /**
@@ -113,24 +86,6 @@ class UserController extends Controller
     }
 
     /**
-     * Create a user
-     * @return mixed
-     */
-    public function actionCreate()
-    {
-        $model = new CreateUser();
-
-        if ($model->load(Yii::$app->getRequest()->post())) {
-            if ($user = $model->create()) {
-                $this->redirect('index');
-            }
-        }
-
-        return $this->render('create', [
-            'model' => $model,
-        ]);
-    }
-    /**
      * Displays a single User model.
      * @param integer $id
      * @return mixed
@@ -142,40 +97,6 @@ class UserController extends Controller
         ]);
     }
 
-
-    /**
-     * update a single User model.
-     * @param integer $id
-     * @return mixed
-     */
-    public function actionUpdate($id)
-    {
-        $model = new UpdateUser($id);
-
-        if ($model->load(Yii::$app->getRequest()->post())) {
-            if ($user = $model->save()) {
-                $this->redirect('index');
-            }
-        }
-//print_r($model);exit;
-
-        return $this->render('update', [
-            'model' => $model,
-        ]);
-    }
-
-    /**
-     * 获取各级部门列表
-     * @param $id
-     * @return string
-     */
-    public function actionAjax()
-    {
-        $id = Yii::$app->request->post('id',0);
-        $depart = Department::find()->andFilterWhere(['parent' =>$id])->asArray()->all();
-        return json_encode($depart);
-    }
-
     /**
      * Deletes an existing User model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
@@ -184,10 +105,6 @@ class UserController extends Controller
      */
     public function actionDelete($id)
     {
-        StoreChild::deleteAll(['user_id' => $id]);
-        StoreChildCheck::deleteAll(['user_id' => $id]);
-        PositionChild::deleteAll(['user_id' => $id]);
-        DepartmentChild::deleteAll(['user_id' => $id]);
         $this->findModel($id)->delete();
 
         return $this->redirect(['index']);
@@ -231,9 +148,7 @@ class UserController extends Controller
     public function actionSignup()
     {
         $model = new Signup();
-
         if ($model->load(Yii::$app->getRequest()->post())) {
-            $post = Yii::$app->getRequest()->post();
             if ($user = $model->signup()) {
                 return $this->goHome();
             }
@@ -242,33 +157,6 @@ class UserController extends Controller
         return $this->render('signup', [
                 'model' => $model,
         ]);
-    }
-
-    /**
-     * Signup new user
-     * @return string
-     */
-    public function actionAutoSignup()
-    {
-        $model = new Signup();
-//        $default_users = [["Signup"=>['username'=>'test','email'=>'test@666.com', 'password'=>'test666']]];
-        $users = isset(Yii::$app->getRequest()->post()['users'])?Yii::$app->getRequest()->post()['users']:[];
-        $users = json_decode($users,true);
-        try {
-            foreach ($users as $person) {
-                $model = clone $model;
-                $model->load($person);
-                if(!$model->signup()){
-                    throw new \Exception('自动注册失败！');
-                }
-            }
-            $ret = '自动注册成功！';
-        }
-        catch (\Exception $why) {
-            $ret = '自动注册失败！';
-        }
-        return [$ret];
-
     }
 
     /**
@@ -304,6 +192,7 @@ class UserController extends Controller
         } catch (InvalidParamException $e) {
             throw new BadRequestHttpException($e->getMessage());
         }
+
         if ($model->load(Yii::$app->getRequest()->post()) && $model->validate() && $model->resetPassword()) {
             Yii::$app->getSession()->setFlash('success', 'New password was saved.');
 
@@ -319,19 +208,16 @@ class UserController extends Controller
      * Reset password
      * @return string
      */
-    public function actionChangePassword($id)
+    public function actionChangePassword()
     {
         $model = new ChangePassword();
-        if ($model->load(Yii::$app->getRequest()->post()) && $model->change($id)) {
-            $this->redirect('index');
-        }else{
-            return $this->render('change-password', [
-                'username' => User::findOne($id)->username,
-                'model' => $model,
-            ]);
+        if ($model->load(Yii::$app->getRequest()->post()) && $model->change()) {
+            return $this->goHome();
         }
 
-
+        return $this->render('change-password', [
+                'model' => $model,
+        ]);
     }
 
     /**
@@ -345,42 +231,17 @@ class UserController extends Controller
     {
         /* @var $user User */
         $user = $this->findModel($id);
-        if ($user->status == User::STATUS_INACTIVE) {
-            $user->status = User::STATUS_ACTIVE;
+        if ($user->status == UserStatus::INACTIVE) {
+            $user->status = UserStatus::ACTIVE;
             if ($user->save()) {
-                return $this->redirect(['index']);
+                return $this->goHome();
             } else {
                 $errors = $user->firstErrors;
                 throw new UserException(reset($errors));
             }
         }
-        return $this->redirect(['index']);
+        return $this->goHome();
     }
-
-
-    /**
-     * Activate new user
-     * @param integer $id
-     * @return type
-     * @throws UserException
-     * @throws NotFoundHttpException
-     */
-    public function actionInactivate($id)
-    {
-        /* @var $user User */
-        $user = $this->findModel($id);
-        if ($user->status == User::STATUS_ACTIVE) {
-            $user->status = User::STATUS_INACTIVE;
-            if ($user->save()) {
-                return $this->redirect(['index']);
-            } else {
-                $errors = $user->firstErrors;
-                throw new UserException(reset($errors));
-            }
-        }
-        return $this->redirect(['index']);
-    }
-
 
     /**
      * Finds the User model based on its primary key value.
@@ -397,18 +258,4 @@ class UserController extends Controller
             throw new NotFoundHttpException('The requested page does not exist.');
         }
     }
-
-    /**
-     * @brief user表单验证
-     * @param $id int
-     * @return array
-     */
-    public function actionValidateUser ($id) {
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-        $model = new UpdateUser($id);
-        $model->load(Yii::$app->request->post());
-        return \yii\widgets\ActiveForm::validate($model);
-    }
-
-
 }

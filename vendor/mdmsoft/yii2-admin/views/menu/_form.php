@@ -24,8 +24,6 @@ $this->registerJs($this->render('_script.js'));
     <div class="row">
         <div class="col-sm-6">
             <?= $form->field($model, 'name')->textInput(['maxlength' => 128]) ?>
-            <?php $model->type = $model->isNewRecord ? 0 : ($model->tabParentId ? 1 : 0);?>
-            <?= $form->field($model, 'type')->textInput()->radioList([0 => '菜单', 1 => '标签'], ['id' => 'type']) ?>
 
             <?= $form->field($model, 'parent_name')->textInput(['id' => 'parent_name']) ?>
 
@@ -34,7 +32,7 @@ $this->registerJs($this->render('_script.js'));
         <div class="col-sm-6">
             <?= $form->field($model, 'order')->input('number') ?>
 
-            <?= $form->field($model, 'data')->textarea(['rows' => 8]) ?>
+            <?= $form->field($model, 'data')->textarea(['rows' => 4]) ?>
         </div>
     </div>
 

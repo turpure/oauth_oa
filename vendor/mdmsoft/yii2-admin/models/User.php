@@ -2,13 +2,13 @@
 
 namespace mdm\admin\models;
 
+use mdm\admin\components\Configs;
+use mdm\admin\components\UserStatus;
 use Yii;
 use yii\base\NotSupportedException;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
-use mdm\admin\components\Configs;
-
 
 /**
  * User model
@@ -23,11 +23,6 @@ use mdm\admin\components\Configs;
  * @property integer $created_at
  * @property integer $updated_at
  * @property string $password write-only password
- * @property string $mapPerson
- * @property string $mapWarehouse
- * @property string $mapPlat
- * @property integer $canStockUp
- * @property string $maxSupplierNum
  *
  * @property UserProfile $profile
  */
@@ -35,9 +30,6 @@ class User extends ActiveRecord implements IdentityInterface
 {
     const STATUS_INACTIVE = 0;
     const STATUS_ACTIVE = 10;
-    public $depart;
-    public $position;
-    public $role;
 
     /**
      * @inheritdoc
@@ -63,8 +55,7 @@ class User extends ActiveRecord implements IdentityInterface
     public function rules()
     {
         return [
-            ['status', 'default', 'value' => self::STATUS_ACTIVE],
-            ['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_INACTIVE]],
+            ['status', 'in', 'range' => [UserStatus::ACTIVE, UserStatus::INACTIVE]],
         ];
     }
 
@@ -73,7 +64,7 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public static function findIdentity($id)
     {
-        return static::findOne(['id' => $id, 'status' => self::STATUS_ACTIVE]);
+        return static::findOne(['id' => $id, 'status' => UserStatus::ACTIVE]);
     }
 
     /**
@@ -92,7 +83,7 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public static function findByUsername($username)
     {
-        return static::findOne(['username' => $username, 'status' => self::STATUS_ACTIVE]);
+        return static::findOne(['username' => $username, 'status' => UserStatus::ACTIVE]);
     }
 
     /**
@@ -109,7 +100,7 @@ class User extends ActiveRecord implements IdentityInterface
 
         return static::findOne([
                 'password_reset_token' => $token,
-                'status' => self::STATUS_ACTIVE,
+                'status' => UserStatus::ACTIVE,
         ]);
     }
 
@@ -202,26 +193,5 @@ class User extends ActiveRecord implements IdentityInterface
     public static function getDb()
     {
         return Configs::userDb();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function attributeLabels()
-    {
-        return [
-            'id' => 'ID',
-            'username' => '用户名',
-            'email' => '邮箱',
-            'created_at' => '创建时间',
-            'status' => '状态',
-            'depart' => '部门',
-            'position' => '职位',
-            'canStockUp' => '备货权限',
-            'mapPersons' => '对应销售',
-            'mapWarehouse' => '对应仓库',
-            'mapPlat' => '销售平台',
-            'role' => '角色'
-        ];
     }
 }

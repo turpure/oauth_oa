@@ -1,7 +1,6 @@
 <?php
 
 use mdm\admin\AnimateAsset;
-use mdm\admin\AutocompleteAsset;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\helpers\Json;
