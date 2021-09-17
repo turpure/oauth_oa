@@ -40,7 +40,7 @@ class BizRule extends \yii\base\Model
     private $_item;
 
     /**
-     * Initialize object
+     * Initilaize object
      * @param \yii\rbac\Rule $item
      * @param array $config
      */

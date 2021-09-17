@@ -39,8 +39,7 @@ use yii\rbac\ManagerInterface;
  * @author Misbahul D Munir <misbahuldmunir@gmail.com>
  * @since 1.0
  */
-
-class Configs extends \mdm\admin\BaseObject
+class Configs extends \yii\base\BaseObject
 {
     const CACHE_TAG = 'mdm.admin';
 
@@ -85,11 +84,6 @@ class Configs extends \mdm\admin\BaseObject
     public $defaultUserStatus = 10;
 
     /**
-     * @var integer Number of user role.
-     */
-    public $userRolePageSize = 100;
-
-    /**
      * @var boolean If true then AccessControl only check if route are registered.
      */
     public $onlyRegisteredRoute = false;
@@ -105,23 +99,7 @@ class Configs extends \mdm\admin\BaseObject
     public $options;
 
     /**
-     * @var array|false Used for multiple application
-     * ```php
-     * [
-     *     'frontend' => [
-     *         '@common/config/main.php',
-     *         '@common/config/main-local.php',
-     *         '@frontend/config/main.php',
-     *         '@frontend/config/main-local.php',
-     *     ],
-     *     'backend' => [
-     *         '@common/config/main.php',
-     *         '@common/config/main-local.php',
-     *         '@backend/config/main.php',
-     *         '@backend/config/main-local.php',
-     *     ],
-     * ]
-     * ```     *
+     * @var array|false
      */
     public $advanced;
 
@@ -260,13 +238,5 @@ class Configs extends \mdm\admin\BaseObject
     public static function strict()
     {
         return static::instance()->strict;
-    }
-
-    /**
-     * @return int
-     */
-    public static function userRolePageSize()
-    {
-        return static::instance()->userRolePageSize;
     }
 }

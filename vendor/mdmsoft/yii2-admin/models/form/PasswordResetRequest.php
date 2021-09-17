@@ -1,9 +1,8 @@
 <?php
 namespace mdm\admin\models\form;
 
-use mdm\admin\components\UserStatus;
-use mdm\admin\models\User;
 use Yii;
+use mdm\admin\models\User;
 use yii\base\Model;
 
 /**
@@ -18,14 +17,13 @@ class PasswordResetRequest extends Model
      */
     public function rules()
     {
-        $class = Yii::$app->getUser()->identityClass ? : 'mdm\admin\models\User';
         return [
             ['email', 'filter', 'filter' => 'trim'],
             ['email', 'required'],
             ['email', 'email'],
             ['email', 'exist',
-                'targetClass' => $class,
-                'filter' => ['status' => UserStatus::ACTIVE],
+                'targetClass' => 'mdm\admin\models\User',
+                'filter' => ['status' => User::STATUS_ACTIVE],
                 'message' => 'There is no user with such email.'
             ],
         ];
@@ -39,15 +37,14 @@ class PasswordResetRequest extends Model
     public function sendEmail()
     {
         /* @var $user User */
-        $class = Yii::$app->getUser()->identityClass ? : 'mdm\admin\models\User';
-        $user = $class::findOne([
-            'status' => UserStatus::ACTIVE,
+        $user = User::findOne([
+            'status' => User::STATUS_ACTIVE,
             'email' => $this->email,
         ]);
 
         if ($user) {
-            if (!ResetPassword::isPasswordResetTokenValid($user->password_reset_token)) {
-                $user->password_reset_token = Yii::$app->security->generateRandomString() . '_' . time();
+            if (!User::isPasswordResetTokenValid($user->password_reset_token)) {
+                $user->generatePasswordResetToken();
             }
 
             if ($user->save()) {

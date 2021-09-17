@@ -9,7 +9,7 @@ use mdm\admin\models\Menu;
 /**
  * MenuHelper used to generate menu depend of user role.
  * Usage
- *
+ * 
  * ```
  * use mdm\admin\components\MenuHelper;
  * use yii\bootstrap\Nav;
@@ -18,9 +18,9 @@ use mdm\admin\models\Menu;
  *    'items' => MenuHelper::getAssignedMenu(Yii::$app->user->id)
  * ]);
  * ```
- *
+ * 
  * To reformat returned, provide callback to method.
- *
+ * 
  * ```
  * $callback = function ($menu) {
  *    $data = eval($menu['data']);
@@ -47,7 +47,7 @@ class MenuHelper
      * @param integer $root
      * @param \Closure $callback use to reformat output.
      * callback should have format like
-     *
+     * 
      * ```
      * function ($menu) {
      *    return [
@@ -84,7 +84,6 @@ class MenuHelper
                     }
                 }
             }
-
             foreach ($manager->defaultRoles as $role) {
                 foreach ($manager->getPermissionsByRole($role) as $name => $value) {
                     if ($name[0] === '/') {
@@ -203,7 +202,7 @@ class MenuHelper
                     $item = call_user_func($callback, $menu);
                 } else {
                     $item = [
-                        'label' => $menu['name'],
+                        'label' => Yii::t('rbac-admin',$menu['name']),
                         'url' => static::parseRoute($menu['route']),
                     ];
                     if ($menu['children'] != []) {

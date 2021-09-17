@@ -5,6 +5,7 @@ namespace mdm\admin\models;
 use mdm\admin\components\Configs;
 use mdm\admin\components\Helper;
 use Yii;
+use yii\base\Object;
 
 /**
  * Description of Assignment
@@ -12,7 +13,7 @@ use Yii;
  * @author Misbahul D Munir <misbahuldmunir@gmail.com>
  * @since 2.5
  */
-class Assignment extends \mdm\admin\BaseObject
+class Assignment extends Object
 {
     /**
      * @var integer User id
@@ -103,8 +104,6 @@ class Assignment extends \mdm\admin\BaseObject
             unset($available[$item->roleName]);
         }
 
-        ksort($available);
-        ksort($assigned);
         return [
             'available' => $available,
             'assigned' => $assigned,

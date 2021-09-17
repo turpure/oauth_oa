@@ -46,6 +46,7 @@ class AssignmentController extends Controller
                 'class' => VerbFilter::className(),
                 'actions' => [
                     'assign' => ['post'],
+                    'assign' => ['post'],
                     'revoke' => ['post'],
                 ],
             ],
