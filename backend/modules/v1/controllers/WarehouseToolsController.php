@@ -100,6 +100,49 @@ class WarehouseToolsController extends AdminController
         return ApiWarehouseTools::getSortLog($condition);
     }
 
+    /**
+     * 分货扫描统计
+     * Date: 2021-09-23 14:54
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
+    public function actionSortStatistics()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        list($totalData, $detail) = ApiWarehouseTools::getSortScanningStatistics($condition);
+        $provider = new ArrayDataProvider([
+            'allModels' => $detail,
+            'sort' => [
+                'attributes' => ['dt', 'username', 'batchNumber', 'tradeNum', 'skuNum', 'goodsNum'],
+                'defaultOrder' => [
+                    'dt' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => 10000,
+            ],
+        ]);
+        return ['totalData' => $totalData, 'detail' => $provider->getModels()];
+    }
+
+    /**
+     * 分拣统计导出
+     * Date: 2021-09-23 15:04
+     * Author: henry
+     * @throws Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionSortStatisticsExport(){
+        $condition = Yii::$app->request->post()['condition'];
+        list($totalData, $detail) = ApiWarehouseTools::getSortScanningStatistics($condition);
+        $res = [
+            ['title' => ['分拣人员', '批次数量', '订单数量', 'SKU数量', '产品数量'], 'name' => '分拣人员数据汇总', 'data' => $totalData],
+            ['title' => ['日期', '分拣人员', '批次号', '订单数量', 'SKU数量', '产品数量'], 'name' => '分拣人员数据明细', 'data' => $detail],
+        ];
+        ExportTools::toExcelMultipleSheets('labelStatistics', $res, 'Xlsx');
+    }
 
     ######################################线下清仓工具#########################################
 

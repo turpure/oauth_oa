@@ -1116,15 +1116,29 @@ class SchedulerController extends Controller
                 $endDate = date('Y-m-d');
             }
 //            var_dump($beginDate,$endDate);exit;
-            $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}';";
-            Yii::$app->py_db->createCommand($sql)->execute();
+            // 获取 最近新订单
+//            $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}';";
+//            Yii::$app->py_db->createCommand($sql)->execute();
+            // 获取需要更新1688包裹状态的采购单
+            $sqlRate = "SELECT m.nid as OrderNID,AliasName1688,m.alibabaorderid,o.* 
+                        FROM oauth_in_storage_time_rate_data_copy o
+                        LEFT JOIN CG_StockOrderM m ON o.stockNo = m.BillNumber
+                        WHERE ISNULL(stockNo,'')<>'' AND ISNULL(OPDate,'')='' -- AND stockNo = 'GD-2021-08-30-1224' ";
+            $list = Yii::$app->py_db->createCommand($sqlRate)-> queryAll();
+            //获取1688 账号token信息
+            $tokenSql = "select m.AliasName, m.LastSyncTime,m.AccessToken,m.RefreshToken  
+                 from S_AlibabaCGInfo m with(nolock)  
+                 inner join S_AlibabaCGInfo d with(nolock) on d.mainLoginId=m.loginId  
+                 where d.AliasName='caigoueasy'";
+            $tokenInfo = Yii::$app->py_db->createCommand($tokenSql)->queryOne();
+
+            foreach ($list as $value){
+//                var_dump($value);
+                $order = array_merge($value, $tokenInfo);
+                $res = ConScheduler::syncOrderInfo1688($order);
+                if($res) echo $res;
+            }
             echo date('Y-m-d H:i:s') . " Goods deliver time data successful !\n";
-            /*$flag = ['1.0', '2.0'];
-            foreach ($flag as $v){
-                $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate '{$beginDate}','{$endDate}','义乌仓','{$v}';";
-                Yii::$app->py_db->createCommand($sql)->execute();
-                echo date('Y-m-d H:i:s') . " Goods deliver time data successful for version $v !\n";
-            }*/
         } catch (\Exception $e) {
             echo date('Y-m-d H:i:s') . " Get deliver time data failed, cause of '{$e->getMessage()}'. \n";
             //echo $e->getMessage();

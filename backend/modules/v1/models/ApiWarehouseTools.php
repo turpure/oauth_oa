@@ -343,6 +343,67 @@ class ApiWarehouseTools
         return $provider;
     }
 
+    /**
+     * 分货扫描统计
+     * @param $condition
+     * Date: 2021-09-23 14:52
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
+    public static function getSortScanningStatistics($condition){
+        $begin = $condition['dateRange'][0];
+        $end = $condition['dateRange'][1] . " 23:59:59";
+        $sql = "SELECT batchNumber,picker,isDone,SUBSTR(MAX(createdTime),1,10) AS createdTime 
+                FROM task_sort 
+                WHERE LENGTH(batchNumber) > 14 AND createdTime BETWEEN '{$begin}' AND '{$end}' ";
+        $sql .= "GROUP BY batchNumber,picker,isDone";
+        $data = Yii::$app->db->createCommand($sql)->queryAll();
+        $batchList = array_unique(ArrayHelper::getColumn($data, 'batchNumber'));
+        $batchStr = implode("','",  $batchList);
+        $userList = array_unique(ArrayHelper::getColumn($data, 'picker'));
+        $timeList = array_unique(ArrayHelper::getColumn($data, 'createdTime'));
+        sort($timeList);
+        $orderSql = "select pickupNo as batchNumber,COUNT(DISTINCT tradeNid) AS tradeNum,
+                            COUNT(DISTINCT sku) AS skuNum,SUM(num) AS goodsNum
+                    from P_TradePickup(nolock)  where PickupNo IN ('{$batchStr}')  GROUP BY pickupNo";
+        $order = Yii::$app->py_db->createCommand($orderSql)->queryAll();
+        $totalData = $detail = [];
+        foreach ($data as $val){
+            $item = [
+                'dt' => $val['createdTime'],
+                'username' => $val['picker'],
+                'batchNumber' => $val['batchNumber'],
+            ];
+            foreach ($order as $v){
+                if($val['batchNumber'] == $v['batchNumber']){
+                    $item['tradeNum'] = $v['tradeNum'];
+                    $item['skuNum'] = $v['skuNum'];
+                    $item['goodsNum'] = $v['goodsNum'];
+                }
+            }
+            $detail[] = $item;
+        }
+        foreach ($userList as $user){
+            $totalItem = [
+                'username' => $user,
+                'batchNum' => 0,
+                'tradeNum' => 0,
+                'skuNum' => 0,
+                'goodsNum' => 0,
+            ];
+            foreach ($detail as $v){
+                if($user == $v['username']){
+                    $totalItem['batchNum'] += 1;
+                    $totalItem['tradeNum'] += $v['tradeNum'];
+                    $totalItem['skuNum'] += $v['skuNum'];
+                    $totalItem['goodsNum'] += $v['goodsNum'];
+                }
+            }
+            $totalData[] = $totalItem;
+        }
+        return [$totalData, $detail];
+    }
 
     /**
      * 线下清仓SKU列表

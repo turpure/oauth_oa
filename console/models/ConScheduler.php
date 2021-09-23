@@ -10,9 +10,12 @@ namespace console\models;
 
 
 use backend\models\EbayAllotRule;
+use backend\models\ShopElf\CGStockOrderM;
+use backend\modules\v1\aliApi\AgentProductSimpleGet;
 use backend\modules\v1\models\ApiReport;
 use backend\modules\v1\models\ApiSettings;
 use backend\modules\v1\utils\Handler;
+use backend\modules\v1\utils\Helper;
 use \Yii;
 use yii\db\Exception;
 use yii\helpers\ArrayHelper;
@@ -298,6 +301,60 @@ class ConScheduler
             ],
             $dataQuery
         )->execute();
+
+    }
+
+    public static function syncOrderInfo1688($order){
+        try{
+            $oauth = new AgentProductSimpleGet($order['AliasName']);
+            $params = [
+                'webSite' => '1688',
+                'orderId' => $order['alibabaorderid'],
+                'logisticsId' => '',
+                'access_token' => $oauth->token,
+                'api_type' => 'com.alibaba.logistics',
+                'api_name' => 'alibaba.trade.getLogisticsTraceInfo.buyerView'
+            ];
+            $base_url = $oauth->get_request_url($params);
+            $ret = Helper::curlRequest($base_url, [], [],'POST');
+//        var_dump($ret);exit;
+            if(!isset($ret['errorMessage'])){
+                $logisticsList = $ret['logisticsTrace'][0]['logisticsSteps'];
+                if($logisticsList){
+                    $logistics = end($logisticsList);
+                    $doDate = $logistics['acceptTime'];
+                    $remark = $logistics['remark'];
+                    $packagestate = substr($doDate,0,19) . ':' . $remark;
+                    CGStockOrderM::updateAll(['packagestate' => $packagestate], ['NID' => $order['OrderNID']]);
+                    $log = 'ur_center ' . date('Y-m-d H:i:s') . ' 同步1688物流跟踪信息, 物流单号:' .
+                        $order['trackingNo'] . ',包裹状态：' . $packagestate;
+                    Yii::$app->py_db->createCommand()->insert('CG_StockLogs',[
+                        'OrderType' => '采购订单',
+                        'OrderNID' => $order['OrderNID'],
+                        'Operator' => 'ur_center',
+                        'Logs' => $log,
+                    ])->execute();
+                    if (strpos($remark,'签收') !== false || strpos($remark,'已取件') !== false){
+                        Yii::$app->py_db->createCommand()->update('oauth_in_storage_time_rate_data_copy',
+                            ['OPDate' => $doDate, 'updateTime' => date('Y-m-d H:i:s')],
+                            ['trackingNo' => $order['trackingNo']]
+                        )->execute();
+                    }
+                    return '';
+                }else{
+                    return "{$order['stockNo']}: No logistics information!\n";
+                }
+            }else{
+                // 标记操作时间，后续统一更新为包裹扫描时间
+                Yii::$app->py_db->createCommand()->update('oauth_in_storage_time_rate_data_copy',
+                    ['OPDate' => $ret['errorMessage'], 'updateTime' => date('Y-m-d H:i:s')],
+                    ['trackingNo' => $order['trackingNo']]
+                )->execute();
+                return "{$order['stockNo']}:failed to get logistics information!\n";
+            }
+        } catch (\Exception $e) {
+            return $order['stockNo'] . ": '{$e->getMessage()}'. \n";
+        }
 
     }
 
