@@ -24,14 +24,14 @@ class ApiPurchaseTool
             $select_sku = 'wo_test_purchasingBill @chkNoShowPur=1';
             $sql = " select DISTINCT bgs.sku from p_tradeun(nolock) as pt LEFT JOIN 
                    p_tradeDtUn(nolock) as ptd on pt.nid=ptd.tradenid LEFT JOIN 
-                   b_goodssku(nolock) as bgs on bgs.sku=ptd.sku where addressowner in ('shopee','wish','joom')  
+                   b_goodssku(nolock) as bgs on bgs.sku=ptd.sku where addressowner in ('shopee','wish','joom','lazada')  
                    and protectionEligibilityType='缺货订单' and 
                    goodsSKUstatus in  (select DISTINCT skuStatus from y_mark_trades)";
         } else {
             $select_sku = 'wo_test_purchasingBill @chkNoShowPur=1 ,@isNormalSku=1';
             $sql = " select DISTINCT bgs.sku from p_tradeun(nolock) as pt LEFT JOIN 
                    p_tradeDtUn(nolock) as ptd on pt.nid=ptd.tradenid LEFT JOIN 
-                   b_goodssku(nolock) as bgs on bgs.sku=ptd.sku where addressowner in  ('shopee','wish','joom' )  
+                   b_goodssku(nolock) as bgs on bgs.sku=ptd.sku where addressowner in  ('shopee','wish','joom','lazada' )  
                    and protectionEligibilityType='缺货订单' and goodsSKUstatus not in 
                    (select DISTINCT skuStatus from y_mark_trades)";
         }
