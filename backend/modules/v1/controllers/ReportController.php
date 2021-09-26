@@ -1287,6 +1287,7 @@ class ReportController extends AdminController
                 'beginDate' => $cond['dateRange'][0],
                 'endDate' => $cond['dateRange'][1],
                 'developer' => $cond['member'] ? implode(',', $cond['member']) : '',
+                'pageSize' => 10000
             ];
             $data = ApiReport::getEbayClearDevProfit($condition)->models;
             $title = ['SKU', '产品编码', '产品名称', '开发员', '销量', '成本', '销售额', '总利润', '利润率(%)'];
