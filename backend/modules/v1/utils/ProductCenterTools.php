@@ -707,7 +707,8 @@ class ProductCenterTools
             'shippingTime' => '7-21',
             'tags' => $goodsInfo['wishTags'],
             'mainImage' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_0_.jpg',
-            'wishMainImage' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_0_.jpg',
+//            'wishMainImage' => 'https://www.tupianku.com/view/full/10023/' . $goodsInfo['goodsCode'] . '-_0_.jpg',
+            'wishMainImage' => 'http://58.246.226.254:10000/images/' . $goodsInfo['goodsCode'] . '-_0_.jpg',
             'goodsId' => $goodsInfo['bgoodsId'],
             'infoId' => $goodsInfo['id'],
             'extraImages' => static::_generateImages($goodsInfo['goodsCode']),
@@ -1092,7 +1093,8 @@ class ProductCenterTools
      */
     private static function _generateImages($goodsCode)
     {
-        $baseUrl = 'https://www.tupianku.com/view/full/10023/';
+//        $baseUrl = 'https://www.tupianku.com/view/full/10023/';
+        $baseUrl = 'http://58.246.226.254:10000/images/';
         $images = '';
         for ($i = 0; $i < 20; $i++) {
             if ($i === 0) {
