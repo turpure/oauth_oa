@@ -56,6 +56,7 @@ use yii\db\Expression;
  * @property string $mapPersons
  * @property string $filterType
  * @property string $hsCode
+ * @property string $ebayGroup
  */
 
 
@@ -92,7 +93,7 @@ class OaGoodsinfo extends \yii\db\ActiveRecord
             [['goodsId', 'supplierID', 'storeID', 'bgoodsId', 'stockDays', 'number', 'mid','filterType'], 'integer'],
             [['description', 'supplierName'], 'string'],
             [['declaredValue'], 'number'],
-            [['devDatetime', 'updateTime', 'picCompleteTime'], 'safe'],
+            [['devDatetime', 'updateTime', 'picCompleteTime','ebay_group'], 'safe'],
             [['goodsName', 'aliasCnName', 'aliasEnName'], 'string', 'max' => 200],
             [['packName', 'purchaser', 'developer'], 'string', 'max' => 50],
             [['season', 'goodsCode', 'completeStatus', 'goodsStatus','hsCode'], 'string', 'max' => 100],
