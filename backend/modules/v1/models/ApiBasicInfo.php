@@ -17,13 +17,16 @@
 namespace backend\modules\v1\models;
 
 
+use backend\components\GoodsRule;
 use backend\models\OaEbaySuffix;
+use backend\models\OaGroupRule;
 use backend\models\OaJoomSuffix;
 use backend\models\OaJoomToWish;
 use backend\models\OaShippingService;
 use backend\models\OaSysRules;
 use backend\models\OaWishSuffix;
 use backend\models\OaShopify;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\db\Query;
@@ -106,6 +109,62 @@ class ApiBasicInfo
             ];
         }
     }
+
+
+
+
+
+    ############################## group rule   ###############################
+
+    public static function getGroupRuleList($condition)
+    {
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
+        $query = OaGroupRule::find();
+        $dataProvider = new ArrayDataProvider([
+            'allModels' => $query->orderBy('id')->all(),
+            'pagination' => [
+                'pageSize' => isset($pageSize) && $pageSize ? $pageSize   : 20,
+            ],
+        ]);
+        return $dataProvider;
+    }
+
+    public static function createGroupRule($condition)
+    {
+        $model = new OaGroupRule();
+        $model->createTime = date('Y-m-d H:i:s');
+        $username = \Yii::$app->user->identity->username;
+        $model->createBy = $username;
+        $model->attributes = $condition;
+        $res = $model->save();
+        if($res){
+            return $model;
+        }else{
+            return [
+                'code' => 400,
+                'message' => $model->getErrors()[0]
+            ];
+        }
+    }
+
+
+    public static function updateGroupRule($condition)
+    {
+        $id = isset($condition['id'])?$condition['id']:'';
+        if (!$id) return false;
+        $model = OaGroupRule::findOne($id);
+        $model->attributes = $condition;
+        $res = $model->save();
+        if($res){
+            return $model;
+        }else{
+            return [
+                'code' => 400,
+                'message' => $model->getErrors()[0]
+            ];
+        }
+    }
+
 
     ##############################   wish suffix   ###############################
 
