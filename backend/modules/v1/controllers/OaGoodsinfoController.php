@@ -108,6 +108,17 @@ class OaGoodsinfoController extends AdminController
 
 
     /**
+     * @brief get ebay group
+     * @return array
+     */
+    public function actionAttributeInfoEbayGroup()
+    {
+        return AttributeInfoTools::getEbayGroup();
+    }
+
+
+
+    /**
      * @brief get store name
      * @return array
      */
