@@ -93,10 +93,10 @@ class UserController extends AdminController
     private function getUserGroup()
     {
         $userId = Yii::$app->user->id;
-        $sql = "select dm.description from oauthoa.auth_department_child dcd inner JOIN oauthoa.auth_department as dm on dcd.department_id = dm.id where user_id=$userId";
+        $sql = "select dm.department from oauthoa.auth_department_child dcd inner JOIN oauthoa.auth_department as dm on dcd.department_id = dm.id where user_id=$userId";
         $db = Yii::$app->db;
         $ret = $db->createCommand($sql)->queryOne();
-        return $ret['description'];
+        return $ret['department'];
     }
 
     /**
