@@ -92,6 +92,30 @@ class BasicInfoController extends AdminController
             ->where(['es.id' => $id])->one();
     }
 
+
+    ############################### ebay group rule  ################################
+
+    public function actionGroupRule()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiBasicInfo::getGroupRuleList($condition);
+    }
+
+
+    public function actionUpdateGroup(){
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiBasicInfo::createGroupRuleList($condition);
+    }
+
+
+    public function actionDeleteGroup(){
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiBasicInfo::deleteGroupRuleList($condition);
+    }
+
+
+
+
     ##############################   wish suffix   ###############################
 
     /** get wish suffix list
