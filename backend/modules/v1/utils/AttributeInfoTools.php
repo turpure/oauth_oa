@@ -6,6 +6,7 @@
  */
 
 namespace backend\modules\v1\utils;
+use backend\models\OaGroupRule;
 use backend\models\ShopElf\BPackInfo;
 use backend\models\ShopElf\BStore;
 use backend\models\ShopElf\BDictionary;
@@ -34,6 +35,19 @@ class AttributeInfoTools
     {
         return ['液体商品','带电商品', '带磁商品','粉末商品'];
     }
+
+
+    /**
+     * @brief 分组名称
+     * @return array
+     */
+    public static function getEbayGroup()
+    {
+        $storeName = OaGroupRule::find()->select('groupName')->asArray()->all();
+        return ArrayHelper::getColumn($storeName, 'groupName');
+    }
+
+
 
     /**
      * @brief 仓库名称
