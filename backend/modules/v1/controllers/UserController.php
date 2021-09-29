@@ -82,8 +82,21 @@ class UserController extends AdminController
             'username' => $user->username,
             'email' => $user->email,
             'avatar' => $user->avatar,
-            'isAdmin' => $this->isAdmin()
+            'isAdmin' => $this->isAdmin(),
+            'group' => $this->getUserGroup(),
         ];
+    }
+
+    /**
+     * 获取分组
+     */
+    private function getUserGroup()
+    {
+        $userId = Yii::$app->user->id;
+        $sql = "select dm.department from oauthoa.auth_department_child dcd inner JOIN oauthoa.auth_department as dm on dcd.department_id = dm.id where user_id=$userId";
+        $db = Yii::$app->db;
+        $ret = $db->createCommand($sql)->queryOne();
+        return $ret['department'];
     }
 
     /**
