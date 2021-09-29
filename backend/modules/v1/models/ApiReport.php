@@ -1559,6 +1559,7 @@ class ApiReport
     }
 
     ////////////////////////////////////////海外仓清仓列表//////////////////////////////////////////////////
+
     /**
      * @brief 获取开发汇率开发利润
      * @param $condition
@@ -2433,6 +2434,37 @@ class ApiReport
             $res[] = $item;
         }
         return $res;
+    }
+
+    /**
+     * 采购议价
+     * @param $condition
+     * Date: 2021-09-29 15:58
+     * Author: henry
+     * @return mixed
+     */
+    public static function getPurchaseBargaining($condition)
+    {
+        $month = $condition['month'] ?: date('Y-m');
+        $sql = "SELECT  bargainTimes,bargainedNum,isBargained,stockOrder,stockInNumber,goodsCode,sku,checkQty,realPrice,
+            CASE WHEN prePrice > 0 THEN prePrice
+			WHEN preTwoPrice > 0 THEN preTwoPrice
+			WHEN preThreePrice > 0 THEN preThreePrice
+			WHEN preFourPrice > 0 THEN preFourPrice
+			WHEN preFivePrice > 0 THEN preFivePrice
+			WHEN preSixPrice > 0 THEN preSixPrice
+			WHEN preSevenPrice > 0 THEN preSevenPrice
+			WHEN preEightPrice > 0 THEN preEightPrice
+			WHEN preNinePrice > 0 THEN preNinePrice
+			WHEN preTenPrice > 0 THEN preTenPrice
+			WHEN preElevenPrice > 0 THEN preElevenPrice
+			WHEN preTwelvePrice > 0 THEN preTwelvePrice
+			ELSE targetPrice END AS prePrice
+            ,person,deltaPrice,deltaPrice*checkQty AS totalDeltaPrice,doDate
+            FROM [dbo].[CG_StockOrderBargainStatistics]
+            WHERE CONVERT(VARCHAR(7),doDate,121) = '{$month}'";
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        return $data;
     }
 
 
