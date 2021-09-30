@@ -34,6 +34,7 @@ class OaGroupRule extends \yii\db\ActiveRecord
              */
             'class' => TimestampBehavior::className(),
             'createdAtAttribute' => false,
+            'updatedAtAttribute' => false,
             'value' => new Expression('NOW()'),
         ],];
     }

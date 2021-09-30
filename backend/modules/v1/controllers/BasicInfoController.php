@@ -17,6 +17,7 @@
 namespace backend\modules\v1\controllers;
 
 use backend\models\OaEbaySuffix;
+use backend\models\OaGroupRule;
 use backend\models\OaJoomSuffix;
 use backend\models\OaJoomToWish;
 use backend\models\OaPaypal;
@@ -97,20 +98,28 @@ class BasicInfoController extends AdminController
 
     public function actionGroupRule()
     {
-        $condition = Yii::$app->request->post()['condition'];
+        $condition = Yii::$app->request->get();
         return ApiBasicInfo::getGroupRuleList($condition);
+    }
+
+
+    public function actionCreateGroup(){
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiBasicInfo::createGroupRule($condition);
     }
 
 
     public function actionUpdateGroup(){
         $condition = Yii::$app->request->post()['condition'];
-        return ApiBasicInfo::createGroupRuleList($condition);
+        return ApiBasicInfo::updateGroupRule($condition);
     }
 
 
     public function actionDeleteGroup(){
         $condition = Yii::$app->request->post()['condition'];
-        return ApiBasicInfo::deleteGroupRuleList($condition);
+        $id = isset($condition['id'])?$condition['id']:'';
+        if (!$id) return false;
+        return OaGroupRule::deleteAll(['id' => $id]);
     }
 
 
