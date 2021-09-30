@@ -2446,6 +2446,7 @@ class ApiReport
     public static function getPurchaseBargaining($condition)
     {
         $month = $condition['month'] ?: date('Y-m');
+        $person = $condition['person'] ?: '';
         $sql = "SELECT  bargainTimes,bargainedNum,isBargained,stockOrder,stockInNumber,goodsCode,sku,checkQty,realPrice,
             CASE WHEN prePrice > 0 THEN prePrice
 			WHEN preTwoPrice > 0 THEN preTwoPrice
@@ -2463,6 +2464,7 @@ class ApiReport
             ,person,deltaPrice,deltaPrice*checkQty AS totalDeltaPrice,doDate
             FROM [dbo].[CG_StockOrderBargainStatistics]
             WHERE CONVERT(VARCHAR(7),doDate,121) = '{$month}'";
+        if($person) $sql .= " AND person = '{$person}' ";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         return $data;
     }

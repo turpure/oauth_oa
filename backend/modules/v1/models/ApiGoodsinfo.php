@@ -1711,7 +1711,7 @@ class ApiGoodsinfo
                 $row['msrp'] = $variantInfo['msrp'];
                 $row['shipping'] = $variantInfo['shipping'];
                 $row['shipping_time'] = '7-21';
-                $row['main_image'] = static::getNewWishMainImage($wishInfo['wishMainImage'], $goodsInfo['goodsCode'], $account['mainImg']);
+                $row['main_image'] = static::getNewWishMainImage($wishInfo['wishMainImage'], $goodsInfo['goodsCode'], strtolower($account['mainImg']));
                 $row['extra_images'] = $wishInfo['wishExtraImages'];
                 $row['variants'] = $variantInfo['variant'];
                 $row['landing_page_url'] = $wishInfo['wishMainImage'];
@@ -3896,7 +3896,7 @@ class ApiGoodsinfo
                 $mainImage = $prefix;
             }
             else {
-                $suffix = '_' . $account['mainImg'] . '_.jpg';
+                $suffix = '_' . strtolower($account['mainImg']) . '_.jpg';
                 $mainImage = $prefix . $suffix;
             }
         } catch (\Exception  $why) {
