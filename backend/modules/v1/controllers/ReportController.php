@@ -1527,6 +1527,8 @@ class ReportController extends AdminController
             $condition = Yii::$app->request->post()['condition'];
             $pageSize = $condition['pageSize'] ?: 20;
             $data = ApiReport::getPurchaseBargaining($condition);
+            $bargaining = ArrayHelper::getColumn($data, 'totalDeltaPrice');
+            $totalBargaining = round(array_sum($bargaining),2);
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
                 'sort' => ['attributes' =>
@@ -1538,7 +1540,8 @@ class ReportController extends AdminController
                     'pageSize' => $pageSize,
                 ],
             ]);
-            return $provider;
+//            return $provider;
+            return ['provider' => $provider, 'extra' => ['totalBargaining' => $totalBargaining]];
         }catch (\Exception $e){
             return [
                 'code' => 400,
