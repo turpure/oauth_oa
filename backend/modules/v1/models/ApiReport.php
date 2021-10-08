@@ -2446,7 +2446,7 @@ class ApiReport
     public static function getPurchaseBargaining($condition)
     {
         $month = $condition['month'] ?: date('Y-m');
-        $person = $condition['person'] ?: '';
+        $person = isset($condition['person']) && $condition['person'] ? $condition['person'] : '';
         $sql = "SELECT  bargainTimes,bargainedNum,isBargained,stockOrder,stockInNumber,goodsCode,sku,checkQty,realPrice,
             CASE WHEN prePrice > 0 THEN prePrice
 			WHEN preTwoPrice > 0 THEN preTwoPrice
