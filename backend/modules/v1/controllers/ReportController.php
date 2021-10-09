@@ -1533,7 +1533,7 @@ class ReportController extends AdminController
                 'allModels' => $data,
                 'sort' => ['attributes' =>
                     [
-                        'stockNumber', 'stockMoney',
+                        'stockNumber', 'stockMoney', 'deltaPrice'
                     ]
                 ],
                 'pagination' => [
