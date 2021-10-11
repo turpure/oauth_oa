@@ -1515,6 +1515,57 @@ class ReportController extends AdminController
     }
 
 
+    /**
+     * 采购议价
+     * Date: 2021-09-29 16:15
+     * Author: henry
+     * @return array|ArrayDataProvider
+     */
+    public function actionPurchaseBargaining()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            $pageSize = $condition['pageSize'] ?: 20;
+            $data = ApiReport::getPurchaseBargaining($condition);
+            $bargaining = ArrayHelper::getColumn($data, 'totalDeltaPrice');
+            $totalBargaining = round(array_sum($bargaining),2);
+            $provider = new ArrayDataProvider([
+                'allModels' => $data,
+                'sort' => ['attributes' =>
+                    [
+                        'stockNumber', 'stockMoney', 'deltaPrice'
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+//            return $provider;
+            return ['provider' => $provider, 'extra' => ['totalBargaining' => $totalBargaining]];
+        }catch (\Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * 采购议价导出
+     * Date: 2021-07-15 8:43
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionPurchaseBargainingExport()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        $res = ApiReport::getPurchaseBargaining($condition);
+        $title = ['议价次数','议价单号','采购单是否是议价单','采购单号','采购入库单号','商品编码','SKU','入库数量','入库价格',
+            '最近采购月平均单价/目标价','议价员','议价差额','总议价差额','议价时间'];
+        ExportTools::toExcelOrCsv('purchaseBargaining', $res, 'Xlsx', $title);
+    }
+
     ////////////////////////////////////运营KPI/////////////////////////////////////////////
 
 

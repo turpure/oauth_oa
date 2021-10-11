@@ -180,6 +180,65 @@ class TestController extends AdminController
         var_dump($res);exit;
     }
 
+    public function actionTest123(){
+        $url = 'http://58.246.226.254:10000/images/6Q5608-_10_.jpg';
+        $path = 'C:/Users/Administrator/Desktop/';
+        if(!preg_match('/\/([^\/]+\.[a-z]{3,4})$/i',$url,$matches))
+            die('Use image please');
+
+//        $image_name = strToLower($matches[1]);
+        $image_name = $matches[1];
+
+        $tmpFile = tempnam(sys_get_temp_dir(), 'image');
+        $resource = fopen($tmpFile, 'wb');
+
+
+        $ch = curl_init ($url);
+//        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+//        curl_setopt($ch, CURLOPT_BINARYTRANSFER,1);
+
+        curl_setopt($ch, CURLOPT_FILE, $resource);
+        // 不需要头文件
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+
+        $img = curl_exec ($ch);
+        curl_close ($ch);
+
+
+//        $fp = fopen($image_name,'w');
+//        fwrite($fp, $img);
+//        fclose($fp);
+
+
+//        var_dump($image_name);exit;
+
+
+        // 获取文件类型
+        if (function_exists('exif_imagetype')) {
+            // 读取一个图像的第一个字节并检查其签名(这里需要打开mbstring及php_exif)
+            $fileType = exif_imagetype($tmpFile);
+        } else {
+            // 获取文件大小，里面第二个参数是文件类型 （这里后缀可以直接通过getimagesize($url)来获取，但是很慢）
+            $fileInfo = getimagesize($tmpFile);
+            $fileType = $fileInfo[2];
+        }
+//        $extension = image_type_to_extension($fileType);
+//        $md5FileName = md5_file($tmpFile);
+//        $returnFile = $path . $md5FileName . $extension;
+        $returnFile = $path . $image_name;
+
+        copy($tmpFile, $returnFile);
+        @unlink($tmpFile);
+
+        // 返回保存的文件路径
+//        return $returnFile;
+
+        var_dump($returnFile);exit;
+
+
+
+    }
+
 
     /**
      *导入paypal的证书信息

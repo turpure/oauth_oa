@@ -712,7 +712,7 @@ class ProductCenterTools
             'goodsId' => $goodsInfo['bgoodsId'],
             'infoId' => $goodsInfo['id'],
             'extraImages' => static::_generateImages($goodsInfo['goodsCode']),
-            'wishExtraImages' => static::_generateImages($goodsInfo['goodsCode']),
+            'wishExtraImages' => static::_generateImages($goodsInfo['goodsCode'], 'wish'),
             'headKeywords' => $goodsInfo['headKeywords'],
             'requiredKeywords' => $goodsInfo['requiredKeywords'],
             'randomKeywords' => $goodsInfo['randomKeywords'],
@@ -1091,10 +1091,13 @@ class ProductCenterTools
      * @param $goodsCode
      * @return string
      */
-    private static function _generateImages($goodsCode)
+    private static function _generateImages($goodsCode, $flag = '')
     {
-//        $baseUrl = 'https://www.tupianku.com/view/full/10023/';
-        $baseUrl = 'http://58.246.226.254:10000/images/';
+        if($flag == 'wish'){
+            $baseUrl = 'http://58.246.226.254:10000/images/';
+        }else{
+            $baseUrl = 'https://www.tupianku.com/view/full/10023/';
+        }
         $images = '';
         for ($i = 0; $i < 20; $i++) {
             if ($i === 0) {
