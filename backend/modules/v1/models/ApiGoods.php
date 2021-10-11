@@ -12,6 +12,7 @@ namespace backend\modules\v1\models;
 use backend\models\OaGoodsinfo;
 use backend\models\OaSysRules;
 use backend\models\User;
+use backend\modules\v1\services\EbayGroupDispatchService;
 use Yii;
 use backend\models\OaGoods;
 use yii\data\ActiveDataProvider;
@@ -388,7 +389,6 @@ class ApiGoods
             $_model->updateTime = strftime('%F %T');
             $_model->achieveStatus = '待处理';
             $_model->stockUp = $goodsModel->stockUp;
-            //$_model->filterType = ApiGoodsinfo::GoodsInfo;
             if(empty($_model->possessMan1)){
                 $arc_model = OaSysRules::find()->where(['ruleKey' => $goodsModel->developer])->andWhere(['ruleType' => 'dev-arc-map'])->one();
                 if(!$arc_model){
@@ -412,6 +412,26 @@ class ApiGoods
 
         }
 
+    }
+
+
+    /**
+     * 设置ebay分组
+     * @param $id
+     * @throws Exception
+     */
+    public static function setEbayGroup($id) {
+        $goodsInfo = OaGoodsinfo::find()->where(['goodsId' =>$id])->one();
+        $ebayGroup = EbayGroupDispatchService::getOneWorkGroup();
+        $groupName = $ebayGroup['groupName'];
+        $groupId = $ebayGroup['id'];
+        $goodsInfo->setAttributeS(['ebay_group' => $groupName]);
+        if($goodsInfo->save()) {
+            EbayGroupDispatchService::addWorkGroupNumber($groupId);
+        }
+        else {
+            throw new Exception("设置ebay分组失败！");
+        }
     }
 
     /**

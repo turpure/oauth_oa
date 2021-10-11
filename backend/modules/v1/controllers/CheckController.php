@@ -3,6 +3,7 @@
 namespace backend\modules\v1\controllers;
 
 use backend\modules\v1\models\ApiGoods;
+use backend\modules\v1\services\EbayGroupDispatchService;
 use Yii;
 use backend\models\OaGoods;
 use yii\helpers\ArrayHelper;
@@ -56,6 +57,7 @@ class CheckController extends AdminController
         return ApiGoods::getCheckList($user, $post, 'pass');
     }
 
+
     /**
      * 未通过列表
      * @return \yii\data\ActiveDataProvider
@@ -77,7 +79,6 @@ class CheckController extends AdminController
      */
     public function actionPass()
     {
-        //ApiGoods::saveDataToInfo(12);exit;
         $post = Yii::$app->request->post('condition');
         if (!$post['nid']) {
             return [
@@ -102,6 +103,9 @@ class CheckController extends AdminController
                 }
                 //保存数据到goodsinfo表中
                 ApiGoods::saveDataToInfo($id, $dictionaryName);
+
+                // 设置ebay分组
+                ApiGoods::setEbayGroup($id);
                 //保存oa_goods信息
                 $model->checkStatus = '已审批';
                 $model->approvalNote = isset($post['approvalNote'])?$post['approvalNote']:$model->approvalNote;
@@ -120,6 +124,14 @@ class CheckController extends AdminController
                 ];
         }
     }
+
+    public function actionDispatchGroup()
+    {
+//        return EbayGroupDispatchService::getOneWorkGroup();
+        return EbayGroupDispatchService::addWorkGroupNumber(18);
+    }
+
+
 
     /**
      * 未通过  批量未通过
