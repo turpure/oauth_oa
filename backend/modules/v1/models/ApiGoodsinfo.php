@@ -459,9 +459,9 @@ class ApiGoodsinfo
             $attributeInfo['goodsCode'] = trim($attributeInfo['goodsCode']);//移除goodsCode中空格
 
             // 验证是否有ebay禁售 如果有就清空ebay分组
-            $dictionaryName = $goodsInfo->dictionaryName;
+            $dictionaryName = $attributeInfo->dictionaryName;
             if(strpos($dictionaryName,'eBay') !== false) {
-                $goodsInfo->ebayGroup = null;
+                $goodsInfo->ebay_group = null;
             }
 
             $goodsInfo->setAttributes($attributeInfo);
