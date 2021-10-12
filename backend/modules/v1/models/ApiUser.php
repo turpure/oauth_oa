@@ -99,4 +99,29 @@ class ApiUser
 
 
 
+    /**
+     * 获取分组/二级部门
+     */
+    public static function getUserGroup()
+    {
+        $userId = Yii::$app->user->id;
+        $sql = "select dm.department from oauthoa.auth_department_child dcd inner JOIN oauthoa.auth_department as dm on dcd.department_id = dm.id where user_id=$userId";
+        $db = Yii::$app->db;
+        $ret = $db->createCommand($sql)->queryOne();
+        return $ret['department'];
+    }
+
+    /**
+     * 获取分组/二级部门
+     */
+    public static function getUserGroupByUserName($userName)
+    {
+        $sql = "select dm.department from oauthoa.auth_department_child dcd inner JOIN oauthoa.auth_department as dm on dcd.department_id = dm.id  INNER JOIN oauthoa.`user` as ur on ur.id = dcd.user_id where username= '$userName' ";
+        $db = Yii::$app->db;
+        $ret = $db->createCommand($sql)->queryOne();
+        return $ret['department'];
+    }
+
+
+
 }

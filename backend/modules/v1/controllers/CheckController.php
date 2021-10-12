@@ -105,7 +105,8 @@ class CheckController extends AdminController
                 ApiGoods::saveDataToInfo($id, $dictionaryName);
 
                 // 设置ebay分组
-                ApiGoods::setEbayGroup($id);
+                $developMan = $model->developer;
+                ApiGoods::setEbayGroup($id, $developMan);
                 //保存oa_goods信息
                 $model->checkStatus = '已审批';
                 $model->approvalNote = isset($post['approvalNote'])?$post['approvalNote']:$model->approvalNote;

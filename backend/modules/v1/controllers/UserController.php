@@ -4,6 +4,7 @@ namespace backend\modules\v1\controllers;
 
 use backend\models\RestLoginForm;
 use backend\models\SignupForm;
+use backend\modules\v1\models\ApiUser;
 use common\models\User;
 use Yii;
 use yii\web\IdentityInterface;
@@ -83,21 +84,10 @@ class UserController extends AdminController
             'email' => $user->email,
             'avatar' => $user->avatar,
             'isAdmin' => $this->isAdmin(),
-            'group' => $this->getUserGroup(),
+            'group' => ApiUser::getUserGroup(),
         ];
     }
 
-    /**
-     * 获取分组
-     */
-    private function getUserGroup()
-    {
-        $userId = Yii::$app->user->id;
-        $sql = "select dm.department from oauthoa.auth_department_child dcd inner JOIN oauthoa.auth_department as dm on dcd.department_id = dm.id where user_id=$userId";
-        $db = Yii::$app->db;
-        $ret = $db->createCommand($sql)->queryOne();
-        return $ret['department'];
-    }
 
     /**
      * @brief 设置头像

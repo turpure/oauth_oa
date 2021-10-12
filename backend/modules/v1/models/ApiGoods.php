@@ -416,11 +416,19 @@ class ApiGoods
 
 
     /**
-     * 设置ebay分组
+     * 设置ebay分组 只有在部门列表里面的开发才设置分组
      * @param $id
+     * @param $developMan
      * @throws Exception
      */
-    public static function setEbayGroup($id) {
+    public static function setEbayGroup($id,$developMan) {
+
+        $userDepartment = ApiUser::getUserGroupByUserName($developMan);
+        $disableDepartment = ApiBasicInfo::getDisableEbayGroupDepartment();
+
+        if (in_array($userDepartment,$disableDepartment,true)) {
+            return;
+        }
         $goodsInfo = OaGoodsinfo::find()->where(['goodsId' =>$id])->one();
         $ebayGroup = EbayGroupDispatchService::getOneWorkGroup();
         $groupName = $ebayGroup['groupName'];

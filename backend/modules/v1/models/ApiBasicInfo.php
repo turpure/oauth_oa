@@ -31,6 +31,7 @@ use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\db\Query;
 use backend\modules\v1\utils\Helper;
+use yii\helpers\ArrayHelper;
 
 
 class ApiBasicInfo
@@ -617,5 +618,16 @@ class ApiBasicInfo
     {
         $id = $condition['id'];
         OaShopify::deleteAll(['id' => $id]);
+    }
+
+
+    /** 获取禁止ebay分组的部门 */
+    public static function getDisableEbayGroupDepartment()
+    {
+        $sql = "select department from proCenter.oa_ebay_group_department";
+        $db = \Yii::$app->db;
+        $ret = $db->createCommand($sql)->queryAll();
+        return ArrayHelper::getColumn($ret,'department');
+
     }
 }
