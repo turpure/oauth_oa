@@ -457,6 +457,13 @@ class ApiGoodsinfo
             }
             $oaGoods->setAttributes($oaInfo);
             $attributeInfo['goodsCode'] = trim($attributeInfo['goodsCode']);//移除goodsCode中空格
+
+            // 验证是否有ebay禁售 如果有就清空ebay分组
+            $dictionaryName = $goodsInfo->dictionaryName;
+            if(strpos($dictionaryName,'eBay') !== false) {
+                $goodsInfo->ebayGroup = null;
+            }
+
             $goodsInfo->setAttributes($attributeInfo);
             $goodsInfo->isVar = count($skuInfo) > 1 ? '是' : '否';//判断是否多属性
             if (!$goodsInfo->save() || !$oaGoods->save()) {
