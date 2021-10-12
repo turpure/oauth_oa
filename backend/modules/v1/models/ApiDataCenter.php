@@ -13,6 +13,7 @@ use Yii;
 use yii\data\ArrayDataProvider;
 use yii\db\Expression;
 use yii\db\Query;
+use yii\helpers\ArrayHelper;
 
 class ApiDataCenter
 {
@@ -347,7 +348,23 @@ class ApiDataCenter
             'turnoverDays' => $condition['turnoverDays'] ?? 0,
         ];
         if ($condition['dataType'] == 'developer') {
-            $params['SalerName'] = $condition['member'] ?: '';
+            $member = $condition['member'] ?: '';
+            $depart = $condition['depart'];
+            if($depart){
+                $departSql = "SELECT DISTINCT u.username FROM `user` u
+                    left Join auth_department_child dc ON dc.user_id=u.id
+                    left Join auth_department d ON d.id=dc.department_id
+                    left Join auth_department p ON p.id=d.parent
+                    left Join auth_assignment a ON a.user_id=u.id
+                    WHERE u.`status`=10 AND item_name = '产品开发' 
+                    AND (p.department = '{$depart}' OR d.department = '{$depart}' ) ";
+                $departUser = Yii::$app->db->createCommand($departSql)->queryAll();
+                $userList = ArrayHelper::getColumn($departUser,'username');
+                if ($member) $userList[] = $member;
+                $member = implode(',', $userList);
+            }
+
+            $params['SalerName'] = $member;
             $params['suffix'] = '';
             $sql = "EXEC oauth_goodsStockTurnover 0,'{$params['goodsStatus']}','{$params['cate']}','{$params['subCate']}',
             '{$params['lastPurchaseDateBegin']}','{$params['lastPurchaseDateEnd']}','{$params['devDateBegin']}',
