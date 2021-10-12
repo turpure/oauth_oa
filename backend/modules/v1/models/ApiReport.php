@@ -2414,7 +2414,11 @@ class ApiReport
                     WHERE BillType = 1 AND p.used = 0 AND c.AudieDate >= '{$beginDate}' AND dictionaryName IN('账期付款','线下交易') 
                                 AND c.SupplierID<>35383 AND ISNULL(personName,'')<>'' AND StoreID IN(2,7,36,13)
                                 AND p.personName IN ('{$userStr}')
-                ) aa GROUP BY dt,purchaser ORDER BY purchaser,dt ";
+                ) aa GROUP BY dt,purchaser
+        UNION 
+                SELECT dt,purchaser,orderMoney FROM [dbo].[oauth_purchaser_account_period_tmp_data]
+                WHERE CONVERT(VARCHAR(10),dt,121) >= '{$beginDate}' AND purchaser IN ('{$userStr}')
+                ORDER BY purchaser,dt ";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         $purchaserList = array_unique(ArrayHelper::getColumn($data, 'purchaser'));
         $dateList = array_unique(ArrayHelper::getColumn($data, 'dt'));
