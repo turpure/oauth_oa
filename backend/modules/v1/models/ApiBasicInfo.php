@@ -19,6 +19,7 @@ namespace backend\modules\v1\models;
 
 use backend\components\GoodsRule;
 use backend\models\OaEbaySuffix;
+use backend\models\OaGroupDepartment;
 use backend\models\OaGroupRule;
 use backend\models\OaJoomSuffix;
 use backend\models\OaJoomToWish;
@@ -154,6 +155,59 @@ class ApiBasicInfo
         $id = isset($condition['id'])?$condition['id']:'';
         if (!$id) return false;
         $model = OaGroupRule::findOne($id);
+        $model->attributes = $condition;
+        $res = $model->save();
+        if($res){
+            return $model;
+        }else{
+            return [
+                'code' => 400,
+                'message' => $model->getErrors()[0]
+            ];
+        }
+    }
+
+
+    ############################## group department  ###############################
+
+    public static function getGroupDepartment($condition)
+    {
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
+        $query = OaGroupDepartment::find();
+        $dataProvider = new ArrayDataProvider([
+            'allModels' => $query->orderBy('id')->all(),
+            'pagination' => [
+                'pageSize' => isset($pageSize) && $pageSize ? $pageSize   : 20,
+            ],
+        ]);
+        return $dataProvider;
+    }
+
+    public static function createGroupDepartment($condition)
+    {
+        $model = new OaGroupDepartment();
+        $model->createdTime = date('Y-m-d H:i:s');
+        $username = \Yii::$app->user->identity->username;
+        $model->createBy = $username;
+        $model->description = '禁止分配';
+        $model->attributes = $condition;
+        $res = $model->save();
+        if($res){
+            return $model;
+        }else{
+            return [
+                'code' => 400,
+                'message' => $model->getErrors()[0]
+            ];
+        }
+    }
+
+
+    public static function updateGroupDepartment($condition)
+    {
+        $id = isset($condition['id'])?$condition['id']:'';
+        if (!$id) return false;
+        $model = OaGroupDepartment::findOne($id);
         $model->attributes = $condition;
         $res = $model->save();
         if($res){
