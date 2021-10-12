@@ -419,12 +419,17 @@ class ApiGoods
      * 设置ebay分组 只有在部门列表里面的开发才设置分组
      * @param $id
      * @param $developMan
+     * @param $mineId
      * @throws Exception
      */
-    public static function setEbayGroup($id,$developMan) {
+    public static function setEbayGroup($id,$developMan,$mineId) {
 
         $userDepartment = ApiUser::getUserGroupByUserName($developMan);
         $disableDepartment = ApiBasicInfo::getDisableEbayGroupDepartment();
+
+        if(!empty($mineId)) {
+            return;
+        }
 
         foreach ($disableDepartment as $dp) {
             if (strpos($userDepartment, $dp) !== false) {
