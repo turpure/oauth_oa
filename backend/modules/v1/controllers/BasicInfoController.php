@@ -17,6 +17,7 @@
 namespace backend\modules\v1\controllers;
 
 use backend\models\OaEbaySuffix;
+use backend\models\OaGroupDepartment;
 use backend\models\OaGroupRule;
 use backend\models\OaJoomSuffix;
 use backend\models\OaJoomToWish;
@@ -120,6 +121,34 @@ class BasicInfoController extends AdminController
         $id = isset($condition['id'])?$condition['id']:'';
         if (!$id) return false;
         return OaGroupRule::deleteAll(['id' => $id]);
+    }
+
+    ############################### ebay disable department ################################
+
+    public function actionGroupDepartment()
+    {
+        $condition = Yii::$app->request->get();
+        return ApiBasicInfo::getGroupDepartment($condition);
+    }
+
+
+    public function actionCreateGroupDepartment(){
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiBasicInfo::createGroupDepartment($condition);
+    }
+
+
+    public function actionUpdateGroupDepartment(){
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiBasicInfo::updateGroupDepartment($condition);
+    }
+
+
+    public function actionDeleteGroupDepartment(){
+        $condition = Yii::$app->request->post()['condition'];
+        $id = isset($condition['id'])?$condition['id']:'';
+        if (!$id) return false;
+        return OaGroupDepartment::deleteAll(['id' => $id]);
     }
 
 
