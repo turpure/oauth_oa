@@ -184,13 +184,19 @@ class ReportController extends AdminController
      */
     public function actionPurchase()
     {
+        $username = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($username);
+
         $request = Yii::$app->request->post();
         $cond = $request['condition'];
+        $member = $cond['member'] ? $cond['member'] : [];
+        $member = array_unique(array_merge($userList, $member));
+//        var_dump($member);exit;
         $condition = [
             'dateFlag' => $cond['dateType'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'purchase' => $cond['member'] ? implode(',', $cond['member']) : '',
+            'purchase' => implode(',', $member),
         ];
         $ret = ApiReport::getPurchaseReport($condition);
         return $ret;

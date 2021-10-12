@@ -2399,6 +2399,10 @@ class ApiReport
      */
     public static function getPurchaseAccountPeriod()
     {
+        $username = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($username);
+        $userStr = implode("','", $userList);
+//        var_dump($userList);exit;
         $beginDate = date('Y-m-01', strtotime('-4 month'));
         $sql = "SELECT dt,purchaser,SUM(orderMoney) AS orderMoney
                 FROM (
@@ -2409,6 +2413,7 @@ class ApiReport
                     LEFT JOIN B_Dictionary(nolock) d ON d.NID= C.BalanceID
                     WHERE BillType = 1 AND p.used = 0 AND c.AudieDate >= '{$beginDate}' AND dictionaryName IN('账期付款','线下交易') 
                                 AND c.SupplierID<>35383 AND ISNULL(personName,'')<>'' AND StoreID IN(2,7,36,13)
+                                AND p.personName IN ('{$userStr}')
                 ) aa GROUP BY dt,purchaser ORDER BY purchaser,dt ";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         $purchaserList = array_unique(ArrayHelper::getColumn($data, 'purchaser'));
@@ -2445,6 +2450,9 @@ class ApiReport
      */
     public static function getPurchaseBargaining($condition)
     {
+        $username = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($username);
+        $userStr = implode("','", $userList);
         $month = $condition['month'] ?: date('Y-m');
         $person = isset($condition['person']) && $condition['person'] ? $condition['person'] : '';
         $sql = "SELECT  bargainTimes,bargainedNum,isBargained,stockOrder,stockInNumber,goodsCode,sku,checkQty,realPrice,
@@ -2463,7 +2471,8 @@ class ApiReport
 			ELSE targetPrice END AS prePrice
             ,person,deltaPrice,deltaPrice*checkQty AS totalDeltaPrice,doDate
             FROM [dbo].[CG_StockOrderBargainStatistics]
-            WHERE CONVERT(VARCHAR(7),doDate,121) = '{$month}'";
+            WHERE CONVERT(VARCHAR(7),doDate,121) = '{$month}' 
+                AND person IN ('{$userStr}') ";
         if($person) $sql .= " AND person = '{$person}' ";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         return $data;
