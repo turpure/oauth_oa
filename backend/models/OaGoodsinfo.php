@@ -56,7 +56,7 @@ use yii\db\Expression;
  * @property string $mapPersons
  * @property string $filterType
  * @property string $hsCode
- * @property string $ebayGroup
+ * @property string $ebay_group
  */
 
 
