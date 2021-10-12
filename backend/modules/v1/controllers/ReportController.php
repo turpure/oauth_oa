@@ -425,13 +425,19 @@ class ReportController extends AdminController
      */
     public function actionIntroduce()
     {
+        $username = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($username);
+
         $request = Yii::$app->request->post();
         $cond = $request['condition'];
+        $member = $cond['member'] ? $cond['member'] : [];
+        $member = array_unique(array_merge($userList, $member));
+
         $condition = [
             'dateFlag' => $cond['dateType'],
             'beginDate' => $cond['dateRange'][0],
             'endDate' => $cond['dateRange'][1],
-            'member' => $cond['member']
+            'member' => $member
         ];
         //print_r($condition);exit;
         return ApiReport::getIntroduceReport($condition);
