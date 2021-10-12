@@ -426,9 +426,13 @@ class ApiGoods
         $userDepartment = ApiUser::getUserGroupByUserName($developMan);
         $disableDepartment = ApiBasicInfo::getDisableEbayGroupDepartment();
 
-        if (in_array($userDepartment,$disableDepartment,true)) {
-            return;
+        foreach ($disableDepartment as $dp) {
+            if (strpos($userDepartment, $dp) !== false) {
+                return;
+            }
         }
+
+
         $goodsInfo = OaGoodsinfo::find()->where(['goodsId' =>$id])->one();
         $ebayGroup = EbayGroupDispatchService::getOneWorkGroup();
         $groupName = $ebayGroup['groupName'];
