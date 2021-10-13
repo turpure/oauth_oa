@@ -191,8 +191,8 @@ class ApiGoodsinfo
         if (isset($condition['picStatus'])) $query->andFilterWhere(['like', 'picStatus', $condition['picStatus']]);
         $query = static::completedStatusFilter($query, $condition);
         $query = static::forbidPlatFilter($query, $condition);
-        if (isset($condition['goodsStatus'])){
-            if(!is_array($condition['goodsStatus'])) $condition['goodsStatus'] = $condition['goodsStatus'] ? [$condition['goodsStatus']] : [];
+        if (isset($condition['goodsStatus'])) {
+            if (!is_array($condition['goodsStatus'])) $condition['goodsStatus'] = $condition['goodsStatus'] ? [$condition['goodsStatus']] : [];
             $query->andFilterWhere(['goodsStatus' => $condition['goodsStatus']]);
         }
         if (isset($condition['ebay_group'])) $query->andFilterWhere(['ebay_group' => $condition['ebay_group']]);
@@ -460,7 +460,7 @@ class ApiGoodsinfo
 
             // 验证是否有ebay禁售 如果有就清空ebay分组
             $dictionaryName = $attributeInfo['dictionaryName'];
-            if(strpos($dictionaryName,'eBay') !== false) {
+            if (strpos($dictionaryName, 'eBay') !== false) {
                 $attributeInfo['ebay_group'] = null;
             }
 
@@ -1186,6 +1186,8 @@ class ApiGoodsinfo
         $out = ['name' => $data['name']];
         $row_data = [];
         $rows = $data['data'];
+        var_dump($accounts);
+        exit;
         foreach ($accounts as $at) {
             $sql = 'select accountName,postfix from oa_lazadaSuffix where suffix =:suffix ';
             $ret = Yii::$app->pro_db->createCommand($sql, [':suffix' => $at])->queryOne();
@@ -1229,44 +1231,44 @@ class ApiGoodsinfo
         owg.lazadaCategoryIdSG as 'SG类目',
         owg.lazadaCategoryIdID as 'ID类目',
         owg.lazadaCategoryIdVN as 'VN类目',
-         goodsCode as '商品编码', goodsStatus as '商品状态'," .
-            "goodsName as '商品名称'," .
-            "ogs.sku as 'SKU'," .
-            "(select sku from oa_goodssku  where infoId= ogs.infoId limit 1) as '关联SKU', " .
-            "ows.color '属性1',ows.size  as '属性2', ogs.property3 as '属性3', mainImage as '商品主图', ogs.linkUrl as '属性主图'," .
-            "owg.extraImages as '附加图'," .
-            "'' as '附加图1'," .
-            "'' as '附加图2'," .
-            "'' as '附加图3'," .
-            "'' as '附加图4'," .
-            "'' as '附加图5'," .
-            "'' as '附加图6'," .
-            "'' as '附加图7'," .
-            "'' as '附加图8'," .
-            "'' as '附加图9'," .
-            "'' as '附加图10'," .
-            "'' as '附加图11'," .
-            "'' as '附加图12'," .
-            " owg.headKeywords as '头部关键词', owg.requiredKeywords as '必须关键词', " .
-            "owg.randomKeywords '随机关键词', owg.tailKeywords '尾部关键词'," .
-            "hopeCost '成本价',ows.weight '重量',packName '包装规格',ogi.description '描述'," .
-            "'' as 'SG原价'," .
-            "'' as 'MY原价'," .
-            "'' as 'ID原价'," .
-            "'' as 'PH原价'," .
-            "'' as 'TH原价'," .
-            "'' as 'VN原价'," .
-            "'' as 'SG售价'," .
-            "'' as 'MY售价'," .
-            "'' as 'ID售价'," .
-            "'' as 'PH售价'," .
-            "'' as 'TH售价'," .
-            "'' as 'VN售价'" .
-            'from oa_goods as og LEFT JOIN oa_goodsinfo as ogi on og.nid= ogi.goodsId ' .
-            'LEFT JOIN oa_goodssku as ogs on ogs.infoId = ogi.id ' .
-            'LEFT JOIN oa_wishGoods as owg on owg.infoId = ogi.id ' .
-            'LEFT JOIN oa_wishGoodsSku as ows on ows.sid = ogs.id ' .
-            "where ogi.id in (" .
+         goodsCode as '商品编码', goodsStatus as '商品状态',
+            goodsName as '商品名称',
+            ogs.sku as 'SKU',
+            (select sku from oa_goodssku  where infoId= ogs.infoId limit 1) as '关联SKU', 
+            ows.color '属性1',ows.size  as '属性2', ogs.property3 as '属性3', mainImage as '商品主图', ogs.linkUrl as '属性主图',
+            owg.extraImages as '附加图',
+            '' as '附加图1',
+            '' as '附加图2',
+            '' as '附加图3',
+            '' as '附加图4',
+            '' as '附加图5',
+            '' as '附加图6',
+            '' as '附加图7',
+            '' as '附加图8',
+            '' as '附加图9',
+            '' as '附加图10',
+            '' as '附加图11',
+            '' as '附加图12',
+             owg.headKeywords as '头部关键词', owg.requiredKeywords as '必须关键词', 
+            owg.randomKeywords '随机关键词', owg.tailKeywords '尾部关键词',
+            hopeCost '成本价',ows.weight '重量',packName '包装规格',ogi.description '描述',
+            '' as 'SG原价',
+            '' as 'MY原价',
+            '' as 'ID原价',
+            '' as 'PH原价',
+            '' as 'TH原价',
+            '' as 'VN原价',
+            '' as 'SG售价',
+            '' as 'MY售价',
+            '' as 'ID售价',
+            '' as 'PH售价',
+            '' as 'TH售价',
+            '' as 'VN售价'
+            from oa_goods as og LEFT JOIN oa_goodsinfo as ogi on og.nid= ogi.goodsId 
+            LEFT JOIN oa_goodssku as ogs on ogs.infoId = ogi.id 
+            LEFT JOIN oa_wishGoods as owg on owg.infoId = ogi.id 
+            LEFT JOIN oa_wishGoodsSku as ows on ows.sid = ogs.id 
+            where ogi.id in (" .
             $ids .
             ")";
 
@@ -1825,12 +1827,12 @@ class ApiGoodsinfo
      * @return array
      * @throws \Exception
      */
-    public static function preExportWishData($id, $type = '',$completeStatus='',$accounts='')
+    public static function preExportWishData($id, $type = '', $completeStatus = '', $accounts = '')
     {
         # 是否有指定状态
-        if(!empty($completeStatus)) {
-            $checkGoods = OaGoodsinfo::find()->where(['id' => $id])->andWhere(['like','completeStatus',$completeStatus])->asArray()->one();
-            if(empty($checkGoods)) {
+        if (!empty($completeStatus)) {
+            $checkGoods = OaGoodsinfo::find()->where(['id' => $id])->andWhere(['like', 'completeStatus', $completeStatus])->asArray()->one();
+            if (empty($checkGoods)) {
                 throw new \Exception('请先完善产品！');
             }
         }
@@ -1842,12 +1844,11 @@ class ApiGoodsinfo
         $goods = OaGoods::find()->where(['nid' => $goodsInfo['goodsId']])->asArray()->one();
 
         # 是否指定店铺
-        if(!empty($accounts)) {
-            $accounts = explode(',' , $accounts);
-            $wishAccountsQuery = OaWishSuffix::find()->andWhere(['or',['like', 'parentCategory', $goods['cate']],["IFNULL(parentCategory,'')" => '']])
-                ->andWhere(['in','shortName', $accounts]);
-        }
-        else {
+        if (!empty($accounts)) {
+            $accounts = explode(',', $accounts);
+            $wishAccountsQuery = OaWishSuffix::find()->andWhere(['or', ['like', 'parentCategory', $goods['cate']], ["IFNULL(parentCategory,'')" => '']])
+                ->andWhere(['in', 'shortName', $accounts]);
+        } else {
             $wishAccountsQuery = OaWishSuffix::find()->where(['like', 'parentCategory', $goods['cate']])
                 ->orWhere(["IFNULL(parentCategory,'')" => '']);
         }
@@ -1901,7 +1902,7 @@ class ApiGoodsinfo
             $row['local_price'] = $variantInfo['local_price'];
             $row['local_shippingfee'] = $variantInfo['local_shippingfee'];
             $row['local_currency'] = $variantInfo['local_currency'];
-            $row['country_shipping_prices'] = WishExportDataUtils::getEuropeFreightTemplate($variantInfo['local_price'],$variantInfo['local_currency'],$variantInfo['local_shippingfee'],$variantInfo['weight']);
+            $row['country_shipping_prices'] = WishExportDataUtils::getEuropeFreightTemplate($variantInfo['local_price'], $variantInfo['local_currency'], $variantInfo['local_shippingfee'], $variantInfo['weight']);
             $out[] = $row;
         }
         $ret['data'] = $out;
@@ -2489,10 +2490,9 @@ class ApiGoodsinfo
                 $joomAccounts = OaJoomSuffix::find()->where(['joomName' => $account])->asArray()->one();
                 try {
                     $imageInfo = static::getJoomImageInfo($joomInfo, $joomAccounts);
-                }
-
-                catch (\Exception $why) {
-                    var_dump($id); die;
+                } catch (\Exception $why) {
+                    var_dump($id);
+                    die;
                 }
                 foreach ($joomSku as $sku) {
 //                    $price = static::getJoomAdjust($sku['weight'], $priceInfo['price']);
@@ -2815,7 +2815,7 @@ class ApiGoodsinfo
                 'Site' => '', 'Selleruserid' => '', 'ListingType' => '', 'Category1' => '', 'Category2' => '',
                 'Condition' => '', 'ConditionBewrite' => '', 'Quantity' => '', 'LotSize' => '', 'Duration' => '',
                 'ReservePrice' => '', 'BestOffer' => '', 'BestOfferAutoAcceptPrice' => '', 'BestOfferAutoRefusedPrice' => '',
-                'AcceptPayment' => '', 'PayPalEmailAddress' => '', 'Location' => '', 'LocationCountry' => '','PostalCode' => '',
+                'AcceptPayment' => '', 'PayPalEmailAddress' => '', 'Location' => '', 'LocationCountry' => '', 'PostalCode' => '',
                 'ReturnsAccepted' => '', 'RefundOptions' => '', 'ReturnsWithin' => '', 'ReturnPolicyShippingCostPaidBy' => '',
                 'ReturnPolicyDescription' => '', 'GalleryType' => '', 'Bold' => '', 'PrivateListing' => '',
                 'HitCounter' => '', 'sku' => '', 'PictureURL' => '', 'Title' => '', 'SubTitle' => '', 'IbayCategory' => '',
@@ -3023,7 +3023,7 @@ class ApiGoodsinfo
                     $row['body_html'] = str_replace("\n", '<br>', $shopifyInfo['description']);
                     //$row['vendor'] = $shopifyInfo['sku'];
                     $row['product_type'] = $shopifyInfo['productType'];
-                    $row['tags'] = explode(',', self::getShopifyTagNew($shopifySku, $shopifyInfo,$account['flag']));
+                    $row['tags'] = explode(',', self::getShopifyTagNew($shopifySku, $shopifyInfo, $account['flag']));
                     //var_dump($row['tags']);exit;
                     $variantInfo = static::getShopifyVariantInfo($shopifySku, $shopifyInfo);
                     $row['variants'] = $variantInfo['variation'];
@@ -3044,7 +3044,7 @@ class ApiGoodsinfo
                     $log->collectionContent = $errMessage;
                     $log->save();
                     continue;
-                }else{
+                } else {
                     //上传 SKU图片
                     if ($log['imgStatus'] != 'success') {
 //                        var_dump(123);exit;
@@ -3898,12 +3898,11 @@ class ApiGoodsinfo
         $mainImage = str_replace('/10023/', '/' . $account['imgCode'] . '/', $joomInfo['mainImage']);
 
         try {
-            $base = explode('_',$mainImage);
+            $base = explode('_', $mainImage);
             $prefix = $base[0];
             if (strpos($prefix, '.jpg') !== false) {
                 $mainImage = $prefix;
-            }
-            else {
+            } else {
                 $suffix = '_' . strtolower($account['mainImg']) . '_.jpg';
                 $mainImage = $prefix . $suffix;
             }
@@ -4305,34 +4304,34 @@ class ApiGoodsinfo
         $outArr = array_merge($optionValue1, $optionValue2);
         $out = implode(',', $outArr);
         if ($shopifyInfo['style']) {
-            if($flag){
+            if ($flag) {
                 $style = str_replace(',', ',Style_', $shopifyInfo['style']);
                 $out .= $out ? (',Style_' . $style) : ('Style_' . $style);
-            }else{
+            } else {
                 $out .= $out ? (',' . $shopifyInfo['style']) : $shopifyInfo['style'];
             }
         }
         if ($shopifyInfo['length']) {
-            if($flag){
+            if ($flag) {
                 $length = str_replace(',', ',Length_', $shopifyInfo['length']);
                 $out .= $out ? (',Length_' . $length) : ('Length_' . $length);
-            }else{
+            } else {
                 $out .= $out ? (',' . $shopifyInfo['length']) : $shopifyInfo['length'];
             }
         }
         if ($shopifyInfo['sleeveLength']) {
-            if($flag){
+            if ($flag) {
                 $sleeveLength = str_replace(',', ',Sleeve Length_', $shopifyInfo['sleeveLength']);
                 $out .= $out ? (',Sleeve Length_' . $sleeveLength) : ('Sleeve Length_' . $sleeveLength);
-            }else{
+            } else {
                 $out .= $out ? (',' . $shopifyInfo['sleeveLength']) : $shopifyInfo['sleeveLength'];
             }
         }
         if ($shopifyInfo['neckline']) {
-            if($flag){
+            if ($flag) {
                 $neckline = str_replace(',', ',Neckline_', $shopifyInfo['neckline']);
                 $out .= $out ? (',Neckline_' . $neckline) : ('Neckline_' . $neckline);
-            }else{
+            } else {
                 $out .= $out ? (',' . $shopifyInfo['neckline']) : $shopifyInfo['neckline'];
             }
         }
