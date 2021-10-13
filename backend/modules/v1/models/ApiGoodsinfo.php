@@ -1168,7 +1168,7 @@ class ApiGoodsinfo
             return $ret;
         }
         else {
-            $sql = "select oes.ebayName,ebaySuffix,storeCountry from oauthoa.auth_store_child as  acd 
+            $sql = "select oes.ebayName,ebaySuffix,storeCountry,dm.department from oauthoa.auth_store_child as  acd 
             LEFT JOIN oauthoa.auth_store as ast on acd.store_id = ast.id 
             LEFT JOIN oauthoa.`user` as ur on ur.id = acd.user_id
             LEFT JOIN oauthoa.auth_department_child dcd on ur.id = dcd.user_id
@@ -1176,7 +1176,7 @@ class ApiGoodsinfo
             LEFT JOIN proCenter.oa_ebaySuffix  as oes on oes.ebaySuffix = ast.store
             where ast.platform='ebay'  
             and  dm.department = '$group'
-            order by oes.ebaySuffix desc  ";
+            order by oes.ebaySuffix ";
             $db = \Yii::$app->db;
             $ret = $db->createCommand($sql)->queryAll();
             return $ret;
