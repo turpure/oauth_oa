@@ -465,7 +465,7 @@ class ApiGoodsinfo
 
             // 验证是否有ebay禁售或是采集 如果有就清空ebay分组
             $dictionaryName = $attributeInfo['dictionaryName'];
-            if(strpos($dictionaryName,'eBay') !== false || !empty($goodsInfo->mineId)) {
+            if(strpos($dictionaryName,'eBay') !== false || !empty($goodsInfo->mid)) {
                 $attributeInfo['ebay_group'] = null;
             }
 
