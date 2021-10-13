@@ -661,7 +661,8 @@ class OaGoodsinfoController extends AdminController
      */
     public function actionPlatEbayAccount()
     {
-        return ApiGoodsinfo::getEbayAccount();
+        $group = Yii::$app->request->get('group');
+        return ApiGoodsinfo::getEbayAccount($group);
     }
 
     /**

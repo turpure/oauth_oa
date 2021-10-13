@@ -157,6 +157,12 @@ class ApiGoodsinfo
                 ->join('LEFT JOIN', 'proCenter.oa_goods g', 'g.nid=gi.goodsId');
             $query->where(['picStatus' => self::PlatInfo]);
 
+            // 如果有ebay分组，只有该分组下的人能看
+
+
+
+
+
             //美工,开发，采购看自己,
             if (strpos($userRole, '销售') === false) {
                 if (strpos($userRole, '采购') !== false) {
@@ -169,7 +175,6 @@ class ApiGoodsinfo
                     $query->andWhere(['or', ['in', 'gi.developer', $userList], ['in', 'possessMan1', $userList]]);
                 }
             }
-            //print_r($userRole);exit;
             if (isset($condition['codeStr']) && $condition['codeStr']) {
                 $codeArr = explode(',', $condition['codeStr']);
                 $map = ['or'];
@@ -1156,11 +1161,27 @@ class ApiGoodsinfo
      * @brief get all ebay accounts
      * @return array
      */
-    public static function getEbayAccount()
+    public static function getEbayAccount($group)
     {
-        $ret = OaEbaySuffix::find()->select('ebaySuffix,ebayName,storeCountry')->orderBy('ebaySuffix')->all();
-        //return ArrayHelper::map($ret, 'ebayName', 'ebaySuffix');
-        return $ret;
+        if(empty($group)) {
+            $ret = OaEbaySuffix::find()->select('ebaySuffix,ebayName,storeCountry')->orderBy('ebaySuffix')->all();
+            return $ret;
+        }
+        else {
+            $sql = "select oes.ebayName,ebaySuffix,storeCountry from oauthoa.auth_store_child as  acd 
+            LEFT JOIN oauthoa.auth_store as ast on acd.store_id = ast.id 
+            LEFT JOIN oauthoa.`user` as ur on ur.id = acd.user_id
+            LEFT JOIN oauthoa.auth_department_child dcd on ur.id = dcd.user_id
+            LEFT JOIN  oauthoa.auth_department as dm on dcd.department_id = dm.id
+            LEFT JOIN proCenter.oa_ebaySuffix  as oes on oes.ebaySuffix = ast.store
+            where ast.platform='ebay'  
+            and  dm.department = '$group'
+            order by oes.ebaySuffix desc  ";
+            $db = \Yii::$app->db;
+            $ret = $db->createCommand($sql)->queryAll();
+            return $ret;
+        }
+
     }
 
     /**
