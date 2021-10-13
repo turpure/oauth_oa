@@ -1163,7 +1163,7 @@ class ApiGoodsinfo
      */
     public static function getEbayAccount($group)
     {
-        if(empty($group)) {
+        if(empty($group) || $group === 'null') {
             $ret = OaEbaySuffix::find()->select('ebaySuffix,ebayName,storeCountry')->orderBy('ebaySuffix')->all();
             return $ret;
         }
