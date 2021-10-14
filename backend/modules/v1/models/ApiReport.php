@@ -1698,6 +1698,8 @@ class ApiReport
             $sql .= " and cp.sku LIKE '%" . $sku . "%' ";
         }
         $query = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $stockMoney = ArrayHelper::getColumn($query, 'stockMoney');
+        $totalStockMoney = round(array_sum($stockMoney),2);
         $provider = new ArrayDataProvider([
             'allModels' => $query,
             'sort' => ['attributes' =>
@@ -1709,7 +1711,7 @@ class ApiReport
                 'pageSize' => $pageSize,
             ],
         ]);
-        return $provider;
+        return ['provider' => $provider, 'extra' => ['totalStockMoney' => $totalStockMoney]];
 
     }
 
