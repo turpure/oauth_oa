@@ -1209,8 +1209,6 @@ class ApiGoodsinfo
         $out = ['name' => $data['name']];
         $row_data = [];
         $rows = $data['data'];
-        var_dump($accounts);
-        exit;
         foreach ($accounts as $at) {
             $sql = 'select accountName,postfix from oa_lazadaSuffix where suffix =:suffix ';
             $ret = Yii::$app->pro_db->createCommand($sql, [':suffix' => $at])->queryOne();
