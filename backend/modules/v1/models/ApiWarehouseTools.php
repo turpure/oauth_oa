@@ -1343,7 +1343,7 @@ class ApiWarehouseTools
                                 WHEN FilterFlag = 2 THEN  '订单退货'
                                 WHEN FilterFlag = 3 THEN '订单取消'
                                 WHEN FilterFlag = 4 THEN '其它异常单'
-                        END AS FilterFlag
+                        END AS FilterFlag,memo
                          FROM [dbo].[oauth_cache_trade_id_history] WHERE storeName='义乌仓' ";
         if($version == '2.0'){
             $sql .= " AND CONVERT(VARCHAR(10),dateADD(mi,990,operateTime),121)='{$opDate}' ) aa ";

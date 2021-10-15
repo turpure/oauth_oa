@@ -918,8 +918,8 @@ class WarehouseToolsController extends AdminController
         $personLoadingData = ApiWarehouseTools::getLoadStatisticsData($condition);
         $dateLoadingData = ApiWarehouseTools::getLoadStatisticsData($condition, 1);
         $data = [
-            ['title' => ['日期', '上架数量'], 'name' => '时间数据', 'data' => $dateLoadingData],
-            ['title' => ['上架人员', '上架数量'], 'name' => '人员数据', 'data' => $personLoadingData],
+            ['title' => ['日期', '上架数量'], 'name' => '时间数据', 'data' => $personLoadingData],
+            ['title' => ['上架人员', '上架数量'], 'name' => '人员数据', 'data' => $dateLoadingData],
         ];
         ExportTools::toExcelMultipleSheets('loadingStatistics', $data, 'Xlsx');
     }
@@ -2112,7 +2112,7 @@ class WarehouseToolsController extends AdminController
         $condition = Yii::$app->request->post('condition', []);
 
         $data = ApiWarehouseTools::getDeliverTimeRateDetail($condition);
-        $title = ['订单编号', '交易日期', '操作日期', '核单日期', '发货仓库', '发货日期', '更新时间', '订单状态'];
+        $title = ['订单编号', '交易日期', '操作日期', '核单日期', '发货仓库', '发货日期', '更新时间', '订单状态', '说明'];
         ExportTools::toExcelOrCsv('deliverTimeRateDetail', $data, 'Xls', $title);
     }
 
