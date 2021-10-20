@@ -374,7 +374,11 @@ class ApiWarehouseTools
                 'dt' => $val['createdTime'],
                 'username' => $val['picker'],
                 'batchNumber' => $val['batchNumber'],
+                'tradeNum' => 0,
+                'skuNum' => 0,
+                'goodsNum' => 0
             ];
+
             foreach ($order as $v){
                 if($val['batchNumber'] == $v['batchNumber']){
                     $item['tradeNum'] = $v['tradeNum'];
