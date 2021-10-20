@@ -1770,6 +1770,66 @@ class DataCenterController extends AdminController
         return $query;
     }
 
+    public function actionPayout(){
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $cond = $request->post('condition');
+        $suffix = isset($cond['suffix']) ? $cond['suffix'] : [];
+        $pageSize = isset($cond['pageSize']) ? $cond['pageSize'] : 20;
+        if ($suffix && !is_array($suffix)) $suffix = [$suffix];
+        $suffix = implode("','", $suffix);
+        $dateRange = isset($cond['dateRange']) ? $cond['dateRange'] : [];
+        try {
+            $sql = "select amount,amountCurrency,instrumentType,payoutStatusDescription,payoutStatus,transactionCount,
+               payoutId,suffix,payoutDate from oauth_ebay_payouts 
+               where convert(VARCHAR(10), payoutDate, 121) BETWEEN '{$dateRange[0]}' AND '{$dateRange[1]}' ";
+            if ($suffix) $sql .= " AND suffix IN ('{$suffix}') ";
+            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+            $provider = new ArrayDataProvider([
+                'allModels' => $data,
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+            return $provider;
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+
+    public function actionPayoutExport(){
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $cond = $request->post('condition');
+        $suffix = isset($cond['suffix']) ? $cond['suffix'] : [];
+        if ($suffix && !is_array($suffix)) $suffix = [$suffix];
+        $suffix = implode("','", $suffix);
+        $dateRange = isset($cond['dateRange']) ? $cond['dateRange'] : [];
+        try {
+            $sql = "select amount,amountCurrency,instrumentType,payoutStatusDescription,payoutStatus,transactionCount,
+               payoutId,suffix,payoutDate from oauth_ebay_payouts 
+               where convert(VARCHAR(10), payoutDate, 121) BETWEEN '{$dateRange[0]}' AND '{$dateRange[1]}' ";
+            if ($suffix) $sql .= " AND suffix IN ('{$suffix}') ";
+            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+            $title = ['金额', '币种', '交易工具', '说明', '交易状态', '交易明细数量', '交易ID', '账号简称', '交易时间'];
+            ExportTools::toExcelOrCsv('payout', $data, 'Xlsx', $title);
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+
     ################################供应商######################################
 
     public function actionSuppliersProfit()
