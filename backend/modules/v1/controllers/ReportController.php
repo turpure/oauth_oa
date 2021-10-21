@@ -1407,7 +1407,7 @@ class ReportController extends AdminController
                 'warehouse' => $condition['store'] ? implode(',', $condition['store']) : '',
                 'pageSize' => isset($condition['pageSize']) ? $condition['pageSize'] : 10
             ];
-            return ApiReport::getEbayClearSkuProfit($condition);
+            return ApiReport::getAmazonClearSkuProfit($condition);
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => 400];
 
@@ -1438,7 +1438,7 @@ class ReportController extends AdminController
                 'warehouse' => $condition['store'] ? implode(',', $condition['store']) : '',
                 'pageSize' => $condition['pageSize'] ?? 10000
             ];
-            $data = ApiReport::getEbayClearSkuProfit($condition)->models;
+            $data = ApiReport::getAmazonClearSkuProfit($condition)->models;
             $title = ['SKU', '产品编码', '产品名称', '平台', '部门', '销售员', '销量', '成本', '销售额', '总利润', '利润率(%)'];
             ExportTools::toExcelOrCsv('ebay-clear-profit', $data, 'Xls', $title);
         } catch (\Exception $why) {

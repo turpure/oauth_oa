@@ -618,10 +618,10 @@ class ApiDataCenter
     public static function  getEbayPayoutData($cond){
         $suffix = isset($cond['suffix']) ? $cond['suffix'] : [];
         $flag = isset($cond['flag']) ? $cond['flag'] : '';
+        $used = isset($cond['used']) ? $cond['used'] : '';
         if ($suffix && !is_array($suffix)) $suffix = [$suffix];
         $suffix = implode("','", $suffix);
-        $dateRange = isset($cond['dateRange']) ? $cond['dateRange'] : [];
-        $sql = "EXEC oauth_ebay_suffix_payout '{$cond['dateRange'][0]}','{$cond['dateRange'][1]}','{$suffix}','{$flag}' ";
+        $sql = "EXEC oauth_ebay_suffix_payout '{$cond['dateRange'][0]}','{$cond['dateRange'][1]}','{$suffix}','{$flag}','{$used}' ";
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
 
