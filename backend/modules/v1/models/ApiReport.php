@@ -1558,7 +1558,7 @@ class ApiReport
         return $provider;
     }
 
-    ////////////////////////////////////////海外仓清仓列表//////////////////////////////////////////////////
+    ////////////////////////////////////////Ebay海外仓清仓列表//////////////////////////////////////////////////
 
     /**
      * @brief 获取开发汇率开发利润
@@ -1773,6 +1773,224 @@ class ApiReport
                 Yii::$app->py_db->createCommand()->update('oauth_clearPlanEbay', $data, ['sku' => $data['sku']])->execute();
             } else {
                 Yii::$app->py_db->createCommand()->insert('oauth_clearPlanEbay', $data)->execute();
+            }
+        }
+        return $errArr;
+    }
+
+    ////////////////////////////////////////Amazon海外仓清仓列表//////////////////////////////////////////////////
+
+    /**
+     * @brief 获取开发汇率开发利润
+     * @param $condition
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getAmazonClearDevProfit($condition)
+    {
+        $sql = 'call  report_devRateEbayClearDeveloperProfitAPI(:dateType,:beginDate,:endDate,:developer);';
+        $sqlParams = [
+            ':dateType' => $condition['dateType'],
+            ':beginDate' => $condition['beginDate'],
+            ':endDate' => $condition['endDate'],
+            ':developer' => $condition['developer'],
+        ];
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $data = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
+        $provider = new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ['develop', 'sold', 'costMoney', 'saleMoney', 'profit', 'profitRate']
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
+    }
+
+    /**
+     * @brief 获取开发汇率账号产品利润
+     * @param $condition
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getAmazonClearSkuProfit($condition)
+    {
+        $sql = 'call  report_devRateEbayClearSkuProfitAPI(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse);';
+        $sqlParams = [
+            ':dateType' => $condition['dateType'],
+            ':beginDate' => $condition['beginDate'],
+            ':endDate' => $condition['endDate'],
+            ':queryType' => $condition['queryType'],
+            ':store' => $condition['store'],
+            ':warehouse' => $condition['warehouse'],
+        ];
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+//        $ret = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->getRawSql();
+//        var_dump($ret);exit;
+        $ret = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
+        $clearGoodsList = static::currentAmazonClearList();
+        $data = [];
+        if (!empty($clearGoodsList)) {
+            foreach ($ret as $row) {
+                if (in_array($row['sku'], $clearGoodsList, true)) {
+                    $data[] = $row;
+                }
+            }
+        }
+        $provider = new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => ['attributes' =>
+                [
+                    'sold', 'costmoney', 'salemoney', 'grossprofit', 'grossprofitRate'
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return $provider;
+    }
+
+    /**
+     * 清仓计划里面的商品编码
+     * @return array
+     */
+    private static function currentAmazonClearList()
+    {
+        $sql = 'select sku from oauth_clearPlanAmazon where isRemoved = 0';
+        $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $data = [];
+        if (empty($ret)) {
+            return $data;
+        }
+        return ArrayHelper::getColumn($ret, 'sku');
+    }
+
+
+    /**
+     * 返回清仓列表
+     * @param $condition
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getAmazonClearList($condition)
+    {
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $stores = isset($condition['stores']) ? $condition['stores'] : [];
+        $goodsStatus = isset($condition['goodsStatus']) ? $condition['goodsStatus'] : [];
+        $sku = isset($condition['sku']) ? $condition['sku'] : '';
+        $storeName = isset($condition['storeName']) ? $condition['storeName'] : [];
+        if (!is_array($stores)) {
+            throw new Exception('stores should be an array');
+        }
+        if (!is_array($storeName)) {
+            throw new Exception('storeName should be an array');
+        }
+        $sql = "SELECT  cp.sku,bgs.goodsSkuStatus,bs.storeName,cp.planNumber,cp.createdTime,skuName,
+                bgs.bmpFileName AS img,bc.categoryParentName,bc.categoryName,number AS stockNumber,money AS stockMoney,
+                bg.salername AS developer -- ,bg.possessMan2 AS seller
+            FROM  oauth_clearPlanAmazon(nolock) AS cp
+            LEFT JOIN b_goodsSku(nolock) AS bgs ON   cp.sku = bgs.sku
+            LEFT JOIN b_goods(nolock) AS bg ON   bg.NID = bgs.goodsID
+            LEFT JOIN b_goodsCats(nolock) AS bc ON bg.goodsCategoryId = bc.nid
+            LEFT JOIN KC_CurrentStock(nolock) AS ks ON ks.goodsskuid = bgs.nid
+            LEFT JOIN b_store(nolock) AS bs ON bs.nid = ks.storeId and bs.storeName = cp.storeName
+            WHERE cp.isRemoved = 0 AND number > 0 ";
+        if (!empty($stores)) {
+            $stores = implode("','", $stores);
+            $sql .= " and bs.StoreName in ('" . $stores . "')";
+        }
+        if (!empty($goodsStatus)) {
+            $goodsStatus = implode("','", $goodsStatus);
+            $sql .= " and bgs.goodsSkuStatus in ('" . $goodsStatus . "')";
+        }
+
+        if (!empty($storeName)) {
+            $storeName = implode("','", $storeName);
+            $sql .= " and cp.storeName in ('" . $storeName . "') ";
+        }
+
+        if (!empty($sku)) {
+            $sql .= " and cp.sku LIKE '%" . $sku . "%' ";
+        }
+        $query = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $stockMoney = ArrayHelper::getColumn($query, 'stockMoney');
+        $totalStockMoney = round(array_sum($stockMoney),2);
+        $provider = new ArrayDataProvider([
+            'allModels' => $query,
+            'sort' => ['attributes' =>
+                [
+                    'stockNumber', 'stockMoney',
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+        return ['provider' => $provider, 'extra' => ['totalStockMoney' => $totalStockMoney]];
+
+    }
+
+    /**
+     * 清仓产品导入模板
+     * @param $condition
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public static function exportAmazonClearListTemplate()
+    {
+        $fileName = 'amazon-clear-products-template';
+        $titles = ['sku'];
+        $data = [['sku' => '3ZSDYSMB08', 'storeName' => 'AMZ上海仓']];
+        ExportTools::toExcelOrCsv($fileName, $data, 'Xls', $titles);
+
+    }
+
+    public static function importAmazonClearList()
+    {
+        if (Yii::$app->request->isPost) {
+            //判断文件后缀
+            $extension = ApiSettings::get_extension($_FILES['file']['name']);
+            if (strtolower($extension) != '.xls') return ['code' => 400, 'message' => "File format error,please upload files in 'xls' format"];
+
+            //文件上传
+            $result = ApiSettings::file($_FILES['file'], 'amazonClearList');
+            if (!$result) {
+                return ['code' => 400, 'message' => 'File upload failed'];
+            } else {
+                //获取上传excel文件的内容并保存
+                $res = static::saveAmazonClearProduct($result);
+                return $res;
+            }
+        }
+        return ['上传成功'];
+    }
+
+    public static function saveAmazonClearProduct($file)
+    {
+        $planNumber = 'AMAZON-QC-' . (string)date('Y-m');
+        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+        $spreadsheet = $reader->load(Yii::$app->basePath . $file);
+        $sheet = $spreadsheet->getSheet(0);
+        $highestRow = $sheet->getHighestRow(); // 取得总行数
+        $errArr = [];
+        for ($i = 2; $i <= $highestRow; $i++) {
+            $data['sku'] = $sheet->getCell("A" . $i)->getValue();
+            $data['storeName'] = $sheet->getCell("B" . $i)->getValue();
+            $data['createdTime'] = date('Y-m-d H:i:s');
+            $data['planNumber'] = $planNumber;
+            $data['isRemoved'] = 0;
+
+            if (!$data['sku']) break;//取到数据为空时跳出循环
+//            var_dump($data);exit;
+            $sql = "SELECT sku FROM oauth_clearPlanEbay WHERE sku = '{$data['sku']}'";
+            $res = Yii::$app->py_db->createCommand($sql)->queryOne();
+            if ($res) {
+                Yii::$app->py_db->createCommand()->update('oauth_clearPlanAmazon', $data, ['sku' => $data['sku']])->execute();
+            } else {
+                Yii::$app->py_db->createCommand()->insert('oauth_clearPlanAmazon', $data)->execute();
             }
         }
         return $errArr;
