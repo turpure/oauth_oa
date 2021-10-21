@@ -1440,7 +1440,7 @@ class ReportController extends AdminController
             ];
             $data = ApiReport::getAmazonClearSkuProfit($condition)->models;
             $title = ['SKU', '产品编码', '产品名称', '平台', '部门', '销售员', '销量', '成本', '销售额', '总利润', '利润率(%)'];
-            ExportTools::toExcelOrCsv('ebay-clear-profit', $data, 'Xls', $title);
+            ExportTools::toExcelOrCsv('amazon-clear-profit', $data, 'Xls', $title);
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => 400];
         }
@@ -1486,7 +1486,7 @@ class ReportController extends AdminController
             ];
             $data = ApiReport::getAmazonClearDevProfit($condition)->models;
             $title = ['SKU', '产品编码', '产品名称', '仓库', '开发员', '销量', '成本', '销售额', '总利润', '利润率(%)'];
-            ExportTools::toExcelOrCsv('ebay-clear-profit', $data, 'Xls', $title);
+            ExportTools::toExcelOrCsv('amazon-clear-profit', $data, 'Xls', $title);
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => 400];
         }
@@ -1521,7 +1521,7 @@ class ReportController extends AdminController
             $data = ApiReport::getEbayClearList($condition)['provider']->models;
             $title = ['SKU', 'SKU状态', '仓库', '清仓计划', '计划创建时间', 'SKU名称', '主图', '主类目', '子类目',
                 '库存数量', '库存金额', '开发员', '销售员'];
-            ExportTools::toExcelOrCsv('ebay-clear-list', $data, 'Xls', $title);
+            ExportTools::toExcelOrCsv('amazon-clear-list', $data, 'Xls', $title);
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => 400];
         }
