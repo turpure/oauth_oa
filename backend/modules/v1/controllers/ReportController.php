@@ -1460,7 +1460,7 @@ class ReportController extends AdminController
                 'endDate' => $cond['dateRange'][1],
                 'developer' => $cond['member'] ? implode(',', $cond['member']) : '',
             ];
-            return ApiReport::getEbayClearDevProfit($condition);
+            return ApiReport::getAmazonClearDevProfit($condition);
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => 400];
 
@@ -1484,8 +1484,8 @@ class ReportController extends AdminController
                 'developer' => $cond['member'] ? implode(',', $cond['member']) : '',
                 'pageSize' => 10000
             ];
-            $data = ApiReport::getEbayClearDevProfit($condition)->models;
-            $title = ['SKU', '产品编码', '产品名称', '开发员', '销量', '成本', '销售额', '总利润', '利润率(%)'];
+            $data = ApiReport::getAmazonClearDevProfit($condition)->models;
+            $title = ['SKU', '产品编码', '产品名称', '仓库', '开发员', '销量', '成本', '销售额', '总利润', '利润率(%)'];
             ExportTools::toExcelOrCsv('ebay-clear-profit', $data, 'Xls', $title);
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => 400];
@@ -1502,7 +1502,7 @@ class ReportController extends AdminController
         try {
             $request = Yii::$app->request->post();
             $condition = $request['condition'];
-            return ApiReport::getEbayClearList($condition);
+            return ApiReport::getAmazonClearList($condition);
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => 400];
         }

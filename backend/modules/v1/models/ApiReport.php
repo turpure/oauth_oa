@@ -1788,7 +1788,7 @@ class ApiReport
      */
     public static function getAmazonClearDevProfit($condition)
     {
-        $sql = 'call  report_devRateEbayClearDeveloperProfitAPI(:dateType,:beginDate,:endDate,:developer);';
+        $sql = 'call  report_devRateAmazonClearDeveloperProfitAPI(:dateType,:beginDate,:endDate,:developer);';
         $sqlParams = [
             ':dateType' => $condition['dateType'],
             ':beginDate' => $condition['beginDate'],
@@ -1817,7 +1817,7 @@ class ApiReport
      */
     public static function getAmazonClearSkuProfit($condition)
     {
-        $sql = 'call  report_devRateEbayClearSkuProfitAPI(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse);';
+        $sql = 'call  report_devRateAmazonClearSkuProfitAPI(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse);';
         $sqlParams = [
             ':dateType' => $condition['dateType'],
             ':beginDate' => $condition['beginDate'],
@@ -1892,11 +1892,11 @@ class ApiReport
                 bgs.bmpFileName AS img,bc.categoryParentName,bc.categoryName,number AS stockNumber,money AS stockMoney,
                 bg.salername AS developer -- ,bg.possessMan2 AS seller
             FROM  oauth_clearPlanAmazon(nolock) AS cp
-            LEFT JOIN b_goodsSku(nolock) AS bgs ON   cp.sku = bgs.sku
-            LEFT JOIN b_goods(nolock) AS bg ON   bg.NID = bgs.goodsID
-            LEFT JOIN b_goodsCats(nolock) AS bc ON bg.goodsCategoryId = bc.nid
-            LEFT JOIN KC_CurrentStock(nolock) AS ks ON ks.goodsskuid = bgs.nid
-            LEFT JOIN b_store(nolock) AS bs ON bs.nid = ks.storeId and bs.storeName = cp.storeName
+            INNER JOIN b_goodsSku(nolock) AS bgs ON   cp.sku = bgs.sku
+            INNER JOIN b_goods(nolock) AS bg ON   bg.NID = bgs.goodsID
+            INNER JOIN b_goodsCats(nolock) AS bc ON bg.goodsCategoryId = bc.nid
+            INNER JOIN KC_CurrentStock(nolock) AS ks ON ks.goodsskuid = bgs.nid
+            INNER JOIN b_store(nolock) AS bs ON bs.nid = ks.storeId and bs.storeName = cp.storeName
             WHERE cp.isRemoved = 0 AND number > 0 ";
         if (!empty($stores)) {
             $stores = implode("','", $stores);
@@ -1985,10 +1985,10 @@ class ApiReport
 
             if (!$data['sku']) break;//取到数据为空时跳出循环
 //            var_dump($data);exit;
-            $sql = "SELECT sku FROM oauth_clearPlanEbay WHERE sku = '{$data['sku']}'";
+            $sql = "SELECT sku FROM oauth_clearPlanAmazon WHERE sku = '{$data['sku']}' AND storeName = '{$data['storeName']}' ";
             $res = Yii::$app->py_db->createCommand($sql)->queryOne();
             if ($res) {
-                Yii::$app->py_db->createCommand()->update('oauth_clearPlanAmazon', $data, ['sku' => $data['sku']])->execute();
+                Yii::$app->py_db->createCommand()->update('oauth_clearPlanAmazon', $data, ['sku' => $data['sku'], 'storeName' => $data['storeName']])->execute();
             } else {
                 Yii::$app->py_db->createCommand()->insert('oauth_clearPlanAmazon', $data)->execute();
             }
