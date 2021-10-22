@@ -8,6 +8,7 @@
 namespace backend\modules\v1\controllers;
 
 
+use backend\models\ShopElf\OauthEbayPayoutSuffixStatus;
 use backend\models\ShopElf\OauthSysConfig;
 use backend\models\ShopElf\YPayPalStatus;
 use backend\models\ShopElf\YPayPalStatusLogs;
@@ -1770,6 +1771,30 @@ class DataCenterController extends AdminController
         return $query;
     }
 
+    public function actionPayoutStatusUpdate()
+    {
+        $request = Yii::$app->request;
+        if (!$request->isPost) {
+            return [];
+        }
+        $cond = $request->post('condition');
+        $suffix = isset($cond['suffix']) ? $cond['suffix'] : '';
+
+        $query = OauthEbayPayoutSuffixStatus::findOne(['suffix' => $suffix]);
+        if (!$query) {
+            $query = new OauthEbayPayoutSuffixStatus();
+        }
+
+        $query->setAttributes($cond);
+//        $changedAttr = $query->getDirtyAttributes();
+//        var_dump($oldAttr);exit;
+        $res = $query->save();
+        if (!$res) {
+            return ['code' => 400, 'message' => 'Failed to save ebay payout suffix info!'];
+        }
+        return true;
+    }
+
     /**
      * ebay Payout
      * Date: 2021-10-20 11:31
@@ -1814,8 +1839,8 @@ class DataCenterController extends AdminController
         $cond = $request->post('condition');
         try {
             $data = ApiDataCenter::getEbayPayoutData($cond);
-            $title = ['账号简称', '是否停用', '日期', '星期', '是否正常', '金额', '币种', '交易工具', '说明', '交易状态', '交易明细数量',
-                '交易ID', '交易时间(北京时间)', '更新时间'];
+            $title = ['账号简称', '账号状态', '启用状态', '日期', '星期', '是否正常', '金额', '币种', '交易工具', '说明',
+                '交易状态', '交易明细数量', '交易ID', '交易时间(北京时间)', '余额', '更新时间'];
             ExportTools::toExcelOrCsv('payout', $data, 'Xlsx', $title);
         } catch (\Exception $e) {
             return [
