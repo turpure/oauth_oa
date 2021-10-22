@@ -1942,7 +1942,7 @@ class ApiReport
     public static function exportAmazonClearListTemplate()
     {
         $fileName = 'amazon-clear-products-template';
-        $titles = ['sku'];
+        $titles = ['sku', '仓库'];
         $data = [['sku' => '3ZSDYSMB08', 'storeName' => 'AMZ上海仓']];
         ExportTools::toExcelOrCsv($fileName, $data, 'Xls', $titles);
 
