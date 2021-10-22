@@ -1534,7 +1534,7 @@ class ReportController extends AdminController
     public function actionImportAmazonClearList()
     {
         try {
-            return ApiReport::importEbayClearList();
+            return ApiReport::importAmazonClearList();
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => 400];
         }
