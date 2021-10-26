@@ -239,7 +239,8 @@ class ConScheduler
         Yii::$app->db->createCommand()->batchInsert(
             'warehouse_integral_data_tmp',
             ['username','month','caiGouRuKuBaoGuo','ruKuBaoGuo','ruKuNum','pdaSkuNum','danPinBaoGuo','heDanBaoGuo','zongBaoGuo',
-                'jianHuoShuLiang','janHuoSkuZhongShu','danPinBaoGuoDaBao','heDanBaoGuoDaBao','dateRate','inboundSortingTotalSkuNum'],
+                'jianHuoShuLiang','janHuoSkuZhongShu', 'danpinJanHuoSkuZhongShu', 'duopinJanHuoSkuZhongShu',
+                'danPinBaoGuoDaBao','heDanBaoGuoDaBao','dateRate','inboundSortingTotalSkuNum'],
             $dataQuery
         )->execute();
 
