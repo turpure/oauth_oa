@@ -1473,7 +1473,7 @@ class ApiGoodsinfo
      * @param $allExpressInfo
      * @return float|int
      */
-    public static function getGoodsSalePrice($SKU, $siteInfo, $packageInfo, $allExpressInfo, $profitRate = 0.3, $plat = 'lazada')
+    public static function getGoodsSalePrice($SKU, $siteInfo, $packageInfo, $allExpressInfo, $profitRate = 0.25, $plat = 'lazada')
     {
         $salePrice = 0;
         $expressFee = static::getGoodsExpressFee($SKU, $site = $siteInfo['site'], $packageInfo, $allExpressInfo, $plat);
