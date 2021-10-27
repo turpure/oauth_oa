@@ -619,9 +619,10 @@ class ApiDataCenter
         $suffix = isset($cond['suffix']) ? $cond['suffix'] : [];
         $flag = isset($cond['flag']) ? $cond['flag'] : '';
         $used = isset($cond['used']) ? $cond['used'] : '';
+        $isUsed = isset($cond['isUsed']) ? $cond['isUsed'] : '';
         if ($suffix && !is_array($suffix)) $suffix = [$suffix];
         $suffix = implode("','", $suffix);
-        $sql = "EXEC oauth_ebay_suffix_payout '{$cond['dateRange'][0]}','{$cond['dateRange'][1]}','{$suffix}','{$flag}','{$used}' ";
+        $sql = "EXEC oauth_ebay_suffix_payout '{$cond['dateRange'][0]}','{$cond['dateRange'][1]}','{$suffix}','{$flag}','{$used}','{$isUsed}' ";
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
 

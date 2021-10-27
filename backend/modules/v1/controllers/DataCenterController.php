@@ -1812,6 +1812,15 @@ class DataCenterController extends AdminController
             $data = ApiDataCenter::getEbayPayoutData($cond);
             $provider = new ArrayDataProvider([
                 'allModels' => $data,
+                'sort' => [
+                    'attributes' => [
+                        'suffix','flag','week','dt','used','isUsed','amount','amountCurrency',
+                        'transactionCount','payoutDate','balance','balanceCurrency','updateTime',
+                    ],
+                    'defaultOrder' => [
+                        'suffix' => SORT_ASC,
+                    ],
+                ],
                 'pagination' => [
                     'pageSize' => $pageSize,
                 ],
