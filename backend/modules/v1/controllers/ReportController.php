@@ -1518,7 +1518,7 @@ class ReportController extends AdminController
             $request = Yii::$app->request->post();
             $condition = $request['condition'];
             $condition['pageSize'] = 100000;
-            $data = ApiReport::getEbayClearList($condition)['provider']->models;
+            $data = ApiReport::getAmazonClearList($condition)['provider']->models;
             $title = ['SKU', 'SKU状态', '仓库', '清仓计划', '计划创建时间', 'SKU名称', '主图', '主类目', '子类目',
                 '库存数量', '库存金额', '开发员', '销售员'];
             ExportTools::toExcelOrCsv('amazon-clear-list', $data, 'Xls', $title);
