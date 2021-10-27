@@ -1254,7 +1254,7 @@ class ApiGoodsinfo
         owg.lazadaCategoryIdVN as 'VN类目',
          goodsCode as '商品编码', goodsStatus as '商品状态',
             goodsName as '商品名称',
-            SUBSTRING(description, INSTR(description,'Material:') + 9,INSTR(SUBSTRING(description, INSTR(description,'Material:') + 9), '\n')) AS '材料',
+            SUBSTRING(ogi.description, INSTR(ogi.description,'Material:') + 9,INSTR(SUBSTRING(ogi.description, INSTR(ogi.description,'Material:') + 9), '\n')) AS '材料',
             ogs.sku as 'SKU',
             (select sku from oa_goodssku  where infoId= ogs.infoId limit 1) as '关联SKU', 
             ows.color '属性1',ows.size  as '属性2', ogs.property3 as '属性3', mainImage as '商品主图', ogs.linkUrl as '属性主图',
