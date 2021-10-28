@@ -532,7 +532,7 @@ class ApiGoodsinfo
             return [];
         }
         return OaGoodsSku::find()
-            ->select('id,sku,linkUrl,property1,property2,property3')
+            ->select('id,sku,linkUrl,wishLinkUrl,property1,property2,property3')
             ->where(['infoId' => $id])
             ->all();
     }
