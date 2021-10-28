@@ -1848,8 +1848,8 @@ class DataCenterController extends AdminController
         $cond = $request->post('condition');
         try {
             $data = ApiDataCenter::getEbayPayoutData($cond);
-            $title = ['账号简称', '普源账号状态', '平台账号状态', '标记状态', '备注', '日期', '最近七天销售额($)', '星期',
-                '是否正常', '金额', '币种', '交易工具', '交易ID', '交易时间(北京时间)', '余额', '余额币种',  '更新时间'];
+            $title = ['账号简称', '普源账号状态', '平台账号状态', '标记状态', '备注', '最近七天销售额($)', '星期', '是否正常',
+                '金额', '币种', '交易工具', '交易ID', '上次放款时间', '交易时间(北京时间)', '余额', '余额币种',  '更新时间'];
             ExportTools::toExcelOrCsv('payout', $data, 'Xlsx', $title);
         } catch (\Exception $e) {
             return [
