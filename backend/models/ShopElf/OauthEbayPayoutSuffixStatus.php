@@ -11,6 +11,7 @@ use yii\behaviors\TimestampBehavior;
  * @property int $id
  * @property string $suffix
  * @property int $isUsed
+ * @property string $memo
  * @property string $createdTime
  * @property string $updatedTime
  */
@@ -52,7 +53,7 @@ class OauthEbayPayoutSuffixStatus extends \yii\db\ActiveRecord
     {
         return [
             [['isUsed'], 'integer'],
-            [['suffix', 'createdTime', 'updatedTime'], 'string'],
+            [['suffix', 'memo', 'createdTime', 'updatedTime'], 'string'],
         ];
     }
 
