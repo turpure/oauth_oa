@@ -63,6 +63,17 @@ class TinyToolController extends AdminController
     }
 
     /**
+     * 物流轨迹
+     * @return mixed
+     */
+    public function actionLogisticsTrack()
+    {
+        $request = Yii::$app->request;
+        $condition = $request->post('condition');
+        return ApiTinyTool::logisticsTrack($condition);
+    }
+
+    /**
      * @brief brand list
      * @return array
      */
