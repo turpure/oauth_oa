@@ -111,6 +111,46 @@ class ApiTinyTool
         }
     }
 
+    /**
+     * 物流轨迹
+     * @param $condition
+     * @return ActiveDataProvider
+     */
+    public static function logisticsTrack($condition)
+    {
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+
+        $query=(new \yii\db\Query())
+            ->select(['trade_send.*','tslt.*'])
+            ->from('trade_send')
+            ->leftJoin( 'trade_send_logistics_track as tslt', 'trade_send.order_id = tslt.order_id')
+            ->orderBy('trade_send.id desc');
+
+        if (!empty($condition['order_id'])) {
+            $query->andFilterWhere(['trade_send.order_id' => $condition['order_id']]);
+        }
+        if (!empty($condition['track_no'])) {
+            $query->andFilterWhere(['trade_send.track_no'=>$condition['track_no']]);
+        }
+        if (!empty($condition['ack'])) {
+            $query->andFilterWhere(['ack'=>$condition['ack']]);
+        }
+        if (!empty($condition['suffix'])) {
+            $query->andFilterWhere(['like', 'trade_send.suffix', $condition['suffix']]);
+        }
+
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            'sort' => [
+                'attributes' => ['id'],
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ]
+        ]);
+        return $provider;
+    }
+
     /** get brand list
      * @param $condition
      * Date: 2019-07-18 10:59
