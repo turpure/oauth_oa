@@ -41,24 +41,27 @@ class TestController extends Controller
     {
         try {
             //备份上月开发目标完成度 TODO  备份数据的加入
+            $seller = Yii::$app->db->createCommand("SELECT distinct username FROM site_target_user WHERE role='开发'")->queryAll();
             $condition = [
                 'dateFlag' => 1,
-                'beginDate' => '2019-12-01',
-                'endDate' => '2019-12-31',
-                'seller' => '胡小红,廖露露,常金彩,刘珊珊,王漫漫,陈微微,杨笑天,李永恒,崔明宽,张崇,史新慈,邹雅丽,杨晶媛',
+                'beginDate' => '2021-09-01',
+                'endDate' => '2021-09-30',
+                'seller' => implode(',', ArrayHelper::getColumn($seller, 'username')),
+                'flag' => 1
             ];
             $devList = ApiReport::getDevelopReport($condition);
             //print_r($devList);exit;
             foreach ($devList as $value) {
                 Yii::$app->db->createCommand()->insert(
-                    'site_targetAllBackupData',
+                    'site_target_all_backup_data',
                     // ['username','role','profitZn','month','updateTime'],
                     [
                         'username' => $value['salernameZero'],
                         'role' => '开发',
-                        'profitZn' => $value['netprofittotal'],
-                        'month' => 12,
-                        'updateTime' => '2019-01-07'
+                        'sale_money_us' => $value['salemoneyrmbusZero'] + $value['salemoneyrmbusSix'],
+                        'profit_zn' => $value['netprofitZero'] + $value['netprofitSix'],
+                        'month' => '2021-09',
+                        'updateTime' => date('Y-m-d H:i:s')
                     ]
                 )->execute();
             }
