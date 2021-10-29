@@ -98,7 +98,12 @@ class SchedulerController extends Controller
         $endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
 //        $endDate = '2021-09-01';//昨天时间
         $dateRate = round(((strtotime($endDate) - strtotime($beginDate)) / 24 / 3600 + 1) * 100 / 122, 2);
-        //print_r($dateRate);exit;
+        // 获取最近一次备份数据月份
+        $backupDataMonth = Yii::$app->db->createCommand("SELECT max(month) FROM site_target_all_backup_data WHERE role='开发'")->queryScalar();
+        if($backupDataMonth){
+            $beginDate = date('Y-m-01', strtotime('+1 month', strtotime($backupDataMonth)));
+        }
+//        print_r($beginDate);exit;
         try {
             //删除开发目标数据
             Yii::$app->db->createCommand("TRUNCATE TABLE site_target_all;")->execute();
