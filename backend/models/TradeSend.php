@@ -12,7 +12,7 @@ use yii\db\ActiveRecord;
  * @property string $suffix
  * @property string $closingdate
  * @property string $track_no
- * @property string $Logistic_name
+ * @property string $logistic_name
  * @property float $total_weight
  * @property string $ack
  * @property string $shiptocountry_code
