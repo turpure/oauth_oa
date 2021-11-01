@@ -75,8 +75,15 @@ class TestController extends Controller
 
 
     public function actionTest(){
-        print 111111;
-        $sql = "";
+        $seller = Yii::$app->db->createCommand("SELECT isDone,createdTime,updatedTime,batchNumber,picker,scanningMan FROM task_sort ")->queryAll();
+        foreach ($seller as $v){
+            var_dump($v);
+            Yii::$app->py_db->createCommand()->insert('oauth_task_sort',
+//                ['isDone','createdTime','updatedTime','batchNumber','picker','scanningMan'],
+                $v
+            )->execute();
+        }
+
     }
 
 

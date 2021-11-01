@@ -356,7 +356,7 @@ class ApiWarehouseTools
         $end = $condition['dateRange'][1] . " 23:59:59";
         $sql = "SELECT batchNumber,picker,isDone,CONVERT(VARCHAR(10),MAX(createdTime),121) AS createdTime 
                 FROM oauth_task_sort 
-                WHERE LENG(batchNumber) > 14 AND createdTime BETWEEN '{$begin}' AND '{$end}' ";
+                WHERE LEN(batchNumber) > 14 AND createdTime BETWEEN '{$begin}' AND '{$end}' ";
         $sql .= "GROUP BY batchNumber,picker,isDone";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         $batchList = array_unique(ArrayHelper::getColumn($data, 'batchNumber'));
