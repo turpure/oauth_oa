@@ -11,9 +11,11 @@ use yii\db\ActiveRecord;
  * @property string $order_id
  * @property int $status
  * @property int $first_time
+ * @property string $first_detail
  * @property int $newest_time
+ * @property string $newest_detail
  * @property int $elapsed_time
- * @property int $select_time
+ * @property int $stagnation_time
  */
 class TradeSendLogisticsTrack extends ActiveRecord
 {
