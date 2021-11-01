@@ -354,11 +354,11 @@ class ApiWarehouseTools
     public static function getSortScanningStatistics($condition){
         $begin = $condition['dateRange'][0];
         $end = $condition['dateRange'][1] . " 23:59:59";
-        $sql = "SELECT batchNumber,picker,isDone,SUBSTR(MAX(createdTime),1,10) AS createdTime 
-                FROM task_sort 
-                WHERE LENGTH(batchNumber) > 14 AND createdTime BETWEEN '{$begin}' AND '{$end}' ";
+        $sql = "SELECT batchNumber,picker,isDone,CONVERT(VARCHAR(10),MAX(createdTime),121) AS createdTime 
+                FROM oauth_task_sort 
+                WHERE LENG(batchNumber) > 14 AND createdTime BETWEEN '{$begin}' AND '{$end}' ";
         $sql .= "GROUP BY batchNumber,picker,isDone";
-        $data = Yii::$app->db->createCommand($sql)->queryAll();
+        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         $batchList = array_unique(ArrayHelper::getColumn($data, 'batchNumber'));
         $batchStr = implode("','",  $batchList);
         $userList = array_unique(ArrayHelper::getColumn($data, 'picker'));
