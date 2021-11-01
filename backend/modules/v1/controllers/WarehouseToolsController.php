@@ -67,7 +67,7 @@ class WarehouseToolsController extends AdminController
         return ApiWarehouseTools::getScanningLog($condition);
     }
 
-    ######################################分拣#########################################
+    ######################################多品分拣#########################################
 
     /**
      * @brief 分拣人

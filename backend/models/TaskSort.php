@@ -7,7 +7,7 @@ use yii\behaviors\TimestampBehavior;
 use yii\db\Expression;
 
 /**
- * This is the model class for table "task_sort".
+ * This is the model class for table "oauth_task_sort".
  *
  * @property string $id
  * @property string $batchNumber
@@ -24,7 +24,12 @@ class TaskSort extends \yii\db\ActiveRecord
      */
     public static function tableName()
     {
-        return 'task_sort';
+        return 'oauth_task_sort';
+    }
+
+    public static function getDb()
+    {
+        return Yii::$app->get('py_db');
     }
 
     public function behaviors()
@@ -36,7 +41,7 @@ class TaskSort extends \yii\db\ActiveRecord
             'class' => TimestampBehavior::className(),
             'createdAtAttribute' => 'createdTime',
             'updatedAtAttribute' => 'updatedTime',
-            'value' => new Expression('NOW()'),
+            'value' => date('Y-m-d H:i:s'),
         ],];
     }
 
