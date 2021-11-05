@@ -111,15 +111,17 @@ class ApiLogisticsTrack
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('D1', '发货时间');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('E1', '总重量(kg)');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('F1', '跟踪号');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('H1', '物流方式');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('I1', '收货国家');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('J1', '出货仓库');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('K1', '销售渠道');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('G1', '物流方式');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('H1', '收货国家');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('I1', '出货仓库');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('J1', '销售渠道');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('K1', '第一条轨迹时间');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('L1', '第一条轨迹信息');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('M1', '最新轨迹信息');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('N1', '运输状态');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('O1', '签收时效');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('P1', '停滞时间');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('M1', '最新轨迹时间');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('N1', '最新轨迹信息');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('O1', '运输状态');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('P1', '签收时效');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('Q1', '停滞时间');
         $n = 2;
         // 	最新时间	签收时效	停滞时间
         foreach ($list as $v) {
@@ -133,12 +135,13 @@ class ApiLogisticsTrack
             $objectPHPExcel->getActiveSheet()->setCellValue('H' . ($n), $v['shiptocountry_name']);
             $objectPHPExcel->getActiveSheet()->setCellValue('I' . ($n), $v['store_name']);
             $objectPHPExcel->getActiveSheet()->setCellValue('J' . ($n), $v['addressowner']);
-            $objectPHPExcel->getActiveSheet()->setCellValue('K' . ($n), $v['first_detail']);
-            $objectPHPExcel->getActiveSheet()->setCellValue('L' . ($n), $v['newest_detail']);
-            $objectPHPExcel->getActiveSheet()->setCellValue('M' . ($n), $v['status'] == 1 ? '运输中' : '已收货');
-            $objectPHPExcel->getActiveSheet()->setCellValue('N' . ($n), date('y-m-s H:i:s', $v['first_time']));
-            $objectPHPExcel->getActiveSheet()->setCellValue('O' . ($n), self::time2second(intval($v['newest_time'])-$v['closingdate']));
-            $objectPHPExcel->getActiveSheet()->setCellValue('P' . ($n), $v['status'] == 1 ?self::time2second(time() - $v['newest_time']):'');
+            $objectPHPExcel->getActiveSheet()->setCellValue('K' . ($n), date('Y-m-d H:i:s',$v['first_time']));
+            $objectPHPExcel->getActiveSheet()->setCellValue('L' . ($n), $v['first_detail']);
+            $objectPHPExcel->getActiveSheet()->setCellValue('M' . ($n), date('Y-m-d H:i:s',$v['newest_detail']));
+            $objectPHPExcel->getActiveSheet()->setCellValue('N' . ($n), $v['newest_detail']);
+            $objectPHPExcel->getActiveSheet()->setCellValue('O' . ($n), $v['status'] == 1 ? '运输中' : '已收货');
+            $objectPHPExcel->getActiveSheet()->setCellValue('P' . ($n), self::time2second(intval($v['newest_time'])-$v['closingdate']));
+            $objectPHPExcel->getActiveSheet()->setCellValue('Q' . ($n), $v['status'] == 1 ?self::time2second(time() - $v['newest_time']):'');
             $n = $n + 1;
         }
         $objWriter = IOFactory::createWriter($objectPHPExcel, 'Xlsx');
@@ -146,7 +149,7 @@ class ApiLogisticsTrack
 
         header('Content-Type: applicationnd.ms-excel');
         $time = date('Y-m-d');
-        header("Content-Disposition: attachment;filename=物流轨迹'.$time.'.xls");
+        header("Content-Disposition: attachment;filename=物流'.$time.'.xls");
         header('Cache-Control: max-age=0');
         $objWriter->save('php://output');
 
@@ -312,18 +315,17 @@ class ApiLogisticsTrack
         $req->setEbayId(self::$ebayId);
         $data = new GetTrackingDetailRequestData();
 
-//        foreach ($orderList as $order) {
-//            $data->setTrackingNumber($order['track_no']);
-//            $req->setData($data);
-//            $rep = $client->execute($req);
-//            $result = $rep->getData();
-//            var_export($result[0]);
-//            if (empty($order['first_time'])) {
-//                $order['first_time'] = $result;
-//            }
-//
-//
-//        }
+        foreach ($orderList as $order) {
+            $data->setTrackingNumber($order['track_no']);
+            $req->setData($data);
+            $rep = $client->execute($req);
+            $result = $rep->getData();
+            var_export($result[0]);
+            if (empty($order['first_time'])) {
+                $order['first_time'] = $result;
+            }
+
+        }
 
     }
 }
