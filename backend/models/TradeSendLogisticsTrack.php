@@ -9,6 +9,9 @@ use yii\db\ActiveRecord;
  *
  * @property string $id
  * @property string $order_id
+ * @property string $track_no
+ * @property string $logistic_name
+ * @property integer $logistic_type
  * @property int $status
  * @property int $first_time
  * @property string $first_detail

@@ -19,6 +19,7 @@ use yii\db\ActiveRecord;
  * @property string $shiptocountry_name
  * @property string $transaction_type
  * @property string $store_name
+ * @property string $addressowner
  *
  */
 
