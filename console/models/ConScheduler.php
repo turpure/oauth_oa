@@ -241,7 +241,7 @@ class ConScheduler
             ['username','month','caiGouRuKuBaoGuo','ruKuSkuNum','ruKuNum','labelNum1','labelNum2', 'labelNum3',
                 'labelNum4','labelNum5','labelNum6','labelNum7','labelNum8','labelNum9', 'pdaSkuNum','zongBaoGuo',
                 'jianHuoShuLiang', 'danpinJanHuoSkuZhongShu', 'duopinJanHuoSkuZhongShu',
-                'danPinBaoGuoDaBao','heDanBaoGuoDaBao','dateRate','inboundSortingTotalSkuNum'],
+                'danPinBaoGuoDaBao','heDanBaoGuoDaBao', 'multi_sorting_goods_num', 'dateRate','inboundSortingTotalSkuNum'],
             $dataQuery
         )->execute();
 
