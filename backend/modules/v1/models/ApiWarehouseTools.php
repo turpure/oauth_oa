@@ -1411,6 +1411,26 @@ class ApiWarehouseTools
         return Yii::$app->py_db->createCommand($sql)->queryAll();
     }
 
-
+    /**
+     * getIntegralEveryDay
+     * @param $condition
+     * Date: 2021-11-08 18:05
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
+    public static function getIntegralEveryDay($condition){
+        $begin = date('Y-m-01', strtotime('-1 days'));
+        $end = date('Y-m-d', strtotime('-1 days'));
+        $beginDate = isset($condition['dateRange'][0]) && $condition['dateRange'][0] ? $condition['dateRange'][0] : $begin;
+        $endDate = isset($condition['dateRange'][1]) && $condition['dateRange'][1] ? $condition['dateRange'][1] : $end;
+//        var_dump($beginDate, $endDate);exit;
+        $sql = "SELECT * FROM warehouse_integral_report_every_day WHERE dt between '{$beginDate}' and '{$endDate}' ";
+        if (isset($condition['group']) && $condition['group']) $sql .= " AND `group`='{$condition['group']}'";
+        if (isset($condition['job']) && $condition['job']) $sql .= " AND job='{$condition['job']}'";
+        if (isset($condition['team']) && $condition['team']) $sql .= " AND team='{$condition['team']}'";
+        if (isset($condition['name']) && $condition['name']) $sql .= " AND name='{$condition['name']}'";
+        return Yii::$app->db->createCommand($sql)->queryAll();
+    }
 
 }
