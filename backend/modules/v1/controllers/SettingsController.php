@@ -384,6 +384,64 @@ class SettingsController extends AdminController
         }
     }
 
+    public function actionWarehouseRateWeight()
+    {
+        $request = Yii::$app->request;
+        if ($request->isGet) {
+            $sql = "SELECT * FROM warehouse_integral_label_rate_weight";
+            return Yii::$app->db->createCommand($sql)->queryAll();
+        }
+        if ($request->isPost) {
+            $post = $request->post();
+            $cond = $post['condition'];
+            if (!$cond['weight'] || !$cond['rate']) {
+                return [
+                    'code' => 400,
+                    'message' => 'The weight and the rate can not be empty at the same time！',
+                ];
+            }
+
+            $id = isset($cond['id']) && $cond['id'] ? $cond['id'] : 0;
+            $query = Yii::$app->db->createCommand("SELECT * FROM warehouse_integral_label_rate_weight WHERE id={$id}")->queryOne();
+            try {
+                if ($query) {
+                    Yii::$app->db->createCommand()->update('warehouse_integral_label_rate_weight', [
+                        'weight' => $cond['weight'],
+                        'rate' => $cond['rate'],
+                        'update' => date('Y-m-d H:i:s'),
+
+                    ], ['id' => $id])->execute();
+                } else {
+                    Yii::$app->db->createCommand()->insert('warehouse_integral_label_rate_weight', [
+                        'weight' => $cond['weight'],
+                        'rate' => $cond['rate'],
+                        'update' => date('Y-m-d H:i:s'),
+                    ])->execute();
+                }
+                return true;
+            } catch (Exception $why) {
+                return [
+                    'code' => 400,
+                    'message' => $why->getMessage(),
+                ];
+            }
+        }
+        if ($request->isDelete) {
+            $post = $request->post();
+            $cond = $post['condition'];
+            $id = isset($cond['id']) && $cond['id'] ? $cond['id'] : 0;
+            try {
+                Yii::$app->db->createCommand()->delete('warehouse_integral_rate', ['id' => $id])->execute();
+                return true;
+            } catch (Exception $why) {
+                return [
+                    'code' => 400,
+                    'message' => $why->getMessage(),
+                ];
+            }
+        }
+    }
+
 
     public function actionWarehouseUser()
     {

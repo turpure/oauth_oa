@@ -765,7 +765,7 @@ class ProductCenterTools
                 'msrp' => $sku['retailPrice'] * 2,
                 'shippingTime' => '7-21',
                 'linkUrl' => $sku['linkUrl'],
-                'wishLinkUrl' => $sku['linkUrl'],
+                'wishLinkUrl' => $sku['wishLinkUrl'],
                 'goodsSkuId' => $sku['goodsSkuId'],
                 'weight' => $sku['weight'],
                 'joomPrice' => $sku['joomPrice'],

@@ -19,6 +19,7 @@ use Yii;
  * @property string $memo3
  * @property string $memo4
  * @property string $linkUrl
+ * @property string $wishLinkUrl
  * @property int $goodsSkuId
  * @property string $retailPrice
  * @property string $costPrice
@@ -47,7 +48,7 @@ class OaGoodsSku extends \yii\db\ActiveRecord
             [['sku'], 'required'],
             [['infoId', 'goodsSkuId', 'stockNum', 'did'], 'integer'],
             [['weight', 'retailPrice', 'costPrice', 'joomPrice', 'joomShipping'], 'number'],
-            [['sku', 'property1', 'property2', 'property3', 'memo1', 'memo2', 'memo3', 'memo4', 'linkUrl'], 'string', 'max' => 255],
+            [['sku', 'property1', 'property2', 'property3', 'memo1', 'memo2', 'memo3', 'memo4', 'linkUrl', 'wishLinkUrl'], 'string', 'max' => 255],
         ];
     }
 

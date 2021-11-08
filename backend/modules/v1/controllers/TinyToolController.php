@@ -17,6 +17,7 @@ use backend\modules\v1\models\ApiTinyTool;
 use backend\modules\v1\models\ApiUk;
 use backend\modules\v1\models\ApiUkFic;
 use backend\modules\v1\models\ApiUser;
+use backend\modules\v1\models\ApiLogisticsTrack;
 use backend\modules\v1\utils\ExportTools;
 use backend\modules\v1\utils\Handler;
 use backend\modules\v1\utils\Helper;
@@ -60,6 +61,41 @@ class TinyToolController extends AdminController
     public function actionExpress()
     {
         return ApiTinyTool::express();
+    }
+
+    /**
+     * 物流轨迹
+     * @return mixed
+     */
+    public function actionLogisticsTrack()
+    {
+        $request = Yii::$app->request;
+        $condition = $request->post('condition');
+        return ApiLogisticsTrack::logisticsTrack($condition);
+    }
+    /**
+     * 导出物流轨迹
+     * @return mixed
+     */
+    public function actionExportLogisticsTrack()
+    {
+        $request = Yii::$app->request;
+        $condition = $request->post('condition');
+        return ApiLogisticsTrack::exportLogisticsTrack($condition);
+    }
+    /**
+     * 物流公司
+     * @param ApiLogisticsTrack $ebayTrack
+     */
+    public function actionLogisticsCompany() {
+        return ApiLogisticsTrack::logisticsCompany();
+    }
+    /**
+     * ebay 物流
+     * @param ApiLogisticsTrack $ebayTrack
+     */
+    public function actionEbayTrack() {
+        return ApiLogisticsTrack::actionEbayTrack();
     }
 
     /**

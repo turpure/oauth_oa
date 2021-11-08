@@ -9,6 +9,7 @@ namespace backend\modules\v1\models;
 
 use backend\models\OaEbayKeyword;
 use backend\models\ShopElf\BGoods;
+use backend\models\ShopElf\BPlatformInfo;
 use backend\modules\v1\utils\Handler;
 use backend\modules\v1\utils\Helper;
 use backend\modules\v1\utils\ExportTools;
@@ -110,6 +111,8 @@ class ApiTinyTool
             ];
         }
     }
+
+
 
     /** get brand list
      * @param $condition

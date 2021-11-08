@@ -238,9 +238,10 @@ class ConScheduler
         Yii::$app->db->createCommand('TRUNCATE TABLE  warehouse_integral_data_tmp')->execute();
         Yii::$app->db->createCommand()->batchInsert(
             'warehouse_integral_data_tmp',
-            ['username','month','caiGouRuKuBaoGuo','ruKuBaoGuo','ruKuNum','pdaSkuNum','danPinBaoGuo','heDanBaoGuo','zongBaoGuo',
-                'jianHuoShuLiang','janHuoSkuZhongShu', 'danpinJanHuoSkuZhongShu', 'duopinJanHuoSkuZhongShu',
-                'danPinBaoGuoDaBao','heDanBaoGuoDaBao','dateRate','inboundSortingTotalSkuNum'],
+            ['username','month','caiGouRuKuBaoGuo','ruKuSkuNum','ruKuNum','labelNum1','labelNum2', 'labelNum3',
+                'labelNum4','labelNum5','labelNum6','labelNum7','labelNum8','labelNum9', 'pdaSkuNum','zongBaoGuo',
+                'jianHuoShuLiang', 'danpinJanHuoSkuZhongShu', 'duopinJanHuoSkuZhongShu',
+                'danPinBaoGuoDaBao','heDanBaoGuoDaBao', 'multi_sorting_goods_num', 'dateRate','inboundSortingTotalSkuNum'],
             $dataQuery
         )->execute();
 
@@ -248,7 +249,7 @@ class ConScheduler
         Yii::$app->db->createCommand("CALL warehouse_integral_data_parser('{$endDate}');")->execute();
 
         //计算排行榜
-        Yii::$app->db->createCommand('CALL warehouse_intrgral_ranking();')->execute();
+//        Yii::$app->db->createCommand('CALL warehouse_intrgral_ranking();')->execute();
 
     }
 
@@ -272,16 +273,12 @@ class ConScheduler
         $dataQuery = Yii::$app->py_db->createCommand($sql)->queryAll();
         foreach ($dataQuery as &$v){
             $v['integral'] = $v['pur_in_package_num'] * $configArr['采购入库包裹'] +
-                $v['pur_in_package_num'] * $configArr['采购入库包裹'] +
-                $v['marking_stock_order_num'] * $configArr['打标入库包裹'] +
-//                $v['marking_sku_num'] * $configArr['打标入库数量'] +
+                $v['marking_sku_num'] * $configArr['打标入库SKU数'] +
                 $v['marking_goods_num'] * $configArr['打标入库数量'] +
-                $v['labeling_order_num'] * $configArr['贴标入库包裹'] +
-//                $v['labeling_sku_num'] * $configArr['贴标入库数量'] +
                 $v['labeling_goods_num'] * $configArr['贴标入库数量'] +
                 $v['pda_in_storage_sku_num'] * $configArr['PDA入库'] +
-                $v['multi_order_num'] * $configArr['拣货核单包裹'] +
-                ($v['single_sku_num'] + $v['multi_sku_num']) * $configArr['拣货SKU种数'] +
+                $v['single_sku_num'] * $configArr['拣货单品SKU种数'] +
+                $v['multi_sku_num'] * $configArr['拣货多品SKU种数'] +
                 ($v['single_goods_num'] + $v['multi_goods_num']) * $configArr['拣货总数量'] +
                 $v['pack_single_order_num'] * $configArr['打包单品包裹'] +
                 $v['pack_multi_order_num'] * $configArr['打包核单包裹'] ;
@@ -290,15 +287,14 @@ class ConScheduler
         Yii::$app->db->createCommand("DELETE FROM warehouse_kpi_report WHERE dt BETWEEN '{$beginDate}' AND '$endDate'")->execute();
         Yii::$app->db->createCommand()->batchInsert(
             'warehouse_kpi_report',
-            ['name', 'dt', 'job', 'pur_in_package_num', 'marking_stock_order_num', 'marking_sku_num',
-                'labeling_sku_num', 'labeling_goods_num',
+            ['name', 'dt', 'job', 'pur_in_package_num', 'marking_stock_order_num', 'marking_goods_num', 'marking_sku_num',
+                'labeling_sku_num', 'labeling_goods_num', 'labeling_order_num',
                 'pda_in_storage_sku_num', 'pda_in_storage_goods_num', 'pda_in_storage_location_num',
                 'single_sku_num', 'single_goods_num', 'single_location_num',
                 'multi_sku_num', 'multi_goods_num', 'multi_location_num',
+                'single_order_num', 'multi_order_num',
                 'pack_single_order_num', 'pack_single_goods_num', 'pack_multi_order_num', 'pack_multi_goods_num',
-                'update_date',
-                'marking_goods_num','labeling_order_num', 'single_order_num', 'multi_order_num', 'integral',
-
+                'update_date', 'integral',
             ],
             $dataQuery
         )->execute();
