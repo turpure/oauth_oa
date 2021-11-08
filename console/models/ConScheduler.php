@@ -235,10 +235,10 @@ class ConScheduler
         $dataQuery = Yii::$app->py_db->createCommand("EXEC oauth_siteWarehouseIntegral '{$beginDate}','{$endDate}','$userPara'")->queryAll();
 
         //将数据保存到临时表中
-        Yii::$app->db->createCommand('TRUNCATE TABLE  warehouse_integral_data_tmp')->execute();
+        Yii::$app->db->createCommand('TRUNCATE TABLE  warehouse_integral_data_tmp_copy')->execute();
         Yii::$app->db->createCommand()->batchInsert(
             'warehouse_integral_data_tmp',
-            ['username','month','caiGouRuKuBaoGuo','ruKuSkuNum','ruKuNum','labelNum1','labelNum2', 'labelNum3',
+            ['username','dt','caiGouRuKuBaoGuo','ruKuSkuNum','ruKuNum','labelNum1','labelNum2', 'labelNum3',
                 'labelNum4','labelNum5','labelNum6','labelNum7','labelNum8','labelNum9', 'pdaSkuNum','zongBaoGuo',
                 'jianHuoShuLiang', 'danpinJanHuoSkuZhongShu', 'duopinJanHuoSkuZhongShu',
                 'danPinBaoGuoDaBao','heDanBaoGuoDaBao', 'multi_sorting_goods_num', 'dateRate','inboundSortingTotalSkuNum'],
