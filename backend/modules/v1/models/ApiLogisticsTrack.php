@@ -14,6 +14,7 @@ use backend\modules\v1\services\ebayTrack\GetTrackingDetailRequestData;
 use DateTime;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use Yii;
 use yii\data\ActiveDataProvider;
 use yii\db\Exception;
 
@@ -138,13 +139,13 @@ class ApiLogisticsTrack
             $objectPHPExcel->getActiveSheet()->setCellValue('H' . ($n), $v['shiptocountry_name']);
             $objectPHPExcel->getActiveSheet()->setCellValue('I' . ($n), $v['store_name']);
             $objectPHPExcel->getActiveSheet()->setCellValue('J' . ($n), $v['addressowner']);
-            $objectPHPExcel->getActiveSheet()->setCellValue('K' . ($n), date('Y-m-d H:i:s', $v['first_time']));
+            $objectPHPExcel->getActiveSheet()->setCellValue('K' . ($n), empty($v['first_time']) ? '' : date('Y-m-d H:i:s', $v['first_time']));
             $objectPHPExcel->getActiveSheet()->setCellValue('L' . ($n), $v['first_detail']);
-            $objectPHPExcel->getActiveSheet()->setCellValue('M' . ($n), date('Y-m-d H:i:s', $v['newest_time']));
+            $objectPHPExcel->getActiveSheet()->setCellValue('M' . ($n), empty($v['newest_time']) ? '' : date('Y-m-d H:i:s', $v['newest_time']));
             $objectPHPExcel->getActiveSheet()->setCellValue('N' . ($n), $v['newest_detail']);
             $objectPHPExcel->getActiveSheet()->setCellValue('O' . ($n), $v['status'] == 1 ? '运输中' : '已收货');
             $objectPHPExcel->getActiveSheet()->setCellValue('P' . ($n), self::time2second(intval($v['newest_time']) - $v['closingdate']));
-            $objectPHPExcel->getActiveSheet()->setCellValue('Q' . ($n), $v['status'] == 1 ? self::time2second(time() - $v['newest_time']) : '');
+            $objectPHPExcel->getActiveSheet()->setCellValue('Q' . ($n), $v['status'] == 1 && !empty($v['newest_time']) ? self::time2second(time() - $v['newest_time']) : '');
             $n = $n + 1;
         }
         $objWriter = IOFactory::createWriter($objectPHPExcel, 'Xlsx');
@@ -270,10 +271,10 @@ class ApiLogisticsTrack
     {
 //
         $token = TradeSendEbayToken::find()
-            ->andWhere(['=','ebay_id' , self::$ebayId])
-            ->andWhere(['>','expire_date' , (time()+86400)])
-            ->andWhere(['=','status',1])
-            ->orderBy('id','desc')
+            ->andWhere(['=', 'ebay_id', self::$ebayId])
+            ->andWhere(['>', 'expire_date', (time() + 86400)])
+            ->andWhere(['=', 'status', 1])
+            ->orderBy('id', 'desc')
             ->limit(1)
             ->one();
 
@@ -292,7 +293,6 @@ class ApiLogisticsTrack
 
         $tradeSendEbayToken = new TradeSendEbayToken();
 
-
         $tradeSendEbayToken->setAttributes([
             'ebay_id'     => self::$ebayId,
             'token'       => $authorization,
@@ -307,14 +307,17 @@ class ApiLogisticsTrack
 
     public static function actionEbayTrack()
     {
+        ini_set('max_execution_time', 300);
+
         $authorization = self::ebayToken();
 
         $orderList = TradeSendLogisticsTrack::find()
-            ->andwhere(['>','created_at' , (time() - 86400 * 60)])
-            ->andwhere(['=','logistic_type',7])
-            ->andwhere(['=','status',1])
-            ->limit(1)
+            ->andwhere(['>', 'created_at', (time() - 86400 * 60)])
+            ->andwhere(['=', 'logistic_type', 7])
+            ->andwhere(['=', 'status', 1])
+            ->limit(10)
             ->all();
+
         $client = new DefaultEbayClient(self::$url, $authorization);
 
         $req = new GetTrackingDetailRequest();
@@ -324,24 +327,46 @@ class ApiLogisticsTrack
         $data = new GetTrackingDetailRequestData();
 
         foreach ($orderList as $order) {
+
             $data->setTrackingNumber($order['track_no']);
+
             $req->setData($data);
+            sleep(1);
+            echo time().'=';
             $rep = $client->execute($req);
+
             $result = $rep->getData();
-            if (empty($result[0])) {
-                var_export(1);
+            var_export(1);
+            //            第二条才上网
+            $length = count($result);
+            if ($length < 2) {
+                Yii::$app->db->createCommand()->update('trade_send_logistics_track', ['updated_at'=>time()], ['order_id' => $order['order_id']])->execute();
+
                 continue;
             }
-            $status = $result[0]->getStatus() == 2?2:1;
-            $description = $result[0]-> getProvince.$result[0]->getCity().$result[0]-> getDistrict.$result[0]->getDescriptionEn();
-            $time = $result[0]->event_time->getTimestamp();
 
-//            if ($order['first_time'] = )
+            $trackDetail = [];
+            foreach ($result as $item) {
 
-            if (empty($order['first_time'])) {
-                $order['first_time'] = $result;
+                $trackDetail[] = [
+                    'status' => $item->getStatus() == 'DELIVERED' ? 2 : 1,
+                    'detail' => $item->getProvince . $item->getCity() . $item->getDistrict . $item->getDescriptionEn(),
+                    'time'   => $item['event_time']->getTimestamp()
+                ];
             }
+            $timeList = array_column($trackDetail, 'time');
+            array_multisort($timeList, SORT_DESC, $trackDetail);
 
+            $updatedData = [
+                'newest_time'     => $trackDetail[0]['time'],
+                'newest_detail'   => $trackDetail[0]['detail'],
+                'first_time'      => $trackDetail[$length - 2]['time'],
+                'first_detail'    => $trackDetail[$length - 2]['detail'],
+                'elapsed_time'    => $trackDetail[0]['time'] - $trackDetail[$length - 2]['time'],
+                'status'          => $trackDetail[0]['status'],
+                'track_detail'    => json_encode($trackDetail)
+            ];
+            Yii::$app->db->createCommand()->update('trade_send_logistics_track', $updatedData, ['order_id' => $order['order_id']])->execute();
         }
 
     }
