@@ -1153,7 +1153,7 @@ class WarehouseToolsController extends AdminController
             $item["打标积分"] = $v["marking_integral"];
             $item["贴标积分"] = $v["labeling_integral"];
             $item["上架积分"] = $v["on_shelf_integral"];
-            $item["入库分拣积分"] = $v["nbound_sorting_integral"];
+            $item["入库分拣积分"] = $v["inbound_sorting_integral"];
             $item["拣货积分"] = $v["picking_integral"];
             $item["多品分拣积分"] = $v["multi_sorting_integral"];
             $item["打包积分"] = $v["packing_integral"];
@@ -1164,7 +1164,7 @@ class WarehouseToolsController extends AdminController
             $res[] = $item;
         }
 //        var_dump($item);exit;
-        ExportTools::toExcelOrCsv('WarehouseIntegralEveryDayExport', $res, 'Xlsx');
+        ExportTools::toExcelOrCsv('WarehouseIntegralEveryDay', $res, 'Xlsx');
     }
 
 
