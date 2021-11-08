@@ -1068,6 +1068,22 @@ class WarehouseToolsController extends AdminController
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
 
+    public function actionIntegralEveryDay()
+    {
+        $begin = date('Y-m-01', strtotime('-1 days'));
+        $end = date('Y-m-d', strtotime('-1 days'));
+        $con = Yii::$app->request->post('condition');
+        $beginDate = isset($con['dateRange'][0]) && $con['dateRange'][0] ? $con['dateRange'][0] : $begin;
+        $endDate = isset($con['dateRange'][1]) && $con['dateRange'][1] ? $con['dateRange'][1] : $end;
+//        var_dump($beginDate, $endDate);exit;
+        $sql = "SELECT * FROM warehouse_integral_report_every_day WHERE dt between '{$beginDate}' and '{$endDate}' ";
+        if (isset($con['group']) && $con['group']) $sql .= " AND `group`='{$con['group']}'";
+        if (isset($con['job']) && $con['job']) $sql .= " AND job='{$con['job']}'";
+        if (isset($con['team']) && $con['team']) $sql .= " AND team='{$con['team']}'";
+        if (isset($con['name']) && $con['name']) $sql .= " AND name='{$con['name']}'";
+        return Yii::$app->db->createCommand($sql)->queryAll();
+    }
+
     public function actionQueryInfo()
     {
         $type = Yii::$app->request->get('type', 'job');
