@@ -1163,7 +1163,8 @@ class WarehouseToolsController extends AdminController
             $item["统计截止时间"] = $v["update_date"];
             $res[] = $item;
         }
-        ExportTools::toExcelOrCsv('WarehouseIntegralEveryDayExport', $res, 'Xls');
+//        var_dump($item);exit;
+        ExportTools::toExcelOrCsv('WarehouseIntegralEveryDayExport', $res, 'Xlsx');
     }
 
 
