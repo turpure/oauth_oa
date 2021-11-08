@@ -1093,7 +1093,7 @@ class WarehouseToolsController extends AdminController
                     "labeling_integral", "on_shelf_integral", "nbound_sorting_integral", "picking_integral", "multi_sorting_integral",
                     "packing_integral", "sorting_integral", "other_integral", "deduction_integral", "update_date"],
                 'defaultOrder' => [
-                    'warehouseDate' => SORT_DESC,
+                    'dt' => SORT_DESC,
                 ]
             ],
             'pagination' => [
@@ -1163,7 +1163,7 @@ class WarehouseToolsController extends AdminController
             $item["统计截止时间"] = $v["update_date"];
             $res[] = $item;
         }
-        ExportTools::toExcelOrCsv('WarehouseIntegralEveryDayExport', $data, 'Xls');
+        ExportTools::toExcelOrCsv('WarehouseIntegralEveryDayExport', $res, 'Xls');
     }
 
 
