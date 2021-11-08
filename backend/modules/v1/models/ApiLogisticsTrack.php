@@ -7,6 +7,8 @@ use backend\models\ShopElf\BPlatformInfo;
 use backend\models\TradeSendEbayToken;
 use backend\models\TradeSendLogisticsTrack;
 use backend\modules\v1\services\ebayTrack\DefaultEbayClient;
+use backend\modules\v1\services\ebayTrack\GetServiceListRequest;
+use backend\modules\v1\services\ebayTrack\GetServiceListRequestRequestData;
 use backend\modules\v1\services\ebayTrack\GetTrackingDetailRequest;
 use backend\modules\v1\services\ebayTrack\GetTrackingDetailRequestData;
 use DateTime;
@@ -17,10 +19,11 @@ use yii\db\Exception;
 
 class ApiLogisticsTrack
 {
-    static $url = 'https://sandbox.edisebay.com/v1/api';
+//    static $url = 'https://sandbox.edisebay.com/v1/api';
+    static $url = 'https://api.edisebay.com/v1/api';
     static $devId = '31049126';
     static $secret = 'ecba8545801d422aa3d33e9c7354d2b03104';
-    static $ebayId = '3199349023168589';
+    static $ebayId = 'springyinee6';
 
 
     /**
@@ -75,12 +78,12 @@ class ApiLogisticsTrack
 
         // 发货时间
         if (!empty($condition['closing_date'][0])) {
-            $query->andFilterWhere(['>','trade_send.closingdate',(strtotime($condition['closing_date'][0])-1)]);
+            $query->andFilterWhere(['>', 'trade_send.closingdate', (strtotime($condition['closing_date'][0]) - 1)]);
         }
 
         // 发货时间
         if (!empty($condition['closing_date'][1])) {
-            $query->andFilterWhere(['<','trade_send.closingdate',(strtotime($condition['closing_date'][1])+1)]);
+            $query->andFilterWhere(['<', 'trade_send.closingdate', (strtotime($condition['closing_date'][1]) + 1)]);
         }
 
         // 快递方式
@@ -128,20 +131,20 @@ class ApiLogisticsTrack
             $objectPHPExcel->getActiveSheet()->setCellValue('A' . ($n), $v['order_id']);
             $objectPHPExcel->getActiveSheet()->setCellValue('B' . ($n), $v['suffix']);
             $objectPHPExcel->getActiveSheet()->setCellValue('C' . ($n), $v['ack']);
-            $objectPHPExcel->getActiveSheet()->setCellValue('D' . ($n), date('Y-m-d H:i:s',$v['closingdate']));
+            $objectPHPExcel->getActiveSheet()->setCellValue('D' . ($n), date('Y-m-d H:i:s', $v['closingdate']));
             $objectPHPExcel->getActiveSheet()->setCellValue('E' . ($n), $v['total_weight']);
             $objectPHPExcel->getActiveSheet()->setCellValue('F' . ($n), $v['track_no']);
             $objectPHPExcel->getActiveSheet()->setCellValue('G' . ($n), $v['logistic_name']);
             $objectPHPExcel->getActiveSheet()->setCellValue('H' . ($n), $v['shiptocountry_name']);
             $objectPHPExcel->getActiveSheet()->setCellValue('I' . ($n), $v['store_name']);
             $objectPHPExcel->getActiveSheet()->setCellValue('J' . ($n), $v['addressowner']);
-            $objectPHPExcel->getActiveSheet()->setCellValue('K' . ($n), date('Y-m-d H:i:s',$v['first_time']));
+            $objectPHPExcel->getActiveSheet()->setCellValue('K' . ($n), date('Y-m-d H:i:s', $v['first_time']));
             $objectPHPExcel->getActiveSheet()->setCellValue('L' . ($n), $v['first_detail']);
-            $objectPHPExcel->getActiveSheet()->setCellValue('M' . ($n), date('Y-m-d H:i:s',$v['newest_detail']));
+            $objectPHPExcel->getActiveSheet()->setCellValue('M' . ($n), date('Y-m-d H:i:s', $v['newest_time']));
             $objectPHPExcel->getActiveSheet()->setCellValue('N' . ($n), $v['newest_detail']);
             $objectPHPExcel->getActiveSheet()->setCellValue('O' . ($n), $v['status'] == 1 ? '运输中' : '已收货');
-            $objectPHPExcel->getActiveSheet()->setCellValue('P' . ($n), self::time2second(intval($v['newest_time'])-$v['closingdate']));
-            $objectPHPExcel->getActiveSheet()->setCellValue('Q' . ($n), $v['status'] == 1 ?self::time2second(time() - $v['newest_time']):'');
+            $objectPHPExcel->getActiveSheet()->setCellValue('P' . ($n), self::time2second(intval($v['newest_time']) - $v['closingdate']));
+            $objectPHPExcel->getActiveSheet()->setCellValue('Q' . ($n), $v['status'] == 1 ? self::time2second(time() - $v['newest_time']) : '');
             $n = $n + 1;
         }
         $objWriter = IOFactory::createWriter($objectPHPExcel, 'Xlsx');
@@ -155,10 +158,11 @@ class ApiLogisticsTrack
 
     }
 
+
     private static function time2second($seconds)
     {
-        if ($seconds < 0) {
-            $seconds = 0;
+        if ($seconds < 0 || $seconds == 0) {
+            return '';
         }
 
         if ($seconds < 86400) {//如果不到一天
@@ -252,7 +256,7 @@ class ApiLogisticsTrack
 
         return [
             'platform' => $platform,
-            'logistic'  => $exList
+            'logistic' => $exList
         ];
 
     }
@@ -264,11 +268,13 @@ class ApiLogisticsTrack
      */
     private static function ebayToken()
     {
-
+//
         $token = TradeSendEbayToken::find()
-            ->where('ebay_id=' . self::$ebayId)
-            ->where('expire_date<' . (time() - 3600))
-            ->where('status=1')
+            ->andWhere(['=','ebay_id' , self::$ebayId])
+            ->andWhere(['>','expire_date' , (time()+86400)])
+            ->andWhere(['=','status',1])
+            ->orderBy('id','desc')
+            ->limit(1)
             ->one();
 
         if (!empty($token->token)) {
@@ -286,6 +292,7 @@ class ApiLogisticsTrack
 
         $tradeSendEbayToken = new TradeSendEbayToken();
 
+
         $tradeSendEbayToken->setAttributes([
             'ebay_id'     => self::$ebayId,
             'token'       => $authorization,
@@ -294,6 +301,7 @@ class ApiLogisticsTrack
             'created_at'  => time()
         ]);
         $tradeSendEbayToken->save();
+
         return $authorization;
     }
 
@@ -302,9 +310,9 @@ class ApiLogisticsTrack
         $authorization = self::ebayToken();
 
         $orderList = TradeSendLogisticsTrack::find()
-            ->where('createda_at>' . (time() - 86400 * 60))
-            ->where('logistic_type=7')
-            ->where('status=1')
+            ->andwhere(['>','created_at' , (time() - 86400 * 60)])
+            ->andwhere(['=','logistic_type',7])
+            ->andwhere(['=','status',1])
             ->limit(1)
             ->all();
         $client = new DefaultEbayClient(self::$url, $authorization);
@@ -320,7 +328,16 @@ class ApiLogisticsTrack
             $req->setData($data);
             $rep = $client->execute($req);
             $result = $rep->getData();
-            var_export($result[0]);
+            if (empty($result[0])) {
+                var_export(1);
+                continue;
+            }
+            $status = $result[0]->getStatus() == 2?2:1;
+            $description = $result[0]-> getProvince.$result[0]->getCity().$result[0]-> getDistrict.$result[0]->getDescriptionEn();
+            $time = $result[0]->event_time->getTimestamp();
+
+//            if ($order['first_time'] = )
+
             if (empty($order['first_time'])) {
                 $order['first_time'] = $result;
             }

@@ -84,7 +84,7 @@ class TinyToolController extends AdminController
         return ApiLogisticsTrack::exportLogisticsTrack($condition);
     }
     /**
-     * ebay 物流
+     * 物流公司
      * @param ApiLogisticsTrack $ebayTrack
      */
     public function actionLogisticsCompany() {
@@ -95,7 +95,7 @@ class TinyToolController extends AdminController
      * @param ApiLogisticsTrack $ebayTrack
      */
     public function actionEbayTrack() {
-        return LogisticsTrack::actionEbayTrack();
+        return ApiLogisticsTrack::actionEbayTrack();
     }
 
     /**
