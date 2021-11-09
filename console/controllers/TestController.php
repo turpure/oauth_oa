@@ -40,8 +40,13 @@ class TestController extends Controller
     public function actionSite()
     {
         try {
-            //备份上月开发目标完成度 TODO  备份数据的加入
-            $seller = Yii::$app->db->createCommand("SELECT distinct username FROM site_target_user WHERE role='开发'")->queryAll();
+            //备份上月开发毛利数据  TODO  备份数据的加入
+            // 获取所有开发人员
+//            $seller = Yii::$app->db->createCommand("SELECT distinct username FROM site_target_user WHERE role='开发'")->queryAll();
+            $sql = "SELECT DISTINCT u.username FROM `user` u
+                    left Join auth_assignment a ON a.user_id=u.id
+                    WHERE u.`status`=10 AND item_name='产品开发' ";
+            $seller = Yii::$app->db->createCommand($sql)->queryAll();
             $condition = [
                 'dateFlag' => 1,
                 'beginDate' => '2021-10-01',
