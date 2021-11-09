@@ -91,7 +91,7 @@ class EbayGroupDispatchService
      */
     private static function generateNewBatch()
     {
-        $sql = "select id,groupName,rate from proCenter.oa_group_rule ";
+        $sql = "select id,groupName,rate from proCenter.oa_group_rule where rate >0 ";
         $db = \Yii::$app->db;
         $ret = $db->createCommand($sql)->queryAll();
         $transaction = \Yii::$app->db->beginTransaction();

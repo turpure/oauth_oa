@@ -44,8 +44,8 @@ class TestController extends Controller
             $seller = Yii::$app->db->createCommand("SELECT distinct username FROM site_target_user WHERE role='开发'")->queryAll();
             $condition = [
                 'dateFlag' => 1,
-                'beginDate' => '2021-09-01',
-                'endDate' => '2021-09-30',
+                'beginDate' => '2021-10-01',
+                'endDate' => '2021-10-31',
                 'seller' => implode(',', ArrayHelper::getColumn($seller, 'username')),
                 'flag' => 1
             ];
@@ -60,7 +60,7 @@ class TestController extends Controller
                         'role' => '开发',
                         'sale_money_us' => $value['salemoneyrmbusZero'] + $value['salemoneyrmbusSix'],
                         'profit_zn' => $value['netprofitZero'] + $value['netprofitSix'],
-                        'month' => '2021-09',
+                        'month' => '2021-10',
                         'updateTime' => date('Y-m-d H:i:s')
                     ]
                 )->execute();

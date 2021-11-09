@@ -134,7 +134,8 @@ class WarehouseToolsController extends AdminController
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    public function actionSortStatisticsExport(){
+    public function actionSortStatisticsExport()
+    {
         $condition = Yii::$app->request->post()['condition'];
         list($totalData, $detail) = ApiWarehouseTools::getSortScanningStatistics($condition);
         $res = [
@@ -296,7 +297,6 @@ class WarehouseToolsController extends AdminController
     }
 
 
-
     ######################################入库工具#########################################
     public function actionWarehousingMember()
     {
@@ -332,7 +332,7 @@ class WarehouseToolsController extends AdminController
             $id = $condition['id'] ?? 0;
             TaskWarehouse::deleteAll(['id' => $id]);
             return true;
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return [
                 'code' => 400,
                 'message' => $e->getMessage()
@@ -1068,6 +1068,107 @@ class WarehouseToolsController extends AdminController
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
 
+    /**
+     * actionIntegralEveryDay
+     * Date: 2021-11-08 18:08
+     * Author: henry
+     * @return ArrayDataProvider
+     * @throws Exception
+     */
+    public function actionIntegralEveryDay()
+    {
+        $con = Yii::$app->request->post('condition');
+        $pageSize = isset($con['pageSize']) && $con['pageSize'] ? $con['pageSize'] : 20;
+        $data = ApiWarehouseTools::getIntegralEveryDay($con);
+        return new ArrayDataProvider([
+            'allModels' => $data,
+            'sort' => [
+                'attributes' => ["name", "dt", "total_integral", "wages", "all_days", "labeling_days", "sorting_days",
+                    "inbound_sorting_days", "group", "job", "team", "pur_in_package_num", "marking_in_storage_package_num",
+                    "marking_in_storage_num", "labeling_in_storage_num", "labeling_in_storage_num2", "labeling_in_storage_num3",
+                    "labeling_in_storage_num4", "labeling_in_storage_num5", "labeling_in_storage_num6", "labeling_in_storage_num7",
+                    "labeling_in_storage_num8", "labeling_in_storage_num9", "pda_in_storage_sku_num", "inbound_pda_in_storage_sku_num",
+                    "picking_single_sku_num", "picking_multi_sku_num", "picking_total_num", "multi_sorting_sku_num",
+                    "pack_single_package_num", "pack_multi_package_num", "package_num", "unpacking_integral", "marking_integral",
+                    "labeling_integral", "on_shelf_integral", "nbound_sorting_integral", "picking_integral", "multi_sorting_integral",
+                    "packing_integral", "sorting_integral", "other_integral", "deduction_integral", "update_date"],
+                'defaultOrder' => [
+                    'dt' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+
+    }
+
+    /**
+     * actionIntegralEveryDayExport
+     * Date: 2021-11-08 18:17
+     * Author: henry
+     * @throws Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionIntegralEveryDayExport()
+    {
+        $con = Yii::$app->request->post('condition');
+        $data = ApiWarehouseTools::getIntegralEveryDay($con);
+        $res = [];
+        foreach ($data as $v) {
+            $item["姓名"] = $v["name"];
+            $item["日期"] = $v["dt"];
+            $item["总积分"] = $v["total_integral"];
+            $item["计件工资"] = $v["wages"];
+            $item["出勤天数"] = $v["all_days"];
+            $item["贴标出勤天数"] = $v["labeling_days"];
+            $item["分拣出勤天数"] = $v["sorting_days"];
+            $item["入库分拣天数"] = $v["inbound_sorting_days"];
+            $item["组别"] = $v["group"];
+            $item["职位"] = $v["job"];
+            $item["小组"] = $v["team"];
+            $item["采购入库包裹"] = $v["pur_in_package_num"];
+            $item["打标入库SKU种数"] = $v["marking_in_storage_package_num"];
+            $item["打标入库数量"] = $v["marking_in_storage_num"];
+            $item["贴标入库数量(系数1)"] = $v["labeling_in_storage_num"];
+            $item["贴标入库数量(系数2)"] = $v["labeling_in_storage_num2"];
+            $item["贴标入库数量(系数3)"] = $v["labeling_in_storage_num3"];
+            $item["贴标入库数量(系数4)"] = $v["labeling_in_storage_num4"];
+            $item["贴标入库数量(系数5)"] = $v["labeling_in_storage_num5"];
+            $item["贴标入库数量(系数6)"] = $v["labeling_in_storage_num6"];
+            $item["贴标入库数量(系数7)"] = $v["labeling_in_storage_num7"];
+            $item["贴标入库数量(系数8)"] = $v["labeling_in_storage_num8"];
+            $item["贴标入库数量(系数9)"] = $v["labeling_in_storage_num9"];
+            $item["PDA入库SKU数"] = $v["pda_in_storage_sku_num"];
+            $item["入库SKU数"] = $v["inbound_pda_in_storage_sku_num"];
+            $item["单品拣货SKU种数"] = $v["picking_single_sku_num"];
+            $item["多品拣货SKU种数"] = $v["picking_multi_sku_num"];
+            $item["拣货总数量"] = $v["picking_total_num"];
+            $item["多品分拣总数量"] = $v["multi_sorting_sku_num"];
+            $item["打包单品包裹数"] = $v["pack_single_package_num"];
+            $item["打包核单包裹数"] = $v["pack_multi_package_num"];
+            $item["分拣包裹数"] = $v["package_num"];
+            $item["拆包积分"] = $v["unpacking_integral"];
+            $item["打标积分"] = $v["marking_integral"];
+            $item["贴标积分"] = $v["labeling_integral"];
+            $item["上架积分"] = $v["on_shelf_integral"];
+            $item["入库分拣积分"] = $v["inbound_sorting_integral"];
+            $item["拣货积分"] = $v["picking_integral"];
+            $item["多品分拣积分"] = $v["multi_sorting_integral"];
+            $item["打包积分"] = $v["packing_integral"];
+            $item["分拣积分"] = $v["sorting_integral"];
+            $item["其它得分项"] = $v["other_integral"];
+            $item["扣分项"] = $v["deduction_integral"];
+            $item["统计截止时间"] = $v["update_date"];
+            $res[] = $item;
+        }
+
+//        var_dump($res);exit;
+        ExportTools::toExcelOrCsv('WarehouseIntegralEveryDay', $res, 'Xls');
+    }
+
+
     public function actionQueryInfo()
     {
         $type = Yii::$app->request->get('type', 'job');
@@ -1653,7 +1754,7 @@ class WarehouseToolsController extends AdminController
             $endDate = $condition['dateRange'][1] ?: '';
             $sql = "EXEC oauth_warehouse_tools_difference_order_rate '{$storeName}','{$beginDate}','{$endDate}'";
             $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-            $title = ['仓库','发货时间','拣货SKU种数','异常SKU种数','异常比例'];
+            $title = ['仓库', '发货时间', '拣货SKU种数', '异常SKU种数', '异常比例'];
             ExportTools::toExcelOrCsv('differenceOrderRate', $data, 'Xls', $title);
         } catch (Exception $e) {
             return [
@@ -1664,13 +1765,15 @@ class WarehouseToolsController extends AdminController
     }
 
     /////////////////////////////////入库时效////////////////////////////////////
+
     /**
      * 入库时效详情
      * Date: 2021-07-19 14:33
      * Author: henry
      * @return array|ArrayDataProvider
      */
-    public function actionStorageTimeRateDetail(){
+    public function actionStorageTimeRateDetail()
+    {
         try {
             $condition = Yii::$app->request->post('condition', []);
             $beginDate = $condition['dt'] ?: '';
@@ -1678,12 +1781,12 @@ class WarehouseToolsController extends AdminController
             $flag = $condition['flag'] ?: 0;  //-- 0  当天 ， 1 一天内 ， 2 两天内 ，3 三天内 ， 4 三天以上 ， 5 未入库
             $version = $condition['version'] ?: '1.0';
 //            $sql = "EXEC oauth_warehouse_tools_in_storage_time_rate_detail '{$beginDate}', {$flag} , '{$version}' ";
-            if ($flag == 5 || $flag == 4){
+            if ($flag == 5 || $flag == 4) {
                 $sql = "SELECT * FROM oauth_in_storage_time_rate_data_copy
                     WHERE CASE WHEN '{$version}' = '1.0' THEN CONVERT(VARCHAR(10),OPDate,121)
 					    ELSE CONVERT(VARCHAR(10),DATEADD(hh, 9, OPDate),121) END BETWEEN '{$beginDate}' AND '{$endDate}'
 					AND ISNULL(audieDate,'') = '' ";
-            }else{
+            } else {
                 $sql = "SELECT * FROM oauth_in_storage_time_rate_data_copy
                     WHERE CASE WHEN '{$version}' = '1.0' THEN CONVERT(VARCHAR(10),OPDate,121)
 					    ELSE CONVERT(VARCHAR(10),DATEADD(hh, 9, OPDate),121) END BETWEEN '{$beginDate}' AND '{$endDate}'
@@ -1786,13 +1889,13 @@ class WarehouseToolsController extends AdminController
         if ($storeName) $sql .= " AND storeName = '{$storeName}' ";*/
         $sql = "oauth_warehouse_tools_in_storage_time_rate_jisuan '{$beginDate}','{$endDate}','{$storeName}','1.0'";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-        foreach ($data as &$v){
-            $v['rate'] = round($v['rate']*100,2) . '%';
-            $v['oneRate'] = round($v['oneRate']*100,2) . '%';
-            $v['twoRate'] = round($v['twoRate']*100,2) . '%';
-            $v['threeRate'] = round($v['threeRate']*100,2) . '%';
-            $v['otherRate'] = round($v['otherRate']*100,2) . '%';
-            $v['notInRate'] = round($v['notInRate']*100,2) . '%';
+        foreach ($data as &$v) {
+            $v['rate'] = round($v['rate'] * 100, 2) . '%';
+            $v['oneRate'] = round($v['oneRate'] * 100, 2) . '%';
+            $v['twoRate'] = round($v['twoRate'] * 100, 2) . '%';
+            $v['threeRate'] = round($v['threeRate'] * 100, 2) . '%';
+            $v['otherRate'] = round($v['otherRate'] * 100, 2) . '%';
+            $v['notInRate'] = round($v['notInRate'] * 100, 2) . '%';
         }
         $title = ['仓库', '扫描日期', '扫描数量', '当天入库数', '当天入库率', '1天内入库数', '1天内入库率',
             '2天内入库数', '2天内入库率', '3天内入库数', '3天内入库率', '3天以上入库数', '3天以上入库率', '未入库数', '未入库率'
@@ -1881,13 +1984,13 @@ class WarehouseToolsController extends AdminController
         if ($storeName) $sql .= " AND storeName = '{$storeName}' ";*/
         $sql = "oauth_warehouse_tools_in_storage_time_rate_jisuan '{$beginDate}','{$endDate}','{$storeName}','2.0'";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-        foreach ($data as &$v){
-            $v['rate'] = round($v['rate']*100,2) . '%';
-            $v['oneRate'] = round($v['oneRate']*100,2) . '%';
-            $v['twoRate'] = round($v['twoRate']*100,2) . '%';
-            $v['threeRate'] = round($v['threeRate']*100,2) . '%';
-            $v['otherRate'] = round($v['otherRate']*100,2) . '%';
-            $v['notInRate'] = round($v['notInRate']*100,2) . '%';
+        foreach ($data as &$v) {
+            $v['rate'] = round($v['rate'] * 100, 2) . '%';
+            $v['oneRate'] = round($v['oneRate'] * 100, 2) . '%';
+            $v['twoRate'] = round($v['twoRate'] * 100, 2) . '%';
+            $v['threeRate'] = round($v['threeRate'] * 100, 2) . '%';
+            $v['otherRate'] = round($v['otherRate'] * 100, 2) . '%';
+            $v['notInRate'] = round($v['notInRate'] * 100, 2) . '%';
         }
         $title = ['仓库', '扫描日期', '扫描数量', '当天入库数', '当天入库率', '1天内入库数', '1天内入库率',
             '2天内入库数', '2天内入库率', '3天内入库数', '3天内入库率', '3天以上入库数', '3天以上入库率', '未入库数', '未入库率'
