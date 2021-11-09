@@ -1122,9 +1122,9 @@ class WarehouseToolsController extends AdminController
             $item["总积分"] = $v["total_integral"];
             $item["计件工资"] = $v["wages"];
             $item["出勤天数"] = $v["all_days"];
-            $item["贴标出勤天数"] = $v["labeling_days"];
+//            $item["贴标出勤天数"] = $v["labeling_days"];
             $item["分拣出勤天数"] = $v["sorting_days"];
-            $item["入库分拣天数"] = $v["inbound_sorting_days"];
+//            $item["入库分拣天数"] = $v["inbound_sorting_days"];
             $item["组别"] = $v["group"];
             $item["职位"] = $v["job"];
             $item["小组"] = $v["team"];
