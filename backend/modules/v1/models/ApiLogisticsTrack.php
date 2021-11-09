@@ -230,28 +230,48 @@ class ApiLogisticsTrack
                     'UBI-全球专线（带电）'],
 
             ],
-            [
-                'name' => '利通智能包裹有限公司',
-                'type' => 6,
-                'list' => [
-                    'UKGF-Royal Mail - Untracked 48 Large Letter (Economy 2-3 Working Days)',
-                    'UKLE-battery-Royal Mail - Untracked 48 Large Letter', 'UKLE-Hermes - UK Standard 48',
-                    'UKMA-battery-Royal Mail - Untracked 48 Large Letter', 'UKMA-Hermes - UK Standard 48',
-                    'UKMA-Royal Mail - Tracked 48 Parcel', 'UKMA-Royal Mail - Untracked 48 Large Letter',
-                    'UKTW-battery-Royal Mail - Untracked 48 Large Letter', 'UKTW-Hermes - UK Standard 24',
-                    'UKTW-Hermes - UK Standard 48', 'UKTW-Royal Mail - Tracked 48 Parcel', 'UKTW-Yodel - Home 48'],
-
-            ],
+//            [
+//                'name' => '利通智能包裹有限公司',
+//                'type' => 6,
+//                'list' => [
+//                    'UKGF-Royal Mail - Untracked 48 Large Letter (Economy 2-3 Working Days)',
+//                    'UKLE-battery-Royal Mail - Untracked 48 Large Letter', 'UKLE-Hermes - UK Standard 48',
+//                    'UKMA-battery-Royal Mail - Untracked 48 Large Letter', 'UKMA-Hermes - UK Standard 48',
+//                    'UKMA-Royal Mail - Tracked 48 Parcel', 'UKMA-Royal Mail - Untracked 48 Large Letter',
+//                    'UKTW-battery-Royal Mail - Untracked 48 Large Letter', 'UKTW-Hermes - UK Standard 24',
+//                    'UKTW-Hermes - UK Standard 48', 'UKTW-Royal Mail - Tracked 48 Parcel', 'UKTW-Yodel - Home 48'],
+//
+//            ],
             [
                 'name' => 'SpeedPAK',
-                'type' => 7,
+                'type' => 6,
                 'list' => ['SpeedPAK-经济型服务', 'SpeedPAK-经济轻小件', 'SpeedPAK-标准型服务'],
             ],
             [
-                'name' => '其他',
-                'type' => 0,
-                'list' => [],
-            ]
+                'name' => '金华-E邮宝',
+                'type' => 7,
+                'list' => ['E邮宝线下20国','E邮宝线下法国','E邮宝线下义乌','E邮宝线下英国','金华-E邮宝-E-EMS'],
+            ],
+            [
+                'name' => '金华邮局',
+                'type' => 8,
+                'list' => ['中国邮政平常小包+（金华）','线下-中邮平常小包','邮政-TNT','中邮挂号-跟踪小包-金华','中邮挂号-金华'],
+            ],
+            [
+                'name' => '云途物流',
+                'type' => 9,
+                'list' => ['云途全球专线挂号(普货)','云途全球专线挂号(特货)'],
+            ],
+            [
+                'name' => 'Wish邮线上',
+                'type' => 10,
+                'list' => ['wish-云途中欧专线平邮(特货)','wish-云途中欧专线挂号','Wish邮智选经济 - 特货','Wish邮智选经济 - 普货','Wish邮智选标准 - 普货',
+                            'WISH燕文专线追踪小包(特货)','WISH燕文专线追踪小包(普货)','WISH燕文专线平邮小包(特货)','WISH燕文专线平邮小包(普货)','WISH燕文燕特快(普货)',
+                           'WISH燕文航空经济小包（特货）','WISH燕文航空经济小包（普货）','WISH燕文航空挂号小包（特货）','WISH燕文航空挂号小包（普货）','wish-顺友通平邮小包(特货)',
+                           'wish-顺友通挂号小包(特货)','wish-UBI欧盟半程小包','wish-UBI快速专线','wish-EQ专线快递(普货)','wish-EQ爱沙邮局半查小包(特货)',
+                           'wish-EQ爱沙邮局半查小包(普货)','WISH-CNE-全球特惠','WISH-CNE-全球经济','wish-A+安速派经济(特货)','wish-A+安速派经济(普货)','wish-A+安速派标准(特货)',
+                           'wish-A+安速派标准(普货)','wish-EQ专线快递(特货)','wish-燕文全球特快专递(特货)','Wish邮智选标准 - 特货','wish-云途专线'],
+            ],
         ];
 
 
@@ -313,7 +333,7 @@ class ApiLogisticsTrack
 
         $orderList = TradeSendLogisticsTrack::find()
             ->andwhere(['>', 'created_at', (time() - 86400 * 60)])
-            ->andwhere(['=', 'logistic_type', 7])
+            ->andwhere(['=', 'logistic_type', 6])
             ->andwhere(['=', 'status', 1])
             ->limit(10)
             ->all();
