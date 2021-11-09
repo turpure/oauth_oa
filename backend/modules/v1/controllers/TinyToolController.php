@@ -84,18 +84,31 @@ class TinyToolController extends AdminController
         return ApiLogisticsTrack::exportLogisticsTrack($condition);
     }
     /**
+     * 物流时效列表
+     * @return mixed
+     */
+    public function actionLogisticsTimeFrame()
+    {
+        $request = Yii::$app->request;
+        $condition = $request->post('condition');
+        return ApiLogisticsTrack::logisticsTimeFrame($condition);
+    }
+    /**
+     * 物流时效列表
+     * @return mixed
+     */
+    public function actionLogisticsSuccRate()
+    {
+        $request = Yii::$app->request;
+        $condition = $request->post('condition');
+        return ApiLogisticsTrack::logisticsSuccRate($condition);
+    }
+    /**
      * 物流公司
      * @param ApiLogisticsTrack $ebayTrack
      */
     public function actionLogisticsCompany() {
         return ApiLogisticsTrack::logisticsCompany();
-    }
-    /**
-     * ebay 物流
-     * @param ApiLogisticsTrack $ebayTrack
-     */
-    public function actionEbayTrack() {
-        return ApiLogisticsTrack::actionEbayTrack();
     }
 
     /**
