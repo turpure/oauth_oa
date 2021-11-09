@@ -1164,7 +1164,7 @@ class WarehouseToolsController extends AdminController
             $res[] = $item;
         }
 //        var_dump($item);exit;
-        ExportTools::toExcelOrCsv('WarehouseIntegralEveryDay', $res, 'Xlsx');
+        ExportTools::toExcelOrCsv('WarehouseIntegralEveryDay', $res, 'Xls');
     }
 
 
