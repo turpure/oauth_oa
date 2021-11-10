@@ -60,7 +60,7 @@ class ApiLogisticsTrack
             ->orderBy('trade_send.id desc');
         if (!empty($condition['order_id'])) {
 
-            $orderId = implode(',', $condition['order_id']);
+            $orderId = explode(',', $condition['order_id']);
             if (count($orderId) == 1) {
                 $query->andFilterWhere(['=', 'trade_send.order_id', $orderId[0]]);
             } else {
@@ -69,9 +69,9 @@ class ApiLogisticsTrack
         }
         // 追踪号
         if (!empty($condition['track_no'])) {
-            $trackNo = implode(',', $condition['track_no']);
+            $trackNo = explode(',', $condition['track_no']);
 
-            if (count($orderId) == 1) {
+            if (count($trackNo) == 1) {
                 $query->andFilterWhere(['=', 'trade_send.track_no', $trackNo[0]]);
             } else {
                 $query->andFilterWhere(['in', 'trade_send.track_no', $trackNo]);
