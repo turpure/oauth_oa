@@ -20,6 +20,7 @@ use yii\db\ActiveRecord;
  * @property int $elapsed_time
  * @property int $stagnation_time
  * @property string $track_detail
+ * @property int $icount
  */
 class TradeSendLogisticsTrack extends ActiveRecord
 {

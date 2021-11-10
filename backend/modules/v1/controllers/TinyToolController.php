@@ -94,7 +94,7 @@ class TinyToolController extends AdminController
         return ApiLogisticsTrack::logisticsTimeFrame($condition);
     }
     /**
-     * 物流时效列表
+     * 物流妥投率列表
      * @return mixed
      */
     public function actionLogisticsSuccRate()
@@ -103,6 +103,28 @@ class TinyToolController extends AdminController
         $condition = $request->post('condition');
         return ApiLogisticsTrack::logisticsSuccRate($condition);
     }
+
+    /**
+     * 导出发货时效列表
+     * @return mixed
+     */
+    public function actionExportLogisticsTimeFrame()
+    {
+        $request = Yii::$app->request;
+        $condition = $request->post('condition');
+        return ApiLogisticsTrack::exportTimeFrame($condition);
+    }
+    /**
+     * 导出签收时效列表
+     * @return mixed
+     */
+    public function actionExportLogisticsSuccRate()
+    {
+        $request = Yii::$app->request;
+        $condition = $request->post('condition');
+        return ApiLogisticsTrack::exportLogisticsSuccRate($condition);
+    }
+
     /**
      * 物流公司
      * @param ApiLogisticsTrack $ebayTrack

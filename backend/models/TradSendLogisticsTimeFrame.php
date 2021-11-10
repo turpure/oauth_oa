@@ -11,11 +11,16 @@ use yii\db\ActiveRecord;
  * @property string $logistic_name
  * @property string $closing_date
  * @property integer $totol_num
+ * @property integer $intraday_num
  * @property integer $first_num
  * @property integer $second_num
  * @property integer $third_num
  * @property integer $not_find_num
- *
+ * @property integer $intraday_ratio
+ * @property integer $first_ratio
+ * @property integer $second_ratio
+ * @property integer $third_ratio
+ * @property integer $not_find_ratio
  */
 class TradSendLogisticsTimeFrame extends ActiveRecord
 {
