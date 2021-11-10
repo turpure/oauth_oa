@@ -97,7 +97,7 @@ class TinyToolController extends AdminController
      * 物流妥投率列表
      * @return mixed
      */
-    public function actionLogisticsSuccRate()
+    public function actionLogisticsSuccRatio()
     {
         $request = Yii::$app->request;
         $condition = $request->post('condition');
@@ -118,7 +118,7 @@ class TinyToolController extends AdminController
      * 导出签收时效列表
      * @return mixed
      */
-    public function actionExportLogisticsSuccRate()
+    public function actionExportLogisticsSuccRatio()
     {
         $request = Yii::$app->request;
         $condition = $request->post('condition');
