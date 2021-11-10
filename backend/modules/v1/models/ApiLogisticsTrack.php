@@ -2,13 +2,9 @@
 
 namespace backend\modules\v1\models;
 
-use backend\models\ShopElf\BPlatformInfo;
 use backend\models\TradSendLogisticsTimeFrame;
 use backend\models\TradSendSuccRate;
-use backend\models\TradSendSuccratio;
-use backend\modules\v1\Enums\LogisticEnum;
-use backend\modules\v1\services\ebayTrack\GetServiceListRequest;
-use backend\modules\v1\services\ebayTrack\GetServiceListRequestRequestData;
+use backend\modules\v1\enums\LogisticEnum;
 use backend\modules\v1\utils\Helper;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
