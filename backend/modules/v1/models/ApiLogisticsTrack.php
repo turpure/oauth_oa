@@ -2,11 +2,13 @@
 
 namespace backend\modules\v1\models;
 
+use backend\models\AuthAssignment;
 use backend\models\TradeSendLogisticsTrack;
 use backend\models\TradSendLogisticsTimeFrame;
 use backend\models\TradSendSuccRate;
 use backend\modules\v1\enums\LogisticEnum;
 use backend\modules\v1\utils\Helper;
+use common\models\User;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Yii;
@@ -44,6 +46,14 @@ class ApiLogisticsTrack
 
     public static function tradeSendQuery($condition)
     {
+        $userId = Yii::$app->user->id;
+        $role = User::getRole($userId);//登录用户角色
+        //获取平台列表
+        if ($isAccountAdmin = (in_array(AuthAssignment::ACCOUNT_ADMIN, $role) === false)) {
+//            非超级会员
+            $userAccount = ApiCondition::getUserAccount();
+        }
+
         $query = (new \yii\db\Query())
             ->select(['trade_send.*', 'tslt.*'])
             ->from('trade_send')
@@ -105,14 +115,26 @@ class ApiLogisticsTrack
         if (!empty($condition['logistic_type'])) {
             $query->andFilterWhere(['=', 'trade_send.logistic_type', $condition['logistic_type']]);
         }
+        $isAccountAdmin = true;
+        $userAccount = [];
 
         // 快递方式
         if (!empty($condition['logistic_name'])) {
             $query->andFilterWhere(['=', 'trade_send.logistic_name', $condition['logistic_name']]);
         }
+
         if (!empty($condition['suffix'])) {
+
+            if ($isAccountAdmin && !in_array($condition['suffix'], $userAccount)) {
+                $condition['suffix'] = '/';
+            }
+
             $query->andFilterWhere(['=', 'trade_send.suffix', $condition['suffix']]);
+
+        } elseif ($isAccountAdmin) {
+            $query->andFilterWhere(['in', 'trade_send.suffix', $userAccount]);
         }
+
         return $query;
     }
 
@@ -130,7 +152,7 @@ class ApiLogisticsTrack
             'allModels'  => $query->all(),
             'sort'       => [
                 'attributes'   => [
-                    'id', 'total_num','intraday_num','intraday_ratio', 'above_ratio', 'above_num', 'second_ratio', 'first_ratio', 'first_num', 'second_num', 'third_num', 'third_ratio'
+                    'id', 'total_num', 'intraday_num', 'intraday_ratio', 'above_ratio', 'above_num', 'second_ratio', 'first_ratio', 'first_num', 'second_num', 'third_num', 'third_ratio'
                 ],
                 'defaultOrder' => [
                     'id' => SORT_DESC,
@@ -181,7 +203,7 @@ class ApiLogisticsTrack
             'allModels'  => $query->all(),
             'sort'       => [
                 'attributes'   => [
-                    'id', 'total_num','average','success_ratio', 'success_num','dont_succeed_num','dont_succeed_ratio'
+                    'id', 'total_num', 'average', 'success_ratio', 'success_num', 'dont_succeed_num', 'dont_succeed_ratio'
                 ],
                 'defaultOrder' => [
                     'id' => SORT_DESC,
