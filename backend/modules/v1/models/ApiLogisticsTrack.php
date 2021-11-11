@@ -85,6 +85,22 @@ class ApiLogisticsTrack
         if (!empty($condition['closing_date'][1])) {
             $query->andFilterWhere(['<', 'trade_send.closingdate', (strtotime($condition['closing_date'][1]) + 86400)]);
         }
+        if (!empty($condition['logistic_status'])) {
+
+            if ($condition['logistic_status'] == 1) {
+                if ($condition['day_num'] < 5) {
+                    // 未上网
+                    $firstDate = strtotime($condition['closing_date'][0]) + $condition['day_num'] * 86400;
+
+                    $query->andWhere("first_time>{$firstDate} or first_time is null");
+                } else {
+                    $query->andWhere(" first_time is null");
+                }
+            } else {
+                // 未妥投
+                $query->andFilterWhere(['!=', 'tslt.status', LogisticEnum::SUCCESS]);
+            }
+        }
         // 快递公司
         if (!empty($condition['logistic_type'])) {
             $query->andFilterWhere(['=', 'trade_send.logistic_type', $condition['logistic_type']]);
@@ -95,23 +111,7 @@ class ApiLogisticsTrack
             $query->andFilterWhere(['=', 'trade_send.logistic_name', $condition['logistic_name']]);
         }
         if (!empty($condition['suffix'])) {
-            $query->andFilterWhere(['like', 'trade_send.suffix', $condition['suffix']]);
-        }
-
-        if (!empty($condition['logistic_status'])) {
-
-            if ($condition['logistic_status'] == 1) {
-                if ($condition['day_num'] > 5) {
-                    // 未上网
-                    $firstDate = strtotime($condition['closingdate'][0]) + $condition['day_num'] * 86400;
-                    $query->andWhere("first_time>{$firstDate} or first_time is null");
-                } else {
-                    $query->andWhere(" first_time is null");
-                }
-            } else {
-                // 未妥投
-                $query->andFilterWhere(['!=', 'tslt.status', LogisticEnum::SUCCESS]);
-            }
+            $query->andFilterWhere(['=', 'trade_send.suffix', $condition['suffix']]);
         }
         return $query;
     }
@@ -126,12 +126,11 @@ class ApiLogisticsTrack
     {
         $query = self::timeFrameQuery($condition);
 
-
         return new ArrayDataProvider([
             'allModels'  => $query->all(),
             'sort'       => [
                 'attributes'   => [
-                    'id', 'totol_num', 'above_ratio', 'above_num', 'second_ratio', 'first_ratio', 'first_num', 'second_num', 'third_num', 'third_ratio'
+                    'id', 'total_num','intraday_num','intraday_ratio', 'above_ratio', 'above_num', 'second_ratio', 'first_ratio', 'first_num', 'second_num', 'third_num', 'third_ratio'
                 ],
                 'defaultOrder' => [
                     'id' => SORT_DESC,
@@ -182,7 +181,7 @@ class ApiLogisticsTrack
             'allModels'  => $query->all(),
             'sort'       => [
                 'attributes'   => [
-                    'id', 'success_ratio', 'success_num'
+                    'id', 'total_num','average','success_ratio', 'success_num','dont_succeed_num','dont_succeed_ratio'
                 ],
                 'defaultOrder' => [
                     'id' => SORT_DESC,
