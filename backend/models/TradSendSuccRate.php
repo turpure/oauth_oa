@@ -6,7 +6,7 @@ use yii\db\ActiveRecord;
 
 /**
  * 妥投率 trad_send_succ_ratio
- * @property string $month
+ * @property string $closing_date
  * @property string $logistic_company
  * @property string $logistic_type
  * @property string $logistic_name

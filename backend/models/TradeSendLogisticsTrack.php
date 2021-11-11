@@ -12,6 +12,7 @@ use yii\db\ActiveRecord;
  * @property string $track_no
  * @property string $logistic_name
  * @property integer $logistic_type
+ * @property integer $closing_date
  * @property int $status
  * @property int $first_time
  * @property string $first_detail
@@ -31,5 +32,13 @@ class TradeSendLogisticsTrack extends ActiveRecord
     {
         return 'trade_send_logistics_track';
     }
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        return [
+        ];
 
+    }
 }
