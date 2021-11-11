@@ -120,19 +120,21 @@ class ApiLogisticsTrack
     public static function logisticsTimeFrame($condition)
     {
         $query = self::timeFrameQuery($condition);
-        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
 
-        $provider = new ActiveDataProvider([
-            'query'      => $query,
-            'sort'       => [
-                'defaultOrder' => ['id' => SORT_DESC]
+        return new ArrayDataProvider([
+            'allModels' => $query->all(),
+            'sort' => [
+                'attributes' => [
+                    'id',  'totol_num','above_ratio','above_num','second_ratio','first_ratio','first_num','second_num','third_num','third_ratio'
+                ],
+                'defaultOrder' => [
+                    'id' => SORT_DESC,
+                ]
             ],
             'pagination' => [
-                'pageSize' => $pageSize,
-            ]
+                'pageSize' => isset($condition['pageSize']) ? $condition['pageSize'] : 10,
+            ],
         ]);
-        return $provider;
-
     }
 
     private static function timeFrameQuery($condition)
@@ -158,46 +160,6 @@ class ApiLogisticsTrack
             $query->andFilterWhere(['logistic_name' => $condition['logistic_name']]);
         }
 
-        if (!empty($condition['order_by']['field'])) {
-
-            switch ($condition['order_by']['field']) {
-                case 1:
-                    $orderByfield = 'first_num';
-                    break;
-                case 2:
-                    $orderByfield = 'first_ratio';
-                    break;
-                case 3:
-                    $orderByfield = 'second_num';
-                    break;
-                case 4:
-                    $orderByfield = 'second_ratio';
-                    break;
-                case 5:
-                    $orderByfield = 'third_num';
-                    break;
-                case 6:
-                    $orderByfield = 'third_ratio';
-                    break;
-                case 7:
-                    $orderByfield = 'above_num';
-                    break;
-                case 8:
-                    $orderByfield = 'above_ratio';
-                    break;
-                case 9:
-                    $orderByfield = 'totol_num';
-                    break;
-            }
-
-            if ($condition['order_by']['sort'] == 1) {
-                $query->orderBy($orderByfield . ' asc,id desc');
-            } else {
-                $query->orderBy($orderByfield . ' desc,id desc');
-            }
-        } else {
-            $query->orderBy('id desc');
-        }
         return $query;
     }
 
@@ -210,26 +172,20 @@ class ApiLogisticsTrack
     {
         $query = self::logisticsSuccRateQuery($condition);
 
-        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-
-
-        $provider = new ArrayDataProvider([
-            'allModels'  => $query->all()->toArray(),
-            'sort'       => [
-                'attributes'   => [
-                    'success_ratio', 'success_num'
+        return new ArrayDataProvider([
+            'allModels' => $query->all(),
+            'sort' => [
+                'attributes' => [
+                   'id',  'success_ratio', 'success_num'
                 ],
                 'defaultOrder' => [
                     'id' => SORT_DESC,
                 ]
             ],
             'pagination' => [
-//                'page' => $condition['start'] - 1,
-'pageSize' => $pageSize,
+                'pageSize' => isset($condition['pageSize']) ? $condition['pageSize'] : 10,
             ],
         ]);
-        return $provider;
-
     }
 
     /**
@@ -255,19 +211,6 @@ class ApiLogisticsTrack
         if (!empty($condition['logistic_name'])) {
             $query->andFilterWhere(['logistic_name' => $condition['logistic_name']]);
         }
-
-        if (!empty($condition['order_by']['field'])) {
-
-            if ($condition['order_by']['sort'] == 1) {
-                $query->orderBy('success_ratio asc ,id desc');
-            } else {
-
-                $query->orderBy('success_ratio desc,id desc');
-            }
-        } else {
-            $query->orderBy('id desc');
-        }
-
         return $query;
     }
 
@@ -311,7 +254,7 @@ class ApiLogisticsTrack
             $objectPHPExcel->getActiveSheet()->setCellValue('K' . ($n), $v['third_num']);
             $objectPHPExcel->getActiveSheet()->setCellValue('L' . ($n), $v['third_ratio']);
             $objectPHPExcel->getActiveSheet()->setCellValue('M' . ($n), $v['above_num']);
-            $objectPHPExcel->getActiveSheet()->setCellValue('N' . ($n), $v['$above_ratio']);
+            $objectPHPExcel->getActiveSheet()->setCellValue('N' . ($n), $v['above_ratio']);
             $n = $n + 1;
         }
         $objWriter = IOFactory::createWriter($objectPHPExcel, 'Xlsx');
@@ -422,7 +365,7 @@ class ApiLogisticsTrack
                 $objectPHPExcel->getActiveSheet()->setCellValue('N' . ($n), empty($v['newest_time']) ? '' : date('Y-m-d H:i:s', $v['newest_time']));
                 $objectPHPExcel->getActiveSheet()->setCellValue('O' . ($n), $v['newest_detail']);
                 $objectPHPExcel->getActiveSheet()->setCellValue('P' . ($n), $trackStatus[$v['status'] - 1]);
-                $objectPHPExcel->getActiveSheet()->setCellValue('Q' . ($n), intval(($v['newest_time'] - $v['closingdate']) / 86400));
+                $objectPHPExcel->getActiveSheet()->setCellValue('Q' . ($n), !empty($v['newest_time']) ? intval(($v['newest_time'] - $v['closingdate']) / 86400) : '');
                 $objectPHPExcel->getActiveSheet()->setCellValue('R' . ($n), $v['status'] == 1 && !empty($v['newest_time']) ? intval(time() - $v['newest_time']) / 86400 : '');
             }
             $n = $n + 1;
