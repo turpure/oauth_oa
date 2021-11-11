@@ -101,8 +101,13 @@ class ApiLogisticsTrack
         if (!empty($condition['logistic_status'])) {
 
             if ($condition['logistic_status'] == 1) {
-                // 未上网
-                $query->andFilterWhere(['=', 'tslt.status', LogisticEnum::NOT_FIND]);
+                if ($condition['day_num'] > 5) {
+                    // 未上网
+                    $firstDate = strtotime($condition['closingdate'][0]) + $condition['day_num'] * 86400;
+                    $query->andWhere("first_time>{$firstDate} or first_time is null");
+                } else {
+                    $query->andWhere(" first_time is null");
+                }
             } else {
                 // 未妥投
                 $query->andFilterWhere(['!=', 'tslt.status', LogisticEnum::SUCCESS]);
@@ -121,11 +126,12 @@ class ApiLogisticsTrack
     {
         $query = self::timeFrameQuery($condition);
 
+
         return new ArrayDataProvider([
-            'allModels' => $query->all(),
-            'sort' => [
-                'attributes' => [
-                    'id',  'totol_num','above_ratio','above_num','second_ratio','first_ratio','first_num','second_num','third_num','third_ratio'
+            'allModels'  => $query->all(),
+            'sort'       => [
+                'attributes'   => [
+                    'id', 'totol_num', 'above_ratio', 'above_num', 'second_ratio', 'first_ratio', 'first_num', 'second_num', 'third_num', 'third_ratio'
                 ],
                 'defaultOrder' => [
                     'id' => SORT_DESC,
@@ -173,10 +179,10 @@ class ApiLogisticsTrack
         $query = self::logisticsSuccRateQuery($condition);
 
         return new ArrayDataProvider([
-            'allModels' => $query->all(),
-            'sort' => [
-                'attributes' => [
-                   'id',  'success_ratio', 'success_num'
+            'allModels'  => $query->all(),
+            'sort'       => [
+                'attributes'   => [
+                    'id', 'success_ratio', 'success_num'
                 ],
                 'defaultOrder' => [
                     'id' => SORT_DESC,
