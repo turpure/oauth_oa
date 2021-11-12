@@ -43,6 +43,8 @@ class AdminController extends ActiveController
                     'Access-Control-Allow-Credentials' => true,
                     'Access-Control-Request-Method' => ['GET', 'POST', 'PUT', 'OPTIONS','DELETE'],
                     'Access-Control-Request-Headers' => ['*'],
+                    'Access-Control-Max-Age' => 86400,
+                    'Access-Control-Expose-Headers' => [],
                 ],
             ],
         ],
