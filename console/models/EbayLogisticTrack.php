@@ -37,10 +37,10 @@ class EbayLogisticTrack
 
         $orderList = TradeSendLogisticsTrack::find()
             ->andwhere(['>', 'created_at', (time() - 86400 * 60)])
-            ->andwhere(['<', 'updated_at', (time() - 360)])
+            ->andwhere(['<', 'updated_at', (time() - 86400)])
             ->andwhere(['=', 'logistic_type', 6])
             ->andwhere(['not in', 'status', [LogisticEnum::SUCCESS, LogisticEnum::FAIL]])
-            ->limit(100)
+            ->limit(40)
             ->orderBy('updated_at', 'asc')
             ->all();
 
@@ -59,9 +59,7 @@ class EbayLogisticTrack
 
             $rep = $client->execute($req);
             $result = $rep->getData();
-
             //            第二条才上网
-
             sleep(1);
             $length = count($result);
             if ($length < 2) {
