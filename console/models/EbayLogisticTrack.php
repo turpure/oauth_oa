@@ -5,9 +5,9 @@ namespace console\models;
 use backend\models\TradeSendEbayToken;
 use backend\models\TradeSendLogisticsTrack;
 use backend\modules\v1\enums\LogisticEnum;
-use backend\modules\v1\services\ebayTrack\DefaultEbayClient;
-use backend\modules\v1\services\ebayTrack\GetTrackingDetailRequest;
-use backend\modules\v1\services\ebayTrack\GetTrackingDetailRequestData;
+use console\services\ebayTrack\DefaultEbayClient;
+use console\services\ebayTrack\GetTrackingDetailRequest;
+use console\services\ebayTrack\GetTrackingDetailRequestData;
 use Yii;
 use yii\db\Exception;
 
@@ -85,7 +85,7 @@ class EbayLogisticTrack
 
                 $trackDetail[] = [
                     'status' => $item->getStatus(),
-                    'detail' => $item->getProvince . $item->getCity() . $item->getDistrict . $item->getDescriptionEn(),
+                    'detail' => $item->getProvince() . $item->getCity() . $item->getDistrict() . $item->getDescriptionEn(),
                     'time'   => $item['event_time']->getTimestamp()
                 ];
             }
