@@ -1,6 +1,6 @@
 <?php
 /**
- * FetchTokenResponses
+ * GetTrackingDetailRequestData
  *
  * PHP version 5
  *
@@ -27,20 +27,20 @@
  * Do not edit the class manually.
  */
 
-namespace backend\modules\v1\services\ebayTrack;
+namespace console\services\ebayTrack;
 
 use \ArrayAccess;
-use backend\modules\v1\services\ebayTrack\ObjectSerializer;
+use console\services\ebayTrack\ObjectSerializer;
 
 /**
- * FetchTokenResponses Class Doc Comment
+ * GetTrackingDetailRequestData Class Doc Comment
  *
  * @category Class
  * @package  Swagger\Client
  * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
-class FetchTokenResponses implements ModelInterface, ArrayAccess
+class GetTrackingDetailRequestData implements ModelInterface, ArrayAccess
 {
     const DISCRIMINATOR = null;
 
@@ -49,7 +49,7 @@ class FetchTokenResponses implements ModelInterface, ArrayAccess
       *
       * @var string
       */
-    protected static $swaggerModelName = 'FetchTokenResponses';
+    protected static $swaggerModelName = 'GetTrackingDetailRequestData';
 
     /**
       * Array of property to type mappings. Used for (de)serialization
@@ -57,9 +57,7 @@ class FetchTokenResponses implements ModelInterface, ArrayAccess
       * @var string[]
       */
     protected static $swaggerTypes = [
-        'expire_date' => '\DateTime',
-        'status' => 'backend\modules\v1\services\ebayTrack\ResponsesStatus',
-        'token' => 'string'
+        'tracking_number' => 'string'
     ];
 
     /**
@@ -68,9 +66,7 @@ class FetchTokenResponses implements ModelInterface, ArrayAccess
       * @var string[]
       */
     protected static $swaggerFormats = [
-        'expire_date' => 'date-time',
-        'status' => null,
-        'token' => null
+        'tracking_number' => null
     ];
 
     /**
@@ -100,9 +96,7 @@ class FetchTokenResponses implements ModelInterface, ArrayAccess
      * @var string[]
      */
     protected static $attributeMap = [
-        'expire_date' => 'expireDate',
-        'status' => 'status',
-        'token' => 'token'
+        'tracking_number' => 'trackingNumber'
     ];
 
     /**
@@ -111,9 +105,7 @@ class FetchTokenResponses implements ModelInterface, ArrayAccess
      * @var string[]
      */
     protected static $setters = [
-        'expire_date' => 'setExpireDate',
-        'status' => 'setStatus',
-        'token' => 'setToken'
+        'tracking_number' => 'setTrackingNumber'
     ];
 
     /**
@@ -122,9 +114,7 @@ class FetchTokenResponses implements ModelInterface, ArrayAccess
      * @var string[]
      */
     protected static $getters = [
-        'expire_date' => 'getExpireDate',
-        'status' => 'getStatus',
-        'token' => 'getToken'
+        'tracking_number' => 'getTrackingNumber'
     ];
 
     /**
@@ -187,9 +177,7 @@ class FetchTokenResponses implements ModelInterface, ArrayAccess
      */
     public function __construct(array $data = null)
     {
-        $this->container['expire_date'] = isset($data['expire_date']) ? $data['expire_date'] : null;
-        $this->container['status'] = isset($data['status']) ? $data['status'] : null;
-        $this->container['token'] = isset($data['token']) ? $data['token'] : null;
+        $this->container['tracking_number'] = isset($data['tracking_number']) ? $data['tracking_number'] : null;
     }
 
     /**
@@ -201,14 +189,8 @@ class FetchTokenResponses implements ModelInterface, ArrayAccess
     {
         $invalidProperties = [];
 
-        if ($this->container['expire_date'] === null) {
-            $invalidProperties[] = "'expire_date' can't be null";
-        }
-        if ($this->container['status'] === null) {
-            $invalidProperties[] = "'status' can't be null";
-        }
-        if ($this->container['token'] === null) {
-            $invalidProperties[] = "'token' can't be null";
+        if ($this->container['tracking_number'] === null) {
+            $invalidProperties[] = "'tracking_number' can't be null";
         }
         return $invalidProperties;
     }
@@ -222,13 +204,7 @@ class FetchTokenResponses implements ModelInterface, ArrayAccess
     public function valid()
     {
 
-        if ($this->container['expire_date'] === null) {
-            return false;
-        }
-        if ($this->container['status'] === null) {
-            return false;
-        }
-        if ($this->container['token'] === null) {
+        if ($this->container['tracking_number'] === null) {
             return false;
         }
         return true;
@@ -236,75 +212,28 @@ class FetchTokenResponses implements ModelInterface, ArrayAccess
 
 
     /**
-     * Gets expire_date
-     *
-     * @return \DateTime
-     */
-    public function getExpireDate()
-    {
-        return $this->container['expire_date'];
-    }
-
-    /**
-     * Sets expire_date
-     *
-     * @param \DateTime $expire_date æææï¼12ä¸ªæï¼
-     *
-     * @return $this
-     */
-    public function setExpireDate($expire_date)
-    {
-        $this->container['expire_date'] = $expire_date;
-
-        return $this;
-    }
-
-    /**
-     * Gets status
-     *
-     * @return backend\modules\v1\services\ebayTrack\ResponsesStatus
-     */
-    public function getStatus()
-    {
-        return $this->container['status'];
-    }
-
-    /**
-     * Sets status
-     *
-     * @param backend\modules\v1\services\ebayTrack\ResponsesStatus $status status
-     *
-     * @return $this
-     */
-    public function setStatus($status)
-    {
-        $this->container['status'] = $status;
-
-        return $this;
-    }
-
-    /**
-     * Gets token
+     * Gets tracking_number
      *
      * @return string
      */
-    public function getToken()
+    public function getTrackingNumber()
     {
-        return $this->container['token'];
+        return $this->container['tracking_number'];
     }
 
     /**
-     * Sets token
+     * Sets tracking_number
      *
-     * @param string $token ä»¤ç
+     * @param string $tracking_number åè£¹è·è¸ªå·
      *
      * @return $this
      */
-    public function setToken($token)
+    public function setTrackingNumber($tracking_number)
     {
-        $this->container['token'] = $token;
 
-        return $this;
+        $this->container['tracking_number'] = $tracking_number;
+
+//        return $this;
     }
     /**
      * Returns true if offset exists. False otherwise.

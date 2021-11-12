@@ -26,7 +26,7 @@
  * Do not edit the class manually.
  */
 
-namespace backend\modules\v1\services\ebayTrack;
+namespace console\services\ebayTrack;
 
 /**
  * Configuration Class Doc Comment

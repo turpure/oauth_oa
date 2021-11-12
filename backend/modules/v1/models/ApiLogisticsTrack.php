@@ -271,7 +271,7 @@ class ApiLogisticsTrack
             $objectPHPExcel->getActiveSheet()->setCellValue('A' . ($n), $v['closing_date']);
             $objectPHPExcel->getActiveSheet()->setCellValue('B' . ($n), $v['logistic_company']);
             $objectPHPExcel->getActiveSheet()->setCellValue('C' . ($n), $v['logistic_name']);
-            $objectPHPExcel->getActiveSheet()->setCellValue('D' . ($n), $v['totol_num']);
+            $objectPHPExcel->getActiveSheet()->setCellValue('D' . ($n), $v['total_num']);
             $objectPHPExcel->getActiveSheet()->setCellValue('E' . ($n), $v['intraday_num']);
             $objectPHPExcel->getActiveSheet()->setCellValue('F' . ($n), $v['intraday_ratio']);
             $objectPHPExcel->getActiveSheet()->setCellValue('G' . ($n), $v['first_num']);
@@ -318,7 +318,7 @@ class ApiLogisticsTrack
             $objectPHPExcel->getActiveSheet()->setCellValue('A' . ($n), $v['closing_date']);
             $objectPHPExcel->getActiveSheet()->setCellValue('B' . ($n), $v['logistic_company']);
             $objectPHPExcel->getActiveSheet()->setCellValue('C' . ($n), $v['logistic_name']);
-            $objectPHPExcel->getActiveSheet()->setCellValue('D' . ($n), $v['order_num']);
+            $objectPHPExcel->getActiveSheet()->setCellValue('D' . ($n), $v['total_num']);
             $objectPHPExcel->getActiveSheet()->setCellValue('E' . ($n), $v['average']);
             $objectPHPExcel->getActiveSheet()->setCellValue('F' . ($n), $v['success_ratio']);
             $objectPHPExcel->getActiveSheet()->setCellValue('G' . ($n), $v['dont_succeed_num']);

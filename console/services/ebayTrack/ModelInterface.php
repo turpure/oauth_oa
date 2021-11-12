@@ -5,7 +5,7 @@
  * PHP version 5
  *
  * @category Class
- * @package  backend\modules\v1\services\ebayTrack
+ * @package  console\services\ebayTrack
  * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
@@ -27,13 +27,13 @@
  * Do not edit the class manually.
  */
 
-namespace backend\modules\v1\services\ebayTrack;
+namespace console\services\ebayTrack;
 
 
 /**
  * Interface abstracting model access.
  *
- * @package backend\modules\v1\services\ebayTrack
+ * @package console\services\ebayTrack
  * @author  Swagger Codegen team
  */
 interface ModelInterface
