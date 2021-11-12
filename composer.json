@@ -30,7 +30,8 @@
         "hguenot/yii2-gftp": "*",
         "yiisoft/yii2-redis": "^2.0",
         "yiisoft/yii2-mongodb": "^2.1",
-        "workerman/workerman": "^3.5"
+        "workerman/workerman": "^3.5",
+        "guzzlehttp/guzzle": "^6.2"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.0.0",
@@ -49,10 +50,6 @@
         "0": {
             "type": "composer",
             "url": "https://asset-packagist.org"
-        },
-        "packagist": {
-            "type": "composer",
-            "url": "https://packagist.phpcomposer.com"
         }
     }
 }
