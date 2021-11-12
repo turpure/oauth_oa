@@ -148,9 +148,11 @@ class  LogisticTrack
 
             $total = self::orderTotol($startTimestamp, 0, $timeFrame['logistic_name']);
 
-            if (!$totalNum = $total[0]['icount']) {
+            if(empty($total[0]['icount'])) {
                 continue;
             }
+
+            $totalNum = $total[0]['icount'];
 
             $updateDate = [
                 'total_num' => $totalNum,
