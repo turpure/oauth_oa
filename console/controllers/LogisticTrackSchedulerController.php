@@ -24,9 +24,8 @@ class LogisticTrackSchedulerController extends Controller
      */
     public function actionLogisticInternet() {
         ini_set('max_execution_time', '0');
-
-//        LogisticTrack::yesterdayOrder();
-//        LogisticTrack::successful();
+        LogisticTrack::yesterdayOrder();
+        LogisticTrack::successful();
         LogisticTrack::internet();
     }
 

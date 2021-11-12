@@ -10,7 +10,7 @@ use yii\db\ActiveRecord;
  * @property string $logistic_type
  * @property string $logistic_name
  * @property string $closing_date
- * @property integer $totol_num
+ * @property integer $total_num
  * @property integer $intraday_num
  * @property integer $first_num
  * @property integer $second_num

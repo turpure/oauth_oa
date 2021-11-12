@@ -37,7 +37,7 @@ class EbayLogisticTrack
 
         $orderList = TradeSendLogisticsTrack::find()
             ->andwhere(['>', 'created_at', (time() - 86400 * 60)])
-            ->andwhere(['<', 'updated_at', (time() - 10800)])
+            ->andwhere(['<', 'updated_at', (time() - 360)])
             ->andwhere(['=', 'logistic_type', 6])
             ->andwhere(['not in', 'status', [LogisticEnum::SUCCESS, LogisticEnum::FAIL]])
             ->limit(100)
@@ -53,12 +53,13 @@ class EbayLogisticTrack
         $data = new GetTrackingDetailRequestData();
 
         foreach ($orderList as $order) {
-            var_export($order['track_no']);
+
             $data->setTrackingNumber($order['track_no']);
             $req->setData($data);
 
             $rep = $client->execute($req);
             $result = $rep->getData();
+
             //            第二条才上网
 
             sleep(1);
@@ -103,7 +104,7 @@ class EbayLogisticTrack
                 default:
                     $status = 3;
             }
-
+            var_export($status);
             $updatedData = [
                 'newest_time'   => $trackDetail[0]['time'],
                 'newest_detail' => $trackDetail[0]['detail'],

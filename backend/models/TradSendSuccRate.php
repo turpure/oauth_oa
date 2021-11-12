@@ -10,7 +10,7 @@ use yii\db\ActiveRecord;
  * @property string $logistic_company
  * @property string $logistic_type
  * @property string $logistic_name
- * @property string $order_num
+ * @property string $total_num
  * @property string $average
  * @property string $success_num
  * @property string $success_ratio
