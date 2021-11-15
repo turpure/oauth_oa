@@ -179,7 +179,7 @@ class ApiLogisticsTrack
                     'management'      => Yii::$app->user->identity->username
                 ],
                 [
-                    'order_id'        => $condition['order_id'],
+                    'id'        => $condition['order_id'],
                     'abnormal_status' => [2, 3, 4]
                 ]
             )

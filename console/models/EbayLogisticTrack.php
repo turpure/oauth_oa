@@ -36,9 +36,9 @@ class EbayLogisticTrack
         $authorization = self::ebayToken();
 
         $orderList = TradeSendLogisticsTrack::find()
-            ->andwhere(['>', 'created_at', (time() - 86400 * 60)])
             ->andwhere(['<', 'updated_at', (time() - 86400)])
             ->andwhere(['=', 'logistic_type', 6])
+            ->andwhere(['>', 'created_at', (time() - 86400 * 60)])
             ->andwhere(['not in', 'status', [LogisticEnum::SUCCESS, LogisticEnum::FAIL]])
             ->limit(40)
             ->orderBy('updated_at', 'asc')
@@ -91,7 +91,7 @@ class EbayLogisticTrack
             $timeList = array_column($trackDetail, 'time');
             array_multisort($timeList, SORT_DESC, $trackDetail);
             // 未查询# 查询不到 # 运输途中 # 运输过久 # 可能异常# 到达待取# 投递失败# 成功签收
-//            RETURN_INITIATED
+            //            RETURN_INITIATED
             switch ($trackDetail[0]['status']) {
                 case 'DELIVERED':
                     $status = 8;
