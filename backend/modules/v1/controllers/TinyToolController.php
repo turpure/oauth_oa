@@ -24,6 +24,7 @@ use backend\modules\v1\utils\Helper;
 use Codeception\Template\Api;
 use common\models\User;
 use backend\modules\v1\services\ExpressExpired;
+use console\models\EbayLogisticTrack;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Yii;
@@ -102,6 +103,41 @@ class TinyToolController extends AdminController
         $request = Yii::$app->request;
         $condition = $request->post('condition');
         return ApiLogisticsTrack::logisticsSuccRate($condition);
+    }
+    /**
+     * 物流异常列表
+     * @return mixed
+     */
+    public function actionLogisticsAbnormal()
+    {
+        $request = Yii::$app->request;
+        $condition = $request->post('condition');
+        return ApiLogisticsTrack::logisticsAbnormal($condition);
+    }
+
+    /**
+     * 物流异常处理
+     * @return mixed
+     */
+    public function actionLogisticsAbnormalManage()
+    {
+        try {
+            $request = Yii::$app->request;
+            $condition = $request->post('condition');
+            return ApiLogisticsTrack::LogisticsAbnormalManage($condition);
+        }
+        catch (\Exception $exception) {
+            return [
+                'code' => 400,
+                'message' =>  $exception->getMessage()
+            ];
+        }
+    }
+
+    public function actionExportLogisticsAbnormal() {
+        $request = Yii::$app->request;
+        $condition = $request->post('condition');
+        return ApiLogisticsTrack::exportLogisticsAbnormal($condition);
     }
 
     /**

@@ -22,8 +22,9 @@ use yii\db\ActiveRecord;
  * @property integer $stagnation_time
  * @property string $track_detail
  * @property integer $icount
- * @property integer abnormal_type
- * @property integer abnormal_status
+ * @property integer $abnormal_type
+ * @property integer $abnormal_status
+ * @property string $management
  */
 class TradeSendLogisticsTrack extends ActiveRecord
 {

@@ -44,7 +44,13 @@ class ApiLogisticsTrack
 
     }
 
-    public static function tradeSendQuery($condition)
+
+    /**
+     * 物流列表查询语句
+     * @param $condition
+     * @return \yii\db\Query
+     */
+    private static function tradeSendQuery($condition)
     {
         $userId = Yii::$app->user->id;
         $role = User::getRole($userId);//登录用户角色
@@ -59,24 +65,13 @@ class ApiLogisticsTrack
             ->from('trade_send')
             ->leftJoin('trade_send_logistics_track as tslt', 'trade_send.order_id = tslt.order_id')
             ->orderBy('trade_send.closingdate desc');
+        //  订单号
         if (!empty($condition['order_id'])) {
-
-            $orderId = explode(',', $condition['order_id']);
-            if (count($orderId) == 1) {
-                $query->andFilterWhere(['=', 'trade_send.order_id', $orderId[0]]);
-            } else {
-                $query->andFilterWhere(['in', 'trade_send.order_id', $orderId]);
-            }
+            $query->andFilterWhere(['trade_send.order_id', explode(',', $condition['order_id'])]);
         }
         // 追踪号
         if (!empty($condition['track_no'])) {
-            $trackNo = explode(',', $condition['track_no']);
-
-            if (count($trackNo) == 1) {
-                $query->andFilterWhere(['=', 'trade_send.track_no', $trackNo[0]]);
-            } else {
-                $query->andFilterWhere(['in', 'trade_send.track_no', $trackNo]);
-            }
+            $query->andFilterWhere(['trade_send.track_no1' => explode(',', $condition['track_no'])]);
         }
         // 店铺单号
         if (!empty($condition['ack'])) {
@@ -86,7 +81,7 @@ class ApiLogisticsTrack
         if (!empty($condition['addressowner'])) {
             $query->andFilterWhere(['=', 'trade_send.addressowner', $condition['addressowner']]);
         }
-
+        // 发货时间
         if (!empty($condition['closing_date'][0])) {
             $query->andFilterWhere(['>', 'trade_send.closingdate', (strtotime($condition['closing_date'][0]) - 1)]);
         }
@@ -111,12 +106,21 @@ class ApiLogisticsTrack
                 $query->andFilterWhere(['!=', 'tslt.status', LogisticEnum::SUCCESS]);
             }
         }
+        // 异常物流类型
+        if (!empty($condition['abnormal_type'])) {
+            $query->andFilterWhere(['=', 'tslt.abnormal_type', $condition['abnormal_type']]);
+        }
+
         // 快递公司
         if (!empty($condition['logistic_type'])) {
             $query->andFilterWhere(['=', 'trade_send.logistic_type', $condition['logistic_type']]);
         }
-        $isAccountAdmin = true;
-        $userAccount = [];
+
+
+        // 异常状态
+        if (!empty($condition['abnormal_status'])) {
+            $query->andFilterWhere(['in', 'tslt.abnormal_status', $condition['abnormal_status']]);
+        }
 
         // 快递方式
         if (!empty($condition['logistic_name'])) {
@@ -136,6 +140,50 @@ class ApiLogisticsTrack
         }
 
         return $query;
+    }
+
+    /**
+     * 异常物流列表
+     * @param $condition
+     * @return ActiveDataProvider
+     */
+    public static function logisticsAbnormal($condition)
+    {
+        $condition['abnormal_status'] = [2, 3, 4];
+
+        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+
+        $query = self::tradeSendQuery($condition);
+
+        $provider = new ActiveDataProvider([
+            'query'      => $query,
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ]
+        ]);
+        return $provider;
+
+    }
+
+    /**
+     * 异常物流处理
+     * @param $condition
+     */
+    public static function LogisticsAbnormalManage($condition)
+    {
+        Yii::$app->db->createCommand()
+            ->update(
+                'trade_send_logistics_track',
+                [
+                    'abnormal_status' => $condition['status'],
+                    'management'      => Yii::$app->user->identity->username
+                ],
+                [
+                    'order_id'        => $condition['order_id'],
+                    'abnormal_status' => [2, 3, 4]
+                ]
+            )
+            ->execute();
     }
 
 
@@ -336,12 +384,26 @@ class ApiLogisticsTrack
     }
 
     /**
+     * 导出异常物流
+     * @param $condition
+     */
+    public static function exportLogisticsAbnormal($condition)
+    {
+        $condition['abnormal_status'] = [2, 3, 4];
+        self::exportLogisticsTrack($condition);
+    }
+
+    /**
      * 导出物流轨迹
      * @param $condition
      */
     public static function exportLogisticsTrack($condition)
     {
+//        3处理中 4待赔偿 5暂时正常 6已退回 7销毁/弃件 8已索赔 9成功签收
         $trackStatus = ['未查询', '查询不到', '运输途中', '运输过久', '可能异常', '到达待取', '投递失败', '成功签收'];
+        $abnormalStatus = ['正常', '异常待处理', '待赔偿', '暂时正常', '已退回', '销毁/弃件', '已索赔', '成功签收'];
+        $abnormalType = ['无异常', '未上网', '断更', '运输过久', '退件', '派送异常', '信息停滞'];
+
         $query = self::tradeSendQuery($condition);
         $list = $query->all();
 
@@ -369,6 +431,16 @@ class ApiLogisticsTrack
             $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('Q1', '签收时效');
             $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('R1', '停滞时间');
         }
+
+        if (!empty($condition['abnormal_status'])) {
+//
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('S1', '轨迹分类');
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('T1', '处理标签');
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('U1', '处理人');
+
+        }
+
+
         $n = 2;
         // 	最新时间	签收时效	停滞时间
         foreach ($list as $v) {
@@ -394,6 +466,14 @@ class ApiLogisticsTrack
                 $objectPHPExcel->getActiveSheet()->setCellValue('P' . ($n), $trackStatus[$v['status'] - 1]);
                 $objectPHPExcel->getActiveSheet()->setCellValue('Q' . ($n), !empty($v['newest_time']) ? intval(($v['newest_time'] - $v['closingdate']) / 86400) : '');
                 $objectPHPExcel->getActiveSheet()->setCellValue('R' . ($n), $v['status'] == 1 && !empty($v['newest_time']) ? intval(time() - $v['newest_time']) / 86400 : '');
+            }
+
+            if (!empty($condition['abnormal_status'])) {
+//
+                $objectPHPExcel->getActiveSheet()->setCellValue('S' . ($n), $abnormalType[$v['abnormal_type'] - 1]);
+                $objectPHPExcel->getActiveSheet()->setCellValue('T' . ($n), $trackStatus[$v['abnormal_status'] - 1]);
+                $objectPHPExcel->getActiveSheet()->setCellValue('U' . ($n), $v['management']);
+
             }
             $n = $n + 1;
         }
@@ -501,72 +581,4 @@ class ApiLogisticsTrack
 
     }
 
-
-    /**
-     * 导出物流轨迹
-     * @param $condition
-     */
-    public static function export($condition)
-    {
-        $trackStatus = ['未查询', '查询不到', '运输途中', '运输过久', '可能异常', '到达待取', '投递失败', '成功签收'];
-
-        $query = self::tradeSendQuery($condition);
-        if ($condition['logistic_status'] == 1) {
-            $query->andFilterWhere(['in', 'status', [1, 2]]);
-        } else {
-            $query->andFilterWhere(['!=', 'status', 8]);
-        }
-        $list = $query->all();
-
-        $objectPHPExcel = new Spreadsheet();//实例化类
-
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', '订单编号');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('B1', '卖家简称');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('C1', '店铺单号');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('D1', '发货时间');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('E1', '总重量(kg)');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('F1', '跟踪号');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('G1', '物流方式');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('H1', '收货国家');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('I1', '出货仓库');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('J1', '销售渠道');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('K1', '第一条轨迹时间');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('L1', '第一条轨迹信息');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('M1', '最新轨迹时间');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('N1', '最新轨迹信息');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('O1', '运输状态');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('P1', '签收时效');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('Q1', '停滞时间');
-        $n = 2;
-        // 	最新时间	签收时效	停滞时间
-        foreach ($list as $v) {
-            $objectPHPExcel->getActiveSheet()->setCellValue('A' . ($n), $v['order_id']);
-            $objectPHPExcel->getActiveSheet()->setCellValue('B' . ($n), $v['suffix']);
-            $objectPHPExcel->getActiveSheet()->setCellValue('C' . ($n), $v['ack']);
-            $objectPHPExcel->getActiveSheet()->setCellValue('D' . ($n), date('Y-m-d H:i:s', $v['closingdate']));
-            $objectPHPExcel->getActiveSheet()->setCellValue('E' . ($n), $v['total_weight']);
-            $objectPHPExcel->getActiveSheet()->setCellValue('F' . ($n), $v['track_no']);
-            $objectPHPExcel->getActiveSheet()->setCellValue('G' . ($n), $v['logistic_name']);
-            $objectPHPExcel->getActiveSheet()->setCellValue('H' . ($n), $v['shiptocountry_name']);
-            $objectPHPExcel->getActiveSheet()->setCellValue('I' . ($n), $v['store_name']);
-            $objectPHPExcel->getActiveSheet()->setCellValue('J' . ($n), $v['addressowner']);
-            $objectPHPExcel->getActiveSheet()->setCellValue('K' . ($n), empty($v['first_time']) ? '' : date('Y-m-d H:i:s', $v['first_time']));
-            $objectPHPExcel->getActiveSheet()->setCellValue('L' . ($n), $v['first_detail']);
-            $objectPHPExcel->getActiveSheet()->setCellValue('M' . ($n), empty($v['newest_time']) ? '' : date('Y-m-d H:i:s', $v['newest_time']));
-            $objectPHPExcel->getActiveSheet()->setCellValue('N' . ($n), $v['newest_detail']);
-            $objectPHPExcel->getActiveSheet()->setCellValue('O' . ($n), $trackStatus[$v['status'] - 1]);
-            $objectPHPExcel->getActiveSheet()->setCellValue('P' . ($n), intval(($v['newest_time'] - $v['closingdate']) / 86400));
-            $objectPHPExcel->getActiveSheet()->setCellValue('Q' . ($n), $v['status'] == 1 && !empty($v['newest_time']) ? intval(time() - $v['newest_time']) / 86400 : '');
-            $n = $n + 1;
-        }
-        $objWriter = IOFactory::createWriter($objectPHPExcel, 'Xlsx');
-
-
-        header('Content-Type: applicationnd.ms-excel');
-        $time = date('Y-m-d');
-        header("Content-Disposition: attachment;filename=物流'.$time.'.xls");
-        header('Cache-Control: max-age=0');
-        $objWriter->save('php://output');
-
-    }
 }
