@@ -15,8 +15,13 @@ class LogisticTrackSchedulerController extends Controller
      * @param EbayLogisticTrack $ebayTrack
      */
     public function actionEbayTrack() {
-        $ebayLogisticTrack = new EbayLogisticTrack();
-        $ebayLogisticTrack->ebayTrack();
+        try {
+            $ebayLogisticTrack = new EbayLogisticTrack();
+            $ebayLogisticTrack->ebayTrack();
+        }
+        catch (\Exception $why) {
+            var_export($why->getMessage());
+        }
     }
 
     /**

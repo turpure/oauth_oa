@@ -144,13 +144,16 @@ class  LogisticTrack
             ->all();
 
         foreach ($timeFrameLists as $timeFrame) {
+
             $startTimestamp = strtotime($timeFrame['closing_date']);
 
             $total = self::orderTotol($startTimestamp, 0, $timeFrame['logistic_name']);
 
-            if (!$totalNum = $total[0]['icount']) {
+            if(empty($total[0]['icount'])) {
                 continue;
             }
+
+            $totalNum = $total[0]['icount'];
 
             $updateDate = [
                 'total_num' => $totalNum,
@@ -174,23 +177,23 @@ class  LogisticTrack
                 switch ($i) {
                     case 1:
                         $updateDate['intraday_num'] = $icount;
-                        $updateDate['intraday_ratio'] = $icount / $totalNum;
+                        $updateDate['intraday_ratio'] =sprintf("%.2f", ( $icount / $totalNum * 100));
                         break;
                     case 2:
                         $updateDate['first_num'] = $icount;
-                        $updateDate['first_ratio'] = $icount / $totalNum;
+                        $updateDate['first_ratio'] = sprintf("%.2f", ( $icount / $totalNum * 100));
                         break;
                     case 3:
                         $updateDate['second_num'] = $icount;
-                        $updateDate['second_ratio'] = $icount / $totalNum;
+                        $updateDate['second_ratio'] = sprintf("%.2f", ( $icount / $totalNum * 100));
                         break;
                     case 4:
                         $updateDate['third_num'] = $icount;
-                        $updateDate['third_ratio'] = $icount / $totalNum;
+                        $updateDate['third_ratio'] = sprintf("%.2f", ( $icount / $totalNum * 100));
                         break;
                     case 5:
                         $updateDate['above_num'] = $icount;
-                        $updateDate['above_ratio'] = $icount / $totalNum;
+                        $updateDate['above_ratio'] = sprintf("%.2f", ( $icount / $totalNum * 100));
                         break;
                 }
             }
