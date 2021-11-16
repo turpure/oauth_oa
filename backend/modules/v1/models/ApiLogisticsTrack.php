@@ -301,7 +301,9 @@ class ApiLogisticsTrack
         $list = self::timeFrameQuery($condition)->all();
 
         $objectPHPExcel = new Spreadsheet();//实例化类
-        //      当天上网数量	当天上网率	1天内上网数量	1天内上网率	2天内上网数量	2天内上网率	3天内上网数量	3天内上网率	未上网数	未上网率
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(30);
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', '发货日期');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('B1', '快递公司');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('C1', '物流方式');
@@ -354,7 +356,9 @@ class ApiLogisticsTrack
         $list = self::logisticsSuccRateQuery($condition)->all();
 
         $objectPHPExcel = new Spreadsheet();//实例化类
-        //        发货月份	快递公司	物流方式	订单数量	平均时效	妥投率	未妥投数量	未妥投率
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(30);
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', '发货日期');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('B1', '快递公司');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('C1', '物流方式');
@@ -413,14 +417,33 @@ class ApiLogisticsTrack
         $list = $query->all();
 
         $objectPHPExcel = new Spreadsheet();//实例化类
+
+
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('O')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('P')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('Q')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('R')->setWidth(30);
+
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', '订单编号');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('B1', '卖家简称');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('C1', '店铺单号')->getColumnDimension('A')->setWidth(60);
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('D1', '发货时间')->getColumnDimension('A')->setWidth(60);
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('E1', '总重量(kg)')->getColumnDimension('A')->setWidth(60);
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('F1', '跟踪号')->getColumnDimension('A')->setWidth(60);
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('G1', '快递公司')->getColumnDimension('A')->setWidth(60);
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('H1', '物流方式')->getColumnDimension('A')->setWidth(60);
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('C1', '店铺单号');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('D1', '发货时间');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('E1', '总重量(kg)');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('F1', '跟踪号');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('G1', '快递公司');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('H1', '物流方式');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('I1', '收货国家');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('J1', '出货仓库');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('K1', '销售渠道');
@@ -428,13 +451,13 @@ class ApiLogisticsTrack
             $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('L1', '运输状态');
         }
         else {
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('L1', '第一条轨迹时间')->getColumnDimension('A')->setWidth(60);
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('M1', '第一条轨迹信息')->getColumnDimension('A')->setWidth(60);
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('N1', '最新轨迹时间')->getColumnDimension('A')->setWidth(60);
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('O1', '最新轨迹信息')->getColumnDimension('A')->setWidth(60);
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('P1', '运输状态')->getColumnDimension('A')->setWidth(60);
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('Q1', '签收时效')->getColumnDimension('A')->setWidth(60);
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('R1', '停滞时间')->getColumnDimension('A')->setWidth(60);
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('L1', '第一条轨迹时间');
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('M1', '第一条轨迹信息');
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('N1', '最新轨迹时间');
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('O1', '最新轨迹信息');
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('P1', '运输状态');
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('Q1', '签收时效');
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('R1', '停滞时间');
         }
 
         if (!empty($condition['abnormal_status'])) {
