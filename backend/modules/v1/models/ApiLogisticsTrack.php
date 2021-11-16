@@ -412,7 +412,7 @@ class ApiLogisticsTrack
         $trackStatus = ['未查询', '查询不到', '运输途中', '运输过久', '可能异常', '到达待取', '投递失败', '成功签收'];
         $abnormalStatus = ['正常', '异常待处理', '待赔偿', '暂时正常', '已退回', '销毁/弃件', '已索赔', '成功签收'];
         $abnormalType = ['无异常', '未上网', '断更', '运输过久', '退件', '派送异常', '信息停滞'];
-        $condition['order_id'] = '35921134';
+
         $query = self::tradeSendQuery($condition);
         $list = $query->all();
 
