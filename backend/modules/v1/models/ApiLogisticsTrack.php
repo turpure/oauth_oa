@@ -71,7 +71,7 @@ class ApiLogisticsTrack
         }
         // 追踪号
         if (!empty($condition['track_no'])) {
-            $query->andFilterWhere(['trade_send.track_no1' => explode(',', $condition['track_no'])]);
+            $query->andFilterWhere(['trade_send.track_no' => explode(',', $condition['track_no'])]);
         }
         // 店铺单号
         if (!empty($condition['ack'])) {
@@ -406,7 +406,7 @@ class ApiLogisticsTrack
      */
     public static function exportLogisticsTrack($condition)
     {
-        //        ini_set('memory_limit', '1024M');
+        ini_set('memory_limit', '1024M');
 
         //        3处理中 4待赔偿 5暂时正常 6已退回 7销毁/弃件 8已索赔 9成功签收
         $trackStatus = ['未查询', '查询不到', '运输途中', '运输过久', '可能异常', '到达待取', '投递失败', '成功签收'];
@@ -418,10 +418,10 @@ class ApiLogisticsTrack
 
         $objectPHPExcel = new Spreadsheet();//实例化类
 
-
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(30);
         $objectPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(30);
         $objectPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(30);
-        $objectPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(10);
         $objectPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(30);
         $objectPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(30);
         $objectPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(30);

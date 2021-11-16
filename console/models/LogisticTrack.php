@@ -231,7 +231,6 @@ class  LogisticTrack
             }
 
             if (!empty($updateData)) {
-                var_export($updateData);
                 Yii::$app->db->createCommand()->update(
                     'trade_send_logistics_track',
                     $updateData,
@@ -248,9 +247,8 @@ class  LogisticTrack
     private static function guahao($track)
     {
         $to = (time() - $track->closing_date) / 86400;
-        $kd = ($track->newest_time - $track->closing_date) / 86400;
+        $kd = ($track->newest_time - $track->first_time) / 86400;
         $ec = (time() - $track->newest_time) / 86400;
-
 
         //      停滞
         //③当前时间-最新轨迹时间>7天；
@@ -260,37 +258,37 @@ class  LogisticTrack
             $phase = 6;
             $abnormalType = LogisticEnum::AT_STAGNATE;
         }
-        elseif ($ec >= 14 && $ec < 21) {
+        elseif ($ec > 14 && $ec < 22) {
             $phase = 7;
             $abnormalType = LogisticEnum::AT_STAGNATE;
         }
-        elseif ($ec >= 21) {
+        elseif ($ec > 21) {
             $phase = 8;
             $abnormalType = LogisticEnum::AT_STAGNATE;
         }
-        if ($to >= 3 && $to < 8 && $kd >= 2) {
+//①当前时间-发货时间>4且最新轨迹时间-第一条轨迹时间<=2
+//②当前时间-发货时间>8且最新轨迹-第一条轨迹时间<=3；
+        elseif ($to >= 4 && $to < 9 && $kd <= 2) {
             $phase = 2;
             $abnormalType = LogisticEnum::AT_SUSPEND;
         }
-        elseif ($to >= 8 && $kd >= 3) {
+        elseif ($to > 8 && $kd <= 3) {
             $phase = 3;
             $abnormalType = LogisticEnum::AT_SUSPEND;
         }
         // "时间过久异常判断：
         //①最新轨迹时间-发货时间>25天；
         //②最新轨迹时间-发货时间>35天；
-        elseif ($kd >= 25 && $kd < 35) {
+        elseif ($kd > 25 && $kd < 36) {
             $phase = 4;
             $abnormalType = LogisticEnum::AT_TOOLONG;
         }
-        // 断更
-        //①当前时间-发货时间>3且最新轨迹-发货时间<=2；
-        //②当前时间-发货时间>8且最新轨迹-发货时间<=3；
-        elseif ($kd >= 35) {
+        elseif ($kd > 35) {
             $phase = 5;
             $abnormalType = LogisticEnum::AT_TOOLONG;
         }
-        elseif (empty($phase) || $track->abnormal_phase == $phase) {
+
+        if (empty($phase) || $track->abnormal_phase == $phase) {
             return [];
         }
 
@@ -309,7 +307,7 @@ class  LogisticTrack
     private static function pingyou($track)
     {
         $to = (time() - $track->closing_date) / 86400;
-        $kd = ($track->newest_time - $track->closing_date) / 86400;
+        $kd = ($track->newest_time - $track->first_time) / 86400;
 
         if ($to >= 3 && $to < 8 && $kd >= 2) {
             $phase = 3;
