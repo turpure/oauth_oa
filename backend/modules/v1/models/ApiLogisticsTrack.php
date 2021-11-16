@@ -56,7 +56,7 @@ class ApiLogisticsTrack
         $role = User::getRole($userId);//登录用户角色
         //获取平台列表
         if ($isAccountAdmin = (in_array(AuthAssignment::ACCOUNT_ADMIN, $role) === false)) {
-//            非超级会员
+            //            非超级会员
             $userAccount = ApiCondition::getUserAccount();
         }
 
@@ -67,7 +67,7 @@ class ApiLogisticsTrack
             ->orderBy('trade_send.closingdate desc');
         //  订单号
         if (!empty($condition['order_id'])) {
-            $query->andFilterWhere(['trade_send.order_id', explode(',', $condition['order_id'])]);
+            $query->andFilterWhere(['trade_send.order_id' => explode(',', $condition['order_id'])]);
         }
         // 追踪号
         if (!empty($condition['track_no'])) {
@@ -98,10 +98,12 @@ class ApiLogisticsTrack
                     $firstDate = strtotime($condition['closing_date'][0]) + $condition['day_num'] * 86400;
 
                     $query->andWhere("first_time>{$firstDate} or first_time is null");
-                } else {
+                }
+                else {
                     $query->andWhere(" first_time is null");
                 }
-            } else {
+            }
+            else {
                 // 未妥投
                 $query->andFilterWhere(['!=', 'tslt.status', LogisticEnum::SUCCESS]);
             }
@@ -135,7 +137,8 @@ class ApiLogisticsTrack
 
             $query->andFilterWhere(['=', 'trade_send.suffix', $condition['suffix']]);
 
-        } elseif ($isAccountAdmin) {
+        }
+        elseif ($isAccountAdmin) {
             $query->andFilterWhere(['in', 'trade_send.suffix', $userAccount]);
         }
 
@@ -179,7 +182,7 @@ class ApiLogisticsTrack
                     'management'      => Yii::$app->user->identity->username
                 ],
                 [
-                    'id'        => $condition['order_id'],
+                    'id'              => $condition['order_id'],
                     'abnormal_status' => [2, 3, 4]
                 ]
             )
@@ -298,8 +301,8 @@ class ApiLogisticsTrack
         $list = self::timeFrameQuery($condition)->all();
 
         $objectPHPExcel = new Spreadsheet();//实例化类
-//      当天上网数量	当天上网率	1天内上网数量	1天内上网率	2天内上网数量	2天内上网率	3天内上网数量	3天内上网率	未上网数	未上网率
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', '发货月份');
+        //      当天上网数量	当天上网率	1天内上网数量	1天内上网率	2天内上网数量	2天内上网率	3天内上网数量	3天内上网率	未上网数	未上网率
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', '发货日期');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('B1', '快递公司');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('C1', '物流方式');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('D1', '订单数量');
@@ -351,7 +354,7 @@ class ApiLogisticsTrack
         $list = self::logisticsSuccRateQuery($condition)->all();
 
         $objectPHPExcel = new Spreadsheet();//实例化类
-//        发货月份	快递公司	物流方式	订单数量	平均时效	妥投率	未妥投数量	未妥投率
+        //        发货月份	快递公司	物流方式	订单数量	平均时效	妥投率	未妥投数量	未妥投率
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', '发货日期');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('B1', '快递公司');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('C1', '物流方式');
@@ -399,41 +402,43 @@ class ApiLogisticsTrack
      */
     public static function exportLogisticsTrack($condition)
     {
-//        3处理中 4待赔偿 5暂时正常 6已退回 7销毁/弃件 8已索赔 9成功签收
+        //        ini_set('memory_limit', '1024M');
+
+        //        3处理中 4待赔偿 5暂时正常 6已退回 7销毁/弃件 8已索赔 9成功签收
         $trackStatus = ['未查询', '查询不到', '运输途中', '运输过久', '可能异常', '到达待取', '投递失败', '成功签收'];
         $abnormalStatus = ['正常', '异常待处理', '待赔偿', '暂时正常', '已退回', '销毁/弃件', '已索赔', '成功签收'];
         $abnormalType = ['无异常', '未上网', '断更', '运输过久', '退件', '派送异常', '信息停滞'];
-
+        $condition['order_id'] = '35921134';
         $query = self::tradeSendQuery($condition);
         $list = $query->all();
 
         $objectPHPExcel = new Spreadsheet();//实例化类
-
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', '订单编号');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('B1', '卖家简称');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('C1', '店铺单号');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('D1', '发货时间');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('E1', '总重量(kg)');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('F1', '跟踪号');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('G1', '快递公司');
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('H1', '物流方式');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('C1', '店铺单号')->getColumnDimension('A')->setWidth(60);
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('D1', '发货时间')->getColumnDimension('A')->setWidth(60);
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('E1', '总重量(kg)')->getColumnDimension('A')->setWidth(60);
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('F1', '跟踪号')->getColumnDimension('A')->setWidth(60);
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('G1', '快递公司')->getColumnDimension('A')->setWidth(60);
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('H1', '物流方式')->getColumnDimension('A')->setWidth(60);
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('I1', '收货国家');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('J1', '出货仓库');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('K1', '销售渠道');
         if (isset($condition['logistic_status']) && $condition['logistic_status'] == 1) {
             $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('L1', '运输状态');
-        } else {
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('L1', '第一条轨迹时间');
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('M1', '第一条轨迹信息');
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('N1', '最新轨迹时间');
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('O1', '最新轨迹信息');
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('P1', '运输状态');
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('Q1', '签收时效');
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('R1', '停滞时间');
+        }
+        else {
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('L1', '第一条轨迹时间')->getColumnDimension('A')->setWidth(60);
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('M1', '第一条轨迹信息')->getColumnDimension('A')->setWidth(60);
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('N1', '最新轨迹时间')->getColumnDimension('A')->setWidth(60);
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('O1', '最新轨迹信息')->getColumnDimension('A')->setWidth(60);
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('P1', '运输状态')->getColumnDimension('A')->setWidth(60);
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('Q1', '签收时效')->getColumnDimension('A')->setWidth(60);
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('R1', '停滞时间')->getColumnDimension('A')->setWidth(60);
         }
 
         if (!empty($condition['abnormal_status'])) {
-//
+            //
             $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('S1', '轨迹分类');
             $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('T1', '处理标签');
             $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('U1', '处理人');
@@ -458,7 +463,8 @@ class ApiLogisticsTrack
 
             if (isset($condition['logistic_status']) && $condition['logistic_status'] == 1) {
                 $objectPHPExcel->getActiveSheet()->setCellValue('L' . ($n), $trackStatus[$v['status'] - 1]);
-            } else {
+            }
+            else {
                 $objectPHPExcel->getActiveSheet()->setCellValue('L' . ($n), empty($v['first_time']) ? '' : date('Y-m-d H:i:s', $v['first_time']));
                 $objectPHPExcel->getActiveSheet()->setCellValue('M' . ($n), $v['first_detail']);
                 $objectPHPExcel->getActiveSheet()->setCellValue('N' . ($n), empty($v['newest_time']) ? '' : date('Y-m-d H:i:s', $v['newest_time']));
@@ -469,9 +475,9 @@ class ApiLogisticsTrack
             }
 
             if (!empty($condition['abnormal_status'])) {
-//
+                //
                 $objectPHPExcel->getActiveSheet()->setCellValue('S' . ($n), $abnormalType[$v['abnormal_type'] - 1]);
-                $objectPHPExcel->getActiveSheet()->setCellValue('T' . ($n), $trackStatus[$v['abnormal_status'] - 1]);
+                $objectPHPExcel->getActiveSheet()->setCellValue('T' . ($n), $abnormalStatus[$v['abnormal_status'] - 1]);
                 $objectPHPExcel->getActiveSheet()->setCellValue('U' . ($n), $v['management']);
 
             }
@@ -511,7 +517,7 @@ class ApiLogisticsTrack
                 'list' => [
                     '5部-燕文专线追踪小包(普货) 上海', '线下E邮宝 上海', '燕特快-澳大利亚（不含电）', '燕特快-澳大利亚（不含电）', '燕文航空挂号小包（普货）',
                     '燕文航空经济小包（特货）', '燕文化妆品挂号-特货（粉末液体)', '燕文化妆品平邮-特货（粉末液体）', '燕文-燕邮宝平邮-特货', '燕文专线平邮小包-普货',
-                    '燕文专线追踪小包(特货)', '燕文-中邮线下E邮宝', '燕文航空挂号小包（特货）', '燕文航空经济小包（普货）', '燕文专线追踪小包(普货)'],
+                    '燕文专线追踪小包(特货)', '燕文-中邮线下E邮宝', '燕文航空挂号小包（特货）', '燕文航空经济小包（普货）', '燕文专线追踪小包(普货)', '燕文-中邮EMS（E特快）'],
             ],
             [
                 'name' => '顺友',
