@@ -62,7 +62,7 @@ class ApiLogisticsTrack
 
         $query = (new \yii\db\Query())
             ->select([
-                'suffix', 'closingdate', 'total_weight', 'ack', 'shiptocountry_code',
+                'suffix', 'closingdate', 'total_weight', 'ack','logistic_company', 'shiptocountry_code',
                 'shiptocountry_name', 'transaction_type', 'store_name', 'addressowner', 'tslt.*',])
             ->from('trade_send')
             ->leftJoin('trade_send_logistics_track as tslt', 'trade_send.order_id = tslt.order_id')
