@@ -61,7 +61,9 @@ class ApiLogisticsTrack
         }
 
         $query = (new \yii\db\Query())
-            ->select(['trade_send.*', 'tslt.*'])
+            ->select([
+                'suffix', 'closingdate', 'total_weight', 'ack', 'shiptocountry_code',
+                'shiptocountry_name', 'transaction_type', 'store_name', 'addressowner', 'tslt.*',])
             ->from('trade_send')
             ->leftJoin('trade_send_logistics_track as tslt', 'trade_send.order_id = tslt.order_id')
             ->orderBy('trade_send.closingdate desc');
@@ -197,7 +199,7 @@ class ApiLogisticsTrack
     public static function logisticsTimeFrame($condition)
     {
         $query = self::timeFrameQuery($condition);
-        $list = $query->limit(1)->all();
+        $list = $query->all();
         $statistical = [
             'total_num'      => 0,
             'intraday_num'   => 0,
@@ -219,17 +221,17 @@ class ApiLogisticsTrack
             $statistical['first_ratio'] += $item->first_ratio;
             $statistical['second_num'] += $item->second_num;
             $statistical['second_ratio'] += $item->second_ratio;
+            $statistical['third_num'] += $item->third_num;
             $statistical['third_ratio'] += $item->third_ratio;
             $statistical['above_num'] += $item->above_num;
             $statistical['above_ratio'] += $item->above_ratio;
         }
         $totalCount = count($list);
-
-        foreach ($statistical as $key => $value) {
-            if ($key != 'total_num') {
-                $statistical[$key] = sprintf("%.2f", $value / $totalCount);
-            }
-        }
+        $statistical['intraday_ratio'] = sprintf("%.2f", $statistical['intraday_ratio'] / $totalCount);
+        $statistical['first_ratio'] = sprintf("%.2f", $statistical['first_ratio'] / $totalCount);
+        $statistical['second_ratio'] = sprintf("%.2f", $statistical['second_ratio'] / $totalCount);
+        $statistical['third_ratio'] = sprintf("%.2f", $statistical['third_ratio'] / $totalCount);
+        $statistical['above_ratio'] = sprintf("%.2f", $statistical['above_ratio'] / $totalCount);
 
 
         $provider = new ArrayDataProvider([
@@ -306,16 +308,12 @@ class ApiLogisticsTrack
             $statistical['dont_succeed_ratio'] += $item->dont_succeed_ratio;
         }
         $totalCount = count($list);
-        foreach ($statistical as $key => $value) {
-            if ($key != 'total_num') {
-                $statistical[$key] = sprintf("%.2f", $value / $totalCount);
-            }
-        }
-
+        $statistical['success_ratio'] = sprintf("%.2f", $statistical['success_ratio'] / $totalCount);
+        $statistical['dont_succeed_ratio'] = sprintf("%.2f", $statistical['dont_succeed_ratio'] / $totalCount);
 
         return [
             'statistical' => $statistical,
-            'provider'        => new ArrayDataProvider([
+            'provider'    => new ArrayDataProvider([
                 'allModels'  => $list,
                 'sort'       => [
                     'attributes'   => [
@@ -539,7 +537,6 @@ class ApiLogisticsTrack
         }
 
 
-
         $n = 2;
         // 	最新时间	签收时效	停滞时间
         foreach ($list as $v) {
@@ -557,7 +554,7 @@ class ApiLogisticsTrack
 
             if (isset($condition['logistic_status']) && $condition['logistic_status'] == 1) {
                 $objectPHPExcel->getActiveSheet()->setCellValue('L' . ($n), $trackStatus[$v['status'] - 1]);
-                $objectPHPExcel->getActiveSheet()->setCellValue('M' . ($n), date('Y-m-d H:i:s',$v['updated_at']));
+                $objectPHPExcel->getActiveSheet()->setCellValue('M' . ($n), date('Y-m-d H:i:s', $v['updated_at']));
 
             }
             else {
