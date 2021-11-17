@@ -2082,9 +2082,15 @@ class ApiGoodsinfo
      * @param $accounts
      * @return array
      */
-    public static function preExportEbayData($id, $type)
+    public static function preExportEbayData($id, $type,$ebaySuffix='')
     {
-        $accounts = OaEbaySuffix::find()->asArray()->all();
+        $query = OaEbaySuffix::find();
+
+        if (!empty($ebaySuffix)) {
+            $query->andFilterWhere(['ebaySuffix',$ebaySuffix]);
+        }
+        $accounts = $query->asArray()->all();
+
         $row = [
             "ApplicationData" => '', "AutoPay" => '', "BestOfferDetails" => '', "BuyerRequirementDetails" => '',
             "BuyerResponsibleForShipping" => '', "BuyItNowPrice" => '', "CategoryMappingAllowed" => '',
