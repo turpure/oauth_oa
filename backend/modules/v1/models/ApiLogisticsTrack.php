@@ -192,14 +192,48 @@ class ApiLogisticsTrack
     /**
      * 物流时效列表
      * @param $condition
-     * @return ActiveDataProvider
+     * @return array
      */
     public static function logisticsTimeFrame($condition)
     {
         $query = self::timeFrameQuery($condition);
+        $list = $query->limit(1)->all();
+        $statistical = [
+            'total_num'      => 0,
+            'intraday_num'   => 0,
+            'intraday_ratio' => 0,
+            'first_num'      => 0,
+            'first_ratio'    => 0,
+            'second_num'     => 0,
+            'second_ratio'   => 0,
+            'third_num'      => 0,
+            'third_ratio'    => 0,
+            'above_num'      => 0,
+            'above_ratio'    => 0,
+        ];
+        foreach ($list as $item) {
+            $statistical['total_num'] += $item->total_num;
+            $statistical['intraday_num'] += $item->intraday_num;
+            $statistical['intraday_ratio'] += $item->intraday_ratio;
+            $statistical['first_num'] += $item->first_num;
+            $statistical['first_ratio'] += $item->first_ratio;
+            $statistical['second_num'] += $item->second_num;
+            $statistical['second_ratio'] += $item->second_ratio;
+            $statistical['third_ratio'] += $item->third_ratio;
+            $statistical['above_num'] += $item->above_num;
+            $statistical['above_ratio'] += $item->above_ratio;
+        }
+        $totalCount = count($list);
 
-        return new ArrayDataProvider([
-            'allModels'  => $query->all(),
+        foreach ($statistical as $key => $value) {
+            if ($key != 'total_num') {
+                $statistical[$key] = sprintf("%.2f", $value / $totalCount);
+            }
+        }
+
+
+        $provider = new ArrayDataProvider([
+            'allModels'  => $list,
             'sort'       => [
                 'attributes'   => [
                     'id', 'total_num', 'intraday_num', 'intraday_ratio', 'above_ratio', 'above_num', 'second_ratio', 'first_ratio', 'first_num', 'second_num', 'third_num', 'third_ratio'
@@ -212,6 +246,10 @@ class ApiLogisticsTrack
                 'pageSize' => isset($condition['pageSize']) ? $condition['pageSize'] : 10,
             ],
         ]);
+
+        return ['provider' => $provider, 'statistical' => $statistical];
+
+
     }
 
     private static function timeFrameQuery($condition)
@@ -248,21 +286,51 @@ class ApiLogisticsTrack
     public static function logisticsSuccRate($condition)
     {
         $query = self::logisticsSuccRateQuery($condition);
+        $list = $query->all();
 
-        return new ArrayDataProvider([
-            'allModels'  => $query->all(),
-            'sort'       => [
-                'attributes'   => [
-                    'id', 'total_num', 'average', 'success_ratio', 'success_num', 'dont_succeed_num', 'dont_succeed_ratio'
+
+        $statistical = [
+            'total_num'          => 0,
+            'average'            => 0,
+            'success_num'        => 0,
+            'success_ratio'      => 0,
+            'dont_succeed_num'   => 0,
+            'dont_succeed_ratio' => 0,
+        ];
+        foreach ($list as $item) {
+            $statistical['total_num'] += $item->total_num;
+            $statistical['average'] += $item->average;
+            $statistical['success_num'] += $item->success_num;
+            $statistical['success_ratio'] += $item->success_ratio;
+            $statistical['dont_succeed_num'] += $item->dont_succeed_num;
+            $statistical['dont_succeed_ratio'] += $item->dont_succeed_ratio;
+        }
+        $totalCount = count($list);
+        foreach ($statistical as $key => $value) {
+            if ($key != 'total_num') {
+                $statistical[$key] = sprintf("%.2f", $value / $totalCount);
+            }
+        }
+
+
+        return [
+            'statistical' => $statistical,
+            'provider'        => new ArrayDataProvider([
+                'allModels'  => $list,
+                'sort'       => [
+                    'attributes'   => [
+                        'id', 'total_num', 'average', 'success_ratio', 'success_num', 'dont_succeed_num', 'dont_succeed_ratio'
+                    ],
+                    'defaultOrder' => [
+                        'id' => SORT_DESC,
+                    ]
                 ],
-                'defaultOrder' => [
-                    'id' => SORT_DESC,
-                ]
-            ],
-            'pagination' => [
-                'pageSize' => isset($condition['pageSize']) ? $condition['pageSize'] : 10,
-            ],
-        ]);
+                'pagination' => [
+                    'pageSize' => isset($condition['pageSize']) ? $condition['pageSize'] : 10,
+                ],
+            ])];
+
+
     }
 
     /**
@@ -410,7 +478,7 @@ class ApiLogisticsTrack
         //        3处理中 4待赔偿 5暂时正常 6已退回 7销毁/弃件 8已索赔 9成功签收
         $trackStatus = ['未查询', '查询不到', '运输途中', '运输过久', '可能异常', '到达待取', '投递失败', '成功签收'];
         $abnormalStatus = ['正常', '异常待处理', '待赔偿', '暂时正常', '已退回', '销毁/弃件', '已索赔', '成功签收'];
-        $abnormalType = ['无异常', '未上网', '断更', '运输过久', '退件', '派送异常', '信息停滞','可能异常'];
+        $abnormalType = ['无异常', '未上网', '断更', '运输过久', '退件', '派送异常', '信息停滞', '可能异常'];
 
         $query = self::tradeSendQuery($condition);
         $list = $query->all();
@@ -448,6 +516,8 @@ class ApiLogisticsTrack
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('K1', '销售渠道');
         if (isset($condition['logistic_status']) && $condition['logistic_status'] == 1) {
             $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('L1', '运输状态');
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('M1', '轨迹查询时间');
+
         }
         else {
             $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('L1', '第一条轨迹时间');
@@ -455,17 +525,19 @@ class ApiLogisticsTrack
             $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('N1', '最新轨迹时间');
             $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('O1', '最新轨迹信息');
             $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('P1', '运输状态');
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('Q1', '签收时效');
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('R1', '停滞时间');
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('Q1', '轨迹查询时间');
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('R1', '签收时效');
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('S1', '停滞时间');
+            if (!empty($condition['abnormal_status'])) {
+                //
+                $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('T1', '轨迹分类');
+                $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('U1', '处理标签');
+                $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('V1', '处理人');
+
+            }
+
         }
 
-        if (!empty($condition['abnormal_status'])) {
-            //
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('S1', '轨迹分类');
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('T1', '处理标签');
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('U1', '处理人');
-
-        }
 
 
         $n = 2;
@@ -485,6 +557,8 @@ class ApiLogisticsTrack
 
             if (isset($condition['logistic_status']) && $condition['logistic_status'] == 1) {
                 $objectPHPExcel->getActiveSheet()->setCellValue('L' . ($n), $trackStatus[$v['status'] - 1]);
+                $objectPHPExcel->getActiveSheet()->setCellValue('M' . ($n), date('Y-m-d H:i:s',$v['updated_at']));
+
             }
             else {
                 $objectPHPExcel->getActiveSheet()->setCellValue('L' . ($n), empty($v['first_time']) ? '' : date('Y-m-d H:i:s', $v['first_time']));
@@ -492,17 +566,20 @@ class ApiLogisticsTrack
                 $objectPHPExcel->getActiveSheet()->setCellValue('N' . ($n), empty($v['newest_time']) ? '' : date('Y-m-d H:i:s', $v['newest_time']));
                 $objectPHPExcel->getActiveSheet()->setCellValue('O' . ($n), $v['newest_detail']);
                 $objectPHPExcel->getActiveSheet()->setCellValue('P' . ($n), $trackStatus[$v['status'] - 1]);
-                $objectPHPExcel->getActiveSheet()->setCellValue('Q' . ($n), !empty($v['newest_time']) ? intval(($v['newest_time'] - $v['closingdate']) / 86400) : '');
-                $objectPHPExcel->getActiveSheet()->setCellValue('R' . ($n), $v['status'] == 1 && !empty($v['newest_time']) ? intval(time() - $v['newest_time']) / 86400 : '');
+                $objectPHPExcel->getActiveSheet()->setCellValue('Q' . ($n), date('Y-m-d H:i:s'));
+                $objectPHPExcel->getActiveSheet()->setCellValue('R' . ($n), !empty($v['newest_time']) ? intval(($v['newest_time'] - $v['closingdate']) / 86400) : '');
+                $objectPHPExcel->getActiveSheet()->setCellValue('S' . ($n), $v['status'] == 1 && !empty($v['newest_time']) ? intval(time() - $v['newest_time']) / 86400 : '');
+                if (!empty($condition['abnormal_status'])) {
+                    //
+                    $objectPHPExcel->getActiveSheet()->setCellValue('T' . ($n), $abnormalType[$v['abnormal_type'] - 1]);
+                    $objectPHPExcel->getActiveSheet()->setCellValue('U' . ($n), $abnormalStatus[$v['abnormal_status'] - 1]);
+                    $objectPHPExcel->getActiveSheet()->setCellValue('V' . ($n), $v['management']);
+
+                }
+
             }
 
-            if (!empty($condition['abnormal_status'])) {
-                //
-                $objectPHPExcel->getActiveSheet()->setCellValue('S' . ($n), $abnormalType[$v['abnormal_type'] - 1]);
-                $objectPHPExcel->getActiveSheet()->setCellValue('T' . ($n), $abnormalStatus[$v['abnormal_status'] - 1]);
-                $objectPHPExcel->getActiveSheet()->setCellValue('U' . ($n), $v['management']);
 
-            }
             $n = $n + 1;
         }
         $objWriter = IOFactory::createWriter($objectPHPExcel, 'Xlsx');

@@ -92,7 +92,10 @@ class TinyToolController extends AdminController
     {
         $request = Yii::$app->request;
         $condition = $request->post('condition');
-        return ApiLogisticsTrack::logisticsTimeFrame($condition);
+        $data = ApiLogisticsTrack::logisticsTimeFrame($condition);
+        $result = $this->serializeData($data['provider']);
+        $result['statistical'] = $data['statistical'];
+        return $result;
     }
     /**
      * 物流妥投率列表
@@ -102,7 +105,10 @@ class TinyToolController extends AdminController
     {
         $request = Yii::$app->request;
         $condition = $request->post('condition');
-        return ApiLogisticsTrack::logisticsSuccRate($condition);
+        $data = ApiLogisticsTrack::logisticsSuccRate($condition);
+        $result = $this->serializeData($data['provider']);
+        $result['statistical'] = $data['statistical'];
+        return $result;
     }
     /**
      * 物流异常列表
