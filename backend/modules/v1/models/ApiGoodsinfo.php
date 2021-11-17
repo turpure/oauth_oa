@@ -2087,7 +2087,7 @@ class ApiGoodsinfo
         $query = OaEbaySuffix::find();
 
         if (!empty($ebaySuffix)) {
-            $query->andFilterWhere(['ebaySuffix',$ebaySuffix]);
+            $query->andFilterWhere(['ebaySuffix'=>$ebaySuffix]);
         }
         $accounts = $query->asArray()->all();
 
