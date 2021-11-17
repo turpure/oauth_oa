@@ -1151,6 +1151,9 @@ class ProductCenterTools
     public static function getCategoryID($cateName)
     {
         try {
+            if(empty($cateName)) {
+                return $cateName;
+            }
             return BGoodSCats::findOne(['CategoryName' => $cateName])->NID;
         } catch (\Exception $why) {
             throw new \Exception('无效的类目名称！', 400);
@@ -1190,6 +1193,9 @@ class ProductCenterTools
     public static function getCategoryCode($cateName)
     {
         try {
+            if(empty($cateName)) {
+                return $cateName;
+            }
             return BGoodSCats::findOne(['CategoryName' => $cateName])->CategoryCode;
         } catch (\Exception $why) {
             throw new \Exception('无效的类目名称！', 400);
