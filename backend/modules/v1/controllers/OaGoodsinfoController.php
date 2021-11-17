@@ -969,9 +969,11 @@ class OaGoodsinfoController extends AdminController
             }
             $condition = $request->post()['condition'];
             $infoId = $condition['id'];
-            $type = isset($condition['type']) ? $condition['type'] : '';
-            $ebaySuffix = isset($condition['ebaySuffix']) ? $condition['ebaySuffix'] : '';
-            $ret = ApiGoodsinfo::preExportEbayData($infoId,$type, $ebaySuffix);
+            $type = $condition['type']??'';
+            $accounts = $condition['accounts']??'';
+            $completeStatus = $condition['completeStatus']??'';
+
+            $ret = ApiGoodsinfo::preExportEbayData($infoId,$type,$completeStatus, $accounts);
             return $ret;
         } catch (\Exception $why) {
             return ['code' => 401, 'message' => $why->getMessage()];
