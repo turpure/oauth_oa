@@ -30,6 +30,9 @@ use yii\db\Expression;
  * @property int $isMagnetism
  * @property int $isCharged
  * @property string $storeId
+ * @property string $linkUrl1
+ * @property string $linkUrl2
+ * @property string $linkUrl3
  */
 class OaDataMine extends \yii\db\ActiveRecord
 {
@@ -62,7 +65,8 @@ class OaDataMine extends \yii\db\ActiveRecord
             [['goodsCode'], 'unique'],
             [['createTime', 'updateTime','infoId'], 'safe'],
             [['isLiquid', 'isPowder', 'isMagnetism', 'isCharged'], 'integer'],
-            [['storeId','proId', 'platForm', 'progress', 'creator', 'detailStatus', 'cat', 'subCat', 'goodsCode', 'devStatus', 'mainImage', 'pyGoodsCode', 'spAttribute'], 'string', 'max' => 255],
+            [['storeId','proId', 'platForm', 'progress', 'creator', 'detailStatus', 'cat', 'subCat', 'goodsCode',
+                'devStatus', 'mainImage', 'pyGoodsCode', 'spAttribute', 'linkUrl1', 'linkUrl2', 'linkUrl3'], 'string', 'max' => 255],
         ];
     }
 

@@ -24,6 +24,7 @@ use backend\modules\v1\utils\Helper;
 use Codeception\Template\Api;
 use common\models\User;
 use backend\modules\v1\services\ExpressExpired;
+use console\models\EbayLogisticTrack;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Yii;
@@ -84,18 +85,88 @@ class TinyToolController extends AdminController
         return ApiLogisticsTrack::exportLogisticsTrack($condition);
     }
     /**
+     * 物流时效列表
+     * @return mixed
+     */
+    public function actionLogisticsTimeFrame()
+    {
+        $request = Yii::$app->request;
+        $condition = $request->post('condition');
+        return ApiLogisticsTrack::logisticsTimeFrame($condition);
+    }
+    /**
+     * 物流妥投率列表
+     * @return mixed
+     */
+    public function actionLogisticsSuccRatio()
+    {
+        $request = Yii::$app->request;
+        $condition = $request->post('condition');
+        return ApiLogisticsTrack::logisticsSuccRate($condition);
+    }
+    /**
+     * 物流异常列表
+     * @return mixed
+     */
+    public function actionLogisticsAbnormal()
+    {
+        $request = Yii::$app->request;
+        $condition = $request->post('condition');
+        return ApiLogisticsTrack::logisticsAbnormal($condition);
+    }
+
+    /**
+     * 物流异常处理
+     * @return mixed
+     */
+    public function actionLogisticsAbnormalManage()
+    {
+        try {
+            $request = Yii::$app->request;
+            $condition = $request->post('condition');
+            return ApiLogisticsTrack::LogisticsAbnormalManage($condition);
+        }
+        catch (\Exception $exception) {
+            return [
+                'code' => 400,
+                'message' =>  $exception->getMessage()
+            ];
+        }
+    }
+
+    public function actionExportLogisticsAbnormal() {
+        $request = Yii::$app->request;
+        $condition = $request->post('condition');
+        return ApiLogisticsTrack::exportLogisticsAbnormal($condition);
+    }
+
+    /**
+     * 导出发货时效列表
+     * @return mixed
+     */
+    public function actionExportLogisticsTimeFrame()
+    {
+        $request = Yii::$app->request;
+        $condition = $request->post('condition');
+        return ApiLogisticsTrack::exportTimeFrame($condition);
+    }
+    /**
+     * 导出签收时效列表
+     * @return mixed
+     */
+    public function actionExportLogisticsSuccRatio()
+    {
+        $request = Yii::$app->request;
+        $condition = $request->post('condition');
+        return ApiLogisticsTrack::exportLogisticsSuccRate($condition);
+    }
+
+    /**
      * 物流公司
      * @param ApiLogisticsTrack $ebayTrack
      */
     public function actionLogisticsCompany() {
         return ApiLogisticsTrack::logisticsCompany();
-    }
-    /**
-     * ebay 物流
-     * @param ApiLogisticsTrack $ebayTrack
-     */
-    public function actionEbayTrack() {
-        return ApiLogisticsTrack::actionEbayTrack();
     }
 
     /**

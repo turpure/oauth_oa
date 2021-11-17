@@ -43,6 +43,14 @@ class TestController extends AdminController
     public function actionTest()
     {
         try {
+            $arr = [1,2,3,4,5];
+            foreach ($arr as $k => $v){
+                if($v == 2){
+                    unset($arr[$k]);
+                }
+            }
+            var_dump($arr);exit;
+
 
 //            $sql = "select top 1 nid FROM  P_TradeUn(nolock) m";
 //            $data = Yii::$app->py_db->createCommand($sql)->queryAll();

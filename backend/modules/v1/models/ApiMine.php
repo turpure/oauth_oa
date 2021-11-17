@@ -663,6 +663,9 @@ class ApiMine
             'developer'  => $developer,
             'stockUp'  => $stockUp === 0 ? '否': '是',
             'mineId'  => $mine['id'],
+            'vendor1'  => $mine['linkUrl1'],
+            'vendor2'  => $mine['linkUrl2'],
+            'vendor3'  => $mine['linkUrl3'],
         ];
 
         $goods = OaGoods::findOne(['mineId' => $mine['id']]);

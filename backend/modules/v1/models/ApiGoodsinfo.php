@@ -1237,12 +1237,12 @@ class ApiGoodsinfo
     {
         $payFeeFixedRate = 0.04;
         $siteInfo = [
-            'MY' => ['site' => '马来西亚', 'exchange' => '1.5418', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 4.13],
-            'PH' => ['site' => '菲律宾', 'exchange' => '0.1284', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 91],
-            'ID' => ['site' => '印尼', 'exchange' => '0.0004458', 'payFeeRate' => 0.0182 + $payFeeFixedRate, 'lowPrice' => 17500],
-            'TH' => ['site' => '泰国', 'exchange' => '0.1980', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 20],
-            'SG' => ['site' => '新加坡', 'exchange' => '4.7755', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 4],
-            'VN' => ['site' => '越南', 'exchange' => '0.0003', 'payFeeRate' => 0.0384 + $payFeeFixedRate, 'lowPrice' => 23300],
+            'MY' => ['site' => '马来西亚', 'exchange' => '1.5387', 'payFeeRate' => 0.0236 + $payFeeFixedRate, 'lowPrice' => 4.13],
+            'PH' => ['site' => '菲律宾', 'exchange' => '0.1275', 'payFeeRate' => 0.0272 + $payFeeFixedRate, 'lowPrice' => 91],
+            'ID' => ['site' => '印尼', 'exchange' => '0.0004466', 'payFeeRate' => 0.024 + $payFeeFixedRate, 'lowPrice' => 17500],
+            'TH' => ['site' => '泰国', 'exchange' => '0.1927', 'payFeeRate' => 0.0242 + $payFeeFixedRate, 'lowPrice' => 20],
+            'SG' => ['site' => '新加坡', 'exchange' => '4.7386', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 4],
+            'VN' => ['site' => '越南', 'exchange' => '0.0002821', 'payFeeRate' => 0.0462 + $payFeeFixedRate, 'lowPrice' => 23300],
         ];
         $ids = implode(',', $ids);
         $sql = "select og.createDate as '开发日期',cate as '一级类目',subCate as '二级类目',
@@ -2082,9 +2082,23 @@ class ApiGoodsinfo
      * @param $accounts
      * @return array
      */
-    public static function preExportEbayData($id, $type)
+    public static function preExportEbayData($id, $type,$completeStatus,$accounts='')
     {
-        $accounts = OaEbaySuffix::find()->asArray()->all();
+        # 是否有指定状态
+        if (!empty($completeStatus)) {
+            $checkGoods = OaGoodsinfo::find()->where(['id' => $id])->andWhere(['like', 'completeStatus', $completeStatus])->asArray()->one();
+            if (empty($checkGoods)) {
+                throw new \Exception('请先完善产品！');
+            }
+        }
+
+        $accountsQuery = OaEbaySuffix::find();
+
+        if (!empty($accounts)) {
+            $accountsQuery->andFilterWhere(['ebaySuffix'=>explode(',', $accounts)]);
+        }
+        $ebayAccounts = $accountsQuery->asArray()->all();
+
         $row = [
             "ApplicationData" => '', "AutoPay" => '', "BestOfferDetails" => '', "BuyerRequirementDetails" => '',
             "BuyerResponsibleForShipping" => '', "BuyItNowPrice" => '', "CategoryMappingAllowed" => '',
@@ -2117,7 +2131,7 @@ class ApiGoodsinfo
         $keyWords = static::preKeywords($ebayInfo);
         $price = self::getEbayPrice($ebayInfo);
 
-        foreach ($accounts as $account) {
+        foreach ($ebayAccounts as $account) {
             $payPal = self::getEbayPayPal($price, $account);
             $titlePool = [];
             $title = '';

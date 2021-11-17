@@ -1,6 +1,6 @@
 <?php
 /**
- * GetTrackingDetailRequest
+ * ResponsesStatus
  *
  * PHP version 5
  *
@@ -27,20 +27,21 @@
  * Do not edit the class manually.
  */
 
-namespace backend\modules\v1\services\ebayTrack;
+namespace console\services\ebayTrack;
 
 use \ArrayAccess;
 
 
 /**
- * GetTrackingDetailRequest Class Doc Comment
+ * ResponsesStatus Class Doc Comment
  *
  * @category Class
+ * @description 返回结果
  * @package  Swagger\Client
  * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
-class GetTrackingDetailRequest implements ModelInterface, ArrayAccess
+class ResponsesStatus implements ModelInterface, ArrayAccess
 {
     const DISCRIMINATOR = null;
 
@@ -49,7 +50,7 @@ class GetTrackingDetailRequest implements ModelInterface, ArrayAccess
       *
       * @var string
       */
-    protected static $swaggerModelName = 'GetTrackingDetailRequest';
+    protected static $swaggerModelName = 'ResponsesStatus';
 
     /**
       * Array of property to type mappings. Used for (de)serialization
@@ -57,9 +58,9 @@ class GetTrackingDetailRequest implements ModelInterface, ArrayAccess
       * @var string[]
       */
     protected static $swaggerTypes = [
-        'data' => 'backend\modules\v1\services\ebayTrack\GetTrackingDetailRequestData',
-        'ebay_id' => 'string',
+        'message' => 'string',
         'message_id' => 'string',
+        'result_code' => 'int',
         'timestamp' => 'int'
     ];
 
@@ -69,9 +70,9 @@ class GetTrackingDetailRequest implements ModelInterface, ArrayAccess
       * @var string[]
       */
     protected static $swaggerFormats = [
-        'data' => null,
-        'ebay_id' => null,
+        'message' => null,
         'message_id' => null,
+        'result_code' => 'int32',
         'timestamp' => 'int64'
     ];
 
@@ -102,9 +103,9 @@ class GetTrackingDetailRequest implements ModelInterface, ArrayAccess
      * @var string[]
      */
     protected static $attributeMap = [
-        'data' => 'data',
-        'ebay_id' => 'ebayId',
+        'message' => 'message',
         'message_id' => 'messageId',
+        'result_code' => 'resultCode',
         'timestamp' => 'timestamp'
     ];
 
@@ -114,9 +115,9 @@ class GetTrackingDetailRequest implements ModelInterface, ArrayAccess
      * @var string[]
      */
     protected static $setters = [
-        'data' => 'setData',
-        'ebay_id' => 'setEbayId',
+        'message' => 'setMessage',
         'message_id' => 'setMessageId',
+        'result_code' => 'setResultCode',
         'timestamp' => 'setTimestamp'
     ];
 
@@ -126,9 +127,9 @@ class GetTrackingDetailRequest implements ModelInterface, ArrayAccess
      * @var string[]
      */
     protected static $getters = [
-        'data' => 'getData',
-        'ebay_id' => 'getEbayId',
+        'message' => 'getMessage',
         'message_id' => 'getMessageId',
+        'result_code' => 'getResultCode',
         'timestamp' => 'getTimestamp'
     ];
 
@@ -192,9 +193,9 @@ class GetTrackingDetailRequest implements ModelInterface, ArrayAccess
      */
     public function __construct(array $data = null)
     {
-        $this->container['data'] = isset($data['data']) ? $data['data'] : null;
-        $this->container['ebay_id'] = isset($data['ebay_id']) ? $data['ebay_id'] : null;
+        $this->container['message'] = isset($data['message']) ? $data['message'] : null;
         $this->container['message_id'] = isset($data['message_id']) ? $data['message_id'] : null;
+        $this->container['result_code'] = isset($data['result_code']) ? $data['result_code'] : null;
         $this->container['timestamp'] = isset($data['timestamp']) ? $data['timestamp'] : null;
     }
 
@@ -207,14 +208,14 @@ class GetTrackingDetailRequest implements ModelInterface, ArrayAccess
     {
         $invalidProperties = [];
 
-        if ($this->container['data'] === null) {
-            $invalidProperties[] = "'data' can't be null";
-        }
-        if ($this->container['ebay_id'] === null) {
-            $invalidProperties[] = "'ebay_id' can't be null";
+        if ($this->container['message'] === null) {
+            $invalidProperties[] = "'message' can't be null";
         }
         if ($this->container['message_id'] === null) {
             $invalidProperties[] = "'message_id' can't be null";
+        }
+        if ($this->container['result_code'] === null) {
+            $invalidProperties[] = "'result_code' can't be null";
         }
         if ($this->container['timestamp'] === null) {
             $invalidProperties[] = "'timestamp' can't be null";
@@ -231,13 +232,13 @@ class GetTrackingDetailRequest implements ModelInterface, ArrayAccess
     public function valid()
     {
 
-        if ($this->container['data'] === null) {
-            return false;
-        }
-        if ($this->container['ebay_id'] === null) {
+        if ($this->container['message'] === null) {
             return false;
         }
         if ($this->container['message_id'] === null) {
+            return false;
+        }
+        if ($this->container['result_code'] === null) {
             return false;
         }
         if ($this->container['timestamp'] === null) {
@@ -248,49 +249,25 @@ class GetTrackingDetailRequest implements ModelInterface, ArrayAccess
 
 
     /**
-     * Gets data
-     *
-     * @return backend\modules\v1\services\ebayTrack\GetTrackingDetailRequestData
-     */
-    public function getData()
-    {
-        return $this->container['data'];
-    }
-
-    /**
-     * Sets data
-     *
-     * @param backend\modules\v1\services\ebayTrack\GetTrackingDetailRequestData $data åè£¹è·è¸ªå·
-     *
-     * @return $this
-     */
-    public function setData($data)
-    {
-        $this->container['data'] = $data;
-
-        return $this;
-    }
-
-    /**
-     * Gets ebay_id
+     * Gets message
      *
      * @return string
      */
-    public function getEbayId()
+    public function getMessage()
     {
-        return $this->container['ebay_id'];
+        return $this->container['message'];
     }
 
     /**
-     * Sets ebay_id
+     * Sets message
      *
-     * @param string $ebay_id åå®¶eBayè´¦æ·
+     * @param string $message 响应消息
      *
      * @return $this
      */
-    public function setEbayId($ebay_id)
+    public function setMessage($message)
     {
-        $this->container['ebay_id'] = $ebay_id;
+        $this->container['message'] = $message;
 
         return $this;
     }
@@ -308,13 +285,37 @@ class GetTrackingDetailRequest implements ModelInterface, ArrayAccess
     /**
      * Sets message_id
      *
-     * @param string $message_id æ¶æ¯ID
+     * @param string $message_id 消息ID
      *
      * @return $this
      */
     public function setMessageId($message_id)
     {
         $this->container['message_id'] = $message_id;
+
+        return $this;
+    }
+
+    /**
+     * Gets result_code
+     *
+     * @return int
+     */
+    public function getResultCode()
+    {
+        return $this->container['result_code'];
+    }
+
+    /**
+     * Sets result_code
+     *
+     * @param int $result_code 响应编码，详见附录响应编码说明
+     *
+     * @return $this
+     */
+    public function setResultCode($result_code)
+    {
+        $this->container['result_code'] = $result_code;
 
         return $this;
     }
@@ -332,7 +333,7 @@ class GetTrackingDetailRequest implements ModelInterface, ArrayAccess
     /**
      * Sets timestamp
      *
-     * @param int $timestamp æ¶é´æ³
+     * @param int $timestamp 时间戳
      *
      * @return $this
      */

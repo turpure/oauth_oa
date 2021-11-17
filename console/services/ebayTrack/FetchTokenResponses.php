@@ -1,6 +1,6 @@
 <?php
 /**
- * GetTrackingDetailResponses
+ * FetchTokenResponses
  *
  * PHP version 5
  *
@@ -27,20 +27,20 @@
  * Do not edit the class manually.
  */
 
-namespace backend\modules\v1\services\ebayTrack;
+namespace console\services\ebayTrack;
 
 use \ArrayAccess;
-
+use console\services\ebayTrack\ObjectSerializer;
 
 /**
- * GetTrackingDetailResponses Class Doc Comment
+ * FetchTokenResponses Class Doc Comment
  *
  * @category Class
  * @package  Swagger\Client
  * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
-class GetTrackingDetailResponses implements ModelInterface, ArrayAccess
+class FetchTokenResponses implements ModelInterface, ArrayAccess
 {
     const DISCRIMINATOR = null;
 
@@ -49,7 +49,7 @@ class GetTrackingDetailResponses implements ModelInterface, ArrayAccess
       *
       * @var string
       */
-    protected static $swaggerModelName = 'GetTrackingDetailResponses';
+    protected static $swaggerModelName = 'FetchTokenResponses';
 
     /**
       * Array of property to type mappings. Used for (de)serialization
@@ -57,8 +57,9 @@ class GetTrackingDetailResponses implements ModelInterface, ArrayAccess
       * @var string[]
       */
     protected static $swaggerTypes = [
-        'data' => 'backend\modules\v1\services\ebayTrack\GetTrackingDetailResponsesData[]',
-        'status' => 'backend\modules\v1\services\ebayTrack\ResponsesStatus'
+        'expire_date' => '\DateTime',
+        'status' => 'console\services\ebayTrack\ResponsesStatus',
+        'token' => 'string'
     ];
 
     /**
@@ -67,8 +68,9 @@ class GetTrackingDetailResponses implements ModelInterface, ArrayAccess
       * @var string[]
       */
     protected static $swaggerFormats = [
-        'data' => null,
-        'status' => null
+        'expire_date' => 'date-time',
+        'status' => null,
+        'token' => null
     ];
 
     /**
@@ -98,8 +100,9 @@ class GetTrackingDetailResponses implements ModelInterface, ArrayAccess
      * @var string[]
      */
     protected static $attributeMap = [
-        'data' => 'data',
-        'status' => 'status'
+        'expire_date' => 'expireDate',
+        'status' => 'status',
+        'token' => 'token'
     ];
 
     /**
@@ -108,8 +111,9 @@ class GetTrackingDetailResponses implements ModelInterface, ArrayAccess
      * @var string[]
      */
     protected static $setters = [
-        'data' => 'setData',
-        'status' => 'setStatus'
+        'expire_date' => 'setExpireDate',
+        'status' => 'setStatus',
+        'token' => 'setToken'
     ];
 
     /**
@@ -118,8 +122,9 @@ class GetTrackingDetailResponses implements ModelInterface, ArrayAccess
      * @var string[]
      */
     protected static $getters = [
-        'data' => 'getData',
-        'status' => 'getStatus'
+        'expire_date' => 'getExpireDate',
+        'status' => 'getStatus',
+        'token' => 'getToken'
     ];
 
     /**
@@ -182,8 +187,9 @@ class GetTrackingDetailResponses implements ModelInterface, ArrayAccess
      */
     public function __construct(array $data = null)
     {
-        $this->container['data'] = isset($data['data']) ? $data['data'] : null;
+        $this->container['expire_date'] = isset($data['expire_date']) ? $data['expire_date'] : null;
         $this->container['status'] = isset($data['status']) ? $data['status'] : null;
+        $this->container['token'] = isset($data['token']) ? $data['token'] : null;
     }
 
     /**
@@ -195,11 +201,14 @@ class GetTrackingDetailResponses implements ModelInterface, ArrayAccess
     {
         $invalidProperties = [];
 
-        if ($this->container['data'] === null) {
-            $invalidProperties[] = "'data' can't be null";
+        if ($this->container['expire_date'] === null) {
+            $invalidProperties[] = "'expire_date' can't be null";
         }
         if ($this->container['status'] === null) {
             $invalidProperties[] = "'status' can't be null";
+        }
+        if ($this->container['token'] === null) {
+            $invalidProperties[] = "'token' can't be null";
         }
         return $invalidProperties;
     }
@@ -213,10 +222,13 @@ class GetTrackingDetailResponses implements ModelInterface, ArrayAccess
     public function valid()
     {
 
-        if ($this->container['data'] === null) {
+        if ($this->container['expire_date'] === null) {
             return false;
         }
         if ($this->container['status'] === null) {
+            return false;
+        }
+        if ($this->container['token'] === null) {
             return false;
         }
         return true;
@@ -224,25 +236,25 @@ class GetTrackingDetailResponses implements ModelInterface, ArrayAccess
 
 
     /**
-     * Gets data
+     * Gets expire_date
      *
-     * @return backend\modules\v1\services\ebayTrack\GetTrackingDetailResponsesData[]
+     * @return \DateTime
      */
-    public function getData()
+    public function getExpireDate()
     {
-        return $this->container['data'];
+        return $this->container['expire_date'];
     }
 
     /**
-     * Sets data
+     * Sets expire_date
      *
-     * @param backend\modules\v1\services\ebayTrack\GetTrackingDetailResponsesData[] $data data
+     * @param \DateTime $expire_date æææï¼12ä¸ªæï¼
      *
      * @return $this
      */
-    public function setData($data)
+    public function setExpireDate($expire_date)
     {
-        $this->container['data'] = $data;
+        $this->container['expire_date'] = $expire_date;
 
         return $this;
     }
@@ -250,7 +262,7 @@ class GetTrackingDetailResponses implements ModelInterface, ArrayAccess
     /**
      * Gets status
      *
-     * @return backend\modules\v1\services\ebayTrack\ResponsesStatus
+     * @return console\services\ebayTrack\ResponsesStatus
      */
     public function getStatus()
     {
@@ -260,13 +272,37 @@ class GetTrackingDetailResponses implements ModelInterface, ArrayAccess
     /**
      * Sets status
      *
-     * @param backend\modules\v1\services\ebayTrack\ResponsesStatus $status status
+     * @param console\services\ebayTrack\ResponsesStatus $status status
      *
      * @return $this
      */
     public function setStatus($status)
     {
         $this->container['status'] = $status;
+
+        return $this;
+    }
+
+    /**
+     * Gets token
+     *
+     * @return string
+     */
+    public function getToken()
+    {
+        return $this->container['token'];
+    }
+
+    /**
+     * Sets token
+     *
+     * @param string $token ä»¤ç
+     *
+     * @return $this
+     */
+    public function setToken($token)
+    {
+        $this->container['token'] = $token;
 
         return $this;
     }

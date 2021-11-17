@@ -35,20 +35,23 @@ class ExportTools
         $workSheet = $sheet->getActiveSheet();
         $cellName = $data ? array_keys($data[0]) : [];
         $len = count($cellName);
-
+//        var_dump($cellName);exit;
         //set title
         if(!empty($title)) {
             foreach ($title as $index => $value) {
                 $workSheet->setCellValueByColumnAndRow($index + 1, 1, $value);
                 $workSheet->getStyleByColumnAndRow($index + 1, 1)->getFont()->setBold(true);
-                $workSheet->getColumnDimensionByColumn($index + 1)->setAutoSize(2 * count($value));
+//                $workSheet->getColumnDimensionByColumn($index + 1)->setAutoSize(2 * count($value));
+                $workSheet->getColumnDimensionByColumn($index + 1)->setAutoSize(2 * mb_strlen($value));
             }
         }
         else {
             foreach ($cellName as $index => $value) {
+//                var_dump(mb_strlen($value));exit;
                 $workSheet->setCellValueByColumnAndRow($index + 1, 1, $value);
                 $workSheet->getStyleByColumnAndRow($index + 1, 1)->getFont()->setBold(true);
-                $workSheet->getColumnDimensionByColumn($index + 1)->setAutoSize(count($value));
+//                $workSheet->getColumnDimensionByColumn($index + 1)->setAutoSize(count($value));
+                $workSheet->getColumnDimensionByColumn($index + 1)->setAutoSize(mb_strlen($value));
             }
         }
 

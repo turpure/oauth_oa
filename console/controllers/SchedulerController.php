@@ -120,7 +120,7 @@ class SchedulerController extends Controller
             foreach ($devList as $value) {
                 $basicSql = "SELECT t.*,IFNULL(l.basic,0) AS basic,IFNULL(hl.high,0) AS high FROM site_target_user t
                             LEFT JOIN site_target_level l ON l.`level`=t.`level` AND l.role=t.role 
-                            LEFT JOIN site_target_level hl ON hl.`level`=t.`level` AND hl.role=t.role 
+                            LEFT JOIN site_target_level hl ON hl.`high_level`=t.`high_level` AND hl.role=t.role 
                             WHERE t.role='开发' and username='{$value['salernameZero']}' ";
                 $target = Yii::$app->db->createCommand($basicSql)->queryOne();
                 $basic = $target['basic'] ?? 0;

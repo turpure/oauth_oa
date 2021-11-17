@@ -546,6 +546,13 @@ class ApiReport
      */
     public static function getProfitReport($condition)
     {
+        $username = Yii::$app->user->identity->username;
+        $member = $condition['salesman'];
+        $role = ApiUser::getUserRole($username);
+        if (!$member && !in_array('产品开发', $role) && !in_array('超级管理员', $role)) {
+            $userList = ApiUser::getUserList($username);
+            $member = implode(',', $userList);
+        }
         $sql = "CALL report_suffixSkuProfit(:dateFlag,:beginDate,:endDate,:devBeginDate,:devEndDate,:chanel,:suffix,:salesman,:storeName,:sku,:goodsName)";
         $params = [
             ':chanel' => $condition['chanel'],
@@ -555,7 +562,7 @@ class ApiReport
             ':devBeginDate' => $condition['devBeginDate'],
             ':devEndDate' => $condition['devEndDate'],
             ':suffix' => $condition['suffix'],
-            ':salesman' => $condition['salesman'],
+            ':salesman' => $member,
             ':storeName' => $condition['storeName'],
             ':sku' => $condition['sku'],
             ':goodsName' => $condition['goodsName'],

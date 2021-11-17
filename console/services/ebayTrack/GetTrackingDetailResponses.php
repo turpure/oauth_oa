@@ -1,6 +1,6 @@
 <?php
 /**
- * GetTrackingDetailRequestData
+ * GetTrackingDetailResponses
  *
  * PHP version 5
  *
@@ -27,20 +27,20 @@
  * Do not edit the class manually.
  */
 
-namespace backend\modules\v1\services\ebayTrack;
+namespace console\services\ebayTrack;
 
 use \ArrayAccess;
-use backend\modules\v1\services\ebayTrack\ObjectSerializer;
+
 
 /**
- * GetTrackingDetailRequestData Class Doc Comment
+ * GetTrackingDetailResponses Class Doc Comment
  *
  * @category Class
  * @package  Swagger\Client
  * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
-class GetTrackingDetailRequestData implements ModelInterface, ArrayAccess
+class GetTrackingDetailResponses implements ModelInterface, ArrayAccess
 {
     const DISCRIMINATOR = null;
 
@@ -49,7 +49,7 @@ class GetTrackingDetailRequestData implements ModelInterface, ArrayAccess
       *
       * @var string
       */
-    protected static $swaggerModelName = 'GetTrackingDetailRequestData';
+    protected static $swaggerModelName = 'GetTrackingDetailResponses';
 
     /**
       * Array of property to type mappings. Used for (de)serialization
@@ -57,7 +57,8 @@ class GetTrackingDetailRequestData implements ModelInterface, ArrayAccess
       * @var string[]
       */
     protected static $swaggerTypes = [
-        'tracking_number' => 'string'
+        'data' => 'console\services\ebayTrack\GetTrackingDetailResponsesData[]',
+        'status' => 'console\services\ebayTrack\ResponsesStatus'
     ];
 
     /**
@@ -66,7 +67,8 @@ class GetTrackingDetailRequestData implements ModelInterface, ArrayAccess
       * @var string[]
       */
     protected static $swaggerFormats = [
-        'tracking_number' => null
+        'data' => null,
+        'status' => null
     ];
 
     /**
@@ -96,7 +98,8 @@ class GetTrackingDetailRequestData implements ModelInterface, ArrayAccess
      * @var string[]
      */
     protected static $attributeMap = [
-        'tracking_number' => 'trackingNumber'
+        'data' => 'data',
+        'status' => 'status'
     ];
 
     /**
@@ -105,7 +108,8 @@ class GetTrackingDetailRequestData implements ModelInterface, ArrayAccess
      * @var string[]
      */
     protected static $setters = [
-        'tracking_number' => 'setTrackingNumber'
+        'data' => 'setData',
+        'status' => 'setStatus'
     ];
 
     /**
@@ -114,7 +118,8 @@ class GetTrackingDetailRequestData implements ModelInterface, ArrayAccess
      * @var string[]
      */
     protected static $getters = [
-        'tracking_number' => 'getTrackingNumber'
+        'data' => 'getData',
+        'status' => 'getStatus'
     ];
 
     /**
@@ -177,7 +182,8 @@ class GetTrackingDetailRequestData implements ModelInterface, ArrayAccess
      */
     public function __construct(array $data = null)
     {
-        $this->container['tracking_number'] = isset($data['tracking_number']) ? $data['tracking_number'] : null;
+        $this->container['data'] = isset($data['data']) ? $data['data'] : null;
+        $this->container['status'] = isset($data['status']) ? $data['status'] : null;
     }
 
     /**
@@ -189,8 +195,11 @@ class GetTrackingDetailRequestData implements ModelInterface, ArrayAccess
     {
         $invalidProperties = [];
 
-        if ($this->container['tracking_number'] === null) {
-            $invalidProperties[] = "'tracking_number' can't be null";
+        if ($this->container['data'] === null) {
+            $invalidProperties[] = "'data' can't be null";
+        }
+        if ($this->container['status'] === null) {
+            $invalidProperties[] = "'status' can't be null";
         }
         return $invalidProperties;
     }
@@ -204,7 +213,10 @@ class GetTrackingDetailRequestData implements ModelInterface, ArrayAccess
     public function valid()
     {
 
-        if ($this->container['tracking_number'] === null) {
+        if ($this->container['data'] === null) {
+            return false;
+        }
+        if ($this->container['status'] === null) {
             return false;
         }
         return true;
@@ -212,28 +224,51 @@ class GetTrackingDetailRequestData implements ModelInterface, ArrayAccess
 
 
     /**
-     * Gets tracking_number
+     * Gets data
      *
-     * @return string
+     * @return console\services\ebayTrack\GetTrackingDetailResponsesData[]
      */
-    public function getTrackingNumber()
+    public function getData()
     {
-        return $this->container['tracking_number'];
+        return $this->container['data'];
     }
 
     /**
-     * Sets tracking_number
+     * Sets data
      *
-     * @param string $tracking_number åè£¹è·è¸ªå·
+     * @param console\services\ebayTrack\GetTrackingDetailResponsesData[] $data data
      *
      * @return $this
      */
-    public function setTrackingNumber($tracking_number)
+    public function setData($data)
     {
+        $this->container['data'] = $data;
 
-        $this->container['tracking_number'] = $tracking_number;
+        return $this;
+    }
 
-//        return $this;
+    /**
+     * Gets status
+     *
+     * @return console\services\ebayTrack\ResponsesStatus
+     */
+    public function getStatus()
+    {
+        return $this->container['status'];
+    }
+
+    /**
+     * Sets status
+     *
+     * @param console\services\ebayTrack\ResponsesStatus $status status
+     *
+     * @return $this
+     */
+    public function setStatus($status)
+    {
+        $this->container['status'] = $status;
+
+        return $this;
     }
     /**
      * Returns true if offset exists. False otherwise.

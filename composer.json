@@ -20,7 +20,7 @@
     "minimum-stability": "stable",
     "require": {
         "php": ">=5.4.0",
-        "yiisoft/yii2": "~2.0.16",
+        "yiisoft/yii2": "~2.0.15",
         "yiisoft/yii2-bootstrap": "~2.0.0",
         "yiisoft/yii2-swiftmailer": "~2.0.0 || ~2.1.0",
         "dmstr/yii2-adminlte-asset": "^2.1",
@@ -30,7 +30,8 @@
         "hguenot/yii2-gftp": "*",
         "yiisoft/yii2-redis": "^2.0",
         "yiisoft/yii2-mongodb": "^2.1",
-        "workerman/workerman": "^3.5"
+        "workerman/workerman": "^3.5",
+        "guzzlehttp/guzzle": "6.5.5"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.0.0",
@@ -49,10 +50,6 @@
         "0": {
             "type": "composer",
             "url": "https://asset-packagist.org"
-        },
-        "packagist": {
-            "type": "composer",
-            "url": "https://packagist.phpcomposer.com"
         }
     }
 }

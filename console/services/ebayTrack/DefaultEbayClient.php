@@ -26,7 +26,7 @@
  * Do not edit the class manually.
  */
 
-namespace backend\modules\v1\services\ebayTrack;
+namespace console\services\ebayTrack;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
@@ -83,7 +83,7 @@ class DefaultEbayClient
 
     /**
      *
-     * @param backend\modules\v1\services\ebayTrack\ModelInterface $request
+     * @param console\services\ebayTrack\ModelInterface $request
      */
     public function execute($request){
 		set_time_limit(90);
@@ -110,11 +110,11 @@ class DefaultEbayClient
      *
      * 新增地址信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddAddressPreferenceRequest $add_address_preference_request addAddressPreferenceRequest (required)
+     * @param  console\services\ebayTrack\AddAddressPreferenceRequest $add_address_preference_request addAddressPreferenceRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\AddAddressPreferenceResponses
+     * @return console\services\ebayTrack\AddAddressPreferenceResponses
      */
     public function addAddressPreference($add_address_preference_request)
     {
@@ -127,15 +127,15 @@ class DefaultEbayClient
      *
      * 新增地址信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddAddressPreferenceRequest $add_address_preference_request addAddressPreferenceRequest (required)
+     * @param  console\services\ebayTrack\AddAddressPreferenceRequest $add_address_preference_request addAddressPreferenceRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\AddAddressPreferenceResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\AddAddressPreferenceResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function addAddressPreferenceWithHttpInfo($add_address_preference_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\AddAddressPreferenceResponses';
+        $returnType = 'console\services\ebayTrack\AddAddressPreferenceResponses';
         $request = $this->addAddressPreferenceRequest($add_address_preference_request);
 
         try {
@@ -187,7 +187,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\AddAddressPreferenceResponses',
+                        'console\services\ebayTrack\AddAddressPreferenceResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -195,7 +195,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\AddAddressPreferenceResponses',
+                        'console\services\ebayTrack\AddAddressPreferenceResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -210,7 +210,7 @@ class DefaultEbayClient
      *
      * 新增地址信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddAddressPreferenceRequest $add_address_preference_request addAddressPreferenceRequest (required)
+     * @param  console\services\ebayTrack\AddAddressPreferenceRequest $add_address_preference_request addAddressPreferenceRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -230,14 +230,14 @@ class DefaultEbayClient
      *
      * 新增地址信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddAddressPreferenceRequest $add_address_preference_request addAddressPreferenceRequest (required)
+     * @param  console\services\ebayTrack\AddAddressPreferenceRequest $add_address_preference_request addAddressPreferenceRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function addAddressPreferenceAsyncWithHttpInfo($add_address_preference_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\AddAddressPreferenceResponses';
+        $returnType = 'console\services\ebayTrack\AddAddressPreferenceResponses';
         $request = $this->addAddressPreferenceRequest($add_address_preference_request);
 
         return $this->client
@@ -280,7 +280,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'addAddressPreference'
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddAddressPreferenceRequest $add_address_preference_request addAddressPreferenceRequest (required)
+     * @param  console\services\ebayTrack\AddAddressPreferenceRequest $add_address_preference_request addAddressPreferenceRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -386,11 +386,11 @@ class DefaultEbayClient
      *
      * 新增交运偏好
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddConsignPreferenceRequest $add_consign_preference_request addConsignPreferenceRequest (required)
+     * @param  console\services\ebayTrack\AddConsignPreferenceRequest $add_consign_preference_request addConsignPreferenceRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\AddConsignPreferenceResponses
+     * @return console\services\ebayTrack\AddConsignPreferenceResponses
      */
     public function addConsignPreference($add_consign_preference_request)
     {
@@ -403,15 +403,15 @@ class DefaultEbayClient
      *
      * 新增交运偏好
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddConsignPreferenceRequest $add_consign_preference_request addConsignPreferenceRequest (required)
+     * @param  console\services\ebayTrack\AddConsignPreferenceRequest $add_consign_preference_request addConsignPreferenceRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\AddConsignPreferenceResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\AddConsignPreferenceResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function addConsignPreferenceWithHttpInfo($add_consign_preference_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\AddConsignPreferenceResponses';
+        $returnType = 'console\services\ebayTrack\AddConsignPreferenceResponses';
         $request = $this->addConsignPreferenceRequest($add_consign_preference_request);
 
         try {
@@ -463,7 +463,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\AddConsignPreferenceResponses',
+                        'console\services\ebayTrack\AddConsignPreferenceResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -471,7 +471,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\AddConsignPreferenceResponses',
+                        'console\services\ebayTrack\AddConsignPreferenceResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -486,7 +486,7 @@ class DefaultEbayClient
      *
      * 新增交运偏好
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddConsignPreferenceRequest $add_consign_preference_request addConsignPreferenceRequest (required)
+     * @param  console\services\ebayTrack\AddConsignPreferenceRequest $add_consign_preference_request addConsignPreferenceRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -506,14 +506,14 @@ class DefaultEbayClient
      *
      * 新增交运偏好
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddConsignPreferenceRequest $add_consign_preference_request addConsignPreferenceRequest (required)
+     * @param  console\services\ebayTrack\AddConsignPreferenceRequest $add_consign_preference_request addConsignPreferenceRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function addConsignPreferenceAsyncWithHttpInfo($add_consign_preference_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\AddConsignPreferenceResponses';
+        $returnType = 'console\services\ebayTrack\AddConsignPreferenceResponses';
         $request = $this->addConsignPreferenceRequest($add_consign_preference_request);
 
         return $this->client
@@ -556,7 +556,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'addConsignPreference'
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddConsignPreferenceRequest $add_consign_preference_request addConsignPreferenceRequest (required)
+     * @param  console\services\ebayTrack\AddConsignPreferenceRequest $add_consign_preference_request addConsignPreferenceRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -662,11 +662,11 @@ class DefaultEbayClient
      *
      * 指定物流服务上传包裹
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddPackageRequest $add_package_request addPackageRequest (required)
+     * @param  console\services\ebayTrack\AddPackageRequest $add_package_request addPackageRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\AddPackageResponses
+     * @return console\services\ebayTrack\AddPackageResponses
      */
     public function addPackage($add_package_request)
     {
@@ -679,15 +679,15 @@ class DefaultEbayClient
      *
      * 指定物流服务上传包裹
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddPackageRequest $add_package_request addPackageRequest (required)
+     * @param  console\services\ebayTrack\AddPackageRequest $add_package_request addPackageRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\AddPackageResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\AddPackageResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function addPackageWithHttpInfo($add_package_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\AddPackageResponses';
+        $returnType = 'console\services\ebayTrack\AddPackageResponses';
         $request = $this->addPackageRequest($add_package_request);
 
         try {
@@ -739,7 +739,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\AddPackageResponses',
+                        'console\services\ebayTrack\AddPackageResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -747,7 +747,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\AddPackageResponses',
+                        'console\services\ebayTrack\AddPackageResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -762,7 +762,7 @@ class DefaultEbayClient
      *
      * 指定物流服务上传包裹
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddPackageRequest $add_package_request addPackageRequest (required)
+     * @param  console\services\ebayTrack\AddPackageRequest $add_package_request addPackageRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -782,14 +782,14 @@ class DefaultEbayClient
      *
      * 指定物流服务上传包裹
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddPackageRequest $add_package_request addPackageRequest (required)
+     * @param  console\services\ebayTrack\AddPackageRequest $add_package_request addPackageRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function addPackageAsyncWithHttpInfo($add_package_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\AddPackageResponses';
+        $returnType = 'console\services\ebayTrack\AddPackageResponses';
         $request = $this->addPackageRequest($add_package_request);
 
         return $this->client
@@ -832,7 +832,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'addPackage'
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddPackageRequest $add_package_request addPackageRequest (required)
+     * @param  console\services\ebayTrack\AddPackageRequest $add_package_request addPackageRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -938,11 +938,11 @@ class DefaultEbayClient
      *
      * 无指定物流服务上传包裹
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddPackageWithoutServiceRequest $add_package_without_service_request addPackageWithoutServiceRequest (required)
+     * @param  console\services\ebayTrack\AddPackageWithoutServiceRequest $add_package_without_service_request addPackageWithoutServiceRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\AddPackageWithoutServiceResponses
+     * @return console\services\ebayTrack\AddPackageWithoutServiceResponses
      */
     public function addPackageWithoutService($add_package_without_service_request)
     {
@@ -955,15 +955,15 @@ class DefaultEbayClient
      *
      * 无指定物流服务上传包裹
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddPackageWithoutServiceRequest $add_package_without_service_request addPackageWithoutServiceRequest (required)
+     * @param  console\services\ebayTrack\AddPackageWithoutServiceRequest $add_package_without_service_request addPackageWithoutServiceRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\AddPackageWithoutServiceResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\AddPackageWithoutServiceResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function addPackageWithoutServiceWithHttpInfo($add_package_without_service_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\AddPackageWithoutServiceResponses';
+        $returnType = 'console\services\ebayTrack\AddPackageWithoutServiceResponses';
         $request = $this->addPackageWithoutServiceRequest($add_package_without_service_request);
 
         try {
@@ -1015,7 +1015,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\AddPackageWithoutServiceResponses',
+                        'console\services\ebayTrack\AddPackageWithoutServiceResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -1023,7 +1023,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\AddPackageWithoutServiceResponses',
+                        'console\services\ebayTrack\AddPackageWithoutServiceResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -1038,7 +1038,7 @@ class DefaultEbayClient
      *
      * 无指定物流服务上传包裹
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddPackageWithoutServiceRequest $add_package_without_service_request addPackageWithoutServiceRequest (required)
+     * @param  console\services\ebayTrack\AddPackageWithoutServiceRequest $add_package_without_service_request addPackageWithoutServiceRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -1058,14 +1058,14 @@ class DefaultEbayClient
      *
      * 无指定物流服务上传包裹
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddPackageWithoutServiceRequest $add_package_without_service_request addPackageWithoutServiceRequest (required)
+     * @param  console\services\ebayTrack\AddPackageWithoutServiceRequest $add_package_without_service_request addPackageWithoutServiceRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function addPackageWithoutServiceAsyncWithHttpInfo($add_package_without_service_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\AddPackageWithoutServiceResponses';
+        $returnType = 'console\services\ebayTrack\AddPackageWithoutServiceResponses';
         $request = $this->addPackageWithoutServiceRequest($add_package_without_service_request);
 
         return $this->client
@@ -1108,7 +1108,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'addPackageWithoutService'
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddPackageWithoutServiceRequest $add_package_without_service_request addPackageWithoutServiceRequest (required)
+     * @param  console\services\ebayTrack\AddPackageWithoutServiceRequest $add_package_without_service_request addPackageWithoutServiceRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -1214,11 +1214,11 @@ class DefaultEbayClient
      *
      * 指定包裹物流服务
      *
-     * @param  backend\modules\v1\services\ebayTrack\AssignServiceRequest $assign_service_request assignServiceRequest (required)
+     * @param  console\services\ebayTrack\AssignServiceRequest $assign_service_request assignServiceRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\AssignServiceResponses
+     * @return console\services\ebayTrack\AssignServiceResponses
      */
     public function assignService($assign_service_request)
     {
@@ -1231,15 +1231,15 @@ class DefaultEbayClient
      *
      * 指定包裹物流服务
      *
-     * @param  backend\modules\v1\services\ebayTrack\AssignServiceRequest $assign_service_request assignServiceRequest (required)
+     * @param  console\services\ebayTrack\AssignServiceRequest $assign_service_request assignServiceRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\AssignServiceResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\AssignServiceResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function assignServiceWithHttpInfo($assign_service_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\AssignServiceResponses';
+        $returnType = 'console\services\ebayTrack\AssignServiceResponses';
         $request = $this->assignServiceRequest($assign_service_request);
 
         try {
@@ -1291,7 +1291,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\AssignServiceResponses',
+                        'console\services\ebayTrack\AssignServiceResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -1299,7 +1299,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\AssignServiceResponses',
+                        'console\services\ebayTrack\AssignServiceResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -1314,7 +1314,7 @@ class DefaultEbayClient
      *
      * 指定包裹物流服务
      *
-     * @param  backend\modules\v1\services\ebayTrack\AssignServiceRequest $assign_service_request assignServiceRequest (required)
+     * @param  console\services\ebayTrack\AssignServiceRequest $assign_service_request assignServiceRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -1334,14 +1334,14 @@ class DefaultEbayClient
      *
      * 指定包裹物流服务
      *
-     * @param  backend\modules\v1\services\ebayTrack\AssignServiceRequest $assign_service_request assignServiceRequest (required)
+     * @param  console\services\ebayTrack\AssignServiceRequest $assign_service_request assignServiceRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function assignServiceAsyncWithHttpInfo($assign_service_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\AssignServiceResponses';
+        $returnType = 'console\services\ebayTrack\AssignServiceResponses';
         $request = $this->assignServiceRequest($assign_service_request);
 
         return $this->client
@@ -1384,7 +1384,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'assignService'
      *
-     * @param  backend\modules\v1\services\ebayTrack\AssignServiceRequest $assign_service_request assignServiceRequest (required)
+     * @param  console\services\ebayTrack\AssignServiceRequest $assign_service_request assignServiceRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -1490,11 +1490,11 @@ class DefaultEbayClient
      *
      * 取消包裹信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\CancelPackagesRequest $cancel_packages_request cancelPackagesRequest (required)
+     * @param  console\services\ebayTrack\CancelPackagesRequest $cancel_packages_request cancelPackagesRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\CancelPackagesResponses
+     * @return console\services\ebayTrack\CancelPackagesResponses
      */
     public function cancelPackages($cancel_packages_request)
     {
@@ -1507,15 +1507,15 @@ class DefaultEbayClient
      *
      * 取消包裹信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\CancelPackagesRequest $cancel_packages_request cancelPackagesRequest (required)
+     * @param  console\services\ebayTrack\CancelPackagesRequest $cancel_packages_request cancelPackagesRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\CancelPackagesResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\CancelPackagesResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function cancelPackagesWithHttpInfo($cancel_packages_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\CancelPackagesResponses';
+        $returnType = 'console\services\ebayTrack\CancelPackagesResponses';
         $request = $this->cancelPackagesRequest($cancel_packages_request);
 
         try {
@@ -1567,7 +1567,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\CancelPackagesResponses',
+                        'console\services\ebayTrack\CancelPackagesResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -1575,7 +1575,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\CancelPackagesResponses',
+                        'console\services\ebayTrack\CancelPackagesResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -1590,7 +1590,7 @@ class DefaultEbayClient
      *
      * 取消包裹信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\CancelPackagesRequest $cancel_packages_request cancelPackagesRequest (required)
+     * @param  console\services\ebayTrack\CancelPackagesRequest $cancel_packages_request cancelPackagesRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -1610,14 +1610,14 @@ class DefaultEbayClient
      *
      * 取消包裹信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\CancelPackagesRequest $cancel_packages_request cancelPackagesRequest (required)
+     * @param  console\services\ebayTrack\CancelPackagesRequest $cancel_packages_request cancelPackagesRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function cancelPackagesAsyncWithHttpInfo($cancel_packages_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\CancelPackagesResponses';
+        $returnType = 'console\services\ebayTrack\CancelPackagesResponses';
         $request = $this->cancelPackagesRequest($cancel_packages_request);
 
         return $this->client
@@ -1660,7 +1660,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'cancelPackages'
      *
-     * @param  backend\modules\v1\services\ebayTrack\CancelPackagesRequest $cancel_packages_request cancelPackagesRequest (required)
+     * @param  console\services\ebayTrack\CancelPackagesRequest $cancel_packages_request cancelPackagesRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -1766,11 +1766,11 @@ class DefaultEbayClient
      *
      * 确认并交运包裹信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\ConfirmPackagesRequest $confirm_packages_request confirmPackagesRequest (required)
+     * @param  console\services\ebayTrack\ConfirmPackagesRequest $confirm_packages_request confirmPackagesRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\ConfirmPackagesResponses
+     * @return console\services\ebayTrack\ConfirmPackagesResponses
      */
     public function confirmPackages($confirm_packages_request)
     {
@@ -1783,15 +1783,15 @@ class DefaultEbayClient
      *
      * 确认并交运包裹信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\ConfirmPackagesRequest $confirm_packages_request confirmPackagesRequest (required)
+     * @param  console\services\ebayTrack\ConfirmPackagesRequest $confirm_packages_request confirmPackagesRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\ConfirmPackagesResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\ConfirmPackagesResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function confirmPackagesWithHttpInfo($confirm_packages_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\ConfirmPackagesResponses';
+        $returnType = 'console\services\ebayTrack\ConfirmPackagesResponses';
         $request = $this->confirmPackagesRequest($confirm_packages_request);
 
         try {
@@ -1843,7 +1843,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\ConfirmPackagesResponses',
+                        'console\services\ebayTrack\ConfirmPackagesResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -1851,7 +1851,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\ConfirmPackagesResponses',
+                        'console\services\ebayTrack\ConfirmPackagesResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -1866,7 +1866,7 @@ class DefaultEbayClient
      *
      * 确认并交运包裹信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\ConfirmPackagesRequest $confirm_packages_request confirmPackagesRequest (required)
+     * @param  console\services\ebayTrack\ConfirmPackagesRequest $confirm_packages_request confirmPackagesRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -1886,14 +1886,14 @@ class DefaultEbayClient
      *
      * 确认并交运包裹信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\ConfirmPackagesRequest $confirm_packages_request confirmPackagesRequest (required)
+     * @param  console\services\ebayTrack\ConfirmPackagesRequest $confirm_packages_request confirmPackagesRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function confirmPackagesAsyncWithHttpInfo($confirm_packages_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\ConfirmPackagesResponses';
+        $returnType = 'console\services\ebayTrack\ConfirmPackagesResponses';
         $request = $this->confirmPackagesRequest($confirm_packages_request);
 
         return $this->client
@@ -1936,7 +1936,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'confirmPackages'
      *
-     * @param  backend\modules\v1\services\ebayTrack\ConfirmPackagesRequest $confirm_packages_request confirmPackagesRequest (required)
+     * @param  console\services\ebayTrack\ConfirmPackagesRequest $confirm_packages_request confirmPackagesRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -2042,11 +2042,11 @@ class DefaultEbayClient
      *
      * 删除包裹信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\DeletePackagesRequest $cancel_packages_request cancelPackagesRequest (required)
+     * @param  console\services\ebayTrack\DeletePackagesRequest $cancel_packages_request cancelPackagesRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\DeletePackagesResponses
+     * @return console\services\ebayTrack\DeletePackagesResponses
      */
     public function deletePackages($cancel_packages_request)
     {
@@ -2059,15 +2059,15 @@ class DefaultEbayClient
      *
      * 删除包裹信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\DeletePackagesRequest $cancel_packages_request cancelPackagesRequest (required)
+     * @param  console\services\ebayTrack\DeletePackagesRequest $cancel_packages_request cancelPackagesRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\DeletePackagesResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\DeletePackagesResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function deletePackagesWithHttpInfo($cancel_packages_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\DeletePackagesResponses';
+        $returnType = 'console\services\ebayTrack\DeletePackagesResponses';
         $request = $this->deletePackagesRequest($cancel_packages_request);
 
         try {
@@ -2119,7 +2119,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\DeletePackagesResponses',
+                        'console\services\ebayTrack\DeletePackagesResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -2127,7 +2127,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\DeletePackagesResponses',
+                        'console\services\ebayTrack\DeletePackagesResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -2142,7 +2142,7 @@ class DefaultEbayClient
      *
      * 删除包裹信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\DeletePackagesRequest $cancel_packages_request cancelPackagesRequest (required)
+     * @param  console\services\ebayTrack\DeletePackagesRequest $cancel_packages_request cancelPackagesRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -2162,14 +2162,14 @@ class DefaultEbayClient
      *
      * 删除包裹信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\DeletePackagesRequest $cancel_packages_request cancelPackagesRequest (required)
+     * @param  console\services\ebayTrack\DeletePackagesRequest $cancel_packages_request cancelPackagesRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function deletePackagesAsyncWithHttpInfo($cancel_packages_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\DeletePackagesResponses';
+        $returnType = 'console\services\ebayTrack\DeletePackagesResponses';
         $request = $this->deletePackagesRequest($cancel_packages_request);
 
         return $this->client
@@ -2212,7 +2212,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'deletePackages'
      *
-     * @param  backend\modules\v1\services\ebayTrack\DeletePackagesRequest $cancel_packages_request cancelPackagesRequest (required)
+     * @param  console\services\ebayTrack\DeletePackagesRequest $cancel_packages_request cancelPackagesRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -2320,9 +2320,9 @@ class DefaultEbayClient
      *
      * @param  string $authorization 注意：调用SDK时,需传入三个参数(url,devId,secret) (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\FetchTokenResponses
+     * @return console\services\ebayTrack\FetchTokenResponses
      */
     public function fetchToken($url,$devId,$secret)
     {
@@ -2338,13 +2338,13 @@ class DefaultEbayClient
      *
      * @param  string $authorization 注意：调用SDK时,需传入三个参数(url,devId,secret) (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\FetchTokenResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\FetchTokenResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function fetchTokenWithHttpInfo($url,$devId,$secret)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\FetchTokenResponses';
+        $returnType = 'console\services\ebayTrack\FetchTokenResponses';
         $request = $this->fetchTokenRequest($url,$devId,$secret);
 
         try {
@@ -2396,7 +2396,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\FetchTokenResponses',
+                        'console\services\ebayTrack\FetchTokenResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -2404,7 +2404,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\FetchTokenResponses',
+                        'console\services\ebayTrack\FetchTokenResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -2446,7 +2446,7 @@ class DefaultEbayClient
      */
     public function fetchTokenAsyncWithHttpInfo($authorization)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\FetchTokenResponses';
+        $returnType = 'console\services\ebayTrack\FetchTokenResponses';
         $request = $this->fetchTokenRequest($authorization);
 
         return $this->client
@@ -2597,11 +2597,11 @@ class DefaultEbayClient
      *
      * 获取包裹实际运费
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetActualCostRequest $get_actual_cost_request getActualCostRequest (required)
+     * @param  console\services\ebayTrack\GetActualCostRequest $get_actual_cost_request getActualCostRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\GetActualCostResponses
+     * @return console\services\ebayTrack\GetActualCostResponses
      */
     public function getActualCost($get_actual_cost_request)
     {
@@ -2614,15 +2614,15 @@ class DefaultEbayClient
      *
      * 获取包裹实际运费
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetActualCostRequest $get_actual_cost_request getActualCostRequest (required)
+     * @param  console\services\ebayTrack\GetActualCostRequest $get_actual_cost_request getActualCostRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\GetActualCostResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\GetActualCostResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function getActualCostWithHttpInfo($get_actual_cost_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetActualCostResponses';
+        $returnType = 'console\services\ebayTrack\GetActualCostResponses';
         $request = $this->getActualCostRequest($get_actual_cost_request);
 
         try {
@@ -2674,7 +2674,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetActualCostResponses',
+                        'console\services\ebayTrack\GetActualCostResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -2682,7 +2682,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetActualCostResponses',
+                        'console\services\ebayTrack\GetActualCostResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -2697,7 +2697,7 @@ class DefaultEbayClient
      *
      * 获取包裹实际运费
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetActualCostRequest $get_actual_cost_request getActualCostRequest (required)
+     * @param  console\services\ebayTrack\GetActualCostRequest $get_actual_cost_request getActualCostRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -2717,14 +2717,14 @@ class DefaultEbayClient
      *
      * 获取包裹实际运费
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetActualCostRequest $get_actual_cost_request getActualCostRequest (required)
+     * @param  console\services\ebayTrack\GetActualCostRequest $get_actual_cost_request getActualCostRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function getActualCostAsyncWithHttpInfo($get_actual_cost_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetActualCostResponses';
+        $returnType = 'console\services\ebayTrack\GetActualCostResponses';
         $request = $this->getActualCostRequest($get_actual_cost_request);
 
         return $this->client
@@ -2767,7 +2767,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'getActualCost'
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetActualCostRequest $get_actual_cost_request getActualCostRequest (required)
+     * @param  console\services\ebayTrack\GetActualCostRequest $get_actual_cost_request getActualCostRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -2874,11 +2874,11 @@ class DefaultEbayClient
      * 获取地址信息列表
      *
      * @param  string $authorization 调用登录认证接口取得的token值 (required)
-     * @param  backend\modules\v1\services\ebayTrack\GetAddressPreferenceListRequest $request request (required)
+     * @param  console\services\ebayTrack\GetAddressPreferenceListRequest $request request (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\GetAddressPreferenceListResponses
+     * @return console\services\ebayTrack\GetAddressPreferenceListResponses
      */
     public function getAddressPreferenceList($request)
     {
@@ -2891,15 +2891,15 @@ class DefaultEbayClient
      *
      * 获取地址信息列表
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetAddressPreferenceListRequest $request request (required)
+     * @param  console\services\ebayTrack\GetAddressPreferenceListRequest $request request (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\GetAddressPreferenceListResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\GetAddressPreferenceListResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function getAddressPreferenceListWithHttpInfo($request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetAddressPreferenceListResponses';
+        $returnType = 'console\services\ebayTrack\GetAddressPreferenceListResponses';
         $request = $this->getAddressPreferenceListRequest($request);
 
         try {
@@ -2952,7 +2952,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetAddressPreferenceListResponses',
+                        'console\services\ebayTrack\GetAddressPreferenceListResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -2960,7 +2960,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetAddressPreferenceListResponses',
+                        'console\services\ebayTrack\GetAddressPreferenceListResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -2975,7 +2975,7 @@ class DefaultEbayClient
      *
      * 获取地址信息列表
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetAddressPreferenceListRequest $request request (required)
+     * @param  console\services\ebayTrack\GetAddressPreferenceListRequest $request request (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -2995,14 +2995,14 @@ class DefaultEbayClient
      *
      * 获取地址信息列表
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetAddressPreferenceListRequest $request request (required)
+     * @param  console\services\ebayTrack\GetAddressPreferenceListRequest $request request (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function getAddressPreferenceListAsyncWithHttpInfo($request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetAddressPreferenceListResponses';
+        $returnType = 'console\services\ebayTrack\GetAddressPreferenceListResponses';
         $request = $this->getAddressPreferenceListRequest($request);
 
         return $this->client
@@ -3045,7 +3045,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'getAddressPreferenceList'
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetAddressPreferenceListRequest $request request (required)
+     * @param  console\services\ebayTrack\GetAddressPreferenceListRequest $request request (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -3152,11 +3152,11 @@ class DefaultEbayClient
      * 获取地址信息列表
      *
      * @param  string $authorization 调用登录认证接口取得的token值 (required)
-     * @param  backend\modules\v1\services\ebayTrack\GetAgentListRequest $request request (required)
+     * @param  console\services\ebayTrack\GetAgentListRequest $request request (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\GetAgentListResponses
+     * @return console\services\ebayTrack\GetAgentListResponses
      */
     public function getAgentList($request)
     {
@@ -3169,15 +3169,15 @@ class DefaultEbayClient
      *
      * 获取地址信息列表
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetAgentListRequest $request request (required)
+     * @param  console\services\ebayTrack\GetAgentListRequest $request request (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\GetAgentListResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\GetAgentListResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function getAgentListWithHttpInfo($request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetAgentListResponses';
+        $returnType = 'console\services\ebayTrack\GetAgentListResponses';
         $request = $this->getAgentListRequest($request);
         try {
             $options = $this->createHttpClientOption();
@@ -3229,7 +3229,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetAgentListResponses',
+                        'console\services\ebayTrack\GetAgentListResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -3237,7 +3237,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetAgentListResponses',
+                        'console\services\ebayTrack\GetAgentListResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -3252,7 +3252,7 @@ class DefaultEbayClient
      *
      * 获取地址信息列表
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetAgentListRequest $request request (required)
+     * @param  console\services\ebayTrack\GetAgentListRequest $request request (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -3272,14 +3272,14 @@ class DefaultEbayClient
      *
      * 获取地址信息列表
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetAgentListRequest $request request (required)
+     * @param  console\services\ebayTrack\GetAgentListRequest $request request (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function getAgentListAsyncWithHttpInfo($request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\getAgentListResponses';
+        $returnType = 'console\services\ebayTrack\getAgentListResponses';
         $request = $this->getAgentListRequest($request);
 
         return $this->client
@@ -3322,7 +3322,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'getAgentList'
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetAgentListRequest $request request (required)
+     * @param  console\services\ebayTrack\GetAgentListRequest $request request (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -3429,11 +3429,11 @@ class DefaultEbayClient
      *
      * 获取带电资质认证信息列表
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetBatteryQualListRequest $get_battery_qual_list_request getBatteryQualListRequest (required)
+     * @param  console\services\ebayTrack\GetBatteryQualListRequest $get_battery_qual_list_request getBatteryQualListRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\GetBatteryQualListResponses
+     * @return console\services\ebayTrack\GetBatteryQualListResponses
      */
     public function getBatteryQualList( $get_battery_qual_list_request)
     {
@@ -3446,15 +3446,15 @@ class DefaultEbayClient
      *
      * 获取带电资质认证信息列表
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetBatteryQualListRequest $get_battery_qual_list_request getBatteryQualListRequest (required)
+     * @param  console\services\ebayTrack\GetBatteryQualListRequest $get_battery_qual_list_request getBatteryQualListRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\GetBatteryQualListResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\GetBatteryQualListResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function getBatteryQualListWithHttpInfo( $get_battery_qual_list_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetBatteryQualListResponses';
+        $returnType = 'console\services\ebayTrack\GetBatteryQualListResponses';
         $request = $this->getBatteryQualListRequest( $get_battery_qual_list_request);
 
         try {
@@ -3506,7 +3506,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetBatteryQualListResponses',
+                        'console\services\ebayTrack\GetBatteryQualListResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -3514,7 +3514,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetBatteryQualListResponses',
+                        'console\services\ebayTrack\GetBatteryQualListResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -3529,7 +3529,7 @@ class DefaultEbayClient
      *
      * 获取带电资质认证信息列表
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetBatteryQualListRequest $get_battery_qual_list_request getBatteryQualListRequest (required)
+     * @param  console\services\ebayTrack\GetBatteryQualListRequest $get_battery_qual_list_request getBatteryQualListRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -3549,14 +3549,14 @@ class DefaultEbayClient
      *
      * 获取带电资质认证信息列表
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetBatteryQualListRequest $get_battery_qual_list_request getBatteryQualListRequest (required)
+     * @param  console\services\ebayTrack\GetBatteryQualListRequest $get_battery_qual_list_request getBatteryQualListRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function getBatteryQualListAsyncWithHttpInfo($get_battery_qual_list_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetBatteryQualListResponses';
+        $returnType = 'console\services\ebayTrack\GetBatteryQualListResponses';
         $request = $this->getBatteryQualListRequest($get_battery_qual_list_request);
 
         return $this->client
@@ -3599,7 +3599,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'getBatteryQualList'
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetBatteryQualListRequest $get_battery_qual_list_request getBatteryQualListRequest (required)
+     * @param  console\services\ebayTrack\GetBatteryQualListRequest $get_battery_qual_list_request getBatteryQualListRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -3705,11 +3705,11 @@ class DefaultEbayClient
      *
      * 获取交运偏好列表
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetConsignPreferenceListRequest $get_consign_preference_list_request getConsignPreferenceListRequest (required)
+     * @param  console\services\ebayTrack\GetConsignPreferenceListRequest $get_consign_preference_list_request getConsignPreferenceListRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\GetConsignPreferenceListResponses
+     * @return console\services\ebayTrack\GetConsignPreferenceListResponses
      */
     public function getConsignPreferenceList($get_consign_preference_list_request)
     {
@@ -3722,15 +3722,15 @@ class DefaultEbayClient
      *
      * 获取交运偏好列表
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetConsignPreferenceListRequest $get_consign_preference_list_request getConsignPreferenceListRequest (required)
+     * @param  console\services\ebayTrack\GetConsignPreferenceListRequest $get_consign_preference_list_request getConsignPreferenceListRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\GetConsignPreferenceListResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\GetConsignPreferenceListResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function getConsignPreferenceListWithHttpInfo($get_consign_preference_list_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetConsignPreferenceListResponses';
+        $returnType = 'console\services\ebayTrack\GetConsignPreferenceListResponses';
         $request = $this->getConsignPreferenceListRequest($get_consign_preference_list_request);
 
         try {
@@ -3782,7 +3782,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetConsignPreferenceListResponses',
+                        'console\services\ebayTrack\GetConsignPreferenceListResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -3790,7 +3790,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetConsignPreferenceListResponses',
+                        'console\services\ebayTrack\GetConsignPreferenceListResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -3805,7 +3805,7 @@ class DefaultEbayClient
      *
      * 获取交运偏好列表
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetConsignPreferenceListRequest $get_consign_preference_list_request getConsignPreferenceListRequest (required)
+     * @param  console\services\ebayTrack\GetConsignPreferenceListRequest $get_consign_preference_list_request getConsignPreferenceListRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -3825,14 +3825,14 @@ class DefaultEbayClient
      *
      * 获取交运偏好列表
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetConsignPreferenceListRequest $get_consign_preference_list_request getConsignPreferenceListRequest (required)
+     * @param  console\services\ebayTrack\GetConsignPreferenceListRequest $get_consign_preference_list_request getConsignPreferenceListRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function getConsignPreferenceListAsyncWithHttpInfo($get_consign_preference_list_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetConsignPreferenceListResponses';
+        $returnType = 'console\services\ebayTrack\GetConsignPreferenceListResponses';
         $request = $this->getConsignPreferenceListRequest($get_consign_preference_list_request);
 
         return $this->client
@@ -3875,7 +3875,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'getConsignPreferenceList'
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetConsignPreferenceListRequest $get_consign_preference_list_request getConsignPreferenceListRequest (required)
+     * @param  console\services\ebayTrack\GetConsignPreferenceListRequest $get_consign_preference_list_request getConsignPreferenceListRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -3981,11 +3981,11 @@ class DefaultEbayClient
      *
      * 获取自送站点列表
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetDropoffSiteListRequest $get_dropoff_site_list_request getDropoffSiteListRequest (required)
+     * @param  console\services\ebayTrack\GetDropoffSiteListRequest $get_dropoff_site_list_request getDropoffSiteListRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\GetDropoffSiteListResponses
+     * @return console\services\ebayTrack\GetDropoffSiteListResponses
      */
     public function getDropoffSiteList($get_dropoff_site_list_request)
     {
@@ -3998,15 +3998,15 @@ class DefaultEbayClient
      *
      * 获取自送站点列表
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetDropoffSiteListRequest $get_dropoff_site_list_request getDropoffSiteListRequest (required)
+     * @param  console\services\ebayTrack\GetDropoffSiteListRequest $get_dropoff_site_list_request getDropoffSiteListRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\GetDropoffSiteListResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\GetDropoffSiteListResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function getDropoffSiteListWithHttpInfo($get_dropoff_site_list_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetDropoffSiteListResponses';
+        $returnType = 'console\services\ebayTrack\GetDropoffSiteListResponses';
         $request = $this->getDropoffSiteListRequest($get_dropoff_site_list_request);
 
         try {
@@ -4058,7 +4058,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetDropoffSiteListResponses',
+                        'console\services\ebayTrack\GetDropoffSiteListResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -4066,7 +4066,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetDropoffSiteListResponses',
+                        'console\services\ebayTrack\GetDropoffSiteListResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -4081,7 +4081,7 @@ class DefaultEbayClient
      *
      * 获取自送站点列表
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetDropoffSiteListRequest $get_dropoff_site_list_request getDropoffSiteListRequest (required)
+     * @param  console\services\ebayTrack\GetDropoffSiteListRequest $get_dropoff_site_list_request getDropoffSiteListRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -4101,14 +4101,14 @@ class DefaultEbayClient
      *
      * 获取自送站点列表
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetDropoffSiteListRequest $get_dropoff_site_list_request getDropoffSiteListRequest (required)
+     * @param  console\services\ebayTrack\GetDropoffSiteListRequest $get_dropoff_site_list_request getDropoffSiteListRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function getDropoffSiteListAsyncWithHttpInfo($get_dropoff_site_list_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetDropoffSiteListResponses';
+        $returnType = 'console\services\ebayTrack\GetDropoffSiteListResponses';
         $request = $this->getDropoffSiteListRequest($get_dropoff_site_list_request);
 
         return $this->client
@@ -4151,7 +4151,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'getDropoffSiteList'
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetDropoffSiteListRequest $get_dropoff_site_list_request getDropoffSiteListRequest (required)
+     * @param  console\services\ebayTrack\GetDropoffSiteListRequest $get_dropoff_site_list_request getDropoffSiteListRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -4257,11 +4257,11 @@ class DefaultEbayClient
      *
      * 获取交接单打印详情
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetHandoverSheetRequest $get_handover_sheet_request getHandoverSheetRequest (required)
+     * @param  console\services\ebayTrack\GetHandoverSheetRequest $get_handover_sheet_request getHandoverSheetRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\GetHandoverSheetResponses
+     * @return console\services\ebayTrack\GetHandoverSheetResponses
      */
     public function getHandoverSheet($get_handover_sheet_request)
     {
@@ -4274,15 +4274,15 @@ class DefaultEbayClient
      *
      * 获取交接单打印详情
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetHandoverSheetRequest $get_handover_sheet_request getHandoverSheetRequest (required)
+     * @param  console\services\ebayTrack\GetHandoverSheetRequest $get_handover_sheet_request getHandoverSheetRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\GetHandoverSheetResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\GetHandoverSheetResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function getHandoverSheetWithHttpInfo($get_handover_sheet_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetHandoverSheetResponses';
+        $returnType = 'console\services\ebayTrack\GetHandoverSheetResponses';
         $request = $this->getHandoverSheetRequest($get_handover_sheet_request);
 
         try {
@@ -4334,7 +4334,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetHandoverSheetResponses',
+                        'console\services\ebayTrack\GetHandoverSheetResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -4342,7 +4342,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetHandoverSheetResponses',
+                        'console\services\ebayTrack\GetHandoverSheetResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -4357,7 +4357,7 @@ class DefaultEbayClient
      *
      * 获取交接单打印详情
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetHandoverSheetRequest $get_handover_sheet_request getHandoverSheetRequest (required)
+     * @param  console\services\ebayTrack\GetHandoverSheetRequest $get_handover_sheet_request getHandoverSheetRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -4377,14 +4377,14 @@ class DefaultEbayClient
      *
      * 获取交接单打印详情
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetHandoverSheetRequest $get_handover_sheet_request getHandoverSheetRequest (required)
+     * @param  console\services\ebayTrack\GetHandoverSheetRequest $get_handover_sheet_request getHandoverSheetRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function getHandoverSheetAsyncWithHttpInfo($get_handover_sheet_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetHandoverSheetResponses';
+        $returnType = 'console\services\ebayTrack\GetHandoverSheetResponses';
         $request = $this->getHandoverSheetRequest($get_handover_sheet_request);
 
         return $this->client
@@ -4427,7 +4427,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'getHandoverSheet'
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetHandoverSheetRequest $get_handover_sheet_request getHandoverSheetRequest (required)
+     * @param  console\services\ebayTrack\GetHandoverSheetRequest $get_handover_sheet_request getHandoverSheetRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -4533,11 +4533,11 @@ class DefaultEbayClient
      *
      * 查询物品包裹ID
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetItemPackageIdRequest $get_item_package_id_request getItemPackageIdRequest (required)
+     * @param  console\services\ebayTrack\GetItemPackageIdRequest $get_item_package_id_request getItemPackageIdRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\GetItemPackageIdResponses
+     * @return console\services\ebayTrack\GetItemPackageIdResponses
      */
     public function getItemPackageId($get_item_package_id_request)
     {
@@ -4550,15 +4550,15 @@ class DefaultEbayClient
      *
      * 查询物品包裹ID
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetItemPackageIdRequest $get_item_package_id_request getItemPackageIdRequest (required)
+     * @param  console\services\ebayTrack\GetItemPackageIdRequest $get_item_package_id_request getItemPackageIdRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\GetItemPackageIdResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\GetItemPackageIdResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function getItemPackageIdWithHttpInfo($get_item_package_id_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetItemPackageIdResponses';
+        $returnType = 'console\services\ebayTrack\GetItemPackageIdResponses';
         $request = $this->getItemPackageIdRequest($get_item_package_id_request);
 
         try {
@@ -4610,7 +4610,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetItemPackageIdResponses',
+                        'console\services\ebayTrack\GetItemPackageIdResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -4618,7 +4618,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetItemPackageIdResponses',
+                        'console\services\ebayTrack\GetItemPackageIdResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -4633,7 +4633,7 @@ class DefaultEbayClient
      *
      * 查询物品包裹ID
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetItemPackageIdRequest $get_item_package_id_request getItemPackageIdRequest (required)
+     * @param  console\services\ebayTrack\GetItemPackageIdRequest $get_item_package_id_request getItemPackageIdRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -4653,14 +4653,14 @@ class DefaultEbayClient
      *
      * 查询物品包裹ID
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetItemPackageIdRequest $get_item_package_id_request getItemPackageIdRequest (required)
+     * @param  console\services\ebayTrack\GetItemPackageIdRequest $get_item_package_id_request getItemPackageIdRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function getItemPackageIdAsyncWithHttpInfo($get_item_package_id_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetItemPackageIdResponses';
+        $returnType = 'console\services\ebayTrack\GetItemPackageIdResponses';
         $request = $this->getItemPackageIdRequest($get_item_package_id_request);
 
         return $this->client
@@ -4703,7 +4703,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'getItemPackageId'
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetItemPackageIdRequest $get_item_package_id_request getItemPackageIdRequest (required)
+     * @param  console\services\ebayTrack\GetItemPackageIdRequest $get_item_package_id_request getItemPackageIdRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -4809,11 +4809,11 @@ class DefaultEbayClient
      *
      * 获取面单打印详情
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetLabelRequest $get_label_request getLabelRequest (required)
+     * @param  console\services\ebayTrack\GetLabelRequest $get_label_request getLabelRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\GetLabelResponses
+     * @return console\services\ebayTrack\GetLabelResponses
      */
     public function getLabel($get_label_request)
     {
@@ -4826,15 +4826,15 @@ class DefaultEbayClient
      *
      * 获取面单打印详情
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetLabelRequest $get_label_request getLabelRequest (required)
+     * @param  console\services\ebayTrack\GetLabelRequest $get_label_request getLabelRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\GetLabelResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\GetLabelResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function getLabelWithHttpInfo($get_label_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetLabelResponses';
+        $returnType = 'console\services\ebayTrack\GetLabelResponses';
         $request = $this->getLabelRequest($get_label_request);
 
         try {
@@ -4886,7 +4886,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetLabelResponses',
+                        'console\services\ebayTrack\GetLabelResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -4894,7 +4894,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetLabelResponses',
+                        'console\services\ebayTrack\GetLabelResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -4909,7 +4909,7 @@ class DefaultEbayClient
      *
      * 获取面单打印详情
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetLabelRequest $get_label_request getLabelRequest (required)
+     * @param  console\services\ebayTrack\GetLabelRequest $get_label_request getLabelRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -4929,14 +4929,14 @@ class DefaultEbayClient
      *
      * 获取面单打印详情
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetLabelRequest $get_label_request getLabelRequest (required)
+     * @param  console\services\ebayTrack\GetLabelRequest $get_label_request getLabelRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function getLabelAsyncWithHttpInfo($get_label_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetLabelResponses';
+        $returnType = 'console\services\ebayTrack\GetLabelResponses';
         $request = $this->getLabelRequest($get_label_request);
 
         return $this->client
@@ -4979,7 +4979,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'getLabel'
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetLabelRequest $get_label_request getLabelRequest (required)
+     * @param  console\services\ebayTrack\GetLabelRequest $get_label_request getLabelRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -5085,11 +5085,11 @@ class DefaultEbayClient
      *
      * 获取包裹详情
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetPackageDetailRequest $get_package_detail_request getPackageDetailRequest (required)
+     * @param  console\services\ebayTrack\GetPackageDetailRequest $get_package_detail_request getPackageDetailRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\GetPackageDetailResponses
+     * @return console\services\ebayTrack\GetPackageDetailResponses
      */
     public function getPackageDetail($get_package_detail_request)
     {
@@ -5102,15 +5102,15 @@ class DefaultEbayClient
      *
      * 获取包裹详情
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetPackageDetailRequest $get_package_detail_request getPackageDetailRequest (required)
+     * @param  console\services\ebayTrack\GetPackageDetailRequest $get_package_detail_request getPackageDetailRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\GetPackageDetailResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\GetPackageDetailResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function getPackageDetailWithHttpInfo($get_package_detail_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetPackageDetailResponses';
+        $returnType = 'console\services\ebayTrack\GetPackageDetailResponses';
         $request = $this->getPackageDetailRequest($get_package_detail_request);
 
         try {
@@ -5162,7 +5162,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetPackageDetailResponses',
+                        'console\services\ebayTrack\GetPackageDetailResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -5170,7 +5170,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetPackageDetailResponses',
+                        'console\services\ebayTrack\GetPackageDetailResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -5185,7 +5185,7 @@ class DefaultEbayClient
      *
      * 获取包裹详情
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetPackageDetailRequest $get_package_detail_request getPackageDetailRequest (required)
+     * @param  console\services\ebayTrack\GetPackageDetailRequest $get_package_detail_request getPackageDetailRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -5205,14 +5205,14 @@ class DefaultEbayClient
      *
      * 获取包裹详情
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetPackageDetailRequest $get_package_detail_request getPackageDetailRequest (required)
+     * @param  console\services\ebayTrack\GetPackageDetailRequest $get_package_detail_request getPackageDetailRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function getPackageDetailAsyncWithHttpInfo($get_package_detail_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetPackageDetailResponses';
+        $returnType = 'console\services\ebayTrack\GetPackageDetailResponses';
         $request = $this->getPackageDetailRequest($get_package_detail_request);
 
         return $this->client
@@ -5255,7 +5255,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'getPackageDetail'
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetPackageDetailRequest $get_package_detail_request getPackageDetailRequest (required)
+     * @param  console\services\ebayTrack\GetPackageDetailRequest $get_package_detail_request getPackageDetailRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -5361,11 +5361,11 @@ class DefaultEbayClient
      *
      * 获取包裹状态
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetPackageStatusRequest $get_package_status_request getPackageStatusRequest (required)
+     * @param  console\services\ebayTrack\GetPackageStatusRequest $get_package_status_request getPackageStatusRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\GetPackageStatusResponses
+     * @return console\services\ebayTrack\GetPackageStatusResponses
      */
     public function getPackageStatus($get_package_status_request)
     {
@@ -5378,15 +5378,15 @@ class DefaultEbayClient
      *
      * 获取包裹状态
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetPackageStatusRequest $get_package_status_request getPackageStatusRequest (required)
+     * @param  console\services\ebayTrack\GetPackageStatusRequest $get_package_status_request getPackageStatusRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\GetPackageStatusResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\GetPackageStatusResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function getPackageStatusWithHttpInfo($get_package_status_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetPackageStatusResponses';
+        $returnType = 'console\services\ebayTrack\GetPackageStatusResponses';
         $request = $this->getPackageStatusRequest($get_package_status_request);
 
         try {
@@ -5438,7 +5438,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetPackageStatusResponses',
+                        'console\services\ebayTrack\GetPackageStatusResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -5446,7 +5446,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetPackageStatusResponses',
+                        'console\services\ebayTrack\GetPackageStatusResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -5461,7 +5461,7 @@ class DefaultEbayClient
      *
      * 获取包裹状态
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetPackageStatusRequest $get_package_status_request getPackageStatusRequest (required)
+     * @param  console\services\ebayTrack\GetPackageStatusRequest $get_package_status_request getPackageStatusRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -5481,14 +5481,14 @@ class DefaultEbayClient
      *
      * 获取包裹状态
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetPackageStatusRequest $get_package_status_request getPackageStatusRequest (required)
+     * @param  console\services\ebayTrack\GetPackageStatusRequest $get_package_status_request getPackageStatusRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function getPackageStatusAsyncWithHttpInfo($get_package_status_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetPackageStatusResponses';
+        $returnType = 'console\services\ebayTrack\GetPackageStatusResponses';
         $request = $this->getPackageStatusRequest($get_package_status_request);
 
         return $this->client
@@ -5531,7 +5531,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'getPackageStatus'
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetPackageStatusRequest $get_package_status_request getPackageStatusRequest (required)
+     * @param  console\services\ebayTrack\GetPackageStatusRequest $get_package_status_request getPackageStatusRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -5639,11 +5639,11 @@ class DefaultEbayClient
      *
      * 获取物流服务列表
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetServiceListRequest $get_service_list_request getServiceListRequest (required)
+     * @param  console\services\ebayTrack\GetServiceListRequest $get_service_list_request getServiceListRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\GetServiceListResponses
+     * @return console\services\ebayTrack\GetServiceListResponses
      */
     public function getServiceList($get_service_list_request)
     {
@@ -5654,7 +5654,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'getServiceList'
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetServiceListRequest $get_service_list_request getServiceListRequest (required)
+     * @param  console\services\ebayTrack\GetServiceListRequest $get_service_list_request getServiceListRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -5761,15 +5761,15 @@ class DefaultEbayClient
      *
      * 获取物流服务列表
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetServiceListRequest $get_service_list_request getServiceListRequest (required)
+     * @param  console\services\ebayTrack\GetServiceListRequest $get_service_list_request getServiceListRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\GetServiceListResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\GetServiceListResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function getServiceListWithHttpInfo($get_service_list_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetServiceListResponses';
+        $returnType = 'console\services\ebayTrack\GetServiceListResponses';
         $request = $this->getServiceListRequest($get_service_list_request);
 
         try {
@@ -5821,7 +5821,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetServiceListResponses',
+                        'console\services\ebayTrack\GetServiceListResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -5829,7 +5829,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetServiceListResponses',
+                        'console\services\ebayTrack\GetServiceListResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -5844,7 +5844,7 @@ class DefaultEbayClient
      *
      * 获取物流服务列表
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetServiceListRequest $get_service_list_request getServiceListRequest (required)
+     * @param  console\services\ebayTrack\GetServiceListRequest $get_service_list_request getServiceListRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -5864,14 +5864,14 @@ class DefaultEbayClient
      *
      * 获取物流服务列表
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetServiceListRequest $get_service_list_request getServiceListRequest (required)
+     * @param  console\services\ebayTrack\GetServiceListRequest $get_service_list_request getServiceListRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function getServiceListAsyncWithHttpInfo($get_service_list_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetServiceListResponses';
+        $returnType = 'console\services\ebayTrack\GetServiceListResponses';
         $request = $this->getServiceListRequest($get_service_list_request);
 
         return $this->client
@@ -5918,11 +5918,11 @@ class DefaultEbayClient
      * 获取包裹物流跟踪信息
      *
      * @param  string $authorization 调用登录认证接口取得的token值 (required)
-     * @param  backend\modules\v1\services\ebayTrack\GetTrackingDetailRequest $get_tracking_detail_request getTrackingDetailRequest (required)
+     * @param  console\services\ebayTrack\GetTrackingDetailRequest $get_tracking_detail_request getTrackingDetailRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\GetTrackingDetailResponses
+     * @return console\services\ebayTrack\GetTrackingDetailResponses
      */
     public function getTrackingDetail($get_tracking_detail_request)
     {
@@ -5935,15 +5935,15 @@ class DefaultEbayClient
      *
      * 获取包裹物流跟踪信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetTrackingDetailRequest $get_tracking_detail_request getTrackingDetailRequest (required)
+     * @param  console\services\ebayTrack\GetTrackingDetailRequest $get_tracking_detail_request getTrackingDetailRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\GetTrackingDetailResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\GetTrackingDetailResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function getTrackingDetailWithHttpInfo($get_tracking_detail_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetTrackingDetailResponses';
+        $returnType = 'console\services\ebayTrack\GetTrackingDetailResponses';
         $request = $this->getTrackingDetailRequest($get_tracking_detail_request);
 
         try {
@@ -5995,7 +5995,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetTrackingDetailResponses',
+                        'console\services\ebayTrack\GetTrackingDetailResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -6003,7 +6003,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\GetTrackingDetailResponses',
+                        'console\services\ebayTrack\GetTrackingDetailResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -6018,7 +6018,7 @@ class DefaultEbayClient
      *
      * 获取包裹物流跟踪信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetTrackingDetailRequest $get_tracking_detail_request getTrackingDetailRequest (required)
+     * @param  console\services\ebayTrack\GetTrackingDetailRequest $get_tracking_detail_request getTrackingDetailRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -6038,14 +6038,14 @@ class DefaultEbayClient
      *
      * 获取包裹物流跟踪信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetTrackingDetailRequest $get_tracking_detail_request getTrackingDetailRequest (required)
+     * @param  console\services\ebayTrack\GetTrackingDetailRequest $get_tracking_detail_request getTrackingDetailRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function getTrackingDetailAsyncWithHttpInfo($get_tracking_detail_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetTrackingDetailResponses';
+        $returnType = 'console\services\ebayTrack\GetTrackingDetailResponses';
         $request = $this->getTrackingDetailRequest($get_tracking_detail_request);
 
         return $this->client
@@ -6088,7 +6088,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'getTrackingDetail'
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetTrackingDetailRequest $get_tracking_detail_request getTrackingDetailRequest (required)
+     * @param  console\services\ebayTrack\GetTrackingDetailRequest $get_tracking_detail_request getTrackingDetailRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -6194,11 +6194,11 @@ class DefaultEbayClient
      *
      * 重新发货
      *
-     * @param  backend\modules\v1\services\ebayTrack\RecreatePackageRequest $recreate_package_request recreatePackageRequest (required)
+     * @param  console\services\ebayTrack\RecreatePackageRequest $recreate_package_request recreatePackageRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\RecreatePackageResponses
+     * @return console\services\ebayTrack\RecreatePackageResponses
      */
     public function recreatePackage($recreate_package_request)
     {
@@ -6211,15 +6211,15 @@ class DefaultEbayClient
      *
      * 重新发货
      *
-     * @param  backend\modules\v1\services\ebayTrack\RecreatePackageRequest $recreate_package_request recreatePackageRequest (required)
+     * @param  console\services\ebayTrack\RecreatePackageRequest $recreate_package_request recreatePackageRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\RecreatePackageResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\RecreatePackageResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function recreatePackageWithHttpInfo($recreate_package_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\RecreatePackageResponses';
+        $returnType = 'console\services\ebayTrack\RecreatePackageResponses';
         $request = $this->recreatePackageRequest($recreate_package_request);
 
         try {
@@ -6271,7 +6271,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\RecreatePackageResponses',
+                        'console\services\ebayTrack\RecreatePackageResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -6279,7 +6279,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\RecreatePackageResponses',
+                        'console\services\ebayTrack\RecreatePackageResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -6294,7 +6294,7 @@ class DefaultEbayClient
      *
      * 重新发货
      *
-     * @param  backend\modules\v1\services\ebayTrack\RecreatePackageRequest $recreate_package_request recreatePackageRequest (required)
+     * @param  console\services\ebayTrack\RecreatePackageRequest $recreate_package_request recreatePackageRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -6314,14 +6314,14 @@ class DefaultEbayClient
      *
      * 重新发货
      *
-     * @param  backend\modules\v1\services\ebayTrack\RecreatePackageRequest $recreate_package_request recreatePackageRequest (required)
+     * @param  console\services\ebayTrack\RecreatePackageRequest $recreate_package_request recreatePackageRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function recreatePackageAsyncWithHttpInfo($recreate_package_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\RecreatePackageResponses';
+        $returnType = 'console\services\ebayTrack\RecreatePackageResponses';
         $request = $this->recreatePackageRequest($recreate_package_request);
 
         return $this->client
@@ -6364,7 +6364,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'recreatePackage'
      *
-     * @param  backend\modules\v1\services\ebayTrack\RecreatePackageRequest $recreate_package_request recreatePackageRequest (required)
+     * @param  console\services\ebayTrack\RecreatePackageRequest $recreate_package_request recreatePackageRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -6470,11 +6470,11 @@ class DefaultEbayClient
      *
      * 更新地址信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\UpdateAddressPreferenceRequest $update_address_preference_request updateAddressPreferenceRequest (required)
+     * @param  console\services\ebayTrack\UpdateAddressPreferenceRequest $update_address_preference_request updateAddressPreferenceRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\UpdateAddressPreferenceResponses
+     * @return console\services\ebayTrack\UpdateAddressPreferenceResponses
      */
     public function updateAddressPreference($update_address_preference_request)
     {
@@ -6487,15 +6487,15 @@ class DefaultEbayClient
      *
      * 更新地址信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\UpdateAddressPreferenceRequest $update_address_preference_request updateAddressPreferenceRequest (required)
+     * @param  console\services\ebayTrack\UpdateAddressPreferenceRequest $update_address_preference_request updateAddressPreferenceRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\UpdateAddressPreferenceResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\UpdateAddressPreferenceResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function updateAddressPreferenceWithHttpInfo($update_address_preference_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\UpdateAddressPreferenceResponses';
+        $returnType = 'console\services\ebayTrack\UpdateAddressPreferenceResponses';
         $request = $this->updateAddressPreferenceRequest($update_address_preference_request);
 
         try {
@@ -6547,7 +6547,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\UpdateAddressPreferenceResponses',
+                        'console\services\ebayTrack\UpdateAddressPreferenceResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -6555,7 +6555,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\UpdateAddressPreferenceResponses',
+                        'console\services\ebayTrack\UpdateAddressPreferenceResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -6570,7 +6570,7 @@ class DefaultEbayClient
      *
      * 更新地址信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\UpdateAddressPreferenceRequest $update_address_preference_request updateAddressPreferenceRequest (required)
+     * @param  console\services\ebayTrack\UpdateAddressPreferenceRequest $update_address_preference_request updateAddressPreferenceRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -6590,14 +6590,14 @@ class DefaultEbayClient
      *
      * 更新地址信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\UpdateAddressPreferenceRequest $update_address_preference_request updateAddressPreferenceRequest (required)
+     * @param  console\services\ebayTrack\UpdateAddressPreferenceRequest $update_address_preference_request updateAddressPreferenceRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function updateAddressPreferenceAsyncWithHttpInfo($update_address_preference_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\UpdateAddressPreferenceResponses';
+        $returnType = 'console\services\ebayTrack\UpdateAddressPreferenceResponses';
         $request = $this->updateAddressPreferenceRequest($update_address_preference_request);
 
         return $this->client
@@ -6640,7 +6640,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'updateAddressPreference'
      *
-     * @param  backend\modules\v1\services\ebayTrack\UpdateAddressPreferenceRequest $update_address_preference_request updateAddressPreferenceRequest (required)
+     * @param  console\services\ebayTrack\UpdateAddressPreferenceRequest $update_address_preference_request updateAddressPreferenceRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -6746,11 +6746,11 @@ class DefaultEbayClient
      *
      * 更新交运偏好
      *
-     * @param  backend\modules\v1\services\ebayTrack\UpdateConsignPreferenceRequest $update_consign_preference_request updateConsignPreferenceRequest (required)
+     * @param  console\services\ebayTrack\UpdateConsignPreferenceRequest $update_consign_preference_request updateConsignPreferenceRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\UpdateConsignPreferenceResponses
+     * @return console\services\ebayTrack\UpdateConsignPreferenceResponses
      */
     public function updateConsignPreference($update_consign_preference_request)
     {
@@ -6763,15 +6763,15 @@ class DefaultEbayClient
      *
      * 更新交运偏好
      *
-     * @param  backend\modules\v1\services\ebayTrack\UpdateConsignPreferenceRequest $update_consign_preference_request updateConsignPreferenceRequest (required)
+     * @param  console\services\ebayTrack\UpdateConsignPreferenceRequest $update_consign_preference_request updateConsignPreferenceRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\UpdateConsignPreferenceResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\UpdateConsignPreferenceResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function updateConsignPreferenceWithHttpInfo($update_consign_preference_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\UpdateConsignPreferenceResponses';
+        $returnType = 'console\services\ebayTrack\UpdateConsignPreferenceResponses';
         $request = $this->updateConsignPreferenceRequest($update_consign_preference_request);
 
         try {
@@ -6823,7 +6823,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\UpdateConsignPreferenceResponses',
+                        'console\services\ebayTrack\UpdateConsignPreferenceResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -6831,7 +6831,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\UpdateConsignPreferenceResponses',
+                        'console\services\ebayTrack\UpdateConsignPreferenceResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -6846,7 +6846,7 @@ class DefaultEbayClient
      *
      * 更新交运偏好
      *
-     * @param  backend\modules\v1\services\ebayTrack\UpdateConsignPreferenceRequest $update_consign_preference_request updateConsignPreferenceRequest (required)
+     * @param  console\services\ebayTrack\UpdateConsignPreferenceRequest $update_consign_preference_request updateConsignPreferenceRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -6866,14 +6866,14 @@ class DefaultEbayClient
      *
      * 更新交运偏好
      *
-     * @param  backend\modules\v1\services\ebayTrack\UpdateConsignPreferenceRequest $update_consign_preference_request updateConsignPreferenceRequest (required)
+     * @param  console\services\ebayTrack\UpdateConsignPreferenceRequest $update_consign_preference_request updateConsignPreferenceRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function updateConsignPreferenceAsyncWithHttpInfo($update_consign_preference_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\UpdateConsignPreferenceResponses';
+        $returnType = 'console\services\ebayTrack\UpdateConsignPreferenceResponses';
         $request = $this->updateConsignPreferenceRequest($update_consign_preference_request);
 
         return $this->client
@@ -6916,7 +6916,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'updateConsignPreference'
      *
-     * @param  backend\modules\v1\services\ebayTrack\UpdateConsignPreferenceRequest $update_consign_preference_request updateConsignPreferenceRequest (required)
+     * @param  console\services\ebayTrack\UpdateConsignPreferenceRequest $update_consign_preference_request updateConsignPreferenceRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -7041,11 +7041,11 @@ class DefaultEbayClient
      *
      * 交运单个包裹
      *
-     * @param  backend\modules\v1\services\ebayTrack\ConfirmPackageRequest $confirm_package_request confirmPackageRequest (required)
+     * @param  console\services\ebayTrack\ConfirmPackageRequest $confirm_package_request confirmPackageRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\ConfirmPackageResponses
+     * @return console\services\ebayTrack\ConfirmPackageResponses
      */
     public function confirmPackage($confirm_package_request)
     {
@@ -7058,7 +7058,7 @@ class DefaultEbayClient
      *
      * 交运单个包裹
      *
-     * @param  backend\modules\v1\services\ebayTrack\ConfirmPackageRequest $confirm_package_request confirmPackageRequest (required)
+     * @param  console\services\ebayTrack\ConfirmPackageRequest $confirm_package_request confirmPackageRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -7079,14 +7079,14 @@ class DefaultEbayClient
      *
      * 交运单个包裹
      *
-     * @param  backend\modules\v1\services\ebayTrack\ConfirmPackageRequest $confirm_package_request confirmPackageRequest (required)
+     * @param  console\services\ebayTrack\ConfirmPackageRequest $confirm_package_request confirmPackageRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function confirmPackageAsyncWithHttpInfo($confirm_package_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\ConfirmPackageResponses';
+        $returnType = 'console\services\ebayTrack\ConfirmPackageResponses';
         $request = $this->confirmPackageRequest($confirm_package_request);
 
         return $this->client
@@ -7131,15 +7131,15 @@ class DefaultEbayClient
      *
      * 交运单个包裹
      *
-     * @param  backend\modules\v1\services\ebayTrack\ConfirmPackageRequest $confirm_package_request confirmPackageRequest (required)
+     * @param  console\services\ebayTrack\ConfirmPackageRequest $confirm_package_request confirmPackageRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\ConfirmPackageResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\ConfirmPackageResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function confirmPackageWithHttpInfo($confirm_package_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\ConfirmPackageResponses';
+        $returnType = 'console\services\ebayTrack\ConfirmPackageResponses';
         $request = $this->confirmPackageRequest($confirm_package_request);
 
         try {
@@ -7191,7 +7191,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                     $e->getResponseBody(),
-                    'backend\modules\v1\services\ebayTrack\ConfirmPackageResponses',
+                    'console\services\ebayTrack\ConfirmPackageResponses',
                     $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -7199,7 +7199,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                     $e->getResponseBody(),
-                    'backend\modules\v1\services\ebayTrack\ConfirmPackageResponses',
+                    'console\services\ebayTrack\ConfirmPackageResponses',
                     $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -7212,7 +7212,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'confirmPackage'
      *
-     * @param  backend\modules\v1\services\ebayTrack\ConfirmPackageRequest $confirm_package_request confirmPackageRequest (required)
+     * @param  console\services\ebayTrack\ConfirmPackageRequest $confirm_package_request confirmPackageRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -7318,11 +7318,11 @@ class DefaultEbayClient
      *
      * æ¹éæå°é¢å
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetLabelListRequest $get_label_list_request getLabelListRequest (required)
+     * @param  console\services\ebayTrack\GetLabelListRequest $get_label_list_request getLabelListRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\GetLabelListResponses
+     * @return console\services\ebayTrack\GetLabelListResponses
      */
     public function getLabelList($get_label_list_request)
     {
@@ -7333,15 +7333,15 @@ class DefaultEbayClient
     /**
      * Operation getLabelListWithHttpInfo
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetLabelListRequest $get_label_list_request getLabelListRequest (required)
+     * @param  console\services\ebayTrack\GetLabelListRequest $get_label_list_request getLabelListRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\GetLabelListResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\GetLabelListResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function getLabelListWithHttpInfo($get_label_list_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetLabelListResponses';
+        $returnType = 'console\services\ebayTrack\GetLabelListResponses';
         $request = $this->getLabelListRequest($get_label_list_request);
 
         try {
@@ -7393,7 +7393,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                     $e->getResponseBody(),
-                    'backend\modules\v1\services\ebayTrack\GetLabelListResponses',
+                    'console\services\ebayTrack\GetLabelListResponses',
                     $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -7401,7 +7401,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                     $e->getResponseBody(),
-                    'backend\modules\v1\services\ebayTrack\GetLabelListResponses',
+                    'console\services\ebayTrack\GetLabelListResponses',
                     $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -7414,7 +7414,7 @@ class DefaultEbayClient
     /**
      * Operation getLabelListAsync
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetLabelListRequest $get_label_list_request getLabelListRequest (required)
+     * @param  console\services\ebayTrack\GetLabelListRequest $get_label_list_request getLabelListRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -7432,14 +7432,14 @@ class DefaultEbayClient
     /**
      * Operation getLabelListAsyncWithHttpInfo
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetLabelListRequest $get_label_list_request getLabelListRequest (required)
+     * @param  console\services\ebayTrack\GetLabelListRequest $get_label_list_request getLabelListRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function getLabelListAsyncWithHttpInfo($get_label_list_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\GetLabelListResponses';
+        $returnType = 'console\services\ebayTrack\GetLabelListResponses';
         $request = $this->getLabelListRequest($get_label_list_request);
 
         return $this->client
@@ -7482,7 +7482,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'getLabelList'
      *
-     * @param  backend\modules\v1\services\ebayTrack\GetLabelListRequest $get_label_list_request getLabelListRequest (required)
+     * @param  console\services\ebayTrack\GetLabelListRequest $get_label_list_request getLabelListRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -7589,11 +7589,11 @@ class DefaultEbayClient
      *
      * 新增超时揽收申诉
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddComplaintRequest $add_complaint_request addComplaintRequest (required)
+     * @param  console\services\ebayTrack\AddComplaintRequest $add_complaint_request addComplaintRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return backend\modules\v1\services\ebayTrack\AddComplaintResponses
+     * @return console\services\ebayTrack\AddComplaintResponses
      */
     public function addComplaint($add_complaint_request)
     {
@@ -7606,15 +7606,15 @@ class DefaultEbayClient
      *
      * 新增超时揽收申诉
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddComplaintRequest $add_complaint_request addComplaintRequest (required)
+     * @param  console\services\ebayTrack\AddComplaintRequest $add_complaint_request addComplaintRequest (required)
      *
-     * @throws backend\modules\v1\services\ebayTrack\ApiException on non-2xx response
+     * @throws console\services\ebayTrack\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of backend\modules\v1\services\ebayTrack\AddComplaintResponses, HTTP status code, HTTP response headers (array of strings)
+     * @return array of console\services\ebayTrack\AddComplaintResponses, HTTP status code, HTTP response headers (array of strings)
      */
     public function addComplaintRequestWithHttpInfo($add_complaint_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\AddComplaintResponses';
+        $returnType = 'console\services\ebayTrack\AddComplaintResponses';
         $request = $this->addComplaintRequest($add_complaint_request);
         try {
             $options = $this->createHttpClientOption();
@@ -7665,7 +7665,7 @@ class DefaultEbayClient
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\AddComplaintResponses',
+                        'console\services\ebayTrack\AddComplaintResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -7673,7 +7673,7 @@ class DefaultEbayClient
                 case 206:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        'backend\modules\v1\services\ebayTrack\AddComplaintResponses',
+                        'console\services\ebayTrack\AddComplaintResponses',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -7686,7 +7686,7 @@ class DefaultEbayClient
     /**
      * Create request for operation 'addComplaint'
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddComplaintRequest $add_complaint_request addComplaintRequest (required)
+     * @param  console\services\ebayTrack\AddComplaintRequest $add_complaint_request addComplaintRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -7793,7 +7793,7 @@ class DefaultEbayClient
      *
      * 新增地址信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddComplaintRequest $add_complaint_request addComplaintRequest (required)
+     * @param  console\services\ebayTrack\AddComplaintRequest $add_complaint_request addComplaintRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -7813,14 +7813,14 @@ class DefaultEbayClient
      *
      * 新增地址信息
      *
-     * @param  backend\modules\v1\services\ebayTrack\AddComplaintRequest $add_complaint_request addComplaintRequest (required)
+     * @param  console\services\ebayTrack\AddComplaintRequest $add_complaint_request addComplaintRequest (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function addComplaintAsyncWithHttpInfo($add_complaint_request)
     {
-        $returnType = 'backend\modules\v1\services\ebayTrack\AddComplaintResponses';
+        $returnType = 'console\services\ebayTrack\AddComplaintResponses';
         $request = $this->addComplaintRequest($add_complaint_request);
 
         return $this->client

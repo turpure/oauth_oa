@@ -335,7 +335,36 @@ class Helper
         return ucfirst(end($x));
     }
 
+    /**
+     * 指定时间下个月一号日期
+     * @param $date
+     * @return string
+     */
+    public static function nextMonthStartDay($date) {
+        $timeStamp = strtotime($date);
+        $thismonth = date('m',$timeStamp);
+        $thisyear = date('Y',$timeStamp);
+        if ($thismonth == 12) {
+            $lastmonth = 1;
+            $lastyear = $thisyear + 1;
+        } else {
+            $lastmonth = $thismonth + 1;
+            $lastyear = $thisyear;
+        }
+        return $lastyear . '-' . $lastmonth . '-1';
 
+    }
+
+    /**
+     * 月末时间
+     * @param $date
+     * @return false|string
+     */
+    public static function monthEndDay($date) {
+        $timestamp = strtotime( $date );
+        $mdays = date( 't', $timestamp );
+        return date( 'Y-m-' . $mdays . ' 23:59:59', $timestamp );
+    }
 
 
 }

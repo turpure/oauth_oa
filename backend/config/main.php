@@ -84,6 +84,13 @@ return [
     'aliases' => [
         '@mdm/admin' => '@vendor/mdmsoft/yii2-admin',
     ],
+//    'as cors' => [
+//        'class' => \yii\filters\Cors::className(),
+//        'cors' => [
+//            'Origin' => ['*'],
+//            'Access-Control-Allow-Credentials' => true
+//        ]
+//    ],
     'as access' => [
         'class' => 'mdm\admin\components\AccessControl',
         'allowActions' => [
