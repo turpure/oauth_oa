@@ -118,7 +118,6 @@ class ApiLogisticsTrack
             $query->andFilterWhere(['=', 'trade_send.logistic_type', $condition['logistic_type']]);
         }
 
-
         // 异常状态
         if (!empty($condition['abnormal_status'])) {
             $query->andFilterWhere(['in', 'tslt.abnormal_status', $condition['abnormal_status']]);
@@ -126,7 +125,7 @@ class ApiLogisticsTrack
 
         // 快递方式
         if (!empty($condition['logistic_name'])) {
-            $query->andFilterWhere(['=', 'trade_send.logistic_name', $condition['logistic_name']]);
+            $query->andFilterWhere(['trade_send.logistic_name' => $condition['logistic_name']]);
         }
 
         if (!empty($condition['suffix'])) {
@@ -406,12 +405,12 @@ class ApiLogisticsTrack
      */
     public static function exportLogisticsTrack($condition)
     {
-        ini_set('memory_limit', '1024M');
+        ini_set('memory_limit', '-1');
 
         //        3处理中 4待赔偿 5暂时正常 6已退回 7销毁/弃件 8已索赔 9成功签收
         $trackStatus = ['未查询', '查询不到', '运输途中', '运输过久', '可能异常', '到达待取', '投递失败', '成功签收'];
         $abnormalStatus = ['正常', '异常待处理', '待赔偿', '暂时正常', '已退回', '销毁/弃件', '已索赔', '成功签收'];
-        $abnormalType = ['无异常', '未上网', '断更', '运输过久', '退件', '派送异常', '信息停滞'];
+        $abnormalType = ['无异常', '未上网', '断更', '运输过久', '退件', '派送异常', '信息停滞','可能异常'];
 
         $query = self::tradeSendQuery($condition);
         $list = $query->all();
