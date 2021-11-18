@@ -307,9 +307,6 @@ class ApiLogisticsTrack
             $list[$key]['average'] = round($item->average / 86400);
         }
         $totalCount = count($list);
-        var_export($statistical['average']);
-        var_export($totalCount);
-
         $statistical['success_ratio'] = sprintf("%.2f", $statistical['success_ratio'] / $totalCount);
         $statistical['dont_succeed_ratio'] = sprintf("%.2f", $statistical['dont_succeed_ratio'] / $totalCount);
         $statistical['average'] = round($statistical['average'] / $totalCount / 86400);
