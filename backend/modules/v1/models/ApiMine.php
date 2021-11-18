@@ -19,6 +19,7 @@ use backend\modules\v1\utils\ExportTools;
 use backend\modules\v1\utils\Helper;
 use Exception;
 use Yii;
+use yii\data\ArrayDataProvider;
 use yii\helpers\ArrayHelper;
 
 

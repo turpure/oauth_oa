@@ -8,6 +8,7 @@
 namespace backend\modules\v1\controllers;
 
 
+use backend\models\CacheSkuStorageAge;
 use backend\models\ShopElf\OauthEbayPayoutSuffixStatus;
 use backend\models\ShopElf\OauthSysConfig;
 use backend\models\ShopElf\YPayPalStatus;
@@ -23,6 +24,7 @@ use backend\modules\v1\utils\Handler;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\db\Exception;
+use yii\db\Expression;
 use yii\db\Query;
 use Yii;
 use yii\helpers\ArrayHelper;
@@ -650,6 +652,82 @@ class DataCenterController extends AdminController
             '60-90天库存数量', '60-90天库存金额', '90天以上库存数量', '90天以上库存金额', '180天以上'];
         ExportTools::toExcelOrCsv('skuStorageAge', $data, 'Xlsx', $title);
     }
+
+    /**
+     * 库龄表 -- 2
+     * Date: 2021-03-06 16:52
+     * Author: henry
+     * @return ActiveDataProvider
+     */
+    public function actionSkuStorageAge2()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $pageSize = $condition['pageSize'] ?: 20;
+        //获取所有销售员--账号 信息
+
+        $salerName = $condition['salerName'] ?: [];
+        $storeName = $condition['storeName'] ?: ['义乌仓'];
+        $goodsSkuStatus = $condition['goodsSkuStatus'] ?? [];
+        $maxStorageAge = $condition['maxStorageAge'] ?: '';
+        $createdTime = $condition['createdTime'] ?: '';
+        $sku = $condition['sku'] ?: '';
+
+        $query = CacheSkuStorageAge::find()
+            ->select(['*',new Expression('SUBSTR(createdTime,1,10) as createdTime')])
+            ->andFilterWhere(['sku' => $sku, 'maxStorageAge' => $maxStorageAge])
+            ->andFilterWhere(['storeName' => $storeName])
+            ->andFilterWhere(['salerName' => $salerName])
+            ->andFilterWhere(['goodsSkuStatus' => $goodsSkuStatus])
+            ->andFilterWhere(['createdTime' => $createdTime]);
+
+        return new ActiveDataProvider([
+            'query' => $query,
+            'sort' => [
+                'attributes' => ['sku', 'storeName', 'skuName', 'salerName', 'goodsSkuStatus', 'createdTime',
+                    'number1', 'money1', 'number2', 'money2', 'totalNumber', 'totalMoney', 'maxStorageAge',
+                    'lastPurchaseDate'],
+                'defaultOrder' => [
+                    'totalNumber' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+    }
+
+    /**
+     * 库龄表 -- 2  导出
+     * Date: 2021-03-06 16:52
+     * Author: henry
+     * @return ActiveDataProvider
+     */
+    public function actionSkuStorageAgeExport2()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        //获取所有销售员--账号 信息
+
+        $salerName = $condition['salerName'] ?: [];
+        $storeName = $condition['storeName'] ?: ['义乌仓'];
+        $goodsSkuStatus = $condition['goodsSkuStatus'] ?? [];
+        $maxStorageAge = $condition['maxStorageAge'] ?: '';
+        $createdTime = $condition['createdTime'] ?: '';
+        $sku = $condition['sku'] ?: '';
+
+        $query = CacheSkuStorageAge::find()
+            ->select(['*',new Expression('SUBSTR(createdTime,1,10) as createdTime')])
+            ->andFilterWhere(['sku' => $sku, 'maxStorageAge' => $maxStorageAge])
+            ->andFilterWhere(['storeName' => $storeName])
+            ->andFilterWhere(['salerName' => $salerName])
+            ->andFilterWhere(['goodsSkuStatus' => $goodsSkuStatus])
+            ->andFilterWhere(['createdTime' => $createdTime])
+            ->asArray()->all();
+
+        $title = ['ID', 'SKU', 'SKU名称', '开发员', '主图', '仓库', 'SKU状态',  '总库存数量', '总库存金额',
+            '90天库存数量', '90天库存金额', '90天以上库存数量', '90天以上库存金额', '最大库龄', '90-120天最大采购日期', '更新时间'];
+        ExportTools::toExcelOrCsv('skuStorageAge', $query, 'Xlsx', $title);
+    }
+
 
     /**
      * 价格保护
