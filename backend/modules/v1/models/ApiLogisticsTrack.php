@@ -298,15 +298,18 @@ class ApiLogisticsTrack
             'dont_succeed_ratio' => 0,
         ];
         foreach ($list as $key => $item) {
-            $list[$key]['average'] = round($item->average / 86400);
-            $statistical['total_num'] += $item->total_num;
             $statistical['average'] += $item->average;
+            $statistical['total_num'] += $item->total_num;
             $statistical['success_num'] += $item->success_num;
             $statistical['success_ratio'] += $item->success_ratio;
             $statistical['dont_succeed_num'] += $item->dont_succeed_num;
             $statistical['dont_succeed_ratio'] += $item->dont_succeed_ratio;
+            $list[$key]['average'] = round($item->average / 86400);
         }
         $totalCount = count($list);
+        var_export($statistical['average']);
+        var_export($totalCount);
+
         $statistical['success_ratio'] = sprintf("%.2f", $statistical['success_ratio'] / $totalCount);
         $statistical['dont_succeed_ratio'] = sprintf("%.2f", $statistical['dont_succeed_ratio'] / $totalCount);
         $statistical['average'] = round($statistical['average'] / $totalCount / 86400);
