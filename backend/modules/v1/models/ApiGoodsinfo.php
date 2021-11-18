@@ -2082,9 +2082,23 @@ class ApiGoodsinfo
      * @param $accounts
      * @return array
      */
-    public static function preExportEbayData($id, $type)
+    public static function preExportEbayData($id, $type,$completeStatus,$accounts='')
     {
-        $accounts = OaEbaySuffix::find()->asArray()->all();
+        # 是否有指定状态
+        if (!empty($completeStatus)) {
+            $checkGoods = OaGoodsinfo::find()->where(['id' => $id])->andWhere(['like', 'completeStatus', $completeStatus])->asArray()->one();
+            if (empty($checkGoods)) {
+                throw new \Exception('请先完善产品！');
+            }
+        }
+
+        $accountsQuery = OaEbaySuffix::find();
+
+        if (!empty($accounts)) {
+            $accountsQuery->andFilterWhere(['ebaySuffix'=>explode(',', $accounts)]);
+        }
+        $ebayAccounts = $accountsQuery->asArray()->all();
+
         $row = [
             "ApplicationData" => '', "AutoPay" => '', "BestOfferDetails" => '', "BuyerRequirementDetails" => '',
             "BuyerResponsibleForShipping" => '', "BuyItNowPrice" => '', "CategoryMappingAllowed" => '',
@@ -2117,7 +2131,7 @@ class ApiGoodsinfo
         $keyWords = static::preKeywords($ebayInfo);
         $price = self::getEbayPrice($ebayInfo);
 
-        foreach ($accounts as $account) {
+        foreach ($ebayAccounts as $account) {
             $payPal = self::getEbayPayPal($price, $account);
             $titlePool = [];
             $title = '';

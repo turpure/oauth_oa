@@ -56,36 +56,33 @@ class ApiLogisticsTrack
         $role = User::getRole($userId);//登录用户角色
         //获取平台列表
         if ($isAccountAdmin = (in_array(AuthAssignment::ACCOUNT_ADMIN, $role) === false)) {
-//            非超级会员
+            //            非超级会员
             $userAccount = ApiCondition::getUserAccount();
         }
 
         $query = (new \yii\db\Query())
-            ->select(['trade_send.*', 'tslt.*'])
+            ->select([
+                'suffix', 'closingdate', 'total_weight', 'ack', 'logistic_company', 'shiptocountry_code',
+                'shiptocountry_name', 'transaction_type', 'store_name', 'addressowner', 'tslt.*',])
             ->from('trade_send')
             ->leftJoin('trade_send_logistics_track as tslt', 'trade_send.order_id = tslt.order_id')
             ->orderBy('trade_send.closingdate desc');
         //  订单号
         if (!empty($condition['order_id'])) {
-            $query->andFilterWhere(['trade_send.order_id', explode(',', $condition['order_id'])]);
+            $query->andFilterWhere(['trade_send.order_id' => explode(',', $condition['order_id'])]);
         }
         // 追踪号
         if (!empty($condition['track_no'])) {
-            $query->andFilterWhere(['trade_send.track_no1' => explode(',', $condition['track_no'])]);
+            $query->andFilterWhere(['trade_send.track_no' => explode(',', $condition['track_no'])]);
         }
         // 店铺单号
         if (!empty($condition['ack'])) {
             $query->andFilterWhere(['=', 'trade_send.ack', $condition['ack']]);
         }
-        // 平台
-        if (!empty($condition['addressowner'])) {
-            $query->andFilterWhere(['=', 'trade_send.addressowner', $condition['addressowner']]);
-        }
         // 发货时间
         if (!empty($condition['closing_date'][0])) {
             $query->andFilterWhere(['>', 'trade_send.closingdate', (strtotime($condition['closing_date'][0]) - 1)]);
         }
-
         // 发货时间
         if (!empty($condition['closing_date'][1])) {
             $query->andFilterWhere(['<', 'trade_send.closingdate', (strtotime($condition['closing_date'][1]) + 86400)]);
@@ -98,10 +95,12 @@ class ApiLogisticsTrack
                     $firstDate = strtotime($condition['closing_date'][0]) + $condition['day_num'] * 86400;
 
                     $query->andWhere("first_time>{$firstDate} or first_time is null");
-                } else {
+                }
+                else {
                     $query->andWhere(" first_time is null");
                 }
-            } else {
+            }
+            else {
                 // 未妥投
                 $query->andFilterWhere(['!=', 'tslt.status', LogisticEnum::SUCCESS]);
             }
@@ -116,7 +115,6 @@ class ApiLogisticsTrack
             $query->andFilterWhere(['=', 'trade_send.logistic_type', $condition['logistic_type']]);
         }
 
-
         // 异常状态
         if (!empty($condition['abnormal_status'])) {
             $query->andFilterWhere(['in', 'tslt.abnormal_status', $condition['abnormal_status']]);
@@ -124,19 +122,23 @@ class ApiLogisticsTrack
 
         // 快递方式
         if (!empty($condition['logistic_name'])) {
-            $query->andFilterWhere(['=', 'trade_send.logistic_name', $condition['logistic_name']]);
+            $query->andFilterWhere(['trade_send.logistic_name' => $condition['logistic_name']]);
         }
-
+        // 平台
+        if (!empty($condition['addressowner'])) {
+            $query->andFilterWhere(['trade_send.addressowner' => $condition['addressowner']]);
+        }
         if (!empty($condition['suffix'])) {
 
             if ($isAccountAdmin && !in_array($condition['suffix'], $userAccount)) {
                 $condition['suffix'] = '/';
             }
 
-            $query->andFilterWhere(['=', 'trade_send.suffix', $condition['suffix']]);
+            $query->andFilterWhere(['trade_send.suffix' => $condition['suffix']]);
 
-        } elseif ($isAccountAdmin) {
-            $query->andFilterWhere(['in', 'trade_send.suffix', $userAccount]);
+        }
+        elseif ($isAccountAdmin) {
+            $query->andFilterWhere(['trade_send.suffix' => $userAccount]);
         }
 
         return $query;
@@ -179,7 +181,7 @@ class ApiLogisticsTrack
                     'management'      => Yii::$app->user->identity->username
                 ],
                 [
-                    'order_id'        => $condition['order_id'],
+                    'id'              => $condition['order_id'],
                     'abnormal_status' => [2, 3, 4]
                 ]
             )
@@ -190,14 +192,48 @@ class ApiLogisticsTrack
     /**
      * 物流时效列表
      * @param $condition
-     * @return ActiveDataProvider
+     * @return array
      */
     public static function logisticsTimeFrame($condition)
     {
         $query = self::timeFrameQuery($condition);
+        $list = $query->all();
+        $statistical = [
+            'total_num'      => 0,
+            'intraday_num'   => 0,
+            'intraday_ratio' => 0,
+            'first_num'      => 0,
+            'first_ratio'    => 0,
+            'second_num'     => 0,
+            'second_ratio'   => 0,
+            'third_num'      => 0,
+            'third_ratio'    => 0,
+            'above_num'      => 0,
+            'above_ratio'    => 0,
+        ];
+        foreach ($list as $item) {
+            $statistical['total_num'] += $item->total_num;
+            $statistical['intraday_num'] += $item->intraday_num;
+            $statistical['intraday_ratio'] += $item->intraday_ratio;
+            $statistical['first_num'] += $item->first_num;
+            $statistical['first_ratio'] += $item->first_ratio;
+            $statistical['second_num'] += $item->second_num;
+            $statistical['second_ratio'] += $item->second_ratio;
+            $statistical['third_num'] += $item->third_num;
+            $statistical['third_ratio'] += $item->third_ratio;
+            $statistical['above_num'] += $item->above_num;
+            $statistical['above_ratio'] += $item->above_ratio;
+        }
+        $totalCount = count($list);
+        $statistical['intraday_ratio'] = sprintf("%.2f", $statistical['intraday_ratio'] / $totalCount);
+        $statistical['first_ratio'] = sprintf("%.2f", $statistical['first_ratio'] / $totalCount);
+        $statistical['second_ratio'] = sprintf("%.2f", $statistical['second_ratio'] / $totalCount);
+        $statistical['third_ratio'] = sprintf("%.2f", $statistical['third_ratio'] / $totalCount);
+        $statistical['above_ratio'] = sprintf("%.2f", $statistical['above_ratio'] / $totalCount);
 
-        return new ArrayDataProvider([
-            'allModels'  => $query->all(),
+
+        $provider = new ArrayDataProvider([
+            'allModels'  => $list,
             'sort'       => [
                 'attributes'   => [
                     'id', 'total_num', 'intraday_num', 'intraday_ratio', 'above_ratio', 'above_num', 'second_ratio', 'first_ratio', 'first_num', 'second_num', 'third_num', 'third_ratio'
@@ -210,6 +246,10 @@ class ApiLogisticsTrack
                 'pageSize' => isset($condition['pageSize']) ? $condition['pageSize'] : 10,
             ],
         ]);
+
+        return ['provider' => $provider, 'statistical' => $statistical];
+
+
     }
 
     private static function timeFrameQuery($condition)
@@ -235,7 +275,7 @@ class ApiLogisticsTrack
             $query->andFilterWhere(['logistic_name' => $condition['logistic_name']]);
         }
 
-        return $query;
+        return $query->andFilterWhere(['status' => 1]);
     }
 
     /**
@@ -246,21 +286,49 @@ class ApiLogisticsTrack
     public static function logisticsSuccRate($condition)
     {
         $query = self::logisticsSuccRateQuery($condition);
+        $list = $query->all();
 
-        return new ArrayDataProvider([
-            'allModels'  => $query->all(),
-            'sort'       => [
-                'attributes'   => [
-                    'id', 'total_num', 'average', 'success_ratio', 'success_num', 'dont_succeed_num', 'dont_succeed_ratio'
+
+        $statistical = [
+            'total_num'          => 0,
+            'average'            => 0,
+            'success_num'        => 0,
+            'success_ratio'      => 0,
+            'dont_succeed_num'   => 0,
+            'dont_succeed_ratio' => 0,
+        ];
+        foreach ($list as $key => $item) {
+            $statistical['average'] += $item->average;
+            $statistical['total_num'] += $item->total_num;
+            $statistical['success_num'] += $item->success_num;
+            $statistical['success_ratio'] += $item->success_ratio;
+            $statistical['dont_succeed_num'] += $item->dont_succeed_num;
+            $statistical['dont_succeed_ratio'] += $item->dont_succeed_ratio;
+            $list[$key]['average'] = round($item->average / 86400);
+        }
+        $totalCount = count($list);
+        $statistical['success_ratio'] = sprintf("%.2f", $statistical['success_ratio'] / $totalCount);
+        $statistical['dont_succeed_ratio'] = sprintf("%.2f", $statistical['dont_succeed_ratio'] / $totalCount);
+        $statistical['average'] = round($statistical['average'] / $totalCount / 86400);
+
+        return [
+            'statistical' => $statistical,
+            'provider'    => new ArrayDataProvider([
+                'allModels'  => $list,
+                'sort'       => [
+                    'attributes'   => [
+                        'id', 'total_num', 'average', 'success_ratio', 'success_num', 'dont_succeed_num', 'dont_succeed_ratio'
+                    ],
+                    'defaultOrder' => [
+                        'id' => SORT_DESC,
+                    ]
                 ],
-                'defaultOrder' => [
-                    'id' => SORT_DESC,
-                ]
-            ],
-            'pagination' => [
-                'pageSize' => isset($condition['pageSize']) ? $condition['pageSize'] : 10,
-            ],
-        ]);
+                'pagination' => [
+                    'pageSize' => isset($condition['pageSize']) ? $condition['pageSize'] : 10,
+                ],
+            ])];
+
+
     }
 
     /**
@@ -286,7 +354,7 @@ class ApiLogisticsTrack
         if (!empty($condition['logistic_name'])) {
             $query->andFilterWhere(['logistic_name' => $condition['logistic_name']]);
         }
-        return $query;
+        return $query->andFilterWhere(['status' => 1]);
     }
 
     /**
@@ -298,8 +366,10 @@ class ApiLogisticsTrack
         $list = self::timeFrameQuery($condition)->all();
 
         $objectPHPExcel = new Spreadsheet();//实例化类
-//      当天上网数量	当天上网率	1天内上网数量	1天内上网率	2天内上网数量	2天内上网率	3天内上网数量	3天内上网率	未上网数	未上网率
-        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', '发货月份');
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(30);
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', '发货日期');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('B1', '快递公司');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('C1', '物流方式');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('D1', '订单数量');
@@ -351,7 +421,9 @@ class ApiLogisticsTrack
         $list = self::logisticsSuccRateQuery($condition)->all();
 
         $objectPHPExcel = new Spreadsheet();//实例化类
-//        发货月份	快递公司	物流方式	订单数量	平均时效	妥投率	未妥投数量	未妥投率
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(30);
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', '发货日期');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('B1', '快递公司');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('C1', '物流方式');
@@ -399,15 +471,35 @@ class ApiLogisticsTrack
      */
     public static function exportLogisticsTrack($condition)
     {
-//        3处理中 4待赔偿 5暂时正常 6已退回 7销毁/弃件 8已索赔 9成功签收
+        ini_set('memory_limit', '-1');
+
+        //        3处理中 4待赔偿 5暂时正常 6已退回 7销毁/弃件 8已索赔 9成功签收
         $trackStatus = ['未查询', '查询不到', '运输途中', '运输过久', '可能异常', '到达待取', '投递失败', '成功签收'];
         $abnormalStatus = ['正常', '异常待处理', '待赔偿', '暂时正常', '已退回', '销毁/弃件', '已索赔', '成功签收'];
-        $abnormalType = ['无异常', '未上网', '断更', '运输过久', '退件', '派送异常', '信息停滞'];
+        $abnormalType = ['无异常', '未上网', '断更', '运输过久', '退件', '派送异常', '信息停滞', '可能异常'];
 
         $query = self::tradeSendQuery($condition);
         $list = $query->all();
 
         $objectPHPExcel = new Spreadsheet();//实例化类
+
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(10);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('O')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('P')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('Q')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('R')->setWidth(30);
 
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', '订单编号');
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('B1', '卖家简称');
@@ -422,21 +514,25 @@ class ApiLogisticsTrack
         $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('K1', '销售渠道');
         if (isset($condition['logistic_status']) && $condition['logistic_status'] == 1) {
             $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('L1', '运输状态');
-        } else {
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('M1', '轨迹查询时间');
+
+        }
+        else {
             $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('L1', '第一条轨迹时间');
             $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('M1', '第一条轨迹信息');
             $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('N1', '最新轨迹时间');
             $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('O1', '最新轨迹信息');
             $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('P1', '运输状态');
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('Q1', '签收时效');
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('R1', '停滞时间');
-        }
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('Q1', '轨迹查询时间');
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('R1', '签收时效');
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('S1', '停滞时间');
+            if (!empty($condition['abnormal_status'])) {
+                //
+                $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('T1', '轨迹分类');
+                $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('U1', '处理标签');
+                $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('V1', '处理人');
 
-        if (!empty($condition['abnormal_status'])) {
-//
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('S1', '轨迹分类');
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('T1', '处理标签');
-            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('U1', '处理人');
+            }
 
         }
 
@@ -458,23 +554,29 @@ class ApiLogisticsTrack
 
             if (isset($condition['logistic_status']) && $condition['logistic_status'] == 1) {
                 $objectPHPExcel->getActiveSheet()->setCellValue('L' . ($n), $trackStatus[$v['status'] - 1]);
-            } else {
+                $objectPHPExcel->getActiveSheet()->setCellValue('M' . ($n), date('Y-m-d H:i:s', $v['updated_at']));
+
+            }
+            else {
                 $objectPHPExcel->getActiveSheet()->setCellValue('L' . ($n), empty($v['first_time']) ? '' : date('Y-m-d H:i:s', $v['first_time']));
                 $objectPHPExcel->getActiveSheet()->setCellValue('M' . ($n), $v['first_detail']);
                 $objectPHPExcel->getActiveSheet()->setCellValue('N' . ($n), empty($v['newest_time']) ? '' : date('Y-m-d H:i:s', $v['newest_time']));
                 $objectPHPExcel->getActiveSheet()->setCellValue('O' . ($n), $v['newest_detail']);
                 $objectPHPExcel->getActiveSheet()->setCellValue('P' . ($n), $trackStatus[$v['status'] - 1]);
-                $objectPHPExcel->getActiveSheet()->setCellValue('Q' . ($n), !empty($v['newest_time']) ? intval(($v['newest_time'] - $v['closingdate']) / 86400) : '');
-                $objectPHPExcel->getActiveSheet()->setCellValue('R' . ($n), $v['status'] == 1 && !empty($v['newest_time']) ? intval(time() - $v['newest_time']) / 86400 : '');
+                $objectPHPExcel->getActiveSheet()->setCellValue('Q' . ($n), $v['status'] == 1 ? '' : date('Y-m-d H:i:s'));
+                $objectPHPExcel->getActiveSheet()->setCellValue('R' . ($n), !empty($v['newest_time']) ? intval(($v['newest_time'] - $v['closingdate']) / 86400) : '');
+                $objectPHPExcel->getActiveSheet()->setCellValue('S' . ($n), $v['status'] == 1 && !empty($v['newest_time']) ? intval(time() - $v['newest_time']) / 86400 : '');
+                if (!empty($condition['abnormal_status'])) {
+                    //
+                    $objectPHPExcel->getActiveSheet()->setCellValue('T' . ($n), $abnormalType[$v['abnormal_type'] - 1]);
+                    $objectPHPExcel->getActiveSheet()->setCellValue('U' . ($n), $abnormalStatus[$v['abnormal_status'] - 1]);
+                    $objectPHPExcel->getActiveSheet()->setCellValue('V' . ($n), $v['management']);
+
+                }
+
             }
 
-            if (!empty($condition['abnormal_status'])) {
-//
-                $objectPHPExcel->getActiveSheet()->setCellValue('S' . ($n), $abnormalType[$v['abnormal_type'] - 1]);
-                $objectPHPExcel->getActiveSheet()->setCellValue('T' . ($n), $trackStatus[$v['abnormal_status'] - 1]);
-                $objectPHPExcel->getActiveSheet()->setCellValue('U' . ($n), $v['management']);
 
-            }
             $n = $n + 1;
         }
         $objWriter = IOFactory::createWriter($objectPHPExcel, 'Xlsx');
@@ -509,9 +611,9 @@ class ApiLogisticsTrack
                 'name' => '燕文',
                 'type' => 2,
                 'list' => [
-                    '5部 - 燕文专线追踪小包(普货)', '线下E邮宝 上海', '燕特快 - 澳大利亚（不含电）', '燕特快 - 澳大利亚（不含电）', '燕文航空挂号小包（普货）',
-                    '燕文航空经济小包（特货）', '燕文化妆品挂号 - 特货（粉末液体)', '燕文化妆品平邮 - 特货（粉末液体）', '燕文 - 燕邮宝平邮 - 特货', '燕文专线平邮小包 - 普货',
-                    '燕文专线追踪小包(特货)', '燕文 - 中邮线下E邮宝', '燕文航空挂号小包（特货）', '燕文航空经济小包（普货）', '燕文专线追踪小包(普货)'],
+                    '5部-燕文专线追踪小包(普货) 上海', '线下E邮宝 上海', '燕特快-澳大利亚（不含电）', '燕特快-澳大利亚（不含电）', '燕文航空挂号小包（普货）',
+                    '燕文航空经济小包（特货）', '燕文化妆品挂号-特货（粉末液体)', '燕文化妆品平邮-特货（粉末液体）', '燕文-燕邮宝平邮-特货', '燕文专线平邮小包-普货',
+                    '燕文专线追踪小包(特货)', '燕文航空挂号小包（特货）', '燕文航空经济小包（普货）', '燕文专线追踪小包(普货)'],
             ],
             [
                 'name' => '顺友',
@@ -523,21 +625,16 @@ class ApiLogisticsTrack
                 'type' => 4,
                 'list' => [
                     'VOVA-中邮平常小包(金华)', 'VOVA-中邮挂号-金华', 'VOVA-燕文专线追踪小包(特货)', 'VOVA-燕文专线追踪小包(普货)',
-                    'VOVA-燕文专线平邮小包(特货)',
-                    'VOVA-燕文航空经济小包(特货)', 'VOVA-燕文航空经济小包(普货)', 'VOVA-燕文航空挂号小包(特货）', 'VOVA-燕文航空挂号小包(普货)',
-                    'Vova线上-UBI-全球平邮小包(特货)',
-                    'Vova线上-UBI-全球平邮小包(普货)', 'Vova线上-UBI-欧盟小包(半程查件)', 'Vova-顺友-经济小包(特货)', 'Vova-顺友-经济小包(普货)',
-                    'Vova-顺友-标准小包(特货)',
-                    'Vova-顺友-标准小包(普货)', 'VOVA-E邮宝线下英国', 'VOVA-E邮宝线下义乌', 'VOVA-E邮宝线下法国', 'VOVA-E邮宝线下20国',
-                    'Vova-CNE-全球优先', 'VOVA-国际EMS',
-                    'VOVA-中邮挂号-跟踪小包-金华'],
+                    'VOVA-燕文专线平邮小包(特货)', 'VOVA-燕文航空经济小包(特货)', 'VOVA-燕文航空经济小包(普货)', 'VOVA-燕文航空挂号小包(特货）',
+                    'VOVA-燕文航空挂号小包(普货)', 'Vova线上-UBI-全球平邮小包(特货)', 'Vova线上-UBI-全球平邮小包(普货)', 'Vova线上-UBI-欧盟小包(半程查件)',
+                    'Vova-顺友-经济小包(特货)', 'Vova-顺友-经济小包(普货)', 'Vova-顺友-标准小包(特货)', 'Vova-顺友-标准小包(普货)', 'VOVA-E邮宝线下英国',
+                    'VOVA-E邮宝线下义乌', 'VOVA-E邮宝线下法国', 'VOVA-E邮宝线下20国', 'Vova-CNE-全球优先', 'VOVA-国际EMS', 'VOVA-中邮挂号-跟踪小包-金华'
+                ],
             ],
             [
                 'name' => '利通智能包裹有限公司',
                 'type' => 5,
-                'list' => [
-                    'UBI全球平邮小包(普货)', 'UBI全球平邮小包(特货)', 'UBI-全球专线澳大利亚(普货)', 'UBI-全球专线澳大利亚(特货)', 'UBI新西兰半程特快',
-                    'UBI-全球专线（带电）'],
+                'list' => ['UBI全球平邮小包(普货)', 'UBI全球平邮小包(特货)', 'UBI新西兰半程特快', 'UBI-全球专线（带电）'],
 
             ],
             [

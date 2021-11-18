@@ -36,11 +36,11 @@ class EbayLogisticTrack
         $authorization = self::ebayToken();
 
         $orderList = TradeSendLogisticsTrack::find()
-            ->andwhere(['>', 'created_at', (time() - 86400 * 60)])
-            ->andwhere(['<', 'updated_at', (time() - 86400)])
+            ->andwhere(['<', 'updated_at', strtotime(date('Y-m-d'))])
             ->andwhere(['=', 'logistic_type', 6])
+            ->andwhere(['>', 'created_at', (time() - 86400 * 60)])
             ->andwhere(['not in', 'status', [LogisticEnum::SUCCESS, LogisticEnum::FAIL]])
-            ->limit(40)
+            ->limit(500)
             ->orderBy('updated_at', 'asc')
             ->all();
 
@@ -60,7 +60,7 @@ class EbayLogisticTrack
             $rep = $client->execute($req);
             $result = $rep->getData();
             //            第二条才上网
-            sleep(1);
+//            sleep(1);
             $length = count($result);
             if ($length < 2) {
                 Yii::$app->db->createCommand()
@@ -91,7 +91,7 @@ class EbayLogisticTrack
             $timeList = array_column($trackDetail, 'time');
             array_multisort($timeList, SORT_DESC, $trackDetail);
             // 未查询# 查询不到 # 运输途中 # 运输过久 # 可能异常# 到达待取# 投递失败# 成功签收
-//            RETURN_INITIATED
+            //            RETURN_INITIATED
             switch ($trackDetail[0]['status']) {
                 case 'DELIVERED':
                     $status = 8;

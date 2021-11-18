@@ -15,6 +15,10 @@ use Yii;
  */
 class  LogisticTrack
 {
+    public function __construct()
+    {
+        ini_set('max_execution_time', '0');
+    }
 
     /**
      * 昨日订单
@@ -24,12 +28,8 @@ class  LogisticTrack
     {
         $closingDate = date('Y-m-d', strtotime('-1 day'));
 
-        $signCount = TradSendSuccRate::find()
-            ->andFilterWhere(['=', 'closing_date', $closingDate])
-            ->count();
-        $timeCount = TradSendLogisticsTimeFrame::find()
-            ->andFilterWhere(['=', 'closing_date', $closingDate])
-            ->count();
+        $signCount = TradSendSuccRate::find()->andFilterWhere(['=', 'closing_date', $closingDate])->count();
+        $timeCount = TradSendLogisticsTimeFrame::find()->andFilterWhere(['=', 'closing_date', $closingDate])->count();
         if ($signCount > 0 && $timeCount > 0) {
             return;
         }
@@ -42,12 +42,7 @@ class  LogisticTrack
 
         foreach ($companys as $company) {
             $logistic = [
-                'logistic_company' => $company['name'],
-                'logistic_type'    => $company['type'],
-                'closing_date'     => $closingDate,
-                'total_num'        => 0,
-                'created_at'       => $ts
-            ];
+                'logistic_company' => $company['name'], 'logistic_type' => $company['type'], 'closing_date' => $closingDate, 'total_num' => 0, 'created_at' => $ts];
             foreach ($company['list'] as $logisticName) {
                 $logistic['logistic_name'] = $logisticName;
                 $firstData[$logisticName] = $logistic;
@@ -72,15 +67,11 @@ class  LogisticTrack
 
         if ($signCount == 0) {
             Yii::$app->db->createCommand()->batchInsert('trad_send_succ_ratio', [
-                'logistic_company', 'logistic_type', 'closing_date', 'total_num', 'created_at', 'logistic_name'
-            ], $data)
-                ->execute();
+                'logistic_company', 'logistic_type', 'closing_date', 'total_num', 'created_at', 'logistic_name'], $data)->execute();
         }
         if ($timeCount == 0) {
             Yii::$app->db->createCommand()->batchInsert('trad_send_logistics_time_frame', [
-                'logistic_company', 'logistic_type', 'closing_date', 'total_num', 'created_at', 'logistic_name'
-            ], $data)
-                ->execute();
+                'logistic_company', 'logistic_type', 'closing_date', 'total_num', 'created_at', 'logistic_name'], $data)->execute();
         }
 
     }
@@ -92,10 +83,7 @@ class  LogisticTrack
     {
         $ts = time();
         $startDay = date('Y-m-d', strtotime('-180 day'));
-        $list = TradSendSuccRate::find()
-            ->andFilterWhere(['<', 'success_ratio', '100'])
-            ->andFilterWhere(['>', 'closing_date', $startDay])
-            ->all();
+        $list = TradSendSuccRate::find()->andFilterWhere(['<', 'success_ratio', '100'])->andFilterWhere(['>', 'closing_date', $startDay])->all();
 
         foreach ($list as $item) {
             $startTimestamp = strtotime($item['closing_date']);
@@ -103,32 +91,23 @@ class  LogisticTrack
             $success = self::orderTotol($startTimestamp, 1, $item['logistic_name']);
 
             if (!$totalNum = $total[0]['icount'] ?? 0) {
+                Yii::$app->db->createCommand()->update(
+                    'trad_send_succ_ratio',
+                    ['status' => 2, 'updated_at' => $ts],
+                    "id ={$item['id']}")
+                    ->execute();
+
                 continue;
             }
 
             $successNum = $success[0]['icount'] ?? 0;
             $average = 0;
             if ($successNum > 0) {
-                $average = (new \yii\db\Query())
-                               ->from('trade_send_logistics_track')
-                               ->select(['sum(elapsed_time) isum', 'logistic_name'])
-                               ->andFilterWhere(['>', 'closing_date', strtotime($item['closing_date']) - 1])
-                               ->andFilterWhere(['<', 'closing_date', strtotime($item['closing_date']) + 86400])
-                               ->andFilterWhere(['=', 'status', LogisticEnum::SUCCESS])
-                               ->groupBy('logistic_name')
-                               ->one()['isum'];
+                $average = (new \yii\db\Query())->from('trade_send_logistics_track')->select(['sum(elapsed_time) isum', 'logistic_name'])->andFilterWhere(['>', 'closing_date', strtotime($item['closing_date']) - 1])->andFilterWhere(['<', 'closing_date', strtotime($item['closing_date']) + 86400])->andFilterWhere(['=', 'status', LogisticEnum::SUCCESS])->groupBy('logistic_name')->one()['isum'];
             }
 
             Yii::$app->db->createCommand()->update('trad_send_succ_ratio', [
-                'total_num'          => $totalNum,
-                'success_num'        => $successNum,
-                'average'            => $average,
-                'success_ratio'      => sprintf("%.2f", ($successNum / $totalNum * 100)),
-                'dont_succeed_num'   => $totalNum - $successNum,
-                'dont_succeed_ratio' => sprintf("%.2f", (($totalNum - $successNum) / $totalNum * 100)),
-                'updated_at'         => $ts
-            ], "id ={$item['id']}")
-                ->execute();
+                'total_num' => $totalNum, 'success_num' => $successNum, 'average' => $average, 'success_ratio' => sprintf("%.2f", ($successNum / $totalNum * 100)), 'dont_succeed_num' => $totalNum - $successNum, 'dont_succeed_ratio' => sprintf("%.2f", (($totalNum - $successNum) / $totalNum * 100)), 'updated_at' => $ts], "id ={$item['id']}")->execute();
         }
 
     }
@@ -141,6 +120,7 @@ class  LogisticTrack
         $ts = time();
         $timeFrameLists = TradSendLogisticsTimeFrame::find()
             ->andFilterWhere(['<', 'above_ratio', 100])
+            ->where(['status' => 1])
             ->all();
 
         foreach ($timeFrameLists as $timeFrame) {
@@ -149,57 +129,53 @@ class  LogisticTrack
 
             $total = self::orderTotol($startTimestamp, 0, $timeFrame['logistic_name']);
 
-            if(empty($total[0]['icount'])) {
+            if (empty($total[0]['icount'])) {
+                Yii::$app->db->createCommand()->update(
+                    'trad_send_logistics_time_frame',
+                    ['status' => 2, 'updated_at' => $ts],
+                    "id ={$timeFrame['id']}")
+                    ->execute();
                 continue;
             }
 
             $totalNum = $total[0]['icount'];
 
             $updateDate = [
-                'total_num' => $totalNum,
-                'updated_at' => $ts
-            ];
+                'total_num' => $totalNum, 'updated_at' => $ts];
 
             for ($i = 1; $i < 6; $i++) {
 
-                $query = (new \yii\db\Query())
-                    ->from('trade_send_logistics_track')
-                    ->select(['count(*) icount'])
-                    ->andFilterWhere(['>', 'closing_date', $startTimestamp - 1])
-                    ->andFilterWhere(['<', 'closing_date', $startTimestamp + 86400])
-                    ->andFilterWhere(['>', 'status', LogisticEnum::NOT_FIND]);
+                $query = (new \yii\db\Query())->from('trade_send_logistics_track')->select(['count(*) icount'])->andFilterWhere(['>', 'closing_date', $startTimestamp - 1])->andFilterWhere(['<', 'closing_date', $startTimestamp + 86400])->andFilterWhere(['>', 'status', LogisticEnum::NOT_FIND]);
                 if ($i != 5) {
                     $query->andFilterWhere(['<', 'first_time', $startTimestamp + 86400 * $i]);
                 }
 
-                $icount = $query->andFilterWhere(['=', 'logistic_name', $timeFrame['logistic_name']])
-                    ->count();
+                $icount = $query->andFilterWhere(['=', 'logistic_name', $timeFrame['logistic_name']])->count();
                 switch ($i) {
                     case 1:
                         $updateDate['intraday_num'] = $icount;
-                        $updateDate['intraday_ratio'] =sprintf("%.2f", ( $icount / $totalNum * 100));
+                        $updateDate['intraday_ratio'] = sprintf("%.2f", ($icount / $totalNum * 100));
                         break;
                     case 2:
                         $updateDate['first_num'] = $icount;
-                        $updateDate['first_ratio'] = sprintf("%.2f", ( $icount / $totalNum * 100));
+                        $updateDate['first_ratio'] = sprintf("%.2f", ($icount / $totalNum * 100));
                         break;
                     case 3:
                         $updateDate['second_num'] = $icount;
-                        $updateDate['second_ratio'] = sprintf("%.2f", ( $icount / $totalNum * 100));
+                        $updateDate['second_ratio'] = sprintf("%.2f", ($icount / $totalNum * 100));
                         break;
                     case 4:
                         $updateDate['third_num'] = $icount;
-                        $updateDate['third_ratio'] = sprintf("%.2f", ( $icount / $totalNum * 100));
+                        $updateDate['third_ratio'] = sprintf("%.2f", ($icount / $totalNum * 100));
                         break;
                     case 5:
                         $updateDate['above_num'] = $icount;
-                        $updateDate['above_ratio'] = sprintf("%.2f", ( $icount / $totalNum * 100));
+                        $updateDate['above_ratio'] = sprintf("%.2f", ($icount / $totalNum * 100));
                         break;
                 }
             }
 
-            Yii::$app->db->createCommand()->update('trad_send_logistics_time_frame', $updateDate, "id ={$timeFrame['id']}")
-                ->execute();
+            Yii::$app->db->createCommand()->update('trad_send_logistics_time_frame', $updateDate, "id ={$timeFrame['id']}")->execute();
 
         }
 
@@ -210,18 +186,13 @@ class  LogisticTrack
     private static function orderTotol($startTime, $status = 0, $logisticName = '')
     {
 
-        $query = (new \yii\db\Query())
-            ->from('trade_send_logistics_track')
-            ->select(['count(*) icount', 'logistic_name'])
-            ->andFilterWhere(['>', 'closing_date', $startTime - 1])
-            ->andFilterWhere(['<', 'closing_date', $startTime + 86400])
-            ->groupBy('logistic_name');
+        $query = (new \yii\db\Query())->from('trade_send_logistics_track')->select(['count(*) icount', 'logistic_name'])->andFilterWhere(['>', 'closing_date', $startTime - 1])->andFilterWhere(['<', 'closing_date', $startTime + 86400])->groupBy('logistic_name');
         if ($status == 1) {
-//             已签收
+            //             已签收
             $query->andFilterWhere(['=', 'status', LogisticEnum::SUCCESS]);
         }
         if ($status == 2) {
-//            以上网
+            //            以上网
             $query->andFilterWhere(['>', 'status', LogisticEnum::NOT_FIND]);
         }
 
@@ -230,6 +201,166 @@ class  LogisticTrack
         }
 
         return $query->all();
+    }
+
+
+    /**
+     * 异常物流
+     */
+    public static function abnormal()
+    {
+        $endTime = time() - 86400 * 1;
+        Yii::$app->db->createCommand()->update(
+            'trade_send_logistics_track',
+            [
+                'abnormal_type'   => LogisticEnum::AT_NOT_FIND,
+                'abnormal_status' => LogisticEnum::AS_PENDING,
+                'abnormal_phase'  => 1
+            ],
+            "closing_date>{$endTime} and logistic_type in (235) and status=" . LogisticEnum::NOT_FIND
+        )->execute();
+
+
+        $trackList = TradeSendLogisticsTrack::find()
+            ->andFilterWhere(['<', 'closing_date', $endTime])
+            ->andFilterWhere(['in', 'logistic_type', [2, 3, 5]])
+            ->andFilterWhere(['=', 'status', LogisticEnum::IN_TRANSIT])
+            ->andFilterWhere(['not in', 'abnormal_status', [6, 7, 8, 9]])
+            ->limit(10000)
+            ->all();
+
+        foreach ($trackList as $track) {
+
+            if (self::transportType($track->logistic_name) == 1) {
+                // 平邮
+                if ($track->abnormal_phase == 3) {
+                    // 平邮最大为3
+                    continue;
+                }
+                $updateData = self::pingyou($track);
+            }
+            else {
+                //挂号
+                $updateData = self::guahao($track);
+            }
+
+            if (!empty($updateData)) {
+                Yii::$app->db->createCommand()->update(
+                    'trade_send_logistics_track',
+                    $updateData,
+                    "id ={$track->id}"
+                )->execute();
+            }
+        }
+    }
+
+    /**
+     * 挂号
+     * @param TradeSendLogisticsTrack $track
+     */
+    private static function guahao($track)
+    {
+        $to = intval((time() - $track->closing_date) / 86400);
+        $kd = intval(($track->newest_time - $track->first_time) / 86400);
+        $ec = intval((time() - $track->newest_time) / 86400);
+
+        //      停滞
+        //③当前时间-最新轨迹时间>7天；
+        //④当前时间-最新轨迹时间>14天；
+        //⑤当前时间-最新轨迹时间>21天"
+        if ($ec >= 7 && $ec < 14) {
+            $phase = 6;
+            $abnormalType = LogisticEnum::AT_STAGNATE;
+        }
+        elseif ($ec > 14 && $ec < 22) {
+            $phase = 7;
+            $abnormalType = LogisticEnum::AT_STAGNATE;
+        }
+        elseif ($ec > 21) {
+            $phase = 8;
+            $abnormalType = LogisticEnum::AT_STAGNATE;
+        }
+        //①当前时间-发货时间>4且最新轨迹时间-第一条轨迹时间<=2
+        //②当前时间-发货时间>8且最新轨迹-第一条轨迹时间<=3；
+        //        elseif ($to >= 4 && $to < 9 && $kd <= 2) {
+        //            $phase = 2;
+        //            $abnormalType = LogisticEnum::AT_SUSPEND;
+        //        }
+        elseif ($to > 8 && $kd <= 3) {
+            $phase = 3;
+            $abnormalType = LogisticEnum::AT_SUSPEND;
+        }
+        // "时间过久异常判断：
+        //①最新轨迹时间-发货时间>25天；
+        //②最新轨迹时间-发货时间>35天；
+        elseif ($kd > 25 && $kd < 36) {
+            $phase = 4;
+            $abnormalType = LogisticEnum::AT_TOOLONG;
+        }
+        elseif ($kd > 35) {
+            $phase = 5;
+            $abnormalType = LogisticEnum::AT_TOOLONG;
+        }
+
+        if (empty($phase) || $track->abnormal_phase == $phase) {
+            return [];
+        }
+
+        return [
+            'abnormal_type'   => $abnormalType,
+            'abnormal_status' => LogisticEnum::AS_PENDING,
+            'abnormal_phase'  => $phase
+        ];
+
+    }
+
+    /**
+     * 平邮
+     * @param TradeSendLogisticsTrack $track
+     */
+    private static function pingyou($track)
+    {
+        $to = (time() - $track->closing_date) / 86400;
+        $kd = ($track->newest_time - $track->first_time) / 86400;
+
+        //        if ($to >= 3 && $to < 8 && $kd >= 2) {
+        //            $phase = 3;
+        //            $abnormalType = LogisticEnum::AT_SUSPEND;
+        //        }
+        //        else
+        if ($to >= 8 && $kd >= 3) {
+            $phase = 3;
+            $abnormalType = LogisticEnum::AT_SUSPEND;
+        }
+
+        if (!empty($status)) {
+            return [
+                'abnormal_type'   => $abnormalType,
+                'abnormal_status' => LogisticEnum::AS_PENDING,
+                'abnormal_phase'  => $phase
+            ];
+        }
+    }
+
+
+    /**
+     * 运输方式
+     * @param $logisticName
+     * @return int 1平邮方式 2挂号方式
+     */
+    private static function transportType($logisticName)
+    {
+        static $pingyou = [
+            '燕文航空经济小包（普货）', '燕文航空经济小包（特货）', '燕文化妆品平邮-特货（粉末液体）', '燕文-燕邮宝平邮-特货',
+            '燕文专线平邮小包-普货', '中国邮政平常小包+（金华）', '线下-中邮平常小包', 'UBI全球平邮小包(普货)',
+            'UBI全球平邮小包(特货)', '顺友-Plus平邮', '顺友-顺邮宝平邮', '顺友通平邮', '菜鸟专线经济(非邮箱件)',
+            '菜鸟特货专线－超级经济', '菜鸟超级经济Global', '菜鸟超级经济', 'SMT线上-燕文航空经济小包(普货)',
+            'SMT线上-4PX新邮经济小包', '菜鸟超级经济-燕文', 'VOVA-中邮平常小包(金华)', 'VOVA-燕文专线平邮小包(特货)',
+            'VOVA-燕文航空经济小包(特货)', 'VOVA-燕文航空经济小包(普货)', 'Vova线上-UBI-全球平邮小包(特货)',
+            'Vova线上-UBI-全球平邮小包(普货)', 'Vova线上-UBI-欧盟小包(半程查件)', 'Vova-顺友-经济小包(特货)',
+            'Vova-顺友-经济小包(普货)', 'SpeedPAK-经济型服务', 'SpeedPAK-经济轻小件'
+        ];
+        return in_array($logisticName, $pingyou) ? 1 : 2;
     }
 
 }

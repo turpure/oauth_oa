@@ -16,6 +16,7 @@ use yii\db\ActiveRecord;
  * @property string $success_ratio
  * @property string $dont_succeed_num
  * @property string $dont_succeed_ratio
+ * @property integer $status
  */
 class TradSendSuccRate extends ActiveRecord
 {
