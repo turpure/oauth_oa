@@ -62,7 +62,7 @@ class ApiLogisticsTrack
 
         $query = (new \yii\db\Query())
             ->select([
-                'suffix', 'closingdate', 'total_weight', 'ack','logistic_company', 'shiptocountry_code',
+                'suffix', 'closingdate', 'total_weight', 'ack', 'logistic_company', 'shiptocountry_code',
                 'shiptocountry_name', 'transaction_type', 'store_name', 'addressowner', 'tslt.*',])
             ->from('trade_send')
             ->leftJoin('trade_send_logistics_track as tslt', 'trade_send.order_id = tslt.order_id')
@@ -277,7 +277,7 @@ class ApiLogisticsTrack
             $query->andFilterWhere(['logistic_name' => $condition['logistic_name']]);
         }
 
-        return $query;
+        return $query->andFilterWhere(['status' => 1]);
     }
 
     /**
@@ -299,7 +299,8 @@ class ApiLogisticsTrack
             'dont_succeed_num'   => 0,
             'dont_succeed_ratio' => 0,
         ];
-        foreach ($list as $item) {
+        foreach ($list as $key => $item) {
+            $list[$key]['average'] = round($item->average / 86400);
             $statistical['total_num'] += $item->total_num;
             $statistical['average'] += $item->average;
             $statistical['success_num'] += $item->success_num;
@@ -310,6 +311,7 @@ class ApiLogisticsTrack
         $totalCount = count($list);
         $statistical['success_ratio'] = sprintf("%.2f", $statistical['success_ratio'] / $totalCount);
         $statistical['dont_succeed_ratio'] = sprintf("%.2f", $statistical['dont_succeed_ratio'] / $totalCount);
+        $statistical['average'] = round($statistical['average'] / $totalCount / 86400);
 
         return [
             'statistical' => $statistical,
@@ -354,7 +356,7 @@ class ApiLogisticsTrack
         if (!empty($condition['logistic_name'])) {
             $query->andFilterWhere(['logistic_name' => $condition['logistic_name']]);
         }
-        return $query;
+        return $query->andFilterWhere(['status' => 1]);
     }
 
     /**
@@ -563,7 +565,7 @@ class ApiLogisticsTrack
                 $objectPHPExcel->getActiveSheet()->setCellValue('N' . ($n), empty($v['newest_time']) ? '' : date('Y-m-d H:i:s', $v['newest_time']));
                 $objectPHPExcel->getActiveSheet()->setCellValue('O' . ($n), $v['newest_detail']);
                 $objectPHPExcel->getActiveSheet()->setCellValue('P' . ($n), $trackStatus[$v['status'] - 1]);
-                $objectPHPExcel->getActiveSheet()->setCellValue('Q' . ($n), date('Y-m-d H:i:s'));
+                $objectPHPExcel->getActiveSheet()->setCellValue('Q' . ($n), $v['status'] == 1 ? '' : date('Y-m-d H:i:s'));
                 $objectPHPExcel->getActiveSheet()->setCellValue('R' . ($n), !empty($v['newest_time']) ? intval(($v['newest_time'] - $v['closingdate']) / 86400) : '');
                 $objectPHPExcel->getActiveSheet()->setCellValue('S' . ($n), $v['status'] == 1 && !empty($v['newest_time']) ? intval(time() - $v['newest_time']) / 86400 : '');
                 if (!empty($condition['abnormal_status'])) {
@@ -613,7 +615,7 @@ class ApiLogisticsTrack
                 'list' => [
                     '5部-燕文专线追踪小包(普货) 上海', '线下E邮宝 上海', '燕特快-澳大利亚（不含电）', '燕特快-澳大利亚（不含电）', '燕文航空挂号小包（普货）',
                     '燕文航空经济小包（特货）', '燕文化妆品挂号-特货（粉末液体)', '燕文化妆品平邮-特货（粉末液体）', '燕文-燕邮宝平邮-特货', '燕文专线平邮小包-普货',
-                    '燕文专线追踪小包(特货)', '燕文-中邮线下E邮宝', '燕文航空挂号小包（特货）', '燕文航空经济小包（普货）', '燕文专线追踪小包(普货)', '燕文-中邮EMS（E特快）'],
+                    '燕文专线追踪小包(特货)', '燕文航空挂号小包（特货）', '燕文航空经济小包（普货）', '燕文专线追踪小包(普货)'],
             ],
             [
                 'name' => '顺友',
@@ -625,21 +627,16 @@ class ApiLogisticsTrack
                 'type' => 4,
                 'list' => [
                     'VOVA-中邮平常小包(金华)', 'VOVA-中邮挂号-金华', 'VOVA-燕文专线追踪小包(特货)', 'VOVA-燕文专线追踪小包(普货)',
-                    'VOVA-燕文专线平邮小包(特货)',
-                    'VOVA-燕文航空经济小包(特货)', 'VOVA-燕文航空经济小包(普货)', 'VOVA-燕文航空挂号小包(特货）', 'VOVA-燕文航空挂号小包(普货)',
-                    'Vova线上-UBI-全球平邮小包(特货)',
-                    'Vova线上-UBI-全球平邮小包(普货)', 'Vova线上-UBI-欧盟小包(半程查件)', 'Vova-顺友-经济小包(特货)', 'Vova-顺友-经济小包(普货)',
-                    'Vova-顺友-标准小包(特货)',
-                    'Vova-顺友-标准小包(普货)', 'VOVA-E邮宝线下英国', 'VOVA-E邮宝线下义乌', 'VOVA-E邮宝线下法国', 'VOVA-E邮宝线下20国',
-                    'Vova-CNE-全球优先', 'VOVA-国际EMS',
-                    'VOVA-中邮挂号-跟踪小包-金华'],
+                    'VOVA-燕文专线平邮小包(特货)', 'VOVA-燕文航空经济小包(特货)', 'VOVA-燕文航空经济小包(普货)', 'VOVA-燕文航空挂号小包(特货）',
+                    'VOVA-燕文航空挂号小包(普货)', 'Vova线上-UBI-全球平邮小包(特货)', 'Vova线上-UBI-全球平邮小包(普货)', 'Vova线上-UBI-欧盟小包(半程查件)',
+                    'Vova-顺友-经济小包(特货)', 'Vova-顺友-经济小包(普货)', 'Vova-顺友-标准小包(特货)', 'Vova-顺友-标准小包(普货)', 'VOVA-E邮宝线下英国',
+                    'VOVA-E邮宝线下义乌', 'VOVA-E邮宝线下法国', 'VOVA-E邮宝线下20国', 'Vova-CNE-全球优先', 'VOVA-国际EMS', 'VOVA-中邮挂号-跟踪小包-金华'
+                ],
             ],
             [
                 'name' => '利通智能包裹有限公司',
                 'type' => 5,
-                'list' => [
-                    'UBI全球平邮小包(普货)', 'UBI全球平邮小包(特货)', 'UBI-全球专线澳大利亚(普货)', 'UBI-全球专线澳大利亚(特货)', 'UBI新西兰半程特快',
-                    'UBI-全球专线（带电）'],
+                'list' => ['UBI全球平邮小包(普货)', 'UBI全球平邮小包(特货)', 'UBI新西兰半程特快', 'UBI-全球专线（带电）'],
 
             ],
             [

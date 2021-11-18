@@ -91,6 +91,12 @@ class  LogisticTrack
             $success = self::orderTotol($startTimestamp, 1, $item['logistic_name']);
 
             if (!$totalNum = $total[0]['icount'] ?? 0) {
+                Yii::$app->db->createCommand()->update(
+                    'trad_send_succ_ratio',
+                    ['status' => 2, 'updated_at' => $ts],
+                    "id ={$item['id']}")
+                    ->execute();
+
                 continue;
             }
 
@@ -112,7 +118,10 @@ class  LogisticTrack
     public static function internet()
     {
         $ts = time();
-        $timeFrameLists = TradSendLogisticsTimeFrame::find()->andFilterWhere(['<', 'above_ratio', 100])->all();
+        $timeFrameLists = TradSendLogisticsTimeFrame::find()
+            ->andFilterWhere(['<', 'above_ratio', 100])
+            ->where(['status' => 1])
+            ->all();
 
         foreach ($timeFrameLists as $timeFrame) {
 
@@ -121,6 +130,11 @@ class  LogisticTrack
             $total = self::orderTotol($startTimestamp, 0, $timeFrame['logistic_name']);
 
             if (empty($total[0]['icount'])) {
+                Yii::$app->db->createCommand()->update(
+                    'trad_send_logistics_time_frame',
+                    ['status' => 2, 'updated_at' => $ts],
+                    "id ={$timeFrame['id']}")
+                    ->execute();
                 continue;
             }
 
@@ -246,9 +260,9 @@ class  LogisticTrack
      */
     private static function guahao($track)
     {
-        $to = (time() - $track->closing_date) / 86400;
-        $kd = ($track->newest_time - $track->first_time) / 86400;
-        $ec = (time() - $track->newest_time) / 86400;
+        $to = intval((time() - $track->closing_date) / 86400);
+        $kd = intval(($track->newest_time - $track->first_time) / 86400);
+        $ec = intval((time() - $track->newest_time) / 86400);
 
         //      停滞
         //③当前时间-最新轨迹时间>7天；
@@ -266,12 +280,12 @@ class  LogisticTrack
             $phase = 8;
             $abnormalType = LogisticEnum::AT_STAGNATE;
         }
-//①当前时间-发货时间>4且最新轨迹时间-第一条轨迹时间<=2
-//②当前时间-发货时间>8且最新轨迹-第一条轨迹时间<=3；
-        elseif ($to >= 4 && $to < 9 && $kd <= 2) {
-            $phase = 2;
-            $abnormalType = LogisticEnum::AT_SUSPEND;
-        }
+        //①当前时间-发货时间>4且最新轨迹时间-第一条轨迹时间<=2
+        //②当前时间-发货时间>8且最新轨迹-第一条轨迹时间<=3；
+        //        elseif ($to >= 4 && $to < 9 && $kd <= 2) {
+        //            $phase = 2;
+        //            $abnormalType = LogisticEnum::AT_SUSPEND;
+        //        }
         elseif ($to > 8 && $kd <= 3) {
             $phase = 3;
             $abnormalType = LogisticEnum::AT_SUSPEND;
@@ -309,11 +323,12 @@ class  LogisticTrack
         $to = (time() - $track->closing_date) / 86400;
         $kd = ($track->newest_time - $track->first_time) / 86400;
 
-        if ($to >= 3 && $to < 8 && $kd >= 2) {
-            $phase = 3;
-            $abnormalType = LogisticEnum::AT_SUSPEND;
-        }
-        elseif ($to >= 8 && $kd >= 3) {
+        //        if ($to >= 3 && $to < 8 && $kd >= 2) {
+        //            $phase = 3;
+        //            $abnormalType = LogisticEnum::AT_SUSPEND;
+        //        }
+        //        else
+        if ($to >= 8 && $kd >= 3) {
             $phase = 3;
             $abnormalType = LogisticEnum::AT_SUSPEND;
         }
