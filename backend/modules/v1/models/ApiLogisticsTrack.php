@@ -79,15 +79,10 @@ class ApiLogisticsTrack
         if (!empty($condition['ack'])) {
             $query->andFilterWhere(['=', 'trade_send.ack', $condition['ack']]);
         }
-        // 平台
-        if (!empty($condition['addressowner'])) {
-            $query->andFilterWhere(['=', 'trade_send.addressowner', $condition['addressowner']]);
-        }
         // 发货时间
         if (!empty($condition['closing_date'][0])) {
             $query->andFilterWhere(['>', 'trade_send.closingdate', (strtotime($condition['closing_date'][0]) - 1)]);
         }
-
         // 发货时间
         if (!empty($condition['closing_date'][1])) {
             $query->andFilterWhere(['<', 'trade_send.closingdate', (strtotime($condition['closing_date'][1]) + 86400)]);
@@ -129,18 +124,21 @@ class ApiLogisticsTrack
         if (!empty($condition['logistic_name'])) {
             $query->andFilterWhere(['trade_send.logistic_name' => $condition['logistic_name']]);
         }
-
+        // 平台
+        if (!empty($condition['addressowner'])) {
+            $query->andFilterWhere(['trade_send.addressowner' => $condition['addressowner']]);
+        }
         if (!empty($condition['suffix'])) {
 
             if ($isAccountAdmin && !in_array($condition['suffix'], $userAccount)) {
                 $condition['suffix'] = '/';
             }
 
-            $query->andFilterWhere(['=', 'trade_send.suffix', $condition['suffix']]);
+            $query->andFilterWhere(['trade_send.suffix' => $condition['suffix']]);
 
         }
         elseif ($isAccountAdmin) {
-            $query->andFilterWhere(['in', 'trade_send.suffix', $userAccount]);
+            $query->andFilterWhere(['trade_send.suffix' => $userAccount]);
         }
 
         return $query;
