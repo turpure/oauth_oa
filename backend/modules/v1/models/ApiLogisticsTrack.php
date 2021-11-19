@@ -107,17 +107,19 @@ class ApiLogisticsTrack
         }
         // 异常物流类型
         if (!empty($condition['abnormal_type'])) {
-            $query->andFilterWhere(['=', 'tslt.abnormal_type', $condition['abnormal_type']]);
+            $query->andFilterWhere(['tslt.abnormal_type' => $condition['abnormal_type']]);
         }
-
         // 快递公司
         if (!empty($condition['logistic_type'])) {
-            $query->andFilterWhere(['=', 'trade_send.logistic_type', $condition['logistic_type']]);
+            $query->andFilterWhere(['trade_send.logistic_type' => $condition['logistic_type']]);
         }
-
+        // 快递状态
+        if (!empty($condition['status'])) {
+            $query->andFilterWhere(['tslt.status' => $condition['status']]);
+        }
         // 异常状态
         if (!empty($condition['abnormal_status'])) {
-            $query->andFilterWhere(['in', 'tslt.abnormal_status', $condition['abnormal_status']]);
+            $query->andFilterWhere(['tslt.abnormal_status' => $condition['abnormal_status']]);
         }
 
         // 快递方式
@@ -302,7 +304,7 @@ class ApiLogisticsTrack
             $statistical['success_ratio'] += $item->success_ratio;
             $statistical['dont_succeed_num'] += $item->dont_succeed_num;
             $statistical['dont_succeed_ratio'] += $item->dont_succeed_ratio;
-            $list[$key]['average'] = $item->success_num != 0 ?round($item->average / 86400 / $item->success_num):0;
+            $list[$key]['average'] = $item->success_num != 0 ? round($item->average / 86400 / $item->success_num) : 0;
         }
         $totalCount = count($list);
         $statistical['success_ratio'] = sprintf("%.2f", $statistical['success_ratio'] / $totalCount);
