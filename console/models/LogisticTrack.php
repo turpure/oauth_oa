@@ -83,7 +83,10 @@ class  LogisticTrack
     {
         $ts = time();
         $startDay = date('Y-m-d', strtotime('-180 day'));
-        $list = TradSendSuccRate::find()->andFilterWhere(['<', 'success_ratio', '100'])->andFilterWhere(['>', 'closing_date', $startDay])->all();
+        $list = TradSendSuccRate::find()
+            ->andFilterWhere(['<', 'success_ratio', '100'])
+            ->andFilterWhere(['>', 'closing_date', $startDay])
+            ->all();
 
         foreach ($list as $item) {
             $startTimestamp = strtotime($item['closing_date']);
@@ -103,11 +106,27 @@ class  LogisticTrack
             $successNum = $success[0]['icount'] ?? 0;
             $average = 0;
             if ($successNum > 0) {
-                $average = (new \yii\db\Query())->from('trade_send_logistics_track')->select(['sum(elapsed_time) isum', 'logistic_name'])->andFilterWhere(['>', 'closing_date', strtotime($item['closing_date']) - 1])->andFilterWhere(['<', 'closing_date', strtotime($item['closing_date']) + 86400])->andFilterWhere(['=', 'status', LogisticEnum::SUCCESS])->groupBy('logistic_name')->one()['isum'];
+                $average = (new \yii\db\Query())->from('trade_send_logistics_track')
+                               ->select(['sum(elapsed_time) isum', 'logistic_name'])
+                               ->andFilterWhere(['>', 'closing_date', strtotime($item['closing_date']) - 1])
+                               ->andFilterWhere(['<', 'closing_date', strtotime($item['closing_date']) + 86400])
+                               ->andFilterWhere(['logistic_type' => $item['logistic_type']])
+                               ->andFilterWhere(['logistic_name' => $item['logistic_name']])
+                               ->andFilterWhere(['=', 'status', LogisticEnum::SUCCESS])
+                               ->one()['isum'];
             }
 
-            Yii::$app->db->createCommand()->update('trad_send_succ_ratio', [
-                'total_num' => $totalNum, 'success_num' => $successNum, 'average' => $average, 'success_ratio' => sprintf("%.2f", ($successNum / $totalNum * 100)), 'dont_succeed_num' => $totalNum - $successNum, 'dont_succeed_ratio' => sprintf("%.2f", (($totalNum - $successNum) / $totalNum * 100)), 'updated_at' => $ts], "id ={$item['id']}")->execute();
+            Yii::$app->db->createCommand()->update(
+                'trad_send_succ_ratio', [
+                'total_num'          => $totalNum,
+                'success_num'        => $successNum,
+                'average'            => $average,
+                'success_ratio'      => sprintf("%.2f", ($successNum / $totalNum * 100)),
+                'dont_succeed_num'   => $totalNum - $successNum,
+                'dont_succeed_ratio' => sprintf("%.2f", (($totalNum - $successNum) / $totalNum * 100)),
+                'updated_at'         => $ts],
+                "id ={$item['id']}")
+                ->execute();
         }
 
     }

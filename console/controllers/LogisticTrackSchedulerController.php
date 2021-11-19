@@ -30,7 +30,7 @@ class LogisticTrackSchedulerController extends Controller
     public function actionLogisticInternet()
     {
         LogisticTrack::yesterdayOrder();
-//        LogisticTrack::successful();
+        LogisticTrack::successful();
         LogisticTrack::internet();
     }
 

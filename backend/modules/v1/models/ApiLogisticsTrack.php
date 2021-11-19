@@ -287,8 +287,6 @@ class ApiLogisticsTrack
     {
         $query = self::logisticsSuccRateQuery($condition);
         $list = $query->all();
-
-
         $statistical = [
             'total_num'          => 0,
             'average'            => 0,
@@ -304,12 +302,12 @@ class ApiLogisticsTrack
             $statistical['success_ratio'] += $item->success_ratio;
             $statistical['dont_succeed_num'] += $item->dont_succeed_num;
             $statistical['dont_succeed_ratio'] += $item->dont_succeed_ratio;
-            $list[$key]['average'] = round($item->average / 86400 / $item->total_num);
+            $list[$key]['average'] = $item->success_num != 0 ?round($item->average / 86400 / $item->success_num):0;
         }
         $totalCount = count($list);
         $statistical['success_ratio'] = sprintf("%.2f", $statistical['success_ratio'] / $totalCount);
         $statistical['dont_succeed_ratio'] = sprintf("%.2f", $statistical['dont_succeed_ratio'] / $totalCount);
-        $statistical['average'] = round($statistical['average'] / $totalCount / $statistical['total_num'] / 86400);
+        $statistical['average'] = round($statistical['average'] / $totalCount / $statistical['success_num'] / 86400);
 
         return [
             'statistical' => $statistical,
