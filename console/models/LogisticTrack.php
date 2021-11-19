@@ -120,7 +120,7 @@ class  LogisticTrack
         $ts = time();
         $timeFrameLists = TradSendLogisticsTimeFrame::find()
             ->andFilterWhere(['<', 'above_ratio', 100])
-            ->where(['status' => 1])
+            ->andFilterWhere(['status' => 1])
             ->all();
 
         foreach ($timeFrameLists as $timeFrame) {
@@ -129,7 +129,7 @@ class  LogisticTrack
 
             $total = self::orderTotol($startTimestamp, 0, $timeFrame['logistic_name']);
 
-            if (empty($total[0]['icount'])) {
+            if (empty($total[0]['icount']) || $total[0]['icount'] == 0) {
                 Yii::$app->db->createCommand()->update(
                     'trad_send_logistics_time_frame',
                     ['status' => 2, 'updated_at' => $ts],
@@ -185,19 +185,24 @@ class  LogisticTrack
     //  固定时间内的发货数量所有发货订单数量
     private static function orderTotol($startTime, $status = 0, $logisticName = '')
     {
-
-        $query = (new \yii\db\Query())->from('trade_send_logistics_track')->select(['count(*) icount', 'logistic_name'])->andFilterWhere(['>', 'closing_date', $startTime - 1])->andFilterWhere(['<', 'closing_date', $startTime + 86400])->groupBy('logistic_name');
+        $query = (new \yii\db\Query())
+            ->select(['count(*) icount', 'tslt.logistic_name'])
+            ->from('trade_send')
+            ->leftJoin('trade_send_logistics_track as tslt', 'trade_send.order_id = tslt.order_id')
+            ->andFilterWhere(['>', 'closingdate', $startTime - 1])
+            ->andFilterWhere(['<', 'closingdate', $startTime + 86400])
+            ->groupBy('tslt.logistic_name');
         if ($status == 1) {
             //             已签收
-            $query->andFilterWhere(['=', 'status', LogisticEnum::SUCCESS]);
+            $query->andFilterWhere(['=', 'tslt.status', LogisticEnum::SUCCESS]);
         }
         if ($status == 2) {
             //            以上网
-            $query->andFilterWhere(['>', 'status', LogisticEnum::NOT_FIND]);
+            $query->andFilterWhere(['>', 'tslt.status', LogisticEnum::NOT_FIND]);
         }
 
         if (!empty($logisticName)) {
-            $query->andFilterWhere(['=', 'logistic_name', $logisticName]);
+            $query->andFilterWhere(['=', 'trade_send.logistic_name', $logisticName]);
         }
 
         return $query->all();
