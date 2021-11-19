@@ -33,6 +33,25 @@ class EbayLogisticTrack
     {
         ini_set('max_execution_time', 300);
 
+        $delivered = ['destination country - arrival', 'port of destination - arrival',
+         'item arrived to destination country', 'package data received',
+         'arrived at destination country airport', 'arrived at destination country',
+         'arrival at post office', 'airline arrived at destination country',
+         'delivered', 'parcel has arrived at destination country', 'arrived at destination hub',
+         'arrived in country', 'arrived at facility',
+         'port of destination - departure', 'delivery to courier',
+         'international shipment release - import',
+         'package arrived to destination country',
+         'arrive at sorting center in destination country', 'arrive at destination',
+         'arrive at transit country or district', 'import clearance success',
+         'arrive at local delivery office', 'airline arrived at destination',
+         'the item has been processed in the country of destination:the item has arrived in the country of destination',
+         'your shipment has been delivered to the postal operator of the country of destination and will be delivered in the coming days',
+         'arrival at processing center', 'transit to destination processing facility',
+         'arrival of goods at destination airport', '已妥投', '到达寄达地处理中心', '到达寄达地'
+        ];
+
+
         $authorization = self::ebayToken();
 
         $orderList = TradeSendLogisticsTrack::find()
@@ -43,7 +62,7 @@ class EbayLogisticTrack
             ->limit(500)
             ->orderBy('updated_at', 'asc')
             ->all();
-
+        var_export('ebay条数:'.count($orderList));
         $client = new DefaultEbayClient($this->ebayConfig['url'], $authorization);
 
         $req = new GetTrackingDetailRequest();
@@ -77,9 +96,27 @@ class EbayLogisticTrack
                 continue;
             }
 
+            if (in_array($order['logistic_name'],['SpeedPAK-经济型服务','SpeedPAK-经济轻小件'])) {
+                $pingyou = true;
+            }else{
+                $pingyou = false;
+            }
 
             $trackDetail = [];
+            $status = LogisticEnum::IN_TRANSIT;
             foreach ($result as $item) {
+                if ($pingyou){
+                    $doc = strtolower($item->getDescriptionEn());
+                    $lastStr = substr($doc,'-1',1);
+
+                    if ($lastStr == '.') {
+                        $doc = substr($doc,0,-1);
+                    }
+
+                    if (in_array($doc,$delivered)) {
+                        $status = LogisticEnum::SUCCESS;
+                    }
+                }
 
                 $trackDetail[] = [
                     'status' => $item->getStatus(),
@@ -91,17 +128,20 @@ class EbayLogisticTrack
             $timeList = array_column($trackDetail, 'time');
             array_multisort($timeList, SORT_DESC, $trackDetail);
             // 未查询# 查询不到 # 运输途中 # 运输过久 # 可能异常# 到达待取# 投递失败# 成功签收
-            //            RETURN_INITIATED
-            switch ($trackDetail[0]['status']) {
-                case 'DELIVERED':
-                    $status = 8;
-                    break;
-                case 'RETURN_INITIATED':
-                    $status = 5;
-                    break;
-                default:
-                    $status = 3;
+
+            if ($status == LogisticEnum::IN_TRANSIT) {
+                switch ($trackDetail[0]['status']) {
+                    case 'DELIVERED':
+                        $status = LogisticEnum::SUCCESS;
+                        break;
+                    case 'RETURN_INITIATED':
+                        $status = LogisticEnum::ABNORMAL;
+                        break;
+                    default:
+                        $status = LogisticEnum::IN_TRANSIT;
+                }
             }
+
             var_export($status);
             $updatedData = [
                 'newest_time'   => $trackDetail[0]['time'],
