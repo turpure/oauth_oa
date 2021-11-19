@@ -479,16 +479,11 @@ class ApiLogisticsTrack
         $abnormalType = ['无异常', '未上网', '断更', '运输过久', '退件', '派送异常', '信息停滞', '可能异常'];
 
         $query = self::tradeSendQuery($condition);
-        //        $count = $query->count();
-        $count = 100;
-        $fileName = date('YmdHis', time());
-        //        header('Content-Type: application/vnd.ms-execl');
-        //        header('Content-Disposition: attachment;filename="' . $fileName . '.csv"');
-
+        $count = $query->count();
 
         header('Content-Description: File Transfer');
         header('Content-Type: application/vnd.ms-excel');
-        header('Content-Disposition: attachment; filename="导出数据-' . date('Y-m-d', time()) . '.csv"');
+        header('Content-Disposition: attachment; filename="导出数据快递轨迹-' . date('Y-m-d', time()) . '.csv"');
         header('Expires: 0');
         header('Cache-Control: must-revalidate');
         header('Pragma: public');
