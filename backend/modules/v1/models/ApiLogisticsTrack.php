@@ -515,7 +515,6 @@ class ApiLogisticsTrack
         if (isset($condition['logistic_status']) && $condition['logistic_status'] == 1) {
             $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('L1', '运输状态');
             $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('M1', '轨迹查询时间');
-
         }
         else {
             $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('L1', '第一条轨迹时间');
@@ -531,7 +530,6 @@ class ApiLogisticsTrack
                 $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('T1', '轨迹分类');
                 $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('U1', '处理标签');
                 $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('V1', '处理人');
-
             }
 
         }
@@ -554,8 +552,7 @@ class ApiLogisticsTrack
 
             if (isset($condition['logistic_status']) && $condition['logistic_status'] == 1) {
                 $objectPHPExcel->getActiveSheet()->setCellValue('L' . ($n), $trackStatus[$v['status'] - 1]);
-                $objectPHPExcel->getActiveSheet()->setCellValue('M' . ($n), date('Y-m-d H:i:s', $v['updated_at']));
-
+                $objectPHPExcel->getActiveSheet()->setCellValue('M' . ($n), $v['status'] == 1 ? '' : date('Y-m-d H:i:s',$v['updated_at']));
             }
             else {
                 $objectPHPExcel->getActiveSheet()->setCellValue('L' . ($n), empty($v['first_time']) ? '' : date('Y-m-d H:i:s', $v['first_time']));
@@ -563,7 +560,7 @@ class ApiLogisticsTrack
                 $objectPHPExcel->getActiveSheet()->setCellValue('N' . ($n), empty($v['newest_time']) ? '' : date('Y-m-d H:i:s', $v['newest_time']));
                 $objectPHPExcel->getActiveSheet()->setCellValue('O' . ($n), $v['newest_detail']);
                 $objectPHPExcel->getActiveSheet()->setCellValue('P' . ($n), $trackStatus[$v['status'] - 1]);
-                $objectPHPExcel->getActiveSheet()->setCellValue('Q' . ($n), $v['status'] == 1 ? '' : date('Y-m-d H:i:s'));
+                $objectPHPExcel->getActiveSheet()->setCellValue('Q' . ($n), $v['status'] == 1 ? '' : date('Y-m-d H:i:s',$v['updated_at']));
                 $objectPHPExcel->getActiveSheet()->setCellValue('R' . ($n), !empty($v['newest_time']) ? intval(($v['newest_time'] - $v['closingdate']) / 86400) : '');
                 $objectPHPExcel->getActiveSheet()->setCellValue('S' . ($n), $v['status'] == 1 && !empty($v['newest_time']) ? intval(time() - $v['newest_time']) / 86400 : '');
                 if (!empty($condition['abnormal_status'])) {
@@ -571,16 +568,11 @@ class ApiLogisticsTrack
                     $objectPHPExcel->getActiveSheet()->setCellValue('T' . ($n), $abnormalType[$v['abnormal_type'] - 1]);
                     $objectPHPExcel->getActiveSheet()->setCellValue('U' . ($n), $abnormalStatus[$v['abnormal_status'] - 1]);
                     $objectPHPExcel->getActiveSheet()->setCellValue('V' . ($n), $v['management']);
-
                 }
-
             }
-
-
             $n = $n + 1;
         }
         $objWriter = IOFactory::createWriter($objectPHPExcel, 'Xlsx');
-
 
         header('Content-Type: applicationnd.ms-excel');
         $time = date('Y-m-d');
