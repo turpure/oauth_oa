@@ -480,7 +480,7 @@ class ApiLogisticsTrack
 
         $query = self::tradeSendQuery($condition);
 //        $count = $query->count();
-        $list = $query->count();
+        $list = $query->all();
 
 //        header('Content-Description: File Transfer');
 //        header('Content-Type: application/vnd.ms-excel');
