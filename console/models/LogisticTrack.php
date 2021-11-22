@@ -268,13 +268,23 @@ class  LogisticTrack
                 $updateData = self::guahao($track);
             }
 
-            if (!empty($updateData)) {
-                Yii::$app->db->createCommand()->update(
-                    'trade_send_logistics_track',
-                    $updateData,
-                    "id ={$track->id}"
-                )->execute();
+            if (empty($updateData)) {
+                if ($track->abnormal_status == 1) {
+                    continue;
+                }
+                $updateData = [
+                    'abnormal_type'   => 1,
+                    'abnormal_status' => 1,
+                    'abnormal_phase'  => 1
+                ];
             }
+
+            Yii::$app->db->createCommand()->update(
+                'trade_send_logistics_track',
+                $updateData,
+                "id ={$track->id}"
+            )->execute();
+
         }
     }
 
@@ -284,9 +294,9 @@ class  LogisticTrack
      */
     private static function guahao($track)
     {
-        $to = intval((time() - $track->closing_date) / 86400);
-        $kd = intval(($track->newest_time - $track->first_time) / 86400);
-        $ec = intval((time() - $track->newest_time) / 86400);
+        $to = (time() - $track->closing_date) / 86400;
+        $kd = ($track->newest_time - $track->first_time) / 86400;
+        $ec = (time() - $track->newest_time) / 86400;
 
         //      停滞
         //③当前时间-最新轨迹时间>7天；
@@ -324,9 +334,7 @@ class  LogisticTrack
         elseif ($kd > 35) {
             $phase = 5;
             $abnormalType = LogisticEnum::AT_TOOLONG;
-        }
-
-        if (empty($phase) || $track->abnormal_phase == $phase) {
+        }else{
             return [];
         }
 
@@ -352,7 +360,7 @@ class  LogisticTrack
         //            $abnormalType = LogisticEnum::AT_SUSPEND;
         //        }
         //        else
-        if ($to >= 8 && $kd >= 3) {
+        if ($to > 8 && $kd <= 3) {
             $phase = 3;
             $abnormalType = LogisticEnum::AT_SUSPEND;
         }
