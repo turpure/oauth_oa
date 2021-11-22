@@ -2,7 +2,7 @@
 
 namespace console\models;
 
-use backend\models\TradeSendEbayToken;
+use backend\models\TradeSendAccessToken;
 use backend\models\TradeSendLogisticsTrack;
 use backend\modules\v1\enums\LogisticEnum;
 use console\services\ebayTrack\DefaultEbayClient;
@@ -33,22 +33,23 @@ class EbayLogisticTrack
     {
         ini_set('max_execution_time', 300);
 
-        $delivered = ['destination country - arrival', 'port of destination - arrival',
-         'item arrived to destination country', 'package data received',
-         'arrived at destination country airport', 'arrived at destination country',
-         'arrival at post office', 'airline arrived at destination country',
-         'delivered', 'parcel has arrived at destination country', 'arrived at destination hub',
-         'arrived in country', 'arrived at facility',
-         'port of destination - departure', 'delivery to courier',
-         'international shipment release - import',
-         'package arrived to destination country',
-         'arrive at sorting center in destination country', 'arrive at destination',
-         'arrive at transit country or district', 'import clearance success',
-         'arrive at local delivery office', 'airline arrived at destination',
-         'the item has been processed in the country of destination:the item has arrived in the country of destination',
-         'your shipment has been delivered to the postal operator of the country of destination and will be delivered in the coming days',
-         'arrival at processing center', 'transit to destination processing facility',
-         'arrival of goods at destination airport', '已妥投', '到达寄达地处理中心', '到达寄达地'
+        $delivered = [
+            'destination country - arrival', 'port of destination - arrival',
+            'item arrived to destination country', 'package data received',
+            'arrived at destination country airport', 'arrived at destination country',
+            'arrival at post office', 'airline arrived at destination country',
+            'delivered', 'parcel has arrived at destination country', 'arrived at destination hub',
+            'arrived in country', 'arrived at facility',
+            'port of destination - departure', 'delivery to courier',
+            'international shipment release - import',
+            'package arrived to destination country',
+            'arrive at sorting center in destination country', 'arrive at destination',
+            'arrive at transit country or district', 'import clearance success',
+            'arrive at local delivery office', 'airline arrived at destination',
+            'the item has been processed in the country of destination:the item has arrived in the country of destination',
+            'your shipment has been delivered to the postal operator of the country of destination and will be delivered in the coming days',
+            'arrival at processing center', 'transit to destination processing facility',
+            'arrival of goods at destination airport', '已妥投', '到达寄达地处理中心', '到达寄达地'
         ];
 
 
@@ -62,7 +63,7 @@ class EbayLogisticTrack
             ->limit(500)
             ->orderBy('updated_at', 'asc')
             ->all();
-        var_export('ebay条数:'.count($orderList));
+        var_export('ebay条数:' . count($orderList));
         $client = new DefaultEbayClient($this->ebayConfig['url'], $authorization);
 
         $req = new GetTrackingDetailRequest();
@@ -79,7 +80,7 @@ class EbayLogisticTrack
             $rep = $client->execute($req);
             $result = $rep->getData();
             //            第二条才上网
-//            sleep(1);
+            //            sleep(1);
             $length = count($result);
             if ($length < 2) {
                 Yii::$app->db->createCommand()
@@ -96,24 +97,25 @@ class EbayLogisticTrack
                 continue;
             }
 
-            if (in_array($order['logistic_name'],['SpeedPAK-经济型服务','SpeedPAK-经济轻小件'])) {
+            if (in_array($order['logistic_name'], ['SpeedPAK-经济型服务', 'SpeedPAK-经济轻小件'])) {
                 $pingyou = true;
-            }else{
+            }
+            else {
                 $pingyou = false;
             }
 
             $trackDetail = [];
             $status = LogisticEnum::IN_TRANSIT;
             foreach ($result as $item) {
-                if ($pingyou){
+                if ($pingyou) {
                     $doc = strtolower($item->getDescriptionEn());
-                    $lastStr = substr($doc,'-1',1);
+                    $lastStr = substr($doc, '-1', 1);
 
                     if ($lastStr == '.') {
-                        $doc = substr($doc,0,-1);
+                        $doc = substr($doc, 0, -1);
                     }
 
-                    if (in_array($doc,$delivered)) {
+                    if (in_array($doc, $delivered)) {
                         $status = LogisticEnum::SUCCESS;
                     }
                 }
@@ -163,10 +165,11 @@ class EbayLogisticTrack
      */
     private function ebayToken()
     {
-        $token = TradeSendEbayToken::find()
-            ->andWhere(['=', 'ebay_id', $this->ebayConfig['ebayId']])
+        $token = TradeSendAccessToken::find()
+            ->andWhere(['=', 'account', $this->ebayConfig['ebayId']])
             ->andWhere(['>', 'expire_date', (time() + 86400)])
             ->andWhere(['=', 'status', 1])
+            ->andWhere(['=', 'type', 1])
             ->orderBy('id', 'desc')
             ->limit(1)
             ->one();
@@ -184,13 +187,14 @@ class EbayLogisticTrack
             throw new Exception('ebay token 失败' . $status['message']);
         }
 
-        $tradeSendEbayToken = new TradeSendEbayToken();
+        $tradeSendEbayToken = new TradeSendAccessToken();
 
         $tradeSendEbayToken->setAttributes([
-            'ebay_id'     => $this->ebayConfig['ebayId'],
+            'account'     => $this->ebayConfig['ebayId'],
             'token'       => $authorization,
             'expire_date' => $accessToken->getExpireDate()->getTimestamp(),
             'status'      => 1,
+            'type'        => 1,
             'created_at'  => time()
         ]);
         $tradeSendEbayToken->save();
