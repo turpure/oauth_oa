@@ -40,6 +40,8 @@ class ApiMine
 //        var_dump(123);exit;
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $condition['platForm'] = isset($condition['platForm']) && $condition['platForm'] ? $condition['platForm'] : 'joom';
+        $condition['m.goodsCode'] = $condition['goodsCode'] ? : '';
+        $condition['IFNULL(g.goodsCode,m.pyGoodsCode)'] = $condition['pyGoodsCode'] ? : '';
 //        $query = OaDataMine::find();
         $query = (new Query())->select(['m.*',new Expression('IFNULL(g.goodsCode,m.pyGoodsCode) as pyGoodsCode')])
             ->from('proCenter.oa_dataMine AS m')
@@ -47,7 +49,7 @@ class ApiMine
 
 
         $filterFields = ['like' => ['proId', 'platForm', 'progress', 'creator', 'detailStatus',
-            'cat', 'subCat', 'goodsCode', 'devStatus', 'pyGoodsCode']];
+            'cat', 'subCat', 'm.goodsCode', 'devStatus', 'IFNULL(g.goodsCode,m.pyGoodsCode)']];
         $filterTime = ['createTime', 'updateTime'];
         $query =  Helper::generateFilter($query, $filterFields, $condition);
         $query =  Helper::timeFilter($query, $filterTime, $condition);
@@ -62,12 +64,14 @@ class ApiMine
             $query->andWhere(['in', 'creator', $userList]);
         }
         $query = $query->orderBy('updateTime DESC');
+//        var_dump($query->);
         $provider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
                 'pageSize' => $pageSize,
             ],
         ]);
+
         return $provider;
     }
 
