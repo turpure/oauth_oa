@@ -198,9 +198,6 @@ class EbayLogisticTrack
             'created_at'  => time()
         ]);
         $tradeSendEbayToken->save();
-
         return $authorization;
     }
-
-
 }

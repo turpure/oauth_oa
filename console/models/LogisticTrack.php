@@ -395,4 +395,5 @@ class  LogisticTrack
         return in_array($logisticName, $pingyou) ? 1 : 2;
     }
 
+
 }
