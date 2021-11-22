@@ -20,6 +20,8 @@ use backend\modules\v1\utils\Helper;
 use Exception;
 use Yii;
 use yii\data\ArrayDataProvider;
+use yii\db\Expression;
+use yii\db\Query;
 use yii\helpers\ArrayHelper;
 
 
@@ -35,15 +37,21 @@ class ApiMine
     public static function getMineList($condition)
     {
         // todo 权限需要重写
-
+//        var_dump(123);exit;
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
         $condition['platForm'] = isset($condition['platForm']) && $condition['platForm'] ? $condition['platForm'] : 'joom';
-        $query = OaDataMine::find();
+//        $query = OaDataMine::find();
+        $query = (new Query())->select(['m.*',new Expression('IFNULL(g.goodsCode,m.pyGoodsCode) as pyGoodsCode')])
+            ->from('proCenter.oa_dataMine AS m')
+            ->leftJoin('proCenter.oa_goodsinfo g', 'g.mid = m.id and g.mid > 0');
+
+
         $filterFields = ['like' => ['proId', 'platForm', 'progress', 'creator', 'detailStatus',
             'cat', 'subCat', 'goodsCode', 'devStatus', 'pyGoodsCode']];
         $filterTime = ['createTime', 'updateTime'];
         $query =  Helper::generateFilter($query, $filterFields, $condition);
         $query =  Helper::timeFilter($query, $filterTime, $condition);
+
 
         //产品权限
         $user = Yii::$app->user->identity->username;
@@ -53,7 +61,6 @@ class ApiMine
         if(strpos($userRole, '销售') !== false && strpos($userRole, '开发') == false) {
             $query->andWhere(['in', 'creator', $userList]);
         }
-
         $query = $query->orderBy('updateTime DESC');
         $provider = new ActiveDataProvider([
             'query' => $query,
