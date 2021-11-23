@@ -233,7 +233,7 @@ class  LogisticTrack
      */
     public static function abnormal()
     {
-        $endTime = time() - 86400 * 1;
+        $endTime = time() - 86400 * 3;
         Yii::$app->db->createCommand()->update(
             'trade_send_logistics_track',
             [
@@ -334,7 +334,8 @@ class  LogisticTrack
         elseif ($kd > 35) {
             $phase = 5;
             $abnormalType = LogisticEnum::AT_TOOLONG;
-        }else{
+        }
+        else {
             return [];
         }
 
