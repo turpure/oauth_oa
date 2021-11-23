@@ -241,7 +241,7 @@ class  LogisticTrack
                 'abnormal_status' => LogisticEnum::AS_PENDING,
                 'abnormal_phase'  => 1
             ],
-            "closing_date>{$endTime} and logistic_type in (235) and status=" . LogisticEnum::NOT_FIND
+            "closing_date>{$endTime} and logistic_type in (2,3,5) and status=" . LogisticEnum::NOT_FIND
         )->execute();
 
 
