@@ -8,6 +8,7 @@ use backend\modules\v1\enums\LogisticEnum;
 use console\services\ebayTrack\DefaultEbayClient;
 use console\services\ebayTrack\GetTrackingDetailRequest;
 use console\services\ebayTrack\GetTrackingDetailRequestData;
+use console\traits\TrackTrait;
 use Yii;
 use yii\db\Exception;
 
@@ -16,8 +17,8 @@ use yii\db\Exception;
  */
 class EbayLogisticTrack
 {
+    use TrackTrait;
 
-    public static $__inst = null;
     private $ebayConfig;
 
     public function __construct()
@@ -55,14 +56,7 @@ class EbayLogisticTrack
 
         $authorization = self::ebayToken();
 
-        $orderList = TradeSendLogisticsTrack::find()
-            ->andwhere(['<', 'updated_at', strtotime(date('Y-m-d'))])
-            ->andwhere(['=', 'logistic_type', 6])
-            ->andwhere(['>', 'created_at', (time() - 86400 * 60)])
-            ->andwhere(['not in', 'status', [LogisticEnum::SUCCESS, LogisticEnum::FAIL]])
-            ->limit(500)
-            ->orderBy('updated_at', 'asc')
-            ->all();
+        $orderList = self::getOrder(6);
         var_export('ebay条数:' . count($orderList));
         $client = new DefaultEbayClient($this->ebayConfig['url'], $authorization);
 
@@ -79,21 +73,10 @@ class EbayLogisticTrack
 
             $rep = $client->execute($req);
             $result = $rep->getData();
-            //            第二条才上网
-            //            sleep(1);
+
             $length = count($result);
             if ($length < 2) {
-                Yii::$app->db->createCommand()
-                    ->update(
-                        'trade_send_logistics_track',
-                        [
-                            'updated_at' => time(),
-                            'status'     => 2
-                        ],
-                        ['order_id' => $order['order_id']]
-                    )
-                    ->execute();
-                var_export('查询不到');
+                self::notExist($order->track_no);
                 continue;
             }
 
@@ -143,7 +126,6 @@ class EbayLogisticTrack
                         $status = LogisticEnum::IN_TRANSIT;
                 }
             }
-
             var_export($status);
             $updatedData = [
                 'newest_time'   => $trackDetail[0]['time'],
@@ -155,7 +137,7 @@ class EbayLogisticTrack
                 'track_detail'  => json_encode($trackDetail),
                 'updated_at'    => time()
             ];
-            Yii::$app->db->createCommand()->update('trade_send_logistics_track', $updatedData, ['order_id' => $order['order_id']])->execute();
+            self::updatedTrack($order->track_no,$updatedData);
         }
     }
 

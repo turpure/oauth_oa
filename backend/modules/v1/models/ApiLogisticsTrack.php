@@ -227,18 +227,20 @@ class ApiLogisticsTrack
             $statistical['above_ratio'] += $item->above_ratio;
         }
         $totalCount = count($list);
-        $statistical['intraday_ratio'] = sprintf("%.2f", $statistical['intraday_ratio'] / $totalCount);
-        $statistical['first_ratio'] = sprintf("%.2f", $statistical['first_ratio'] / $totalCount);
-        $statistical['second_ratio'] = sprintf("%.2f", $statistical['second_ratio'] / $totalCount);
-        $statistical['third_ratio'] = sprintf("%.2f", $statistical['third_ratio'] / $totalCount);
-        $statistical['above_ratio'] = sprintf("%.2f", $statistical['above_ratio'] / $totalCount);
+        if ($totalCount > 0) {
+            $statistical['intraday_ratio'] = sprintf("%.2f", $statistical['intraday_ratio'] / $totalCount);
+            $statistical['first_ratio'] = sprintf("%.2f", $statistical['first_ratio'] / $totalCount);
+            $statistical['second_ratio'] = sprintf("%.2f", $statistical['second_ratio'] / $totalCount);
+            $statistical['third_ratio'] = sprintf("%.2f", $statistical['third_ratio'] / $totalCount);
+            $statistical['above_ratio'] = sprintf("%.2f", $statistical['above_ratio'] / $totalCount);
+        }
 
 
         $provider = new ArrayDataProvider([
             'allModels'  => $list,
             'sort'       => [
                 'attributes'   => [
-                    'id', 'total_num', 'intraday_num', 'intraday_ratio', 'above_ratio', 'above_num', 'second_ratio', 'first_ratio', 'first_num', 'second_num', 'third_num', 'third_ratio'
+                    'id', 'closing_date', 'total_num', 'intraday_num', 'intraday_ratio', 'above_ratio', 'above_num', 'second_ratio', 'first_ratio', 'first_num', 'second_num', 'third_num', 'third_ratio'
                 ],
                 'defaultOrder' => [
                     'id' => SORT_DESC,
@@ -307,9 +309,11 @@ class ApiLogisticsTrack
             $list[$key]['average'] = $item->success_num != 0 ? round($item->average / 86400 / $item->success_num) : 0;
         }
         $totalCount = count($list);
-        $statistical['success_ratio'] = sprintf("%.2f", $statistical['success_ratio'] / $totalCount);
-        $statistical['dont_succeed_ratio'] = sprintf("%.2f", $statistical['dont_succeed_ratio'] / $totalCount);
-        $statistical['average'] = round($statistical['average'] / $totalCount / $statistical['success_num'] / 86400);
+        if ($totalCount > 0) {
+            $statistical['success_ratio'] = sprintf("%.2f", $statistical['success_ratio'] / $totalCount);
+            $statistical['dont_succeed_ratio'] = sprintf("%.2f", $statistical['dont_succeed_ratio'] / $totalCount);
+            $statistical['average'] = round($statistical['average'] / $totalCount / $statistical['success_num'] / 86400);
+        }
 
         return [
             'statistical' => $statistical,
@@ -317,7 +321,7 @@ class ApiLogisticsTrack
                 'allModels'  => $list,
                 'sort'       => [
                     'attributes'   => [
-                        'id', 'total_num', 'average', 'success_ratio', 'success_num', 'dont_succeed_num', 'dont_succeed_ratio'
+                        'id', 'closing_date','total_num', 'average', 'success_ratio', 'success_num', 'dont_succeed_num', 'dont_succeed_ratio'
                     ],
                     'defaultOrder' => [
                         'id' => SORT_DESC,
@@ -479,190 +483,190 @@ class ApiLogisticsTrack
         $abnormalType = ['无异常', '未上网', '断更', '运输过久', '退件', '派送异常', '信息停滞', '可能异常'];
 
         $query = self::tradeSendQuery($condition);
-//        $count = $query->count();
+        //        $count = $query->count();
         $list = $query->all();
 
-//        header('Content-Description: File Transfer');
-//        header('Content-Type: application/vnd.ms-excel');
-//        header('Content-Disposition: attachment; filename="导出数据快递轨迹-' . date('Y-m-d', time()) . '.csv"');
-//        header('Expires: 0');
-//        header('Cache-Control: must-revalidate');
-//        header('Pragma: public');
-//        $fp = fopen('php://output', 'a');//打开output流
-//        mb_convert_variables('GBK', 'UTF-8', $columns);
-//        $title = ['订单编号', '卖家简称', '店铺单号', '发货时间', '总重量(kg)', '跟踪号', '快递公司', '物流方式', '收货国家', '出货仓库', '销售渠道'];
-//
-//        if (isset($condition['logistic_status']) && $condition['logistic_status'] == 1) {
-//            $title[] = '运输状态';
-//            $title[] = '轨迹查询时间';
-//        }
-//        else {
-//            $title[] = '第一条轨迹时间';
-//            $title[] = '第一条轨迹信息';
-//            $title[] = '最新轨迹时间';
-//            $title[] = '最新轨迹信息';
-//            $title[] = '运输状态';
-//            $title[] = '轨迹查询时间';
-//            $title[] = '签收时效';
-//            $title[] = '停滞时间';
-//            if (!empty($condition['abnormal_status'])) {
-//                //
-//                $title[] = '轨迹分类';
-//                $title[] = '处理标签';
-//                $title[] = '处理人';
-//            }
-//
-//        }
-//
-//        fputcsv($fp, $title);
-//
-//        for ($i = 0; $i < $count; $i += 10000) {
-//            $list = $query->limit(10000)->offset($i)->all();
-//            // 	最新时间	签收时效	停滞时间
-//            foreach ($list as $v) {
-//                //这里必须转码，不然会乱码
-//                $row = [
-//                    iconv('UTF-8', 'GBK', $v['order_id']),
-//                    $v['suffix'],
-//                    $v['ack'],
-//                    date('Y-m-d H:i:s', $v['closingdate']),
-//                    $v['total_weight'],
-//                    $v['track_no'],
-//                    $v['logistic_company'],
-//                    $v['logistic_name'],
-//                    $v['shiptocountry_name'],
-//                    $v['store_name'],
-//                    $v['addressowner']
-//                ];
-//                if (isset($condition['logistic_status']) && $condition['logistic_status'] == 1) {
-//                    $row[] = $trackStatus[$v['status'] - 1];
-//                    $row[] = $v['status'] == 1 ? '' : date('Y-m-d H:i:s', $v['updated_at']);
-//                }
-//                else {
-//                    $row[] = empty($v['first_time']) ? '' : date('Y-m-d H:i:s', $v['first_time']);
-//                    $row[] = $v['first_detail'];
-//                    $row[] = empty($v['newest_time']) ? '' : date('Y-m-d H:i:s', $v['newest_time']);
-//                    $row[] = $v['newest_detail'];
-//                    $row[] = $trackStatus[$v['status'] - 1];
-//                    $row[] = $v['status'] == 1 ? '' : date('Y-m-d H:i:s', $v['updated_at']);
-//                    $row[] = !empty($v['newest_time']) ? intval(($v['newest_time'] - $v['closingdate']) / 86400) : '';
-//                    $row[] = $v['status'] == 1 && !empty($v['newest_time']) ? intval(time() - $v['newest_time']) / 86400 : '';
-//                    if (!empty($condition['abnormal_status'])) {
-//                        $row[] = $abnormalType[$v['abnormal_type'] - 1];
-//                        $row[] = $abnormalStatus[$v['abnormal_status'] - 1];
-//                        $row[] = $v['management'];
-//                    }
-//                }
-//                fputcsv($fp, $row);
-//            }
-//            unset($list);
-//            ob_flush();
-//            flush();
-//        }
-//
-//        fclose($fp);
-//        exit();
+        //        header('Content-Description: File Transfer');
+        //        header('Content-Type: application/vnd.ms-excel');
+        //        header('Content-Disposition: attachment; filename="导出数据快递轨迹-' . date('Y-m-d', time()) . '.csv"');
+        //        header('Expires: 0');
+        //        header('Cache-Control: must-revalidate');
+        //        header('Pragma: public');
+        //        $fp = fopen('php://output', 'a');//打开output流
+        //        mb_convert_variables('GBK', 'UTF-8', $columns);
+        //        $title = ['订单编号', '卖家简称', '店铺单号', '发货时间', '总重量(kg)', '跟踪号', '快递公司', '物流方式', '收货国家', '出货仓库', '销售渠道'];
+        //
+        //        if (isset($condition['logistic_status']) && $condition['logistic_status'] == 1) {
+        //            $title[] = '运输状态';
+        //            $title[] = '轨迹查询时间';
+        //        }
+        //        else {
+        //            $title[] = '第一条轨迹时间';
+        //            $title[] = '第一条轨迹信息';
+        //            $title[] = '最新轨迹时间';
+        //            $title[] = '最新轨迹信息';
+        //            $title[] = '运输状态';
+        //            $title[] = '轨迹查询时间';
+        //            $title[] = '签收时效';
+        //            $title[] = '停滞时间';
+        //            if (!empty($condition['abnormal_status'])) {
+        //                //
+        //                $title[] = '轨迹分类';
+        //                $title[] = '处理标签';
+        //                $title[] = '处理人';
+        //            }
+        //
+        //        }
+        //
+        //        fputcsv($fp, $title);
+        //
+        //        for ($i = 0; $i < $count; $i += 10000) {
+        //            $list = $query->limit(10000)->offset($i)->all();
+        //            // 	最新时间	签收时效	停滞时间
+        //            foreach ($list as $v) {
+        //                //这里必须转码，不然会乱码
+        //                $row = [
+        //                    iconv('UTF-8', 'GBK', $v['order_id']),
+        //                    $v['suffix'],
+        //                    $v['ack'],
+        //                    date('Y-m-d H:i:s', $v['closingdate']),
+        //                    $v['total_weight'],
+        //                    $v['track_no'],
+        //                    $v['logistic_company'],
+        //                    $v['logistic_name'],
+        //                    $v['shiptocountry_name'],
+        //                    $v['store_name'],
+        //                    $v['addressowner']
+        //                ];
+        //                if (isset($condition['logistic_status']) && $condition['logistic_status'] == 1) {
+        //                    $row[] = $trackStatus[$v['status'] - 1];
+        //                    $row[] = $v['status'] == 1 ? '' : date('Y-m-d H:i:s', $v['updated_at']);
+        //                }
+        //                else {
+        //                    $row[] = empty($v['first_time']) ? '' : date('Y-m-d H:i:s', $v['first_time']);
+        //                    $row[] = $v['first_detail'];
+        //                    $row[] = empty($v['newest_time']) ? '' : date('Y-m-d H:i:s', $v['newest_time']);
+        //                    $row[] = $v['newest_detail'];
+        //                    $row[] = $trackStatus[$v['status'] - 1];
+        //                    $row[] = $v['status'] == 1 ? '' : date('Y-m-d H:i:s', $v['updated_at']);
+        //                    $row[] = !empty($v['newest_time']) ? intval(($v['newest_time'] - $v['closingdate']) / 86400) : '';
+        //                    $row[] = $v['status'] == 1 && !empty($v['newest_time']) ? intval(time() - $v['newest_time']) / 86400 : '';
+        //                    if (!empty($condition['abnormal_status'])) {
+        //                        $row[] = $abnormalType[$v['abnormal_type'] - 1];
+        //                        $row[] = $abnormalStatus[$v['abnormal_status'] - 1];
+        //                        $row[] = $v['management'];
+        //                    }
+        //                }
+        //                fputcsv($fp, $row);
+        //            }
+        //            unset($list);
+        //            ob_flush();
+        //            flush();
+        //        }
+        //
+        //        fclose($fp);
+        //        exit();
 
 
-                $objectPHPExcel = new Spreadsheet();//实例化类
+        $objectPHPExcel = new Spreadsheet();//实例化类
 
-                $objectPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(30);
-                $objectPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(30);
-                $objectPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(30);
-                $objectPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(10);
-                $objectPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(30);
-                $objectPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(30);
-                $objectPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(30);
-                $objectPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(30);
-                $objectPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(30);
-                $objectPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(30);
-                $objectPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(30);
-                $objectPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(30);
-                $objectPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(30);
-                $objectPHPExcel->getActiveSheet()->getColumnDimension('O')->setWidth(30);
-                $objectPHPExcel->getActiveSheet()->getColumnDimension('P')->setWidth(30);
-                $objectPHPExcel->getActiveSheet()->getColumnDimension('Q')->setWidth(30);
-                $objectPHPExcel->getActiveSheet()->getColumnDimension('R')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(10);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('O')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('P')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('Q')->setWidth(30);
+        $objectPHPExcel->getActiveSheet()->getColumnDimension('R')->setWidth(30);
 
-                $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', '订单编号');
-                $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('B1', '卖家简称');
-                $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('C1', '店铺单号');
-                $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('D1', '发货时间');
-                $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('E1', '总重量(kg)');
-                $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('F1', '跟踪号');
-                $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('G1', '快递公司');
-                $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('H1', '物流方式');
-                $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('I1', '收货国家');
-                $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('J1', '出货仓库');
-                $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('K1', '销售渠道');
-                if (isset($condition['logistic_status']) && $condition['logistic_status'] == 1) {
-                    $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('L1', '运输状态');
-                    $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('M1', '轨迹查询时间');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', '订单编号');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('B1', '卖家简称');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('C1', '店铺单号');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('D1', '发货时间');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('E1', '总重量(kg)');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('F1', '跟踪号');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('G1', '快递公司');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('H1', '物流方式');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('I1', '收货国家');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('J1', '出货仓库');
+        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('K1', '销售渠道');
+        if (isset($condition['logistic_status']) && $condition['logistic_status'] == 1) {
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('L1', '运输状态');
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('M1', '轨迹查询时间');
+        }
+
+        else {
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('L1', '第一条轨迹时间');
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('M1', '第一条轨迹信息');
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('N1', '最新轨迹时间');
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('O1', '最新轨迹信息');
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('P1', '运输状态');
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('Q1', '轨迹查询时间');
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('R1', '签收时效');
+            $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('S1', '停滞时间');
+            if (!empty($condition['abnormal_status'])) {
+                //
+                $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('T1', '轨迹分类');
+                $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('U1', '处理标签');
+                $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('V1', '处理人');
+            }
+
+        }
+
+
+        $n = 2;
+        // 	最新时间	签收时效	停滞时间
+        foreach ($list as $v) {
+            $objectPHPExcel->getActiveSheet()->setCellValue('A' . ($n), $v['order_id']);
+            $objectPHPExcel->getActiveSheet()->setCellValue('B' . ($n), $v['suffix']);
+            $objectPHPExcel->getActiveSheet()->setCellValue('C' . ($n), $v['ack'] . ' ');
+            $objectPHPExcel->getActiveSheet()->setCellValue('D' . ($n), date('Y-m-d H:i:s', $v['closingdate']));
+            $objectPHPExcel->getActiveSheet()->setCellValue('E' . ($n), $v['total_weight']);
+            $objectPHPExcel->getActiveSheet()->setCellValue('F' . ($n), $v['track_no']);
+            $objectPHPExcel->getActiveSheet()->setCellValue('G' . ($n), $v['logistic_company']);
+            $objectPHPExcel->getActiveSheet()->setCellValue('H' . ($n), $v['logistic_name']);
+            $objectPHPExcel->getActiveSheet()->setCellValue('I' . ($n), $v['shiptocountry_name']);
+            $objectPHPExcel->getActiveSheet()->setCellValue('J' . ($n), $v['store_name']);
+            $objectPHPExcel->getActiveSheet()->setCellValue('K' . ($n), $v['addressowner']);
+
+            if (isset($condition['logistic_status']) && $condition['logistic_status'] == 1) {
+                $objectPHPExcel->getActiveSheet()->setCellValue('L' . ($n), $trackStatus[$v['status'] - 1]);
+                $objectPHPExcel->getActiveSheet()->setCellValue('M' . ($n), $v['status'] == 1 ? '' : date('Y-m-d H:i:s', $v['updated_at']));
+            }
+            else {
+                $objectPHPExcel->getActiveSheet()->setCellValue('L' . ($n), empty($v['first_time']) ? '' : date('Y-m-d H:i:s', $v['first_time']));
+                $objectPHPExcel->getActiveSheet()->setCellValue('M' . ($n), $v['first_detail']);
+                $objectPHPExcel->getActiveSheet()->setCellValue('N' . ($n), empty($v['newest_time']) ? '' : date('Y-m-d H:i:s', $v['newest_time']));
+                $objectPHPExcel->getActiveSheet()->setCellValue('O' . ($n), $v['newest_detail']);
+                $objectPHPExcel->getActiveSheet()->setCellValue('P' . ($n), $trackStatus[$v['status'] - 1]);
+                $objectPHPExcel->getActiveSheet()->setCellValue('Q' . ($n), $v['status'] == 1 ? '' : date('Y-m-d H:i:s', $v['updated_at']));
+                $objectPHPExcel->getActiveSheet()->setCellValue('R' . ($n), !empty($v['newest_time']) ? intval(($v['newest_time'] - $v['closingdate']) / 86400) : '');
+                $objectPHPExcel->getActiveSheet()->setCellValue('S' . ($n), $v['status'] == 1 && !empty($v['newest_time']) ? intval(time() - $v['newest_time']) / 86400 : '');
+                if (!empty($condition['abnormal_status'])) {
+                    //
+                    $objectPHPExcel->getActiveSheet()->setCellValue('T' . ($n), $abnormalType[$v['abnormal_type'] - 1]);
+                    $objectPHPExcel->getActiveSheet()->setCellValue('U' . ($n), $abnormalStatus[$v['abnormal_status'] - 1]);
+                    $objectPHPExcel->getActiveSheet()->setCellValue('V' . ($n), $v['management']);
                 }
-
-                else {
-                    $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('L1', '第一条轨迹时间');
-                    $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('M1', '第一条轨迹信息');
-                    $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('N1', '最新轨迹时间');
-                    $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('O1', '最新轨迹信息');
-                    $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('P1', '运输状态');
-                    $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('Q1', '轨迹查询时间');
-                    $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('R1', '签收时效');
-                    $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('S1', '停滞时间');
-                    if (!empty($condition['abnormal_status'])) {
-                        //
-                        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('T1', '轨迹分类');
-                        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('U1', '处理标签');
-                        $objectPHPExcel->setActiveSheetIndex(0)->setCellValue('V1', '处理人');
-                    }
-
-                }
-
-
-                $n = 2;
-                // 	最新时间	签收时效	停滞时间
-                foreach ($list as $v) {
-                    $objectPHPExcel->getActiveSheet()->setCellValue('A' . ($n), $v['order_id']);
-                    $objectPHPExcel->getActiveSheet()->setCellValue('B' . ($n), $v['suffix']);
-                    $objectPHPExcel->getActiveSheet()->setCellValue('C' . ($n), $v['ack'] . ' ');
-                    $objectPHPExcel->getActiveSheet()->setCellValue('D' . ($n), date('Y-m-d H:i:s', $v['closingdate']));
-                    $objectPHPExcel->getActiveSheet()->setCellValue('E' . ($n), $v['total_weight']);
-                    $objectPHPExcel->getActiveSheet()->setCellValue('F' . ($n), $v['track_no']);
-                    $objectPHPExcel->getActiveSheet()->setCellValue('G' . ($n), $v['logistic_company']);
-                    $objectPHPExcel->getActiveSheet()->setCellValue('H' . ($n), $v['logistic_name']);
-                    $objectPHPExcel->getActiveSheet()->setCellValue('I' . ($n), $v['shiptocountry_name']);
-                    $objectPHPExcel->getActiveSheet()->setCellValue('J' . ($n), $v['store_name']);
-                    $objectPHPExcel->getActiveSheet()->setCellValue('K' . ($n), $v['addressowner']);
-
-                    if (isset($condition['logistic_status']) && $condition['logistic_status'] == 1) {
-                        $objectPHPExcel->getActiveSheet()->setCellValue('L' . ($n), $trackStatus[$v['status'] - 1]);
-                        $objectPHPExcel->getActiveSheet()->setCellValue('M' . ($n), $v['status'] == 1 ? '' : date('Y-m-d H:i:s', $v['updated_at']));
-                    }
-                    else {
-                        $objectPHPExcel->getActiveSheet()->setCellValue('L' . ($n), empty($v['first_time']) ? '' : date('Y-m-d H:i:s', $v['first_time']));
-                        $objectPHPExcel->getActiveSheet()->setCellValue('M' . ($n), $v['first_detail']);
-                        $objectPHPExcel->getActiveSheet()->setCellValue('N' . ($n), empty($v['newest_time']) ? '' : date('Y-m-d H:i:s', $v['newest_time']));
-                        $objectPHPExcel->getActiveSheet()->setCellValue('O' . ($n), $v['newest_detail']);
-                        $objectPHPExcel->getActiveSheet()->setCellValue('P' . ($n), $trackStatus[$v['status'] - 1]);
-                        $objectPHPExcel->getActiveSheet()->setCellValue('Q' . ($n), $v['status'] == 1 ? '' : date('Y-m-d H:i:s', $v['updated_at']));
-                        $objectPHPExcel->getActiveSheet()->setCellValue('R' . ($n), !empty($v['newest_time']) ? intval(($v['newest_time'] - $v['closingdate']) / 86400) : '');
-                        $objectPHPExcel->getActiveSheet()->setCellValue('S' . ($n), $v['status'] == 1 && !empty($v['newest_time']) ? intval(time() - $v['newest_time']) / 86400 : '');
-                        if (!empty($condition['abnormal_status'])) {
-                            //
-                            $objectPHPExcel->getActiveSheet()->setCellValue('T' . ($n), $abnormalType[$v['abnormal_type'] - 1]);
-                            $objectPHPExcel->getActiveSheet()->setCellValue('U' . ($n), $abnormalStatus[$v['abnormal_status'] - 1]);
-                            $objectPHPExcel->getActiveSheet()->setCellValue('V' . ($n), $v['management']);
-                        }
-                    }
-                    $n = $n + 1;
-                }
-                $objWriter = IOFactory::createWriter($objectPHPExcel, 'Xlsx');
-                $objWriter->setPreCalculateFormulas(false);
-                header('Content-Type: applicationnd.ms-excel');
-                $time = date('Y-m-d');
-                header("Content-Disposition: attachment;filename=物流'.$time.'.xls");
-                header('Cache-Control: max-age=0');
-                $objWriter->save('php://output');
+            }
+            $n = $n + 1;
+        }
+        $objWriter = IOFactory::createWriter($objectPHPExcel, 'Xlsx');
+        $objWriter->setPreCalculateFormulas(false);
+        header('Content-Type: applicationnd.ms-excel');
+        $time = date('Y-m-d');
+        header("Content-Disposition: attachment;filename=物流'.$time.'.xls");
+        header('Cache-Control: max-age=0');
+        $objWriter->save('php://output');
 
     }
 
@@ -719,6 +723,17 @@ class ApiLogisticsTrack
                 'type' => 6,
                 'list' => ['SpeedPAK-经济型服务', 'SpeedPAK-经济轻小件', 'SpeedPAK-标准型服务'],
             ],
+            [
+                'name' => 'Wish邮线上',
+                'type' => 7,
+                'list' => [
+                    'wish-云途中欧专线平邮(特货)', 'wish-云途中欧专线挂号', 'Wish邮智选经济 - 特货', 'Wish邮智选经济 - 普货', 'Wish邮智选标准 - 普货',
+                    'WISH燕文专线追踪小包(特货)', 'WISH燕文专线追踪小包(普货)', 'WISH燕文专线平邮小包(特货)', 'WISH燕文专线平邮小包(普货)', 'WISH燕文燕特快(普货)',
+                    'WISH燕文航空经济小包（特货）', 'WISH燕文航空经济小包（普货）', 'WISH燕文航空挂号小包（特货）', 'WISH燕文航空挂号小包（普货）', 'wish-顺友通平邮小包(特货)',
+                    'wish-顺友通挂号小包(特货)', 'wish-UBI欧盟半程小包', 'wish-UBI快速专线', 'wish-EQ专线快递(普货)', 'wish-EQ爱沙邮局半查小包(特货)',
+                    'wish-EQ爱沙邮局半查小包(普货)', 'WISH-CNE-全球特惠', 'WISH-CNE-全球经济', 'wish-A+安速派经济(特货)', 'wish-A+安速派经济(普货)', 'wish-A+安速派标准(特货)',
+                    'wish-A+安速派标准(普货)', 'wish-EQ专线快递(特货)', 'wish-燕文全球特快专递(特货)', 'Wish邮智选标准 - 特货', 'wish-云途专线'],
+            ],
             //            [
             //                'name' => '金华-E邮宝',
             //                'type' => 7,
@@ -733,17 +748,6 @@ class ApiLogisticsTrack
             //                'name' => '云途物流',
             //                'type' => 9,
             //                'list' => ['云途全球专线挂号(普货)', '云途全球专线挂号(特货)'],
-            //            ],
-            //            [
-            //                'name' => 'Wish邮线上',
-            //                'type' => 10,
-            //                'list' => [
-            //                    'wish-云途中欧专线平邮(特货)', 'wish-云途中欧专线挂号', 'Wish邮智选经济 - 特货', 'Wish邮智选经济 - 普货', 'Wish邮智选标准 - 普货',
-            //                    'WISH燕文专线追踪小包(特货)', 'WISH燕文专线追踪小包(普货)', 'WISH燕文专线平邮小包(特货)', 'WISH燕文专线平邮小包(普货)', 'WISH燕文燕特快(普货)',
-            //                    'WISH燕文航空经济小包（特货）', 'WISH燕文航空经济小包（普货）', 'WISH燕文航空挂号小包（特货）', 'WISH燕文航空挂号小包（普货）', 'wish-顺友通平邮小包(特货)',
-            //                    'wish-顺友通挂号小包(特货)', 'wish-UBI欧盟半程小包', 'wish-UBI快速专线', 'wish-EQ专线快递(普货)', 'wish-EQ爱沙邮局半查小包(特货)',
-            //                    'wish-EQ爱沙邮局半查小包(普货)', 'WISH-CNE-全球特惠', 'WISH-CNE-全球经济', 'wish-A+安速派经济(特货)', 'wish-A+安速派经济(普货)', 'wish-A+安速派标准(特货)',
-            //                    'wish-A+安速派标准(普货)', 'wish-EQ专线快递(特货)', 'wish-燕文全球特快专递(特货)', 'Wish邮智选标准 - 特货', 'wish-云途专线'],
             //            ],
         ];
 
