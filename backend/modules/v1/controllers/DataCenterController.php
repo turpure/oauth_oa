@@ -670,11 +670,11 @@ class DataCenterController extends AdminController
         $goodsSkuStatus = $condition['goodsSkuStatus'] ?? [];
         $maxStorageAge = $condition['maxStorageAge'] ?: '';
         $createdTime = $condition['createdTime'] ?: '';
-        $sku = $condition['sku'] ?: '';
+        $sku = $condition['goodsCode'] ?: '';
 
         $query = CacheSkuStorageAge::find()
             ->select(['*',new Expression('SUBSTR(createdTime,1,10) as createdTime')])
-            ->andFilterWhere(['sku' => $sku, 'maxStorageAge' => $maxStorageAge])
+            ->andFilterWhere(['goodsCode' => $sku, 'maxStorageAge' => $maxStorageAge])
             ->andFilterWhere(['storeName' => $storeName])
             ->andFilterWhere(['salerName' => $salerName])
             ->andFilterWhere(['goodsSkuStatus' => $goodsSkuStatus])
@@ -683,7 +683,7 @@ class DataCenterController extends AdminController
         return new ActiveDataProvider([
             'query' => $query,
             'sort' => [
-                'attributes' => ['sku', 'storeName', 'skuName', 'salerName', 'goodsSkuStatus', 'createdTime',
+                'attributes' => ['goodsCode', 'storeName', 'skuName', 'salerName', 'goodsSkuStatus', 'createdTime',
                     'number1', 'money1', 'number2', 'money2', 'totalNumber', 'totalMoney', 'maxStorageAge',
                     'lastPurchaseDate'],
                 'defaultOrder' => [
