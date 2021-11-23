@@ -43,7 +43,7 @@ class CacheSkuStorageAge extends \yii\db\ActiveRecord
              * TimestampBehavior：
              */
             'class' => TimestampBehavior::className(),
-            'createdAtAttribute' => 'createTime',
+            'createdAtAttribute' => 'createdTime',
             'updatedAtAttribute' => false,
             'value' => new Expression('NOW()'),
         ],];
