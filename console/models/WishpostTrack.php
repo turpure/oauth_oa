@@ -64,8 +64,9 @@ class WishpostTrack
      */
     private static function getLogisticTrack($param)
     {
-        $xml = self::post('v2/tracking', $param, [
-            'Content-Type' => 'text/xml; charset=UTF8',
+        $xml = self::post('v2/tracking', [
+            'body'    => $param,
+            'headres' => ['Content-Type' => 'text/xml; charset=UTF8']
         ]);
 
         $obj = simplexml_load_string($xml, "SimpleXMLElement", LIBXML_NOCDATA);
@@ -74,7 +75,7 @@ class WishpostTrack
 
         if ($trackResult['status'] !== '0') {
             var_export('wishpost :错误');
-            throw new \Exception("wishpost 获取快递信息 错误：".var_export($trackResult,true));
+            throw new \Exception("wishpost 获取快递信息 错误：" . var_export($trackResult, true));
 
         }
         foreach ($trackResult['tracks'] as $track) {
@@ -108,7 +109,7 @@ class WishpostTrack
                 'track_detail'  => json_encode($trackDetail),
                 'updated_at'    => time()
             ];
-            self::updatedTrack($track['@attributes']['barcode'],$updatedData);
+            self::updatedTrack($track['@attributes']['barcode'], $updatedData);
         }
     }
 
@@ -149,25 +150,26 @@ class WishpostTrack
             ->limit(1)
             ->one();
         //
-        if ($token->expire_date > time() + 3600) {
-            return $token->token;
-        }
+        //        if ($token->expire_date > time() + 3600) {
+        //            return $token->token;
+        //        }
         $config = Yii::$app->params['wishpost'];
-        $header = [
+        $headers = [
             'Authorization' => 'Basic ' . base64_encode($config['client_id'] . ":" . $config['client_secret']),
             'Content-Type'  => 'application/x-www-form-urlencoded'
         ];
-        $data = [
+        $params = [
             'grant_type'    => 'refresh_token',
             'refresh_token' => $token->refresh_token
         ];
 
-        $result = self::post('v3//access_token/refresh', $data, $header);
+        $result = self::post('v3/access_token/refresh', [
+            'form_params' => $params,
+            'headers'     => $headers
+        ]);
         $result = json_decode($result, true);
         if ($result['message'] !== 'Success') {
-            //
-            throw new \Exception("wishpost 刷新token 错误：".var_export($result,true));
-
+            throw new \Exception("wishpost 刷新token 错误：" . var_export($result, true));
         }
         $tradeSendEbayToken = new TradeSendAccessToken();
 
@@ -188,17 +190,14 @@ class WishpostTrack
     /*
    * post接口
    */
-    public static function post($url, $body, $headers = [], $timeOut = 30)
+    public static function post($url, $options)
     {
         $client = new Client(['base_uri' => self::$baseUrl]);
 
-        $response = $client->request('POST', $url, [
-            'body'    => $body,
-            'headers' => $headers
-        ]);
+        $response = $client->request('POST', $url, $options);
 
         if ($response->getStatusCode() !== 200) {
-            throw new \Exception("wishpost 非200 code: ".$response->getStatusCode());
+            throw new \Exception("wishpost 非200 code: " . $response->getStatusCode());
         }
         return $response->getBody();
     }
