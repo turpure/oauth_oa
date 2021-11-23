@@ -149,10 +149,10 @@ class WishpostTrack
             ->orderBy('id', 'desc')
             ->limit(1)
             ->one();
-        //
-        //        if ($token->expire_date > time() + 3600) {
-        //            return $token->token;
-        //        }
+
+        if ($token->expire_date > time() + 3600) {
+            return $token->token;
+        }
         $config = Yii::$app->params['wishpost'];
         $headers = [
             'Authorization' => 'Basic ' . base64_encode($config['client_id'] . ":" . $config['client_secret']),

@@ -240,7 +240,7 @@ class ApiLogisticsTrack
             'allModels'  => $list,
             'sort'       => [
                 'attributes'   => [
-                    'id', 'closing_date', 'total_num', 'intraday_num', 'intraday_ratio', 'above_ratio', 'above_num', 'second_ratio', 'first_ratio', 'first_num', 'second_num', 'third_num', 'third_ratio'
+                    'id', 'closing_date', 'logistic_type', 'logistic_name', 'total_num', 'intraday_num', 'intraday_ratio', 'above_ratio', 'above_num', 'second_ratio', 'first_ratio', 'first_num', 'second_num', 'third_num', 'third_ratio'
                 ],
                 'defaultOrder' => [
                     'id' => SORT_DESC,
@@ -321,7 +321,7 @@ class ApiLogisticsTrack
                 'allModels'  => $list,
                 'sort'       => [
                     'attributes'   => [
-                        'id', 'closing_date','total_num', 'average', 'success_ratio', 'success_num', 'dont_succeed_num', 'dont_succeed_ratio'
+                        'id', 'logistic_type', 'logistic_name', 'closing_date', 'total_num', 'average', 'success_ratio', 'success_num', 'dont_succeed_num', 'dont_succeed_ratio'
                     ],
                     'defaultOrder' => [
                         'id' => SORT_DESC,
