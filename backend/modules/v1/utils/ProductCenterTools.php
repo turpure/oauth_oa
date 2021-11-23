@@ -1598,6 +1598,23 @@ class ProductCenterTools
             $companyName = $supplier ? $supplier['SupplierName'] : $ret['productInfo']['sellerLoginId'];
             $skuInfos = isset($ret['productInfo']['skuInfos']) ? $ret['productInfo']['skuInfos'] : [];
             if($skuInfos){
+                $skuListNum = count($skuInfos);
+                // 获取SKU公共属性，2021-11-22 添加
+                $config = $config_arr = [];
+                foreach ($skuInfos as $v) {
+                    foreach ($v['attributes'] as $v1) {
+                        if (in_array($v1['attributeValue'], array_keys($config))) {
+                            $config[$v1['attributeValue']] += 1;
+                        }else{
+                            $config[$v1['attributeValue']] = 1;
+                        }
+                    }
+                }
+                foreach ($config as $j => $v){
+                    if($v == $skuListNum){
+                        $config_arr[] = $j;
+                    }
+                }
                 foreach ($skuInfos as $sku) {
                     $item['infoId'] = $infoId;
                     $item['offerId'] = $goodsId;
@@ -1608,17 +1625,22 @@ class ProductCenterTools
                     $item['multiStyle'] = 0;
                     $item['supplierLoginId'] = $ret['productInfo']['sellerLoginId'];
                     $item['companyName'] = $companyName;
-                    $attributeIDs = ArrayHelper::getColumn($sku['attributes'], 'attributeID');
-                    sort($attributeIDs);
+//                    $attributeIDs = ArrayHelper::getColumn($sku['attributes'], 'attributeID');
+//                    sort($sku['attributes']);
                     $styleArr = [];
                     foreach ($sku['attributes'] as $attr) {
-                        foreach ($attributeIDs as $val){
+                        /*foreach ($attributeIDs as $val){
                             if ($attr['attributeID'] == $val) {
                                 $styleArr[] = $attr['attributeValue'];
                                 break;
                             }
+                        }*/
+                        if (!in_array($attr['attributeValue'], $config_arr)) {
+                            $styleArr[] = $attr['attributeValue'];
                         }
                     }
+                    $styleArr = array_unique($styleArr);
+//                    var_dump($styleArr);exit;
                     $item['style'] = implode('-->', $styleArr);
                     $model = new OaGoods1688();
                     $model->setAttributes($item);

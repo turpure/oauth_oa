@@ -10,7 +10,7 @@ use yii\db\Expression;
  * This is the model class for table "cache_sku_storage_age2".
  *
  * @property int $id
- * @property string $sku
+ * @property string $goodsCode
  * @property string $skuName
  * @property string $salerName
  * @property string $img
@@ -43,7 +43,7 @@ class CacheSkuStorageAge extends \yii\db\ActiveRecord
              * TimestampBehavior：
              */
             'class' => TimestampBehavior::className(),
-            'createdAtAttribute' => 'createTime',
+            'createdAtAttribute' => 'createdTime',
             'updatedAtAttribute' => false,
             'value' => new Expression('NOW()'),
         ],];
@@ -57,7 +57,7 @@ class CacheSkuStorageAge extends \yii\db\ActiveRecord
             [['createTime', 'lastPurchaseDate'], 'safe'],
             [['totalNumber', 'number1', 'number2'], 'integer'],
             [['totalMoney', 'money1', 'money2'], 'number'],
-            [['sku','proId', 'skuName', 'salerName', 'img', 'storeName', 'goodsSkuStatus', 'maxStorageAge'], 'string', 'max' => 255],
+            [['goodsCode', 'skuName', 'salerName', 'img', 'storeName', 'goodsSkuStatus', 'maxStorageAge'], 'string', 'max' => 255],
         ];
     }
 

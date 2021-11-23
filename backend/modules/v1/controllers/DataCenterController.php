@@ -670,11 +670,11 @@ class DataCenterController extends AdminController
         $goodsSkuStatus = $condition['goodsSkuStatus'] ?? [];
         $maxStorageAge = $condition['maxStorageAge'] ?: '';
         $createdTime = $condition['createdTime'] ?: '';
-        $sku = $condition['sku'] ?: '';
+        $goodsCode = $condition['goodsCode'] ?: '';
 
         $query = CacheSkuStorageAge::find()
             ->select(['*',new Expression('SUBSTR(createdTime,1,10) as createdTime')])
-            ->andFilterWhere(['sku' => $sku, 'maxStorageAge' => $maxStorageAge])
+            ->andFilterWhere(['goodsCode' => $goodsCode, 'maxStorageAge' => $maxStorageAge])
             ->andFilterWhere(['storeName' => $storeName])
             ->andFilterWhere(['salerName' => $salerName])
             ->andFilterWhere(['goodsSkuStatus' => $goodsSkuStatus])
@@ -683,7 +683,7 @@ class DataCenterController extends AdminController
         return new ActiveDataProvider([
             'query' => $query,
             'sort' => [
-                'attributes' => ['sku', 'storeName', 'skuName', 'salerName', 'goodsSkuStatus', 'createdTime',
+                'attributes' => ['goodsCode', 'storeName', 'skuName', 'salerName', 'goodsSkuStatus', 'createdTime',
                     'number1', 'money1', 'number2', 'money2', 'totalNumber', 'totalMoney', 'maxStorageAge',
                     'lastPurchaseDate'],
                 'defaultOrder' => [
@@ -712,18 +712,18 @@ class DataCenterController extends AdminController
         $goodsSkuStatus = $condition['goodsSkuStatus'] ?? [];
         $maxStorageAge = $condition['maxStorageAge'] ?: '';
         $createdTime = $condition['createdTime'] ?: '';
-        $sku = $condition['sku'] ?: '';
+        $goodsCode = $condition['goodsCode'] ?: '';
 
         $query = CacheSkuStorageAge::find()
             ->select(['*',new Expression('SUBSTR(createdTime,1,10) as createdTime')])
-            ->andFilterWhere(['sku' => $sku, 'maxStorageAge' => $maxStorageAge])
+            ->andFilterWhere(['goodsCode' => $goodsCode, 'maxStorageAge' => $maxStorageAge])
             ->andFilterWhere(['storeName' => $storeName])
             ->andFilterWhere(['salerName' => $salerName])
             ->andFilterWhere(['goodsSkuStatus' => $goodsSkuStatus])
             ->andFilterWhere(['createdTime' => $createdTime])
             ->asArray()->all();
 
-        $title = ['ID', 'SKU', 'SKU名称', '开发员', '主图', '仓库', 'SKU状态',  '总库存数量', '总库存金额',
+        $title = ['ID', '商品编码', 'SKU名称', '开发员', '主图', '仓库', 'SKU状态',  '总库存数量', '总库存金额',
             '90天库存数量', '90天库存金额', '90天以上库存数量', '90天以上库存金额', '最大库龄', '90-120天最大采购日期', '更新时间'];
         ExportTools::toExcelOrCsv('skuStorageAge', $query, 'Xlsx', $title);
     }
