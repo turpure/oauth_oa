@@ -50,6 +50,11 @@ class WishpostTrack
                 $param['track'] = [];
             }
         }
+
+        if (!empty($param['track'])) {
+            self::getLogisticTrack(self::arr2xml($param));
+        }
+
     }
 
     /**
