@@ -241,18 +241,25 @@ class  LogisticTrack
                 'abnormal_status' => LogisticEnum::AS_PENDING,
                 'abnormal_phase'  => 1
             ],
-            "closing_date<{$endTime} and logistic_type in (2,3,5) and status=" . LogisticEnum::NOT_FIND
+            "closing_date<{$endTime}  and status=" . LogisticEnum::NOT_FIND
         )->execute();
-
+        Yii::$app->db->createCommand()->update(
+            'trade_send_logistics_track',
+            [
+                'abnormal_type'   => LogisticEnum::NORMAL,
+                'abnormal_status' => LogisticEnum::NORMAL,
+            ],
+            'abnormal_type=' . LogisticEnum::AT_NOT_FIND . ' and status!=' . LogisticEnum::NOT_FIND
+        )->execute();
+        //        and logistic_type in (2,3,5)
 
         $trackList = TradeSendLogisticsTrack::find()
             ->andFilterWhere(['<', 'closing_date', $endTime])
-            ->andFilterWhere(['in', 'logistic_type', [2, 3, 5]])
             ->andFilterWhere(['=', 'status', LogisticEnum::IN_TRANSIT])
             ->andFilterWhere(['not in', 'abnormal_status', [6, 7, 8, 9]])
-            ->limit(10000)
+            //            ->limit(10000)
             ->all();
-
+        //      ->andFilterWhere(['in', 'logistic_type', [2, 3, 5]])
         foreach ($trackList as $track) {
 
             if (self::transportType($track->logistic_name) == 1) {

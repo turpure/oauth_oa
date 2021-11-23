@@ -13,11 +13,15 @@ class LogisticEnum
     const SUCCESS  = 8;
 
 //    异常
+    const NORMAL = 1;
     const AT_NOT_FIND = 2;
     const AT_SUSPEND = 3;
     const AT_TOOLONG = 4;
+    const AT_DELIVERY = 6;
     const AT_STAGNATE = 7;
-//
+    const AT_PROBABLY = 8;
+
+    //
 
     const AS_PENDING = 2; // 待处理
 

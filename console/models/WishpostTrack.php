@@ -109,8 +109,24 @@ class WishpostTrack
                 'track_detail'  => json_encode($trackDetail),
                 'updated_at'    => time()
             ];
+
+            self::setAbnormalType($updatedData, $status);
             self::updatedTrack($track['@attributes']['barcode'], $updatedData);
         }
+    }
+
+    private static function setAbnormalType(&$updatedData, $status)
+    {
+        if ($status == 5) {
+            $updatedData['abnormal_status'] = LogisticEnum::AS_PENDING;
+            $updatedData['abnormal_type'] = LogisticEnum::AT_PROBABLY;
+
+        }
+        elseif ($status == 7) {
+            $updatedData['abnormal_status'] = LogisticEnum::AS_PENDING;
+            $updatedData['abnormal_type'] = LogisticEnum::AT_DELIVERY;
+        }
+
     }
 
     private static function getStatus($statusNum)
@@ -146,7 +162,7 @@ class WishpostTrack
             ->andWhere(['=', 'status', 1])
             ->andWhere(['=', 'type', 2])
             ->andWhere(['=', 'account', 'wish'])
-            ->orderBy('id', 'desc')
+            ->orderBy('id desc')
             ->limit(1)
             ->one();
 

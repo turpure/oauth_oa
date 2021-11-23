@@ -152,7 +152,7 @@ class EbayLogisticTrack
             ->andWhere(['>', 'expire_date', (time() + 86400)])
             ->andWhere(['=', 'status', 1])
             ->andWhere(['=', 'type', 1])
-            ->orderBy('id', 'desc')
+            ->orderBy('id desc')
             ->limit(1)
             ->one();
 
