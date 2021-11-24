@@ -727,7 +727,7 @@ class DataCenterController extends AdminController
             ->andFilterWhere(['createdTime' => $createdTime])
             ->asArray()->all();
 
-        $title = ['ID', '商品编码', 'SKU名称', '开发员', '主图', '仓库', 'SKU状态',  '总库存数量', '总库存金额',
+        $title = ['商品编码', 'SKU名称', '开发员', '主图', '仓库', 'SKU状态',  '总库存数量', '总库存金额',
             '90天库存数量', '90天库存金额', '90天以上库存数量', '90天以上库存金额', '最大库龄', '90-120天最大采购日期', '更新时间'];
         ExportTools::toExcelOrCsv('skuStorageAge', $query, 'Xlsx', $title);
     }
