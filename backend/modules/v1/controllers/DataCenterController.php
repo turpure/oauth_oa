@@ -717,7 +717,9 @@ class DataCenterController extends AdminController
         $goodsCode = $condition['goodsCode'] ?: '';
 
         $query = CacheSkuStorageAge::find()
-            ->select(['*',new Expression('SUBSTR(createdTime,1,10) as createdTime')])
+            ->select(['goodsCode','skuName','salerName','img','storeName','goodsSkuStatus','totalNumber','totalMoney',
+                'number1','money1','number2','money2','maxStorageAge','lastPurchaseDate',
+                new Expression('CONVERT(VARCHAR(10),createdTime,121) as createdTime')])
             ->andFilterWhere(['goodsCode' => $goodsCode, 'maxStorageAge' => $maxStorageAge])
             ->andFilterWhere(['storeName' => $storeName])
             ->andFilterWhere(['salerName' => $salerName])
