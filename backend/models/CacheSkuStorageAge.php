@@ -36,6 +36,14 @@ class CacheSkuStorageAge extends \yii\db\ActiveRecord
         return 'cache_sku_storage_age2';
     }
 
+    /**
+     * @return \yii\db\Connection the database connection used by this AR class.
+     */
+    public static function getDb()
+    {
+        return Yii::$app->get('py_db');
+    }
+
     public function behaviors()
     {
         return [[
@@ -45,7 +53,7 @@ class CacheSkuStorageAge extends \yii\db\ActiveRecord
             'class' => TimestampBehavior::className(),
             'createdAtAttribute' => 'createdTime',
             'updatedAtAttribute' => false,
-            'value' => new Expression('NOW()'),
+            'value' => date('Y-m-d H:i:s'),
         ],];
     }
     /**
