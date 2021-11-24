@@ -108,7 +108,7 @@ class DataCenterController extends AdminController
                         UNION ALL 
                         SELECT SKU,storeName,class,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
                          FROM `cache_stockWaringTmpDataBackup` WHERE updateMonth = '{$month}'  
-                ) a WHERE storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW') AND class IN ('海运', '空运')
+                ) a WHERE storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW','万邑通UKGF') AND class IN ('海运', '空运')
                 GROUP BY CASE WHEN IFNULL(class,'')='海运' THEN '万邑通UK海运' ELSE '万邑通UK空运' END";
         try {
             return Yii::$app->db->createCommand($sql)->queryAll();
@@ -186,9 +186,9 @@ class DataCenterController extends AdminController
                         ) a WHERE 1=1 ";
         if (isset($condition['storeName']) && $condition['storeName']) {
             if ($condition['storeName'] == '万邑通UK海运') {
-                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW') AND class='海运' ";
+                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW','万邑通UKGF') AND class='海运' ";
             } elseif ($condition['storeName'] == '万邑通UK空运') {
-                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW') AND class='空运' ";
+                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW','万邑通UKGF') AND class='空运' ";
             } else {
                 $sql .= " AND storeName LIKE '%{$condition['storeName']}%'";
             }
@@ -248,9 +248,9 @@ class DataCenterController extends AdminController
                         ) a WHERE 1=1  ";
         if (isset($cond['storeName']) && $cond['storeName']) {
             if ($cond['storeName'] == '万邑通UK海运') {
-                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW') AND class='海运' ";
+                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW','万邑通UKGF') AND class='海运' ";
             } elseif ($cond['storeName'] == '万邑通UK空运') {
-                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW') AND class='空运' ";
+                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW','万邑通UKGF') AND class='空运' ";
             } else {
                 $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
             }
