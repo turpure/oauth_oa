@@ -584,6 +584,8 @@ class TinyToolController extends AdminController
         //获取运费和出库费
         $data['transport'] = ApiUk::getTransport($res['weight'], $res['length'], $res['width'], $res['height']);
 
+//        var_dump($data['transport']);exit;
+
         foreach ($data['transport'] as $v) {
             $params1 = $params2 = [
                 'costRmb' => $v['costRmb'],
