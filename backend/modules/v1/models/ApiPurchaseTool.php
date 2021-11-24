@@ -83,7 +83,8 @@ class ApiPurchaseTool
                 FROM cg_stockorderm  AS cm WITH(nolock)
                 LEFT JOIN S_AlibabaCGInfo AS info WITH(nolock) ON Cm.AliasName1688 = info.AliasName
                 where checkflag=0 AND datediff(day,makedate,getdate())<4 
-                AND isnull(note,'') != '' --  AND billNumber='CGD-2021-08-20-0491' ";
+                    AND isnull(note,'') != '' 
+                 --  AND billNumber='CGD-2021-11-18-2944' ";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
 //        var_dump($data);exit;
         $message = [];
@@ -99,14 +100,16 @@ class ApiPurchaseTool
             }
             // 获取1688订单信息
             $orderInfo = self::getOrderDetails($val);
+
             if ($orderInfo['order']) {
                 // 判断 采购单和1688 单数量是否一致
                 $searchSql = "SELECT cgsm.BillNumber,sum(sd.amount) total_amt
                             FROM cg_stockorderd  AS sd WITH(nolock) 
                             LEFT JOIN cg_stockorderm  AS cgsm WITH(nolock) ON sd.stockordernid= cgsm.nid 
-                            WHERE note LIKE '%{$val['orderId']}%' AND cgsm.checkflag = 0 
+                            WHERE note LIKE '%{$val['orderId']}%' AND BillNumber = '{$val['BillNumber']}'  AND cgsm.checkflag = 0 
                             GROUP BY cgsm.BillNumber ";
                 $ret = Yii::$app->py_db->createCommand($searchSql)->queryOne();
+//                var_dump($ret);exit;
                 if (!$ret) {
                     $item = 'No need to check ' . $val['orderId'];
                 }elseif ($ret['total_amt'] == $orderInfo['order']['qty']) {

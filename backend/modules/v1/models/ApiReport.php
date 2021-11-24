@@ -1901,7 +1901,7 @@ class ApiReport
             FROM  oauth_clearPlanAmazon(nolock) AS cp
             INNER JOIN b_goodsSku(nolock) AS bgs ON   cp.sku = bgs.sku
             INNER JOIN b_goods(nolock) AS bg ON   bg.NID = bgs.goodsID
-            INNER JOIN b_goodsCats(nolock) AS bc ON bg.goodsCategoryId = bc.nid
+            LEFT JOIN b_goodsCats(nolock) AS bc ON bg.goodsCategoryId = bc.nid
             INNER JOIN KC_CurrentStock(nolock) AS ks ON ks.goodsskuid = bgs.nid
             INNER JOIN b_store(nolock) AS bs ON bs.nid = ks.storeId and bs.storeName = cp.storeName
             WHERE cp.isRemoved = 0 AND number > 0 ";

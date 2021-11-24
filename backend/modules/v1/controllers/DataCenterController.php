@@ -108,7 +108,7 @@ class DataCenterController extends AdminController
                         UNION ALL 
                         SELECT SKU,storeName,class,useNum,costmoney,notInStore,notInCostmoney,hopeUseNum,totalCostmoney,sellCostMoney 
                          FROM `cache_stockWaringTmpDataBackup` WHERE updateMonth = '{$month}'  
-                ) a WHERE storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW') AND class IN ('海运', '空运')
+                ) a WHERE storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW','万邑通UKGF') AND class IN ('海运', '空运')
                 GROUP BY CASE WHEN IFNULL(class,'')='海运' THEN '万邑通UK海运' ELSE '万邑通UK空运' END";
         try {
             return Yii::$app->db->createCommand($sql)->queryAll();
@@ -186,9 +186,9 @@ class DataCenterController extends AdminController
                         ) a WHERE 1=1 ";
         if (isset($condition['storeName']) && $condition['storeName']) {
             if ($condition['storeName'] == '万邑通UK海运') {
-                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW') AND class='海运' ";
+                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW','万邑通UKGF') AND class='海运' ";
             } elseif ($condition['storeName'] == '万邑通UK空运') {
-                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW') AND class='空运' ";
+                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW','万邑通UKGF') AND class='空运' ";
             } else {
                 $sql .= " AND storeName LIKE '%{$condition['storeName']}%'";
             }
@@ -248,9 +248,9 @@ class DataCenterController extends AdminController
                         ) a WHERE 1=1  ";
         if (isset($cond['storeName']) && $cond['storeName']) {
             if ($cond['storeName'] == '万邑通UK海运') {
-                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW') AND class='海运' ";
+                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW','万邑通UKGF') AND class='海运' ";
             } elseif ($cond['storeName'] == '万邑通UK空运') {
-                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW') AND class='空运' ";
+                $sql .= " AND storeName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW','万邑通UKGF') AND class='空运' ";
             } else {
                 $sql .= " AND storeName LIKE '%{$cond['storeName']}%'";
             }
@@ -673,7 +673,9 @@ class DataCenterController extends AdminController
         $goodsCode = $condition['goodsCode'] ?: '';
 
         $query = CacheSkuStorageAge::find()
-            ->select(['*',new Expression('SUBSTR(createdTime,1,10) as createdTime')])
+            ->select(['goodsCode','skuName','salerName','img','storeName','goodsSkuStatus','totalNumber','totalMoney',
+                'number1','money1','number2','money2','maxStorageAge','lastPurchaseDate',
+                new Expression('CONVERT(VARCHAR(10),createdTime,121) as createdTime')])
             ->andFilterWhere(['goodsCode' => $goodsCode, 'maxStorageAge' => $maxStorageAge])
             ->andFilterWhere(['storeName' => $storeName])
             ->andFilterWhere(['salerName' => $salerName])
@@ -715,7 +717,9 @@ class DataCenterController extends AdminController
         $goodsCode = $condition['goodsCode'] ?: '';
 
         $query = CacheSkuStorageAge::find()
-            ->select(['*',new Expression('SUBSTR(createdTime,1,10) as createdTime')])
+            ->select(['goodsCode','skuName','salerName','img','storeName','goodsSkuStatus','totalNumber','totalMoney',
+                'number1','money1','number2','money2','maxStorageAge','lastPurchaseDate',
+                new Expression('CONVERT(VARCHAR(10),createdTime,121) as createdTime')])
             ->andFilterWhere(['goodsCode' => $goodsCode, 'maxStorageAge' => $maxStorageAge])
             ->andFilterWhere(['storeName' => $storeName])
             ->andFilterWhere(['salerName' => $salerName])
@@ -723,7 +727,7 @@ class DataCenterController extends AdminController
             ->andFilterWhere(['createdTime' => $createdTime])
             ->asArray()->all();
 
-        $title = ['ID', '商品编码', 'SKU名称', '开发员', '主图', '仓库', 'SKU状态',  '总库存数量', '总库存金额',
+        $title = ['商品编码', 'SKU名称', '开发员', '主图', '仓库', 'SKU状态',  '总库存数量', '总库存金额',
             '90天库存数量', '90天库存金额', '90天以上库存数量', '90天以上库存金额', '最大库龄', '90-120天最大采购日期', '更新时间'];
         ExportTools::toExcelOrCsv('skuStorageAge', $query, 'Xlsx', $title);
     }
