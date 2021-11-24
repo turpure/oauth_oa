@@ -13,6 +13,7 @@ use yii\db\ActiveRecord;
  * @property integer $expire_date
  * @property integer $status
  * @property integer $type
+ * @property string $refresh_token
  *
  */
 class TradeSendAccessToken extends ActiveRecord
@@ -31,7 +32,7 @@ class TradeSendAccessToken extends ActiveRecord
     public function rules()
     {
         return [
-            [['account', 'token', 'expire_date', 'status','type'], 'required'],
+            [['account', 'token','refresh_token', 'expire_date', 'status','type'], 'required'],
         ];
     }
 }

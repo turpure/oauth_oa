@@ -4,6 +4,7 @@ namespace console\controllers;
 
 use console\models\EbayLogisticTrack;
 use console\models\LogisticTrack;
+use console\models\WishpostTrack;
 use yii\console\Controller;
 
 class LogisticTrackSchedulerController extends Controller
@@ -42,6 +43,16 @@ class LogisticTrackSchedulerController extends Controller
         LogisticTrack::abnormal();
 
     }
-
+    /**
+     * Wish物流
+     */
+    public function actionWishpostTrack()
+    {
+        try {
+            WishpostTrack::getTrack();
+        } catch (\Exception $why) {
+            var_export($why->getMessage());
+        }
+    }
 
 }
