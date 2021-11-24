@@ -94,6 +94,7 @@ class ApiUk
             $width + $height > Yii::$app->params['w_h_uk_tran_4'] || $length + 2 * ($width + $height) > Yii::$app->params['circum_uk_tran_4']) {
             $data['name'] = '无法获取对应物流！';
             $data['cost'] = 0;
+            $data['extra'] = 0;
         } elseif ($weight > Yii::$app->params['w_uk_tran_3_6'] || $length > Yii::$app->params['len_uk_tran_3'] ||
             $width > Yii::$app->params['wid_uk_tran_3'] || $height > Yii::$app->params['hei_uk_tran_3']) {
             $data['name'] = Yii::$app->params['transport_uk4'];
@@ -104,6 +105,12 @@ class ApiUk
                 $data['cost'] = Yii::$app->params['w_uk_tran_fee_4_2'];
             } else {
                 $data['cost'] = Yii::$app->params['w_uk_tran_fee_4_3'];
+            }
+            if($weight > Yii::$app->params['w_uk_tran_extra'] || $length > Yii::$app->params['len_uk_tran_extra'] ||
+                $length + 2 * ($width + $height) > Yii::$app->params['circum_uk_tran_extra']){
+                $data['extra'] = Yii::$app->params['extra_fee'];
+            }else{
+                $data['extra'] = 0;
             }
         } elseif ($weight > Yii::$app->params['w_uk_tran_2_2'] || $length > Yii::$app->params['len_uk_tran_2'] ||
             $width > Yii::$app->params['wid_uk_tran_2'] || $height > Yii::$app->params['hei_uk_tran_2']) {
@@ -124,6 +131,7 @@ class ApiUk
             } else {
                 $data['cost'] = Yii::$app->params['w_uk_tran_fee_3_7'];
             }
+            $data['extra'] = 0;
         } elseif ($weight > Yii::$app->params['w_uk_tran_1_4'] || $length > Yii::$app->params['len_uk_tran'] ||
             $width > Yii::$app->params['wid_uk_tran'] || $height > Yii::$app->params['hei_uk_tran']) {
             $data['name'] = Yii::$app->params['transport_uk2'];
@@ -133,7 +141,7 @@ class ApiUk
             } else {
                 $data['cost'] = Yii::$app->params['w_uk_tran_fee_2_2'];
             }
-
+            $data['extra'] = 0;
         } else {
             $data['name'] = Yii::$app->params['transport_uk1'];
             //获取方式1的运费
@@ -146,9 +154,11 @@ class ApiUk
             } else {
                 $data['cost'] = Yii::$app->params['w_uk_tran_fee_1_4'];
             }
+            $data['extra'] = 0;
         }
         $data['costRmb'] = round($data['cost'] * Yii::$app->params['poundRate'],2);
         $data['outRmb'] = round($data['out'] * Yii::$app->params['poundRate'],2);
+        $data['extraRmb'] = round($data['extra'] * Yii::$app->params['poundRate'],2);
 
         $res[] = $data;
         if ($data['name'] != '无法获取对应物流！') {
@@ -162,8 +172,15 @@ class ApiUk
             } else {
                 $item['cost'] = Yii::$app->params['w_uk_tran_fee_4_3'];
             }
+            if($weight > Yii::$app->params['w_uk_tran_extra'] || $length > Yii::$app->params['len_uk_tran_extra'] ||
+                $length + 2 * ($width + $height) > Yii::$app->params['circum_uk_tran_extra']){
+                $item['extra'] = Yii::$app->params['extra_fee'];
+            }else{
+                $item['extra'] = 0;
+            }
             $item['costRmb'] = round($item['cost'] * Yii::$app->params['poundRate'],2);
             $item['outRmb'] = round($data['out'] * Yii::$app->params['poundRate'],2);
+            $item['extraRmb'] = round($data['extra'] * Yii::$app->params['poundRate'],2);
             $res[] = $item;
 //            var_dump($item);exit;
         }
@@ -224,7 +241,7 @@ class ApiUk
 
         $profit = $data['price'] - $params['price'] * $params['adRate'] / 100 -
             $data['pFee'] - $data['eFee'] - $data['vatFee'] - $data['tradeFee'] -
-            ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate ;
+            ($params['costRmb'] + $params['outRmb'] + $params['costPrice'] + $params['extraRmb']) / $ukRate ;
 
         if ($params['vatRate']) {
             $data['rate'] = round($profit * 1.2/ $data['price'] * 100, 2);
@@ -308,7 +325,7 @@ class ApiUk
 
         $data['pFee'] = 0.3;
         $price = (
-                ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate + $data['pFee'] -
+                ($params['costRmb'] + $params['outRmb'] + $params['costPrice'] + $params['extraRmb']) / $ukRate + $data['pFee'] -
                 $params['shippingPrice'] * (1 - $params['rate']/100/(1 + $params['vatRate']/100) -
                     1.2 * Yii::$app->params['eRate_uk'] )
             ) / (
@@ -325,7 +342,7 @@ class ApiUk
 
         //计算毛利
         $profit = $data['price'] - $price * $params['adRate'] / 100 - $data['eFee'] - $data['pFee'] -
-            ($params['costRmb'] + $params['outRmb'] + $params['costPrice']) / $ukRate - $data['vatFee'];
+            ($params['costRmb'] + $params['outRmb'] + $params['costPrice'] + $params['extraRmb']) / $ukRate - $data['vatFee'];
         $data['profit'] = round($profit, 2);
         $data['profitRmb'] = round($profit * $ukRate, 2);
         $data['rate'] = $params['rate'];

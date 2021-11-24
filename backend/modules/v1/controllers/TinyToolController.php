@@ -590,6 +590,8 @@ class TinyToolController extends AdminController
             $params1 = $params2 = [
                 'costRmb' => $v['costRmb'],
                 'outRmb' => $v['outRmb'],
+                'extra' => $v['extra'],
+                'extraRmb' => $v['extraRmb'],
                 'costPrice' => $res['price'],
                 'shippingPrice' => $post['shippingPrice'],
                 'adRate' => $post['adRate'],
