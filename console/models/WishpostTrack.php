@@ -34,7 +34,7 @@ class WishpostTrack
     public static function getTrack()
     {
         $token = self::getAccessToken();
-        $orderList = self::getOrder(7);
+        $orderList = self::getOrder(7,1000);
         var_export('with条数:' . count($orderList));
 
         $param = [

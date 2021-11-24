@@ -16,14 +16,14 @@ trait TrackTrait
      * @param $type
      * @return array|TradeSendLogisticsTrack[]|\yii\db\ActiveRecord[]
      */
-    static public function getOrder($type)
+    static public function getOrder($type,$num=500)
     {
         return TradeSendLogisticsTrack::find()
             ->andwhere(['<', 'updated_at', strtotime(date('Y-m-d'))])
             ->andwhere(['=', 'logistic_type', $type])
             ->andwhere(['>', 'created_at', (time() - 86400 * 60)])
             ->andwhere(['not in', 'status', [LogisticEnum::SUCCESS, LogisticEnum::FAIL]])
-            ->limit(500)
+            ->limit($num)
             ->orderBy('id', 'asc')
             ->all();
     }
