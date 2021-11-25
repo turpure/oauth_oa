@@ -234,6 +234,7 @@ class  LogisticTrack
     public static function abnormal()
     {
         $endTime = time() - 86400 * 3;
+
         Yii::$app->db->createCommand()->update(
             'trade_send_logistics_track',
             [
@@ -309,7 +310,7 @@ class  LogisticTrack
         //③当前时间-最新轨迹时间>7天；
         //④当前时间-最新轨迹时间>14天；
         //⑤当前时间-最新轨迹时间>21天"
-        if ($ec >= 7 && $ec < 14) {
+        if ($ec >= 7 && $ec < 15) {
             $phase = 6;
             $abnormalType = LogisticEnum::AT_STAGNATE;
         }
