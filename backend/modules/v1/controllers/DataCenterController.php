@@ -728,11 +728,102 @@ class DataCenterController extends AdminController
             ->asArray()->all();
 
         $title = ['商品编码', 'SKU名称', '开发员', '主图', '仓库', 'SKU状态',  '总库存数量', '总库存金额',
-            '90天库存数量', '90天库存金额', '90天以上库存数量', '90天以上库存金额', '最大库龄', '90-120天最大采购日期', '更新时间'];
+            '90天库存数量', '90天库存金额', '90天以上库存数量', '90天以上库存金额', '最大库龄', '90-120天最近采购日期', '更新时间'];
         ExportTools::toExcelOrCsv('skuStorageAge', $query, 'Xlsx', $title);
     }
 
+    /**
+     * 高库龄责任人
+     * Date: 2021-03-06 16:52
+     * Author: henry
+     * @return ActiveDataProvider
+     */
+    public function actionSkuAgeHighPerson()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        $pageSize = $condition['pageSize'] ?: 20;
+        //获取所有销售员--账号 信息
 
+        $salerName = $condition['salerName'] ?: [];
+        $username = $condition['username'] ?: [];
+        $storeName = $condition['storeName'] ?: ['义乌仓'];
+        $goodsSkuStatus = $condition['goodsSkuStatus'] ?? [];
+        $maxStorageAge = $condition['maxStorageAge'] ?: '';
+        $createdTime = $condition['createdTime'] ?: '';
+        $goodsCode = $condition['goodsCode'] ?: '';
+
+        $query = (new Query())
+            ->select(['goodsCode','skuName','salerName','img','storeName','goodsSkuStatus','totalNumber','totalMoney',
+                'number1','money1','number2','money2','maxStorageAge','lastPurchaseDate2', 'suffix', 'username',
+                'num','totalNum','rate',
+                new Expression('SUBSTR(createdTime,1,10) as createdTime')])
+            ->from('cache_sku_storage_age2 as l')
+            ->leftJoin('auth_store as s', 's.store = l.suffix')
+            ->leftJoin('auth_store_child as sc', 'sc.store_id = s.id')
+            ->leftJoin('user as u', 'u.id = sc.user_id')
+            ->andFilterWhere(['goodsCode' => $goodsCode, 'maxStorageAge' => $maxStorageAge])
+            ->andFilterWhere(['storeName' => $storeName])
+            ->andFilterWhere(['salerName' => $salerName])
+            ->andFilterWhere(['username' => $username])
+            ->andFilterWhere(['goodsSkuStatus' => $goodsSkuStatus])
+            ->andFilterWhere(['createdTime' => $createdTime]);
+
+        return new ActiveDataProvider([
+            'query' => $query,
+            'sort' => [
+                'attributes' => ['goodsCode', 'storeName', 'skuName', 'salerName', 'goodsSkuStatus', 'createdTime',
+                    'number1', 'money1', 'number2', 'money2', 'totalNumber', 'totalMoney', 'maxStorageAge',
+                    'lastPurchaseDate2','suffix', 'username', 'num','totalNum','rate','createdTime'],
+                'defaultOrder' => [
+                    'totalNumber' => SORT_DESC,
+                ]
+            ],
+            'pagination' => [
+                'pageSize' => $pageSize,
+            ],
+        ]);
+    }
+
+    /**
+     * 高库龄责任人  导出
+     * Date: 2021-03-06 16:52
+     * Author: henry
+     * @return ActiveDataProvider
+     */
+    public function actionSkuAgeHighPersonExport()
+    {
+        $condition = Yii::$app->request->post('condition', []);
+        //获取所有销售员--账号 信息
+
+        $salerName = $condition['salerName'] ?: [];
+        $username = $condition['username'] ?: [];
+        $storeName = $condition['storeName'] ?: ['义乌仓'];
+        $goodsSkuStatus = $condition['goodsSkuStatus'] ?? [];
+        $maxStorageAge = $condition['maxStorageAge'] ?: '';
+        $createdTime = $condition['createdTime'] ?: '';
+        $goodsCode = $condition['goodsCode'] ?: '';
+
+        $query = CacheSkuStorageAge::find()
+            ->select(['goodsCode','skuName','salerName','img','storeName','goodsSkuStatus','totalNumber','totalMoney',
+                'number1','money1','number2','money2','maxStorageAge','lastPurchaseDate2','suffix', 'username',
+                'num','totalNum','rate',
+                new Expression('SUBSTR(createdTime,1,10) as createdTime')])
+            ->andFilterWhere(['goodsCode' => $goodsCode, 'maxStorageAge' => $maxStorageAge])
+            ->andFilterWhere(['storeName' => $storeName])
+            ->andFilterWhere(['salerName' => $salerName])
+            ->andFilterWhere(['username' => $username])
+            ->andFilterWhere(['goodsSkuStatus' => $goodsSkuStatus])
+            ->andFilterWhere(['createdTime' => $createdTime])
+            ->asArray()->all();
+
+        $title = ['商品编码', 'SKU名称', '开发员', '主图', '仓库', 'SKU状态',  '总库存数量', '总库存金额',
+            '90天库存数量', '90天库存金额', '90天以上库存数量', '90天以上库存金额', '最大库龄', '90天以上库存最近采购日期',
+            '账号简称','销售员','采购时间最近30天销量','采购时间最近30天总销量','销售占比', '更新时间'];
+        ExportTools::toExcelOrCsv('skuAgeHighPerson', $query, 'Xlsx', $title);
+    }
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * 价格保护
      * Date: 2021-03-08 10:59
