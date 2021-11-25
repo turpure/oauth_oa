@@ -42,6 +42,8 @@ class ApiMine
         $condition['platForm'] = isset($condition['platForm']) && $condition['platForm'] ? $condition['platForm'] : 'joom';
         $condition['m.goodsCode'] = $condition['goodsCode'] ? : '';
         $condition['IFNULL(g.goodsCode,m.pyGoodsCode)'] = $condition['pyGoodsCode'] ? : '';
+        $condition['m.createTime'] = $condition['createTime'] ? : [];
+        $condition['m.updateTime'] = $condition['updateTime'] ? : [];
 //        $query = OaDataMine::find();
         $query = (new Query())->select(['m.*',new Expression('IFNULL(g.goodsCode,m.pyGoodsCode) as pyGoodsCode')])
             ->from('proCenter.oa_dataMine AS m')
@@ -50,7 +52,7 @@ class ApiMine
 
         $filterFields = ['like' => ['proId', 'platForm', 'progress', 'creator', 'detailStatus',
             'cat', 'subCat', 'm.goodsCode', 'devStatus', 'IFNULL(g.goodsCode,m.pyGoodsCode)']];
-        $filterTime = ['createTime', 'updateTime'];
+        $filterTime = ['m.createTime', 'm.updateTime'];
         $query =  Helper::generateFilter($query, $filterFields, $condition);
         $query =  Helper::timeFilter($query, $filterTime, $condition);
 

@@ -144,7 +144,7 @@ class UpdateUser extends Model
                 $child->save();
             }
             // 增改删查看店铺
-            StoreChildCheck::deleteAll(['store_id' => $this->store]);
+            StoreChildCheck::deleteAll(['store_id' => $this->check_store]);
             foreach ($this->check_store as $sto) {
                 $child = new StoreChildCheck();
                 $child->user_id = $this->user_id;
