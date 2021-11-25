@@ -67,7 +67,7 @@ class EbayLogisticTrack
         $data = new GetTrackingDetailRequestData();
 
         foreach ($orderList as $order) {
-
+            var_export($order['track_no']);
             $data->setTrackingNumber($order['track_no']);
             $req->setData($data);
 
@@ -126,7 +126,7 @@ class EbayLogisticTrack
                         $status = LogisticEnum::IN_TRANSIT;
                 }
             }
-            var_export($status);
+//            var_export($status);
             $updatedData = [
                 'newest_time'   => $trackDetail[0]['time'],
                 'newest_detail' => $trackDetail[0]['detail'],
@@ -137,6 +137,8 @@ class EbayLogisticTrack
                 'track_detail'  => json_encode($trackDetail),
                 'updated_at'    => time()
             ];
+
+            self::setAbnormalType($updatedData, $status);
             self::updatedTrack($order->track_no,$updatedData);
         }
     }
