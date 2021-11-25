@@ -19,12 +19,13 @@ trait TrackTrait
     static public function getOrder($type,$num=500)
     {
         return TradeSendLogisticsTrack::find()
+//            ->andFilterWhere(['status'=>'5'])
             ->andwhere(['<', 'updated_at', strtotime(date('Y-m-d'))])
             ->andwhere(['=', 'logistic_type', $type])
             ->andwhere(['>', 'created_at', (time() - 86400 * 60)])
             ->andwhere(['not in', 'status', [LogisticEnum::SUCCESS, LogisticEnum::FAIL]])
             ->limit($num)
-            ->orderBy('id', 'asc')
+            ->orderBy('id', 'desc')
             ->all();
     }
 
@@ -61,6 +62,20 @@ trait TrackTrait
                 $updatedData,
                 ['track_no' => $trackNo])
             ->execute();
+
+    }
+
+    private static function setAbnormalType(&$updatedData, $status)
+    {
+        if ($status == 5) {
+            $updatedData['abnormal_status'] = LogisticEnum::AS_PENDING;
+            $updatedData['abnormal_type'] = LogisticEnum::AT_PROBABLY;
+
+        }
+        elseif ($status == 7) {
+            $updatedData['abnormal_status'] = LogisticEnum::AS_PENDING;
+            $updatedData['abnormal_type'] = LogisticEnum::AT_DELIVERY;
+        }
 
     }
 }
