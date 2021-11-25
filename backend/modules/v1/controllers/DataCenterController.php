@@ -803,11 +803,15 @@ class DataCenterController extends AdminController
         $createdTime = $condition['createdTime'] ?: '';
         $goodsCode = $condition['goodsCode'] ?: '';
 
-        $query = CacheSkuStorageAge::find()
+        $query = (new Query())
             ->select(['goodsCode','skuName','salerName','img','storeName','goodsSkuStatus','totalNumber','totalMoney',
-                'number1','money1','number2','money2','maxStorageAge','lastPurchaseDate2','suffix', 'username',
+                'number1','money1','number2','money2','maxStorageAge','lastPurchaseDate2', 'suffix', 'username',
                 'num','totalNum','rate',
                 new Expression('SUBSTR(createdTime,1,10) as createdTime')])
+            ->from('cache_sku_storage_age2 as l')
+            ->leftJoin('auth_store as s', 's.store = l.suffix')
+            ->leftJoin('auth_store_child as sc', 'sc.store_id = s.id')
+            ->leftJoin('user as u', 'u.id = sc.user_id')
             ->andFilterWhere(['goodsCode' => $goodsCode])
 //            ->andFilterWhere(['maxStorageAge' => $maxStorageAge])
             ->andFilterWhere(['storeName' => $storeName])
@@ -815,8 +819,8 @@ class DataCenterController extends AdminController
             ->andFilterWhere(['username' => $username])
             ->andFilterWhere(['goodsSkuStatus' => $goodsSkuStatus])
             ->andFilterWhere(['createdTime' => $createdTime])
-            ->asArray()->all();
-
+            ->all();
+//        var_dump($query);exit;
         $title = ['商品编码', 'SKU名称', '开发员', '主图', '仓库', 'SKU状态',  '总库存数量', '总库存金额',
             '90天库存数量', '90天库存金额', '90天以上库存数量', '90天以上库存金额', '最大库龄', '90天以上库存最近采购日期',
             '账号简称','销售员','采购时间最近30天销量','采购时间最近30天总销量','销售占比', '更新时间'];
