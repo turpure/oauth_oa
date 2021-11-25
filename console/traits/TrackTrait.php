@@ -20,12 +20,12 @@ trait TrackTrait
     {
         return TradeSendLogisticsTrack::find()
 //            ->andFilterWhere(['status'=>'5'])
-            ->andwhere(['<', 'updated_at', strtotime(date('Y-m-d'))])
+//            ->andwhere(['<', 'updated_at', strtotime(date('Y-m-d'))])
             ->andwhere(['=', 'logistic_type', $type])
             ->andwhere(['>', 'created_at', (time() - 86400 * 60)])
             ->andwhere(['not in', 'status', [LogisticEnum::SUCCESS, LogisticEnum::FAIL]])
-            ->limit($num)
-            ->orderBy('id', 'desc')
+            ->limit(10)
+            ->orderBy('id', 'asc')
             ->all();
     }
 

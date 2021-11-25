@@ -36,21 +36,24 @@ class EbayLogisticTrack
 
         $delivered = [
             'destination country - arrival', 'port of destination - arrival',
-            'item arrived to destination country', 'package data received',
+            'item arrived to destination country',
+            'your shipment has been delivered to the postal operator of the country of destination and will be delivered in the coming days',
             'arrived at destination country airport', 'arrived at destination country',
-            'arrival at post office', 'airline arrived at destination country',
-            'delivered', 'parcel has arrived at destination country', 'arrived at destination hub',
-            'arrived in country', 'arrived at facility',
-            'port of destination - departure', 'delivery to courier',
-            'international shipment release - import',
-            'package arrived to destination country',
+            'arrival at post office',
+            'airline arrived at destination country', 'delivered',
+            'parcel has arrived at destination country', 'arrived at destination hub',
+            'arrived in country',
+            'arrived at facility',
+            'delivery to courier',
+            'arrived at destination airport',
+            'international shipment release - import', 'package arrived to destination country',
             'arrive at sorting center in destination country', 'arrive at destination',
             'arrive at transit country or district', 'import clearance success',
-            'arrive at local delivery office', 'airline arrived at destination',
+            'arrive at local delivery office',
             'the item has been processed in the country of destination:the item has arrived in the country of destination',
-            'your shipment has been delivered to the postal operator of the country of destination and will be delivered in the coming days',
             'arrival at processing center', 'transit to destination processing facility',
-            'arrival of goods at destination airport', '已妥投', '到达寄达地处理中心', '到达寄达地'
+            'arrival of goods at destination airport', 'airline arrived at destination', '已妥投',
+            '到达寄达地处理中心', '到达寄达地'
         ];
 
 
@@ -67,10 +70,8 @@ class EbayLogisticTrack
         $data = new GetTrackingDetailRequestData();
 
         foreach ($orderList as $order) {
-            var_export($order['track_no']);
             $data->setTrackingNumber($order['track_no']);
             $req->setData($data);
-
             $rep = $client->execute($req);
             $result = $rep->getData();
 
@@ -106,7 +107,7 @@ class EbayLogisticTrack
                 $trackDetail[] = [
                     'status' => $item->getStatus(),
                     'detail' => $item->getProvince() . $item->getCity() . $item->getDistrict() . $item->getDescriptionEn(),
-                    'time'   => $item['event_time']->getTimestamp()
+                    'time'   => date('Y-m-d H:i:s',$item['event_time']->getTimestamp())
                 ];
             }
 
@@ -128,16 +129,15 @@ class EbayLogisticTrack
             }
 //            var_export($status);
             $updatedData = [
-                'newest_time'   => $trackDetail[0]['time'],
+                'newest_time'   => strtotime($trackDetail[0]['time']),
                 'newest_detail' => $trackDetail[0]['detail'],
-                'first_time'    => $trackDetail[$length - 2]['time'],
+                'first_time'    => strtotime($trackDetail[$length - 2]['time']),
                 'first_detail'  => $trackDetail[$length - 2]['detail'],
                 'elapsed_time'  => $trackDetail[0]['time'] - $trackDetail[$length - 2]['time'],
                 'status'        => $status,
                 'track_detail'  => json_encode($trackDetail),
                 'updated_at'    => time()
             ];
-
             self::setAbnormalType($updatedData, $status);
             self::updatedTrack($order->track_no,$updatedData);
         }
