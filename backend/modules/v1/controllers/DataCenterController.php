@@ -748,7 +748,7 @@ class DataCenterController extends AdminController
         $username = $condition['username'] ?: [];
         $storeName = $condition['storeName'] ?: ['义乌仓'];
         $goodsSkuStatus = $condition['goodsSkuStatus'] ?? [];
-        $maxStorageAge = $condition['maxStorageAge'] ?: '';
+//        $maxStorageAge = $condition['maxStorageAge'] ?: '';
         $createdTime = $condition['createdTime'] ?: '';
         $goodsCode = $condition['goodsCode'] ?: '';
 
@@ -761,7 +761,7 @@ class DataCenterController extends AdminController
             ->leftJoin('auth_store as s', 's.store = l.suffix')
             ->leftJoin('auth_store_child as sc', 'sc.store_id = s.id')
             ->leftJoin('user as u', 'u.id = sc.user_id')
-            ->andFilterWhere(['goodsCode' => $goodsCode, 'maxStorageAge' => $maxStorageAge])
+            ->andFilterWhere(['goodsCode' => $goodsCode])
             ->andFilterWhere(['storeName' => $storeName])
             ->andFilterWhere(['salerName' => $salerName])
             ->andFilterWhere(['username' => $username])
@@ -799,7 +799,7 @@ class DataCenterController extends AdminController
         $username = $condition['username'] ?: [];
         $storeName = $condition['storeName'] ?: ['义乌仓'];
         $goodsSkuStatus = $condition['goodsSkuStatus'] ?? [];
-        $maxStorageAge = $condition['maxStorageAge'] ?: '';
+//        $maxStorageAge = $condition['maxStorageAge'] ?: '';
         $createdTime = $condition['createdTime'] ?: '';
         $goodsCode = $condition['goodsCode'] ?: '';
 
@@ -808,7 +808,8 @@ class DataCenterController extends AdminController
                 'number1','money1','number2','money2','maxStorageAge','lastPurchaseDate2','suffix', 'username',
                 'num','totalNum','rate',
                 new Expression('SUBSTR(createdTime,1,10) as createdTime')])
-            ->andFilterWhere(['goodsCode' => $goodsCode, 'maxStorageAge' => $maxStorageAge])
+            ->andFilterWhere(['goodsCode' => $goodsCode])
+//            ->andFilterWhere(['maxStorageAge' => $maxStorageAge])
             ->andFilterWhere(['storeName' => $storeName])
             ->andFilterWhere(['salerName' => $salerName])
             ->andFilterWhere(['username' => $username])
