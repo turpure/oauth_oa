@@ -775,7 +775,8 @@ class DataCenterController extends AdminController
                     'number1', 'money1', 'number2', 'money2', 'totalNumber', 'totalMoney', 'maxStorageAge',
                     'lastPurchaseDate2','suffix', 'username', 'num','totalNum','rate','createdTime'],
                 'defaultOrder' => [
-                    'totalNumber' => SORT_DESC,
+                    'goodsCode' => SORT_DESC,
+                    'num' => SORT_DESC,
                 ]
             ],
             'pagination' => [
@@ -819,6 +820,7 @@ class DataCenterController extends AdminController
             ->andFilterWhere(['username' => $username])
             ->andFilterWhere(['goodsSkuStatus' => $goodsSkuStatus])
             ->andFilterWhere(['createdTime' => $createdTime])
+            ->orderBy('goodsCode,num desc')
             ->all();
 //        var_dump($query);exit;
         $title = ['商品编码', 'SKU名称', '开发员', '主图', '仓库', 'SKU状态',  '总库存数量', '总库存金额',
