@@ -1616,6 +1616,7 @@ class ProductCenterTools
                     }
                 }
                 foreach ($skuInfos as $sku) {
+//                    var_dump($sku);exit;
                     $item['infoId'] = $infoId;
                     $item['offerId'] = $goodsId;
                     $item['specId'] = $sku['specId'];
@@ -1625,16 +1626,10 @@ class ProductCenterTools
                     $item['multiStyle'] = 0;
                     $item['supplierLoginId'] = $ret['productInfo']['sellerLoginId'];
                     $item['companyName'] = $companyName;
-//                    $attributeIDs = ArrayHelper::getColumn($sku['attributes'], 'attributeID');
-//                    sort($sku['attributes']);
                     $styleArr = [];
                     foreach ($sku['attributes'] as $attr) {
-                        /*foreach ($attributeIDs as $val){
-                            if ($attr['attributeID'] == $val) {
-                                $styleArr[] = $attr['attributeValue'];
-                                break;
-                            }
-                        }*/
+
+//                        var_dump($attr['attributeValue']);
                         if (!in_array($attr['attributeValue'], $config_arr)) {
                             $styleArr[] = $attr['attributeValue'];
                         }
