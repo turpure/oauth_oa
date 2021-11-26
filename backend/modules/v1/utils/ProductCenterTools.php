@@ -1628,15 +1628,14 @@ class ProductCenterTools
                     $item['companyName'] = $companyName;
                     $styleArr = [];
                     foreach ($sku['attributes'] as $attr) {
-
-//                        var_dump($attr['attributeValue']);
+                        var_dump($attr['attributeValue']);
                         if (!in_array($attr['attributeValue'], $config_arr)) {
                             $styleArr[] = $attr['attributeValue'];
                         }
                     }
                     $styleArr = array_unique($styleArr);
-//                    var_dump($styleArr);exit;
                     $item['style'] = implode('-->', $styleArr);
+//                    var_dump($item);exit;
                     $model = new OaGoods1688();
                     $model->setAttributes($item);
                     if (!$model->save()) {
