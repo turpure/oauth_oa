@@ -118,14 +118,24 @@ class  LogisticTrack
             $successNum = $success[0]['icount'] ?? 0;
             $average = 0;
             if ($successNum > 0) {
-                $average = (new \yii\db\Query())->from('trade_send_logistics_track')
-                               ->select(['sum(elapsed_time) isum', 'logistic_name'])
-                               ->andFilterWhere(['>', 'closing_date', strtotime($item['closing_date']) - 1])
-                               ->andFilterWhere(['<', 'closing_date', strtotime($item['closing_date']) + 86400])
-                               ->andFilterWhere(['logistic_type' => $item['logistic_type']])
-                               ->andFilterWhere(['logistic_name' => $item['logistic_name']])
-                               ->andFilterWhere(['=', 'status', LogisticEnum::SUCCESS])
-                               ->one()['isum'];
+                $trackList = (new \yii\db\Query())->from('trade_send_logistics_track')
+                    ->select(['newest_time', 'closing_date'])
+                    ->andFilterWhere(['>', 'closing_date', strtotime($item['closing_date']) - 1])
+                    ->andFilterWhere(['<', 'closing_date', strtotime($item['closing_date']) + 86400])
+                    ->andFilterWhere(['logistic_type' => $item['logistic_type']])
+                    ->andFilterWhere(['logistic_name' => $item['logistic_name']])
+                    ->andFilterWhere(['=', 'status', LogisticEnum::SUCCESS])
+                    ->all();
+
+                foreach ($trackList as $track) {
+
+                    $average += ceil(($track['newest_time'] - $track['closing_date']) / 86400);
+                }
+//                var_export($average);
+
+                $average = intval(ceil($average / count($trackList)));
+                var_export($average);
+
             }
 
             Yii::$app->db->createCommand()->update(
