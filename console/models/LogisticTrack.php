@@ -21,6 +21,18 @@ class  LogisticTrack
     }
 
     /**
+     * 设置收货时效
+     */
+    public static function setElapsedTime()
+    {
+        Yii::$app->db->createCommand(
+            'UPDATE trade_send_logistics_track set elapsed_time = newest_time-closing_date where `status` = 8 and elapsed_time=0'
+        )
+            ->execute();
+    }
+
+
+    /**
      * 昨日订单
      * @throws \yii\db\Exception
      */
@@ -84,7 +96,7 @@ class  LogisticTrack
         $ts = time();
         $startDay = date('Y-m-d', strtotime('-180 day'));
         $list = TradSendSuccRate::find()
-            ->andFilterWhere(['<', 'success_ratio', '100'])
+            //            ->andFilterWhere(['<', 'success_ratio', '100'])
             ->andFilterWhere(['>', 'closing_date', $startDay])
             ->all();
 
