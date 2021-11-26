@@ -5,6 +5,7 @@ namespace console\controllers;
 use console\models\EbayLogisticTrack;
 use console\models\LogisticTrack;
 use console\models\WishpostTrack;
+use console\models\YunTuTrack;
 use yii\console\Controller;
 
 class LogisticTrackSchedulerController extends Controller
@@ -24,13 +25,37 @@ class LogisticTrackSchedulerController extends Controller
             var_export($why->getMessage());
         }
     }
-
+    /**
+     * Wish物流
+     */
+    public function actionWishpostTrack()
+    {
+        try {
+            $withpost = new WishpostTrack();
+            $withpost->getTrack();
+        } catch (\Exception $why) {
+            var_export($why->getMessage());
+        }
+    }
+    /**
+     * 云途物流
+     */
+    public function actionYuntuTrack()
+    {
+//        try {
+            $yutu = new YunTuTrack();
+            $yutu->getTrack();
+//        } catch (\Exception $why) {
+//            var_export($why->getMessage());
+//        }
+    }
     /**
      * 物流上网时效定时任务
      */
     public function actionLogisticInternet()
     {
         LogisticTrack::yesterdayOrder();
+//        LogisticTrack::setElapsedTime();
         LogisticTrack::successful();
         LogisticTrack::internet();
     }
@@ -43,16 +68,6 @@ class LogisticTrackSchedulerController extends Controller
         LogisticTrack::abnormal();
 
     }
-    /**
-     * Wish物流
-     */
-    public function actionWishpostTrack()
-    {
-        try {
-            WishpostTrack::getTrack();
-        } catch (\Exception $why) {
-            var_export($why->getMessage());
-        }
-    }
+
 
 }

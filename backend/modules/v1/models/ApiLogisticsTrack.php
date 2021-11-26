@@ -299,20 +299,23 @@ class ApiLogisticsTrack
             'dont_succeed_num'   => 0,
             'dont_succeed_ratio' => 0,
         ];
+        $averageNum = 0;
         foreach ($list as $key => $item) {
-            $statistical['average'] += $item->average;
             $statistical['total_num'] += $item->total_num;
             $statistical['success_num'] += $item->success_num;
             $statistical['success_ratio'] += $item->success_ratio;
             $statistical['dont_succeed_num'] += $item->dont_succeed_num;
             $statistical['dont_succeed_ratio'] += $item->dont_succeed_ratio;
-            $list[$key]['average'] = $item->success_num != 0 ? round($item->average / 86400 / $item->success_num) : 0;
+            $statistical['average'] += $item->average;
+            if ($item->average > 0) {
+                $averageNum++;
+            }
         }
         $totalCount = count($list);
         if ($totalCount > 0) {
             $statistical['success_ratio'] = sprintf("%.2f", $statistical['success_ratio'] / $totalCount);
             $statistical['dont_succeed_ratio'] = sprintf("%.2f", $statistical['dont_succeed_ratio'] / $totalCount);
-            $statistical['average'] = round($statistical['average'] / $totalCount / $statistical['success_num'] / 86400);
+            $statistical['average'] = ceil($statistical['average'] / $averageNum);
         }
 
         return [
@@ -649,7 +652,7 @@ class ApiLogisticsTrack
                 $objectPHPExcel->getActiveSheet()->setCellValue('O' . ($n), $v['newest_detail']);
                 $objectPHPExcel->getActiveSheet()->setCellValue('P' . ($n), $trackStatus[$v['status'] - 1]);
                 $objectPHPExcel->getActiveSheet()->setCellValue('Q' . ($n), $v['status'] == 1 ? '' : date('Y-m-d H:i:s', $v['updated_at']));
-                $objectPHPExcel->getActiveSheet()->setCellValue('R' . ($n), !empty($v['newest_time']) ? intval(($v['newest_time'] - $v['closingdate']) / 86400) : '');
+                $objectPHPExcel->getActiveSheet()->setCellValue('R' . ($n), !empty($v['newest_time']) ? ceil(($v['newest_time'] - $v['closingdate']) / 86400) : '');
                 $objectPHPExcel->getActiveSheet()->setCellValue('S' . ($n), $v['status'] == 1 && !empty($v['newest_time']) ? intval(time() - $v['newest_time']) / 86400 : '');
                 if (!empty($condition['abnormal_status'])) {
                     //
@@ -679,15 +682,15 @@ class ApiLogisticsTrack
         $platform = ['1688', 'ae_common', 'aliexpress', 'amazon11', 'ebay', 'joom', 'lazada', 'mall', 'paypal', 'shopee', 'vova', 'wish', 'Shopify', 'fyndiq', 'Joybuy', 'saleafter'];
 
         $exList = [
-//            [
-//                'name' => '速卖通线上',
-//                'type' => 1,
-//                'list' => [
-//                    '无忧物流-优先', '无忧物流-简易(特货)', '无忧物流-简易', '无忧物流-标准(特货)', '无忧物流-简易巴西包邮', '菜鸟超级经济Global',
-//                    '无忧物流-标准（大包）', '无忧物流-标准', '无忧物流-标准(带电)', '无忧物流-简易(带电)', '无忧物流-标准巴西包邮', '无忧物流-标准(带电)巴西包邮',
-//                    '无忧物流-简易(带电)巴西包邮', '菜鸟专线经济(非邮箱件)', '菜鸟专线标准', '菜鸟特货专线－简易', '菜鸟特货专线－超级经济', '菜鸟特货专线－标准',
-//                    '菜鸟超级经济', 'SMT线上-燕文航空经济小包(普货)', 'SMT线上-4PX新邮经济小包', '菜鸟超级经济-燕文', '菜鸟大包专线', '菜鸟特货专线－标快'],
-//            ],
+            //            [
+            //                'name' => '速卖通线上',
+            //                'type' => 1,
+            //                'list' => [
+            //                    '无忧物流-优先', '无忧物流-简易(特货)', '无忧物流-简易', '无忧物流-标准(特货)', '无忧物流-简易巴西包邮', '菜鸟超级经济Global',
+            //                    '无忧物流-标准（大包）', '无忧物流-标准', '无忧物流-标准(带电)', '无忧物流-简易(带电)', '无忧物流-标准巴西包邮', '无忧物流-标准(带电)巴西包邮',
+            //                    '无忧物流-简易(带电)巴西包邮', '菜鸟专线经济(非邮箱件)', '菜鸟专线标准', '菜鸟特货专线－简易', '菜鸟特货专线－超级经济', '菜鸟特货专线－标准',
+            //                    '菜鸟超级经济', 'SMT线上-燕文航空经济小包(普货)', 'SMT线上-4PX新邮经济小包', '菜鸟超级经济-燕文', '菜鸟大包专线', '菜鸟特货专线－标快'],
+            //            ],
             [
                 'name' => '燕文',
                 'type' => 2,
@@ -734,6 +737,11 @@ class ApiLogisticsTrack
                     'wish-EQ爱沙邮局半查小包(普货)', 'WISH-CNE-全球特惠', 'WISH-CNE-全球经济', 'wish-A+安速派经济(特货)', 'wish-A+安速派经济(普货)', 'wish-A+安速派标准(特货)',
                     'wish-A+安速派标准(普货)', 'wish-EQ专线快递(特货)', 'wish-燕文全球特快专递(特货)', 'Wish邮智选标准 - 特货', 'wish-云途专线'],
             ],
+            [
+                'name' => '云途物流',
+                'type' => 8,
+                'list' => ['云途全球专线挂号(普货)', '云途全球专线挂号(特货)'],
+            ],
             //            [
             //                'name' => '金华-E邮宝',
             //                'type' => 7,
@@ -744,11 +752,7 @@ class ApiLogisticsTrack
             //                'type' => 8,
             //                'list' => ['中国邮政平常小包+（金华）', '线下-中邮平常小包', '邮政-TNT', '中邮挂号-跟踪小包-金华', '中邮挂号-金华'],
             //            ],
-            //            [
-            //                'name' => '云途物流',
-            //                'type' => 9,
-            //                'list' => ['云途全球专线挂号(普货)', '云途全球专线挂号(特货)'],
-            //            ],
+
         ];
 
 

@@ -21,6 +21,18 @@ class  LogisticTrack
     }
 
     /**
+     * 设置收货时效
+     */
+    public static function setElapsedTime()
+    {
+        Yii::$app->db->createCommand(
+            'UPDATE trade_send_logistics_track set elapsed_time = newest_time-closing_date where `status` = 8 and elapsed_time=0'
+        )
+            ->execute();
+    }
+
+
+    /**
      * 昨日订单
      * @throws \yii\db\Exception
      */
@@ -84,7 +96,7 @@ class  LogisticTrack
         $ts = time();
         $startDay = date('Y-m-d', strtotime('-180 day'));
         $list = TradSendSuccRate::find()
-            ->andFilterWhere(['<', 'success_ratio', '100'])
+            //            ->andFilterWhere(['<', 'success_ratio', '100'])
             ->andFilterWhere(['>', 'closing_date', $startDay])
             ->all();
 
@@ -106,14 +118,20 @@ class  LogisticTrack
             $successNum = $success[0]['icount'] ?? 0;
             $average = 0;
             if ($successNum > 0) {
-                $average = (new \yii\db\Query())->from('trade_send_logistics_track')
-                               ->select(['sum(elapsed_time) isum', 'logistic_name'])
-                               ->andFilterWhere(['>', 'closing_date', strtotime($item['closing_date']) - 1])
-                               ->andFilterWhere(['<', 'closing_date', strtotime($item['closing_date']) + 86400])
-                               ->andFilterWhere(['logistic_type' => $item['logistic_type']])
-                               ->andFilterWhere(['logistic_name' => $item['logistic_name']])
-                               ->andFilterWhere(['=', 'status', LogisticEnum::SUCCESS])
-                               ->one()['isum'];
+                $trackList = (new \yii\db\Query())->from('trade_send_logistics_track')
+                    ->select(['newest_time', 'closing_date'])
+                    ->andFilterWhere(['>', 'closing_date', strtotime($item['closing_date']) - 1])
+                    ->andFilterWhere(['<', 'closing_date', strtotime($item['closing_date']) + 86400])
+                    ->andFilterWhere(['logistic_type' => $item['logistic_type']])
+                    ->andFilterWhere(['logistic_name' => $item['logistic_name']])
+                    ->andFilterWhere(['=', 'status', LogisticEnum::SUCCESS])
+                    ->all();
+
+                foreach ($trackList as $track) {
+
+                    $average += ceil(($track['newest_time'] - $track['closing_date']) / 86400);
+                }
+                $average = intval(ceil($average / count($trackList)));
             }
 
             Yii::$app->db->createCommand()->update(
