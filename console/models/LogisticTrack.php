@@ -131,11 +131,7 @@ class  LogisticTrack
 
                     $average += ceil(($track['newest_time'] - $track['closing_date']) / 86400);
                 }
-//                var_export($average);
-
                 $average = intval(ceil($average / count($trackList)));
-                var_export($average);
-
             }
 
             Yii::$app->db->createCommand()->update(
