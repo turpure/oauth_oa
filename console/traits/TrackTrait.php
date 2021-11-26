@@ -4,6 +4,7 @@ namespace console\traits;
 
 use backend\models\TradeSendLogisticsTrack;
 use backend\modules\v1\enums\LogisticEnum;
+use GuzzleHttp\Client;
 use Yii;
 
 /**
@@ -16,10 +17,10 @@ trait TrackTrait
      * @param $type
      * @return array|TradeSendLogisticsTrack[]|\yii\db\ActiveRecord[]
      */
-    static public function getOrder($type,$num=500)
+    public function getOrder($type, $num = 500)
     {
         return TradeSendLogisticsTrack::find()
-//            ->andFilterWhere(['status'=>'5'])
+            //            ->andFilterWhere(['status'=>'5'])
             ->andwhere(['<', 'updated_at', strtotime(date('Y-m-d'))])
             ->andwhere(['=', 'logistic_type', $type])
             ->andwhere(['>', 'created_at', (time() - 86400 * 60)])
@@ -33,7 +34,7 @@ trait TrackTrait
      * 查询不到
      * @param $trackNo
      */
-    static public function notExist($trackNo)
+    public function notExist($trackNo)
     {
         var_export('查询不到:' . $trackNo);
         Yii::$app->db->createCommand()
@@ -54,8 +55,9 @@ trait TrackTrait
      * @param $updatedData
      * @throws \yii\db\Exception
      */
-    static public function updatedTrack($trackNo, $updatedData)
+    public function updatedTrack($trackNo, $updatedData)
     {
+        $this->setAbnormalType($updatedData);
         Yii::$app->db->createCommand()
             ->update(
                 'trade_send_logistics_track',
@@ -65,17 +67,31 @@ trait TrackTrait
 
     }
 
-    private static function setAbnormalType(&$updatedData, $status)
+    private function setAbnormalType(&$updatedData)
     {
-        if ($status == 5) {
+        if ($updatedData['status'] == 5) {
             $updatedData['abnormal_status'] = LogisticEnum::AS_PENDING;
             $updatedData['abnormal_type'] = LogisticEnum::AT_PROBABLY;
 
         }
-        elseif ($status == 7) {
+        elseif ($updatedData['status'] == 7) {
             $updatedData['abnormal_status'] = LogisticEnum::AS_PENDING;
             $updatedData['abnormal_type'] = LogisticEnum::AT_DELIVERY;
         }
 
     }
+
+
+    public function request($url, $options, $method = 'POST')
+    {
+        $client = new Client(['base_uri' => $this->config['url']]);
+
+        $response = $client->request($method, $url, $options);
+
+        if ($response->getStatusCode() !== 200) {
+            throw new \Exception("wishpost 非200 code: " . $response->getStatusCode());
+        }
+        return $response->getBody();
+    }
+
 }

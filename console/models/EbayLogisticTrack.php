@@ -137,7 +137,7 @@ class EbayLogisticTrack
                 'track_detail'  => json_encode($trackDetail),
                 'updated_at'    => time()
             ];
-            self::setAbnormalType($updatedData, $status);
+
             self::updatedTrack($order->track_no,$updatedData);
         }
     }
