@@ -1601,13 +1601,12 @@ class ProductCenterTools
                 $skuListNum = count($skuInfos);
                 // 获取SKU公共属性，2021-11-22 添加
                 $config = $config_arr = [];
-                var_dump(123);
                 foreach ($skuInfos as $v) {
                     foreach ($v['attributes'] as $v1) {
-                        if (in_array((string)$v1['attributeValue'], array_keys($config))) {
-                            $config[(string)$v1['attributeValue']] += 1;
+                        if (in_array((string)$v1['attributeValue'].'-', array_keys($config))) {
+                            $config[(string)$v1['attributeValue'].'-'] += 1;
                         }else{
-                            $config[(string)$v1['attributeValue']] = 1;
+                            $config[(string)$v1['attributeValue'].'-'] = 1;
                         }
                     }
                 }
@@ -1616,7 +1615,6 @@ class ProductCenterTools
                         $config_arr[] = $j;
                     }
                 }
-//                var_dump($config);exit;
                 foreach ($skuInfos as $sku) {
 //                    var_dump($sku);exit;
                     $item['infoId'] = $infoId;
@@ -1631,7 +1629,7 @@ class ProductCenterTools
                     $styleArr = [];
                     foreach ($sku['attributes'] as $attr) {
                         var_dump($attr['attributeValue']);
-                        if (!in_array($attr['attributeValue'], $config_arr)) {
+                        if (!in_array($attr['attributeValue'].'-', $config_arr)) {
                             $styleArr[] = $attr['attributeValue'];
                         }
                     }
