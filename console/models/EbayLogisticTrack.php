@@ -132,7 +132,7 @@ class EbayLogisticTrack
                 'newest_detail' => $trackDetail[0]['detail'],
                 'first_time'    => strtotime($trackDetail[$length - 2]['time']),
                 'first_detail'  => $trackDetail[$length - 2]['detail'],
-                'elapsed_time'  => strtotime($trackDetail[0]['time']) - strtotime($trackDetail[$length - 2]['time']),
+//                'elapsed_time'  => strtotime($trackDetail[0]['time']) - $order->closing_date,
                 'status'        => $status,
                 'track_detail'  => json_encode($trackDetail),
                 'updated_at'    => time()
