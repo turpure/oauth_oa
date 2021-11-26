@@ -1604,9 +1604,9 @@ class ProductCenterTools
                 foreach ($skuInfos as $v) {
                     foreach ($v['attributes'] as $v1) {
                         if (in_array($v1['attributeValue'], array_keys($config))) {
-                            $config[$v1['attributeValue']] += 1;
+                            $config[(string)$v1['attributeValue']] += 1;
                         }else{
-                            $config[$v1['attributeValue']] = 1;
+                            $config[(string)$v1['attributeValue']] = 1;
                         }
                     }
                 }
@@ -1615,6 +1615,7 @@ class ProductCenterTools
                         $config_arr[] = $j;
                     }
                 }
+//                var_dump($config);exit;
                 foreach ($skuInfos as $sku) {
 //                    var_dump($sku);exit;
                     $item['infoId'] = $infoId;
