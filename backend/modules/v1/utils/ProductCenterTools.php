@@ -1628,7 +1628,6 @@ class ProductCenterTools
                     $item['companyName'] = $companyName;
                     $styleArr = [];
                     foreach ($sku['attributes'] as $attr) {
-                        var_dump($attr['attributeValue']);
                         if (!in_array($attr['attributeValue'].'-', $config_arr)) {
                             $styleArr[] = $attr['attributeValue'];
                         }
