@@ -127,13 +127,12 @@ class EbayLogisticTrack
                         $status = LogisticEnum::IN_TRANSIT;
                 }
             }
-//            var_export($status);
             $updatedData = [
                 'newest_time'   => strtotime($trackDetail[0]['time']),
                 'newest_detail' => $trackDetail[0]['detail'],
                 'first_time'    => strtotime($trackDetail[$length - 2]['time']),
                 'first_detail'  => $trackDetail[$length - 2]['detail'],
-                'elapsed_time'  => $trackDetail[0]['time'] - $trackDetail[$length - 2]['time'],
+                'elapsed_time'  => strtotime($trackDetail[0]['time']) - strtotime($trackDetail[$length - 2]['time']),
                 'status'        => $status,
                 'track_detail'  => json_encode($trackDetail),
                 'updated_at'    => time()
