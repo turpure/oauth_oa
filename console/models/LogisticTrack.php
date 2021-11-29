@@ -96,7 +96,7 @@ class  LogisticTrack
         $ts = time();
         $startDay = date('Y-m-d', strtotime('-180 day'));
         $list = TradSendSuccRate::find()
-            //            ->andFilterWhere(['<', 'success_ratio', '100'])
+            ->andFilterWhere(['<', 'success_ratio', '100'])
             ->andFilterWhere(['>', 'closing_date', $startDay])
             ->all();
 

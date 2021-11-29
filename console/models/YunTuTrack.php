@@ -27,6 +27,7 @@ class YunTuTrack
             'Content-Type'  => 'application/json'
         ];
         $orderList = self::getOrder(8, 100);
+        var_export('云途:'.count($orderList));
 
         foreach ($orderList as $order) {
             $result = $this->request(
@@ -105,8 +106,8 @@ class YunTuTrack
         $this->config = Yii::$app->params['cne'];
         $this->config['domestic']['md5'] = md5($this->config['domestic']['client_id'] . $timeStamp . $this->config['domestic']['client_secret']);
         $this->config['foreign']['md5'] = md5($this->config['foreign']['client_id'] . $timeStamp . $this->config['foreign']['client_secret']);
-        $orderList = $this->getOrder(9, 100);
-
+        $orderList = $this->getOrder(9, 1000);
+        var_export('CNE:'.count($orderList));
         foreach ($orderList as $order) {
             $formParams = [
 
@@ -141,7 +142,7 @@ class YunTuTrack
     private function cneLogisticTrack($trackNo, $trackInfo)
     {
 
-        if (empty($trackInfo['trackingEventList'])) {
+        if (empty($trackInfo['trackingEventList']) || count($trackInfo['trackingEventList']) < 2) {
             $this->notExist($trackNo);
         }
 
@@ -165,8 +166,8 @@ class YunTuTrack
         $this->updatedTrack($trackNo, [
             'newest_time'   => strtotime($trackDetail[count($trackDetail) - 1]['time']),
             'newest_detail' => $trackDetail[count($trackDetail) - 1]['detail'],
-            'first_time'    => strtotime($trackDetail[0]['time']),
-            'first_detail'  => $trackDetail[0]['detail'],
+            'first_time'    => strtotime($trackDetail[1]['time']),
+            'first_detail'  => $trackDetail[1]['detail'],
             'status'        => $status,
             'track_detail'  => json_encode($trackDetail),
             'updated_at'    => time()
