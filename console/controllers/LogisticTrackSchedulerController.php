@@ -21,10 +21,12 @@ class LogisticTrackSchedulerController extends Controller
         try {
             $ebayLogisticTrack = new EbayLogisticTrack();
             $ebayLogisticTrack->ebayTrack();
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             var_export($why->getMessage());
         }
     }
+
     /**
      * Wish物流
      */
@@ -33,29 +35,34 @@ class LogisticTrackSchedulerController extends Controller
         try {
             $withpost = new WishpostTrack();
             $withpost->getTrack();
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             var_export($why->getMessage());
         }
     }
+
     /**
      * 云途物流
      */
     public function actionYuntuTrack()
     {
-//        try {
+        try {
             $yutu = new YunTuTrack();
-            $yutu->getTrack();
-//        } catch (\Exception $why) {
-//            var_export($why->getMessage());
-//        }
+            $yutu->getYuntuTrack();
+            $yutu->getCneTrack();
+        }
+        catch (\Exception $why) {
+            var_export($why->getMessage());
+        }
     }
+
     /**
      * 物流上网时效定时任务
      */
     public function actionLogisticInternet()
     {
         LogisticTrack::yesterdayOrder();
-//        LogisticTrack::setElapsedTime();
+        //        LogisticTrack::setElapsedTime();
         LogisticTrack::successful();
         LogisticTrack::internet();
     }

@@ -18,9 +18,9 @@ class WishpostTrack
     use TrackTrait;
 
     private $pingyou = [
-        'wish-A+安速派经济(特货)', 'wish-A+安速派经济(普货)', 'wish-EQ爱沙邮局半查小包(特货)', 'wish-EQ爱沙邮局半查小包(普货)',
+        'wish-EQ爱沙邮局半查小包(特货)', 'wish-EQ爱沙邮局半查小包(普货)', 'wish-云途中欧专线平邮(特货)',
         'wish-UBI欧盟半程小包', 'wish-顺友通平邮小包(特货)', 'WISH燕文航空经济小包（特货）', 'WISH燕文航空经济小包（普货）',
-        'WISH燕文专线平邮小包(特货)', 'WISH燕文专线平邮小包(普货)', 'Wish邮智选经济 - 特货', 'Wish邮智选经济 - 普货', 'wish-云途中欧专线平邮(特货)'
+        'WISH燕文专线平邮小包(特货)', 'WISH燕文专线平邮小包(普货)', 'Wish邮智选经济 - 特货', 'Wish邮智选经济 - 普货'
     ];
 
     private $config;
@@ -37,7 +37,7 @@ class WishpostTrack
     public function getTrack()
     {
         $token = $this->getAccessToken();
-        $orderList = $this->getOrder(7, 1000);
+        $orderList = $this->getOrder(7, 20000);
         var_export('with条数:' . count($orderList));
 
         $param = [
@@ -45,17 +45,19 @@ class WishpostTrack
             'language'     => 'cn',
             'track'        => []
         ];
-
+        $logisticName = [];
         foreach ($orderList as $key => $order) {
             $param['track'][] = ['barcode' => $order->track_no];
+            $logisticName[$order->track_no] = $order['logistic_name'];
             if (count($param['track']) == 20) {
-                $this->getLogisticTrack($this->arr2xml($param));
+                $this->getLogisticTrack($this->arr2xml($param), $logisticName);
                 $param['track'] = [];
+                $logisticName[] = [];
             }
         }
 
         if (!empty($param['track'])) {
-            $this->getLogisticTrack($this->arr2xml($param));
+            $this->getLogisticTrack($this->arr2xml($param), $logisticName);
         }
 
     }
@@ -65,9 +67,9 @@ class WishpostTrack
      * @param $xml
      * @throws Exception
      */
-    private function getLogisticTrack($param)
+    private function getLogisticTrack($param, $logisticNameList)
     {
-        $xml = $this->request( 'v2/tracking', [
+        $xml = $this->request('v2/tracking', [
             'body'    => $param,
             'headres' => ['Content-Type' => 'text/xml; charset=UTF8']
         ]);
@@ -101,7 +103,7 @@ class WishpostTrack
             $timeList = array_column($trackDetail, 'time');
             array_multisort($timeList, SORT_DESC, $trackDetail);
 
-            $status = $this->getStatus($trackDetail[0]['status']);
+            $status = $this->getStatus($trackDetail[0]['status'], $logisticNameList[$track['@attributes']['barcode']]);
 
             $this->updatedTrack($track['@attributes']['barcode'], [
                 'newest_time'   => strtotime($trackDetail[0]['time']),
@@ -117,8 +119,9 @@ class WishpostTrack
     }
 
 
-    private function getStatus($statusNum)
+    private function getStatus($statusNum, $logisticName)
     {
+        print(in_array($logisticName, $this->pingyou));
         //        1未查询# 2查询不到 #3 运输途中 #4 运输过久 # 5可能异常# 6到达待取# 7投递失败#8 成功签收
         if ($statusNum == 2) {
             return LogisticEnum::NOT_FIND;
@@ -129,8 +132,9 @@ class WishpostTrack
         elseif ($statusNum == 25) {
             return LogisticEnum::FAIL;
         }
-        elseif (in_array($statusNum, [23, 24]) || (in_array($statusNum, $this->pingyou)
+        elseif (in_array($statusNum, [23, 24]) || (in_array($logisticName, $this->pingyou)
                 && in_array($statusNum, [17, 18, 19, 20, 21, 22, 23, 24, 28, 29, 30]))) {
+            print('平邮');
             return LogisticEnum::SUCCESS;
 
         }
@@ -167,7 +171,7 @@ class WishpostTrack
             'refresh_token' => $token->refresh_token
         ];
 
-        $result = $this->request( 'v3/access_token/refresh', [
+        $result = $this->request('v3/access_token/refresh', [
             'form_params' => $params,
             'headers'     => $headers
         ]);
