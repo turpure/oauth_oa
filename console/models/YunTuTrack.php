@@ -144,6 +144,7 @@ class YunTuTrack
 
         if (empty($trackInfo['trackingEventList']) || count($trackInfo['trackingEventList']) < 2) {
             $this->notExist($trackNo);
+            return;
         }
 
         if (in_array($trackInfo['Response_Info']['status'], [0, 1, 2, 5])) {

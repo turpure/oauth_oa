@@ -67,7 +67,7 @@ class LogisticTrackSchedulerController extends Controller
     }
 
     /**
-     * 物流异常
+     * 物流异常 export-logistics-abnormal
      */
     public function actionExportLogisticsAbnormal()
     {

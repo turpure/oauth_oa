@@ -134,9 +134,7 @@ class WishpostTrack
         }
         elseif (in_array($statusNum, [23, 24]) || (in_array($logisticName, $this->pingyou)
                 && in_array($statusNum, [17, 18, 19, 20, 21, 22, 23, 24, 28, 29, 30]))) {
-            print('平邮');
             return LogisticEnum::SUCCESS;
-
         }
         else {
             return LogisticEnum::IN_TRANSIT;

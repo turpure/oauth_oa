@@ -268,8 +268,9 @@ class  LogisticTrack
                 'abnormal_type'   => LogisticEnum::NORMAL,
                 'abnormal_status' => LogisticEnum::NORMAL,
             ],
-            'abnormal_type=' . LogisticEnum::AT_NOT_FIND . ' and status!=' . LogisticEnum::NOT_FIND
+            'abnormal_type1=' . LogisticEnum::AT_NOT_FIND . ' and status!=' . LogisticEnum::NOT_FIND . ' or status=' . LogisticEnum::SUCCESS
         )->execute();
+
         //        and logistic_type in (2,3,5)
 
         $trackList = TradeSendLogisticsTrack::find()
