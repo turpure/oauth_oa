@@ -680,8 +680,8 @@ class DataCenterController extends AdminController
             ->andFilterWhere(['storeName' => $storeName])
             ->andFilterWhere(['salerName' => $salerName])
             ->andFilterWhere(['goodsSkuStatus' => $goodsSkuStatus])
-            ->andFilterWhere(['createdTime' => $createdTime]);
-
+            ->andFilterWhere(['LIKE', 'createdTime', $createdTime]);
+//        var_dump($query->createCommand()->getRawSql());exit;
         return new ActiveDataProvider([
             'query' => $query,
             'sort' => [
@@ -724,7 +724,7 @@ class DataCenterController extends AdminController
             ->andFilterWhere(['storeName' => $storeName])
             ->andFilterWhere(['salerName' => $salerName])
             ->andFilterWhere(['goodsSkuStatus' => $goodsSkuStatus])
-            ->andFilterWhere(['createdTime' => $createdTime])
+            ->andFilterWhere(['LIKE', 'createdTime', $createdTime])
             ->asArray()->all();
 
         $title = ['商品编码', 'SKU名称', '开发员', '主图', '仓库', 'SKU状态',  '总库存数量', '总库存金额',
@@ -766,7 +766,7 @@ class DataCenterController extends AdminController
             ->andFilterWhere(['salerName' => $salerName])
             ->andFilterWhere(['username' => $username])
             ->andFilterWhere(['goodsSkuStatus' => $goodsSkuStatus])
-            ->andFilterWhere(['createdTime' => $createdTime]);
+            ->andFilterWhere(['LIKE', 'createdTime', $createdTime]);
 
         return new ActiveDataProvider([
             'query' => $query,
@@ -819,7 +819,7 @@ class DataCenterController extends AdminController
             ->andFilterWhere(['salerName' => $salerName])
             ->andFilterWhere(['username' => $username])
             ->andFilterWhere(['goodsSkuStatus' => $goodsSkuStatus])
-            ->andFilterWhere(['createdTime' => $createdTime])
+            ->andFilterWhere(['LIKE', 'createdTime', $createdTime])
             ->orderBy('goodsCode,num desc')
             ->all();
 //        var_dump($query);exit;
