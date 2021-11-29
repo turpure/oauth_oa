@@ -1603,10 +1603,10 @@ class ProductCenterTools
                 $config = $config_arr = [];
                 foreach ($skuInfos as $v) {
                     foreach ($v['attributes'] as $v1) {
-                        if (in_array($v1['attributeValue'], array_keys($config))) {
-                            $config[$v1['attributeValue']] += 1;
+                        if (in_array((string)$v1['attributeValue'].'-', array_keys($config))) {
+                            $config[(string)$v1['attributeValue'].'-'] += 1;
                         }else{
-                            $config[$v1['attributeValue']] = 1;
+                            $config[(string)$v1['attributeValue'].'-'] = 1;
                         }
                     }
                 }
@@ -1616,6 +1616,7 @@ class ProductCenterTools
                     }
                 }
                 foreach ($skuInfos as $sku) {
+//                    var_dump($sku);exit;
                     $item['infoId'] = $infoId;
                     $item['offerId'] = $goodsId;
                     $item['specId'] = $sku['specId'];
@@ -1625,23 +1626,15 @@ class ProductCenterTools
                     $item['multiStyle'] = 0;
                     $item['supplierLoginId'] = $ret['productInfo']['sellerLoginId'];
                     $item['companyName'] = $companyName;
-//                    $attributeIDs = ArrayHelper::getColumn($sku['attributes'], 'attributeID');
-//                    sort($sku['attributes']);
                     $styleArr = [];
                     foreach ($sku['attributes'] as $attr) {
-                        /*foreach ($attributeIDs as $val){
-                            if ($attr['attributeID'] == $val) {
-                                $styleArr[] = $attr['attributeValue'];
-                                break;
-                            }
-                        }*/
-                        if (!in_array($attr['attributeValue'], $config_arr)) {
+                        if (!in_array($attr['attributeValue'].'-', $config_arr)) {
                             $styleArr[] = $attr['attributeValue'];
                         }
                     }
                     $styleArr = array_unique($styleArr);
-//                    var_dump($styleArr);exit;
                     $item['style'] = implode('-->', $styleArr);
+//                    var_dump($item);exit;
                     $model = new OaGoods1688();
                     $model->setAttributes($item);
                     if (!$model->save()) {
