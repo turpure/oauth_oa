@@ -105,7 +105,7 @@ class YunTuTrack
         $this->config = Yii::$app->params['cne'];
         $this->config['domestic']['md5'] = md5($this->config['domestic']['client_id'] . $timeStamp . $this->config['domestic']['client_secret']);
         $this->config['foreign']['md5'] = md5($this->config['foreign']['client_id'] . $timeStamp . $this->config['foreign']['client_secret']);
-        $orderList = $this->getOrder(9, 10);
+        $orderList = $this->getOrder(9, 100);
 
         foreach ($orderList as $order) {
             $formParams = [
