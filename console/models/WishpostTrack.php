@@ -37,7 +37,7 @@ class WishpostTrack
     public function getTrack()
     {
         $token = $this->getAccessToken();
-        $orderList = $this->getOrder(7, 20000);
+        $orderList = $this->getOrder(7, 1000);
         var_export('with条数:' . count($orderList));
 
         $param = [
@@ -121,7 +121,6 @@ class WishpostTrack
 
     private function getStatus($statusNum, $logisticName)
     {
-        print(in_array($logisticName, $this->pingyou));
         //        1未查询# 2查询不到 #3 运输途中 #4 运输过久 # 5可能异常# 6到达待取# 7投递失败#8 成功签收
         if ($statusNum == 2) {
             return LogisticEnum::NOT_FIND;
