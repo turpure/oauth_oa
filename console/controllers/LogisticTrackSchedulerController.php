@@ -50,6 +50,7 @@ class LogisticTrackSchedulerController extends Controller
             $yutu = new YunTuTrack();
             $yutu->getYuntuTrack();
             $yutu->getCneTrack();
+            $yutu->emsTrack();
         }
         catch (\Exception $why) {
             var_export($why->getMessage());
@@ -74,6 +75,5 @@ class LogisticTrackSchedulerController extends Controller
         LogisticTrack::abnormal();
 
     }
-
 
 }

@@ -27,7 +27,7 @@ class YunTuTrack
             'Content-Type'  => 'application/json'
         ];
         $orderList = self::getOrder(8, 100);
-        var_export('云途:'.count($orderList));
+        var_export('云途:' . count($orderList));
 
         foreach ($orderList as $order) {
             $result = $this->request(
@@ -107,7 +107,7 @@ class YunTuTrack
         $this->config['domestic']['md5'] = md5($this->config['domestic']['client_id'] . $timeStamp . $this->config['domestic']['client_secret']);
         $this->config['foreign']['md5'] = md5($this->config['foreign']['client_id'] . $timeStamp . $this->config['foreign']['client_secret']);
         $orderList = $this->getOrder(9, 1000);
-        var_export('CNE:'.count($orderList));
+        var_export('CNE:' . count($orderList));
         foreach ($orderList as $order) {
             $formParams = [
 
@@ -169,6 +169,79 @@ class YunTuTrack
             'newest_detail' => $trackDetail[count($trackDetail) - 1]['detail'],
             'first_time'    => strtotime($trackDetail[1]['time']),
             'first_detail'  => $trackDetail[1]['detail'],
+            'status'        => $status,
+            'track_detail'  => json_encode($trackDetail),
+            'updated_at'    => time()
+        ]);
+    }
+
+
+    /**
+     * 邮政快递轨迹
+     * @throws \Exception
+     */
+    public function emsTrack()
+    {
+        $timeStamp = time() . '000';
+        $this->config = Yii::$app->params['ems'];
+        $orderList = $this->getOrder(10, 500);
+        var_export('EMS:' . count($orderList));
+        $param = [
+            'sendID'    => $this->config['client_id'],
+            'proviceNo' => '99',
+            'msgKind'   => 'JDPT_YOURAN_TRACE',
+            'serialNo'  => '100000000001',
+            'sendDate'  => $timeStamp,
+            'receiveID' => 'JDPT',
+            'dataType'  => 1,
+        ];
+
+        foreach ($orderList as $order) {
+
+            $traceNoStr = '{"traceNo":"' . $order->track_no . '"}';
+
+            $param['msgBody'] = urlencode($traceNoStr);
+            $param['dataDigest'] = base64_encode(md5($traceNoStr . '10qu2V474VC8948I'));
+
+            $result = $this->request('querypush-pcpw/mailTrackProtocolPortal/queryMailTrackWn?' . http_build_query($param), [
+                'headers' => ['Content-Type' => 'application/json; charset=UTF-8;']
+            ]);
+
+            $this->emsLogisticTrack($order->track_no, json_decode($result, true));
+        }
+    }
+
+
+    public function emsLogisticTrack($trackNo, $trackInfo)
+    {
+        if (empty($trackInfo['responseItems'])) {
+            $this->notExist($trackNo);
+            return;
+        }
+
+        foreach ($trackInfo['responseItems'] as $item) {
+            $trackDetail[] = [
+                'detail' => $item['opDesc'],
+                'time'   => $item['opTime'],
+                'status' => $item['opCode']
+            ];
+        }
+
+        if ($trackDetail['status'] == 462) {
+            $status = LogisticEnum::WAITINGTAKE;
+        }
+        elseif (in_array($trackDetail['status'], [463, 704])) {
+            $status = LogisticEnum::SUCCESS;
+        }
+        else {
+            $status = LogisticEnum::IN_TRANSIT;
+        }
+        echo $status;
+        $this->updatedTrack($trackNo, [
+            'newest_time'   => strtotime($trackDetail[count($trackDetail) - 1]['time']),
+            'newest_detail' => $trackDetail[count($trackDetail) - 1]['detail'],
+            'first_time'    => strtotime($trackDetail[0]['time']),
+            'first_detail'  => $trackDetail[0]['detail'],
             'status'        => $status,
             'track_detail'  => json_encode($trackDetail),
             'updated_at'    => time()
