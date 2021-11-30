@@ -175,19 +175,38 @@ class ApiLogisticsTrack
      */
     public static function LogisticsAbnormalManage($condition)
     {
+        $updateDate = [
+            'abnormal_status' => $condition['status'],
+            'management'      => Yii::$app->user->identity->username
+        ];
+        //         6已退回 7销毁/弃件 8已索赔 9成功签收
+        switch ($condition['status']) {
+            case 6:
+                $updateDate['status'] = 9;
+                break;
+            case 7:
+                $updateDate['status'] = 10;
+                break;
+            case 8:
+                $updateDate['status'] = 11;
+                break;
+            case 9:
+                $updateDate['status'] = 8;
+                break;
+        }
+
         Yii::$app->db->createCommand()
             ->update(
                 'trade_send_logistics_track',
-                [
-                    'abnormal_status' => $condition['status'],
-                    'management'      => Yii::$app->user->identity->username
-                ],
+                $updateDate,
                 [
                     'id'              => $condition['order_id'],
                     'abnormal_status' => [2, 3, 4]
                 ]
             )
             ->execute();
+
+
     }
 
 

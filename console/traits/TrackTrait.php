@@ -24,7 +24,7 @@ trait TrackTrait
             ->andwhere(['<', 'updated_at', strtotime(date('Y-m-d'))])
             ->andwhere(['=', 'logistic_type', $type])
             ->andwhere(['>', 'created_at', (time() - 86400 * 60)])
-            ->andwhere(['not in', 'status', [LogisticEnum::SUCCESS, LogisticEnum::FAIL]])
+            ->andwhere(['not in', 'status', [LogisticEnum::SUCCESS, 9, 10, 11]])
             ->limit($num)
             ->orderBy('id', 'asc')
             ->all();
