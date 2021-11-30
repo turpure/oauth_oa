@@ -268,51 +268,56 @@ class  LogisticTrack
                 'abnormal_type'   => LogisticEnum::NORMAL,
                 'abnormal_status' => LogisticEnum::NORMAL,
             ],
-            'abnormal_type1=' . LogisticEnum::AT_NOT_FIND . ' and status!=' . LogisticEnum::NOT_FIND . ' or status=' . LogisticEnum::SUCCESS
+            'abnormal_type=' . LogisticEnum::AT_NOT_FIND . ' and status!=' . LogisticEnum::NOT_FIND . ' or status=' . LogisticEnum::SUCCESS
         )->execute();
 
-        //        and logistic_type in (2,3,5)
-
-        $trackList = TradeSendLogisticsTrack::find()
+        $query = TradeSendLogisticsTrack::find()
             ->andFilterWhere(['<', 'closing_date', $endTime])
             ->andFilterWhere(['=', 'status', LogisticEnum::IN_TRANSIT])
-            ->andFilterWhere(['not in', 'abnormal_status', [6, 7, 8, 9]])
-            //            ->limit(10000)
-            ->all();
-        //      ->andFilterWhere(['in', 'logistic_type', [2, 3, 5]])
-        foreach ($trackList as $track) {
+            ->andFilterWhere(['not in', 'abnormal_status', [6, 7, 8, 9, 10, 11]]);
 
-            if (self::transportType($track->logistic_name) == 1) {
-                // 平邮
-                if ($track->abnormal_phase == 3) {
-                    // 平邮最大为3
-                    continue;
+        $count = $query->count();
+
+        for ($startNum = 1; $startNum <= $count; $startNum += 10000) {
+            $trackList = $query->offset($startNum)->limit(10000)
+                ->all();
+
+            foreach ($trackList as $track) {
+
+                if (self::transportType($track->logistic_name) == 1) {
+                    // 平邮
+                    if ($track->abnormal_phase == 3) {
+                        // 平邮最大为3
+                        continue;
+                    }
+                    $updateData = self::pingyou($track);
                 }
-                $updateData = self::pingyou($track);
-            }
-            else {
-                //挂号
-                $updateData = self::guahao($track);
-            }
-
-            if (empty($updateData)) {
-                if ($track->abnormal_status == 1) {
-                    continue;
+                else {
+                    //挂号
+                    $updateData = self::guahao($track);
                 }
-                $updateData = [
-                    'abnormal_type'   => 1,
-                    'abnormal_status' => 1,
-                    'abnormal_phase'  => 1
-                ];
+
+                if (empty($updateData)) {
+                    if ($track->abnormal_status == 1) {
+                        continue;
+                    }
+                    $updateData = [
+                        'abnormal_type'   => 1,
+                        'abnormal_status' => 1,
+                        'abnormal_phase'  => 1
+                    ];
+                }
+
+                Yii::$app->db->createCommand()->update(
+                    'trade_send_logistics_track',
+                    $updateData,
+                    "id ={$track->id}"
+                )->execute();
+
             }
-
-            Yii::$app->db->createCommand()->update(
-                'trade_send_logistics_track',
-                $updateData,
-                "id ={$track->id}"
-            )->execute();
-
         }
+
+
     }
 
     /**
