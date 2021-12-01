@@ -236,7 +236,6 @@ class YunTuTrack
         else {
             $status = LogisticEnum::IN_TRANSIT;
         }
-        echo $status;
         $this->updatedTrack($trackNo, [
             'newest_time'   => strtotime($trackDetail[count($trackDetail) - 1]['time']),
             'newest_detail' => $trackDetail[count($trackDetail) - 1]['detail'],
