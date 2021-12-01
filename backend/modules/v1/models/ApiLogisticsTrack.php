@@ -308,6 +308,8 @@ class ApiLogisticsTrack
      */
     public static function logisticsSuccRate($condition)
     {
+        $condition['logistic_type'] = [10];
+        $condition['closing_date'] = ["2021-11-15", "2021-11-30"];
         $query = self::logisticsSuccRateQuery($condition);
         $list = $query->all();
         $statistical = [
@@ -334,7 +336,7 @@ class ApiLogisticsTrack
         if ($totalCount > 0) {
             $statistical['success_ratio'] = sprintf("%.2f", $statistical['success_ratio'] / $totalCount);
             $statistical['dont_succeed_ratio'] = sprintf("%.2f", $statistical['dont_succeed_ratio'] / $totalCount);
-            $statistical['average'] = ceil($statistical['average'] / $averageNum);
+            $statistical['average'] = $averageNum == 0?0:ceil($statistical['average'] / $averageNum);
         }
 
         return [

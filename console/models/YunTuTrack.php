@@ -227,10 +227,10 @@ class YunTuTrack
             ];
         }
 
-        if ($trackDetail['status'] == 462) {
+        if ($trackDetail[0]['status'] == 462) {
             $status = LogisticEnum::WAITINGTAKE;
         }
-        elseif (in_array($trackDetail['status'], [463, 704])) {
+        elseif (in_array($trackDetail[0]['status'], [463, 704])) {
             $status = LogisticEnum::SUCCESS;
         }
         else {
