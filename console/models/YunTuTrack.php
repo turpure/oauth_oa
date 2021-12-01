@@ -184,7 +184,7 @@ class YunTuTrack
     {
         $timeStamp = time() . '000';
         $this->config = Yii::$app->params['ems'];
-        $orderList = $this->getOrder(10, 500);
+        $orderList = $this->getOrder(10, 5000);
         var_export('EMS:' . count($orderList));
         $param = [
             'sendID'    => $this->config['client_id'],
@@ -214,6 +214,9 @@ class YunTuTrack
 
     public function emsLogisticTrack($trackNo, $trackInfo)
     {
+         if (!$trackInfo['responseState']) {
+             exit($trackInfo['errorDesc']);
+         }
         if (empty($trackInfo['responseItems'])) {
             $this->notExist($trackNo);
             return;
