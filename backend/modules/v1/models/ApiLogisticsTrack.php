@@ -308,8 +308,6 @@ class ApiLogisticsTrack
      */
     public static function logisticsSuccRate($condition)
     {
-        $condition['logistic_type'] = [10];
-        $condition['closing_date'] = ["2021-11-15", "2021-11-30"];
         $query = self::logisticsSuccRateQuery($condition);
         $list = $query->all();
         $statistical = [
