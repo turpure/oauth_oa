@@ -12,11 +12,6 @@ class YunTuTrack
 
     public $config;
     public $headers;
-    //    public function __construct()
-    //    {
-    //
-    //
-    //    }
 
     public function getYuntuTrack()
     {
@@ -180,11 +175,11 @@ class YunTuTrack
      * 邮政快递轨迹
      * @throws \Exception
      */
-    public function emsTrack()
+    public function emsTrack($type)
     {
         $timeStamp = time() . '000';
         $this->config = Yii::$app->params['ems'];
-        $orderList = $this->getOrder(10, 5000);
+        $orderList = $this->getOrder($type, 5000);
         var_export('EMS:' . count($orderList));
         $param = [
             'sendID'    => $this->config['client_id'],

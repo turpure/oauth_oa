@@ -334,7 +334,7 @@ class ApiLogisticsTrack
         if ($totalCount > 0) {
             $statistical['success_ratio'] = sprintf("%.2f", $statistical['success_ratio'] / $totalCount);
             $statistical['dont_succeed_ratio'] = sprintf("%.2f", $statistical['dont_succeed_ratio'] / $totalCount);
-            $statistical['average'] = $averageNum == 0?0:ceil($statistical['average'] / $averageNum);
+            $statistical['average'] = $averageNum == 0 ? 0 : ceil($statistical['average'] / $averageNum);
         }
 
         return [
@@ -770,13 +770,20 @@ class ApiLogisticsTrack
                     'CNE-全球经济(波兰)', 'CNE-全球经济(捷克)', 'CNE-全球经济（国内）', 'CNE-全球特惠（国内）'],
             ],
             [
-                'name' => '邮政',
+                'name' => '金华-E邮宝',
                 'type' => 10,
-                'list' => [
-                    'E邮宝线下20国', 'E邮宝线下法国', 'E邮宝线下义乌', 'E邮宝线下英国', '金华-E邮宝-E-EMS', '线下-中邮平常小包', '邮政-TNT',
-                    '中邮挂号-跟踪小包-金华', '中邮挂号-金华', '燕文-中邮线下E邮宝', '燕文-中邮EMS（E特快）'],
+                'list' => ['E邮宝线下20国', 'E邮宝线下法国', 'E邮宝线下义乌', 'E邮宝线下英国', '金华-E邮宝-E-EMS'],
             ],
-
+            [
+                'name' => '金华邮局-线下',
+                'type' => 11,
+                'list' => ['线下-中邮平常小包', '邮政-TNT', '中邮挂号-跟踪小包-金华', '中邮挂号-金华'],
+            ],
+            [
+                'name' => '燕文邮政',
+                'type' => 12,
+                'list' => ['燕文-中邮线下E邮宝', '燕文-中邮EMS（E特快）'],
+            ],
         ];
 
 
