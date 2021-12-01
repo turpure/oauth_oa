@@ -179,7 +179,7 @@ class YunTuTrack
     {
         $timeStamp = time() . '000';
         $this->config = Yii::$app->params['ems'];
-        $orderList = $this->getOrder($type, 5000);
+        $orderList = $this->getOrder($type, 400);
         var_export('EMS:' . count($orderList));
         $param = [
             'sendID'    => $this->config['client_id'],
