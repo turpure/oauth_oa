@@ -209,6 +209,16 @@ class YunTuTrack
 
     public function emsLogisticTrack($trackNo, $trackInfo)
     {
+
+        if ($trackInfo['errorDesc'] == '当前无权限查询！') {
+            $this->updatedTrack($trackNo, [
+                'newest_detail' => $trackInfo['errorDesc'],
+                'status'        => LogisticEnum::ABNORMAL,
+                'updated_at'    => time()
+            ]);
+            return;
+        }
+
          if (!$trackInfo['responseState']) {
              exit($trackInfo['errorDesc']);
          }
