@@ -62,7 +62,7 @@ class ApiLogisticsTrack
 
         $query = (new \yii\db\Query())
             ->select([
-                'trade_send.logistic_name', 'suffix', 'closingdate', 'total_weight', 'ack', 'logistic_company',
+                'trade_send.logistic_name', 'trade_send.order_id', 'suffix', 'closingdate', 'total_weight', 'ack', 'logistic_company',
                 'shiptocountry_code', 'shiptocountry_name', 'transaction_type', 'store_name', 'addressowner',
                 'trade_send.track_no', 'tslt.closing_date', 'tslt.status', 'tslt.first_time', 'tslt.first_detail', 'tslt.newest_time',
                 'tslt.newest_detail', 'tslt.elapsed_time', 'tslt.track_detail', 'tslt.abnormal_type', 'tslt.abnormal_status',
