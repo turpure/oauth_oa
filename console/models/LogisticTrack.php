@@ -2,6 +2,7 @@
 
 namespace console\models;
 
+use backend\models\TradeSend;
 use backend\models\TradeSendLogisticsTrack;
 use backend\models\TradSendLogisticsTimeFrame;
 use backend\models\TradSendSuccRate;
@@ -426,6 +427,22 @@ class  LogisticTrack
             'Vova-顺友-经济小包(普货)', 'SpeedPAK-经济型服务', 'SpeedPAK-经济轻小件'
         ];
         return in_array($logisticName, $pingyou) ? 1 : 2;
+    }
+
+
+    public static function delRepeatOrder()
+    {
+        //
+        $dataList = Yii::$app->db->createCommand('select * from (select count(*) icount,order_id from trade_send  GROUP BY order_id) as dd where dd.icount > 1')
+            ->queryAll();
+        foreach ($dataList as $data) {
+            Yii::$app->db->createCommand("delete from trade_send where order_id={$data['order_id']} order by closingdate asc limit " . ($data['icount'] - 1))->execute();
+        }
+        $dataList = Yii::$app->db->createCommand('select * from (select count(*) icount,order_id from trade_send_logistics_track  GROUP BY order_id) as dd where dd.icount > 1')
+            ->queryAll();
+        foreach ($dataList as $data) {
+            Yii::$app->db->createCommand("delete from trade_send_logistics_track where order_id={$data['order_id']} order by closing_date asc limit " . ($data['icount'] - 1))->execute();
+        }
     }
 
 

@@ -62,13 +62,10 @@ class ApiLogisticsTrack
 
         $query = (new \yii\db\Query())
             ->select([
-                'trade_send.logistic_name', 'trade_send.order_id', 'suffix', 'closingdate', 'total_weight', 'ack', 'logistic_company',
-                'shiptocountry_code', 'shiptocountry_name', 'transaction_type', 'store_name', 'addressowner',
-                'trade_send.track_no', 'tslt.closing_date', 'tslt.status', 'tslt.first_time', 'tslt.first_detail', 'tslt.newest_time',
-                'tslt.newest_detail', 'tslt.elapsed_time', 'tslt.track_detail', 'tslt.abnormal_type', 'tslt.abnormal_status',
-                'tslt.abnormal_phase', 'tslt.management','tslt.updated_at'])
+                'suffix', 'closingdate', 'total_weight', 'ack', 'logistic_company', 'shiptocountry_code',
+                'shiptocountry_name', 'transaction_type', 'store_name', 'addressowner', 'tslt.*',])
             ->from('trade_send')
-            ->leftJoin('trade_send_logistics_track as tslt', 'trade_send.track_no = tslt.track_no')
+            ->leftJoin('trade_send_logistics_track as tslt', 'trade_send.order_id = tslt.order_id')
             ->orderBy('trade_send.closingdate desc');
         //  订单号
         if (!empty($condition['order_id'])) {
