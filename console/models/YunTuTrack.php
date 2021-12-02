@@ -77,8 +77,7 @@ class YunTuTrack
                 'time'   => $item['ProcessDate'],
             ];
         }
-
-        $this->updatedTrack($trackNo, [
+        $updatedData = [
             'newest_time'   => strtotime($trackDetail[count($trackDetail) - 1]['time']),
             'newest_detail' => $trackDetail[count($trackDetail) - 1]['detail'],
             'first_time'    => strtotime($trackDetail[1]['time']),
@@ -86,7 +85,9 @@ class YunTuTrack
             'status'        => $status,
             'track_detail'  => json_encode($trackDetail),
             'updated_at'    => time()
-        ]);
+        ];
+        $this->setAbnormalType($updatedData);
+        $this->updatedTrack($trackNo, $updatedData);
 
     }
 
@@ -158,8 +159,7 @@ class YunTuTrack
                 'time'   => $item['date'],
             ];
         }
-
-        $this->updatedTrack($trackNo, [
+        $updatedData = [
             'newest_time'   => strtotime($trackDetail[count($trackDetail) - 1]['time']),
             'newest_detail' => $trackDetail[count($trackDetail) - 1]['detail'],
             'first_time'    => strtotime($trackDetail[1]['time']),
@@ -167,7 +167,9 @@ class YunTuTrack
             'status'        => $status,
             'track_detail'  => json_encode($trackDetail),
             'updated_at'    => time()
-        ]);
+        ];
+        $this->setAbnormalType($updatedData);
+        $this->updatedTrack($trackNo, $updatedData);
     }
 
 
@@ -219,9 +221,9 @@ class YunTuTrack
             return;
         }
 
-         if (!$trackInfo['responseState']) {
-             exit($trackInfo['errorDesc']);
-         }
+        if (!$trackInfo['responseState']) {
+            exit($trackInfo['errorDesc']);
+        }
         if (empty($trackInfo['responseItems'])) {
             $this->notExist($trackNo);
             return;

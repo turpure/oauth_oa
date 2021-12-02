@@ -57,7 +57,7 @@ trait TrackTrait
      */
     public function updatedTrack($trackNo, $updatedData)
     {
-        $this->setAbnormalType($updatedData);
+
         Yii::$app->db->createCommand()
             ->update(
                 'trade_send_logistics_track',
