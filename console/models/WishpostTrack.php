@@ -69,20 +69,23 @@ class WishpostTrack
      */
     private function getLogisticTrack($param, $logisticNameList)
     {
-        $xml = $this->request('v2/tracking',[
-            'body'=>$param,
-            'headers'=>['Content-Type' => 'text/xml; charset=UTF8']
+        $xml = $this->request('v2/tracking', [
+            'body'    => $param,
+            'headers' => ['Content-Type' => 'text/xml; charset=UTF8']
         ]);
         try {
             $obj = simplexml_load_string($xml);
-        }catch (\Exception $exception){
+        }
+        catch (\Exception $exception) {
             $trackNo = array_keys($logisticNameList)[0];
             Yii::$app->db->createCommand()
                 ->update(
                     'trade_send_logistics_track',
                     [
-                        'updated_at' => time(),
-                        'status'     => 5
+                        'updated_at'      => time(),
+                        'status'          => 5,
+                        'abnormal_status' => LogisticEnum::AS_PENDING,
+                        'abnormal_type'   => LogisticEnum::AT_PROBABLY
                     ],
                     ['track_no' => $trackNo]
                 )
@@ -212,25 +215,26 @@ class WishpostTrack
     /*
       * post接口
       */
-    public function post($url, $data, $header = false,$timeOut = 30){
+    public function post($url, $data, $header = false, $timeOut = 30)
+    {
 
 
         $ch = curl_init();
 
-        curl_setopt($ch,CURLOPT_TIMEOUT, $timeOut);
-//        curl_setopt($ch,CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch,CURLOPT_URL, $url);
-//        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-//        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeOut);
+        //        curl_setopt($ch,CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_URL, $url);
+        //        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        //        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:'));
         curl_setopt($ch, CURLOPT_POST, true);
-        if (is_array($data)){
+        if (is_array($data)) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
         }
-        else{
+        else {
             curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         }
-        if ($header){
+        if ($header) {
             //            curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
             //            curl_setopt($ch, CURLINFO_HEADER_OUT, true);
         }
@@ -241,6 +245,7 @@ class WishpostTrack
         curl_close($ch);
         return $ret;
     }
+
     /**
      *   将数组转换为xml
      * @param array $data 要转换的数组
