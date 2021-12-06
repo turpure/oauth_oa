@@ -103,7 +103,6 @@ class WishpostTrack
         }
 
         foreach ($trackResult['tracks'] as $track) {
-            var_export(1);
             $length = count($track['track']);
 
             if (empty($track['track']) || isset($track['track']['date'])) {
@@ -124,7 +123,6 @@ class WishpostTrack
             array_multisort($timeList, SORT_DESC, $trackDetail);
 
             $status = $this->getStatus($trackDetail[0]['status'], $logisticNameList[$track['@attributes']['barcode']]);
-
             $this->updatedTrack($track['@attributes']['barcode'], [
                 'newest_time'   => strtotime($trackDetail[0]['time']),
                 'newest_detail' => $trackDetail[0]['detail'],
