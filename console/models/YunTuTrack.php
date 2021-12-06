@@ -223,12 +223,15 @@ class YunTuTrack
                 'status' => $item['opCode']
             ];
         }
-        $maxIndex = count($trackDetail)-1;
-        if (in_array($trackDetail[$maxIndex]['status']  , [461, 462])) {
+        $maxIndex = count($trackDetail) - 1;
+        if (in_array($trackDetail[$maxIndex]['status'], [461, 462, 491])) {
             $status = LogisticEnum::WAITINGTAKE;
         }
         elseif (in_array($trackDetail[$maxIndex]['status'], [463, 704])) {
             $status = LogisticEnum::SUCCESS;
+        }
+        elseif ($trackDetail[$maxIndex]['status'] == 423) {
+            $status = LogisticEnum::ABNORMAL;
         }
         else {
             $status = LogisticEnum::IN_TRANSIT;
