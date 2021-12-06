@@ -69,15 +69,14 @@ trait TrackTrait
 
     private function setAbnormalType(&$updatedData)
     {
-        if ($updatedData['status'] == 5) {
+        if ($updatedData['status'] == 5 || $updatedData['status'] == 7) {
             $updatedData['abnormal_status'] = LogisticEnum::AS_PENDING;
             $updatedData['abnormal_type'] = LogisticEnum::AT_PROBABLY;
-
         }
-        elseif ($updatedData['status'] == 7) {
-            $updatedData['abnormal_status'] = LogisticEnum::AS_PENDING;
-            $updatedData['abnormal_type'] = LogisticEnum::AT_DELIVERY;
-        }
+//        elseif ($updatedData['status'] == 7) {
+//            $updatedData['abnormal_status'] = LogisticEnum::AS_PENDING;
+//            $updatedData['abnormal_type'] = LogisticEnum::AT_DELIVERY;
+//        }
 
     }
 
