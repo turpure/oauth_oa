@@ -21,7 +21,7 @@ class YunTuTrack
             'Authorization' => 'Basic ' . base64_encode($this->config['client_id'] . '&' . $this->config['client_secret']),
             'Content-Type'  => 'application/json'
         ];
-        $orderList = self::getOrder(8, 100);
+        $orderList = self::getOrder(8, 200);
         var_export('云途:' . count($orderList));
 
         foreach ($orderList as $order) {
@@ -181,7 +181,7 @@ class YunTuTrack
     {
         $timeStamp = time() . '000';
         $this->config = Yii::$app->params['ems'];
-        $orderList = $this->getOrder($type, 400);
+        $orderList = $this->getOrder($type, 800);
         var_export('EMS:' . count($orderList));
         $param = [
             'sendID'    => $this->config['client_id'],
@@ -230,7 +230,7 @@ class YunTuTrack
         elseif (in_array($trackDetail[$maxIndex]['status'], [463, 704])) {
             $status = LogisticEnum::SUCCESS;
         }
-        elseif ($trackDetail[$maxIndex]['status'] == 423) {
+        elseif (in_array($trackDetail[$maxIndex]['status'] , [405,447,448,474,423,482,483,711,741,482])) {
             $status = LogisticEnum::ABNORMAL;
         }
         else {

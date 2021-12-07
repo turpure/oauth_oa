@@ -59,7 +59,7 @@ class EbayLogisticTrack
 
         $authorization = self::ebayToken();
 
-        $orderList = self::getOrder(6);
+        $orderList = self::getOrder(6,1000);
         var_export('ebay条数:' . count($orderList));
         $client = new DefaultEbayClient($this->ebayConfig['url'], $authorization);
 
