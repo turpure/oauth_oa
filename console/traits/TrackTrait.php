@@ -24,7 +24,7 @@ trait TrackTrait
             ->andwhere(['<', 'updated_at', strtotime(date('Y-m-d'))])
             ->andwhere(['=', 'logistic_type', $type])
             ->andwhere(['>', 'created_at', (time() - 86400 * 60)])
-            ->andwhere(['not in', 'status', [LogisticEnum::SUCCESS, LogisticEnum::FAIL]])
+            ->andwhere(['not in', 'status', [LogisticEnum::SUCCESS, 9, 10, 11]])
             ->limit($num)
             ->orderBy('id', 'asc')
             ->all();
@@ -57,7 +57,7 @@ trait TrackTrait
      */
     public function updatedTrack($trackNo, $updatedData)
     {
-        $this->setAbnormalType($updatedData);
+
         Yii::$app->db->createCommand()
             ->update(
                 'trade_send_logistics_track',
@@ -69,15 +69,19 @@ trait TrackTrait
 
     private function setAbnormalType(&$updatedData)
     {
-        if ($updatedData['status'] == 5) {
+        if ($updatedData['status'] == 5 || $updatedData['status'] == 7) {
             $updatedData['abnormal_status'] = LogisticEnum::AS_PENDING;
             $updatedData['abnormal_type'] = LogisticEnum::AT_PROBABLY;
+        }
+        elseif ($updatedData['status'] == 8) {
+            $updatedData['abnormal_status'] = LogisticEnum::NORMAL;
+            $updatedData['abnormal_type'] = LogisticEnum::NORMAL;
+        }
 
-        }
-        elseif ($updatedData['status'] == 7) {
-            $updatedData['abnormal_status'] = LogisticEnum::AS_PENDING;
-            $updatedData['abnormal_type'] = LogisticEnum::AT_DELIVERY;
-        }
+        //        elseif ($updatedData['status'] == 7) {
+        //            $updatedData['abnormal_status'] = LogisticEnum::AS_PENDING;
+        //            $updatedData['abnormal_type'] = LogisticEnum::AT_DELIVERY;
+        //        }
 
     }
 

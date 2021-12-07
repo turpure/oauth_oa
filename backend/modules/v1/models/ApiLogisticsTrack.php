@@ -175,19 +175,38 @@ class ApiLogisticsTrack
      */
     public static function LogisticsAbnormalManage($condition)
     {
+        $updateDate = [
+            'abnormal_status' => $condition['status'],
+            'management'      => Yii::$app->user->identity->username
+        ];
+        //         6已退回 7销毁/弃件 8已索赔 9成功签收
+        switch ($condition['status']) {
+            case 6:
+                $updateDate['status'] = 9;
+                break;
+            case 7:
+                $updateDate['status'] = 10;
+                break;
+            case 8:
+                $updateDate['status'] = 11;
+                break;
+            case 9:
+                $updateDate['status'] = 8;
+                break;
+        }
+
         Yii::$app->db->createCommand()
             ->update(
                 'trade_send_logistics_track',
-                [
-                    'abnormal_status' => $condition['status'],
-                    'management'      => Yii::$app->user->identity->username
-                ],
+                $updateDate,
                 [
                     'id'              => $condition['order_id'],
                     'abnormal_status' => [2, 3, 4]
                 ]
             )
             ->execute();
+
+
     }
 
 
@@ -315,7 +334,7 @@ class ApiLogisticsTrack
         if ($totalCount > 0) {
             $statistical['success_ratio'] = sprintf("%.2f", $statistical['success_ratio'] / $totalCount);
             $statistical['dont_succeed_ratio'] = sprintf("%.2f", $statistical['dont_succeed_ratio'] / $totalCount);
-            $statistical['average'] = ceil($statistical['average'] / $averageNum);
+            $statistical['average'] = $averageNum == 0 ? 0 : ceil($statistical['average'] / $averageNum);
         }
 
         return [
@@ -480,8 +499,8 @@ class ApiLogisticsTrack
     {
         ini_set('memory_limit', '-1');
 
-        //        3处理中 4待赔偿 5暂时正常 6已退回 7销毁/弃件 8已索赔 9成功签收
-        $trackStatus = ['未查询', '查询不到', '运输途中', '运输过久', '可能异常', '到达待取', '投递失败', '成功签收'];
+        //      ：1未查询# 2查询不到 #3 运输途中 # 5可能异常# 6到达待取# 7投递失败#8 成功签收 9已退回 10销毁/弃件 11已索赔
+        $trackStatus = ['未查询', '查询不到', '运输途中', '运输过久', '可能异常', '到达待取', '投递失败', '成功签收','已退回','销毁/弃件','已索赔'];
         $abnormalStatus = ['正常', '异常待处理', '待赔偿', '暂时正常', '已退回', '销毁/弃件', '已索赔', '成功签收'];
         $abnormalType = ['无异常', '未上网', '断更', '运输过久', '退件', '派送异常', '信息停滞', '可能异常'];
 
@@ -750,7 +769,21 @@ class ApiLogisticsTrack
                     'CNE-全球特惠(泛欧)', 'CNE-全球特惠(泛美)', 'CNE-全球特惠(比利时)', 'CNE-全球经济', 'CNE-全球经济(泛欧)',
                     'CNE-全球经济(波兰)', 'CNE-全球经济(捷克)', 'CNE-全球经济（国内）', 'CNE-全球特惠（国内）'],
             ],
-
+            [
+                'name' => '金华-E邮宝',
+                'type' => 10,
+                'list' => ['E邮宝线下20国', 'E邮宝线下法国', 'E邮宝线下义乌', 'E邮宝线下英国', '金华-E邮宝-E-EMS'],
+            ],
+            [
+                'name' => '金华邮局-线下',
+                'type' => 11,
+                'list' => ['线下-中邮平常小包', '邮政-TNT', '中邮挂号-跟踪小包-金华', '中邮挂号-金华'],
+            ],
+            [
+                'name' => '燕文邮政',
+                'type' => 12,
+                'list' => ['燕文-中邮线下E邮宝', '燕文-中邮EMS（E特快）'],
+            ],
         ];
 
 

@@ -12,11 +12,6 @@ class YunTuTrack
 
     public $config;
     public $headers;
-    //    public function __construct()
-    //    {
-    //
-    //
-    //    }
 
     public function getYuntuTrack()
     {
@@ -26,7 +21,8 @@ class YunTuTrack
             'Authorization' => 'Basic ' . base64_encode($this->config['client_id'] . '&' . $this->config['client_secret']),
             'Content-Type'  => 'application/json'
         ];
-        $orderList = self::getOrder(8, 100);
+        $orderList = self::getOrder(8, 200);
+        var_export('云途:' . count($orderList));
 
         foreach ($orderList as $order) {
             $result = $this->request(
@@ -81,8 +77,7 @@ class YunTuTrack
                 'time'   => $item['ProcessDate'],
             ];
         }
-
-        $this->updatedTrack($trackNo, [
+        $updatedData = [
             'newest_time'   => strtotime($trackDetail[count($trackDetail) - 1]['time']),
             'newest_detail' => $trackDetail[count($trackDetail) - 1]['detail'],
             'first_time'    => strtotime($trackDetail[1]['time']),
@@ -90,7 +85,9 @@ class YunTuTrack
             'status'        => $status,
             'track_detail'  => json_encode($trackDetail),
             'updated_at'    => time()
-        ]);
+        ];
+        $this->setAbnormalType($updatedData);
+        $this->updatedTrack($trackNo, $updatedData);
 
     }
 
@@ -105,8 +102,8 @@ class YunTuTrack
         $this->config = Yii::$app->params['cne'];
         $this->config['domestic']['md5'] = md5($this->config['domestic']['client_id'] . $timeStamp . $this->config['domestic']['client_secret']);
         $this->config['foreign']['md5'] = md5($this->config['foreign']['client_id'] . $timeStamp . $this->config['foreign']['client_secret']);
-        $orderList = $this->getOrder(9, 10);
-
+        $orderList = $this->getOrder(9, 1000);
+        var_export('CNE:' . count($orderList));
         foreach ($orderList as $order) {
             $formParams = [
 
@@ -141,8 +138,9 @@ class YunTuTrack
     private function cneLogisticTrack($trackNo, $trackInfo)
     {
 
-        if (empty($trackInfo['trackingEventList'])) {
+        if (empty($trackInfo['trackingEventList']) || count($trackInfo['trackingEventList']) < 2) {
             $this->notExist($trackNo);
+            return;
         }
 
         if (in_array($trackInfo['Response_Info']['status'], [0, 1, 2, 5])) {
@@ -161,7 +159,83 @@ class YunTuTrack
                 'time'   => $item['date'],
             ];
         }
+        $updatedData = [
+            'newest_time'   => strtotime($trackDetail[count($trackDetail) - 1]['time']),
+            'newest_detail' => $trackDetail[count($trackDetail) - 1]['detail'],
+            'first_time'    => strtotime($trackDetail[1]['time']),
+            'first_detail'  => $trackDetail[1]['detail'],
+            'status'        => $status,
+            'track_detail'  => json_encode($trackDetail),
+            'updated_at'    => time()
+        ];
+        $this->setAbnormalType($updatedData);
+        $this->updatedTrack($trackNo, $updatedData);
+    }
 
+
+    /**
+     * 邮政快递轨迹
+     * @throws \Exception
+     */
+    public function emsTrack($type)
+    {
+        $timeStamp = time() . '000';
+        $this->config = Yii::$app->params['ems'];
+        $orderList = $this->getOrder($type, 800);
+        var_export('EMS:' . count($orderList));
+        $param = [
+            'sendID'    => $this->config['client_id'],
+            'proviceNo' => '99',
+            'msgKind'   => 'JDPT_YOURAN_TRACE',
+            'serialNo'  => '100000000001',
+            'sendDate'  => $timeStamp,
+            'receiveID' => 'JDPT',
+            'dataType'  => 1,
+        ];
+
+        foreach ($orderList as $order) {
+
+            $traceNoStr = '{"traceNo":"' . $order->track_no . '"}';
+
+            $param['msgBody'] = urlencode($traceNoStr);
+            $param['dataDigest'] = base64_encode(md5($traceNoStr . '10qu2V474VC8948I'));
+
+            $result = $this->request('querypush-pcpw/mailTrackProtocolPortal/queryMailTrackWn?' . http_build_query($param), [
+                'headers' => ['Content-Type' => 'application/json; charset=UTF-8;']
+            ]);
+
+            $this->emsLogisticTrack($order->track_no, json_decode($result, true));
+        }
+    }
+
+
+    public function emsLogisticTrack($trackNo, $trackInfo)
+    {
+        if (empty($trackInfo['responseItems'])) {
+            $this->notExist($trackNo);
+            return;
+        }
+
+        foreach ($trackInfo['responseItems'] as $item) {
+            $trackDetail[] = [
+                'detail' => $item['opDesc'],
+                'time'   => $item['opTime'],
+                'status' => $item['opCode']
+            ];
+        }
+        $maxIndex = count($trackDetail) - 1;
+        if (in_array($trackDetail[$maxIndex]['status'], [461, 462, 491])) {
+            $status = LogisticEnum::WAITINGTAKE;
+        }
+        elseif (in_array($trackDetail[$maxIndex]['status'], [463, 704])) {
+            $status = LogisticEnum::SUCCESS;
+        }
+        elseif (in_array($trackDetail[$maxIndex]['status'] , [405,447,448,474,423,482,483,711,741,482])) {
+            $status = LogisticEnum::ABNORMAL;
+        }
+        else {
+            $status = LogisticEnum::IN_TRANSIT;
+        }
         $this->updatedTrack($trackNo, [
             'newest_time'   => strtotime($trackDetail[count($trackDetail) - 1]['time']),
             'newest_detail' => $trackDetail[count($trackDetail) - 1]['detail'],

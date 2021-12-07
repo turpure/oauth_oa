@@ -37,7 +37,7 @@ class WishpostTrack
     public function getTrack()
     {
         $token = $this->getAccessToken();
-        $orderList = $this->getOrder(7, 20000);
+        $orderList = $this->getOrder(7, 2000);
         var_export('with条数:' . count($orderList));
 
         $param = [
@@ -71,10 +71,28 @@ class WishpostTrack
     {
         $xml = $this->request('v2/tracking', [
             'body'    => $param,
-            'headres' => ['Content-Type' => 'text/xml; charset=UTF8']
+            'headers' => ['Content-Type' => 'text/xml; charset=UTF8']
         ]);
+        try {
+            $obj = simplexml_load_string($xml);
+        }
+        catch (\Exception $exception) {
+            $trackNo = array_keys($logisticNameList)[0];
+            Yii::$app->db->createCommand()
+                ->update(
+                    'trade_send_logistics_track',
+                    [
+                        'updated_at'      => time(),
+                        'status'          => 5,
+                        'abnormal_status' => LogisticEnum::AS_PENDING,
+                        'abnormal_type'   => LogisticEnum::AT_PROBABLY
+                    ],
+                    ['track_no' => $trackNo]
+                )
+                ->execute();
+            return;
+        }
 
-        $obj = simplexml_load_string($xml, "SimpleXMLElement", LIBXML_NOCDATA);
 
         $trackResult = json_decode(json_encode($obj), true);
 
@@ -83,6 +101,7 @@ class WishpostTrack
             throw new \Exception("wishpost 获取快递信息 错误：" . var_export($trackResult, true));
 
         }
+
         foreach ($trackResult['tracks'] as $track) {
             $length = count($track['track']);
 
@@ -104,7 +123,6 @@ class WishpostTrack
             array_multisort($timeList, SORT_DESC, $trackDetail);
 
             $status = $this->getStatus($trackDetail[0]['status'], $logisticNameList[$track['@attributes']['barcode']]);
-
             $this->updatedTrack($track['@attributes']['barcode'], [
                 'newest_time'   => strtotime($trackDetail[0]['time']),
                 'newest_detail' => $trackDetail[0]['detail'],
@@ -121,7 +139,6 @@ class WishpostTrack
 
     private function getStatus($statusNum, $logisticName)
     {
-        print(in_array($logisticName, $this->pingyou));
         //        1未查询# 2查询不到 #3 运输途中 #4 运输过久 # 5可能异常# 6到达待取# 7投递失败#8 成功签收
         if ($statusNum == 2) {
             return LogisticEnum::NOT_FIND;
@@ -134,9 +151,7 @@ class WishpostTrack
         }
         elseif (in_array($statusNum, [23, 24]) || (in_array($logisticName, $this->pingyou)
                 && in_array($statusNum, [17, 18, 19, 20, 21, 22, 23, 24, 28, 29, 30]))) {
-            print('平邮');
             return LogisticEnum::SUCCESS;
-
         }
         else {
             return LogisticEnum::IN_TRANSIT;
@@ -195,6 +210,39 @@ class WishpostTrack
         return $result['access_token'];
     }
 
+    /*
+      * post接口
+      */
+    public function post($url, $data, $header = false, $timeOut = 30)
+    {
+
+
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeOut);
+        //        curl_setopt($ch,CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_URL, $url);
+        //        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        //        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:'));
+        curl_setopt($ch, CURLOPT_POST, true);
+        if (is_array($data)) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+        }
+        else {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        }
+        if ($header) {
+            //            curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+            //            curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+        }
+
+        $ret = curl_exec($ch);
+        // Log::info(curl_getinfo($ch, CURLINFO_HEADER_OUT));
+
+        curl_close($ch);
+        return $ret;
+    }
 
     /**
      *   将数组转换为xml

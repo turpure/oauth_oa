@@ -50,6 +50,9 @@ class LogisticTrackSchedulerController extends Controller
             $yutu = new YunTuTrack();
             $yutu->getYuntuTrack();
             $yutu->getCneTrack();
+            $yutu->emsTrack(10);
+            $yutu->emsTrack(11);
+            $yutu->emsTrack(12);
         }
         catch (\Exception $why) {
             var_export($why->getMessage());
@@ -61,19 +64,37 @@ class LogisticTrackSchedulerController extends Controller
      */
     public function actionLogisticInternet()
     {
+//        for($i = 28;$i>0;$i--) {
+//            LogisticTrack::yesterdayOrder($i);
+//        }
         LogisticTrack::yesterdayOrder();
-        //        LogisticTrack::setElapsedTime();
         LogisticTrack::successful();
         LogisticTrack::internet();
     }
 
     /**
-     * 物流异常
+     * 物流异常 export-logistics-abnormal
      */
     public function actionExportLogisticsAbnormal()
     {
-        LogisticTrack::abnormal();
+        try {
+            LogisticTrack::abnormal();
+        }
+        catch (\Exception $why) {
+            var_export($why->getMessage());
+        }
+    }
 
+
+
+    public function actionDelRepeatOrder()
+    {
+        try {
+            LogisticTrack::delRepeatOrder();
+        }
+        catch (\Exception $why) {
+            var_export($why->getMessage());
+        }
     }
 
 

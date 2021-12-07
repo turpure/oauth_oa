@@ -9,6 +9,7 @@ class LogisticEnum
     const NOT_FIND = 2;
     const IN_TRANSIT = 3;
     const ABNORMAL = 5;
+    const WAITINGTAKE  = 6;
     const FAIL  = 7;
     const SUCCESS  = 8;
 
