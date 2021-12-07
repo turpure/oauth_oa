@@ -73,10 +73,15 @@ trait TrackTrait
             $updatedData['abnormal_status'] = LogisticEnum::AS_PENDING;
             $updatedData['abnormal_type'] = LogisticEnum::AT_PROBABLY;
         }
-//        elseif ($updatedData['status'] == 7) {
-//            $updatedData['abnormal_status'] = LogisticEnum::AS_PENDING;
-//            $updatedData['abnormal_type'] = LogisticEnum::AT_DELIVERY;
-//        }
+        elseif ($updatedData['status'] == 8) {
+            $updatedData['abnormal_status'] = LogisticEnum::NORMAL;
+            $updatedData['abnormal_type'] = LogisticEnum::NORMAL;
+        }
+
+        //        elseif ($updatedData['status'] == 7) {
+        //            $updatedData['abnormal_status'] = LogisticEnum::AS_PENDING;
+        //            $updatedData['abnormal_type'] = LogisticEnum::AT_DELIVERY;
+        //        }
 
     }
 
