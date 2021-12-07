@@ -2709,6 +2709,7 @@ class ApiReport
         return $data;
     }
 
+//////////////////////////////////运营KPI//////////////////////////////////////////////////////
 
     /**
      * 运营KPI 数据
@@ -2848,6 +2849,114 @@ class ApiReport
                     if ($v['rank'] == '保护期-C') $item['testNumC'] += 1;
                     if ($v['rank'] == '保护期-D') $item['testNumD'] += 1;
 
+                }
+            }
+            $item['totalRate'] = round((1 + $item['numA'] * 0.1 + $item['testNumA'] * 0.1 - $item['numC'] * 0.05 - $item['numD'] * 0.1) * 100, 2);
+            $data[] = $item;
+        }
+        $totalRate = ArrayHelper::getColumn($data, 'totalRate');
+        array_multisort($totalRate, SORT_DESC, $data);
+        foreach ($data as $k => &$v) {
+            $v['totalSort'] = ($k + 1) . '/' . count($totalRate);
+            $v['totalRate'] .= '%';
+        }
+        return $data;
+    }
+
+    //////////////////////////////////主管KPI//////////////////////////////////////////////////////
+
+    /**
+     * 主管KPI 数据
+     * @param $condition
+     * Date: 2021-12-06 9:19
+     * Author: henry
+     * @return array
+     */
+    public static function getLeaderKpi($condition)
+    {
+        $name = isset($condition['name']) && $condition['name'] ? $condition['name'] : [];
+        $name = is_array($name) ? $name : [$name];
+//        $depart = isset($condition['depart']) ? $condition['depart'] : '';
+//        $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
+//        $plat = isset($condition['plat']) ? $condition['plat'] : '';
+        $month = isset($condition['month']) ? $condition['month'] : '';
+//        if (!$name && $depart) {
+//            $name = ApiCondition::getUserByDepart($depart, $secDepartment);
+//        }
+        //获取当前用户信息
+        $username = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($username);
+//        var_dump($userList);exit;
+        $query = (new yii\db\Query())//->select('*')
+        ->from('oauth_leader_kpi_report')
+            ->andFilterWhere(['in', 'name', $name])
+            ->andFilterWhere(['in', 'name', $userList])
+//            ->andFilterWhere(['=', 'depart', $depart])
+//            ->andFilterWhere(['=', 'plat', $plat])
+            ->andFilterWhere(['=', 'month', $month])
+            ->orderBy('totalScore DESC')->all();
+        foreach ($query as &$v) {
+            $v['salesAddRate'] .= '%';
+        }
+        return $query;
+    }
+
+
+    /**
+     * 主管KPI 历史数据
+     * @param $condition
+     * Date: 2021-12-06 9:19
+     * Author: henry
+     * @return array
+     */
+    public static function getLeaderKpiHistory($condition)
+    {
+        $name = isset($condition['name']) && $condition['name'] ? $condition['name'] : [];
+        $name = is_array($name) ? $name : [$name];
+//        $depart = isset($condition['depart']) ? $condition['depart'] : '';
+//        $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
+//        $plat = isset($condition['plat']) ? $condition['plat'] : '';
+        $beginMonth = isset($condition['dateRange'][0]) && $condition['dateRange'][0] ? $condition['dateRange'][0] : '';
+        $endMonth = isset($condition['dateRange'][1]) && $condition['dateRange'][1] ? $condition['dateRange'][1] : '';
+//        if (!$name && $depart) {
+//            $name = ApiCondition::getUserByDepart($depart, $secDepartment);
+//        }
+        //获取当前用户信息
+        $username = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($username);
+        $query = (new yii\db\Query())//->select('*')
+        ->from('oauth_leader_kpi_report')
+            ->andFilterWhere(['in', 'name', $name])
+            ->andFilterWhere(['in', 'name', $userList])
+            ->andFilterWhere(['between', 'month', $beginMonth, $endMonth])
+//            ->andFilterWhere(['=', 'depart', $depart])
+//            ->andFilterWhere(['=', 'plat', $plat])
+            ->orderBy('name, month')->all();
+        $userList = array_unique(ArrayHelper::getColumn($query, 'name'));
+        $dateList = array_unique(ArrayHelper::getColumn($query, 'month'));
+        sort($dateList);
+        $row = [];
+        foreach ($dateList as $v) {
+            $row[] = ['month' => $v, 'rank' => ''];
+        }
+        $data = [];
+        foreach ($userList as $user) {
+            $item = [];
+            $item['name'] = $user;
+            $item['numA'] = $item['numB'] = $item['numC'] = $item['numD'] = $item['totalRate'] = $item['totalSort'] = 0;
+            $item['value'] = $row;
+            foreach ($query as $v) {
+                if ($v['name'] == $user) {
+                    $item['hireDate'] = $v['hireDate'];
+                    foreach ($item['value'] as &$value) {
+                        if ($value['month'] == $v['month'] && $v['month'] >= substr($v['hireDate'], 0, 7)) {
+                            $value['rank'] = $v['rank'];
+                        }
+                    }
+                    if ($v['rank'] == 'A') $item['numA'] += 1;
+                    if ($v['rank'] == 'B') $item['numB'] += 1;
+                    if ($v['rank'] == 'C') $item['numC'] += 1;
+                    if ($v['rank'] == 'D') $item['numD'] += 1;
                 }
             }
             $item['totalRate'] = round((1 + $item['numA'] * 0.1 + $item['testNumA'] * 0.1 - $item['numC'] * 0.05 - $item['numD'] * 0.1) * 100, 2);

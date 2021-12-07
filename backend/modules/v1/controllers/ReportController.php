@@ -1880,7 +1880,7 @@ class ReportController extends AdminController
             $item['计数-保护期-D'] = $v['testNumD'];
             $out[] = $item;
         }
-        ExportTools::toExcelOrCsv('operatorKpi', $out, 'Xlsx');
+        ExportTools::toExcelOrCsv('operatorKpiHistory', $out, 'Xlsx');
     }
 
     /**
@@ -1944,5 +1944,120 @@ class ReportController extends AdminController
         }
         ExportTools::toExcelOrCsv('operatorKpiOther', $res, 'Xlsx');
     }
+
+
+    ////////////////////////////////////主管KPI/////////////////////////////////////////////
+
+
+    /**
+     * 主管KPI
+     * Date: 2021-12-06 13:27
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    public function actionLeaderKpi()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        return ApiReport::getLeaderKpi($condition);
+    }
+
+    /**
+     * 主管KPI导出
+     * Date: 2021-07-12 13:49
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionLeaderKpiExport()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        $data = ApiReport::getLeaderKpi($condition);
+        $res = [];
+        foreach ($data as &$v){
+            $item['姓名'] = $v['name'];
+            $item['月份'] = $v['month'];
+            $item['入职时间'] = $v['hireDate'];
+            $item['入职时长（月）'] = $v['hireMonth'];
+            $item['综合排名'] = $v['sort'] . '/' . $v['totalTeamNum'];
+            $item['综合得分'] = $v['totalScore'];
+            $item['评价等级'] = $v['rank'];
+            $item['更新时间'] = $v['updateTime'];
+            $item['团队净利排名'] = $v['profitSort'] . '/' . $v['totalTeamNum'];
+            $item['团队净利排名得分'] = $v['profitSortScore'];
+            $item['团队净利'] = $v['teamProfit'];
+            $item['团队净利得分'] = $v['profitScore'];
+            $item['人均净利值'] = $v['profitAve'];
+            $item['人均净利值得分'] = $v['profitAveScore'];
+            $item['销售额绝对值增长'] = $v['salesAdd'];
+            $item['销售额绝对值增长得分'] = $v['salesAddScore'];
+            $item['销售额百分比增长(%)'] = $v['salesAddRate'];
+            $item['销售额百分比增长得分'] = $v['salesAddRateScore'];
+            $item['入职时间系数'] = $v['userHireRate'];
+            $item['业绩指标总得分'] = $v['achieveTotalScore'];
+            $item['合作度'] = $v['cooperateScore'];
+            $item['积极性'] = $v['activityScore'];
+            $item['执行力'] = $v['executiveScore'];
+            $item['工作态度总得分'] = $v['workingTotalScore'];
+            $item['新人培训'] = $v['otherTrainingScore'];
+            $item['挑战专项加分'] = $v['otherChallengeScore'];
+            $item['扣分项'] = $v['otherDeductionScore'];
+            $res[] = $item;
+        }
+        ExportTools::toExcelOrCsv('leaderKpi', $res, 'Xlsx');
+    }
+
+    /**
+     * 主管KPI历史数据
+     * Date: 2021-12-06 13:27
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    public function actionLeaderKpiHistory()
+    {
+        try {
+            $condition = Yii::$app->request->post()['condition'];
+            return ApiReport::getLeaderKpiHistory($condition);
+        }catch (\Exception $e){
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+
+    }
+
+    /**
+     * 主管KPI历史数据导出
+     * Date: 2021-12-12 13:49
+     * Author: henry
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionLeaderKpiHistoryExport()
+    {
+        $condition = Yii::$app->request->post()['condition'];
+        $data = ApiReport::getLeaderKpiHistory($condition);
+        $out = [];
+        foreach ($data as $v){
+            $item['姓名'] = $v['name'];
+            $item['入职日期'] = $v['hireDate'];
+            $item['综合比例'] = $v['totalRate'];
+            $item['综合排名'] = $v['totalSort'];
+            foreach ($v['value'] as $val){
+                $item['评价等级-'.$val['month']] = $val['rank'];
+            }
+            $item['计数-A'] = $v['numA'];
+            $item['计数-B'] = $v['numB'];
+            $item['计数-C'] = $v['numC'];
+            $item['计数-D'] = $v['numD'];
+            $out[] = $item;
+        }
+        ExportTools::toExcelOrCsv('leaderKpiHistory', $out, 'Xlsx');
+    }
+
+
+
 
 }
