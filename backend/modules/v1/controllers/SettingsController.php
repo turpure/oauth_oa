@@ -787,7 +787,7 @@ class SettingsController extends AdminController
         $condition = Yii::$app->request->post('condition');
         $type = $condition['type'];
         if ($type == '权重') {
-            $sql = "UPDATE `oauth_operator_kpi_config` SET typeWeight={$condition['typeWeight']} WHERE `name` = '{$condition['name']}'";
+            $sql = "UPDATE `oauth_leader_kpi_config` SET typeWeight={$condition['typeWeight']} WHERE `name` = '{$condition['name']}'";
             return Yii::$app->db->createCommand($sql)->execute();
         } else {
             $id = $condition['id'];
@@ -806,7 +806,7 @@ class SettingsController extends AdminController
     {
         try {
             $condition = Yii::$app->request->post('condition');
-            return ApiSettings::getKpiExtraScore($condition);
+            return ApiSettings::getLeaderKpiExtraScore($condition);
         } catch (\Exception  $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
@@ -824,22 +824,21 @@ class SettingsController extends AdminController
     public function actionLeaderKpiExtraScoreExport()
     {
         $condition = Yii::$app->request->post('condition');
-        $data = ApiSettings::getKpiExtraScore($condition);
+        $data = ApiSettings::getLeaderKpiExtraScore($condition);
         $res = [];
         foreach ($data as $v) {
             $item['月份'] = $v['month'];
             $item['姓名'] = $v['username'];
-            $item['入职时长'] = $v['hireMonth'];
+            $item['入职时长'] = $v['hireDate'];
             $item['合作度'] = $v['cooperateScore'];
             $item['积极性'] = $v['activityScore'];
             $item['执行力'] = $v['executiveScore'];
             $item['新人培训'] = $v['otherTrainingScore'];
             $item['挑战专项加分'] = $v['otherChallengeScore'];
             $item['扣分项'] = $v['otherDeductionScore'];
-            $item['是否新人接手老账号'] = $v['isHaveOldAccount'];
             $res[] = $item;
         }
-        ExportTools::toExcelOrCsv('operatorKpiSettings', $res, 'Xls');
+        ExportTools::toExcelOrCsv('LeaderKpiSettings', $res, 'Xls');
     }
 
     /**
@@ -855,27 +854,19 @@ class SettingsController extends AdminController
         $id = $condition['id'] ?? 0;
         $name = $condition['username'] ?? '';
         $month = $condition['month'] ?? '';
-        if (isset($condition['hireMonth'])) unset($condition['hireMonth']);
+        if (isset($condition['hireDate'])) unset($condition['hireDate']);
         if (!$name && !$month) return ['code' => 400, 'message' => 'Month and username can not be empty at the same time!'];
-        $user_sql = "SELECT created_at FROM `user` WHERE username = '{$name}'";
-        $hireDate = Yii::$app->db->createCommand($user_sql)->queryScalar();
-        if (strtotime($month) > $hireDate + 12 * 30 * 24 * 3600 && $condition['isHaveOldAccount'] == 'Y') {
-            return [
-                'code' => 400,
-                'message' => "The isHaveOldAccount(是否新人接手老账号) value for user '{$name}' can not be set to 'Y', because his/she hiredate is more than 12 months!"
-            ];
-        }
         $condition['updateTime'] = date('Y-m-d H:i:s');
-        $sql = "SELECT * FROM oauth_operator_kpi_other_score WHERE username = '{$name}' AND month = '{$month}' ";
+        $sql = "SELECT * FROM oauth_leader_kpi_other_score WHERE username = '{$name}' AND month = '{$month}' ";
         $res = Yii::$app->db->createCommand($sql)->queryOne();
         if ($id) {
-            return Yii::$app->db->createCommand()->update('oauth_operator_kpi_other_score', $condition, ['id' => $id])->execute();
+            return Yii::$app->db->createCommand()->update('oauth_leader_kpi_other_score', $condition, ['id' => $id])->execute();
         } elseif ($res) {
             unset($condition['id']);
-            return Yii::$app->db->createCommand()->update('oauth_operator_kpi_other_score', $condition, ['username' => $name, 'month' => $month])->execute();
+            return Yii::$app->db->createCommand()->update('oauth_leader_kpi_other_score', $condition, ['username' => $name, 'month' => $month])->execute();
         } else {
             unset($condition['id']);
-            return Yii::$app->db->createCommand()->insert('oauth_operator_kpi_other_score', $condition)->execute();
+            return Yii::$app->db->createCommand()->insert('oauth_leader_kpi_other_score', $condition)->execute();
         }
     }
 
@@ -890,7 +881,7 @@ class SettingsController extends AdminController
     {
         $condition = Yii::$app->request->post('condition');
         $id = $condition['id'] ?? [];
-        return Yii::$app->db->createCommand()->delete('oauth_operator_kpi_other_score', ['id' => $id])->execute();
+        return Yii::$app->db->createCommand()->delete('oauth_leader_kpi_other_score', ['id' => $id])->execute();
     }
 
     /**
@@ -917,7 +908,7 @@ class SettingsController extends AdminController
                 throw new Exception('File upload failed!');
             } else {
                 //获取上传excel文件的内容并保存
-                $res = ApiSettings::saveKpiExtraData($result);
+                $res = ApiSettings::saveLeaderKpiExtraData($result);
 //                if ($res !== true) return ['code' => 400, 'message' => $res];
                 return $res;
             }
