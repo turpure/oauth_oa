@@ -951,7 +951,7 @@ class ApiReport
                         WHERE s.store = '{$v['suffix']}' ";
                 $item['salerman'] = Yii::$app->db->createCommand($sql)->queryScalar();
                 $item['suffix'] = $v['suffix'];
-                $item['feeType'] = $v['feeType'];
+                $item['feeType'] = isset($v['feeType']) ? $v['feeType'] : '';
                 $item['currency'] = $v['currency'];
                 $item['value'] = $v['sum'];
 
