@@ -920,6 +920,7 @@ class ApiReport
         $suffix = $condition['suffix'];
         $usRate = ApiUkFic::getRateUkOrUs('USD');
         $gbpRate = ApiUkFic::getRateUkOrUs('GBP');
+        return $gbpRate;
         $data = EbayStoreFee::getCollection()->aggregate([
             [
                 '$match' => [

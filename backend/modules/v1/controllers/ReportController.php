@@ -521,7 +521,6 @@ class ReportController extends AdminController
             'page' => isset($cond['page']) ? $cond['page'] : 1,
             'pageSize' => isset($cond['pageSize']) ? $cond['pageSize'] : 10,
         ];
-        return $condition;
         return ApiReport::getEbayStoreFee($condition);
     }
 
