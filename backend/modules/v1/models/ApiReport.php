@@ -945,7 +945,6 @@ class ApiReport
         $totalFeeUs = $totalFeeGbp = 0;
 
         foreach ($data as $v) {
-            return $v;
             $sql = "SELECT username FROM `user` u
                     LEFT JOIN auth_store_child l ON l.user_id = u.id
                     LEFT JOIN auth_store s ON l.store_id = s.id
@@ -969,6 +968,7 @@ class ApiReport
             $item['valueZn'] = round($item['valueZn'], 2);
             $res[] = $item;
         }
+        return $res;
         try {
             $provider = new ArrayDataProvider([
                 'allModels' => $res,
