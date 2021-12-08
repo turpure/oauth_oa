@@ -920,7 +920,6 @@ class ApiReport
         $suffix = $condition['suffix'];
         $usRate = ApiUkFic::getRateUkOrUs('USD');
         $gbpRate = ApiUkFic::getRateUkOrUs('GBP');
-        return $gbpRate;
         $data = EbayStoreFee::getCollection()->aggregate([
             [
                 '$match' => [
@@ -944,7 +943,9 @@ class ApiReport
 //        var_dump($suffixArr);exit;
         $res = [];
         $totalFeeUs = $totalFeeGbp = 0;
+
         foreach ($data as $v) {
+            return $v;
             $sql = "SELECT username FROM `user` u
                     LEFT JOIN auth_store_child l ON l.user_id = u.id
                     LEFT JOIN auth_store s ON l.store_id = s.id
