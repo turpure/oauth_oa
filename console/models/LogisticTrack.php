@@ -252,7 +252,7 @@ class  LogisticTrack
      */
     public static function abnormal()
     {
-//        $endTime = time() - 86400 * 3;
+        $endTime = time() - 86400 * 3;
 
 //        Yii::$app->db->createCommand()->update(
 //            'trade_send_logistics_track',
