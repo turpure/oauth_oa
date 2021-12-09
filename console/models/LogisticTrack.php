@@ -280,7 +280,7 @@ class  LogisticTrack
 
         $count = $query->count();
 
-        for ($startNum = 1; $startNum <= $count; $startNum += 10000) {
+        for ($startNum = 0; $startNum <= $count; $startNum += 10000) {
             $trackList = $query->offset($startNum)->limit(10000)
                 ->all();
 
@@ -288,6 +288,7 @@ class  LogisticTrack
 
                 if (self::transportType($track->logistic_name) == 1) {
                     // 平邮
+
                     if ($track->abnormal_phase == 3) {
                         // 平邮最大为3
                         continue;
@@ -400,7 +401,7 @@ class  LogisticTrack
             $abnormalType = LogisticEnum::AT_SUSPEND;
         }
 
-        if (!empty($status)) {
+        if (!empty($phase)) {
             return [
                 'abnormal_type'   => $abnormalType,
                 'abnormal_status' => LogisticEnum::AS_PENDING,
