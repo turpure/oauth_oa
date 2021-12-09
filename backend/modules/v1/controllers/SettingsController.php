@@ -750,4 +750,175 @@ class SettingsController extends AdminController
     }
 
 
+    ////////////////////////////////////主管KPI参数设置/////////////////////////////////////////////
+
+    /**
+     * KPI公共参数列表
+     * Date: 2021-07-15 9:52
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
+    public function actionLeaderKpiParams()
+    {
+        $condition = Yii::$app->request->post('condition');
+        $type = $condition['type'];
+        if ($type == '评级') {
+            return Yii::$app->db->createCommand("SELECT * FROM `oauth_leader_kpi_config` WHERE type = '评级';")->queryAll();
+        } elseif ($type == '入职时间系数') {
+            return Yii::$app->db->createCommand("SELECT * FROM `oauth_leader_kpi_config` WHERE type = '晋升时间系数';")->queryAll();
+        } elseif ($type == '业绩指标') {
+            return Yii::$app->db->createCommand("SELECT * FROM `oauth_leader_kpi_config` WHERE type = '业绩指标';")->queryAll();
+        } else {
+            $sql = "SELECT DISTINCT typeWeight,name FROM `oauth_leader_kpi_config` WHERE type NOT IN ('评级', '晋升时间系数');";
+            return Yii::$app->db->createCommand($sql)->queryAll();
+        }
+    }
+
+    /**
+     * KPI公共参数修改
+     * Date: 2021-07-19 13:27
+     * Author: henry
+     * @return int
+     * @throws Exception
+     */
+    public function actionLeaderKpiParamsSet()
+    {
+        $condition = Yii::$app->request->post('condition');
+        $type = $condition['type'];
+        if ($type == '权重') {
+            $sql = "UPDATE `oauth_leader_kpi_config` SET typeWeight={$condition['typeWeight']} WHERE `name` = '{$condition['name']}'";
+            return Yii::$app->db->createCommand($sql)->execute();
+        } else {
+            $id = $condition['id'];
+            return Yii::$app->db->createCommand()->update('oauth_leader_kpi_config', $condition, ['id' => $id])->execute();
+        }
+    }
+
+    /**
+     * 其他分数项列表
+     * Date: 2021-07-15 9:52
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
+    public function actionLeaderKpiExtraScore()
+    {
+        try {
+            $condition = Yii::$app->request->post('condition');
+            return ApiSettings::getLeaderKpiExtraScore($condition);
+        } catch (\Exception  $why) {
+            return ['code' => $why->getCode(), 'message' => $why->getMessage()];
+        }
+
+    }
+
+    /**
+     * 其他分数项列表导出
+     * Date: 2021-07-19 16:15
+     * Author: henry
+     * @throws Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    public function actionLeaderKpiExtraScoreExport()
+    {
+        $condition = Yii::$app->request->post('condition');
+        $data = ApiSettings::getLeaderKpiExtraScore($condition);
+        $res = [];
+        foreach ($data as $v) {
+            $item['月份'] = $v['month'];
+            $item['姓名'] = $v['username'];
+            $item['入职时长'] = $v['hireDate'];
+            $item['合作度'] = $v['cooperateScore'];
+            $item['积极性'] = $v['activityScore'];
+            $item['执行力'] = $v['executiveScore'];
+            $item['新人培训'] = $v['otherTrainingScore'];
+            $item['挑战专项加分'] = $v['otherChallengeScore'];
+            $item['扣分项'] = $v['otherDeductionScore'];
+            $res[] = $item;
+        }
+        ExportTools::toExcelOrCsv('LeaderKpiSettings', $res, 'Xls');
+    }
+
+    /**
+     * 其他分数项设置
+     * Date: 2021-07-15 17:32
+     * Author: henry
+     * @return array|int
+     * @throws Exception
+     */
+    public function actionLeaderKpiExtraScoreSet()
+    {
+        $condition = Yii::$app->request->post('condition');
+        $id = $condition['id'] ?? 0;
+        $name = $condition['username'] ?? '';
+        $month = $condition['month'] ?? '';
+        if (isset($condition['hireDate'])) unset($condition['hireDate']);
+        if (!$name && !$month) return ['code' => 400, 'message' => 'Month and username can not be empty at the same time!'];
+        $condition['updateTime'] = date('Y-m-d H:i:s');
+        $sql = "SELECT * FROM oauth_leader_kpi_other_score WHERE username = '{$name}' AND month = '{$month}' ";
+        $res = Yii::$app->db->createCommand($sql)->queryOne();
+        if ($id) {
+            return Yii::$app->db->createCommand()->update('oauth_leader_kpi_other_score', $condition, ['id' => $id])->execute();
+        } elseif ($res) {
+            unset($condition['id']);
+            return Yii::$app->db->createCommand()->update('oauth_leader_kpi_other_score', $condition, ['username' => $name, 'month' => $month])->execute();
+        } else {
+            unset($condition['id']);
+            return Yii::$app->db->createCommand()->insert('oauth_leader_kpi_other_score', $condition)->execute();
+        }
+    }
+
+    /**
+     * 其他分数项删除
+     * Date: 2021-07-15 16:46
+     * Author: henry
+     * @return int
+     * @throws Exception
+     */
+    public function actionLeaderKpiExtraScoreDelete()
+    {
+        $condition = Yii::$app->request->post('condition');
+        $id = $condition['id'] ?? [];
+        return Yii::$app->db->createCommand()->delete('oauth_leader_kpi_other_score', ['id' => $id])->execute();
+    }
+
+    /**
+     * 其他分数项设置-- 批量导入
+     * Date: 2021-07-15 9:52
+     * Author: henry
+     * @return array
+     * @throws Exception
+     */
+    public function actionLeaderKpiExtraScoreImport()
+    {
+        try {
+            $file = $_FILES['file'];
+            if (!$file) {
+                throw new Exception('The upload file can not be empty!');
+            }
+            //判断文件后缀
+            $extension = ApiSettings::get_extension($file['name']);
+            if (!in_array($extension, ['.Xls', '.xls'])) return ['code' => 400, 'message' => "File format error,please upload files in 'Xls' format"];
+
+            //文件上传
+            $result = ApiSettings::file($file, 'kpiExtra');
+            if (!$result) {
+                throw new Exception('File upload failed!');
+            } else {
+                //获取上传excel文件的内容并保存
+                $res = ApiSettings::saveLeaderKpiExtraData($result);
+//                if ($res !== true) return ['code' => 400, 'message' => $res];
+                return $res;
+            }
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+
 }
