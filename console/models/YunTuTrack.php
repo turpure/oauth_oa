@@ -69,6 +69,8 @@ class YunTuTrack
             case 7:
                 $status = LogisticEnum::ABNORMAL;
                 break;
+            default:
+                $status = LogisticEnum::IN_TRANSIT;
         }
 
         foreach ($track['OrderTrackingDetails'] as $item) {
@@ -230,7 +232,7 @@ class YunTuTrack
         elseif (in_array($trackDetail[$maxIndex]['status'], [463, 704])) {
             $status = LogisticEnum::SUCCESS;
         }
-        elseif (in_array($trackDetail[$maxIndex]['status'] , [405,447,448,474,423,482,483,711,741,482])) {
+        elseif (in_array($trackDetail[$maxIndex]['status'], [405, 447, 448, 474, 423, 482, 483, 711, 741, 482])) {
             $status = LogisticEnum::ABNORMAL;
         }
         else {

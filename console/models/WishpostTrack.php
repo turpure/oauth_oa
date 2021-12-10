@@ -4,6 +4,7 @@ namespace console\models;
 
 use backend\models\TradeSendAccessToken;
 use backend\modules\v1\enums\LogisticEnum;
+use backend\modules\v1\models\ApiLogisticsTrack;
 use console\traits\TrackTrait;
 use Yii;
 use yii\db\Exception;
@@ -49,7 +50,7 @@ class WishpostTrack
         foreach ($orderList as $key => $order) {
             $param['track'][] = ['barcode' => $order->track_no];
             $logisticName[$order->track_no] = $order['logistic_name'];
-            if (count($param['track']) == 20) {
+            if (count($param['track']) == 2) {
                 $this->getLogisticTrack($this->arr2xml($param), $logisticName);
                 $param['track'] = [];
                 $logisticName[] = [];
@@ -75,26 +76,25 @@ class WishpostTrack
         ]);
         try {
             $obj = simplexml_load_string($xml);
+            $trackResult = json_decode(json_encode($obj), true);
         }
         catch (\Exception $exception) {
+            var_export($exception->getMessage());
             $trackNo = array_keys($logisticNameList)[0];
             Yii::$app->db->createCommand()
                 ->update(
                     'trade_send_logistics_track',
                     [
-                        'updated_at'      => time(),
-                        'status'          => 5,
-                        'abnormal_status' => LogisticEnum::AS_PENDING,
-                        'abnormal_type'   => LogisticEnum::AT_PROBABLY
+                        'updated_at' => time(),
+                        'status'     => 5,
+                        //                        'abnormal_status' => LogisticEnum::AS_PENDING,
+                        //                        'abnormal_type'   => LogisticEnum::AT_PROBABLY
                     ],
                     ['track_no' => $trackNo]
                 )
                 ->execute();
             return;
         }
-
-
-        $trackResult = json_decode(json_encode($obj), true);
 
         if ($trackResult['status'] !== '0') {
             var_export('wishpost :错误');
@@ -124,14 +124,15 @@ class WishpostTrack
 
             $status = $this->getStatus($trackDetail[0]['status'], $logisticNameList[$track['@attributes']['barcode']]);
             $this->updatedTrack($track['@attributes']['barcode'], [
-                'newest_time'   => strtotime($trackDetail[0]['time']),
-                'newest_detail' => $trackDetail[0]['detail'],
-                'first_time'    => strtotime($trackDetail[$length - 2]['time']),
-                'first_detail'  => $trackDetail[$length - 2]['detail'],
-                //                'elapsed_time'  => strtotime($trackDetail[0]['time']) - strtotime($trackDetail[$length - 2]['time']),
-                'status'        => $status,
-                'track_detail'  => json_encode($trackDetail),
-                'updated_at'    => time()
+                'newest_time'     => strtotime($trackDetail[0]['time']),
+                'newest_detail'   => $trackDetail[0]['detail'],
+                'first_time'      => strtotime($trackDetail[$length - 2]['time']),
+                'first_detail'    => $trackDetail[$length - 2]['detail'],
+                'status'          => $status,
+                'track_detail'    => json_encode($trackDetail),
+                'abnormal_status' => 1,
+                'abnormal_type'   => 1,
+                'updated_at'      => time()
             ]);
         }
     }
