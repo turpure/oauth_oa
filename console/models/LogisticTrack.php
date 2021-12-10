@@ -317,6 +317,8 @@ class  LogisticTrack
                     ];
                 }
 
+                $updateData['updated_at'] = time();
+
                 Yii::$app->db->createCommand()->update(
                     'trade_send_logistics_track',
                     $updateData,
