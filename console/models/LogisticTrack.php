@@ -132,7 +132,7 @@ class  LogisticTrack
 
                     $average += ceil(($track['newest_time'] - $track['closing_date']) / 86400);
                 }
-                $average = $average == 0?0:intval(ceil($average / count($trackList)));
+                $average = $average == 0 ? 0 : intval(ceil($average / count($trackList)));
             }
 
             Yii::$app->db->createCommand()->update(
@@ -254,26 +254,27 @@ class  LogisticTrack
     {
         $endTime = time() - 86400 * 3;
 
-//        Yii::$app->db->createCommand()->update(
-//            'trade_send_logistics_track',
-//            [
-//                'abnormal_type'   => LogisticEnum::AT_NOT_FIND,
-//                'abnormal_status' => LogisticEnum::AS_PENDING,
-//                'abnormal_phase'  => 1
-//            ],
-//            "closing_date<{$endTime} and logistic_type in (2,3,5,8,9) and status=" . LogisticEnum::NOT_FIND
-//        )->execute();
-//        Yii::$app->db->createCommand()->update(
-//            'trade_send_logistics_track',
-//            [
-//                'abnormal_type'   => LogisticEnum::NORMAL,
-//                'abnormal_status' => LogisticEnum::NORMAL,
-//            ],
-//            'abnormal_type=' . LogisticEnum::AT_NOT_FIND . ' and status!=' . LogisticEnum::NOT_FIND . ' or status=' . LogisticEnum::SUCCESS
-//        )->execute();
+        //        Yii::$app->db->createCommand()->update(
+        //            'trade_send_logistics_track',
+        //            [
+        //                'abnormal_type'   => LogisticEnum::AT_NOT_FIND,
+        //                'abnormal_status' => LogisticEnum::AS_PENDING,
+        //                'abnormal_phase'  => 1
+        //            ],
+        //            "closing_date<{$endTime} and logistic_type in (2,3,5,8,9) and status=" . LogisticEnum::NOT_FIND
+        //        )->execute();
+        //        Yii::$app->db->createCommand()->update(
+        //            'trade_send_logistics_track',
+        //            [
+        //                'abnormal_type'   => LogisticEnum::NORMAL,
+        //                'abnormal_status' => LogisticEnum::NORMAL,
+        //            ],
+        //            'abnormal_type=' . LogisticEnum::AT_NOT_FIND . ' and status!=' . LogisticEnum::NOT_FIND . ' or status=' . LogisticEnum::SUCCESS
+        //        )->execute();
 
         $query = TradeSendLogisticsTrack::find()
             ->andFilterWhere(['<', 'closing_date', $endTime])
+            ->andFilterWhere(['track_no' => "VR448347373YP"])
             ->andFilterWhere(['=', 'status', LogisticEnum::IN_TRANSIT])
             ->andFilterWhere(['logistic_type' => [2, 3, 5, 8, 9]])
             ->andFilterWhere(['not in', 'abnormal_status', [6, 7, 8, 9, 10, 11]]);
@@ -298,9 +299,15 @@ class  LogisticTrack
                 else {
                     //挂号
                     $updateData = self::guahao($track);
+
                 }
 
-                if (empty($updateData)) {
+                if (!empty($updateData)) {
+                    if ($track->abnormal_phase == $updateData['abnormal_phase']) {
+                        continue;
+                    }
+                }
+                else {
                     if ($track->abnormal_status == 1) {
                         continue;
                     }
