@@ -274,7 +274,6 @@ class  LogisticTrack
 
         $query = TradeSendLogisticsTrack::find()
             ->andFilterWhere(['<', 'closing_date', $endTime])
-            ->andFilterWhere(['track_no' => "VR448347373YP"])
             ->andFilterWhere(['=', 'status', LogisticEnum::IN_TRANSIT])
             ->andFilterWhere(['logistic_type' => [2, 3, 5, 8, 9]])
             ->andFilterWhere(['not in', 'abnormal_status', [6, 7, 8, 9, 10, 11]]);
