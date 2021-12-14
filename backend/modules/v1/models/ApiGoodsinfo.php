@@ -1237,12 +1237,12 @@ class ApiGoodsinfo
     {
         $payFeeFixedRate = 0.04;
         $siteInfo = [
-            'MY' => ['site' => '马来西亚', 'exchange' => '1.5387', 'payFeeRate' => 0.0236 + $payFeeFixedRate, 'lowPrice' => 4.13],
-            'PH' => ['site' => '菲律宾', 'exchange' => '0.1275', 'payFeeRate' => 0.0272 + $payFeeFixedRate, 'lowPrice' => 91],
-            'ID' => ['site' => '印尼', 'exchange' => '0.0004466', 'payFeeRate' => 0.024 + $payFeeFixedRate, 'lowPrice' => 17500],
-            'TH' => ['site' => '泰国', 'exchange' => '0.1927', 'payFeeRate' => 0.0242 + $payFeeFixedRate, 'lowPrice' => 20],
-            'SG' => ['site' => '新加坡', 'exchange' => '4.7386', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 4],
-            'VN' => ['site' => '越南', 'exchange' => '0.0002821', 'payFeeRate' => 0.0462 + $payFeeFixedRate, 'lowPrice' => 23300],
+            'MY' => ['site' => '马来西亚', 'exchange' => '1.5387', 'payFeeRate' => 0.0236 + $payFeeFixedRate, 'lowPrice' => 0],
+            'PH' => ['site' => '菲律宾', 'exchange' => '0.1275', 'payFeeRate' => 0.0272 + $payFeeFixedRate, 'lowPrice' => 49],
+            'ID' => ['site' => '印尼', 'exchange' => '0.0004466', 'payFeeRate' => 0.024 + $payFeeFixedRate, 'lowPrice' => 999],
+            'TH' => ['site' => '泰国', 'exchange' => '0.1927', 'payFeeRate' => 0.0242 + $payFeeFixedRate, 'lowPrice' => 0],
+            'SG' => ['site' => '新加坡', 'exchange' => '4.7386', 'payFeeRate' => 0.02 + $payFeeFixedRate, 'lowPrice' => 0],
+            'VN' => ['site' => '越南', 'exchange' => '0.0002821', 'payFeeRate' => 0.0462 + $payFeeFixedRate, 'lowPrice' => 23005],
         ];
         $ids = implode(',', $ids);
         $sql = "select og.createDate as '开发日期',cate as '一级类目',subCate as '二级类目',
