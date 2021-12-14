@@ -92,7 +92,10 @@ class TinyToolController extends AdminController
     {
         $request = Yii::$app->request;
         $condition = $request->post('condition');
-        return ApiLogisticsTrack::logisticsTimeFrame($condition);
+        $data = ApiLogisticsTrack::logisticsTimeFrame($condition);
+        $result = $this->serializeData($data['provider']);
+        $result['statistical'] = $data['statistical'];
+        return $result;
     }
     /**
      * 物流妥投率列表
@@ -102,7 +105,10 @@ class TinyToolController extends AdminController
     {
         $request = Yii::$app->request;
         $condition = $request->post('condition');
-        return ApiLogisticsTrack::logisticsSuccRate($condition);
+        $data = ApiLogisticsTrack::logisticsSuccRate($condition);
+        $result = $this->serializeData($data['provider']);
+        $result['statistical'] = $data['statistical'];
+        return $result;
     }
     /**
      * 物流异常列表
@@ -578,10 +584,14 @@ class TinyToolController extends AdminController
         //获取运费和出库费
         $data['transport'] = ApiUk::getTransport($res['weight'], $res['length'], $res['width'], $res['height']);
 
+//        var_dump($data['transport']);exit;
+
         foreach ($data['transport'] as $v) {
             $params1 = $params2 = [
                 'costRmb' => $v['costRmb'],
                 'outRmb' => $v['outRmb'],
+                'extra' => $v['extra'],
+                'extraRmb' => $v['extraRmb'],
                 'costPrice' => $res['price'],
                 'shippingPrice' => $post['shippingPrice'],
                 'adRate' => $post['adRate'],
@@ -1405,7 +1415,7 @@ class TinyToolController extends AdminController
                         SELECT IFNULL(u.seller1,'无人') seller1,c.sku,useNum,c.costMoney,
                         IFNULL(thirtySellCount,0) 30DaySellCount,IFNULL(sellCostMoney,0) 30DayCostMoney
                         FROM `cache_stockWaringTmpData` c
-                        INNER JOIN `cache_skuSeller` u ON u.goodsCode=c.goodsCode WHERE c.storeName IN ('万邑通UK','万邑通UK-MA仓','谷仓UK', '万邑通UKTW')
+                        INNER JOIN `cache_skuSeller` u ON u.goodsCode=c.goodsCode WHERE c.storeName IN ('万邑通UK','万邑通UK-MA仓','谷仓UK', '万邑通UKTW', '万邑通UKGF')
                         AND SUBSTRING(updateTime,1,7) = '{$thisMonth}' 
                 ) aa GROUP BY seller1;";
         try {

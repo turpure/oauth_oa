@@ -332,8 +332,9 @@ class ApiWarehouseTools
         $timeFilter = ['createdTime', 'updatedTime'];
         $query = TaskSort::find();
         $query = Helper::generateFilter($query, $fieldsFilter, $condition);
-        $query = Helper::timeFilter($query, $timeFilter, $condition);
+        $query = Helper::timeFilter($query, $timeFilter, $condition, $type='mssql');
         $query->orderBy('id DESC');
+//        var_dump($query->createCommand()->getRawSql());exit;
         $provider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [

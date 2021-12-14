@@ -46,7 +46,8 @@ class ApiSettings
                 devRate='{$condition['devRate']}',devRate1='{$condition['devRate1']}',
                 wishSalerRate='{$condition['wishSalerRate']}',wishReceiptRate='{$condition['wishReceiptRate']}',
                             wishReceiptRateTime='{$condition['wishReceiptRateTime']}',
-                devRate5='{$condition['devRate5']}',devRate7='{$condition['devRate7']}'";
+                devRate5='{$condition['devRate5']}',devRate7='{$condition['devRate7']}',
+                updateTime=GETDATE() ";
         $res = Yii::$app->py_db->createCommand($sql)->execute();
         if ($res) {
             $result = true;
@@ -68,7 +69,8 @@ class ApiSettings
      */
     public static function addDiebaseFeeFile($condition)
     {
-        $sql = "UPDATE Y_RateManagement SET salerRate='{$condition['salerRate']}',devRate='{$condition['devRate']}'";
+        $sql = "UPDATE Y_RateManagement SET salerRate='{$condition['salerRate']}',devRate='{$condition['devRate']}',
+                updateTime=GETDATE() ";
         $res = Yii::$app->py_db->createCommand($sql)->execute();
         if ($res) {
             $result = true;
@@ -350,6 +352,7 @@ class ApiSettings
         return $res;
     }
 
+    /////////////////////////////////////运营KPI////////////////////////////
     /**
      * getKpiExtraScore
      * @param $condition
@@ -426,6 +429,75 @@ class ApiSettings
         }
         return $errArr;
     }
+
+    /////////////////////////////主管KPI/////////////////////////////////////////
+
+    /**
+     * getKpiExtraScore
+     * @param $condition
+     * Date: 2021-07-28 9:47
+     * Author: henry
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    public static function getLeaderKpiExtraScore($condition)
+    {
+        $month = $condition['month'];
+        $name = isset($condition['username']) ? $condition['username'] : '';
+//        $depart = isset($condition['depart']) ? $condition['depart'] : '';
+//        $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
+//        if (!$name && $depart) {
+//            $name = ApiCondition::getUserByDepart($depart, $secDepartment);
+//            $name = implode("','", $name);
+//        }
+        //获取当前用户信息
+        $username = Yii::$app->user->identity->username;
+        $userList = implode("','", ApiUser::getUserList($username));
+        $sql = "SELECT DISTINCT s.id,b.username,b.month,b.hireDate ,cooperateScore,activityScore,executiveScore,
+                        otherTrainingScore,otherChallengeScore,otherDeductionScore,s.updateTime 
+                FROM `user` u
+                LEFT JOIN auth_assignment a ON a.user_id=u.id
+                INNER JOIN oauth_leader_kpi_tmp_data b ON b.username=u.username AND b.`month` = '{$month}'
+                LEFT JOIN oauth_leader_kpi_other_score s ON s.username=b.username AND s.month = '{$month}'
+                WHERE u.`status`=10 AND a.item_name = '部门主管' ";
+        if ($name) $sql .= " AND b.username IN ('{$name}') ";
+        if ($userList) $sql .= " AND b.username IN ('{$userList}') ";
+        return Yii::$app->db->createCommand($sql)->queryAll();
+    }
+
+    public static function saveLeaderKpiExtraData($file)
+    {
+        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+        $spreadsheet = $reader->load(Yii::$app->basePath . $file);
+        $sheet = $spreadsheet->getSheet(0);
+        $highestRow = $sheet->getHighestRow(); // 取得总行数
+        $errArr = [];
+        for ($i = 2; $i <= $highestRow; $i++) {
+            $data['month'] = $sheet->getCell("A" . $i)->getValue();
+            $data['username'] = $sheet->getCell("B" . $i)->getValue();
+            $data['cooperateScore'] = $sheet->getCell("D" . $i)->getValue() ?: 0;
+            $data['activityScore'] = $sheet->getCell("E" . $i)->getValue() ?: 0;
+            $data['executiveScore'] = $sheet->getCell("F" . $i)->getValue() ?: 0;
+            $data['otherTrainingScore'] = $sheet->getCell("G" . $i)->getValue() ?: 0;
+            $data['otherChallengeScore'] = $sheet->getCell("H" . $i)->getValue() ?: 0;
+            $data['otherDeductionScore'] = $sheet->getCell("I" . $i)->getValue() ?: 0;
+            $data['updateTime'] = date('Y-m-d H:i:s');
+
+            if (!$data['username'] && !$data['month']) break;//取到数据为空时跳出循环
+
+            $sql = "SELECT * FROM oauth_leader_kpi_other_score WHERE username = '{$data['username']}' AND `month` = '{$data['month']}' ";
+            $res = Yii::$app->db->createCommand($sql)->queryOne();
+            if($res) {
+                Yii::$app->db->createCommand()->update('oauth_leader_kpi_other_score', $data, ['username' => $data['username'], 'month' => $data['month']])->execute();
+            }else{
+                Yii::$app->db->createCommand()->insert('oauth_leader_kpi_other_score', $data)->execute();
+            }
+        }
+        return $errArr;
+    }
+
+
+
 
     public static function saveIntegralData($file, $fileName, $fileSize)
     {

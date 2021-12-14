@@ -21,6 +21,7 @@ use yii\db\ActiveRecord;
  * @property integer $second_ratio
  * @property integer $third_ratio
  * @property integer $above_ratio
+ * @property integer $status
  */
 class TradSendLogisticsTimeFrame extends ActiveRecord
 {

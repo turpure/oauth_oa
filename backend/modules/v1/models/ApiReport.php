@@ -943,31 +943,32 @@ class ApiReport
 //        var_dump($suffixArr);exit;
         $res = [];
         $totalFeeUs = $totalFeeGbp = 0;
-        foreach ($data as $v) {
-            $sql = "SELECT username FROM `user` u
-                    LEFT JOIN auth_store_child l ON l.user_id = u.id
-                    LEFT JOIN auth_store s ON l.store_id = s.id
-                    WHERE s.store = '{$v['suffix']}' ";
-            $item['salerman'] = Yii::$app->db->createCommand($sql)->queryScalar();
-            $item['suffix'] = $v['suffix'];
-            $item['feeType'] = $v['feeType'];
-            $item['currency'] = $v['currency'];
-            $item['value'] = $v['sum'];
-
-//            $item['valueZn'] = $v['sum'] * ($v['currency'] == 'USD' ? $usRate : ($v['currency'] == 'GBP' ? $gbpRate : ApiUkFic::getRateUkOrUs($v['currency'])));
-            if ($v['currency'] == 'USD') {
-                $item['valueZn'] = $v['sum'] * $usRate;
-                $totalFeeUs += $v['sum'];
-            } elseif ($v['currency'] == 'GBP') {
-                $item['valueZn'] = $v['sum'] * $gbpRate;
-                $totalFeeGbp += $v['sum'];
-            } else {
-                $item['valueZn'] = $v['sum'] * ApiUkFic::getRateUkOrUs($v['currency']);
-            }
-            $item['valueZn'] = round($item['valueZn'], 2);
-            $res[] = $item;
-        }
         try {
+            foreach ($data as $v) {
+                $sql = "SELECT username FROM `user` u
+                        LEFT JOIN auth_store_child l ON l.user_id = u.id
+                        LEFT JOIN auth_store s ON l.store_id = s.id
+                        WHERE s.store = '{$v['suffix']}' ";
+                $item['salerman'] = Yii::$app->db->createCommand($sql)->queryScalar();
+                $item['suffix'] = $v['suffix'];
+                $item['feeType'] = isset($v['feeType']) ? $v['feeType'] : '';
+                $item['currency'] = $v['currency'];
+                $item['value'] = $v['sum'];
+
+    //            $item['valueZn'] = $v['sum'] * ($v['currency'] == 'USD' ? $usRate : ($v['currency'] == 'GBP' ? $gbpRate : ApiUkFic::getRateUkOrUs($v['currency'])));
+                if ($v['currency'] == 'USD') {
+                    $item['valueZn'] = $v['sum'] * $usRate;
+                    $totalFeeUs += $v['sum'];
+                } elseif ($v['currency'] == 'GBP') {
+                    $item['valueZn'] = $v['sum'] * $gbpRate;
+                    $totalFeeGbp += $v['sum'];
+                } else {
+                    $item['valueZn'] = $v['sum'] * ApiUkFic::getRateUkOrUs($v['currency']);
+                }
+                $item['valueZn'] = round($item['valueZn'], 2);
+                $res[] = $item;
+            }
+
             $provider = new ArrayDataProvider([
                 'allModels' => $res,
                 'pagination' => [
@@ -1901,7 +1902,7 @@ class ApiReport
             FROM  oauth_clearPlanAmazon(nolock) AS cp
             INNER JOIN b_goodsSku(nolock) AS bgs ON   cp.sku = bgs.sku
             INNER JOIN b_goods(nolock) AS bg ON   bg.NID = bgs.goodsID
-            INNER JOIN b_goodsCats(nolock) AS bc ON bg.goodsCategoryId = bc.nid
+            LEFT JOIN b_goodsCats(nolock) AS bc ON bg.goodsCategoryId = bc.nid
             INNER JOIN KC_CurrentStock(nolock) AS ks ON ks.goodsskuid = bgs.nid
             INNER JOIN b_store(nolock) AS bs ON bs.nid = ks.storeId and bs.storeName = cp.storeName
             WHERE cp.isRemoved = 0 AND number > 0 ";
@@ -2709,6 +2710,7 @@ class ApiReport
         return $data;
     }
 
+//////////////////////////////////运营KPI//////////////////////////////////////////////////////
 
     /**
      * 运营KPI 数据
@@ -2851,6 +2853,114 @@ class ApiReport
                 }
             }
             $item['totalRate'] = round((1 + $item['numA'] * 0.1 + $item['testNumA'] * 0.1 - $item['numC'] * 0.05 - $item['numD'] * 0.1) * 100, 2);
+            $data[] = $item;
+        }
+        $totalRate = ArrayHelper::getColumn($data, 'totalRate');
+        array_multisort($totalRate, SORT_DESC, $data);
+        foreach ($data as $k => &$v) {
+            $v['totalSort'] = ($k + 1) . '/' . count($totalRate);
+            $v['totalRate'] .= '%';
+        }
+        return $data;
+    }
+
+    //////////////////////////////////主管KPI//////////////////////////////////////////////////////
+
+    /**
+     * 主管KPI 数据
+     * @param $condition
+     * Date: 2021-12-06 9:19
+     * Author: henry
+     * @return array
+     */
+    public static function getLeaderKpi($condition)
+    {
+        $name = isset($condition['name']) && $condition['name'] ? $condition['name'] : [];
+        $name = is_array($name) ? $name : [$name];
+//        $depart = isset($condition['depart']) ? $condition['depart'] : '';
+//        $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
+//        $plat = isset($condition['plat']) ? $condition['plat'] : '';
+        $month = isset($condition['month']) ? $condition['month'] : '';
+//        if (!$name && $depart) {
+//            $name = ApiCondition::getUserByDepart($depart, $secDepartment);
+//        }
+        //获取当前用户信息
+        $username = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($username);
+//        var_dump($userList);exit;
+        $query = (new yii\db\Query())//->select('*')
+        ->from('oauth_leader_kpi_report')
+            ->andFilterWhere(['in', 'name', $name])
+            ->andFilterWhere(['in', 'name', $userList])
+//            ->andFilterWhere(['=', 'depart', $depart])
+//            ->andFilterWhere(['=', 'plat', $plat])
+            ->andFilterWhere(['=', 'month', $month])
+            ->orderBy('totalScore DESC')->all();
+        foreach ($query as &$v) {
+            $v['salesAddRate'] .= '%';
+        }
+        return $query;
+    }
+
+
+    /**
+     * 主管KPI 历史数据
+     * @param $condition
+     * Date: 2021-12-06 9:19
+     * Author: henry
+     * @return array
+     */
+    public static function getLeaderKpiHistory($condition)
+    {
+        $name = isset($condition['name']) && $condition['name'] ? $condition['name'] : [];
+        $name = is_array($name) ? $name : [$name];
+//        $depart = isset($condition['depart']) ? $condition['depart'] : '';
+//        $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
+//        $plat = isset($condition['plat']) ? $condition['plat'] : '';
+        $beginMonth = isset($condition['dateRange'][0]) && $condition['dateRange'][0] ? $condition['dateRange'][0] : '';
+        $endMonth = isset($condition['dateRange'][1]) && $condition['dateRange'][1] ? $condition['dateRange'][1] : '';
+//        if (!$name && $depart) {
+//            $name = ApiCondition::getUserByDepart($depart, $secDepartment);
+//        }
+        //获取当前用户信息
+        $username = Yii::$app->user->identity->username;
+        $userList = ApiUser::getUserList($username);
+        $query = (new yii\db\Query())//->select('*')
+        ->from('oauth_leader_kpi_report')
+            ->andFilterWhere(['in', 'name', $name])
+            ->andFilterWhere(['in', 'name', $userList])
+            ->andFilterWhere(['between', 'month', $beginMonth, $endMonth])
+//            ->andFilterWhere(['=', 'depart', $depart])
+//            ->andFilterWhere(['=', 'plat', $plat])
+            ->orderBy('name, month')->all();
+        $userList = array_unique(ArrayHelper::getColumn($query, 'name'));
+        $dateList = array_unique(ArrayHelper::getColumn($query, 'month'));
+        sort($dateList);
+        $row = [];
+        foreach ($dateList as $v) {
+            $row[] = ['month' => $v, 'rank' => ''];
+        }
+        $data = [];
+        foreach ($userList as $user) {
+            $item = [];
+            $item['name'] = $user;
+            $item['numA'] = $item['numB'] = $item['numC'] = $item['numD'] = $item['totalRate'] = $item['totalSort'] = 0;
+            $item['value'] = $row;
+            foreach ($query as $v) {
+                if ($v['name'] == $user) {
+                    $item['hireDate'] = $v['hireDate'];
+                    foreach ($item['value'] as &$value) {
+                        if ($value['month'] == $v['month'] && $v['month'] >= substr($v['hireDate'], 0, 7)) {
+                            $value['rank'] = $v['rank'];
+                        }
+                    }
+                    if ($v['rank'] == 'A') $item['numA'] += 1;
+                    if ($v['rank'] == 'B') $item['numB'] += 1;
+                    if ($v['rank'] == 'C') $item['numC'] += 1;
+                    if ($v['rank'] == 'D') $item['numD'] += 1;
+                }
+            }
+            $item['totalRate'] = round((1 + $item['numA'] * 0.1 - $item['numC'] * 0.05 - $item['numD'] * 0.1) * 100, 2);
             $data[] = $item;
         }
         $totalRate = ArrayHelper::getColumn($data, 'totalRate');
