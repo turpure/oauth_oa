@@ -1707,6 +1707,7 @@ class ApiGoodsinfo
             $wishAccounts = OaWishSuffix::find()->andFilterWhere(['like', 'parentCategory', $goods['cate']])
                 ->orWhere(["IFNULL(parentCategory,'')" => ''])
                 ->andWhere(['isIbay' => 1])
+                ->andWhere(['removed' => 0])
                 ->andFilterWhere(['shortName' => $suffix])
                 ->asArray()->all();
             $keyWords = static::preKeywords($wishInfo);
@@ -1868,11 +1869,10 @@ class ApiGoodsinfo
         # 是否指定店铺
         if (!empty($accounts)) {
             $accounts = explode(',', $accounts);
-            $wishAccountsQuery = OaWishSuffix::find()->andWhere(['or', ['like', 'parentCategory', $goods['cate']], ["IFNULL(parentCategory,'')" => '']])
+            $wishAccountsQuery = OaWishSuffix::find()->andWhere(['removed' => 0])->andWhere(['or', ['like', 'parentCategory', $goods['cate']], ["IFNULL(parentCategory,'')" => '']])
                 ->andWhere(['in', 'shortName', $accounts]);
         } else {
-            $wishAccountsQuery = OaWishSuffix::find()->where(['like', 'parentCategory', $goods['cate']])
-                ->orWhere(["IFNULL(parentCategory,'')" => '']);
+            $wishAccountsQuery = OaWishSuffix::find()->andWhere(['removed' => 0])->andWhere(['or', ['like', 'parentCategory', $goods['cate']], ["IFNULL(parentCategory,'')" => '']]);
         }
         if (!$type) {
             $wishAccountsQuery->andWhere(['isIbay' => 0]);
