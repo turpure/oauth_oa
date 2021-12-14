@@ -46,7 +46,8 @@ class ApiSettings
                 devRate='{$condition['devRate']}',devRate1='{$condition['devRate1']}',
                 wishSalerRate='{$condition['wishSalerRate']}',wishReceiptRate='{$condition['wishReceiptRate']}',
                             wishReceiptRateTime='{$condition['wishReceiptRateTime']}',
-                devRate5='{$condition['devRate5']}',devRate7='{$condition['devRate7']}'";
+                devRate5='{$condition['devRate5']}',devRate7='{$condition['devRate7']}',
+                updateTime=GETDATE() ";
         $res = Yii::$app->py_db->createCommand($sql)->execute();
         if ($res) {
             $result = true;
@@ -68,7 +69,8 @@ class ApiSettings
      */
     public static function addDiebaseFeeFile($condition)
     {
-        $sql = "UPDATE Y_RateManagement SET salerRate='{$condition['salerRate']}',devRate='{$condition['devRate']}'";
+        $sql = "UPDATE Y_RateManagement SET salerRate='{$condition['salerRate']}',devRate='{$condition['devRate']}',
+                updateTime=GETDATE() ";
         $res = Yii::$app->py_db->createCommand($sql)->execute();
         if ($res) {
             $result = true;
