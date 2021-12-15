@@ -238,6 +238,7 @@ class ApiBasicInfo
         if(isset($condition['shortName'])) $query->andFilterWhere(['like', 'shortName', $condition['shortName']]);
         if(isset($condition['suffix'])) $query->andFilterWhere(['like', 'suffix', $condition['suffix']]);
         if(isset($condition['mainImg'])) $query->andFilterWhere(['like', 'mainImg', $condition['mainImg']]);
+        if(isset($condition['removed'])) $query->andFilterWhere(['like', 'removed', $condition['removed']]);
         if(isset($condition['parentCategory'])) $query->andFilterWhere(['like', 'parentCategory', $condition['parentCategory']]);
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
