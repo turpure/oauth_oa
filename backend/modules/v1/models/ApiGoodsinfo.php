@@ -4427,7 +4427,9 @@ class ApiGoodsinfo
                 LEFT JOIN `auth_department_child` dc ON u.id=dc.user_id
                 LEFT JOIN `auth_department` d ON d.id=dc.department_id
                 LEFT JOIN `auth_department` pd ON pd.id=d.parent
-                WHERE s.platform NOT in  ('Joom', 'Amazon') order by platform,suffix";
+                -- 2021-12-15 添加 ，过滤掉wish 停用账号
+                LEFT JOIN proCenter.oa_wishSuffix w ON w.shortName=s.store
+                WHERE s.platform NOT in  ('Joom', 'Amazon') AND IFNULL(w.removed,0)<>1 order by platform,suffix";
         return Yii::$app->db->createCommand($sql)->queryAll();
     }
 
