@@ -273,6 +273,7 @@ class  LogisticTrack
         //        )->execute();
 
         $query = TradeSendLogisticsTrack::find()
+            ->andFilterWhere(['order_id'=>'36683093'])
             ->andFilterWhere(['<', 'closing_date', $endTime])
             ->andFilterWhere(['=', 'status', LogisticEnum::IN_TRANSIT])
             ->andFilterWhere(['logistic_type' => [2, 3, 5, 8, 9]])
@@ -288,11 +289,6 @@ class  LogisticTrack
 
                 if (self::transportType($track->logistic_name) == 1) {
                     // 平邮
-
-                    if ($track->abnormal_phase == 3) {
-                        // 平邮最大为3
-                        continue;
-                    }
                     $updateData = self::pingyou($track);
                 }
                 else {
@@ -316,8 +312,6 @@ class  LogisticTrack
                         'abnormal_phase'  => 1
                     ];
                 }
-
-                $updateData['updated_at'] = time();
 
                 Yii::$app->db->createCommand()->update(
                     'trade_send_logistics_track',
