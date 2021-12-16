@@ -695,10 +695,10 @@ class ApiReport
                                CASE WHEN ISNULL(SalerName,'')='' THEN '无人' ELSE SalerName END AS SalerName,
                                timegroup,
                                sum(amount) as amount,
-                               devOperateTime
+                               CONVERT(VARCHAR(10),devOperateTime,121) AS devOperateTime
                              FROM Y_devOperateFee
-                             WHERE devOperateTime  BETWEEN '{$condition['beginDate']}'  AND '{$condition['endDate']}'
-                             group by salername,timegroup,devOperateTime) dev1
+                             WHERE CONVERT(VARCHAR(10),devOperateTime,121)  BETWEEN '{$condition['beginDate']}'  AND '{$condition['endDate']}'
+                             group by salername,timegroup,CONVERT(VARCHAR(10),devOperateTime,121)) dev1
                           group  by dev1.salername,dev1.timegroup";
             $operateList = Yii::$app->py_db->createCommand($operateSql)->queryAll();
             //获取 清仓
@@ -708,10 +708,10 @@ class ApiReport
                                CASE WHEN ISNULL(introducer,'')='' THEN '无人' ELSE introducer END AS introducer,
                                timegroup,
                                sum(amount) as amount,
-                               clearnTime
+                               CONVERT(VARCHAR(10),clearnTime,121) AS clearnTime
                              FROM Y_introOfflineClearn
-                             WHERE clearnTime  BETWEEN '{$condition['beginDate']}'  AND '{$condition['endDate']}'
-                             group by introducer,timegroup,clearnTime) dev1
+                             WHERE CONVERT(VARCHAR(10),clearnTime,121)  BETWEEN '{$condition['beginDate']}'  AND '{$condition['endDate']}'
+                             group by introducer,timegroup,CONVERT(VARCHAR(10),clearnTime,121)) dev1
                           group  by dev1.introducer,dev1.timegroup";
             $offlineList = Yii::$app->py_db->createCommand($offlineSql)->queryAll();
             $data = [];
