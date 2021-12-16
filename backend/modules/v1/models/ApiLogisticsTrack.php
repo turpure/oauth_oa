@@ -3,11 +3,9 @@
 namespace backend\modules\v1\models;
 
 use backend\models\AuthAssignment;
-use backend\models\TradeSendLogisticsTrack;
 use backend\models\TradSendLogisticsTimeFrame;
 use backend\models\TradSendSuccRate;
 use backend\modules\v1\enums\LogisticEnum;
-use backend\modules\v1\utils\Helper;
 use common\models\User;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -57,7 +55,7 @@ class ApiLogisticsTrack
         //获取平台列表
         if ($isAccountAdmin = (in_array(AuthAssignment::ACCOUNT_ADMIN, $role) === false)) {
             //            非超级会员
-            $userAccount = ApiCondition::getUserAccount();
+            $userAccount = array_column(ApiCondition::getUserAccount(), 'store');
         }
 
         $query = (new \yii\db\Query())
@@ -130,6 +128,7 @@ class ApiLogisticsTrack
         if (!empty($condition['addressowner'])) {
             $query->andFilterWhere(['trade_send.addressowner' => $condition['addressowner']]);
         }
+
         if (!empty($condition['suffix'])) {
 
             if ($isAccountAdmin && !in_array($condition['suffix'], $userAccount)) {
