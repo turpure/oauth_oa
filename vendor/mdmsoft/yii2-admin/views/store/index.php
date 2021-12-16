@@ -3,6 +3,8 @@
 use yii\helpers\Html;
 use yii\grid\GridView;
 use mdm\admin\components\Helper;
+use \yii\bootstrap\Modal;
+use yii\helpers\Url;
 
 /* @var $this yii\web\View */
 /* @var $searchModel mdm\admin\models\searchs\User */
@@ -17,6 +19,13 @@ $this->params['breadcrumbs'][] = $this->title;
     <p>
         <?= Html::a(Yii::t('rbac-admin', '新增店铺'), ['create'], ['class' => 'btn btn-success']) ?>
         <?= Html::a(Yii::t('rbac-admin', '导出'), ['export'], ['class' => 'export btn btn-primary']) ?>
+        <?= Html::a(Yii::t('rbac-admin', '批量导入'), ['#'],
+            [
+                'id' => 'create',
+                'data-toggle' => 'modal',
+                'data-target' => '#create-modal',
+                'class' => 'import btn btn-danger'
+            ]) ?>
     </p>
 
     <?=
@@ -34,6 +43,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 }
             ],
             'username',
+            'check_username',
             [
                 'class' => 'yii\grid\ActionColumn',
                 'template' => Helper::filterActionColumn(['view', 'update', 'delete']),
@@ -53,5 +63,22 @@ $this->params['breadcrumbs'][] = $this->title;
             'maxButtonCount' => 10
         ],
     ]);
+
+    Modal::begin([
+        'id' => 'create-modal',
+        'header' => '<h4 class="modal-title">导入</h4>',
+        'footer' => '<a href="#" class="btn btn-primary" data-dismiss="modal">Close</a>',
+    ]);
+    $requestUrl = Url::toRoute('import');
+    $js = <<<JS
+    $.get('{$requestUrl}', {},
+        function (data) {
+            $('.modal-body').html(data);
+        }  
+    );
+JS;
+    $this->registerJs($js);
+    Modal::end();
+
     ?>
 </div>
