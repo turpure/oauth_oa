@@ -5,6 +5,7 @@ use yii\grid\GridView;
 use mdm\admin\components\Helper;
 use \yii\bootstrap\Modal;
 use yii\helpers\Url;
+use yii\widgets\ActiveForm;
 
 /* @var $this yii\web\View */
 /* @var $searchModel mdm\admin\models\searchs\User */
@@ -19,14 +20,14 @@ $this->params['breadcrumbs'][] = $this->title;
     <p>
         <?= Html::a(Yii::t('rbac-admin', '新增店铺'), ['create'], ['class' => 'btn btn-success']) ?>
         <?= Html::a(Yii::t('rbac-admin', '导出'), ['export'], ['class' => 'export btn btn-primary']) ?>
-        <?= Html::a(Yii::t('rbac-admin', '批量导入'), ['#'],
-            [
-                'id' => 'create',
-                'data-toggle' => 'modal',
-                'data-target' => '#create-modal',
-                'class' => 'import btn btn-danger'
-            ]) ?>
+
+        <?php /*$form = ActiveForm::begin(["options" => ["enctype" => "multipart/form-data"]]); */?><!--
+        <?/*= $form->field($model, "file")->fileInput() */?>
+        <?/*= Html::a(Yii::t('rbac-admin', '批量导入'), ['import'], ['id' => 'create', 'class' => 'import btn btn-danger']) */?>
+        --><?php /*ActiveForm::end(); */?>
     </p>
+
+
 
     <?=
     GridView::widget([
@@ -64,21 +65,6 @@ $this->params['breadcrumbs'][] = $this->title;
         ],
     ]);
 
-    Modal::begin([
-        'id' => 'create-modal',
-        'header' => '<h4 class="modal-title">导入</h4>',
-        'footer' => '<a href="#" class="btn btn-primary" data-dismiss="modal">Close</a>',
-    ]);
-    $requestUrl = Url::toRoute('import');
-    $js = <<<JS
-    $.get('{$requestUrl}', {},
-        function (data) {
-            $('.modal-body').html(data);
-        }  
-    );
-JS;
-    $this->registerJs($js);
-    Modal::end();
 
     ?>
 </div>
