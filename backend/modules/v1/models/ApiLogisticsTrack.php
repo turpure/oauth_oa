@@ -3,6 +3,7 @@
 namespace backend\modules\v1\models;
 
 use backend\models\AuthAssignment;
+use backend\models\TradSendLogisticsCompany;
 use backend\models\TradSendLogisticsTimeFrame;
 use backend\models\TradSendSuccRate;
 use backend\modules\v1\enums\LogisticEnum;
@@ -499,7 +500,7 @@ class ApiLogisticsTrack
         ini_set('memory_limit', '-1');
 
         //      ：1未查询# 2查询不到 #3 运输途中 # 5可能异常# 6到达待取# 7投递失败#8 成功签收 9已退回 10销毁/弃件 11已索赔
-        $trackStatus = ['未查询', '查询不到', '运输途中', '运输过久', '可能异常', '到达待取', '投递失败', '成功签收','已退回','销毁/弃件','已索赔'];
+        $trackStatus = ['未查询', '查询不到', '运输途中', '运输过久', '可能异常', '到达待取', '投递失败', '成功签收', '已退回', '销毁/弃件', '已索赔'];
         $abnormalStatus = ['正常', '异常待处理', '待赔偿', '暂时正常', '已退回', '销毁/弃件', '已索赔', '成功签收'];
         $abnormalType = ['无异常', '未上网', '断更', '运输过久', '退件', '派送异常', '信息停滞', '可能异常'];
 
@@ -694,8 +695,75 @@ class ApiLogisticsTrack
     /**
      * 物流公司
      */
-    public
-    static function logisticsCompany()
+    public static function logisticsCompany()
+    {
+        $platform = ['1688', 'ae_common', 'aliexpress', 'amazon11', 'ebay', 'joom', 'lazada', 'mall', 'paypal', 'shopee', 'vova', 'wish', 'Shopify', 'fyndiq', 'Joybuy', 'saleafter'];
+
+        $companys = TradSendLogisticsCompany::find()
+            ->andFilterWhere(['level' => 1])
+            ->andFilterWhere(['status' => 1])
+            ->asArray()->all();
+
+        $logistics = TradSendLogisticsCompany::find()
+            ->andFilterWhere(['level' => 2])
+            ->andFilterWhere(['status' => 1])
+            ->asArray()->all();
+
+        foreach ($companys as $key => $company) {
+            foreach ($logistics as $logistic) {
+                if ($logistic['type'] == $company['type']) {
+                    $companys[$key]['list'][] = $logistic['name'];
+                }
+            }
+        }
+
+        return [
+            'platform' => $platform,
+            'logistic' => $companys
+        ];
+    }
+
+    /**
+     * 编辑物流方式
+     * @param $condition
+     */
+    public static function logisticsEditName($condition)
+    {
+        if ($condition['operation_type'] == 1) {
+            Yii::$app->db->createCommand()
+                ->insert(
+                    'trad_send_logistics_company',
+                    [
+                        'name'       => $condition['name'],
+                        'type'       => $condition['type'],
+                        'level'      => 2,
+                        'created_at' => time(),
+                        'updated_at' => time()
+                    ])
+                ->execute();
+        }
+        else {
+            Yii::$app->db->createCommand()
+                ->update(
+                    'trad_send_logistics_company',
+                    [
+                        'status'     => 2,
+                        'updated_at' => time()
+                    ],
+                    [
+                        'name'   => $condition['name'],
+                        'type'   => $condition['type'],
+                        'status' => 1
+                    ])
+                ->execute();
+        }
+    }
+
+
+    /**
+     * 物流公司
+     */
+    public static function logisticsCompany3()
     {
         $platform = ['1688', 'ae_common', 'aliexpress', 'amazon11', 'ebay', 'joom', 'lazada', 'mall', 'paypal', 'shopee', 'vova', 'wish', 'Shopify', 'fyndiq', 'Joybuy', 'saleafter'];
 
@@ -785,11 +853,38 @@ class ApiLogisticsTrack
             ],
         ];
 
+        //         * @property string $name
+        // * @property string $type
+        // * @property string $level
 
-        return [
-            'platform' => $platform,
-            'logistic' => $exList
-        ];
+        $data = [];
+        foreach ($exList as $item) {
+            $data[] = [
+                $item['name'],
+                $item['type'],
+                1,
+                time(),
+                time(),
+            ];
+
+            foreach ($item['list'] as $name) {
+                $data[] = [
+                    $name,
+                    $item['type'],
+                    2,
+                    time(),
+                    time(),
+                ];
+            }
+        }
+
+        Yii::$app->db->createCommand()
+            ->batchInsert('trad_send_logistics_company', ['name', 'type', 'level', 'created_at', 'updated_at'], $data)->execute();
+
+        //        return [
+        //            'platform' => $platform,
+        //            'logistic' => $exList
+        //        ];
 
     }
 
