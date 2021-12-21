@@ -5,7 +5,7 @@ namespace backend\models;
 use yii\db\ActiveRecord;
 
 /**
- * 物流方式 "trad_send_logistics_company".
+ * 物流方式 "trade_send_logistics_company".
  *
  * @property string $id
  * @property string $name
@@ -13,14 +13,14 @@ use yii\db\ActiveRecord;
  * @property string $level
  */
 
-class TradSendLogisticsCompany extends ActiveRecord
+class TradeSendLogisticsCompany extends ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return 'trad_send_logistics_company';
+        return 'trade_send_logistics_company';
     }
 
 }
