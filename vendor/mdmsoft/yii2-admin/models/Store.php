@@ -14,6 +14,7 @@ class Store extends ActiveRecord
 {
     public $username;
     public $check_username;
+    public $file;
 
     /**
      * {@inheritdoc}

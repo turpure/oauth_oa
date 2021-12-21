@@ -20,6 +20,7 @@ namespace backend\modules\v1\controllers;
 
 use backend\models\OaFyndiqSuffix;
 use backend\models\ShopElf\BGoods;
+use backend\modules\v1\models\ApiSettings;
 use backend\modules\v1\services\WytServices;
 use backend\modules\v1\utils\ExportTools;
 use backend\modules\v1\utils\Helper;
@@ -245,6 +246,35 @@ class TestController extends AdminController
 
 
 
+    }
+
+
+    public function actionImport(){
+        try {
+            $file = $_FILES['file'];
+            if (!$file) {
+                throw new Exception('The upload file can not be empty!');
+            }
+            //判断文件后缀
+            $extension = ApiSettings::get_extension($file['name']);
+            if (!in_array($extension, ['.Xls', '.xls'])) return ['code' => 400, 'message' => "File format error,please upload files in 'Xls' format"];
+
+            //文件上传
+            $result = ApiSettings::file($file, 'storeUpdate');
+            if (!$result) {
+                throw new Exception('File upload failed!');
+            } else {
+                //获取上传excel文件的内容并保存
+                $res = ApiSettings::saveStoreData($result);
+//                if ($res !== true) return ['code' => 400, 'message' => $res];
+                return $res;
+            }
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
     }
 
 

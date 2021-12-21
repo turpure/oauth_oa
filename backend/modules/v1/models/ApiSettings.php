@@ -10,6 +10,10 @@ namespace backend\modules\v1\models;
 
 use backend\models\OaWishGoods;
 use backend\models\OaWishGoodsSku;
+use backend\models\User;
+use mdm\admin\models\Store;
+use mdm\admin\models\StoreChild;
+use mdm\admin\models\StoreChildCheck;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Yii;
 
@@ -625,5 +629,75 @@ class ApiSettings
         }
     }
 
+
+    public static function saveStoreData($file)
+    {
+        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+        $spreadsheet = $reader->load(Yii::$app->basePath . $file);
+        $sheet = $spreadsheet->getSheet(0);
+        $highestRow = $sheet->getHighestRow(); // 取得总行数
+        $errArr = [];
+        for ($i = 2; $i <= $highestRow; $i++) {
+            $data['store'] = $sheet->getCell("A" . $i)->getValue();
+            $data['platform'] = $sheet->getCell("B" . $i)->getValue();
+            $data['username'] = $sheet->getCell("C" . $i)->getValue() ?: 0;
+            $data['check_username'] = $sheet->getCell("D" . $i)->getValue() ?: 0;
+
+            if (!$data['store']) break;//取到数据为空时跳出循环
+
+            $store = Store::findOne(['store' => $data['store']]);
+            if(!$store) {
+                $store = new Store();
+                $store->store = $data['store'];
+                $store->platform = $data['platform'];
+                $res1 = $store->save();
+                if(!$res1){
+                    $errArr[] = $data['store'] . ' 保存失败!';
+                    continue;
+                }
+                $storeId = $store->id;
+            }else{
+                $storeId = $store['id'];
+            }
+            if ($data['username']){
+                $userId = User::findOne(['username' => $data['username']])['id'];
+                if(!$userId){
+                    $errArr[] = $data['store'] . ' 更新归属人失败，用户' . $data['username'] . '不存在!';
+                    continue;
+                }
+                StoreChild::deleteAll(['store_id' => $storeId]);
+                $storeChild = new StoreChild();
+                $storeChild->user_id = $userId;
+                $storeChild->store_id = $storeId;
+                $res2 = $storeChild->save();
+                if(!$res2){
+                    $errArr[] = $data['store'] . ' 更新归属人失败!ERROR';
+                    continue;
+                }
+            }
+            if ($data['check_username']){
+                $checkUserId = User::findOne(['username' => $data['check_username']])['id'];
+//                var_dump($checkUserId);exit;
+                if(!$checkUserId){
+                    $errArr[] = $data['store'] . ' 添加查看人失败，用户' . $data['check_username'] . '不存在!';
+                    continue;
+                }
+                $check = StoreChildCheck::findOne(['user_id' => $checkUserId, 'store_id' => $storeId]);
+                if($check){
+                    continue;
+                }
+                $storeChildCheck = new StoreChildCheck();
+                $storeChildCheck->user_id = $checkUserId;
+                $storeChildCheck->store_id = $storeId;
+                $res3 = $storeChildCheck->save();
+                if(!$res3){
+//                    var_dump($storeChildCheck->getErrors());exit;
+                    $errArr[] = $data['store'] . ' 添加查看人失败!ERROR';
+                    continue;
+                }
+            }
+        }
+        return $errArr;
+    }
 
 }

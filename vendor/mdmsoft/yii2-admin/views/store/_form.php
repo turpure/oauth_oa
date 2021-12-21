@@ -51,7 +51,7 @@ use \mdm\admin\models\Position;
             ]) ?>
 
             <?= $form->field($model, 'check_username')->widget(Select2::classname(), [
-                'data' => Position::getPositionUser('销售'),
+                'data' => Position::getPositionUser(),
                 'options' => ['placeholder' => '--请选择查看人--',
                     'multiple' => true,
                 ],
