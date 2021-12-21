@@ -331,12 +331,11 @@ class ApiLogisticsTrack
                 $averageNum++;
             }
         }
-        $totalCount = count($list);
-        if ($totalCount > 0) {
-            $statistical['success_ratio'] = sprintf("%.2f", $statistical['success_ratio'] / $totalCount);
-            $statistical['dont_succeed_ratio'] = sprintf("%.2f", $statistical['dont_succeed_ratio'] / $totalCount);
-            $statistical['average'] = $averageNum == 0 ? 0 : ceil($statistical['average'] / $averageNum);
-        }
+
+        $statistical['success_ratio'] = sprintf("%.2f", $statistical['success_num'] / $statistical['total_num']);
+        $statistical['dont_succeed_ratio'] = sprintf("%.2f", $statistical['dont_succeed_num'] / $statistical['total_num']);
+        $statistical['average'] = $averageNum == 0 ? 0 : ceil($statistical['average'] / $averageNum);
+
 
         return [
             'statistical' => $statistical,
