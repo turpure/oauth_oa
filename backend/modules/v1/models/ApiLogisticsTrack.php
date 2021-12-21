@@ -332,8 +332,8 @@ class ApiLogisticsTrack
             }
         }
 
-        $statistical['success_ratio'] = sprintf("%.2f", $statistical['success_num'] / $statistical['total_num']);
-        $statistical['dont_succeed_ratio'] = sprintf("%.2f", $statistical['dont_succeed_num'] / $statistical['total_num']);
+        $statistical['success_ratio'] = sprintf("%.2f", $statistical['success_num'] / $statistical['total_num']*100);
+        $statistical['dont_succeed_ratio'] = sprintf("%.2f", $statistical['dont_succeed_num'] / $statistical['total_num']*100);
         $statistical['average'] = $averageNum == 0 ? 0 : ceil($statistical['average'] / $averageNum);
 
 
