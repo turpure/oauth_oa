@@ -650,7 +650,7 @@ class ApiGoodsinfo
                     ]];
                 return $ret;
             }
-            $goods['ebay_group'] = $ebayGroup;
+            $goods['ebayGroup'] = $ebayGroup;
             foreach ($goodsSku as $sku) {
                 $sku['property'] = json_decode($sku['property']);
             }
