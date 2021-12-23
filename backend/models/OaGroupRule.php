@@ -44,7 +44,7 @@ class OaGroupRule extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['createTime', '$createBy','storeName','groupName','rate'], 'safe'],
+            [['createTime', 'createBy','storeName','groupName','rate'], 'safe'],
         ];
     }
 

@@ -588,6 +588,9 @@ class ApiGoodsinfo
             $query = OaGoodsinfo::findOne(['goodsCode' => $goodsCode]);
             $infoId = $query->id;
             $ebayGroup = $query->ebay_group;
+        }else{
+            $query = OaGoodsinfo::findOne(['id' => $infoId]);
+            $ebayGroup = $query->ebay_group;
         }
         if ($plat === 'wish') {
             $goods = OaWishGoods::findOne(['infoId' => $infoId]);
@@ -611,7 +614,6 @@ class ApiGoodsinfo
 
         } elseif ($plat === 'ebay') {
             $goods = OaEbayGoods::find()->andFilterWhere(['infoId' => $infoId])->asArray()->one();
-            $goods['ebay_group'] = $ebayGroup;
             $goodsSku = OaEbayGoodsSku::findAll(['infoId' => $infoId]);
             if ($goods === null && $goodsSku === null) {
                 $ret = [
@@ -627,7 +629,7 @@ class ApiGoodsinfo
                         'sku' => '', 'infoId' => '', 'specifics' => '{"specifics":[{"Brand":"Unbranded"}]}', 'iBayTemplate' => '', 'headKeywords' => '',
                         'requiredKeywords' => '["","","","","",""]',
                         'randomKeywords' => '["","","","","","","","","",""]',
-                        'tailKeywords' => '', 'stockUp' => '否'
+                        'tailKeywords' => '', 'stockUp' => '否', 'ebay_group' => ''
                     ],
                     'skuInfo' => [[
                         'id' => '', 'itemId' => '', 'sid' => '', 'infoId' => '', 'sku' => '', 'quantity' => '', 'retailPrice' => '',
@@ -648,6 +650,7 @@ class ApiGoodsinfo
                     ]];
                 return $ret;
             }
+            $goods['ebay_group'] = $ebayGroup;
             foreach ($goodsSku as $sku) {
                 $sku['property'] = json_decode($sku['property']);
             }
