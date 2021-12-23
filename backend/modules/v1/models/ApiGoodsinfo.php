@@ -587,6 +587,7 @@ class ApiGoodsinfo
         if (!$infoId and $goodsCode) {
             $query = OaGoodsinfo::findOne(['goodsCode' => $goodsCode]);
             $infoId = $query->id;
+            $ebayGroup = $query->ebay_group;
         }
         if ($plat === 'wish') {
             $goods = OaWishGoods::findOne(['infoId' => $infoId]);
@@ -610,6 +611,7 @@ class ApiGoodsinfo
 
         } elseif ($plat === 'ebay') {
             $goods = OaEbayGoods::findOne(['infoId' => $infoId]);
+            $goods['ebay_group'] = $ebayGroup;
             $goodsSku = OaEbayGoodsSku::findAll(['infoId' => $infoId]);
             if ($goods === null && $goodsSku === null) {
                 $ret = [
