@@ -610,7 +610,7 @@ class ApiGoodsinfo
             }
 
         } elseif ($plat === 'ebay') {
-            $goods = OaEbayGoods::findOne(['infoId' => $infoId]);
+            $goods = OaEbayGoods::find()->andFilterWhere(['infoId' => $infoId])->asArray()->one();
             $goods['ebay_group'] = $ebayGroup;
             $goodsSku = OaEbayGoodsSku::findAll(['infoId' => $infoId]);
             if ($goods === null && $goodsSku === null) {
