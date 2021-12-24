@@ -214,7 +214,7 @@ class YunTuTrack
     public function emsLogisticTrack($trackNo, $trackInfo)
     {
         if (empty($trackInfo['responseItems'])) {
-            $this->notExist($trackNo);
+            $this->notExist($trackNo,$trackInfo['errorDesc']);
             return;
         }
 
