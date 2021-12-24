@@ -50,7 +50,7 @@ class WishpostTrack
         foreach ($orderList as $key => $order) {
             $param['track'][] = ['barcode' => $order->track_no];
             $logisticName[$order->track_no] = $order['logistic_name'];
-            if (count($param['track']) == 2) {
+            if (count($param['track']) == 20) {
                 $this->getLogisticTrack($this->arr2xml($param), $logisticName);
                 $param['track'] = [];
                 $logisticName[] = [];
