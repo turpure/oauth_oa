@@ -4168,6 +4168,10 @@ class ApiGoodsinfo
                 'Quantity' => $sku['quantity'],
                 'StartPrice' => $sku['retailPrice'],
                 'VariationSpecifics' => $variationSpecificsSet,
+                'VariationProductListingDetails'=>[
+                    'UPC'=>'Does not apply',
+                    'EAN'=>'Does not apply'
+                ],
             ];
             $variation[] = $var;
         }
