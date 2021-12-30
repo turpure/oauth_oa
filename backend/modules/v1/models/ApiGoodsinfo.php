@@ -586,10 +586,22 @@ class ApiGoodsinfo
         }
         if (!$infoId and $goodsCode) {
             $query = OaGoodsinfo::findOne(['goodsCode' => $goodsCode]);
+            if (empty($query)) {
+                return [
+                    'code' => 400,
+                    'message' => "产品不存在!",
+                ];
+            }
             $infoId = $query->id;
             $ebayGroup = $query->ebay_group;
         }else{
             $query = OaGoodsinfo::findOne(['id' => $infoId]);
+            if (empty($query)) {
+                return [
+                    'code' => 400,
+                    'message' => "产品不存在!",
+                ];
+            }
             $ebayGroup = $query->ebay_group;
         }
         if ($plat === 'wish') {
