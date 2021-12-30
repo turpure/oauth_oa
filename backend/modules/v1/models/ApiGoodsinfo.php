@@ -4239,13 +4239,13 @@ class ApiGoodsinfo
 
                 //不全为空的属性才加入NameValueList
                 if ($propertyFlag[array_keys($col)[0]] > 0) {
-                    $name = array_keys($col)[0];
-                    $value = array_values($col)[0];
+                    $nvlname = array_keys($col)[0];
+                    $nvlvalue = array_values($col)[0];
                     if ($name == 'UPC' || array_keys($col)[0] == 'EAN') {
-                        $variationProductListingDetails[$name] = $value;
+                        $variationProductListingDetails[$nvlname] = $nvlvalue;
                         continue;
                     }
-                    $map = ['Name' => $name, 'Value' => $value];
+                    $map = ['Name' => $nvlname, 'Value' => $nvlvalue];
                     $item[] = $map;
                 }
             }
