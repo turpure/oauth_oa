@@ -4241,7 +4241,7 @@ class ApiGoodsinfo
                 if ($propertyFlag[array_keys($col)[0]] > 0) {
                     $nvlname = array_keys($col)[0];
                     $nvlvalue = array_values($col)[0];
-                    if ($name == 'UPC' || array_keys($col)[0] == 'EAN') {
+                    if ($nvlname == 'UPC' || $nvlname == 'EAN') {
                         $variationProductListingDetails[$nvlname] = $nvlvalue;
                         continue;
                     }
