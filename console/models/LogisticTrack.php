@@ -273,7 +273,6 @@ class  LogisticTrack
         //        )->execute();
 
         $query = TradeSendLogisticsTrack::find()
-            ->andFilterWhere(['order_id'=>'36683093'])
             ->andFilterWhere(['<', 'closing_date', $endTime])
             ->andFilterWhere(['=', 'status', LogisticEnum::IN_TRANSIT])
             ->andFilterWhere(['logistic_type' => [2, 3, 5, 8, 9]])
@@ -441,13 +440,13 @@ class  LogisticTrack
             ->queryAll();
         foreach ($dataList as $data) {
             Yii::$app->db->createCommand("delete from trade_send where order_id={$data['order_id']} order by closingdate asc limit " . ($data['icount'] - 1))->execute();
+            Yii::$app->db->createCommand("delete from trade_send_logistics_track where order_id={$data['order_id']}")->execute();
         }
-        $dataList = Yii::$app->db->createCommand('select * from (select count(*) icount,order_id from trade_send_logistics_track  GROUP BY order_id) as dd where dd.icount > 1')
-            ->queryAll();
-        foreach ($dataList as $data) {
-            Yii::$app->db->createCommand("delete from trade_send_logistics_track where order_id={$data['order_id']} order by closing_date asc limit " . ($data['icount'] - 1))->execute();
-        }
+//        $dataList = Yii::$app->db->createCommand('select * from (select count(*) icount,order_id from trade_send_logistics_track  GROUP BY order_id) as dd where dd.icount > 1')
+//            ->queryAll();
+//        foreach ($dataList as $data) {
+//            Yii::$app->db->createCommand("delete from trade_send_logistics_track where order_id={$data['order_id']} order by closing_date asc limit " . ($data['icount'] - 1))->execute();
+//        }
     }
-
 
 }
