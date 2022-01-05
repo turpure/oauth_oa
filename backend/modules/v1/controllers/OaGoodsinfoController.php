@@ -1126,7 +1126,6 @@ class OaGoodsinfoController extends AdminController
             $infoId = $condition['id'];
             $query = $this->actionPlatEbayData();
 
-            return $query;
 
             $data = isset($query['data']) ? json_encode($query['data']) : '';
 
