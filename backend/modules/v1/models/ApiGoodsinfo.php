@@ -621,7 +621,7 @@ class ApiGoodsinfo
             $ebayGroup = $query->ebay_group;
         }
         if ($plat === 'wish') {
-            $goods = OaWishGoods::findOne(['infoId' => $infoId]);
+            $goods = OaWishGoods::find()->where(['infoId' => $infoId])->asArray()->one();
             $goodsSku = OaWishGoodsSku::findAll(['infoId' => $infoId]);
             if ($goods === null & $goodsSku === null) {
                 $ret = [
@@ -630,7 +630,8 @@ class ApiGoodsinfo
                         'shipping'       => '', 'shippingTime' => '', 'tags' => '', 'mainImage' => '', 'goodsId' => '', 'infoId' => '',
                         'extraImages'    => '', 'headKeywords' => '', 'requiredKeywords' => '', 'randomKeywords' => '', 'tailKeywords' => '',
                         'wishTags'       => '', 'stockUp' => '', 'wishMainImage' => '', 'wishExtraImages' => '', 'isJoomPublish' => '',
-                        'vovaCategoryId' => '', 'lazadaCategoryIdMY' => '', 'lazadaCategoryIdPH' => '', 'lazadaCategoryIdTH' => '', 'lazadaCategoryIdSG' => '', 'lazadaCategoryIdID' => '', 'lazadaCategoryIdVN' => '',
+                        'vovaCategoryId' => '', 'lazadaCategoryIdMY' => '', 'lazadaCategoryIdPH' => '', 'lazadaCategoryIdTH' => '',
+                        'lazadaCategoryIdSG' => '', 'lazadaCategoryIdID' => '', 'lazadaCategoryIdVN' => '', 'completeStatus' => ''
                     ],
                     'skuInfo'   => [
                         [
@@ -640,7 +641,7 @@ class ApiGoodsinfo
                         ]]];
                 return $ret;
             }
-
+            $goods['completeStatus'] = $query['completeStatus'];
         }
         elseif ($plat === 'ebay') {
             $goods = OaEbayGoods::find()->andFilterWhere(['infoId' => $infoId])->asArray()->one();
