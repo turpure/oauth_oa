@@ -196,17 +196,24 @@ class Helper
     public static function file_exists($url)
     {
         $ch = curl_init($url);
-//        curl_setopt($ch, curlopt_url,$url);
-        curl_setopt($ch, curlopt_nobody, true); // 不下载
-//        curl_setopt($ch, curlopt_failonerror, 1);
-//        curl_setopt($ch, curlopt_returntransfer, 1);
-        $res = curl_exec($ch);
-        if($res !== false){
-            var_dump($res);
-            return true;
-        }else{
-            return false;
+        curl_setopt($ch, CURLOPT_NOBODY, 1); // 不下载
+        curl_setopt($ch, CURLOPT_FAILONERROR, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+        if(strpos($url,'https:') !== false){
+            curl_setopt ( $ch, CURLOPT_SSL_VERIFYPEER, false );
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         }
+        $res = curl_exec($ch);
+        var_dump($res);
+        if($res !== false){
+//            var_dump(curl_getinfo($ch, CURLINFO_HTTP_CODE));
+            if (curl_getinfo($ch, CURLINFO_HTTP_CODE) == 200) {
+                return true;
+            }
+        }
+        return false;
+
     }
 
     /**

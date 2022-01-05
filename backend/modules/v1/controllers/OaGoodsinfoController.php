@@ -867,6 +867,7 @@ class OaGoodsinfoController extends AdminController
 //                return $ret;
                 //var_dump($ret['data']);exit;
             }
+            return $ret;
             ExportTools::toExcelOrCsv($ret['name'], $ret['data'], $type);
         } catch (\Exception  $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
