@@ -269,8 +269,8 @@ class TestController extends AdminController
         $item = [];
         foreach ($query as $v) {
             $item['servicesName'] = $v['description'];
-            $item["type"] = $item["internationalservice"] == "true" ? 'In' : 'Out';
-            $item["site"] = $v["siteid"];
+            $item["type"] = $v["internationalservice"] == "true" ? 'Out' : 'In';
+            $item["site"] = (string)$v["siteid"];
             $item["ibayShipping"] = $v["shippingservice"];
             $item["internationalService"] = $v['internationalservice'];
             $item['shippingPackage'] = unserialize($v['shippingpackage']);
@@ -288,7 +288,8 @@ class TestController extends AdminController
             $item["detailVersion"] = $v['detailversion'];
             $item["updateTime"] = $v['updatetime'];
 
-
+//                var_dump($item['servicesName'], $item["type"]);exit;
+//                var_dump($item['servicesName'], $item["type"]);exit;
             $collection = Yii::$app->mongodb->getDatabase('operation')->getCollection('ebay_shipping_service');
 //            $res = $collection->find(['type' => 'InSec']);
             $collection->insert($item);

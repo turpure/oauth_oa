@@ -4241,10 +4241,10 @@ class ApiGoodsinfo
                 if ($propertyFlag[array_keys($col)[0]] > 0) {
                     $nvlname = array_keys($col)[0];
                     $nvlvalue = array_values($col)[0];
-                    if ($nvlname == 'UPC' || $nvlname == 'EAN') {
+                    /*if ($nvlname == 'UPC' || $nvlname == 'EAN') {
                         $variationProductListingDetails[$nvlname] = $nvlvalue;
                         continue;
-                    }
+                    }*/
                     $map = ['Name' => $nvlname, 'Value' => $nvlvalue];
                     $item[] = $map;
                 }
@@ -4257,7 +4257,7 @@ class ApiGoodsinfo
                 'Quantity'                       => $sku['quantity'],
                 'StartPrice'                     => $sku['retailPrice'],
                 'VariationSpecifics'             => $variationSpecificsSet,
-                'VariationProductListingDetails' => $variationProductListingDetails,
+//                'VariationProductListingDetails' => $variationProductListingDetails,
             ];
             $variation[] = $var;
         }
