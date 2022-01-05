@@ -1376,16 +1376,14 @@ class ApiGoodsinfo
             $extraImagesArr = [];
             $extraImagesArr = $extraImages;
 //            foreach ($extraImages as $v){
-//                $v = 'https://www.tupianku.com/view/full/10023/7F7088-_88_.jpg';
-//                $v = 'http://58.246.226.254:10000/images/7F7088-_422_.jpg';
 //                $a = get_headers($v,1);
-//                $a = Helper::file_exists($v);
-//                var_dump($a);exit;
-//                if(@fopen( $v, 'r')) {
+//                var_dump($a);
+//                if($a['Content-Type'] == 'image/jpg'){
 //                    $extraImagesArr[] = $v;
 //                }
+////                var_dump($a);exit;
 //            }
-//            var_dump($extraImages);exit;
+//            var_dump($extraImagesArr);exit;
             $ele['附加图'] = $extraImagesArr[0] ?? '';
             $ele['附加图1'] = $extraImagesArr[1] ?? '';
             $ele['附加图2'] = $extraImagesArr[2] ?? '';
