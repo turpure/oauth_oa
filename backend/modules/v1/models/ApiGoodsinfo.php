@@ -1373,20 +1373,26 @@ class ApiGoodsinfo
 
             # 附件图处理
             $extraImages = explode("\n", $ele['附加图']);
-
-            $ele['附加图'] = $extraImages[0] ?? '';
-            $ele['附加图1'] = $extraImages[1] ?? '';
-            $ele['附加图2'] = $extraImages[2] ?? '';
-            $ele['附加图3'] = $extraImages[3] ?? '';
-            $ele['附加图4'] = $extraImages[4] ?? '';
-            $ele['附加图5'] = $extraImages[5] ?? '';
-            $ele['附加图6'] = $extraImages[6] ?? '';
-            $ele['附加图7'] = $extraImages[7] ?? '';
-            $ele['附加图8'] = $extraImages[8] ?? '';
-            $ele['附加图9'] = $extraImages[9] ?? '';
-            $ele['附加图10'] = $extraImages[10] ?? '';
-            $ele['附加图11'] = $extraImages[11] ?? '';
-            $ele['附加图12'] = $extraImages[12] ?? '';
+            $extraImagesArr = [];
+            foreach ($extraImages as $v){
+                if(@fopen( $v, 'r')) {
+                    $extraImagesArr[] = $v;
+                }
+            }
+//            var_dump($extraImagesArr[22]);exit;
+            $ele['附加图'] = $extraImagesArr[0] ?? '';
+            $ele['附加图1'] = $extraImagesArr[1] ?? '';
+            $ele['附加图2'] = $extraImagesArr[2] ?? '';
+            $ele['附加图3'] = $extraImagesArr[3] ?? '';
+            $ele['附加图4'] = $extraImagesArr[4] ?? '';
+            $ele['附加图5'] = $extraImagesArr[5] ?? '';
+            $ele['附加图6'] = $extraImagesArr[6] ?? '';
+            $ele['附加图7'] = $extraImagesArr[7] ?? '';
+            $ele['附加图8'] = $extraImagesArr[8] ?? '';
+            $ele['附加图9'] = $extraImagesArr[9] ?? '';
+            $ele['附加图10'] = $extraImagesArr[10] ?? '';
+            $ele['附加图11'] = $extraImagesArr[11] ?? '';
+            $ele['附加图12'] = $extraImagesArr[12] ?? '';
 
             # Package
             $ele['Package'] = '1 * ' . json_decode($ele['必须关键词'])[0];

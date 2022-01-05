@@ -193,6 +193,21 @@ class Helper
         return $ret;
     }
 
+    public static function file_exists($url)
+    {
+        $ch = curl_init($url);
+//        curl_setopt($ch, curlopt_url,$url);
+        curl_setopt($ch, curlopt_nobody, true); // 不下载
+//        curl_setopt($ch, curlopt_failonerror, 1);
+//        curl_setopt($ch, curlopt_returntransfer, 1);
+        $res = curl_exec($ch);
+        if($res !== false){
+            var_dump($res);
+            return true;
+        }else{
+            return false;
+        }
+    }
 
     /**
      * PHP发送Json对象数据
