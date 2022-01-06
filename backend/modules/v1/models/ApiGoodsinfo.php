@@ -1377,7 +1377,11 @@ class ApiGoodsinfo
             $extraImagesArr = [];
             foreach ($extraImages as $v){
                 $a = explode('?', $v);
-                if(end($a) == '1'){
+                if(count($a) > 1){
+                    if(end($a) == '1'){
+                        $extraImagesArr[] = $v;
+                    }
+                }else{
                     $extraImagesArr[] = $v;
                 }
             }
