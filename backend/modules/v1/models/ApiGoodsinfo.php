@@ -1375,16 +1375,12 @@ class ApiGoodsinfo
             # 附件图处理
             $extraImages = explode("\n", $ele['附加图']);
             $extraImagesArr = [];
-            $extraImagesArr = $extraImages;
-//            foreach ($extraImages as $v){
-//                $a = get_headers($v,1);
-//                var_dump($a);
-//                if($a['Content-Type'] == 'image/jpg'){
-//                    $extraImagesArr[] = $v;
-//                }
-////                var_dump($a);exit;
-//            }
-//            var_dump($extraImagesArr);exit;
+            foreach ($extraImages as $v){
+                $a = explode('?', $v);
+                if(end($a) == '1'){
+                    $extraImagesArr[] = $v;
+                }
+            }
             $ele['附加图'] = $extraImagesArr[0] ?? '';
             $ele['附加图1'] = $extraImagesArr[1] ?? '';
             $ele['附加图2'] = $extraImagesArr[2] ?? '';
