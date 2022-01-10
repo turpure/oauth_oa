@@ -49,8 +49,8 @@ class TestController extends Controller
             $seller = Yii::$app->db->createCommand($sql)->queryAll();
             $condition = [
                 'dateFlag' => 1,
-                'beginDate' => '2021-11-01',
-                'endDate' => '2021-11-30',
+                'beginDate' => '2021-12-01',
+                'endDate' => '2021-12-31',
                 'seller' => implode(',', ArrayHelper::getColumn($seller, 'username')),
                 'flag' => 1
             ];
@@ -65,7 +65,7 @@ class TestController extends Controller
                         'role' => '开发',
                         'sale_money_us' => $value['salemoneyrmbusZero'] + $value['salemoneyrmbusSix'],
                         'profit_zn' => $value['netprofitZero'] + $value['netprofitSix'],
-                        'month' => '2021-11',
+                        'month' => '2021-12',
                         'updateTime' => date('Y-m-d H:i:s')
                     ]
                 )->execute();
