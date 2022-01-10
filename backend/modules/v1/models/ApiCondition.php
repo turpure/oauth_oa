@@ -259,7 +259,7 @@ class ApiCondition
         //if ($role === AuthAssignment::ACCOUNT_ADMIN) {
         if (in_array(AuthAssignment::ACCOUNT_ADMIN,$role) !== false || $flag == true) {
             $users = (new Query())->select("u.id,username,p.position,d.department as department,d.id as department_id,	
-            IFnull(`pd`.`department`,d.department) AS `parent_department`,IFNULL(`pd`.`id`, d.id) AS `parent_id`,
+            IFnull(`pd`.`department`,d.department) AS `parent_department`,IFNULL(`pd`.`id`, d.id) AS `parent_id`,d.order,
             IFNULL(pd.`order`,d.`order`) as parent_order,d.order,IFNULL(pd.`type`,d.`type`) as department_type, d.`type` as sec_department_type")
                 ->from('`user` as u ')
                 ->leftJoin('auth_position_child pc','pc.user_id=u.id')
@@ -268,6 +268,7 @@ class ApiCondition
                 ->leftJoin('auth_department d','d.id=dc.department_id')
                 ->leftJoin('auth_department pd','pd.id=d.parent')
                 ->andWhere(['u.status' => 10])
+                ->orderBy('d.order ASC')
                 ->distinct()
                 ->all();
         } elseif (in_array(AuthPosition::JOB_MANAGER, $position) ||
@@ -276,7 +277,7 @@ class ApiCondition
             //登录用户部门
             $depart_id = AuthDepartmentChild::findOne(['user_id' => $userId])['department_id'];
             $users = (new Query())->select("u.id,username,p.position,d.department as department,d.id as department_id,	
-            IFnull(`pd`.`department`,d.department) AS `parent_department`,IFNULL(`pd`.`id`, d.id) AS `parent_id`,
+            IFnull(`pd`.`department`,d.department) AS `parent_department`,IFNULL(`pd`.`id`, d.id) AS `parent_id`,d.order,
             IFNULL(pd.`order`,d.`order`) as parent_order,d.order,IFNULL(pd.`type`,d.`type`) as department_type, d.`type` as sec_department_type")
                 ->from('user u')
                 ->innerJoin('auth_position_child pc','pc.user_id=u.id')
@@ -285,11 +286,12 @@ class ApiCondition
                 ->innerJoin('auth_position p','p.id=pc.position_id')
                 ->leftJoin('auth_department pd','pd.id=d.parent')
                 ->andWhere(['u.status' => 10])
-                ->andWhere(['or',['d.id' => $depart_id],['d.parent' => $depart_id]])->all();
+                ->andWhere(['or',['d.id' => $depart_id],['d.parent' => $depart_id]])
+                ->orderBy('d.order ASC')->all();
         } elseif (in_array(AuthPosition::JOB_SERVICE, $position) !== false) {
             //登录用户部门
             $users = (new Query())->select("u.id,username,p.position,d.department as department,d.id as department_id,	
-            IFnull(`pd`.`department`,d.department) AS `parent_department`,IFNULL(`pd`.`id`, d.id) AS `parent_id`,
+            IFnull(`pd`.`department`,d.department) AS `parent_department`,IFNULL(`pd`.`id`, d.id) AS `parent_id`,d.order,
             IFNULL(pd.`order`,d.`order`) as parent_order,d.order,IFNULL(pd.`type`,d.`type`) as department_type, d.`type` as sec_department_type")
                 ->from('user u')
                 ->innerJoin('auth_position_child pc','pc.user_id=u.id')
@@ -303,11 +305,12 @@ class ApiCondition
                 ->andWhere(['ascc.user_id' => $userId,'u.status' => 10,'p.position' => '销售'])
 //                ->andWhere(['as.platform' => 'eBay','u.status' => 10,'p.position' => '销售'])
 //                ->orWhere(['u.id' => $userId])
-                ->groupBy('u.id,username,p.position,d.department,d.id,pd.department,pd.id,IFNULL(pd.`type`,d.`type`)')
+                ->groupBy('u.id,username,p.position,d.order,d.department,d.id,pd.department,pd.id,IFNULL(pd.`type`,d.`type`)')
+                ->orderBy('d.order ASC')
                 ->all();
         }else {
             $users = (new Query())->select("u.id,username,p.position,d.department as department,d.id as department_id,	
-            IFnull(`pd`.`department`,d.department) AS `parent_department`,IFNULL(`pd`.`id`, d.id) AS `parent_id`,
+            IFnull(`pd`.`department`,d.department) AS `parent_department`,IFNULL(`pd`.`id`, d.id) AS `parent_id`,d.order,
             IFNULL(pd.`order`,d.`order`) as parent_order,d.order,IFNULL(pd.`type`,d.`type`) as department_type, d.`type` as sec_department_type")
                 ->from('user u')
                 ->innerJoin('auth_position_child pc','pc.user_id=u.id')
@@ -317,6 +320,7 @@ class ApiCondition
                 ->leftJoin('auth_department pd','pd.id=d.parent')
                 ->andWhere(['u.status' => 10])
                 ->andWhere(['u.id' => $userId])
+                ->orderBy('d.order ASC')
                 ->all();
         }
         return $users;
