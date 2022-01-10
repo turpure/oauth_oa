@@ -59,8 +59,8 @@ class EbayLogisticTrack
 
         $authorization = self::ebayToken();
 
-        $orderList = self::getOrder(6,1000);
-        var_export('ebay条数:' . count($orderList));
+        $orderList = self::getOrder(6, 1000);
+        var_export('ebay条数:' . count($orderList) . PHP_EOL);
         $client = new DefaultEbayClient($this->ebayConfig['url'], $authorization);
 
         $req = new GetTrackingDetailRequest();
@@ -70,6 +70,7 @@ class EbayLogisticTrack
         $data = new GetTrackingDetailRequestData();
 
         foreach ($orderList as $order) {
+
             $data->setTrackingNumber($order['track_no']);
             $req->setData($data);
             $rep = $client->execute($req);
@@ -107,7 +108,7 @@ class EbayLogisticTrack
                 $trackDetail[] = [
                     'status' => $item->getStatus(),
                     'detail' => $item->getProvince() . $item->getCity() . $item->getDistrict() . $item->getDescriptionEn(),
-                    'time'   => date('Y-m-d H:i:s',$item['event_time']->getTimestamp())
+                    'time'   => date('Y-m-d H:i:s', $item['event_time']->getTimestamp())
                 ];
             }
 
@@ -132,13 +133,12 @@ class EbayLogisticTrack
                 'newest_detail' => $trackDetail[0]['detail'],
                 'first_time'    => strtotime($trackDetail[$length - 2]['time']),
                 'first_detail'  => $trackDetail[$length - 2]['detail'],
-//                'elapsed_time'  => strtotime($trackDetail[0]['time']) - $order->closing_date,
+                //                'elapsed_time'  => strtotime($trackDetail[0]['time']) - $order->closing_date,
                 'status'        => $status,
                 'track_detail'  => json_encode($trackDetail),
                 'updated_at'    => time()
             ];
-
-            self::updatedTrack($order->track_no,$updatedData);
+            self::updatedTrack($order->track_no, $updatedData);
         }
     }
 

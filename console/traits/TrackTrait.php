@@ -21,7 +21,7 @@ trait TrackTrait
     {
         return TradeSendLogisticsTrack::find()
             //            ->andFilterWhere(['track_no' => 'EV006643476CN'])
-//            ->andwhere(['<', 'updated_at', strtotime(date('Y-m-d'))])
+            ->andwhere(['<', 'updated_at', strtotime(date('Y-m-d'))])
             ->andwhere(['=', 'logistic_type', $type])
             ->andwhere(['>', 'created_at', (time() - 86400 * 60)])
             ->andwhere(['not in', 'status', [LogisticEnum::SUCCESS, 9, 10, 11]])
@@ -36,7 +36,7 @@ trait TrackTrait
      */
     public function notExist($trackNo, $newestDetail = null)
     {
-        var_export('查询不到:' . $trackNo);
+        var_export('查询不到:' . $trackNo.PHP_EOL);
         $updateData = [
             'updated_at' => time(),
             'status'     => 2
