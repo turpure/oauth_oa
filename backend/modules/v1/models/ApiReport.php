@@ -143,7 +143,7 @@ class ApiReport
             foreach ($list as $value) {
                 $item = $value;
                 $defaultRate = Yii::$app->py_db->createCommand("select devRate from Y_Ratemanagement")->queryScalar();
-                $rate = isset($rateArr[$value['salernameZero']]) ?? $defaultRate;
+                $rate = isset($rateArr[$value['salerName']]) ?? $defaultRate;
 
                 //print_r($rate);exit;
                 //重新计算各时间段销售额（￥）、pp交易费（￥）、毛利润、毛利率
@@ -191,7 +191,7 @@ class ApiReport
             foreach ($list as $value) {
                 $item = $value;
                 $defaultRate = Yii::$app->py_db->createCommand("select devRate from Y_Ratemanagement")->queryScalar();
-                $rate = isset($rateArr[$value['salernameZero']]) ?? $defaultRate;
+                $rate = isset($rateArr[$value['purchaser']]) ?? $defaultRate;
 
                 //重新计算各时间段销售额（￥）、pp交易费（￥）
                 $item['salemoneyrmbzn'] *= $rate;
@@ -287,7 +287,7 @@ class ApiReport
             foreach ($list as $value) {
                 $item = $value;
                 $defaultRate = Yii::$app->py_db->createCommand("select devRate from Y_Ratemanagement")->queryScalar();
-                $rate = isset($rateArr[$value['salernameZero']]) ?? $defaultRate;
+                $rate = isset($rateArr[$value['possessman1Zero']]) ?? $defaultRate;
 
                 //重新计算各时间段销售额（￥）、pp交易费（￥）
                 //0-6月
