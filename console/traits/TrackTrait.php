@@ -36,7 +36,7 @@ trait TrackTrait
      */
     public function notExist($trackNo, $newestDetail = null)
     {
-        var_export('查询不到:' . $trackNo);
+        var_export('查询不到:' . $trackNo.PHP_EOL);
         $updateData = [
             'updated_at' => time(),
             'status'     => 2
