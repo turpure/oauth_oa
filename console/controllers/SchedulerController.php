@@ -96,6 +96,9 @@ class SchedulerController extends Controller
     {
         $beginDate = '2021-09-01';//date('Y-m-d', strtotime('-30 days'));
         $endDate = date('Y-m-d', strtotime('-1 days'));//昨天时间
+        if($endDate > '2021-12-31'){
+            $endDate = '2021-12-31';
+        }
 //        $endDate = '2021-09-01';//昨天时间
         $dateRate = round(((strtotime($endDate) - strtotime($beginDate)) / 24 / 3600 + 1) * 100 / 122, 2);
         // 获取最近一次备份数据月份

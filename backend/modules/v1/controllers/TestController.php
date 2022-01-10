@@ -24,8 +24,10 @@ use backend\modules\v1\models\ApiSettings;
 use backend\modules\v1\services\WytServices;
 use backend\modules\v1\utils\ExportTools;
 use backend\modules\v1\utils\Helper;
+use Cassandra\Date;
 use Yii;
 use yii\db\Exception;
+use yii\mongodb\Query;
 
 class TestController extends AdminController
 {
@@ -44,20 +46,30 @@ class TestController extends AdminController
     public function actionTest()
     {
         try {
-            $arr = [1,2,3,4,5];
-            foreach ($arr as $k => $v){
-                if($v == 2){
-                    unset($arr[$k]);
-                }
-            }
-            var_dump($arr);exit;
+            $sql = 'SELECT  * FROM "public"."ebay_region_location";';
+            $data = Yii::$app->ibay->createCommand($sql)->queryAll();
+            $rows = [];
+            foreach ($data as $v) {
+                $row['description'] = $v['description'];
+                $row['location'] = $v['location'];
+                $row['region'] = $v['region'];
+                $row['name_cn'] = $v['zhname'];
 
+//                return $row;
+
+                $collection = Yii::$app->mongodb->getDatabase('operation')->getCollection('ebay_region_location');
+                $collection->insert($row);
+
+            }
+
+            return $rows;
 
 //            $sql = "select top 1 nid FROM  P_TradeUn(nolock) m";
 //            $data = Yii::$app->py_db->createCommand($sql)->queryAll();
             //$sql = "select * FROM  proCenter.oa_goodsinfo limit 1";
             //$data = Yii::$app->db->createCommand($sql)->queryAll();
-//            var_dump($data);exit;
+            var_dump($data);
+            exit;
 
 
             $sql = "EXEC oauth_skuStorageAge '','','','','',0,1 ";
@@ -170,29 +182,31 @@ class TestController extends AdminController
         $params = WytServices::get_request_par($data, $action);
         $res = Helper::request($base_url, json_encode($params));
 //        return $res;
-        if($res[0] == 200 ){
-            if($res[1]['code'] == '0'){
+        if ($res[0] == 200) {
+            if ($res[1]['code'] == '0') {
                 return $res[1]['data'];
-            }else{
+            } else {
                 return [
                     'code' => 400,
                     'message' => $res[1]['msg']
                 ];
             }
-        }else{
+        } else {
             return [
                 'code' => 400,
                 'message' => 'request error'
             ];
         }
 
-        var_dump($res);exit;
+        var_dump($res);
+        exit;
     }
 
-    public function actionTest123(){
+    public function actionTest123()
+    {
         $url = 'http://58.246.226.254:10000/images/6Q5608-_10_.jpg';
         $path = 'C:/Users/Administrator/Desktop/';
-        if(!preg_match('/\/([^\/]+\.[a-z]{3,4})$/i',$url,$matches))
+        if (!preg_match('/\/([^\/]+\.[a-z]{3,4})$/i', $url, $matches))
             die('Use image please');
 
 //        $image_name = strToLower($matches[1]);
@@ -202,7 +216,7 @@ class TestController extends AdminController
         $resource = fopen($tmpFile, 'wb');
 
 
-        $ch = curl_init ($url);
+        $ch = curl_init($url);
 //        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 //        curl_setopt($ch, CURLOPT_BINARYTRANSFER,1);
 
@@ -210,8 +224,8 @@ class TestController extends AdminController
         // 不需要头文件
         curl_setopt($ch, CURLOPT_HEADER, 0);
 
-        $img = curl_exec ($ch);
-        curl_close ($ch);
+        $img = curl_exec($ch);
+        curl_close($ch);
 
 
 //        $fp = fopen($image_name,'w');
@@ -242,14 +256,52 @@ class TestController extends AdminController
         // 返回保存的文件路径
 //        return $returnFile;
 
-        var_dump($returnFile);exit;
-
+        var_dump($returnFile);
+        exit;
 
 
     }
 
+    public function actionSync()
+    {
+        $sql = 'SELECT * FROM "public"."ebay_shippingservice" ';
+        $query = Yii::$app->ibay->createCommand($sql)->queryAll();
+        $item = [];
+        foreach ($query as $v) {
+            $item['servicesName'] = $v['description'];
+            $item["type"] = $v["internationalservice"] == "true" ? 'Out' : 'In';
+            $item["site"] = (string)$v["siteid"];
+            $item["ibayShipping"] = $v["shippingservice"];
+            $item["internationalService"] = $v['internationalservice'];
+            $item['shippingPackage'] = unserialize($v['shippingpackage']);
+            $item['shippingServicePackageDetails'] = unserialize($v['shippingservicepackagedetails']);
+            $item["shippingServiceId"] = $v['shippingserviceid'];
+            $item["shippingTimeMax"] = $v['shippingtimemax'];
+            $item["shippingTimeMin"] = $v['shippingtimemin'];
+            $item["serviceType"] = $v['servicetype'];
+            $item["shippingCarrier"] = $v['shippingcarrier'];
+            $item["weightRequired"] = $v["weightrequired"];
+            $item["dimensionsRequired"] = $v['dimensionsrequired'];
+            $item["validForSellingFlow"] = $v['validforsellingflow'];
+            $item["expeditedService"] = $v['expeditedservice'];
+            $item["surChargeApplicable"] = $v['surchargeapplicable'];
+            $item["detailVersion"] = $v['detailversion'];
+            $item["updateTime"] = $v['updatetime'];
 
-    public function actionImport(){
+//                var_dump($item['servicesName'], $item["type"]);exit;
+//                var_dump($item['servicesName'], $item["type"]);exit;
+            $collection = Yii::$app->mongodb->getDatabase('operation')->getCollection('ebay_shipping_service');
+//            $res = $collection->find(['type' => 'InSec']);
+            $collection->insert($item);
+//            $collection->update(['_id = 55a4957sd88423d10ea7c07d'],$arrUpdate);
+
+//            return $item;
+        }
+
+    }
+
+    public function actionImport()
+    {
         try {
             $file = $_FILES['file'];
             if (!$file) {

@@ -835,7 +835,6 @@ class OaGoodsinfoController extends AdminController
                     'message' => 'account is empty!'
                 ];
             }
-            $type = 'Csv';
             $ret = [
                 'name' => '',
                 'data' => [],
@@ -844,6 +843,7 @@ class OaGoodsinfoController extends AdminController
                 $type = 'Xls';
                 $ret = ApiGoodsinfo::preExportWish($infoId, $accounts);
             }elseif ($plat == 'Joom'){
+                $type = 'Csv';
                 $ret = ApiGoodsinfo::preExportJoom($infoId, $accounts);
             }elseif ($plat == 'Lazada'){
                 $type = 'Xls';
@@ -852,11 +852,13 @@ class OaGoodsinfoController extends AdminController
                 $type = 'Xls';
                 $ret = ApiGoodsinfo::preExportShopee($infoId);
             }elseif ($plat == 'Shopify'){
+                $type = 'Csv';
                 $ret = ApiGoodsinfo::preExportShopify($infoId, $accounts);
             }elseif ($plat == 'VOVA'){
                 $type = 'Xls';
                 $ret = ApiGoodsinfo::preExportVova($infoId, $accounts);
             }elseif ($plat == 'Mymall'){
+                $type = 'Csv';
                 $ret = ApiGoodsinfo::preExportMyMall($infoId, $accounts);
             }elseif ($plat == 'eBay'){
                 $type = 'Xls';
@@ -864,9 +866,8 @@ class OaGoodsinfoController extends AdminController
             }elseif($plat == 'Fyndiq'){
                 $type = 'Xls';
                 $ret = ApiGoodsinfo::preExportFyndiq($infoId, $accounts);
-//                return $ret;
-                //var_dump($ret['data']);exit;
             }
+//            return $ret;
             ExportTools::toExcelOrCsv($ret['name'], $ret['data'], $type);
         } catch (\Exception  $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
@@ -1125,6 +1126,7 @@ class OaGoodsinfoController extends AdminController
             $condition = $request->post()['condition'];
             $infoId = $condition['id'];
             $query = $this->actionPlatEbayData();
+
 
             $data = isset($query['data']) ? json_encode($query['data']) : '';
 

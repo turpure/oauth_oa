@@ -621,7 +621,7 @@ class ApiGoodsinfo
             $ebayGroup = $query->ebay_group;
         }
         if ($plat === 'wish') {
-            $goods = OaWishGoods::findOne(['infoId' => $infoId]);
+            $goods = OaWishGoods::find()->where(['infoId' => $infoId])->asArray()->one();
             $goodsSku = OaWishGoodsSku::findAll(['infoId' => $infoId]);
             if ($goods === null & $goodsSku === null) {
                 $ret = [
@@ -630,7 +630,8 @@ class ApiGoodsinfo
                         'shipping'       => '', 'shippingTime' => '', 'tags' => '', 'mainImage' => '', 'goodsId' => '', 'infoId' => '',
                         'extraImages'    => '', 'headKeywords' => '', 'requiredKeywords' => '', 'randomKeywords' => '', 'tailKeywords' => '',
                         'wishTags'       => '', 'stockUp' => '', 'wishMainImage' => '', 'wishExtraImages' => '', 'isJoomPublish' => '',
-                        'vovaCategoryId' => '', 'lazadaCategoryIdMY' => '', 'lazadaCategoryIdPH' => '', 'lazadaCategoryIdTH' => '', 'lazadaCategoryIdSG' => '', 'lazadaCategoryIdID' => '', 'lazadaCategoryIdVN' => '',
+                        'vovaCategoryId' => '', 'lazadaCategoryIdMY' => '', 'lazadaCategoryIdPH' => '', 'lazadaCategoryIdTH' => '',
+                        'lazadaCategoryIdSG' => '', 'lazadaCategoryIdID' => '', 'lazadaCategoryIdVN' => '', 'completeStatus' => ''
                     ],
                     'skuInfo'   => [
                         [
@@ -640,7 +641,7 @@ class ApiGoodsinfo
                         ]]];
                 return $ret;
             }
-
+            $goods['completeStatus'] = $query['completeStatus'];
         }
         elseif ($plat === 'ebay') {
             $goods = OaEbayGoods::find()->andFilterWhere(['infoId' => $infoId])->asArray()->one();
@@ -1373,20 +1374,30 @@ class ApiGoodsinfo
 
             # 附件图处理
             $extraImages = explode("\n", $ele['附加图']);
-
-            $ele['附加图'] = $extraImages[0] ?? '';
-            $ele['附加图1'] = $extraImages[1] ?? '';
-            $ele['附加图2'] = $extraImages[2] ?? '';
-            $ele['附加图3'] = $extraImages[3] ?? '';
-            $ele['附加图4'] = $extraImages[4] ?? '';
-            $ele['附加图5'] = $extraImages[5] ?? '';
-            $ele['附加图6'] = $extraImages[6] ?? '';
-            $ele['附加图7'] = $extraImages[7] ?? '';
-            $ele['附加图8'] = $extraImages[8] ?? '';
-            $ele['附加图9'] = $extraImages[9] ?? '';
-            $ele['附加图10'] = $extraImages[10] ?? '';
-            $ele['附加图11'] = $extraImages[11] ?? '';
-            $ele['附加图12'] = $extraImages[12] ?? '';
+            $extraImagesArr = [];
+            foreach ($extraImages as $v){
+                $a = explode('?', $v);
+                if(count($a) > 1){
+                    if(end($a) == '1'){
+                        $extraImagesArr[] = $v;
+                    }
+                }else{
+                    $extraImagesArr[] = $v;
+                }
+            }
+            $ele['附加图'] = $extraImagesArr[0] ?? '';
+            $ele['附加图1'] = $extraImagesArr[1] ?? '';
+            $ele['附加图2'] = $extraImagesArr[2] ?? '';
+            $ele['附加图3'] = $extraImagesArr[3] ?? '';
+            $ele['附加图4'] = $extraImagesArr[4] ?? '';
+            $ele['附加图5'] = $extraImagesArr[5] ?? '';
+            $ele['附加图6'] = $extraImagesArr[6] ?? '';
+            $ele['附加图7'] = $extraImagesArr[7] ?? '';
+            $ele['附加图8'] = $extraImagesArr[8] ?? '';
+            $ele['附加图9'] = $extraImagesArr[9] ?? '';
+            $ele['附加图10'] = $extraImagesArr[10] ?? '';
+            $ele['附加图11'] = $extraImagesArr[11] ?? '';
+            $ele['附加图12'] = $extraImagesArr[12] ?? '';
 
             # Package
             $ele['Package'] = '1 * ' . json_decode($ele['必须关键词'])[0];
@@ -4241,10 +4252,10 @@ class ApiGoodsinfo
                 if ($propertyFlag[array_keys($col)[0]] > 0) {
                     $nvlname = array_keys($col)[0];
                     $nvlvalue = array_values($col)[0];
-                    if ($nvlname == 'UPC' || $nvlname == 'EAN') {
+                    /*if ($nvlname == 'UPC' || $nvlname == 'EAN') {
                         $variationProductListingDetails[$nvlname] = $nvlvalue;
                         continue;
-                    }
+                    }*/
                     $map = ['Name' => $nvlname, 'Value' => $nvlvalue];
                     $item[] = $map;
                 }
@@ -4257,7 +4268,7 @@ class ApiGoodsinfo
                 'Quantity'                       => $sku['quantity'],
                 'StartPrice'                     => $sku['retailPrice'],
                 'VariationSpecifics'             => $variationSpecificsSet,
-                'VariationProductListingDetails' => $variationProductListingDetails,
+//                'VariationProductListingDetails' => $variationProductListingDetails,
             ];
             $variation[] = $var;
         }
