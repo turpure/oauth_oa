@@ -224,12 +224,12 @@ class  LogisticTrack
     private static function orderTotol($startTime, $status = 0, $logisticName = '')
     {
         $query = (new \yii\db\Query())
-            ->select(['count(*) icount', 'tslt.logistic_name'])
+            ->select(['count(*) icount', 'trade_send.logistic_name'])
             ->from('trade_send')
             ->leftJoin('trade_send_logistics_track as tslt', 'trade_send.order_id = tslt.order_id')
             ->andFilterWhere(['>', 'closingdate', $startTime - 1])
             ->andFilterWhere(['<', 'closingdate', $startTime + 86400])
-            ->groupBy('tslt.logistic_name');
+            ->groupBy('trade_send.logistic_name');
         if ($status == 1) {
             //             已签收
             $query->andFilterWhere(['=', 'tslt.status', LogisticEnum::SUCCESS]);
