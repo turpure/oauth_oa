@@ -1344,7 +1344,7 @@ class ApiGoodsinfo
             LEFT JOIN oa_wishGoodsSku as ows on ows.sid = ogs.id 
             where ogi.id in (" .
             $ids .
-            ")";
+            ") ORDER BY goodsCode ASC";
 
         #生成英文标题
 
