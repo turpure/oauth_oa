@@ -105,10 +105,26 @@ class ApiUser
     public static function getUserGroup()
     {
         $userId = Yii::$app->user->id;
-        $sql = "select dm.department from oauthoa.auth_department_child dcd inner JOIN oauthoa.auth_department as dm on dcd.department_id = dm.id where user_id=$userId";
+        $role = User::getRole($userId);
+        $sql = "select dm.department 
+                from oauthoa.auth_department_child dcd 
+                inner JOIN oauthoa.auth_department as dm on dcd.department_id = dm.id 
+                where user_id=$userId";
         $db = Yii::$app->db;
         $ret = $db->createCommand($sql)->queryOne();
-        return $ret['department'];
+        $res = $ret['department'];
+        if(in_array('部门经理', $role) || in_array('部门主管', $role)){
+            $sql2 = "select GROUP_CONCAT(dd.department) AS department 
+                    from oauthoa.auth_department_child dcd 
+                    inner JOIN oauthoa.auth_department as dm on dcd.department_id = dm.id 
+                    inner JOIN oauthoa.auth_department as dd on dm.id = dd.parent 
+                    where user_id=$userId GROUP BY dm.department";
+            $result = Yii::$app->db->createCommand($sql2)->queryScalar();
+//            var_dump($result);exit;
+            $res .= ',' . $result;
+        }
+
+        return $res;
     }
 
     /**
@@ -116,7 +132,11 @@ class ApiUser
      */
     public static function getUserGroupByUserName($userName)
     {
-        $sql = "select dm.department from oauthoa.auth_department_child dcd inner JOIN oauthoa.auth_department as dm on dcd.department_id = dm.id  INNER JOIN oauthoa.`user` as ur on ur.id = dcd.user_id where username= '$userName' ";
+        $sql = "select dm.department 
+                from oauthoa.auth_department_child dcd 
+                inner JOIN oauthoa.auth_department as dm on dcd.department_id = dm.id  
+                INNER JOIN oauthoa.`user` as ur on ur.id = dcd.user_id 
+                where username= '$userName' ";
         $db = Yii::$app->db;
         $ret = $db->createCommand($sql)->queryOne();
         return $ret['department'];
