@@ -247,11 +247,11 @@ class ApiLogisticsTrack
 //            $statistical['above_ratio'] += $item->above_ratio;
         }
         if ($statistical['total_num'] > 0) {
-            $statistical['intraday_ratio'] = sprintf("%.2f", $statistical['intraday_num'] / $statistical['total_num'])*100;
-            $statistical['first_ratio'] = sprintf("%.2f", $statistical['first_num'] / $statistical['total_num'])*100;
-            $statistical['second_ratio'] = sprintf("%.2f", $statistical['second_num'] / $statistical['total_num'])*100;
-            $statistical['third_ratio'] = sprintf("%.2f", $statistical['third_num'] / $statistical['total_num'])*100;
-            $statistical['above_ratio'] = sprintf("%.2f", $statistical['above_num'] / $statistical['total_num'])*100;
+            $statistical['intraday_ratio'] = sprintf("%.2f", $statistical['intraday_num'] / $statistical['total_num']*100);
+            $statistical['first_ratio'] = sprintf("%.2f", $statistical['first_num'] / $statistical['total_num']*100);
+            $statistical['second_ratio'] = sprintf("%.2f", $statistical['second_num'] / $statistical['total_num']*100);
+            $statistical['third_ratio'] = sprintf("%.2f", $statistical['third_num'] / $statistical['total_num']*100);
+            $statistical['above_ratio'] = sprintf("%.2f", $statistical['above_num'] / $statistical['total_num']*100);
         }
 
 
