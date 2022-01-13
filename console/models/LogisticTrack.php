@@ -157,7 +157,7 @@ class  LogisticTrack
     {
         $ts = time();
         $timeFrameLists = TradSendLogisticsTimeFrame::find()
-            ->andFilterWhere(['<', 'above_ratio', 100])
+            ->andFilterWhere(['>', 'above_ratio', 100])
             ->andFilterWhere(['status' => 1])
             ->all();
 
@@ -183,12 +183,18 @@ class  LogisticTrack
 
             for ($i = 1; $i < 6; $i++) {
 
-                $query = (new \yii\db\Query())->from('trade_send_logistics_track')->select(['count(*) icount'])->andFilterWhere(['>', 'closing_date', $startTimestamp - 1])->andFilterWhere(['<', 'closing_date', $startTimestamp + 86400])->andFilterWhere(['>', 'status', LogisticEnum::NOT_FIND]);
+                $query = (new \yii\db\Query())
+                    ->from('trade_send')
+                    ->leftJoin('trade_send_logistics_track as tslt', 'trade_send.order_id = tslt.order_id')
+                    ->andFilterWhere(['>', 'closingdate', $startTimestamp - 1])
+                    ->andFilterWhere(['<', 'closingdate', $startTimestamp + 86400]);
+
                 if ($i != 5) {
                     $query->andFilterWhere(['<', 'first_time', $startTimestamp + 86400 * $i]);
                 }
 
-                $icount = $query->andFilterWhere(['=', 'logistic_name', $timeFrame['logistic_name']])->count();
+                $icount = $query->andFilterWhere(['=', 'trade_send.logistic_name', $timeFrame['logistic_name']])->count();
+
                 switch ($i) {
                     case 1:
                         $updateDate['intraday_num'] = $icount;

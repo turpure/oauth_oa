@@ -236,24 +236,24 @@ class ApiLogisticsTrack
         foreach ($list as $item) {
             $statistical['total_num'] += $item->total_num;
             $statistical['intraday_num'] += $item->intraday_num;
-            $statistical['intraday_ratio'] += $item->intraday_ratio;
+//            $statistical['intraday_ratio'] += $item->intraday_ratio;
             $statistical['first_num'] += $item->first_num;
-            $statistical['first_ratio'] += $item->first_ratio;
+//            $statistical['first_ratio'] += $item->first_ratio;
             $statistical['second_num'] += $item->second_num;
-            $statistical['second_ratio'] += $item->second_ratio;
+//            $statistical['second_ratio'] += $item->second_ratio;
             $statistical['third_num'] += $item->third_num;
-            $statistical['third_ratio'] += $item->third_ratio;
+//            $statistical['third_ratio'] += $item->third_ratio;
             $statistical['above_num'] += $item->above_num;
-            $statistical['above_ratio'] += $item->above_ratio;
+//            $statistical['above_ratio'] += $item->above_ratio;
         }
-        $totalCount = count($list);
-        if ($totalCount > 0) {
-            $statistical['intraday_ratio'] = sprintf("%.2f", $statistical['intraday_ratio'] / $totalCount);
-            $statistical['first_ratio'] = sprintf("%.2f", $statistical['first_ratio'] / $totalCount);
-            $statistical['second_ratio'] = sprintf("%.2f", $statistical['second_ratio'] / $totalCount);
-            $statistical['third_ratio'] = sprintf("%.2f", $statistical['third_ratio'] / $totalCount);
-            $statistical['above_ratio'] = sprintf("%.2f", $statistical['above_ratio'] / $totalCount);
+        if ($statistical['total_num'] > 0) {
+            $statistical['intraday_ratio'] = sprintf("%.2f", $statistical['intraday_num'] / $statistical['total_num']);
+            $statistical['first_ratio'] = sprintf("%.2f", $statistical['first_num'] / $statistical['total_num']);
+            $statistical['second_ratio'] = sprintf("%.2f", $statistical['second_num'] / $statistical['total_num']);
+            $statistical['third_ratio'] = sprintf("%.2f", $statistical['third_num'] / $statistical['total_num']);
+            $statistical['above_ratio'] = sprintf("%.2f", $statistical['above_num'] / $statistical['total_num']);
         }
+
 
 
         $provider = new ArrayDataProvider([
