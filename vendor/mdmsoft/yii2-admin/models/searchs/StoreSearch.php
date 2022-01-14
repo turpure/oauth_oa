@@ -9,6 +9,7 @@ namespace mdm\admin\models\searchs;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use mdm\admin\models\Store;
+use yii\db\Query;
 
 class StoreSearch extends Store
 {
@@ -25,7 +26,7 @@ class StoreSearch extends Store
     {
         return [
             [['store','platform'], 'string'],
-            [['username'], 'safe'],
+            [['username','check_username'], 'safe'],
 
         ];
     }
@@ -39,9 +40,12 @@ class StoreSearch extends Store
      */
     public function search($params)
     {
-        $query = Store::find()->select('auth_store.*,u.username')
+        $query = Store::find()->select('auth_store.*,u.username,GROUP_CONCAT(uc.username) as check_username')
             ->join('LEFT JOIN','auth_store_child sc','sc.store_id=auth_store.id')
             ->join('LEFT JOIN','user u','u.id=sc.user_id')
+            ->join('LEFT JOIN','auth_store_child_check scc','scc.store_id=auth_store.id')
+            ->join('LEFT JOIN','user uc','uc.id=scc.user_id')
+            ->groupBy('auth_store.id,store,platform,used,feeRate,u.username')
             ->orderBy('auth_store.store ASC');
 
         $dataProvider = new ActiveDataProvider([
@@ -66,7 +70,8 @@ class StoreSearch extends Store
 
         $query->andFilterWhere(['like', 'store', $this->store]);
         $query->andFilterWhere(['like', 'platform', $this->platform]);
-        $query->andFilterWhere(['like', 'username', $this->username]);
+        $query->andFilterWhere(['like', 'u.username', $this->username]);
+        $query->andFilterHaving(['like', 'check_username', $this->check_username]);
 
         return $dataProvider;
     }

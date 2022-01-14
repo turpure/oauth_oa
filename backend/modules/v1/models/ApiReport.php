@@ -1,8 +1,8 @@
 <?php
 /**
- * @desc PhpStorm.
+ * @desc  PhpStorm.
  * @author: Administrator
- * @since: 2018-06-12 14:22
+ * @since : 2018-06-12 14:22
  */
 
 namespace backend\modules\v1\models;
@@ -29,21 +29,22 @@ class ApiReport
 
     public static function getSalesReport($condition)
     {
-        $con = Yii::$app->db;
-        $sql = 'call report_salesProfit(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse,:exchangeRate, :wishExchangeRate);';
+        $con       = Yii::$app->db;
+        $sql       = 'call report_salesProfit(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse,:exchangeRate, :wishExchangeRate);';
         $sqlParams = [
-            ':dateType' => $condition['dateType'],
-            ':beginDate' => $condition['beginDate'],
-            ':endDate' => $condition['endDate'],
-            ':queryType' => $condition['queryType'],
-            ':store' => $condition['store'],
-            ':warehouse' => $condition['warehouse'],
-            ':exchangeRate' => $condition['exchangeRate'],
+            ':dateType'         => $condition['dateType'],
+            ':beginDate'        => $condition['beginDate'],
+            ':endDate'          => $condition['endDate'],
+            ':queryType'        => $condition['queryType'],
+            ':store'            => $condition['store'],
+            ':warehouse'        => $condition['warehouse'],
+            ':exchangeRate'     => $condition['exchangeRate'],
             ':wishExchangeRate' => $condition['wishExchangeRate']
         ];
         try {
             return $con->createCommand($sql)->bindValues($sqlParams)->queryAll();
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return [$why];
         }
 
@@ -57,56 +58,59 @@ class ApiReport
      */
     public static function getDevelopReport($condition)
     {
-        $sql = "EXEC P_DevNetprofit_advanced @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate," .
+        $sql    = "EXEC P_DevNetprofit_advanced @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate," .
             "@Sku='',@SalerName=:seller,@SalerName2='',@chanel='',@SaleType='',@SalerAliasName='',@DevDate=''," .
             "@DevDateEnd='',@Purchaser=0,@SupplierName=0,@possessMan1=0,@possessMan2=0,@flag=:flag";
-        $con = Yii::$app->py_db;
+        $con    = Yii::$app->py_db;
         $params = [
-            ':dateFlag' => $condition['dateFlag'],
+            ':dateFlag'  => $condition['dateFlag'],
             ':beginDate' => $condition['beginDate'],
-            ':endDate' => $condition['endDate'],
-            ':seller' => $condition['seller'],
-            ':flag' => isset($condition['flag']) && $condition['flag'] ? $condition['flag'] : 0,
+            ':endDate'   => $condition['endDate'],
+            ':seller'    => $condition['seller'],
+            ':flag'      => isset($condition['flag']) && $condition['flag'] ? $condition['flag'] : 0,
         ];
         try {
-//            return $con->createCommand($sql)->bindValues($params)->getRawSql();
+            //            return $con->createCommand($sql)->bindValues($params)->getRawSql();
             $list = $con->createCommand($sql)->bindValues($params)->queryAll();
             //获取现有开发以及部门
             $userList = self::getAllDeveloper();
-            $result = [];
+            $rateArr = self::getDeveloperRate($userList);
+            $result   = [];
             foreach ($list as $value) {
                 $item = $value;
-                $rate = self::getDeveloperRate($userList, $value['salernameZero']);
+                $defaultRate = Yii::$app->py_db->createCommand("select devRate from Y_Ratemanagement")->queryScalar();
+                $rate = isset($rateArr[$value['salernameZero']]) ? $rateArr[$value['salernameZero']] : $defaultRate;
 
-                //print_r($rate);exit;
+//                print_r($rate);exit;
                 //重新计算各时间段销售额（￥）、pp交易费（￥）、毛利润、毛利率
                 //0-6月
                 $item['salemoneyrmbznZero'] *= $rate;
-                $item['ppebayznZero'] *= $rate;
-                $item['netprofitZero'] = $item['salemoneyrmbznZero'] - $item['costmoneyrmbZero'] - $item['ppebayznZero']
+                $item['ppebayznZero']       *= $rate;
+                $item['netprofitZero']      = $item['salemoneyrmbznZero'] - $item['costmoneyrmbZero'] - $item['ppebayznZero']
                     - $item['inpackagefeermbZero'] - $item['expressfarermbZero'] - $item['devofflinefeeZero'] - $item['devOpeFeeZero'];
-                $item['netrateZero'] = $item['salemoneyrmbznZero'] == 0 ? 0 : round($item['netprofitZero'] / $item['salemoneyrmbznZero'], 4) * 100;
+                $item['netrateZero']        = $item['salemoneyrmbznZero'] == 0 ? 0 : round($item['netprofitZero'] / $item['salemoneyrmbznZero'], 4) * 100;
                 //6-12月
                 $item['salemoneyrmbznSix'] *= $rate;
-                $item['ppebayznSix'] *= $rate;
-                $item['netprofitSix'] = $item['salemoneyrmbznSix'] - $item['costmoneyrmbSix'] - $item['ppebayznSix']
+                $item['ppebayznSix']       *= $rate;
+                $item['netprofitSix']      = $item['salemoneyrmbznSix'] - $item['costmoneyrmbSix'] - $item['ppebayznSix']
                     - $item['inpackagefeermbSix'] - $item['expressfarermbSix'] - $item['devofflinefeeSix'] - $item['devOpeFeeSix'];
-                $item['netrateSix'] = $item['salemoneyrmbznSix'] == 0 ? 0 : round($item['netprofitSix'] / $item['salemoneyrmbznSix'], 4) * 100;
+                $item['netrateSix']        = $item['salemoneyrmbznSix'] == 0 ? 0 : round($item['netprofitSix'] / $item['salemoneyrmbznSix'], 4) * 100;
                 //12月以上
                 $item['salemoneyrmbznTwe'] *= $rate;
-                $item['ppebayznTwe'] *= $rate;
-                $item['netprofitTwe'] = $item['salemoneyrmbznTwe'] - $item['costmoneyrmbTwe'] - $item['ppebayznTwe']
+                $item['ppebayznTwe']       *= $rate;
+                $item['netprofitTwe']      = $item['salemoneyrmbznTwe'] - $item['costmoneyrmbTwe'] - $item['ppebayznTwe']
                     - $item['inpackagefeermbTwe'] - $item['expressfarermbTwe'] - $item['devofflinefeeTwe'] - $item['devOpeFeeTwe'];
-                $item['netrateTwe'] = $item['salemoneyrmbznTwe'] == 0 ? 0 : round($item['netprofitTwe'] / $item['salemoneyrmbznTwe'], 4) * 100;
+                $item['netrateTwe']        = $item['salemoneyrmbznTwe'] == 0 ? 0 : round($item['netprofitTwe'] / $item['salemoneyrmbznTwe'], 4) * 100;
                 //汇总
                 $item['salemoneyrmbtotal'] *= $rate;
-                $item['netprofittotal'] = $item['netprofitZero'] + $item['netprofitSix'] + $item['netprofitTwe'];
-                $item['netratetotal'] = $item['salemoneyrmbtotal'] == 0 ? 0 : round($item['netprofittotal'] / $item['salemoneyrmbtotal'], 4) * 100;
-                $result[] = $item;
+                $item['netprofittotal']    = $item['netprofitZero'] + $item['netprofitSix'] + $item['netprofitTwe'];
+                $item['netratetotal']      = $item['salemoneyrmbtotal'] == 0 ? 0 : round($item['netprofittotal'] / $item['salemoneyrmbtotal'], 4) * 100;
+                $result[]                  = $item;
             }
             //print_r($result);exit;
             return $result;
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return [$why];
         }
 
@@ -121,37 +125,40 @@ class ApiReport
     public static function getDevelopProfitDetailReport($condition)
     {
 
-        $sql = "EXEC oauth_developer_sku_profit_detail @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,@SalerName=:seller";
-        $con = Yii::$app->py_db;
+        $sql    = "EXEC oauth_developer_sku_profit_detail @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,@SalerName=:seller";
+        $con    = Yii::$app->py_db;
         $params = [
-            ':dateFlag' => $condition['dateFlag'],
+            ':dateFlag'  => $condition['dateFlag'],
             ':beginDate' => $condition['beginDate'],
-            ':endDate' => $condition['endDate'],
-            ':seller' => $condition['seller'],
+            ':endDate'   => $condition['endDate'],
+            ':seller'    => $condition['seller'],
         ];
         try {
             //return $con->createCommand($sql)->bindValues($params)->queryAll();
             $list = $con->createCommand($sql)->bindValues($params)->queryAll();
             //获取现有开发以及部门
             $userList = self::getAllDeveloper();
-            $result = [];
+            $rateArr = self::getDeveloperRate($userList);
+            $result   = [];
             foreach ($list as $value) {
                 $item = $value;
-                $rate = self::getDeveloperRate($userList, $value['salerName']);
+                $defaultRate = Yii::$app->py_db->createCommand("select devRate from Y_Ratemanagement")->queryScalar();
+                $rate = isset($rateArr[$value['salerName']]) ? $rateArr[$value['salerName']] : $defaultRate;
 
                 //print_r($rate);exit;
                 //重新计算各时间段销售额（￥）、pp交易费（￥）、毛利润、毛利率
 
                 $item['saleMoneyRmbZn'] *= $rate;
-                $item['ppEbayZn'] *= $rate;
-                $item['profit'] = $item['saleMoneyRmbZn'] - $item['costMoneyRmb'] - $item['ppEbayZn']
+                $item['ppEbayZn']       *= $rate;
+                $item['profit']         = $item['saleMoneyRmbZn'] - $item['costMoneyRmb'] - $item['ppEbayZn']
                     - $item['packageFeeRmb'] - $item['expressFareRmb'];
-                $item['rate'] = $item['saleMoneyRmbZn'] == 0 ? 0 : round($item['profit'] / $item['saleMoneyRmbZn'], 4) * 100;
-                $result[] = $item;
+                $item['rate']           = $item['saleMoneyRmbZn'] == 0 ? 0 : round($item['profit'] / $item['saleMoneyRmbZn'], 4) * 100;
+                $result[]               = $item;
             }
             return $result;
 
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return [$why];
         }
     }
@@ -164,58 +171,61 @@ class ApiReport
      */
     public static function getPurchaseReport($condition)
     {
-        $sql = "EXEC z_p_purchaserProfit @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate," .
+        $sql    = "EXEC z_p_purchaserProfit @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate," .
             "@Sku='',@SalerName='',@SalerName2='',@chanel='',@SaleType='',@SalerAliasName='',@DevDate=''," .
             "@DevDateEnd='',@Purchaser=:purchase,@SupplierName=0,@possessMan1=0,@possessMan2=0";
-        $con = Yii::$app->py_db;
+        $con    = Yii::$app->py_db;
         $params = [
-            ':dateFlag' => $condition['dateFlag'],
+            ':dateFlag'  => $condition['dateFlag'],
             ':beginDate' => $condition['beginDate'],
-            ':endDate' => $condition['endDate'],
-            ':purchase' => $condition['purchase'],
+            ':endDate'   => $condition['endDate'],
+            ':purchase'  => $condition['purchase'],
         ];
         try {
             //return $con->createCommand($sql)->bindValues($params)->queryAll();
-            $userList = self::getAllDeveloper();
-            $list = $con->createCommand($sql)->bindValues($params)->queryAll();
+            $userList  = self::getAllDeveloper();
+            $rateArr = self::getDeveloperRate($userList);
+            $list      = $con->createCommand($sql)->bindValues($params)->queryAll();
             $purchaser = array_unique(ArrayHelper::getColumn($list, 'purchaser'));//获取采购员数组并去重
-            $result = $data = [];
+            $result    = $data = [];
             foreach ($list as $value) {
                 $item = $value;
-                $rate = self::getDeveloperRate($userList, $value['salerName']);
+                $defaultRate = Yii::$app->py_db->createCommand("select devRate from Y_Ratemanagement")->queryScalar();
+                $rate = isset($rateArr[$value['purchaser']]) ? $rateArr[$value['purchaser']] : $defaultRate;
 
                 //重新计算各时间段销售额（￥）、pp交易费（￥）
                 $item['salemoneyrmbzn'] *= $rate;
-                $item['ppebayzn'] *= $rate;
-                $data[] = $item;
+                $item['ppebayzn']       *= $rate;
+                $data[]                 = $item;
             }
             foreach ($purchaser as $value) {
-                $res['purchaser'] = $value;
+                $res['purchaser']      = $value;
                 $res['salemoneyrmbus'] = $res['salemoneyrmbzn'] = $res['ppebayus'] = $res['ppebayzn'] =
                 $res['costmoneyrmb'] = $res['expressfarermb'] = $res['inpackagefeermb'] = 0;
                 foreach ($data as $v) {
                     if ($value === $v['purchaser']) {
-                        $res['salemoneyrmbus'] += $v['salemoneyrmbus'];
-                        $res['salemoneyrmbzn'] += $v['salemoneyrmbzn'];
-                        $res['ppebayus'] += $v['ppebayus'];
-                        $res['ppebayzn'] += $v['ppebayzn'];
-                        $res['costmoneyrmb'] += $v['costmoneyrmb'];
-                        $res['expressfarermb'] += $v['expressfarermb'];
+                        $res['salemoneyrmbus']  += $v['salemoneyrmbus'];
+                        $res['salemoneyrmbzn']  += $v['salemoneyrmbzn'];
+                        $res['ppebayus']        += $v['ppebayus'];
+                        $res['ppebayzn']        += $v['ppebayzn'];
+                        $res['costmoneyrmb']    += $v['costmoneyrmb'];
+                        $res['expressfarermb']  += $v['expressfarermb'];
                         $res['inpackagefeermb'] += $v['inpackagefeermb'];
-                        $res['devofflinefee'] = $v['devofflinefee'];
-                        $res['devopefee'] = $v['devopefee'];
-                        $res['totalamount'] = $v['totalamount'];
+                        $res['devofflinefee']   = $v['devofflinefee'];
+                        $res['devopefee']       = $v['devopefee'];
+                        $res['totalamount']     = $v['totalamount'];
                     }
                 }
                 $res['netprofit'] = $res['salemoneyrmbzn'] - $res['ppebayzn'] - $res['costmoneyrmb']
                     - $res['expressfarermb'] - $res['inpackagefeermb'] - $res['devofflinefee'] - $res['devopefee'];
-                $res['netrate'] = $res['salemoneyrmbzn'] == 0 ? 0 : round($res['netprofit'] / $res['salemoneyrmbzn'], 4) * 100;
-                $result[] = $res;
+                $res['netrate']   = $res['salemoneyrmbzn'] == 0 ? 0 : round($res['netprofit'] / $res['salemoneyrmbzn'], 4) * 100;
+                $result[]         = $res;
             }
             return $result;
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return [
-                'code' => 400,
+                'code'    => 400,
                 'message' => $why->getMessage()
             ];
         }
@@ -230,27 +240,25 @@ class ApiReport
      * Author: henry
      * @return mixed
      */
-    public static function getDeveloperRate($userList, $username)
+    public static function getDeveloperRate($userList)
     {
         $rateArr = Yii::$app->py_db->createCommand("select * from Y_Ratemanagement")->queryOne();
-        $rate = 0;
+        $res     = [];
         foreach ($userList as $u) {
-            if ($username === $u['username']) {
-                if ($u['departId'] == 1) {   //一部
-                    $rate = $rateArr['devRate1'];
-                } elseif ($u['departId'] == 4) {   //五部
-                    $rate = $rateArr['devRate5'];
-                } elseif ($u['departId'] == 40) { //七部
-                    $rate = $rateArr['devRate7'];
-                } else {
-                    $rate = $rateArr['devRate'];
-                }
-                break;//跳出内层循环
-            } else {
-                $rate = $rateArr['devRate'];
+            if ($u['departId'] == 1) {   //一部
+                $res[$u['username']] = $rateArr['devRate1'];
+            }
+            elseif ($u['departId'] == 4) {   //五部
+                $res[$u['username']] = $rateArr['devRate5'];
+            }
+            elseif ($u['departId'] == 40) { //七部
+                $res[$u['username']] = $rateArr['devRate7'];
+            }
+            else {
+                $res[$u['username']] = $rateArr['devRate'];
             }
         }
-        return $rate;
+        return $res;
     }
 
     /**
@@ -260,88 +268,91 @@ class ApiReport
      */
     public static function getPossessReport($condition)
     {
-        $sql = "EXEC Z_P_PossessNetProfit @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,@possessMan1=:possess";
-        $con = Yii::$app->py_db;
+        $sql    = "EXEC Z_P_PossessNetProfit @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,@possessMan1=:possess";
+        $con    = Yii::$app->py_db;
         $params = [
-            ':dateFlag' => $condition['dateFlag'],
+            ':dateFlag'  => $condition['dateFlag'],
             ':beginDate' => $condition['beginDate'],
-            ':endDate' => $condition['endDate'],
-            ':possess' => $condition['possess'],
+            ':endDate'   => $condition['endDate'],
+            ':possess'   => $condition['possess'],
         ];
         try {
             $userList = self::getAllDeveloper();
             //print_r($con->createCommand($sql)->bindValues($params)->getRawSql());exit;
-            $list = $con->createCommand($sql)->bindValues($params)->queryAll();
+            $list    = $con->createCommand($sql)->bindValues($params)->queryAll();
+            $rateArr = self::getDeveloperRate($userList);
             $possess = array_unique(ArrayHelper::getColumn($list, 'possessman1Zero'));//获取美工数组并去重
-            $result = $data = [];
+            $result  = $data = [];
             //return $con->createCommand($sql)->bindValues($params)->queryAll();
             foreach ($list as $value) {
                 $item = $value;
-                $rate = self::getDeveloperRate($userList, $value['salerNameZero']);
+                $defaultRate = Yii::$app->py_db->createCommand("select devRate from Y_Ratemanagement")->queryScalar();
+                $rate = isset($rateArr[$value['possessman1Zero']]) ? $rateArr[$value['possessman1Zero']] : $defaultRate;
 
                 //重新计算各时间段销售额（￥）、pp交易费（￥）
                 //0-6月
                 $item['salemoneyrmbznZero'] *= $rate;
-                $item['ppebayznZero'] *= $rate;
+                $item['ppebayznZero']       *= $rate;
                 //6-12月
                 $item['salemoneyrmbznSix'] *= $rate;
-                $item['ppebayznSix'] *= $rate;
+                $item['ppebayznSix']       *= $rate;
                 //12月以上
                 $item['salemoneyrmbznTwe'] *= $rate;
-                $item['ppebayznTwe'] *= $rate;
+                $item['ppebayznTwe']       *= $rate;
                 //汇总
                 $item['salemoneyrmbtotal'] *= $rate;
-                $data[] = $item;
+                $data[]                    = $item;
             }
             //print_r(array_keys($data[0]));exit;
             foreach ($possess as $value) {
                 $res = $list[0];
-                array_walk($res, function (&$v, $k) {
+                array_walk(
+                    $res, function (&$v, $k) {
                     $v = 0;
                 });
                 unset($res['salerNameZero']);
                 $res['possessman1Zero'] = $value;
-                $possessofflinefeeZero = $possessOpeFeeZero =
+                $possessofflinefeeZero  = $possessOpeFeeZero =
                 $possessofflinefeeSix = $possessOpeFeeSix =
                 $possessofflinefeeTwe = $possessOpeFeeTwe = 0;
                 foreach ($data as $v) {
                     if ($value === $v['possessman1Zero']) {
-                        $res['tableType'] = $v['tableType'];
+                        $res['tableType']     = $v['tableType'];
                         $res['timegroupZero'] = $v['timegroupZero'];
-                        $res['timegroupSix'] = $v['timegroupSix'];
-                        $res['timegroupTwe'] = $v['timegroupTwe'];
+                        $res['timegroupSix']  = $v['timegroupSix'];
+                        $res['timegroupTwe']  = $v['timegroupTwe'];
                         //0-6月
-                        $res['salemoneyrmbusZero'] += $v['salemoneyrmbusZero'];
-                        $res['salemoneyrmbznZero'] += $v['salemoneyrmbznZero'];
-                        $res['costmoneyrmbZero'] += $v['costmoneyrmbZero'];
-                        $res['ppebayusZero'] += $v['ppebayusZero'];
-                        $res['ppebayznZero'] += $v['ppebayznZero'];
-                        $res['inpackagefeermbZero'] += $v['inpackagefeermbZero'];
-                        $res['expressfarermbZero'] += $v['expressfarermbZero'];
+                        $res['salemoneyrmbusZero']    += $v['salemoneyrmbusZero'];
+                        $res['salemoneyrmbznZero']    += $v['salemoneyrmbznZero'];
+                        $res['costmoneyrmbZero']      += $v['costmoneyrmbZero'];
+                        $res['ppebayusZero']          += $v['ppebayusZero'];
+                        $res['ppebayznZero']          += $v['ppebayznZero'];
+                        $res['inpackagefeermbZero']   += $v['inpackagefeermbZero'];
+                        $res['expressfarermbZero']    += $v['expressfarermbZero'];
                         $res['possessofflinefeeZero'] = $v['possessofflinefeeZero'];
-                        $res['possessOpeFeeZero'] = $v['possessOpeFeeZero'];
+                        $res['possessOpeFeeZero']     = $v['possessOpeFeeZero'];
                         //$possessofflinefeeZero = max($v['possessofflinefeeZero'],$possessofflinefeeZero);
                         //$possessOpeFeeZero = max($v['possessOpeFeeZero'],$possessOpeFeeZero);
                         //6-12月
-                        $res['salemoneyrmbusSix'] += $v['salemoneyrmbusSix'];
-                        $res['salemoneyrmbznSix'] += $v['salemoneyrmbznSix'];
-                        $res['costmoneyrmbSix'] += $v['costmoneyrmbSix'];
-                        $res['ppebayusSix'] += $v['ppebayusSix'];
-                        $res['ppebayznSix'] += $v['ppebayznSix'];
-                        $res['inpackagefeermbSix'] += $v['inpackagefeermbSix'];
-                        $res['expressfarermbSix'] += $v['expressfarermbSix'];
+                        $res['salemoneyrmbusSix']    += $v['salemoneyrmbusSix'];
+                        $res['salemoneyrmbznSix']    += $v['salemoneyrmbznSix'];
+                        $res['costmoneyrmbSix']      += $v['costmoneyrmbSix'];
+                        $res['ppebayusSix']          += $v['ppebayusSix'];
+                        $res['ppebayznSix']          += $v['ppebayznSix'];
+                        $res['inpackagefeermbSix']   += $v['inpackagefeermbSix'];
+                        $res['expressfarermbSix']    += $v['expressfarermbSix'];
                         $res['possessofflinefeeSix'] = $v['possessofflinefeeSix'];
-                        $res['possessOpeFeeSix'] = $v['possessOpeFeeSix'];
+                        $res['possessOpeFeeSix']     = $v['possessOpeFeeSix'];
                         //12月以上
-                        $res['salemoneyrmbusTwe'] += $v['salemoneyrmbusTwe'];
-                        $res['salemoneyrmbznTwe'] += $v['salemoneyrmbznTwe'];
-                        $res['costmoneyrmbTwe'] += $v['costmoneyrmbTwe'];
-                        $res['ppebayusTwe'] += $v['ppebayusTwe'];
-                        $res['ppebayznTwe'] += $v['ppebayznTwe'];
-                        $res['inpackagefeermbTwe'] += $v['inpackagefeermbTwe'];
-                        $res['expressfarermbTwe'] += $v['expressfarermbTwe'];
+                        $res['salemoneyrmbusTwe']    += $v['salemoneyrmbusTwe'];
+                        $res['salemoneyrmbznTwe']    += $v['salemoneyrmbznTwe'];
+                        $res['costmoneyrmbTwe']      += $v['costmoneyrmbTwe'];
+                        $res['ppebayusTwe']          += $v['ppebayusTwe'];
+                        $res['ppebayznTwe']          += $v['ppebayznTwe'];
+                        $res['inpackagefeermbTwe']   += $v['inpackagefeermbTwe'];
+                        $res['expressfarermbTwe']    += $v['expressfarermbTwe'];
                         $res['possessofflinefeeTwe'] = $v['possessofflinefeeTwe'];
-                        $res['possessOpeFeeTwe'] = $v['possessOpeFeeTwe'];
+                        $res['possessOpeFeeTwe']     = $v['possessOpeFeeTwe'];
                         //总计
                         $res['salemoneyrmbtotal'] += $v['salemoneyrmbtotal'];
                     }
@@ -349,25 +360,26 @@ class ApiReport
                 //0-6月
                 $res['netprofitZero'] = $res['salemoneyrmbznZero'] - $res['costmoneyrmbZero'] - $res['ppebayznZero']
                     - $res['inpackagefeermbZero'] - $res['expressfarermbZero'] - $res['possessofflinefeeZero'] - $res['possessOpeFeeZero'];
-                $res['netrateZero'] = $res['salemoneyrmbznZero'] == 0 ? 0 : round($res['netprofitZero'] / $res['salemoneyrmbznZero'], 4) * 100;
+                $res['netrateZero']   = $res['salemoneyrmbznZero'] == 0 ? 0 : round($res['netprofitZero'] / $res['salemoneyrmbznZero'], 4) * 100;
                 //6-12月
                 $res['netprofitSix'] = $res['salemoneyrmbznSix'] - $res['costmoneyrmbSix'] - $res['ppebayznSix']
                     - $res['inpackagefeermbSix'] - $res['expressfarermbSix'] - $res['possessofflinefeeSix'] - $res['possessOpeFeeSix'];
-                $res['netrateSix'] = $res['salemoneyrmbznSix'] == 0 ? 0 : round($res['netprofitSix'] / $res['salemoneyrmbznSix'], 4) * 100;
+                $res['netrateSix']   = $res['salemoneyrmbznSix'] == 0 ? 0 : round($res['netprofitSix'] / $res['salemoneyrmbznSix'], 4) * 100;
                 //12月以上
                 $res['netprofitTwe'] = $res['salemoneyrmbznTwe'] - $res['costmoneyrmbTwe'] - $res['ppebayznTwe']
                     - $res['inpackagefeermbTwe'] - $res['expressfarermbTwe'] - $res['possessofflinefeeTwe'] - $res['possessOpeFeeTwe'];
-                $res['netrateTwe'] = $res['salemoneyrmbznTwe'] == 0 ? 0 : round($res['netprofitTwe'] / $res['salemoneyrmbznTwe'], 4) * 100;
+                $res['netrateTwe']   = $res['salemoneyrmbznTwe'] == 0 ? 0 : round($res['netprofitTwe'] / $res['salemoneyrmbznTwe'], 4) * 100;
                 //总计
                 $res['netprofittotal'] = $res['netprofitZero'] + $res['netprofitSix'] + $res['netprofitTwe'];
-                $res['netratetotal'] = $res['salemoneyrmbtotal'] == 0 ? 0 : round($res['netprofittotal'] / $res['salemoneyrmbtotal'], 4) * 100;
+                $res['netratetotal']   = $res['salemoneyrmbtotal'] == 0 ? 0 : round($res['netprofittotal'] / $res['salemoneyrmbtotal'], 4) * 100;
 
                 $result[] = $res;
             }
             return $result;
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return [
-                'code' => 400,
+                'code'    => 400,
                 'message' => $why->getMessage()
             ];
         }
@@ -402,20 +414,21 @@ class ApiReport
      */
     public static function getEbaySalesReport($condition)
     {
-        $sql = "EXEC P_YR_PossessMan2Profit @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate," .
+        $sql    = "EXEC P_YR_PossessMan2Profit @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate," .
             "@Sku='',@SalerName='',@SalerName2=0,@chanel='eBay',@SaleType='',@SalerAliasName='',@DevDate=''," .
             "@DevDateEnd='',@Purchaser=0,@SupplierName=0,@possessMan1=0,@possessMan2=0";
-        $con = Yii::$app->py_db;
+        $con    = Yii::$app->py_db;
         $params = [
-            ':dateFlag' => $condition['dateFlag'],
+            ':dateFlag'  => $condition['dateFlag'],
             ':beginDate' => $condition['beginDate'],
-            ':endDate' => $condition['endDate'],
+            ':endDate'   => $condition['endDate'],
         ];
         try {
             return $con->createCommand($sql)->bindValues($params)->queryAll();
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return [
-                'code' => 400,
+                'code'    => 400,
                 'message' => $why->getMessage()
             ];
         }
@@ -429,22 +442,23 @@ class ApiReport
      */
     public static function getSalesTrendReport($condition)
     {
-        $sql = 'call report_salesTrend(:store,:queryType,:showType,:dateFlag,:beginDate,:endDate)';
-        $con = Yii::$app->db;
+        $sql    = 'call report_salesTrend(:store,:queryType,:showType,:dateFlag,:beginDate,:endDate)';
+        $con    = Yii::$app->db;
         $params = [
-            ':store' => $condition['store'],
+            ':store'     => $condition['store'],
             ':queryType' => $condition['queryType'],
-            ':showType' => $condition['showType'],
-            ':dateFlag' => $condition['dateFlag'],
+            ':showType'  => $condition['showType'],
+            ':dateFlag'  => $condition['dateFlag'],
             ':beginDate' => $condition['beginDate'],
-            ':endDate' => $condition['endDate']
+            ':endDate'   => $condition['endDate']
         ];
         try {
             $ret = $con->createCommand($sql)->bindValues($params)->queryAll();
             return !empty($ret) ? $ret : [];
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return [
-                'code' => 400,
+                'code'    => 400,
                 'message' => $why->getMessage()
             ];
         }
@@ -458,22 +472,23 @@ class ApiReport
      */
     public static function getProfitTrendReport($condition)
     {
-        $sql = 'call report_profitTrend(:store,:queryType,:showType,:dateFlag,:beginDate,:endDate,:exchangeRate)';
-        $con = Yii::$app->db;
+        $sql    = 'call report_profitTrend(:store,:queryType,:showType,:dateFlag,:beginDate,:endDate,:exchangeRate)';
+        $con    = Yii::$app->db;
         $params = [
-            ':store' => $condition['store'],
-            ':queryType' => $condition['queryType'],
-            ':showType' => $condition['showType'],
-            ':dateFlag' => $condition['dateFlag'],
-            ':beginDate' => $condition['beginDate'],
-            ':endDate' => $condition['endDate'],
+            ':store'        => $condition['store'],
+            ':queryType'    => $condition['queryType'],
+            ':showType'     => $condition['showType'],
+            ':dateFlag'     => $condition['dateFlag'],
+            ':beginDate'    => $condition['beginDate'],
+            ':endDate'      => $condition['endDate'],
             ':exchangeRate' => $condition['exchangeRate']
         ];
         try {
             return $con->createCommand($sql)->bindValues($params)->queryAll();
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return [
-                'code' => 400,
+                'code'    => 400,
                 'message' => $why->getMessage()
             ];
         }
@@ -487,21 +502,22 @@ class ApiReport
      */
     public static function getOrderCountReport($condition)
     {
-        $sql = 'call report_orderCount(:store,:queryType,:showType,:dateFlag,:beginDate,:endDate)';
-        $con = Yii::$app->db;
+        $sql    = 'call report_orderCount(:store,:queryType,:showType,:dateFlag,:beginDate,:endDate)';
+        $con    = Yii::$app->db;
         $params = [
-            ':store' => $condition['store'],
+            ':store'     => $condition['store'],
             ':queryType' => $condition['queryType'],
-            ':showType' => $condition['showType'],
-            ':dateFlag' => $condition['dateFlag'],
+            ':showType'  => $condition['showType'],
+            ':dateFlag'  => $condition['dateFlag'],
             ':beginDate' => $condition['beginDate'],
-            ':endDate' => $condition['endDate']
+            ':endDate'   => $condition['endDate']
         ];
         try {
             return $con->createCommand($sql)->bindValues($params)->queryAll();
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return [
-                'code' => 400,
+                'code'    => 400,
                 'message' => $why->getMessage()
             ];
         }
@@ -516,21 +532,22 @@ class ApiReport
 
     public static function getSkuCountReport($condition)
     {
-        $sql = 'call report_SkuCount(:store,:queryType,:showType,:dateFlag,:beginDate,:endDate)';
-        $con = Yii::$app->db;
+        $sql    = 'call report_SkuCount(:store,:queryType,:showType,:dateFlag,:beginDate,:endDate)';
+        $con    = Yii::$app->db;
         $params = [
-            ':store' => $condition['store'],
+            ':store'     => $condition['store'],
             ':queryType' => $condition['queryType'],
-            ':showType' => $condition['showType'],
-            ':dateFlag' => $condition['dateFlag'],
+            ':showType'  => $condition['showType'],
+            ':dateFlag'  => $condition['dateFlag'],
             ':beginDate' => $condition['beginDate'],
-            ':endDate' => $condition['endDate']
+            ':endDate'   => $condition['endDate']
         ];
         try {
             return $con->createCommand($sql)->bindValues($params)->queryAll();
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return [
-                'code' => 400,
+                'code'    => 400,
                 'message' => $why->getMessage()
             ];
         }
@@ -547,70 +564,83 @@ class ApiReport
     public static function getProfitReport($condition)
     {
         $username = Yii::$app->user->identity->username;
-        $member = $condition['salesman'];
-        $role = ApiUser::getUserRole($username);
+        $member   = $condition['salesman'];
+        $role     = ApiUser::getUserRole($username);
         if (!$member && !in_array('产品开发', $role) && !in_array('超级管理员', $role)) {
             $userList = ApiUser::getUserList($username);
-            $member = implode(',', $userList);
+            $member   = implode(',', $userList);
         }
-        $sql = "CALL report_suffixSkuProfit(:dateFlag,:beginDate,:endDate,:devBeginDate,:devEndDate,:chanel,:suffix,:salesman,:storeName,:sku,:goodsName)";
+        $sql    = "CALL report_suffixSkuProfit(:dateFlag,:beginDate,:endDate,:devBeginDate,:devEndDate,:chanel,:suffix,:salesman,:storeName,:sku,:goodsName)";
         $params = [
-            ':chanel' => $condition['chanel'],
-            ':dateFlag' => $condition['dateFlag'],
-            ':beginDate' => $condition['beginDate'],
-            ':endDate' => $condition['endDate'],
+            ':chanel'       => $condition['chanel'],
+            ':dateFlag'     => $condition['dateFlag'],
+            ':beginDate'    => $condition['beginDate'],
+            ':endDate'      => $condition['endDate'],
             ':devBeginDate' => $condition['devBeginDate'],
-            ':devEndDate' => $condition['devEndDate'],
-            ':suffix' => $condition['suffix'],
-            ':salesman' => $member,
-            ':storeName' => $condition['storeName'],
-            ':sku' => $condition['sku'],
-            ':goodsName' => $condition['goodsName'],
+            ':devEndDate'   => $condition['devEndDate'],
+            ':suffix'       => $condition['suffix'],
+            ':salesman'     => $member,
+            ':storeName'    => $condition['storeName'],
+            ':sku'          => $condition['sku'],
+            ':goodsName'    => $condition['goodsName'],
         ];
-        $key = Yii::$app->db->createCommand($sql)->bindValues($params)->getRawSql();
+        $key    = Yii::$app->db->createCommand($sql)->bindValues($params)->getRawSql();
         //获取缓存
         $res = Yii::$app->cache->get($key);
-//        if($res){
-//            $list = $res;
-//        }else{
+        //        if($res){
+        //            $list = $res;
+        //        }else{
         $list = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
-//            Yii::$app->cache->set($key, $list, 3600*12);
-//        }
+        //            Yii::$app->cache->set($key, $list, 3600*12);
+        //        }
         try {
-            $provider = new ArrayDataProvider([
-                'allModels' => $list,
-                'sort' => [
-                    'attributes' => [
-                        'salesman', 'suffix', 'pingtai', 'GoodsCode', 'GoodsName', 'SalerName',
-                        'storeName', 'SKUQty', 'SaleMoneyRmb', 'refund', 'ProfitRmb', 'rate', 'refundRate'
+            $provider        = new ArrayDataProvider(
+                [
+                    'allModels'  => $list,
+                    'sort'       => [
+                        'attributes' => [
+                            'salesman',
+                            'suffix',
+                            'pingtai',
+                            'GoodsCode',
+                            'GoodsName',
+                            'SalerName',
+                            'storeName',
+                            'SKUQty',
+                            'SaleMoneyRmb',
+                            'refund',
+                            'ProfitRmb',
+                            'rate',
+                            'refundRate'
+                        ],
                     ],
-                ],
-                'pagination' => [
-                    'page' => $condition['start'] - 1,
-                    'pageSize' => isset($condition['limit']) && $condition['limit'] ? $condition['limit'] : 20,
-                ],
-            ]);
-            $totalQty = array_sum(ArrayHelper::getColumn($list, 'SKUQty'));
-            $totalSaleMoney = round(array_sum(ArrayHelper::getColumn($list, 'SaleMoneyRmb')), 2);
-            $totalRefund = round(array_sum(ArrayHelper::getColumn($list, 'refund')), 2);
-            $totalProfitRmb = round(array_sum(ArrayHelper::getColumn($list, 'ProfitRmb')), 2);
-            $totalRate = $totalSaleMoney == 0 ? 0 : round($totalProfitRmb / $totalSaleMoney * 100, 2);
+                    'pagination' => [
+                        'page'     => $condition['start'] - 1,
+                        'pageSize' => isset($condition['limit']) && $condition['limit'] ? $condition['limit'] : 20,
+                    ],
+                ]);
+            $totalQty        = array_sum(ArrayHelper::getColumn($list, 'SKUQty'));
+            $totalSaleMoney  = round(array_sum(ArrayHelper::getColumn($list, 'SaleMoneyRmb')), 2);
+            $totalRefund     = round(array_sum(ArrayHelper::getColumn($list, 'refund')), 2);
+            $totalProfitRmb  = round(array_sum(ArrayHelper::getColumn($list, 'ProfitRmb')), 2);
+            $totalRate       = $totalSaleMoney == 0 ? 0 : round($totalProfitRmb / $totalSaleMoney * 100, 2);
             $totalRefundRate = $totalProfitRmb == 0 ? 0 : round($totalRefund / $totalProfitRmb * 100, 2);
             return [
                 'provider' => $provider,
-                'extra' => [
-                    'totalQty' => $totalQty,
-                    'totalSaleMoney' => $totalSaleMoney,
-                    'totalRefund' => $totalRefund,
-                    'totalProfitRmb' => $totalProfitRmb,
-                    'totalRate' => $totalRate,
+                'extra'    => [
+                    'totalQty'        => $totalQty,
+                    'totalSaleMoney'  => $totalSaleMoney,
+                    'totalRefund'     => $totalRefund,
+                    'totalProfitRmb'  => $totalProfitRmb,
+                    'totalRate'       => $totalRate,
                     'totalRefundRate' => $totalRefundRate,
                 ]
             ];
 
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return [
-                'code' => 400,
+                'code'    => 400,
                 'message' => $why->getMessage()
             ];
         }
@@ -626,21 +656,21 @@ class ApiReport
      */
     public static function getProfitReportExport($condition)
     {
-        $sql = "CALL report_suffixSkuProfit(:dateFlag,:beginDate,:endDate,:devBeginDate,:devEndDate,:chanel,:suffix,:salesman,:storeName,:sku,:goodsName)";
+        $sql    = "CALL report_suffixSkuProfit(:dateFlag,:beginDate,:endDate,:devBeginDate,:devEndDate,:chanel,:suffix,:salesman,:storeName,:sku,:goodsName)";
         $params = [
-            ':chanel' => $condition['chanel'],
-            ':dateFlag' => $condition['dateFlag'],
-            ':beginDate' => $condition['beginDate'],
-            ':endDate' => $condition['endDate'],
+            ':chanel'      => $condition['chanel'],
+            ':dateFlag'    => $condition['dateFlag'],
+            ':beginDate'   => $condition['beginDate'],
+            ':endDate'     => $condition['endDate'],
             'devBeginDate' => isset($condition['devBeginDate']) ? $condition['devBeginDate'] : '',
-            'devEndDate' => isset($condition['devEndDate']) ? $condition['devEndDate'] : '',
-            ':suffix' => $condition['suffix'],
-            ':salesman' => $condition['salesman'],
-            ':storeName' => $condition['storeName'],
-            ':sku' => $condition['sku'],
-            ':goodsName' => $condition['goodsName'],
+            'devEndDate'   => isset($condition['devEndDate']) ? $condition['devEndDate'] : '',
+            ':suffix'      => $condition['suffix'],
+            ':salesman'    => $condition['salesman'],
+            ':storeName'   => $condition['storeName'],
+            ':sku'         => $condition['sku'],
+            ':goodsName'   => $condition['goodsName'],
         ];
-        $key = Yii::$app->db->createCommand($sql)->bindValues($params)->getRawSql();
+        $key    = Yii::$app->db->createCommand($sql)->bindValues($params)->getRawSql();
 
         $list = Yii::$app->cache->get($key);
         if (!$list) {
@@ -648,12 +678,32 @@ class ApiReport
         }
         try {
             //["suffix","pingtai", "GoodsCode","GoodsName", "SalerName", "SKUQty", "SaleMoneyRmb","ProfitRmb", "rate","salesman"];
-            $title = ['销售员', '卖家简称', '平台', '商品编码', '主图', '商品名称', '开发员', '开发日期', '仓库', '销量', '销售额￥', '退款￥', '利润￥', '利润率%', '退款利润占比'];
-            return [$title, $list];
-
-        } catch (\Exception $why) {
+            $title = [
+                '销售员',
+                '卖家简称',
+                '平台',
+                '商品编码',
+                '主图',
+                '商品名称',
+                '开发员',
+                '开发日期',
+                '仓库',
+                '销量',
+                '销售额￥',
+                '退款￥',
+                '利润￥',
+                '利润率%',
+                '退款利润占比'
+            ];
             return [
-                'code' => 400,
+                $title,
+                $list
+            ];
+
+        }
+        catch (\Exception $why) {
+            return [
+                'code'    => 400,
                 'message' => $why->getMessage()
             ];
         }
@@ -668,11 +718,11 @@ class ApiReport
     public static function getIntroduceReport($condition)
     {
         $member = $condition['member'] ? implode(',', $condition['member']) : '';
-        $sql = 'exec P_RefereeProfit_advanced @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,@SalerName=:salerName';
+        $sql    = 'exec P_RefereeProfit_advanced @DateFlag=:dateFlag,@BeginDate=:beginDate,@endDate=:endDate,@SalerName=:salerName';
         $params = [
-            ':dateFlag' => $condition['dateFlag'],
+            ':dateFlag'  => $condition['dateFlag'],
             ':beginDate' => $condition['beginDate'],
-            ':endDate' => $condition['endDate'],
+            ':endDate'   => $condition['endDate'],
             ':salerName' => $member
         ];
         try {
@@ -681,42 +731,56 @@ class ApiReport
             $list = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
             //插入MySql数据库进行进一步计算
             Yii::$app->db->createCommand("TRUNCATE TABLE cache_introduceProfitTmp;")->execute();
-            Yii::$app->db->createCommand()->batchInsert('cache_introduceProfitTmp',
-                ['goodsCode', 'salerName', 'createDate', 'costMoneyRmb', 'saleMoneyRmb', 'ppEbayRmb',
-                    'inPackageFeeRmb', 'expressFareRmb', 'devRateUs', 'devRate', 'devRate1', 'devRate5', 'devRate7'],
+            Yii::$app->db->createCommand()->batchInsert(
+                'cache_introduceProfitTmp',
+                [
+                    'goodsCode',
+                    'salerName',
+                    'createDate',
+                    'costMoneyRmb',
+                    'saleMoneyRmb',
+                    'ppEbayRmb',
+                    'inPackageFeeRmb',
+                    'expressFareRmb',
+                    'devRateUs',
+                    'devRate',
+                    'devRate1',
+                    'devRate5',
+                    'devRate7'
+                ],
                 $list
             )->execute();
             //获取初步计算结果
             $dataList = Yii::$app->db->createCommand("CALL report_introduceProfitTmp('{$condition['endDate']}');")->queryAll();
             //获取 运营费用
-            $operateSql = "select dev1.salername as introducer,dev1.timegroup,sum(dev1.amount)as amount
+            $operateSql  = "select dev1.salername as introducer,dev1.timegroup,sum(dev1.amount)as amount
                           from (
                               SELECT
                                CASE WHEN ISNULL(SalerName,'')='' THEN '无人' ELSE SalerName END AS SalerName,
                                timegroup,
                                sum(amount) as amount,
-                               devOperateTime
+                               CONVERT(VARCHAR(10),devOperateTime,121) AS devOperateTime
                              FROM Y_devOperateFee
-                             WHERE devOperateTime  BETWEEN '{$condition['beginDate']}'  AND '{$condition['endDate']}'
-                             group by salername,timegroup,devOperateTime) dev1
+                             WHERE CONVERT(VARCHAR(10),devOperateTime,121)  BETWEEN '{$condition['beginDate']}'  AND '{$condition['endDate']}'
+                             group by salername,timegroup,CONVERT(VARCHAR(10),devOperateTime,121)) dev1
                           group  by dev1.salername,dev1.timegroup";
             $operateList = Yii::$app->py_db->createCommand($operateSql)->queryAll();
             //获取 清仓
-            $offlineSql = "select dev1.introducer,dev1.timegroup,sum(dev1.amount)as amount
+            $offlineSql  = "select dev1.introducer,dev1.timegroup,sum(dev1.amount)as amount
                           from (
                             SELECT
                                CASE WHEN ISNULL(introducer,'')='' THEN '无人' ELSE introducer END AS introducer,
                                timegroup,
                                sum(amount) as amount,
-                               clearnTime
+                               CONVERT(VARCHAR(10),clearnTime,121) AS clearnTime
                              FROM Y_introOfflineClearn
-                             WHERE clearnTime  BETWEEN '{$condition['beginDate']}'  AND '{$condition['endDate']}'
-                             group by introducer,timegroup,clearnTime) dev1
+                             WHERE CONVERT(VARCHAR(10),clearnTime,121)  BETWEEN '{$condition['beginDate']}'  AND '{$condition['endDate']}'
+                             group by introducer,timegroup,CONVERT(VARCHAR(10),clearnTime,121)) dev1
                           group  by dev1.introducer,dev1.timegroup";
             $offlineList = Yii::$app->py_db->createCommand($offlineSql)->queryAll();
-            $data = [];
+            $data        = [];
             foreach ($dataList as $value) {
-                $item = $value;
+                $item                  = $value;
                 $item['devOpeFeeZero'] = $item['devofflinefeeZero'] =
                 $item['devOpeFeeSix'] = $item['devofflinefeeSix'] =
                 $item['devOpeFeeTwe'] = $item['devofflinefeeTwe'] = 0;
@@ -747,19 +811,19 @@ class ApiReport
                     //0-6月
                     $item['netprofitZero'] = $item['salemoneyrmbznZero'] - $item['costmoneyrmbZero'] - $item['ppebayznZero']
                         - $item['inpackagefeermbZero'] - $item['expressfarermbZero'] - $item['devofflinefeeZero'] - $item['devOpeFeeZero'];
-                    $item['netrateZero'] = $item['salemoneyrmbznZero'] == 0 ? 0 : round($item['netprofitZero'] / $item['salemoneyrmbznZero'], 4) * 100;
+                    $item['netrateZero']   = $item['salemoneyrmbznZero'] == 0 ? 0 : round($item['netprofitZero'] / $item['salemoneyrmbznZero'], 4) * 100;
                     //6-12月
                     $item['netprofitSix'] = $item['salemoneyrmbznSix'] - $item['costmoneyrmbSix'] - $item['ppebayznSix']
                         - $item['inpackagefeermbSix'] - $item['expressfarermbSix'] - $item['devofflinefeeSix'] - $item['devOpeFeeSix'];
-                    $item['netrateSix'] = $item['salemoneyrmbznSix'] == 0 ? 0 : round($item['netprofitSix'] / $item['salemoneyrmbznSix'], 4) * 100;
+                    $item['netrateSix']   = $item['salemoneyrmbznSix'] == 0 ? 0 : round($item['netprofitSix'] / $item['salemoneyrmbznSix'], 4) * 100;
                     //12月以上
                     $item['netprofitTwe'] = $item['salemoneyrmbznTwe'] - $item['costmoneyrmbTwe'] - $item['ppebayznTwe']
                         - $item['inpackagefeermbTwe'] - $item['expressfarermbTwe'] - $item['devofflinefeeTwe'] - $item['devOpeFeeTwe'];
-                    $item['netrateTwe'] = $item['salemoneyrmbznTwe'] == 0 ? 0 : round($item['netprofitTwe'] / $item['salemoneyrmbznTwe'], 4) * 100;
+                    $item['netrateTwe']   = $item['salemoneyrmbznTwe'] == 0 ? 0 : round($item['netprofitTwe'] / $item['salemoneyrmbznTwe'], 4) * 100;
                     //总计
                     $item['salemoneyrmbtotal'] = $item['salemoneyrmbznZero'] + $item['salemoneyrmbznSix'] + $item['salemoneyrmbznTwe'];
-                    $item['netprofittotal'] = $item['netprofitZero'] + $item['netprofitSix'] + $item['netprofitTwe'];
-                    $item['netratetotal'] = $item['salemoneyrmbtotal'] == 0 ? 0 : round($item['netprofittotal'] / $item['salemoneyrmbtotal'], 4) * 100;
+                    $item['netprofittotal']    = $item['netprofitZero'] + $item['netprofitSix'] + $item['netprofitTwe'];
+                    $item['netratetotal']      = $item['salemoneyrmbtotal'] == 0 ? 0 : round($item['netprofittotal'] / $item['salemoneyrmbtotal'], 4) * 100;
                     //print_r($item);exit;
                     $data[] = $item;
                 }
@@ -768,9 +832,10 @@ class ApiReport
 
             //print_r($data);exit;
             return $data;
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return [
-                'code' => 400,
+                'code'    => 400,
                 'message' => $why->getMessage()
             ];
         }
@@ -783,10 +848,10 @@ class ApiReport
     public static function getRefundDetails($condition)
     {
         //美元汇率
-        $rate = ApiUkFic::getRateUkOrUs('USD');
-        $exchangeRate = ApiSettings::getExchangeRate();
+        $rate          = ApiUkFic::getRateUkOrUs('USD');
+        $exchangeRate  = ApiSettings::getExchangeRate();
         $wishSalerRate = $exchangeRate['wishSalerRate'];
-        $sql = '';
+        $sql           = '';
 
         //按订单汇总退款
         if ($condition['type'] === 'order') {
@@ -832,19 +897,27 @@ class ApiReport
 
         $con = Yii::$app->db;
         try {
-            $data = $con->createCommand($sql)->queryAll();
-            $provider = new ArrayDataProvider([
-                'allModels' => $data,
-                'pagination' => [
-                    'pageSize' => $condition['pageSize'],
-                ],
-            ]);
+            $data          = $con->createCommand($sql)->queryAll();
+            $provider      = new ArrayDataProvider(
+                [
+                    'allModels'  => $data,
+                    'pagination' => [
+                        'pageSize' => $condition['pageSize'],
+                    ],
+                ]);
             $totalRefundZn = round(array_sum(ArrayHelper::getColumn($data, 'refundZn')), 2);
             $totalRefundUs = round(array_sum(ArrayHelper::getColumn($data, 'refund')), 2);
-            return ['provider' => $provider, 'extra' => ['totalRefundZn' => $totalRefundZn, 'totalRefundUs' => $totalRefundUs]];
-        } catch (\Exception $why) {
             return [
-                'code' => 400,
+                'provider' => $provider,
+                'extra'    => [
+                    'totalRefundZn' => $totalRefundZn,
+                    'totalRefundUs' => $totalRefundUs
+                ]
+            ];
+        }
+        catch (\Exception $why) {
+            return [
+                'code'    => 400,
                 'message' => $why->getMessage()
             ];
         }
@@ -861,7 +934,7 @@ class ApiReport
     public static function getEbayRefundDetails($condition)
     {
         $rate = ApiUkFic::getRateUkOrUs('USD');
-        $sql = "SELECT rd.*, refund * {$rate} AS refundZn,u.username AS salesman 
+        $sql  = "SELECT rd.*, refund * {$rate} AS refundZn,u.username AS salesman 
                 FROM (
                     SELECT MAX(refMonth) AS refMonth, MAX(dateDelta) as dateDelta, MAX(suffix) AS suffix,
                     MAX(goodsName) AS goodsName,MAX(goodsCode) AS goodsCode,MAX(goodsSku) AS goodsSku, 
@@ -883,23 +956,31 @@ class ApiReport
             $sql .= 'AND suffix IN (' . $condition['suffix'] . ') ';
         }
         $sql .= 'ORDER BY refund DESC,goodsSku ASC';
-//        $data = Yii::$app->db->createCommand($sql)->getRawSql();
-//        var_dump($data);exit;
+        //        $data = Yii::$app->db->createCommand($sql)->getRawSql();
+        //        var_dump($data);exit;
         $data = Yii::$app->db->createCommand($sql)->queryAll();
 
         try {
-            $provider = new ArrayDataProvider([
-                'allModels' => $data,
-                'pagination' => [
-                    'pageSize' => $condition['pageSize'],
-                ],
-            ]);
+            $provider      = new ArrayDataProvider(
+                [
+                    'allModels'  => $data,
+                    'pagination' => [
+                        'pageSize' => $condition['pageSize'],
+                    ],
+                ]);
             $totalRefundZn = round(array_sum(ArrayHelper::getColumn($data, 'refundZn')), 2);
             $totalRefundUs = round($totalRefundZn / $rate, 2);
-            return ['provider' => $provider, 'extra' => ['totalRefundZn' => $totalRefundZn, 'totalRefundUs' => $totalRefundUs]];
-        } catch (\Exception $why) {
             return [
-                'code' => 400,
+                'provider' => $provider,
+                'extra'    => [
+                    'totalRefundZn' => $totalRefundZn,
+                    'totalRefundUs' => $totalRefundUs
+                ]
+            ];
+        }
+        catch (\Exception $why) {
+            return [
+                'code'    => 400,
                 'message' => $why->getMessage()
             ];
         }
@@ -916,72 +997,95 @@ class ApiReport
     public static function getEbayStoreFee($condition)
     {
         $beginDate = $condition['beginDate'];
-        $endDate = $condition['endDate'];
-        $suffix = $condition['suffix'];
-        $usRate = ApiUkFic::getRateUkOrUs('USD');
-        $gbpRate = ApiUkFic::getRateUkOrUs('GBP');
-        $data = EbayStoreFee::getCollection()->aggregate([
+        $endDate   = $condition['endDate'];
+        $suffix    = $condition['suffix'];
+        $usRate    = ApiUkFic::getRateUkOrUs('USD');
+        $gbpRate   = ApiUkFic::getRateUkOrUs('GBP');
+        $data      = EbayStoreFee::getCollection()->aggregate(
             [
-                '$match' => [
-                    'suffix' => ['$in' => array_values($suffix)],
-                    'transactionDate' => ['$gte' => $beginDate, '$lte' => $endDate]
+                [
+                    '$match' => [
+                        'suffix'          => ['$in' => array_values($suffix)],
+                        'transactionDate' => [
+                            '$gte' => $beginDate,
+                            '$lte' => $endDate
+                        ]
+                    ]
+                ],
+                [
+                    '$group' => [
+                        '_id' => [
+                            'suffix'   => '$suffix',
+                            'currency' => '$currency',
+                            'feeType'  => '$feeType'
+                        ],
+                        'sum' => ['$sum' => ['$toDouble' => '$amountValue']]
+                    ]
+                ],
+                [
+                    '$project' => [
+                        '_id'      => 0,
+                        'suffix'   => '$_id.suffix',
+                        'currency' => '$_id.currency',
+                        'feeType'  => '$_id.feeType',
+                        'sum'      => '$sum'
+                    ]
                 ]
-            ],
-            [
-                '$group' => [
-                    '_id' => ['suffix' => '$suffix', 'currency' => '$currency', 'feeType' => '$feeType'],
-                    'sum' => ['$sum' => ['$toDouble' => '$amountValue']]
-                ]
-            ],
-            [
-                '$project' => [
-                    '_id' => 0, 'suffix' => '$_id.suffix', 'currency' => '$_id.currency', 'feeType' => '$_id.feeType', 'sum' => '$sum'
-                ]
-            ]
-        ]);
-//        $suffixArr = ArrayHelper::getColumn($data, 'sum');
-//        var_dump($suffixArr);exit;
-        $res = [];
+            ]);
+        //        $suffixArr = ArrayHelper::getColumn($data, 'sum');
+        //        var_dump($suffixArr);exit;
+        $res        = [];
         $totalFeeUs = $totalFeeGbp = 0;
         try {
             foreach ($data as $v) {
-                $sql = "SELECT username FROM `user` u
+                $sql              = "SELECT username FROM `user` u
                         LEFT JOIN auth_store_child l ON l.user_id = u.id
                         LEFT JOIN auth_store s ON l.store_id = s.id
                         WHERE s.store = '{$v['suffix']}' ";
                 $item['salerman'] = Yii::$app->db->createCommand($sql)->queryScalar();
-                $item['suffix'] = $v['suffix'];
-                $item['feeType'] = isset($v['feeType']) ? $v['feeType'] : '';
+                $item['suffix']   = $v['suffix'];
+                $item['feeType']  = isset($v['feeType']) ? $v['feeType'] : '';
                 $item['currency'] = $v['currency'];
-                $item['value'] = $v['sum'];
+                $item['value']    = $v['sum'];
 
-    //            $item['valueZn'] = $v['sum'] * ($v['currency'] == 'USD' ? $usRate : ($v['currency'] == 'GBP' ? $gbpRate : ApiUkFic::getRateUkOrUs($v['currency'])));
+                //            $item['valueZn'] = $v['sum'] * ($v['currency'] == 'USD' ? $usRate : ($v['currency'] == 'GBP' ? $gbpRate : ApiUkFic::getRateUkOrUs($v['currency'])));
                 if ($v['currency'] == 'USD') {
                     $item['valueZn'] = $v['sum'] * $usRate;
-                    $totalFeeUs += $v['sum'];
-                } elseif ($v['currency'] == 'GBP') {
+                    $totalFeeUs      += $v['sum'];
+                }
+                elseif ($v['currency'] == 'GBP') {
                     $item['valueZn'] = $v['sum'] * $gbpRate;
-                    $totalFeeGbp += $v['sum'];
-                } else {
+                    $totalFeeGbp     += $v['sum'];
+                }
+                else {
                     $item['valueZn'] = $v['sum'] * ApiUkFic::getRateUkOrUs($v['currency']);
                 }
                 $item['valueZn'] = round($item['valueZn'], 2);
-                $res[] = $item;
+                $res[]           = $item;
             }
 
-            $provider = new ArrayDataProvider([
-                'allModels' => $res,
-                'pagination' => [
-                    'pageSize' => $condition['pageSize'],
-                ],
-            ]);
-            $totalFeeZn = round(array_sum(ArrayHelper::getColumn($res, 'valueZn')), 2);
-            $totalFeeUs = round($totalFeeUs, 2);
+            $provider    = new ArrayDataProvider(
+                [
+                    'allModels'  => $res,
+                    'pagination' => [
+                        'pageSize' => $condition['pageSize'],
+                    ],
+                ]);
+            $totalFeeZn  = round(array_sum(ArrayHelper::getColumn($res, 'valueZn')), 2);
+            $totalFeeUs  = round($totalFeeUs, 2);
             $totalFeeGbp = round($totalFeeGbp, 2);
-            return ['provider' => $provider, 'extra' => ['totalFeeZn' => $totalFeeZn, 'totalFeeUs' => $totalFeeUs, 'totalFeeGbp' => $totalFeeGbp]];
-        } catch (\Exception $why) {
             return [
-                'code' => 400,
+                'provider' => $provider,
+                'extra'    => [
+                    'totalFeeZn'  => $totalFeeZn,
+                    'totalFeeUs'  => $totalFeeUs,
+                    'totalFeeGbp' => $totalFeeGbp
+                ]
+            ];
+        }
+        catch (\Exception $why) {
+            return [
+                'code'    => 400,
                 'message' => $why->getMessage()
             ];
         }
@@ -996,7 +1100,7 @@ class ApiReport
     {
         //美元汇率
         $rate = ApiUkFic::getRateUkOrUs('USD');
-        $sql = '';
+        $sql  = '';
 
         //按订单汇总退款
         if ($condition['type'] === 'wishOrder') {
@@ -1022,13 +1126,14 @@ class ApiReport
 
         $con = Yii::$app->db;
         try {
-            $data = $con->createCommand($sql)->queryAll();
-            $provider = new ArrayDataProvider([
-                'allModels' => $data,
-                'pagination' => [
-                    'pageSize' => $condition['pageSize'],
-                ],
-            ]);
+            $data          = $con->createCommand($sql)->queryAll();
+            $provider      = new ArrayDataProvider(
+                [
+                    'allModels'  => $data,
+                    'pagination' => [
+                        'pageSize' => $condition['pageSize'],
+                    ],
+                ]);
             $totalRefundZn = 0;
             $totalRefundUs = 0;
             foreach ($data as $row) {
@@ -1039,10 +1144,17 @@ class ApiReport
                     $totalRefundZn += $row['refund'];
                 }
             }
-            return ['provider' => $provider, 'extra' => ['totalRefundZn' => round($totalRefundZn, 2), 'totalRefundUs' => round($totalRefundUs, 2)]];
-        } catch (\Exception $why) {
             return [
-                'code' => 400,
+                'provider' => $provider,
+                'extra'    => [
+                    'totalRefundZn' => round($totalRefundZn, 2),
+                    'totalRefundUs' => round($totalRefundUs, 2)
+                ]
+            ];
+        }
+        catch (\Exception $why) {
+            return [
+                'code'    => 400,
                 'message' => $why->getMessage()
             ];
         }
@@ -1070,25 +1182,30 @@ class ApiReport
             $deadData = Yii::$app->py_db->createCommand($deadSql)->queryAll();
             $userData = Yii::$app->db->createCommand($userSql)->queryAll();
             $userData = ArrayHelper::map($userData, 'store', 'username');
-            $data = [];
+            $data     = [];
             foreach ($deadData as $v) {
-                $item = $v;
+                $item             = $v;
                 $item['salesman'] = isset($userData[$v['suffix']]) ? $userData[$v['suffix']] : '未分配';
-                $data[] = $item;
+                $data[]           = $item;
             }
             $totalAveAmount = array_sum(ArrayHelper::getColumn($data, 'aveAmount'));
 
-            $provider = new ArrayDataProvider([
-                'allModels' => $data,
-                'pagination' => [
-                    'pageSize' => isset($condition['pageSize']) && $condition['pageSize'] ? $condition['pageSize'] : 20,
-                ],
-            ]);
+            $provider = new ArrayDataProvider(
+                [
+                    'allModels'  => $data,
+                    'pagination' => [
+                        'pageSize' => isset($condition['pageSize']) && $condition['pageSize'] ? $condition['pageSize'] : 20,
+                    ],
+                ]);
 
-            return ['provider' => $provider, 'extra' => ['totalAveAmount' => $totalAveAmount]];
-        } catch (\Exception $why) {
             return [
-                'code' => 400,
+                'provider' => $provider,
+                'extra'    => ['totalAveAmount' => $totalAveAmount]
+            ];
+        }
+        catch (\Exception $why) {
+            return [
+                'code'    => 400,
                 'message' => $why->getMessage()
             ];
         }
@@ -1107,37 +1224,49 @@ class ApiReport
         if ($condition['member']) {
             if ($condition['role'] == 'purchaser') {
                 $deadSql .= ' AND purchaser IN (' . $condition['member'] . ') ';
-            } elseif ($condition['role'] == 'possessMan') {
+            }
+            elseif ($condition['role'] == 'possessMan') {
                 $deadSql .= ' AND possessMan IN (' . $condition['member'] . ') ';
-            } elseif ($condition['role'] == 'introducer') {
+            }
+            elseif ($condition['role'] == 'introducer') {
                 $deadSql .= ' AND introducer IN (' . $condition['member'] . ') ';
-            } else {
+            }
+            else {
                 $deadSql .= ' AND (developer IN (' . $condition['member'] . ') OR developer2 IN (' . $condition['member'] . ')) ';
             }
-        } else {
+        }
+        else {
             if ($condition['role'] == 'purchaser') {
                 $deadSql .= " AND ISNULL(purchaser,'')<>'' ";
-            } elseif ($condition['role'] == 'possessMan') {
+            }
+            elseif ($condition['role'] == 'possessMan') {
                 $deadSql .= " AND ISNULL(possessMan,'')<>'' ";
-            } elseif ($condition['role'] == 'introducer') {
+            }
+            elseif ($condition['role'] == 'introducer') {
                 $deadSql .= " AND ISNULL(introducer,'')<>'' ";
-            } else {
+            }
+            else {
                 $deadSql .= " AND (ISNULL(developer,'')<>'' OR ISNULL(developer2,'')<>'') ";
             }
         }
         try {
-            $data = Yii::$app->py_db->createCommand($deadSql)->queryAll();
+            $data           = Yii::$app->py_db->createCommand($deadSql)->queryAll();
             $totalAveAmount = array_sum(ArrayHelper::getColumn($data, 'aveAmount'));
-            $provider = new ArrayDataProvider([
-                'allModels' => $data,
-                'pagination' => [
-                    'pageSize' => isset($condition['pageSize']) && $condition['pageSize'] ? $condition['pageSize'] : 20,
-                ],
-            ]);
-            return ['provider' => $provider, 'extra' => ['totalAveAmount' => $totalAveAmount]];
-        } catch (\Exception $why) {
+            $provider       = new ArrayDataProvider(
+                [
+                    'allModels'  => $data,
+                    'pagination' => [
+                        'pageSize' => isset($condition['pageSize']) && $condition['pageSize'] ? $condition['pageSize'] : 20,
+                    ],
+                ]);
             return [
-                'code' => 400,
+                'provider' => $provider,
+                'extra'    => ['totalAveAmount' => $totalAveAmount]
+            ];
+        }
+        catch (\Exception $why) {
+            return [
+                'code'    => 400,
                 'message' => $why->getMessage()
             ];
         }
@@ -1159,28 +1288,36 @@ class ApiReport
                     WHERE u.`status`=10 ";
         if ($condition['suffix']) $userSql .= ' AND store IN (' . $condition['suffix'] . ') ';
         try {
-            $dataTmp = Yii::$app->py_db->createCommand($sql)->queryAll();
+            $dataTmp  = Yii::$app->py_db->createCommand($sql)->queryAll();
             $userData = Yii::$app->db->createCommand($userSql)->queryAll();
             $userData = ArrayHelper::map($userData, 'store', 'username');
-            $data = [];
+            $data     = [];
             foreach ($dataTmp as $v) {
-                $item = $v;
+                $item             = $v;
                 $item['salesman'] = isset($userData[$v['suffix']]) ? $userData[$v['suffix']] : '未分配';
-                $data[] = $item;
+                $data[]           = $item;
             }
-            $totalAmount = array_sum(ArrayHelper::getColumn($data, 'total'));
+            $totalAmount    = array_sum(ArrayHelper::getColumn($data, 'total'));
             $totalAmountRmb = array_sum(ArrayHelper::getColumn($data, 'totalRmb'));
-            $provider = new ArrayDataProvider([
-                'allModels' => $data,
-                'pagination' => [
-                    'pageSize' => $condition['pageSize'],
-                ],
-            ]);
+            $provider       = new ArrayDataProvider(
+                [
+                    'allModels'  => $data,
+                    'pagination' => [
+                        'pageSize' => $condition['pageSize'],
+                    ],
+                ]);
 
-            return ['provider' => $provider, 'extra' => ['totalAmount' => round($totalAmount, 2), 'totalAmountRmb' => round($totalAmountRmb, 2)]];
-        } catch (\Exception $why) {
             return [
-                'code' => 400,
+                'provider' => $provider,
+                'extra'    => [
+                    'totalAmount'    => round($totalAmount, 2),
+                    'totalAmountRmb' => round($totalAmountRmb, 2)
+                ]
+            ];
+        }
+        catch (\Exception $why) {
+            return [
+                'code'    => 400,
                 'message' => $why->getMessage()
             ];
         }
@@ -1205,26 +1342,31 @@ class ApiReport
         if ($condition['suffix']) $userSql .= ' AND store IN (' . $condition['suffix'] . ') ';
         try {
             $extraData = Yii::$app->py_db->createCommand($sql)->queryAll();
-            $userData = Yii::$app->db->createCommand($userSql)->queryAll();
-            $userData = ArrayHelper::map($userData, 'store', 'username');
-            $data = [];
+            $userData  = Yii::$app->db->createCommand($userSql)->queryAll();
+            $userData  = ArrayHelper::map($userData, 'store', 'username');
+            $data      = [];
             foreach ($extraData as $v) {
-                $item = $v;
+                $item             = $v;
                 $item['salesman'] = isset($userData[$v['suffix']]) ? $userData[$v['suffix']] : '未分配';
-                $data[] = $item;
+                $data[]           = $item;
             }
             $totalAveAmount = array_sum(ArrayHelper::getColumn($data, 'saleOpeFeeZn'));
-            $provider = new ArrayDataProvider([
-                'allModels' => $data,
-                'pagination' => [
-                    'pageSize' => $condition['pageSize'],
-                ],
-            ]);
+            $provider       = new ArrayDataProvider(
+                [
+                    'allModels'  => $data,
+                    'pagination' => [
+                        'pageSize' => $condition['pageSize'],
+                    ],
+                ]);
 
-            return ['provider' => $provider, 'extra' => ['totalAveAmount' => $totalAveAmount]];
-        } catch (\Exception $why) {
             return [
-                'code' => 400,
+                'provider' => $provider,
+                'extra'    => ['totalAveAmount' => $totalAveAmount]
+            ];
+        }
+        catch (\Exception $why) {
+            return [
+                'code'    => 400,
                 'message' => $why->getMessage()
             ];
         }
@@ -1248,16 +1390,17 @@ class ApiReport
      */
     public static function getRefundExpressRate($condition)
     {
-        $suffix = $condition['account'];
+        $suffix   = $condition['account'];
         $dateFlag = $condition['dateType'];
         list($beginDate, $endDate) = $condition['dateRange'];
-        $sql = 'call report_refundExPressRateAPI (:suffix, :beginDate, :endDate, :dateFlag)';
-        $query = Yii::$app->db->createCommand($sql)->bindValues([
-            ':suffix' => implode(',', $suffix),
-            ':beginDate' => $beginDate,
-            ':endDate' => $endDate,
-            ':dateFlag' => $dateFlag
-        ])->queryAll();
+        $sql   = 'call report_refundExPressRateAPI (:suffix, :beginDate, :endDate, :dateFlag)';
+        $query = Yii::$app->db->createCommand($sql)->bindValues(
+            [
+                ':suffix'    => implode(',', $suffix),
+                ':beginDate' => $beginDate,
+                ':endDate'   => $endDate,
+                ':dateFlag'  => $dateFlag
+            ])->queryAll();
         return $query;
     }
 
@@ -1269,16 +1412,17 @@ class ApiReport
      */
     public static function getRefundSuffixRate($condition)
     {
-        $suffix = $condition['account'];
+        $suffix   = $condition['account'];
         $dateFlag = $condition['dateType'];
         list($beginDate, $endDate) = $condition['dateRange'];
-        $sql = 'call report_refundSuffixRateAPI (:suffix, :beginDate, :endDate, :dateFlag)';
-        $query = Yii::$app->db->createCommand($sql)->bindValues([
-            ':suffix' => implode(',', $suffix),
-            ':beginDate' => $beginDate,
-            ':endDate' => $endDate,
-            ':dateFlag' => $dateFlag
-        ])->queryAll();
+        $sql   = 'call report_refundSuffixRateAPI (:suffix, :beginDate, :endDate, :dateFlag)';
+        $query = Yii::$app->db->createCommand($sql)->bindValues(
+            [
+                ':suffix'    => implode(',', $suffix),
+                ':beginDate' => $beginDate,
+                ':endDate'   => $endDate,
+                ':dateFlag'  => $dateFlag
+            ])->queryAll();
         return $query;
     }
 
@@ -1293,19 +1437,19 @@ class ApiReport
     {
         $developer = $condition['developer'];
         list($beginDate, $endDate) = $condition['dateRange'];
-        $dateFlag = $condition['dateType'];
-        $minNumber = isset($condition['minNumber']) && !empty($condition['minNumber']) ? $condition['minNumber'] : 200;
+        $dateFlag     = $condition['dateType'];
+        $minNumber    = isset($condition['minNumber']) && !empty($condition['minNumber']) ? $condition['minNumber'] : 200;
         $minAvgNumber = isset($condition['minAvgNumber']) && !empty($condition['minNumber']) ? $condition['minNumber'] : 300;
-        $sql = 'call report_devNumLimit (:developer,:beginDate,:endDate,:dateFlag, :minNumber, :minAvgNumber)';
-        $param = [
-            ':developer' => implode(',', $developer),
-            ':beginDate' => $beginDate,
-            ':endDate' => $endDate,
-            ':dateFlag' => $dateFlag,
-            ':minNumber' => $minNumber,
+        $sql          = 'call report_devNumLimit (:developer,:beginDate,:endDate,:dateFlag, :minNumber, :minAvgNumber)';
+        $param        = [
+            ':developer'    => implode(',', $developer),
+            ':beginDate'    => $beginDate,
+            ':endDate'      => $endDate,
+            ':dateFlag'     => $dateFlag,
+            ':minNumber'    => $minNumber,
             ':minAvgNumber' => $minAvgNumber,
         ];
-        $db = Yii::$app->db;
+        $db           = Yii::$app->db;
         return $db->createCommand($sql)->bindValues($param)->queryAll();
     }
 
@@ -1317,35 +1461,66 @@ class ApiReport
      */
     public static function getDevGoodsProfit($condition)
     {
-        $developer = isset($condition['developer']) ? $condition['developer'] : [];
+        $developer   = isset($condition['developer']) ? $condition['developer'] : [];
         $goodsStatus = isset($condition['goodsStatus']) ? $condition['goodsStatus'] : [];
-        $introducer = isset($condition['introducer']) ? $condition['introducer'] : '';
-        $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
+        $introducer  = isset($condition['introducer']) ? $condition['introducer'] : '';
+        $goodsCode   = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
         list($beginDate, $endDate) = $condition['dateRange'];
-        list($devBeginDate, $devEndDate) = isset($condition['devDateRange']) && $condition['devDateRange'] ? $condition['devDateRange'] : ['', ''];
+        list($devBeginDate, $devEndDate) = isset($condition['devDateRange']) && $condition['devDateRange'] ? $condition['devDateRange'] : [
+            '',
+            ''
+        ];
         $dateFlag = $condition['dateType'];
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-        $sql = 'call report_devGoodsProfitAPI (:developer,:introducer,:goodsCode,:goodsStatus, :beginDate, :endDate, :dateFlag, :devBeginDate, :devEndDate)';
-        $params = [':developer' => implode(',', $developer), ':introducer' => $introducer,
-            ':goodsCode' => $goodsCode, ':goodsStatus' => implode(',', $goodsStatus),
-            ':beginDate' => $beginDate, ':endDate' => $endDate, ':dateFlag' => (int)$dateFlag,
-            ':devBeginDate' => $devBeginDate, ':devEndDate' => $devEndDate,];
-        $query = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
-        $provider = new ArrayDataProvider([
-            'allModels' => $query,
-            'sort' => ['attributes' =>
-                [
-                    'developer', 'introducer', 'goodsCode', 'goodsName', 'devDate', 'goodsStatus',
-                    'sold', 'amt', 'profit', 'rate', 'ebaySold', 'ebayProfit',
-                    'wishSold', 'wishProfit', 'smtSold', 'smtProfit',
-                    'joomSold', 'joomProfit', 'amazonSold', 'amazonProfit',
-                    'vovaSold', 'vovaProfit', 'lazadaSold', 'lazadaProfit'
-                ]
-            ],
-            'pagination' => [
-                'pageSize' => $pageSize,
-            ],
-        ]);
+        $sql      = 'call report_devGoodsProfitAPI (:developer,:introducer,:goodsCode,:goodsStatus, :beginDate, :endDate, :dateFlag, :devBeginDate, :devEndDate)';
+        $params   = [
+            ':developer'    => implode(',', $developer),
+            ':introducer'   => $introducer,
+            ':goodsCode'    => $goodsCode,
+            ':goodsStatus'  => implode(',', $goodsStatus),
+            ':beginDate'    => $beginDate,
+            ':endDate'      => $endDate,
+            ':dateFlag'     => (int)$dateFlag,
+            ':devBeginDate' => $devBeginDate,
+            ':devEndDate'   => $devEndDate,
+        ];
+        $query    = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
+        $provider = new ArrayDataProvider(
+            [
+                'allModels'  => $query,
+                'sort'       => [
+                    'attributes' =>
+                        [
+                            'developer',
+                            'introducer',
+                            'goodsCode',
+                            'goodsName',
+                            'devDate',
+                            'goodsStatus',
+                            'sold',
+                            'amt',
+                            'profit',
+                            'rate',
+                            'ebaySold',
+                            'ebayProfit',
+                            'wishSold',
+                            'wishProfit',
+                            'smtSold',
+                            'smtProfit',
+                            'joomSold',
+                            'joomProfit',
+                            'amazonSold',
+                            'amazonProfit',
+                            'vovaSold',
+                            'vovaProfit',
+                            'lazadaSold',
+                            'lazadaProfit'
+                        ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
         return $provider;
     }
 
@@ -1358,32 +1533,53 @@ class ApiReport
      */
     public static function getDevRateGoodsProfit($condition)
     {
-        $developer = isset($condition['developer']) ? $condition['developer'] : [];
+        $developer   = isset($condition['developer']) ? $condition['developer'] : [];
         $goodsStatus = isset($condition['goodsStatus']) ? $condition['goodsStatus'] : [];
-        $introducer = isset($condition['introducer']) ? $condition['introducer'] : '';
-        $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
+        $introducer  = isset($condition['introducer']) ? $condition['introducer'] : '';
+        $goodsCode   = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
         list($beginDate, $endDate) = $condition['dateRange'];
-        list($devBeginDate, $devEndDate) = isset($condition['devDateRange']) && $condition['devDateRange'] ? $condition['devDateRange'] : ['', ''];
+        list($devBeginDate, $devEndDate) = isset($condition['devDateRange']) && $condition['devDateRange'] ? $condition['devDateRange'] : [
+            '',
+            ''
+        ];
         $dateFlag = $condition['dateType'];
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-        $sql = 'call report_devRateGoodsProfitAPI (:developer,:introducer,:goodsCode,:goodsStatus, :beginDate, :endDate, :dateFlag, :devBeginDate, :devEndDate)';
-        $params = [':developer' => implode(',', $developer), ':introducer' => $introducer,
-            ':goodsCode' => $goodsCode, ':goodsStatus' => implode(',', $goodsStatus),
-            ':beginDate' => $beginDate, ':endDate' => $endDate, ':dateFlag' => (int)$dateFlag,
-            ':devBeginDate' => $devBeginDate, ':devEndDate' => $devEndDate,];
-        $query = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
-        $provider = new ArrayDataProvider([
-            'allModels' => $query,
-            'sort' => ['attributes' =>
-                [
-                    'developer', 'introducer', 'goodsCode', 'goodsName', 'devDate', 'goodsStatus',
-                    'sold', 'amt', 'profit', 'rate', 'maxMonthProfit'
-                ]
-            ],
-            'pagination' => [
-                'pageSize' => $pageSize,
-            ],
-        ]);
+        $sql      = 'call report_devRateGoodsProfitAPI (:developer,:introducer,:goodsCode,:goodsStatus, :beginDate, :endDate, :dateFlag, :devBeginDate, :devEndDate)';
+        $params   = [
+            ':developer'    => implode(',', $developer),
+            ':introducer'   => $introducer,
+            ':goodsCode'    => $goodsCode,
+            ':goodsStatus'  => implode(',', $goodsStatus),
+            ':beginDate'    => $beginDate,
+            ':endDate'      => $endDate,
+            ':dateFlag'     => (int)$dateFlag,
+            ':devBeginDate' => $devBeginDate,
+            ':devEndDate'   => $devEndDate,
+        ];
+        $query    = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
+        $provider = new ArrayDataProvider(
+            [
+                'allModels'  => $query,
+                'sort'       => [
+                    'attributes' =>
+                        [
+                            'developer',
+                            'introducer',
+                            'goodsCode',
+                            'goodsName',
+                            'devDate',
+                            'goodsStatus',
+                            'sold',
+                            'amt',
+                            'profit',
+                            'rate',
+                            'maxMonthProfit'
+                        ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
         return $provider;
     }
 
@@ -1396,41 +1592,49 @@ class ApiReport
      */
     public static function getDevRateDeveloperGoodsProfit($condition)
     {
-        $developer = isset($condition['developer']) ? $condition['developer'] : [];
-        $homeGreatProfit = isset($condition['homeGreatProfit']) && !empty($condition['homeGreatProfit']) ? $condition['homeGreatProfit'] : 3000;
+        $developer          = isset($condition['developer']) ? $condition['developer'] : [];
+        $homeGreatProfit    = isset($condition['homeGreatProfit']) && !empty($condition['homeGreatProfit']) ? $condition['homeGreatProfit'] : 3000;
         $overseaGreatProfit = isset($condition['overseaGreatProfit']) && !empty($condition['$overseaGreatProfit']) ? $condition['overseaGreatProfit'] : 5000;
-        $goodsStatus = isset($condition['goodsStatus']) ? $condition['goodsStatus'] : [];
+        $goodsStatus        = isset($condition['goodsStatus']) ? $condition['goodsStatus'] : [];
         list($beginDate, $endDate) = $condition['dateRange'];
-        list($devBeginDate, $devEndDate) = isset($condition['devDateRange']) && $condition['devDateRange'] ? $condition['devDateRange'] : ['', ''];
+        list($devBeginDate, $devEndDate) = isset($condition['devDateRange']) && $condition['devDateRange'] ? $condition['devDateRange'] : [
+            '',
+            ''
+        ];
         $dateFlag = $condition['dateType'];
         $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-        $sql = 'call report_devRateDeveloperGoodsProfitAPI (:developer,:goodsStatus, :beginDate,
+        $sql      = 'call report_devRateDeveloperGoodsProfitAPI (:developer,:goodsStatus, :beginDate,
         :endDate, :dateFlag, :devBeginDate, :devEndDate, :homeGreatProfit, :overseaGreatProfit)';
-        $params = [':developer' => implode(',', $developer),
-            ':goodsStatus' => implode(',', $goodsStatus),
-            ':beginDate' => $beginDate, ':endDate' => $endDate, ':dateFlag' => (int)$dateFlag,
-            ':devBeginDate' => $devBeginDate, ':devEndDate' => $devEndDate,
-            ':homeGreatProfit' => $homeGreatProfit, ':overseaGreatProfit' => $overseaGreatProfit,
+        $params   = [
+            ':developer'          => implode(',', $developer),
+            ':goodsStatus'        => implode(',', $goodsStatus),
+            ':beginDate'          => $beginDate,
+            ':endDate'            => $endDate,
+            ':dateFlag'           => (int)$dateFlag,
+            ':devBeginDate'       => $devBeginDate,
+            ':devEndDate'         => $devEndDate,
+            ':homeGreatProfit'    => $homeGreatProfit,
+            ':overseaGreatProfit' => $overseaGreatProfit,
         ];
 
-        $oneMonthAgo = static::getPreMonth($beginDate, 1);
-        $twoMonthAgo = static::getPreMonth($beginDate, 2);
+        $oneMonthAgo   = static::getPreMonth($beginDate, 1);
+        $twoMonthAgo   = static::getPreMonth($beginDate, 2);
         $threeMonthAgo = static::getPreMonth($beginDate, 3);
 
         $current = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
 
         $params[':beginDate'] = $oneMonthAgo[0];
-        $params[':endDate'] = $oneMonthAgo[1];
-        $oneMonthData = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
+        $params[':endDate']   = $oneMonthAgo[1];
+        $oneMonthData         = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
 
         $params[':beginDate'] = $twoMonthAgo[0];
-        $params[':endDate'] = $twoMonthAgo[1];
-        $twoMonthData = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
+        $params[':endDate']   = $twoMonthAgo[1];
+        $twoMonthData         = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
 
         $params[':beginDate'] = $threeMonthAgo[0];
-        $params[':endDate'] = $threeMonthAgo[1];
-        $threeMonthData = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
-        $ret = [];
+        $params[':endDate']   = $threeMonthAgo[1];
+        $threeMonthData       = Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
+        $ret                  = [];
         foreach ($current as &$cur) {
             foreach ($oneMonthData as $od) {
                 if ($cur['developer'] === $od['developer']) {
@@ -1464,39 +1668,54 @@ class ApiReport
             if (!isset($cur['threeMonthProfit'])) {
                 $cur['threeMonthProfit'] = 0;
             }
-            $cur['maxMonthProfit'] = max([$cur['oneMonthProfit'], $cur['twoMonthProfit'], $cur['threeMonthProfit']]);
-            $cur['profitGrowth'] = $cur['profit'] - $cur['maxMonthProfit'];
-            $row['developer'] = $cur['developer'];
-            $row['amt'] = $cur['amt'];
-            $row['sold'] = $cur['sold'];
-            $row['profit'] = $cur['profit'];
+            $cur['maxMonthProfit'] = max(
+                [
+                    $cur['oneMonthProfit'],
+                    $cur['twoMonthProfit'],
+                    $cur['threeMonthProfit']
+                ]);
+            $cur['profitGrowth']   = $cur['profit'] - $cur['maxMonthProfit'];
+            $row['developer']      = $cur['developer'];
+            $row['amt']            = $cur['amt'];
+            $row['sold']           = $cur['sold'];
+            $row['profit']         = $cur['profit'];
             $row['maxMonthProfit'] = $cur['maxMonthProfit'];
-            $row['profitGrowth'] = $cur['profitGrowth'];
-            $ret[] = $row;
+            $row['profitGrowth']   = $cur['profitGrowth'];
+            $ret[]                 = $row;
         }
 
-        $provider = new ArrayDataProvider([
-            'allModels' => $ret,
-            'sort' => ['attributes' =>
-                [
-                    'developer', 'profitGrowth', 'maxMonthProfit',
-                    'sold', 'amt', 'profit', 'rate'
-                ]
-            ],
-            'pagination' => [
-                'pageSize' => $pageSize,
-            ],
-        ]);
+        $provider = new ArrayDataProvider(
+            [
+                'allModels'  => $ret,
+                'sort'       => [
+                    'attributes' =>
+                        [
+                            'developer',
+                            'profitGrowth',
+                            'maxMonthProfit',
+                            'sold',
+                            'amt',
+                            'profit',
+                            'rate'
+                        ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
         return $provider;
     }
 
     //获取指定日期上个月的第一天和最后一天
     private static function getPreMonth($date, $m)
     {
-        $time = strtotime($date);
+        $time     = strtotime($date);
         $firstDay = date('Y-m-01', strtotime(date('Y', $time) . '-' . (date('m', $time) - $m) . '-01'));
-        $lastDay = date('Y-m-d', strtotime("$firstDay +1 month -1 day"));
-        return [$firstDay, $lastDay];
+        $lastDay  = date('Y-m-d', strtotime("$firstDay +1 month -1 day"));
+        return [
+            $firstDay,
+            $lastDay
+        ];
     }
 
     /**
@@ -1507,18 +1726,28 @@ class ApiReport
      */
     public static function exportDevRateGoodsProfit($condition)
     {
-        $developer = isset($condition['developer']) ? $condition['developer'] : [];
+        $developer   = isset($condition['developer']) ? $condition['developer'] : [];
         $goodsStatus = isset($condition['goodsStatus']) ? $condition['goodsStatus'] : [];
-        $introducer = isset($condition['introducer']) ? $condition['introducer'] : '';
-        $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
+        $introducer  = isset($condition['introducer']) ? $condition['introducer'] : '';
+        $goodsCode   = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
         list($beginDate, $endDate) = $condition['dateRange'];
-        list($devBeginDate, $devEndDate) = isset($condition['devDateRange']) && $condition['devDateRange'] ? $condition['devDateRange'] : ['', ''];
+        list($devBeginDate, $devEndDate) = isset($condition['devDateRange']) && $condition['devDateRange'] ? $condition['devDateRange'] : [
+            '',
+            ''
+        ];
         $dateFlag = $condition['dateType'];
-        $sql = 'call report_devRateGoodsProfitAPI (:developer,:introducer,:goodsCode,:goodsStatus, :beginDate, :endDate, :dateFlag, :devBeginDate, :devEndDate)';
-        $params = [':developer' => implode(',', $developer), ':introducer' => $introducer,
-            ':goodsCode' => $goodsCode, ':goodsStatus' => implode(',', $goodsStatus),
-            ':beginDate' => $beginDate, ':endDate' => $endDate, ':dateFlag' => (int)$dateFlag,
-            ':devBeginDate' => $devBeginDate, ':devEndDate' => $devEndDate,];
+        $sql      = 'call report_devRateGoodsProfitAPI (:developer,:introducer,:goodsCode,:goodsStatus, :beginDate, :endDate, :dateFlag, :devBeginDate, :devEndDate)';
+        $params   = [
+            ':developer'    => implode(',', $developer),
+            ':introducer'   => $introducer,
+            ':goodsCode'    => $goodsCode,
+            ':goodsStatus'  => implode(',', $goodsStatus),
+            ':beginDate'    => $beginDate,
+            ':endDate'      => $endDate,
+            ':dateFlag'     => (int)$dateFlag,
+            ':devBeginDate' => $devBeginDate,
+            ':devEndDate'   => $devEndDate,
+        ];
         return Yii::$app->db->createCommand($sql)->bindValues($params)->queryAll();
     }
 
@@ -1532,19 +1761,19 @@ class ApiReport
 
     public static function getDevRateSuffixGoodsProfit($condition)
     {
-        $sql = 'call  report_devRateSuffixGoodsProfitAPI(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse);';
-        $sqlParams = [
-            ':dateType' => $condition['dateType'],
+        $sql            = 'call  report_devRateSuffixGoodsProfitAPI(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse);';
+        $sqlParams      = [
+            ':dateType'  => $condition['dateType'],
             ':beginDate' => $condition['beginDate'],
-            ':endDate' => $condition['endDate'],
+            ':endDate'   => $condition['endDate'],
             ':queryType' => $condition['queryType'],
-            ':store' => $condition['store'],
+            ':store'     => $condition['store'],
             ':warehouse' => $condition['warehouse'],
         ];
-        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-        $ret = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
+        $pageSize       = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $ret            = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
         $clearGoodsList = static::currentClearList();
-        $data = [];
+        $data           = [];
         if (!empty($clearGoodsList)) {
             foreach ($ret as $row) {
                 if (in_array($row['goodsCode'], $clearGoodsList, true)) {
@@ -1552,17 +1781,22 @@ class ApiReport
                 }
             }
         }
-        $provider = new ArrayDataProvider([
-            'allModels' => $data,
-            'sort' => ['attributes' =>
-                [
-                    'sold', 'salemoney', 'grossprofit', 'grossprofitRate'
-                ]
-            ],
-            'pagination' => [
-                'pageSize' => $pageSize,
-            ],
-        ]);
+        $provider = new ArrayDataProvider(
+            [
+                'allModels'  => $data,
+                'sort'       => [
+                    'attributes' =>
+                        [
+                            'sold',
+                            'salemoney',
+                            'grossprofit',
+                            'grossprofitRate'
+                        ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
         return $provider;
     }
 
@@ -1576,24 +1810,32 @@ class ApiReport
      */
     public static function getEbayClearDevProfit($condition)
     {
-        $sql = 'call  report_devRateEbayClearDeveloperProfitAPI(:dateType,:beginDate,:endDate,:developer);';
+        $sql       = 'call  report_devRateEbayClearDeveloperProfitAPI(:dateType,:beginDate,:endDate,:developer);';
         $sqlParams = [
-            ':dateType' => $condition['dateType'],
+            ':dateType'  => $condition['dateType'],
             ':beginDate' => $condition['beginDate'],
-            ':endDate' => $condition['endDate'],
+            ':endDate'   => $condition['endDate'],
             ':developer' => $condition['developer'],
         ];
-        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-        $data = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
-        $provider = new ArrayDataProvider([
-            'allModels' => $data,
-            'sort' => [
-                'attributes' => ['develop', 'sold', 'costMoney', 'saleMoney', 'profit', 'profitRate']
-            ],
-            'pagination' => [
-                'pageSize' => $pageSize,
-            ],
-        ]);
+        $pageSize  = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $data      = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
+        $provider  = new ArrayDataProvider(
+            [
+                'allModels'  => $data,
+                'sort'       => [
+                    'attributes' => [
+                        'develop',
+                        'sold',
+                        'costMoney',
+                        'saleMoney',
+                        'profit',
+                        'profitRate'
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
         return $provider;
     }
 
@@ -1605,21 +1847,21 @@ class ApiReport
      */
     public static function getEbayClearSkuProfit($condition)
     {
-        $sql = 'call  report_devRateEbayClearSkuProfitAPI(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse);';
+        $sql       = 'call  report_devRateEbayClearSkuProfitAPI(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse);';
         $sqlParams = [
-            ':dateType' => $condition['dateType'],
+            ':dateType'  => $condition['dateType'],
             ':beginDate' => $condition['beginDate'],
-            ':endDate' => $condition['endDate'],
+            ':endDate'   => $condition['endDate'],
             ':queryType' => $condition['queryType'],
-            ':store' => $condition['store'],
+            ':store'     => $condition['store'],
             ':warehouse' => $condition['warehouse'],
         ];
-        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-//        $ret = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->getRawSql();
-//        var_dump($ret);exit;
-        $ret = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
+        $pageSize  = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        //        $ret = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->getRawSql();
+        //        var_dump($ret);exit;
+        $ret            = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
         $clearGoodsList = static::currentEbayClearList();
-        $data = [];
+        $data           = [];
         if (!empty($clearGoodsList)) {
             foreach ($ret as $row) {
                 if (in_array($row['sku'], $clearGoodsList, true)) {
@@ -1627,17 +1869,23 @@ class ApiReport
                 }
             }
         }
-        $provider = new ArrayDataProvider([
-            'allModels' => $data,
-            'sort' => ['attributes' =>
-                [
-                    'sold', 'costmoney', 'salemoney', 'grossprofit', 'grossprofitRate'
-                ]
-            ],
-            'pagination' => [
-                'pageSize' => $pageSize,
-            ],
-        ]);
+        $provider = new ArrayDataProvider(
+            [
+                'allModels'  => $data,
+                'sort'       => [
+                    'attributes' =>
+                        [
+                            'sold',
+                            'costmoney',
+                            'salemoney',
+                            'grossprofit',
+                            'grossprofitRate'
+                        ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
         return $provider;
     }
 
@@ -1647,8 +1895,8 @@ class ApiReport
      */
     private static function currentEbayClearList()
     {
-        $sql = 'select sku from oauth_clearPlanEbay where isRemoved = 0';
-        $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $sql  = 'select sku from oauth_clearPlanEbay where isRemoved = 0';
+        $ret  = Yii::$app->py_db->createCommand($sql)->queryAll();
         $data = [];
         if (empty($ret)) {
             return $data;
@@ -1665,11 +1913,11 @@ class ApiReport
      */
     public static function getEbayClearList($condition)
     {
-        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-        $stores = isset($condition['stores']) ? $condition['stores'] : [];
+        $pageSize    = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $stores      = isset($condition['stores']) ? $condition['stores'] : [];
         $goodsStatus = isset($condition['goodsStatus']) ? $condition['goodsStatus'] : [];
-        $sku = isset($condition['sku']) ? $condition['sku'] : '';
-        $sellers = isset($condition['sellers']) ? $condition['sellers'] : [];
+        $sku         = isset($condition['sku']) ? $condition['sku'] : '';
+        $sellers     = isset($condition['sellers']) ? $condition['sellers'] : [];
         if (!is_array($stores)) {
             throw new Exception('stores should be an array');
         }
@@ -1689,37 +1937,43 @@ class ApiReport
             AND bs.StoreName IN ('万邑通UK','万邑通UK-MA仓','万邑通UKTW','谷仓UK') ";
         if (!empty($stores)) {
             $stores = implode("','", $stores);
-            $sql .= " and bs.StoreName in ('" . $stores . "')";
+            $sql    .= " and bs.StoreName in ('" . $stores . "')";
         }
         if (!empty($goodsStatus)) {
             $goodsStatus = implode("','", $goodsStatus);
-            $sql .= " and bgs.goodsSkuStatus in ('" . $goodsStatus . "')";
+            $sql         .= " and bgs.goodsSkuStatus in ('" . $goodsStatus . "')";
         }
 
         if (!empty($sellers)) {
             $sellers[] = 'all';
-            $sellers = implode("','", $sellers);
-            $sql .= " and cp.sellers in ('" . $sellers . "') ";
+            $sellers   = implode("','", $sellers);
+            $sql       .= " and cp.sellers in ('" . $sellers . "') ";
         }
 
         if (!empty($sku)) {
             $sql .= " and cp.sku LIKE '%" . $sku . "%' ";
         }
-        $query = Yii::$app->py_db->createCommand($sql)->queryAll();
-        $stockMoney = ArrayHelper::getColumn($query, 'stockMoney');
-        $totalStockMoney = round(array_sum($stockMoney),2);
-        $provider = new ArrayDataProvider([
-            'allModels' => $query,
-            'sort' => ['attributes' =>
-                [
-                    'stockNumber', 'stockMoney',
-                ]
-            ],
-            'pagination' => [
-                'pageSize' => $pageSize,
-            ],
-        ]);
-        return ['provider' => $provider, 'extra' => ['totalStockMoney' => $totalStockMoney]];
+        $query           = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $stockMoney      = ArrayHelper::getColumn($query, 'stockMoney');
+        $totalStockMoney = round(array_sum($stockMoney), 2);
+        $provider        = new ArrayDataProvider(
+            [
+                'allModels'  => $query,
+                'sort'       => [
+                    'attributes' =>
+                        [
+                            'stockNumber',
+                            'stockMoney',
+                        ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+        return [
+            'provider' => $provider,
+            'extra'    => ['totalStockMoney' => $totalStockMoney]
+        ];
 
     }
 
@@ -1732,8 +1986,8 @@ class ApiReport
     public static function exportEbayClearListTemplate()
     {
         $fileName = 'ebay-clear-products-template';
-        $titles = ['sku'];
-        $data = [['sku' => 'UK-A000305']];
+        $titles   = ['sku'];
+        $data     = [['sku' => 'UK-A000305']];
         ExportTools::toExcelOrCsv($fileName, $data, 'Xls', $titles);
 
     }
@@ -1743,13 +1997,20 @@ class ApiReport
         if (Yii::$app->request->isPost) {
             //判断文件后缀
             $extension = ApiSettings::get_extension($_FILES['file']['name']);
-            if (strtolower($extension) != '.xls') return ['code' => 400, 'message' => "File format error,please upload files in 'xls' format"];
+            if (strtolower($extension) != '.xls') return [
+                'code'    => 400,
+                'message' => "File format error,please upload files in 'xls' format"
+            ];
 
             //文件上传
             $result = ApiSettings::file($_FILES['file'], 'ebayClearList');
             if (!$result) {
-                return ['code' => 400, 'message' => 'File upload failed'];
-            } else {
+                return [
+                    'code'    => 400,
+                    'message' => 'File upload failed'
+                ];
+            }
+            else {
                 //获取上传excel文件的内容并保存
                 $res = static::saveEbayClearProduct($result);
                 return $res;
@@ -1760,26 +2021,27 @@ class ApiReport
 
     public static function saveEbayClearProduct($file)
     {
-        $planNumber = 'EBAY-QC-' . (string)date('Y-m');
-        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+        $planNumber  = 'EBAY-QC-' . (string)date('Y-m');
+        $reader      = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
         $spreadsheet = $reader->load(Yii::$app->basePath . $file);
-        $sheet = $spreadsheet->getSheet(0);
-        $highestRow = $sheet->getHighestRow(); // 取得总行数
-        $errArr = [];
+        $sheet       = $spreadsheet->getSheet(0);
+        $highestRow  = $sheet->getHighestRow(); // 取得总行数
+        $errArr      = [];
         for ($i = 2; $i <= $highestRow; $i++) {
             $data['sku'] = $sheet->getCell("A" . $i)->getValue();
             //$data['sellers'] = $sheet->getCell("B" . $i)->getValue();
             $data['createdTime'] = date('Y-m-d H:i:s');
-            $data['planNumber'] = $planNumber;
-            $data['isRemoved'] = 0;
+            $data['planNumber']  = $planNumber;
+            $data['isRemoved']   = 0;
 
             if (!$data['sku']) break;//取到数据为空时跳出循环
-//            var_dump($data);exit;
+            //            var_dump($data);exit;
             $sql = "SELECT sku FROM oauth_clearPlanEbay WHERE sku = '{$data['sku']}'";
             $res = Yii::$app->py_db->createCommand($sql)->queryOne();
             if ($res) {
                 Yii::$app->py_db->createCommand()->update('oauth_clearPlanEbay', $data, ['sku' => $data['sku']])->execute();
-            } else {
+            }
+            else {
                 Yii::$app->py_db->createCommand()->insert('oauth_clearPlanEbay', $data)->execute();
             }
         }
@@ -1796,24 +2058,32 @@ class ApiReport
      */
     public static function getAmazonClearDevProfit($condition)
     {
-        $sql = 'call  report_devRateAmazonClearDeveloperProfitAPI(:dateType,:beginDate,:endDate,:developer);';
+        $sql       = 'call  report_devRateAmazonClearDeveloperProfitAPI(:dateType,:beginDate,:endDate,:developer);';
         $sqlParams = [
-            ':dateType' => $condition['dateType'],
+            ':dateType'  => $condition['dateType'],
             ':beginDate' => $condition['beginDate'],
-            ':endDate' => $condition['endDate'],
+            ':endDate'   => $condition['endDate'],
             ':developer' => $condition['developer'],
         ];
-        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-        $data = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
-        $provider = new ArrayDataProvider([
-            'allModels' => $data,
-            'sort' => [
-                'attributes' => ['develop', 'sold', 'costMoney', 'saleMoney', 'profit', 'profitRate']
-            ],
-            'pagination' => [
-                'pageSize' => $pageSize,
-            ],
-        ]);
+        $pageSize  = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $data      = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
+        $provider  = new ArrayDataProvider(
+            [
+                'allModels'  => $data,
+                'sort'       => [
+                    'attributes' => [
+                        'develop',
+                        'sold',
+                        'costMoney',
+                        'saleMoney',
+                        'profit',
+                        'profitRate'
+                    ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
         return $provider;
     }
 
@@ -1825,21 +2095,21 @@ class ApiReport
      */
     public static function getAmazonClearSkuProfit($condition)
     {
-        $sql = 'call  report_devRateAmazonClearSkuProfitAPI(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse);';
+        $sql       = 'call  report_devRateAmazonClearSkuProfitAPI(:dateType,:beginDate,:endDate,:queryType,:store,:warehouse);';
         $sqlParams = [
-            ':dateType' => $condition['dateType'],
+            ':dateType'  => $condition['dateType'],
             ':beginDate' => $condition['beginDate'],
-            ':endDate' => $condition['endDate'],
+            ':endDate'   => $condition['endDate'],
             ':queryType' => $condition['queryType'],
-            ':store' => $condition['store'],
+            ':store'     => $condition['store'],
             ':warehouse' => $condition['warehouse'],
         ];
-        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-//        $ret = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->getRawSql();
-//        var_dump($ret);exit;
-        $ret = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
+        $pageSize  = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        //        $ret = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->getRawSql();
+        //        var_dump($ret);exit;
+        $ret            = Yii::$app->db->createCommand($sql)->bindValues($sqlParams)->queryAll();
         $clearGoodsList = static::currentAmazonClearList();
-        $data = [];
+        $data           = [];
         if (!empty($clearGoodsList)) {
             foreach ($ret as $row) {
                 if (in_array($row['sku'], $clearGoodsList, true)) {
@@ -1847,17 +2117,23 @@ class ApiReport
                 }
             }
         }
-        $provider = new ArrayDataProvider([
-            'allModels' => $data,
-            'sort' => ['attributes' =>
-                [
-                    'sold', 'costmoney', 'salemoney', 'grossprofit', 'grossprofitRate'
-                ]
-            ],
-            'pagination' => [
-                'pageSize' => $pageSize,
-            ],
-        ]);
+        $provider = new ArrayDataProvider(
+            [
+                'allModels'  => $data,
+                'sort'       => [
+                    'attributes' =>
+                        [
+                            'sold',
+                            'costmoney',
+                            'salemoney',
+                            'grossprofit',
+                            'grossprofitRate'
+                        ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
         return $provider;
     }
 
@@ -1867,8 +2143,8 @@ class ApiReport
      */
     private static function currentAmazonClearList()
     {
-        $sql = 'select sku from oauth_clearPlanAmazon where isRemoved = 0';
-        $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $sql  = 'select sku from oauth_clearPlanAmazon where isRemoved = 0';
+        $ret  = Yii::$app->py_db->createCommand($sql)->queryAll();
         $data = [];
         if (empty($ret)) {
             return $data;
@@ -1885,11 +2161,11 @@ class ApiReport
      */
     public static function getAmazonClearList($condition)
     {
-        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-        $stores = isset($condition['stores']) ? $condition['stores'] : [];
+        $pageSize    = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $stores      = isset($condition['stores']) ? $condition['stores'] : [];
         $goodsStatus = isset($condition['goodsStatus']) ? $condition['goodsStatus'] : [];
-        $sku = isset($condition['sku']) ? $condition['sku'] : '';
-        $storeName = isset($condition['storeName']) ? $condition['storeName'] : [];
+        $sku         = isset($condition['sku']) ? $condition['sku'] : '';
+        $storeName   = isset($condition['storeName']) ? $condition['storeName'] : [];
         if (!is_array($stores)) {
             throw new Exception('stores should be an array');
         }
@@ -1908,36 +2184,42 @@ class ApiReport
             WHERE cp.isRemoved = 0 AND number > 0 ";
         if (!empty($stores)) {
             $stores = implode("','", $stores);
-            $sql .= " and bs.StoreName in ('" . $stores . "')";
+            $sql    .= " and bs.StoreName in ('" . $stores . "')";
         }
         if (!empty($goodsStatus)) {
             $goodsStatus = implode("','", $goodsStatus);
-            $sql .= " and bgs.goodsSkuStatus in ('" . $goodsStatus . "')";
+            $sql         .= " and bgs.goodsSkuStatus in ('" . $goodsStatus . "')";
         }
 
         if (!empty($storeName)) {
             $storeName = implode("','", $storeName);
-            $sql .= " and cp.storeName in ('" . $storeName . "') ";
+            $sql       .= " and cp.storeName in ('" . $storeName . "') ";
         }
 
         if (!empty($sku)) {
             $sql .= " and cp.sku LIKE '%" . $sku . "%' ";
         }
-        $query = Yii::$app->py_db->createCommand($sql)->queryAll();
-        $stockMoney = ArrayHelper::getColumn($query, 'stockMoney');
-        $totalStockMoney = round(array_sum($stockMoney),2);
-        $provider = new ArrayDataProvider([
-            'allModels' => $query,
-            'sort' => ['attributes' =>
-                [
-                    'stockNumber', 'stockMoney',
-                ]
-            ],
-            'pagination' => [
-                'pageSize' => $pageSize,
-            ],
-        ]);
-        return ['provider' => $provider, 'extra' => ['totalStockMoney' => $totalStockMoney]];
+        $query           = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $stockMoney      = ArrayHelper::getColumn($query, 'stockMoney');
+        $totalStockMoney = round(array_sum($stockMoney), 2);
+        $provider        = new ArrayDataProvider(
+            [
+                'allModels'  => $query,
+                'sort'       => [
+                    'attributes' =>
+                        [
+                            'stockNumber',
+                            'stockMoney',
+                        ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
+        return [
+            'provider' => $provider,
+            'extra'    => ['totalStockMoney' => $totalStockMoney]
+        ];
 
     }
 
@@ -1950,8 +2232,16 @@ class ApiReport
     public static function exportAmazonClearListTemplate()
     {
         $fileName = 'amazon-clear-products-template';
-        $titles = ['sku', '仓库'];
-        $data = [['sku' => '3ZSDYSMB08', 'storeName' => 'AMZ上海仓']];
+        $titles   = [
+            'sku',
+            '仓库'
+        ];
+        $data     = [
+            [
+                'sku'       => '3ZSDYSMB08',
+                'storeName' => 'AMZ上海仓'
+            ]
+        ];
         ExportTools::toExcelOrCsv($fileName, $data, 'Xls', $titles);
 
     }
@@ -1961,13 +2251,20 @@ class ApiReport
         if (Yii::$app->request->isPost) {
             //判断文件后缀
             $extension = ApiSettings::get_extension($_FILES['file']['name']);
-            if (strtolower($extension) != '.xls') return ['code' => 400, 'message' => "File format error,please upload files in 'xls' format"];
+            if (strtolower($extension) != '.xls') return [
+                'code'    => 400,
+                'message' => "File format error,please upload files in 'xls' format"
+            ];
 
             //文件上传
             $result = ApiSettings::file($_FILES['file'], 'amazonClearList');
             if (!$result) {
-                return ['code' => 400, 'message' => 'File upload failed'];
-            } else {
+                return [
+                    'code'    => 400,
+                    'message' => 'File upload failed'
+                ];
+            }
+            else {
                 //获取上传excel文件的内容并保存
                 $res = static::saveAmazonClearProduct($result);
                 return $res;
@@ -1978,26 +2275,31 @@ class ApiReport
 
     public static function saveAmazonClearProduct($file)
     {
-        $planNumber = 'AMAZON-QC-' . (string)date('Y-m');
-        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+        $planNumber  = 'AMAZON-QC-' . (string)date('Y-m');
+        $reader      = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
         $spreadsheet = $reader->load(Yii::$app->basePath . $file);
-        $sheet = $spreadsheet->getSheet(0);
-        $highestRow = $sheet->getHighestRow(); // 取得总行数
-        $errArr = [];
+        $sheet       = $spreadsheet->getSheet(0);
+        $highestRow  = $sheet->getHighestRow(); // 取得总行数
+        $errArr      = [];
         for ($i = 2; $i <= $highestRow; $i++) {
-            $data['sku'] = $sheet->getCell("A" . $i)->getValue();
-            $data['storeName'] = $sheet->getCell("B" . $i)->getValue();
+            $data['sku']         = $sheet->getCell("A" . $i)->getValue();
+            $data['storeName']   = $sheet->getCell("B" . $i)->getValue();
             $data['createdTime'] = date('Y-m-d H:i:s');
-            $data['planNumber'] = $planNumber;
-            $data['isRemoved'] = 0;
+            $data['planNumber']  = $planNumber;
+            $data['isRemoved']   = 0;
 
             if (!$data['sku']) break;//取到数据为空时跳出循环
-//            var_dump($data);exit;
+            //            var_dump($data);exit;
             $sql = "SELECT sku FROM oauth_clearPlanAmazon WHERE sku = '{$data['sku']}' AND storeName = '{$data['storeName']}' ";
             $res = Yii::$app->py_db->createCommand($sql)->queryOne();
             if ($res) {
-                Yii::$app->py_db->createCommand()->update('oauth_clearPlanAmazon', $data, ['sku' => $data['sku'], 'storeName' => $data['storeName']])->execute();
-            } else {
+                Yii::$app->py_db->createCommand()->update(
+                    'oauth_clearPlanAmazon', $data, [
+                    'sku'       => $data['sku'],
+                    'storeName' => $data['storeName']
+                ])->execute();
+            }
+            else {
                 Yii::$app->py_db->createCommand()->insert('oauth_clearPlanAmazon', $data)->execute();
             }
         }
@@ -2005,7 +2307,7 @@ class ApiReport
     }
 
 
-////////////////////////////////////////清仓列表//////////////////////////////////////////////////
+    ////////////////////////////////////////清仓列表//////////////////////////////////////////////////
 
     /**
      * 清仓计划里面的商品编码
@@ -2013,8 +2315,8 @@ class ApiReport
      */
     private static function currentClearList()
     {
-        $sql = 'select goodsCode from oauth_clearPlan where isRemoved = 0';
-        $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $sql  = 'select goodsCode from oauth_clearPlan where isRemoved = 0';
+        $ret  = Yii::$app->py_db->createCommand($sql)->queryAll();
         $data = [];
         if (empty($ret)) {
             return $data;
@@ -2031,11 +2333,11 @@ class ApiReport
      */
     public static function getClearList($condition)
     {
-        $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
-        $stores = isset($condition['stores']) ? $condition['stores'] : [];
+        $pageSize    = isset($condition['pageSize']) ? $condition['pageSize'] : 10;
+        $stores      = isset($condition['stores']) ? $condition['stores'] : [];
         $goodsStatus = isset($condition['goodsStatus']) ? $condition['goodsStatus'] : [];
-        $goodsCode = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
-        $sellers = isset($condition['sellers']) ? $condition['sellers'] : [];
+        $goodsCode   = isset($condition['goodsCode']) ? $condition['goodsCode'] : '';
+        $sellers     = isset($condition['sellers']) ? $condition['sellers'] : [];
         if (!is_array($stores)) {
             throw new Exception('stores should be an array');
         }
@@ -2052,34 +2354,37 @@ class ApiReport
             LEFT JOIN b_store(nolock) as bs on bs.nid = ks.storeId where bs.storeName=cp.storeName and cp.isRemoved = 0 ';
         if (!empty($stores)) {
             $stores = implode("','", $stores);
-            $sql .= " and bs.StoreName in ('" . $stores . "')";
+            $sql    .= " and bs.StoreName in ('" . $stores . "')";
         }
         if (!empty($goodsStatus)) {
             $goodsStatus = implode("','", $goodsStatus);
-            $sql .= " and bg.goodsStatus in ('" . $goodsStatus . "')";
+            $sql         .= " and bg.goodsStatus in ('" . $goodsStatus . "')";
         }
 
         if (!empty($sellers)) {
             $sellers[] = 'all';
-            $sellers = implode("','", $sellers);
-            $sql .= " and (cp.sellers in ('" . $sellers . "')) ";
+            $sellers   = implode("','", $sellers);
+            $sql       .= " and (cp.sellers in ('" . $sellers . "')) ";
         }
 
         if (!empty($goodsCode)) {
             $sql .= " and (cp.goodsCode = '" . $goodsCode . "') ";
         }
-        $query = Yii::$app->py_db->createCommand($sql)->queryAll();
-        $provider = new ArrayDataProvider([
-            'allModels' => $query,
-            'sort' => ['attributes' =>
-                [
-                    'stockNumber', 'stockMoney',
-                ]
-            ],
-            'pagination' => [
-                'pageSize' => $pageSize,
-            ],
-        ]);
+        $query    = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $provider = new ArrayDataProvider(
+            [
+                'allModels'  => $query,
+                'sort'       => [
+                    'attributes' =>
+                        [
+                            'stockNumber',
+                            'stockMoney',
+                        ]
+                ],
+                'pagination' => [
+                    'pageSize' => $pageSize,
+                ],
+            ]);
         return $provider;
 
     }
@@ -2102,19 +2407,30 @@ class ApiReport
     public static function exportClearListTemplate()
     {
         $fileName = 'clear-products-template';
-        $titles = ['商品编码', '仓库名称'];
-        $data = [['商品编码' => '7A0001', '仓库名称' => '义乌仓']];
+        $titles   = [
+            '商品编码',
+            '仓库名称'
+        ];
+        $data     = [
+            [
+                '商品编码' => '7A0001',
+                '仓库名称' => '义乌仓'
+            ]
+        ];
         ExportTools::toExcelOrCsv($fileName, $data, 'Csv', $titles);
 
     }
 
     public static function importClearList()
     {
-        $fields = ['goodsCode', 'storeName'];
+        $fields     = [
+            'goodsCode',
+            'storeName'
+        ];
         $planNumber = 'QC-' . (string)date('Y-m');
         try {
             if (Yii::$app->request->isPost) {
-                $tmpName = $_FILES['file']['tmp_name'];
+                $tmpName    = $_FILES['file']['tmp_name'];
                 $csvAsArray = array_map('str_getcsv', file($tmpName));
 
                 // 删除列名
@@ -2123,7 +2439,14 @@ class ApiReport
                 foreach ($csvAsArray as &$row) {
                     foreach ($row as &$ceil) {
                         //检测编码方式
-                        $encode = mb_detect_encoding($ceil, array('ASCII', 'UTF-8', 'GB2312', 'GBK', 'BIG5'));
+                        $encode = mb_detect_encoding(
+                            $ceil, array(
+                            'ASCII',
+                            'UTF-8',
+                            'GB2312',
+                            'GBK',
+                            'BIG5'
+                        ));
                         // 转换编码方式
                         $ceil = iconv($encode, 'UTF-8', $ceil);
                     }
@@ -2143,7 +2466,8 @@ class ApiReport
                 static::saveNewClearProduct($products);
             }
             return ['上传成功'];
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             throw new Exception('上传失败');
         }
     }
@@ -2171,7 +2495,7 @@ class ApiReport
                 # 根据历史表算出的主销售
                 $theSeller = $sellers[$product['goodsCode']];
 
-                $product['sellers'] = $theSeller;
+                $product['sellers']     = $theSeller;
                 $product['createdTime'] = date('Y-m-d H:i:s');
                 $plan->setAttributes($product);
                 if (!$plan->save()) {
@@ -2179,7 +2503,8 @@ class ApiReport
                 }
             }
             $trans->commit();
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             $trans->rollBack();
             throw new \Exception('Create new clear plan failed!');
         }
@@ -2197,18 +2522,20 @@ class ApiReport
         foreach ($products as $pt) {
             $goodsCode[] = $pt['goodsCode'];
         }
-        $goodsCodeString = implode(',', $goodsCode);
-        $sellers = [];
+        $goodsCodeString    = implode(',', $goodsCode);
+        $sellers            = [];
         $goodsCodeSellerMap = static::getMainSellerMap($goodsCodeString);
         foreach ($goodsCode as $gc) {
             if (array_key_exists($gc, $goodsCodeSellerMap)) {
                 $goodsInfo = $goodsCodeSellerMap[$gc];
                 if ($goodsInfo['stockNumber'] >= 20) {
                     $sellers[$gc] = 'all';
-                } else {
+                }
+                else {
                     $sellers[$gc] = !empty($goodsInfo['username']) ? $goodsInfo['username'] : 'all';
                 }
-            } else {
+            }
+            else {
                 $sellers[$gc] = 'all';
             }
         }
@@ -2239,7 +2566,7 @@ class ApiReport
         $ret = Yii::$app->db->createCommand($sql)->queryAll();
         $map = [];
         foreach ($ret as $row) {
-            $username = $row['username'];
+            $username         = $row['username'];
             $map[$username][] = $row['store'];
         }
         return $map;
@@ -2270,8 +2597,8 @@ class ApiReport
      */
     private static function getMainSellerMap($goodsCodes)
     {
-        $sql = "oauth_goodsCodeSuffixSold '$goodsCodes'";
-        $ret = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $sql       = "oauth_goodsCodeSuffixSold '$goodsCodes'";
+        $ret       = Yii::$app->py_db->createCommand($sql)->queryAll();
         $sellerMap = [];
         foreach ($ret as $row) {
             $sellerMap[$row['goodsCode']] = $row;
@@ -2292,13 +2619,19 @@ class ApiReport
 
         try {
             list($beginDate, $endDate) = $condition['dateRange'];
-            $dateFlag = $condition['dateType'];
+            $dateFlag  = $condition['dateType'];
             $goodsCode = $condition['goodsCode'];
-            $sql = 'call report_devGoodsProfitDetailAPI (:goodsCode,:beginDate,:endDate,:dateFlag)';
-            $params = [':goodsCode' => $goodsCode, ':beginDate' => $beginDate, ':endDate' => $endDate, ':dateFlag' => $dateFlag];
-            $db = Yii::$app->db;
+            $sql       = 'call report_devGoodsProfitDetailAPI (:goodsCode,:beginDate,:endDate,:dateFlag)';
+            $params    = [
+                ':goodsCode' => $goodsCode,
+                ':beginDate' => $beginDate,
+                ':endDate'   => $endDate,
+                ':dateFlag'  => $dateFlag
+            ];
+            $db        = Yii::$app->db;
             return $db->createCommand($sql)->bindValues($params)->queryAll();
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             throw  new \Exception($why->getMessage(), '400');
         }
     }
@@ -2320,65 +2653,103 @@ class ApiReport
      */
     public static function getHistorySalesProfit($condition)
     {
-        $plat = isset($condition['plat']) ? $condition['plat'] : [];
+        $plat     = isset($condition['plat']) ? $condition['plat'] : [];
         $salesMan = isset($condition['member']) ? $condition['member'] : [];
         list($beginDate, $endDate) = $condition['dateRange'];
-        $query = (new yii\db\Query())->select('*')->from('cache_historySalesProfit')->andWhere(['in', 'username', $salesMan])
-            ->andWhere(['between', 'monthName', $beginDate, $endDate])
-            ->andWhere(['in', 'plat', $plat]);
+        $query = (new yii\db\Query())->select('*')->from('cache_historySalesProfit')->andWhere(
+            [
+                'in',
+                'username',
+                $salesMan
+            ])
+            ->andWhere(
+                [
+                    'between',
+                    'monthName',
+                    $beginDate,
+                    $endDate
+                ])
+            ->andWhere(
+                [
+                    'in',
+                    'plat',
+                    $plat
+                ]);
         if (!empty($plat)) {
-            $query->andWhere(['in', 'plat', $plat]);
+            $query->andWhere(
+                [
+                    'in',
+                    'plat',
+                    $plat
+                ]);
         }
-        $query = $query->orderBy('monthName asc')->all();
-        $out = [];
+        $query     = $query->orderBy('monthName asc')->all();
+        $out       = [];
         $monthList = static::getMonth($beginDate, $endDate);
         foreach ($query as $row) {
             $unique = $row['plat'] . '-' . $row['username'];
-            $ret = [];
+            $ret    = [];
             if (in_array($unique, ArrayHelper::getColumn($out, 'unique'), true)) {
                 foreach ($out as &$ele) {
                     if ($ele['unique'] === $unique) {
-                        $ele['historyProfit'][] = ['month' => $row['monthName'], 'profit' => $row['profit']];
-                        $ele['historyRank'][] = ['month' => $row['monthName'], 'rank' => $row['rank']];
+                        $ele['historyProfit'][] = [
+                            'month'  => $row['monthName'],
+                            'profit' => $row['profit']
+                        ];
+                        $ele['historyRank'][]   = [
+                            'month' => $row['monthName'],
+                            'rank'  => $row['rank']
+                        ];
                         break;
                     }
                 }
-            } else {
-                $ret['unique'] = $unique;
-                $ret['username'] = $row['username'];
-                $ret['department'] = $row['department'];
-                $ret['plat'] = $row['plat'];
-                $ret['hireDate'] = $row['hireDate'];
-                $ret['avgProfit'] = $row['avgProfit'];
-                $ret['rank'] = $row['rank'];
+            }
+            else {
+                $ret['unique']          = $unique;
+                $ret['username']        = $row['username'];
+                $ret['department']      = $row['department'];
+                $ret['plat']            = $row['plat'];
+                $ret['hireDate']        = $row['hireDate'];
+                $ret['avgProfit']       = $row['avgProfit'];
+                $ret['rank']            = $row['rank'];
                 $ret['departmentTotal'] = $row['departmentTotal'];
-                $ret['historyProfit'] = [['month' => $row['monthName'], 'profit' => $row['profit']]];
-                $ret['historyRank'] = [['month' => $row['monthName'], 'rank' => $row['rank']]];
-                $out[] = $ret;
+                $ret['historyProfit']   = [
+                    [
+                        'month'  => $row['monthName'],
+                        'profit' => $row['profit']
+                    ]
+                ];
+                $ret['historyRank']     = [
+                    [
+                        'month' => $row['monthName'],
+                        'rank'  => $row['rank']
+                    ]
+                ];
+                $out[]                  = $ret;
             }
 
         }
         $historyProfit = [];
-        $historyRank = [];
+        $historyRank   = [];
         foreach ($monthList as $month) {
-            $row = [];
-            $row['month'] = $month;
-            $row['profit'] = 0;
+            $row             = [];
+            $row['month']    = $month;
+            $row['profit']   = 0;
             $historyProfit[] = $row;
         }
 
         foreach ($monthList as $month) {
-            $row = [];
-            $row['month'] = $month;
-            $row['rank'] = 0;
+            $row           = [];
+            $row['month']  = $month;
+            $row['rank']   = 0;
             $historyRank[] = $row;
         }
 
         foreach ($out as &$item) {
             $myHistoryProfit = $item['historyProfit'];
-            $myHistoryRank = $item['historyRank'];
-            $hProfit = $historyProfit;
-            $hRank = $historyRank;
+            $myHistoryRank   = $item['historyRank'];
+            $hProfit         = $historyProfit;
+            $hRank           = $historyRank;
 
             //填充历史利润
             foreach ($hProfit as &$pro) {
@@ -2406,7 +2777,7 @@ class ApiReport
             }
 
             $item['historyProfit'] = $hProfit;
-            $item['historyRank'] = $hRank;
+            $item['historyRank']   = $hRank;
 
 
         }
@@ -2423,36 +2794,57 @@ class ApiReport
      */
     public static function exportHistorySalesProfit($condition)
     {
-        $plat = isset($condition['plat']) ? $condition['plat'] : [];
+        $plat     = isset($condition['plat']) ? $condition['plat'] : [];
         $salesMan = isset($condition['member']) ? $condition['member'] : [];
         list($beginDate, $endDate) = $condition['dateRange'];
 
         $userList = (new yii\db\Query())->select("username,plat,hireDate,departmentTotal")
             ->from('cache_historySalesProfit')
-            ->andFilterWhere(['in', 'username', $salesMan])
-            ->andFilterWhere(['between', 'monthName', $beginDate, $endDate])
-            ->andFilterWhere(['in', 'plat', $plat])
+            ->andFilterWhere(
+                [
+                    'in',
+                    'username',
+                    $salesMan
+                ])
+            ->andFilterWhere(
+                [
+                    'between',
+                    'monthName',
+                    $beginDate,
+                    $endDate
+                ])
+            ->andFilterWhere(
+                [
+                    'in',
+                    'plat',
+                    $plat
+                ])
             ->orderBy('username asc')->distinct()->all();
 
         $monthList = static::getMonth($beginDate, $endDate);
-        $out = [];
+        $out       = [];
         foreach ($userList as $value) {
-            $depart = (new yii\db\Query())->select('department')
+            $depart       = (new yii\db\Query())->select('department')
                 ->from('cache_historySalesProfit')
                 ->andWhere(['username' => $value['username']])
                 ->orderBy('monthName DESC')->one();
-            $item['人员'] = $value['username'];
-            $item['部门'] = isset($depart['department']) ? $depart['department'] : '';
+            $item['人员']   = $value['username'];
+            $item['部门']   = isset($depart['department']) ? $depart['department'] : '';
             $item['销售平台'] = $value['plat'];
             $item['入职日期'] = $value['hireDate'];
             // 每月毛利
             foreach ($monthList as $v) {
                 $userData = (new yii\db\Query())->select('profit')
                     ->from('cache_historySalesProfit')
-                    ->andWhere(['username' => $value['username'], 'monthName' => $v])->one();
+                    ->andWhere(
+                        [
+                            'username'  => $value['username'],
+                            'monthName' => $v
+                        ])->one();
                 if ($userData) {
                     $item['利润-' . $v] = $userData['profit'];
-                } else {
+                }
+                else {
                     $item['利润-' . $v] = 0;
                 }
             }
@@ -2461,10 +2853,15 @@ class ApiReport
             foreach ($monthList as $v) {
                 $userData = (new yii\db\Query())->select('rank')
                     ->from('cache_historySalesProfit')
-                    ->andWhere(['username' => $value['username'], 'monthName' => $v])->one();
+                    ->andWhere(
+                        [
+                            'username'  => $value['username'],
+                            'monthName' => $v
+                        ])->one();
                 if ($userData) {
                     $item['排名-' . $v] = $userData['rank'] . '/' . $value['departmentTotal'];
-                } else {
+                }
+                else {
                     $item['排名-' . $v] = $value['departmentTotal'] . '/' . $value['departmentTotal'];
                 }
             }
@@ -2481,19 +2878,35 @@ class ApiReport
      */
     public static function getHistoryProfit($condition)
     {
-        $plat = isset($condition['plat']) ? $condition['plat'] : [];
+        $plat     = isset($condition['plat']) ? $condition['plat'] : [];
         $salesMan = isset($condition['member']) ? $condition['member'] : [];
         list($beginDate, $endDate) = $condition['dateRange'];
         $query = (new yii\db\Query())->select('username,plat,profit as profit, monthName,')
-            ->from('cache_historySalesProfit')->andWhere(['in', 'username', $salesMan])
-            ->andWhere(['between', 'monthName', $beginDate, $endDate]);
+            ->from('cache_historySalesProfit')->andWhere(
+                [
+                    'in',
+                    'username',
+                    $salesMan
+                ])
+            ->andWhere(
+                [
+                    'between',
+                    'monthName',
+                    $beginDate,
+                    $endDate
+                ]);
         if (!empty($plat)) {
-            $query->andWhere(['in', 'plat', $plat]);
+            $query->andWhere(
+                [
+                    'in',
+                    'plat',
+                    $plat
+                ]);
         }
-        $query = $query->orderBy('monthName desc')->all();
+        $query     = $query->orderBy('monthName desc')->all();
         $monthList = static::getMonth($beginDate, $endDate);
-        $out = [];
-        $userList = [];
+        $out       = [];
+        $userList  = [];
         foreach ($query as $row) {
             $row['title'] = $row['plat'] . '-' . $row['username'];
             unset($row['username'], $row['plat']);
@@ -2506,11 +2919,11 @@ class ApiReport
         $ret = [];
         foreach ($monthList as $month) {
             foreach ($userList as $title) {
-                $ele = [];
+                $ele              = [];
                 $ele['monthName'] = $month;
-                $ele['title'] = $title;
-                $ele['profit'] = 0;
-                $ret[] = $ele;
+                $ele['title']     = $title;
+                $ele['profit']    = 0;
+                $ret[]            = $ele;
             }
         }
 
@@ -2533,19 +2946,35 @@ class ApiReport
      */
     public static function getHistoryRank($condition)
     {
-        $plat = isset($condition['plat']) ? $condition['plat'] : [];
+        $plat     = isset($condition['plat']) ? $condition['plat'] : [];
         $salesMan = isset($condition['member']) ? $condition['member'] : [];
         list($beginDate, $endDate) = $condition['dateRange'];
         $query = (new yii\db\Query())->select('username,plat,rank, monthName,')
-            ->from('cache_historySalesProfit')->andWhere(['in', 'username', $salesMan])
-            ->andWhere(['between', 'monthName', $beginDate, $endDate]);
+            ->from('cache_historySalesProfit')->andWhere(
+                [
+                    'in',
+                    'username',
+                    $salesMan
+                ])
+            ->andWhere(
+                [
+                    'between',
+                    'monthName',
+                    $beginDate,
+                    $endDate
+                ]);
         if (!empty($plat)) {
-            $query->andWhere(['in', 'plat', $plat]);
+            $query->andWhere(
+                [
+                    'in',
+                    'plat',
+                    $plat
+                ]);
         }
-        $query = $query->orderBy('monthName desc')->all();
+        $query     = $query->orderBy('monthName desc')->all();
         $monthList = static::getMonth($beginDate, $endDate);
-        $out = [];
-        $userList = [];
+        $out       = [];
+        $userList  = [];
         foreach ($query as $row) {
             $row['title'] = $row['plat'] . '-' . $row['username'];
             unset($row['username'], $row['plat']);
@@ -2559,11 +2988,11 @@ class ApiReport
         $ret = [];
         foreach ($monthList as $month) {
             foreach ($userList as $title) {
-                $ele = [];
+                $ele              = [];
                 $ele['monthName'] = $month;
-                $ele['title'] = $title;
-                $ele['rank'] = 0;
-                $ret[] = $ele;
+                $ele['title']     = $title;
+                $ele['rank']      = 0;
+                $ret[]            = $ele;
             }
         }
 
@@ -2595,12 +3024,12 @@ class ApiReport
     private static function getMonth($start, $end)
     {
         $month = strtotime($start);
-        $end = strtotime($end);
-        $ret = [];
+        $end   = strtotime($end);
+        $ret   = [];
         while ($month <= $end) {
             $thisMonth = date('Y-m', $month);
-            $ret[] = $thisMonth;
-            $month = strtotime('+1 month', $month);
+            $ret[]     = $thisMonth;
+            $month     = strtotime('+1 month', $month);
         }
         return $ret;
     }
@@ -2613,8 +3042,8 @@ class ApiReport
     private static function getDepartmentTotal($title)
     {
         $plat = explode('-', $title)[0];
-        $sql = 'select departmentTotal from cache_historySalesProfit where plat=:plat limit 1';
-        $ret = Yii::$app->db->createCommand($sql)->bindValues([':plat' => $plat])->queryScalar();
+        $sql  = 'select departmentTotal from cache_historySalesProfit where plat=:plat limit 1';
+        $ret  = Yii::$app->db->createCommand($sql)->bindValues([':plat' => $plat])->queryScalar();
         return $ret;
     }
 
@@ -2629,10 +3058,10 @@ class ApiReport
     {
         $username = Yii::$app->user->identity->username;
         $userList = ApiUser::getUserList($username);
-        $userStr = implode("','", $userList);
-//        var_dump($userList);exit;
-        $beginDate = date('Y-m-01', strtotime('-4 month'));
-        $sql = "SELECT dt,purchaser,SUM(orderMoney) AS orderMoney
+        $userStr  = implode("','", $userList);
+        //        var_dump($userList);exit;
+        $beginDate     = date('Y-m-01', strtotime('-4 month'));
+        $sql           = "SELECT dt,purchaser,SUM(orderMoney) AS orderMoney
                 FROM (
                     SELECT p.personName AS purchaser,CONVERT(VARCHAR(7),c.AudieDate,121) AS dt,
                                 orderMoney = (SELECT SUM (ISNULL(allmoney, 0)) FROM	CG_StockInD (nolock) WHERE	StockInNID = c.nid)
@@ -2647,20 +3076,23 @@ class ApiReport
                 SELECT dt,purchaser,orderMoney FROM [dbo].[oauth_purchaser_account_period_tmp_data]
                 WHERE CONVERT(VARCHAR(10),dt,121) >= '{$beginDate}' AND purchaser IN ('{$userStr}')
                 ORDER BY purchaser,dt ";
-        $data = Yii::$app->py_db->createCommand($sql)->queryAll();
+        $data          = Yii::$app->py_db->createCommand($sql)->queryAll();
         $purchaserList = array_unique(ArrayHelper::getColumn($data, 'purchaser'));
-        $dateList = array_unique(ArrayHelper::getColumn($data, 'dt'));
+        $dateList      = array_unique(ArrayHelper::getColumn($data, 'dt'));
         sort($dateList);
         $row = [];
         foreach ($dateList as $v) {
-            $row[] = ['dt' => $v, 'orderMoney' => 0];
+            $row[] = [
+                'dt'         => $v,
+                'orderMoney' => 0
+            ];
         }
 
         $res = [];
         foreach ($purchaserList as $val) {
-            $item = [];
+            $item              = [];
             $item['purchaser'] = $val;
-            $item['value'] = $row;
+            $item['value']     = $row;
             foreach ($data as $v) {
                 foreach ($item['value'] as &$value) {
                     if ($value['dt'] == $v['dt'] && $v['purchaser'] == $val) {
@@ -2684,10 +3116,10 @@ class ApiReport
     {
         $username = Yii::$app->user->identity->username;
         $userList = ApiUser::getUserList($username);
-        $userStr = implode("','", $userList);
-        $month = $condition['month'] ?: date('Y-m');
-        $person = isset($condition['person']) && $condition['person'] ? $condition['person'] : '';
-        $sql = "SELECT  bargainTimes,bargainedNum,isBargained,stockOrder,stockInNumber,goodsCode,sku,checkQty,realPrice,
+        $userStr  = implode("','", $userList);
+        $month    = $condition['month'] ?: date('Y-m');
+        $person   = isset($condition['person']) && $condition['person'] ? $condition['person'] : '';
+        $sql      = "SELECT  bargainTimes,bargainedNum,isBargained,stockOrder,stockInNumber,goodsCode,sku,checkQty,realPrice,
             CASE WHEN prePrice > 0 THEN prePrice
 			WHEN preTwoPrice > 0 THEN preTwoPrice
 			WHEN preThreePrice > 0 THEN preThreePrice
@@ -2705,12 +3137,12 @@ class ApiReport
             FROM [dbo].[CG_StockOrderBargainStatistics]
             WHERE CONVERT(VARCHAR(7),doDate,121) = '{$month}' 
                 AND person IN ('{$userStr}') ";
-        if($person) $sql .= " AND person = '{$person}' ";
+        if ($person) $sql .= " AND person = '{$person}' ";
         $data = Yii::$app->py_db->createCommand($sql)->queryAll();
         return $data;
     }
 
-//////////////////////////////////运营KPI//////////////////////////////////////////////////////
+    //////////////////////////////////运营KPI//////////////////////////////////////////////////////
 
     /**
      * 运营KPI 数据
@@ -2721,30 +3153,55 @@ class ApiReport
      */
     public static function getOperatorKpi($condition)
     {
-        $name = isset($condition['name']) ? $condition['name'] : [];
-        $name = $name ? [$name] : [];
-        $depart = isset($condition['depart']) ? $condition['depart'] : '';
+        $name          = isset($condition['name']) ? $condition['name'] : [];
+        $name          = $name ? [$name] : [];
+        $depart        = isset($condition['depart']) ? $condition['depart'] : '';
         $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
-        $plat = isset($condition['plat']) ? $condition['plat'] : '';
-        $month = isset($condition['month']) ? $condition['month'] : '';
+        $plat          = isset($condition['plat']) ? $condition['plat'] : '';
+        $month         = isset($condition['month']) ? $condition['month'] : '';
         if (!$name && $depart) {
             $name = ApiCondition::getUserByDepart($depart, $secDepartment);
         }
         //获取当前用户信息
         $username = Yii::$app->user->identity->username;
         $userList = ApiUser::getUserList($username);
-//        var_dump($userList);exit;
+        //        var_dump($userList);exit;
         $query = (new yii\db\Query())//->select('*')
         ->from('cache_kpi_saler_and_dev_tmp_data')
-            ->andFilterWhere(['in', 'name', $name])
-            ->andFilterWhere(['in', 'name', $userList])
-            ->andFilterWhere(['=', 'depart', $depart])
-            ->andFilterWhere(['=', 'plat', $plat])
-            ->andFilterWhere(['=', 'month', $month])
+            ->andFilterWhere(
+                [
+                    'in',
+                    'name',
+                    $name
+                ])
+            ->andFilterWhere(
+                [
+                    'in',
+                    'name',
+                    $userList
+                ])
+            ->andFilterWhere(
+                [
+                    '=',
+                    'depart',
+                    $depart
+                ])
+            ->andFilterWhere(
+                [
+                    '=',
+                    'plat',
+                    $plat
+                ])
+            ->andFilterWhere(
+                [
+                    '=',
+                    'month',
+                    $month
+                ])
             ->orderBy('totalScore DESC')->all();
         foreach ($query as &$v) {
             $v['profitRate'] .= '%';
-            $v['salesRate'] .= '%';
+            $v['salesRate']  .= '%';
         }
         return $query;
     }
@@ -2758,30 +3215,55 @@ class ApiReport
      */
     public static function getOperatorKpiOther($condition)
     {
-        $name = isset($condition['name']) ? $condition['name'] : [];
-        $name = $name ? [$name] : [];
-        $depart = isset($condition['depart']) ? $condition['depart'] : '';
+        $name          = isset($condition['name']) ? $condition['name'] : [];
+        $name          = $name ? [$name] : [];
+        $depart        = isset($condition['depart']) ? $condition['depart'] : '';
         $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
-        $plat = isset($condition['plat']) ? $condition['plat'] : '';
-        $month = isset($condition['month']) ? $condition['month'] : '';
+        $plat          = isset($condition['plat']) ? $condition['plat'] : '';
+        $month         = isset($condition['month']) ? $condition['month'] : '';
         if (!$name && $depart) {
             $name = ApiCondition::getUserByDepart($depart, $secDepartment);
         }
         //获取当前用户信息
         $username = Yii::$app->user->identity->username;
         $userList = ApiUser::getUserList($username);
-//        var_dump($userList);exit;
+        //        var_dump($userList);exit;
         $query = (new yii\db\Query())//->select('*')
         ->from('cache_kpi_saler_and_dev_tmp_data_other_plat')
-            ->andFilterWhere(['in', 'name', $name])
-            ->andFilterWhere(['in', 'name', $userList])
-            ->andFilterWhere(['=', 'depart', $depart])
-            ->andFilterWhere(['=', 'plat', $plat])
-            ->andFilterWhere(['=', 'month', $month])
+            ->andFilterWhere(
+                [
+                    'in',
+                    'name',
+                    $name
+                ])
+            ->andFilterWhere(
+                [
+                    'in',
+                    'name',
+                    $userList
+                ])
+            ->andFilterWhere(
+                [
+                    '=',
+                    'depart',
+                    $depart
+                ])
+            ->andFilterWhere(
+                [
+                    '=',
+                    'plat',
+                    $plat
+                ])
+            ->andFilterWhere(
+                [
+                    '=',
+                    'month',
+                    $month
+                ])
             ->orderBy('totalScore DESC')->all();
         foreach ($query as &$v) {
             $v['profitRate'] .= '%';
-            $v['salesRate'] .= '%';
+            $v['salesRate']  .= '%';
         }
         return $query;
     }
@@ -2795,46 +3277,75 @@ class ApiReport
      */
     public static function getOperatorKpiHistory($condition)
     {
-        $name = isset($condition['name']) ? $condition['name'] : '';
-        $name = $name ? [$name] : [];
-        $depart = isset($condition['depart']) ? $condition['depart'] : '';
+        $name          = isset($condition['name']) ? $condition['name'] : '';
+        $name          = $name ? [$name] : [];
+        $depart        = isset($condition['depart']) ? $condition['depart'] : '';
         $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
-        $plat = isset($condition['plat']) ? $condition['plat'] : '';
-        $beginMonth = isset($condition['dateRange'][0]) ? $condition['dateRange'][0] : '';
-        $endMonth = isset($condition['dateRange'][1]) ? $condition['dateRange'][1] : '';
+        $plat          = isset($condition['plat']) ? $condition['plat'] : '';
+        $beginMonth    = isset($condition['dateRange'][0]) ? $condition['dateRange'][0] : '';
+        $endMonth      = isset($condition['dateRange'][1]) ? $condition['dateRange'][1] : '';
         if (!$name && $depart) {
             $name = ApiCondition::getUserByDepart($depart, $secDepartment);
         }
         //获取当前用户信息
         $username = Yii::$app->user->identity->username;
         $userList = ApiUser::getUserList($username);
-        $query = (new yii\db\Query())//->select('*')
+        $query    = (new yii\db\Query())//->select('*')
         ->from('cache_kpi_saler_and_dev_tmp_data')
-            ->andFilterWhere(['between', 'month', $beginMonth, $endMonth])
-            ->andFilterWhere(['in', 'name', $name])
-            ->andFilterWhere(['in', 'name', $userList])
-            ->andFilterWhere(['=', 'depart', $depart])
-            ->andFilterWhere(['=', 'plat', $plat])
+            ->andFilterWhere(
+                [
+                    'between',
+                    'month',
+                    $beginMonth,
+                    $endMonth
+                ])
+            ->andFilterWhere(
+                [
+                    'in',
+                    'name',
+                    $name
+                ])
+            ->andFilterWhere(
+                [
+                    'in',
+                    'name',
+                    $userList
+                ])
+            ->andFilterWhere(
+                [
+                    '=',
+                    'depart',
+                    $depart
+                ])
+            ->andFilterWhere(
+                [
+                    '=',
+                    'plat',
+                    $plat
+                ])
             ->orderBy('name, month')->all();
         $userList = array_unique(ArrayHelper::getColumn($query, 'name'));
         $dateList = array_unique(ArrayHelper::getColumn($query, 'month'));
         sort($dateList);
         $row = [];
         foreach ($dateList as $v) {
-            $row[] = ['month' => $v, 'rank' => ''];
+            $row[] = [
+                'month' => $v,
+                'rank'  => ''
+            ];
         }
-//        var_dump($row);exit;
+        //        var_dump($row);exit;
         $data = [];
         foreach ($userList as $user) {
-            $item = [];
-            $item['name'] = $user;
-            $item['numA'] = $item['numB'] = $item['numC'] = $item['numD'] =
+            $item          = [];
+            $item['name']  = $user;
+            $item['numA']  = $item['numB'] = $item['numC'] = $item['numD'] =
             $item['testNumA'] = $item['testNumB'] = $item['testNumC'] = $item['testNumD'] =
             $item['totalRate'] = $item['totalSort'] = 0;
             $item['value'] = $row;
             foreach ($query as $v) {
                 if ($v['name'] == $user) {
-                    $item['depart'] = $v['depart'];
+                    $item['depart']   = $v['depart'];
                     $item['hireDate'] = $v['hireDate'];
                     foreach ($item['value'] as &$value) {
                         if ($value['month'] == $v['month'] && $v['month'] >= substr($v['hireDate'], 0, 7)) {
@@ -2853,7 +3364,7 @@ class ApiReport
                 }
             }
             $item['totalRate'] = round((1 + $item['numA'] * 0.1 + $item['testNumA'] * 0.1 - $item['numC'] * 0.05 - $item['numD'] * 0.1) * 100, 2);
-            $data[] = $item;
+            $data[]            = $item;
         }
         $totalRate = ArrayHelper::getColumn($data, 'totalRate');
         array_multisort($totalRate, SORT_DESC, $data);
@@ -2877,24 +3388,39 @@ class ApiReport
     {
         $name = isset($condition['name']) && $condition['name'] ? $condition['name'] : [];
         $name = is_array($name) ? $name : [$name];
-//        $depart = isset($condition['depart']) ? $condition['depart'] : '';
-//        $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
-//        $plat = isset($condition['plat']) ? $condition['plat'] : '';
+        //        $depart = isset($condition['depart']) ? $condition['depart'] : '';
+        //        $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
+        //        $plat = isset($condition['plat']) ? $condition['plat'] : '';
         $month = isset($condition['month']) ? $condition['month'] : '';
-//        if (!$name && $depart) {
-//            $name = ApiCondition::getUserByDepart($depart, $secDepartment);
-//        }
+        //        if (!$name && $depart) {
+        //            $name = ApiCondition::getUserByDepart($depart, $secDepartment);
+        //        }
         //获取当前用户信息
         $username = Yii::$app->user->identity->username;
         $userList = ApiUser::getUserList($username);
-//        var_dump($userList);exit;
+        //        var_dump($userList);exit;
         $query = (new yii\db\Query())//->select('*')
         ->from('oauth_leader_kpi_report')
-            ->andFilterWhere(['in', 'name', $name])
-            ->andFilterWhere(['in', 'name', $userList])
-//            ->andFilterWhere(['=', 'depart', $depart])
-//            ->andFilterWhere(['=', 'plat', $plat])
-            ->andFilterWhere(['=', 'month', $month])
+            ->andFilterWhere(
+                [
+                    'in',
+                    'name',
+                    $name
+                ])
+            ->andFilterWhere(
+                [
+                    'in',
+                    'name',
+                    $userList
+                ])
+            //            ->andFilterWhere(['=', 'depart', $depart])
+            //            ->andFilterWhere(['=', 'plat', $plat])
+            ->andFilterWhere(
+                [
+                    '=',
+                    'month',
+                    $month
+                ])
             ->orderBy('totalScore DESC')->all();
         foreach ($query as &$v) {
             $v['salesAddRate'] .= '%';
@@ -2914,37 +3440,56 @@ class ApiReport
     {
         $name = isset($condition['name']) && $condition['name'] ? $condition['name'] : [];
         $name = is_array($name) ? $name : [$name];
-//        $depart = isset($condition['depart']) ? $condition['depart'] : '';
-//        $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
-//        $plat = isset($condition['plat']) ? $condition['plat'] : '';
+        //        $depart = isset($condition['depart']) ? $condition['depart'] : '';
+        //        $secDepartment = isset($condition['secDepartment']) ? $condition['secDepartment'] : '';
+        //        $plat = isset($condition['plat']) ? $condition['plat'] : '';
         $beginMonth = isset($condition['dateRange'][0]) && $condition['dateRange'][0] ? $condition['dateRange'][0] : '';
-        $endMonth = isset($condition['dateRange'][1]) && $condition['dateRange'][1] ? $condition['dateRange'][1] : '';
-//        if (!$name && $depart) {
-//            $name = ApiCondition::getUserByDepart($depart, $secDepartment);
-//        }
+        $endMonth   = isset($condition['dateRange'][1]) && $condition['dateRange'][1] ? $condition['dateRange'][1] : '';
+        //        if (!$name && $depart) {
+        //            $name = ApiCondition::getUserByDepart($depart, $secDepartment);
+        //        }
         //获取当前用户信息
         $username = Yii::$app->user->identity->username;
         $userList = ApiUser::getUserList($username);
-        $query = (new yii\db\Query())//->select('*')
+        $query    = (new yii\db\Query())//->select('*')
         ->from('oauth_leader_kpi_report')
-            ->andFilterWhere(['in', 'name', $name])
-            ->andFilterWhere(['in', 'name', $userList])
-            ->andFilterWhere(['between', 'month', $beginMonth, $endMonth])
-//            ->andFilterWhere(['=', 'depart', $depart])
-//            ->andFilterWhere(['=', 'plat', $plat])
+            ->andFilterWhere(
+                [
+                    'in',
+                    'name',
+                    $name
+                ])
+            ->andFilterWhere(
+                [
+                    'in',
+                    'name',
+                    $userList
+                ])
+            ->andFilterWhere(
+                [
+                    'between',
+                    'month',
+                    $beginMonth,
+                    $endMonth
+                ])
+            //            ->andFilterWhere(['=', 'depart', $depart])
+            //            ->andFilterWhere(['=', 'plat', $plat])
             ->orderBy('name, month')->all();
         $userList = array_unique(ArrayHelper::getColumn($query, 'name'));
         $dateList = array_unique(ArrayHelper::getColumn($query, 'month'));
         sort($dateList);
         $row = [];
         foreach ($dateList as $v) {
-            $row[] = ['month' => $v, 'rank' => ''];
+            $row[] = [
+                'month' => $v,
+                'rank'  => ''
+            ];
         }
         $data = [];
         foreach ($userList as $user) {
-            $item = [];
-            $item['name'] = $user;
-            $item['numA'] = $item['numB'] = $item['numC'] = $item['numD'] = $item['totalRate'] = $item['totalSort'] = 0;
+            $item          = [];
+            $item['name']  = $user;
+            $item['numA']  = $item['numB'] = $item['numC'] = $item['numD'] = $item['totalRate'] = $item['totalSort'] = 0;
             $item['value'] = $row;
             foreach ($query as $v) {
                 if ($v['name'] == $user) {
@@ -2961,7 +3506,7 @@ class ApiReport
                 }
             }
             $item['totalRate'] = round((1 + $item['numA'] * 0.1 - $item['numC'] * 0.05 - $item['numD'] * 0.1) * 100, 2);
-            $data[] = $item;
+            $data[]            = $item;
         }
         $totalRate = ArrayHelper::getColumn($data, 'totalRate');
         array_multisort($totalRate, SORT_DESC, $data);

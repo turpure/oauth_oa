@@ -6,10 +6,12 @@
  */
 
 namespace mdm\admin\controllers;
+use backend\modules\v1\models\ApiSettings;
 use backend\modules\v1\models\ApiTool;
 use common\models\User;
 use mdm\admin\models\StoreChild;
 use mdm\admin\models\StoreChildCheck;
+use yii\db\Exception;
 use yii\helpers\ArrayHelper;
 use yii\web\Controller;
 use Yii;
@@ -132,8 +134,9 @@ class StoreController extends Controller
     }
 
     public function actionExport(){
-        $sql = "SELECT s.store AS '账号',s.platform as '平台',u.username AS '销售',aa.username AS '主管',d.department as '小组', 
-				        CASE WHEN ifnull(pd.department,'')<>'' THEN pd.department ELSE d.department END AS '部门'
+        $sql = "SELECT s.store AS '账号',s.platform as '平台',u.username AS '归属人',GROUP_CONCAT(ucc.username) as '查看人',
+						aa.username AS '主管',d.department as '小组', 
+						CASE WHEN ifnull(pd.department,'')<>'' THEN pd.department ELSE d.department END AS '部门'
                 FROM `auth_store` s 
                 LEFT JOIN `auth_store_child` sc ON s.id=sc.store_id
                 LEFT JOIN `user` u ON u.id=sc.user_id
@@ -149,16 +152,49 @@ class StoreController extends Controller
                     LEFT JOIN `auth_position_child` pc ON u.id=pc.user_id
                     LEFT JOIN `auth_position` p ON p.id=pc.position_id
                     WHERE pd.department='郑州分部' AND p.position='主管' OR  p.position='经理'
-                ) aa ON aa.department = (CASE WHEN ifnull(pd.department,'')<>'' THEN pd.department ELSE d.department END)";
+                ) aa ON aa.department = (CASE WHEN ifnull(pd.department,'')<>'' THEN pd.department ELSE d.department END)
+                LEFT JOIN auth_store_child_check scc ON scc.store_id=s.id
+                LEFT JOIN user ucc ON scc.user_id=ucc.id
+                GROUP BY s.store,s.platform,u.username,aa.username,d.department, 
+                        CASE WHEN ifnull(pd.department,'')<>'' THEN pd.department ELSE d.department END";
         /*$data = Store::find()->select("`store` as '店铺名称',`platform` as '平台',`username` as '归属人',`used` as '停用'")
             ->join('LEFT JOIN','auth_store_child sc','sc.store_id=auth_store.id')
             ->join('LEFT JOIN','user u','u.id=sc.user_id')
             ->asArray()->all();*/
         $data = Yii::$app->db->createCommand($sql)->queryAll();
-        $title = "店铺（账号）归属人详情";
-        $titleList = ['账号','平台', '销售', '主管', '小组', '部门'];
+        $title = "店铺（账号）归属人(查看人)详情";
+        $titleList = ['账号','平台', '归属人', '查看人', '主管', '小组', '部门'];
         //var_dump($data);exit;
         ApiTool::exportExcel($title, $titleList, $data);
+    }
+
+
+    public function actionImport(){
+        try {
+            $file = $_FILES['file'];
+            if (!$file) {
+                throw new Exception('The upload file can not be empty!');
+            }
+            //判断文件后缀
+            $extension = ApiSettings::get_extension($file['name']);
+            if (!in_array($extension, ['.Xls', '.xls'])) return ['code' => 400, 'message' => "File format error,please upload files in 'Xls' format"];
+
+            //文件上传
+            $result = ApiSettings::file($file, 'storeUpdate');
+            if (!$result) {
+                throw new Exception('File upload failed!');
+            } else {
+                //获取上传excel文件的内容并保存
+                $res = ApiSettings::saveStoreData($result);
+//                if ($res !== true) return ['code' => 400, 'message' => $res];
+                return $res;
+            }
+        } catch (\Exception $e) {
+            return [
+                'code' => 400,
+                'message' => $e->getMessage()
+            ];
+        }
     }
 
 }

@@ -1,8 +1,8 @@
 <?php
 /**
- * @desc PhpStorm.
+ * @desc  PhpStorm.
  * @author: turpure
- * @since: 2018-09-07 10:00
+ * @since : 2018-09-07 10:00
  */
 
 namespace backend\modules\v1\controllers;
@@ -39,7 +39,7 @@ class TinyToolController extends AdminController
     public $modelClass = 'backend\modules\v1\models\ApiTinyTool';
 
     public $serializer = [
-        'class' => 'backend\modules\v1\utils\PowerfulSerializer',
+        'class'              => 'backend\modules\v1\utils\PowerfulSerializer',
         'collectionEnvelope' => 'items',
     ];
 
@@ -74,6 +74,7 @@ class TinyToolController extends AdminController
         $condition = $request->post('condition');
         return ApiLogisticsTrack::logisticsTrack($condition);
     }
+
     /**
      * 导出物流轨迹
      * @return mixed
@@ -84,6 +85,7 @@ class TinyToolController extends AdminController
         $condition = $request->post('condition');
         return ApiLogisticsTrack::exportLogisticsTrack($condition);
     }
+
     /**
      * 物流时效列表
      * @return mixed
@@ -97,6 +99,7 @@ class TinyToolController extends AdminController
         $result['statistical'] = $data['statistical'];
         return $result;
     }
+
     /**
      * 物流妥投率列表
      * @return mixed
@@ -110,6 +113,7 @@ class TinyToolController extends AdminController
         $result['statistical'] = $data['statistical'];
         return $result;
     }
+
     /**
      * 物流异常列表
      * @return mixed
@@ -134,13 +138,14 @@ class TinyToolController extends AdminController
         }
         catch (\Exception $exception) {
             return [
-                'code' => 400,
-                'message' =>  $exception->getMessage()
+                'code'    => 400,
+                'message' => $exception->getMessage()
             ];
         }
     }
 
-    public function actionExportLogisticsAbnormal() {
+    public function actionExportLogisticsAbnormal()
+    {
         $request = Yii::$app->request;
         $condition = $request->post('condition');
         return ApiLogisticsTrack::exportLogisticsAbnormal($condition);
@@ -156,6 +161,7 @@ class TinyToolController extends AdminController
         $condition = $request->post('condition');
         return ApiLogisticsTrack::exportTimeFrame($condition);
     }
+
     /**
      * 导出签收时效列表
      * @return mixed
@@ -171,8 +177,23 @@ class TinyToolController extends AdminController
      * 物流公司
      * @param ApiLogisticsTrack $ebayTrack
      */
-    public function actionLogisticsCompany() {
+    public function actionLogisticsCompany()
+    {
         return ApiLogisticsTrack::logisticsCompany();
+    }
+
+    /**
+     * 编辑物流方式
+     * @return array
+     */
+    public function actionLogisticsEdit()
+    {
+        try {
+            return ApiLogisticsTrack::logisticsEditName(Yii::$app->request->post('condition'));
+        }
+        catch (\Exception $exception) {
+            return ['code' => $exception->getCode(), 'message' => $exception->getMessage()];
+        }
     }
 
     /**
@@ -241,10 +262,12 @@ class TinyToolController extends AdminController
                     throw new \Exception("fail to set $username");
                 }
                 return 'job done!';
-            } else {
+            }
+            else {
                 throw new \Exception("Cant't find user '{$username}''");
             }
-        } catch (\Exception  $why) {
+        }
+        catch (\Exception  $why) {
             return [$why];
         }
 
@@ -269,10 +292,12 @@ class TinyToolController extends AdminController
                     throw new \Exception("fail to set $username");
                 }
                 return 'job done!';
-            } else {
+            }
+            else {
                 throw new \Exception("Cant't find user '{$username}''");
             }
-        } catch (\Exception  $why) {
+        }
+        catch (\Exception  $why) {
             return [$why];
         }
 
@@ -291,22 +316,22 @@ class TinyToolController extends AdminController
         $cond = $request['condition'];
         if (!$cond['sku']) {
             return [
-                'code' => 400,
+                'code'    => 400,
                 'message' => 'The SKU attribute can not be empty!',
             ];
         }
         $post = [
-            'sku' => $cond['sku'],
-            'num' => $cond['num'] ? $cond['num'] : 1,
-            'price' => $cond['price'],
-            'rate' => isset($cond['rate']) && $cond['rate'] ? $cond['rate'] : 0,
+            'sku'     => $cond['sku'],
+            'num'     => $cond['num'] ? $cond['num'] : 1,
+            'price'   => $cond['price'],
+            'rate'    => isset($cond['rate']) && $cond['rate'] ? $cond['rate'] : 0,
             'vatRate' => isset($cond['vatRate']) && $cond['vatRate'] ? $cond['vatRate'] : 0,
         ];
 
         $data = [
-            'detail' => [],
-            'rate' => [],
-            'price' => [],
+            'detail'    => [],
+            'rate'      => [],
+            'price'     => [],
             'transport' => [],
         ];
         //获取SKU信息
@@ -334,7 +359,8 @@ class TinyToolController extends AdminController
         $name = Yii::$app->params['transport1'];
         if ($res['Weight'] <= Yii::$app->params['weight']) {
             $cost = Yii::$app->params['swBasic'] + Yii::$app->params['swPrice'] * $res['Weight'];
-        } else // if($res['Weight'] < Yii::$app->params['weight1'])
+        }
+        else // if($res['Weight'] < Yii::$app->params['weight1'])
         {
             $cost = Yii::$app->params['bwBasic'] + Yii::$app->params['bwPrice'] * $res['Weight'];
         }
@@ -348,7 +374,8 @@ class TinyToolController extends AdminController
         $name3 = Yii::$app->params['transport3'];
         if ($res['Weight'] < Yii::$app->params['weight3']) {
             $cost3 = Yii::$app->params['basic3'] + Yii::$app->params['price2'] * $res['Weight'];
-        } else {
+        }
+        else {
             $cost3 = Yii::$app->params['basic3'] + Yii::$app->params['price3'] * $res['Weight'];
         }
 
@@ -362,13 +389,13 @@ class TinyToolController extends AdminController
         }*/
 
         $param1 = $param2 = $param3 = $param4 = [
-            'costprice' => $res['costprice'],
-            'bigPriceBasic' => Yii::$app->params['bpBasic'],
+            'costprice'       => $res['costprice'],
+            'bigPriceBasic'   => Yii::$app->params['bpBasic'],
             'smallPriceBasic' => Yii::$app->params['spBasic'],
-            'bigPriceRate' => Yii::$app->params['bpRate'],
-            'smallPriceRate' => Yii::$app->params['spRate'],
-            'ebayRate' => Yii::$app->params['eRate'],
-            'vatRate' => $post['vatRate'],
+            'bigPriceRate'    => Yii::$app->params['bpRate'],
+            'smallPriceRate'  => Yii::$app->params['spRate'],
+            'ebayRate'        => Yii::$app->params['eRate'],
+            'vatRate'         => $post['vatRate'],
         ];
         $param1['cost'] = $cost;
         $param2['cost'] = $cost2;
@@ -390,7 +417,7 @@ class TinyToolController extends AdminController
             $rate4 = ApiUkFic::getRate($param4);
             $rate4['transport'] = $name4;
             $data['rate'] = [$rate, $rate2, $rate3, $rate4];
-//            $data['rate'] = [$rate2];
+            //            $data['rate'] = [$rate2];
         }
         //根据利润率获取售价
         $param1['rate'] = $param2['rate'] = $param3['rate'] = $param4['rate'] = $post['rate'];
@@ -407,7 +434,7 @@ class TinyToolController extends AdminController
         $price4['transport'] = $name4;
 
         $data['price'] = [$price, $price2, $price3, $price4];
-//        $data['price'] = [$price2];
+        //        $data['price'] = [$price2];
         //print_r($data['price']);exit;
         $data['transport'] = [
             [
@@ -440,31 +467,32 @@ class TinyToolController extends AdminController
         $cond = $request['condition'];
         if (!$cond['sku']) {
             return [
-                'code' => 400,
+                'code'    => 400,
                 'message' => 'The SKU attribute can not be empty!',
             ];
         }
         $post = [
-            'sku' => $cond['sku'],
-            'num' => $cond['num'] ? $cond['num'] : 1,
-            'price' => $cond['price'] ? $cond['price'] : 0,
-            'rate' => $cond['rate'] ? $cond['rate'] : 0,
+            'sku'           => $cond['sku'],
+            'num'           => $cond['num'] ? $cond['num'] : 1,
+            'price'         => $cond['price'] ? $cond['price'] : 0,
+            'rate'          => $cond['rate'] ? $cond['rate'] : 0,
             'shippingPrice' => isset($cond['shippingPrice']) && $cond['shippingPrice'] ? $cond['shippingPrice'] : 0,
-            'adRate' => isset($cond['adRate']) && $cond['adRate'] ? $cond['adRate'] : 0,
-            'vatRate' => isset($cond['vatRate']) && $cond['vatRate'] ? $cond['vatRate'] : 0,
+            'adRate'        => isset($cond['adRate']) && $cond['adRate'] ? $cond['adRate'] : 0,
+            'vatRate'       => isset($cond['vatRate']) && $cond['vatRate'] ? $cond['vatRate'] : 0,
         ];
 
         $data = [
-            'detail' => [],
-            'rate' => [],
-            'price' => [],
+            'detail'    => [],
+            'rate'      => [],
+            'price'     => [],
             'transport' => [],
         ];
         //获取SKU信息
         if (strpos($post['sku'], '*') !== false) {
             $newSku = substr($post['sku'], 0, strpos($post['sku'], '*'));
             $skuNum = substr($post['sku'], strpos($post['sku'], '*') + 1, count($post['sku']));
-        } else {
+        }
+        else {
             $newSku = $post['sku'];
             $skuNum = 1;
         }
@@ -499,25 +527,25 @@ class TinyToolController extends AdminController
             ) {
                 $item['name'] = $v['shipping'];
                 $item['out'] = $v['deliveryFee'];
-                $item['outRmb'] = round($item['out'] * Yii::$app->params['poundRate'],3);
+                $item['outRmb'] = round($item['out'] * Yii::$app->params['poundRate'], 3);
                 $item['cost'] = $item['costRmb'] = 0;
                 $weightList = json_decode($v['weightFee'], true);
                 foreach ($weightList as $ele) {
-                    if($weight > $ele['min'] && $weight <= $ele['max']){
+                    if ($weight > $ele['min'] && $weight <= $ele['max']) {
                         $item['cost'] = $ele['value'];
-                        $item['costRmb'] = round($ele['value'] * Yii::$app->params['poundRate'],3);
+                        $item['costRmb'] = round($ele['value'] * Yii::$app->params['poundRate'], 3);
                         //$item['cost'] = $ele['value'] + $item['out'];
                         //$item['costRmb'] = $item['shippingRmb'] + $item['outRmb'];
                     }
                 }
                 $data['transport'][] = $item;
                 $params1 = $params2 = [
-                    'costRmb' => $item['costRmb'],
-                    'outRmb' => $item['outRmb'],
-                    'costPrice' => $res['price'],
+                    'costRmb'       => $item['costRmb'],
+                    'outRmb'        => $item['outRmb'],
+                    'costPrice'     => $res['price'],
                     'shippingPrice' => $post['shippingPrice'],
-                    'adRate' => $post['adRate'],
-                    'vatRate' => $post['vatRate'],
+                    'adRate'        => $post['adRate'],
+                    'vatRate'       => $post['vatRate'],
                 ];
                 //根据售价获取毛利率
                 if ($post['price']) {
@@ -548,24 +576,24 @@ class TinyToolController extends AdminController
         $cond = $request['condition'];
         if (!$cond['sku']) {
             return [
-                'code' => 400,
+                'code'    => 400,
                 'message' => 'The SKU attribute can not be empty!',
             ];
         }
         $post = [
-            'storeName' => $cond['storeName'],
-            'sku' => $cond['sku'],
-            'num' => isset($cond['num']) && $cond['num'] ? $cond['num'] : 1,
-            'price' => isset($cond['price']) && $cond['price'] ? $cond['price'] : 0,
+            'storeName'     => $cond['storeName'],
+            'sku'           => $cond['sku'],
+            'num'           => isset($cond['num']) && $cond['num'] ? $cond['num'] : 1,
+            'price'         => isset($cond['price']) && $cond['price'] ? $cond['price'] : 0,
             'shippingPrice' => isset($cond['shippingPrice']) && $cond['shippingPrice'] ? $cond['shippingPrice'] : 0,
-            'adRate' => isset($cond['adRate']) && $cond['adRate'] ? $cond['adRate'] : 0,
-            'rate' => isset($cond['rate']) && $cond['rate'] ? $cond['rate'] : 0,
-            'vatRate' => isset($cond['vatRate']) && $cond['vatRate'] ? $cond['vatRate'] : 0,
+            'adRate'        => isset($cond['adRate']) && $cond['adRate'] ? $cond['adRate'] : 0,
+            'rate'          => isset($cond['rate']) && $cond['rate'] ? $cond['rate'] : 0,
+            'vatRate'       => isset($cond['vatRate']) && $cond['vatRate'] ? $cond['vatRate'] : 0,
         ];
         $data = [
-            'detail' => [],
-            'rate' => [],
-            'price' => [],
+            'detail'    => [],
+            'rate'      => [],
+            'price'     => [],
             'transport' => [],
         ];
         //获取SKU信息
@@ -584,18 +612,18 @@ class TinyToolController extends AdminController
         //获取运费和出库费
         $data['transport'] = ApiUk::getTransport($res['weight'], $res['length'], $res['width'], $res['height']);
 
-//        var_dump($data['transport']);exit;
+        //        var_dump($data['transport']);exit;
 
         foreach ($data['transport'] as $v) {
             $params1 = $params2 = [
-                'costRmb' => $v['costRmb'],
-                'outRmb' => $v['outRmb'],
-                'extra' => $v['extra'],
-                'extraRmb' => $v['extraRmb'],
-                'costPrice' => $res['price'],
+                'costRmb'       => $v['costRmb'],
+                'outRmb'        => $v['outRmb'],
+                'extra'         => $v['extra'],
+                'extraRmb'      => $v['extraRmb'],
+                'costPrice'     => $res['price'],
                 'shippingPrice' => $post['shippingPrice'],
-                'adRate' => $post['adRate'],
-                'vatRate' => $post['vatRate'],
+                'adRate'        => $post['adRate'],
+                'vatRate'       => $post['vatRate'],
             ];
 
             //根据售价获取利润率
@@ -628,20 +656,20 @@ class TinyToolController extends AdminController
         $cond = $request['condition'];
         if (!$cond['sku']) {
             return [
-                'code' => 400,
+                'code'    => 400,
                 'message' => 'The SKU attribute can not be empty!',
             ];
         }
         $post = [
-            'sku' => $cond['sku'],
-            'num' => $cond['num'] ? $cond['num'] : 1,
+            'sku'   => $cond['sku'],
+            'num'   => $cond['num'] ? $cond['num'] : 1,
             'price' => $cond['price'],
-            'rate' => $cond['rate'],
+            'rate'  => $cond['rate'],
         ];
         $data = [
-            'detail' => [],
-            'rate' => [],
-            'price' => [],
+            'detail'    => [],
+            'rate'      => [],
+            'price'     => [],
             'transport' => [],
         ];
         //获取SKU信息
@@ -661,7 +689,7 @@ class TinyToolController extends AdminController
 
         //获取运费和出库费
         $data['transport'] = ApiAu::getTransport($res['weight'], $res['length'], $res['width'], $res['height']);
-//        var_dump($data['transport']);exit;
+        //        var_dump($data['transport']);exit;
         foreach ($data['transport'] as $v) {
             //根据售价获取利润率
             if ($post['price']) {
@@ -757,12 +785,13 @@ class TinyToolController extends AdminController
     {
         try {
             return ExpressExpired::run();
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
     }
 
-//========================================================
+    //========================================================
     //海外仓补货
 
     /**
@@ -792,13 +821,14 @@ class TinyToolController extends AdminController
             $totalPurCost = array_sum(ArrayHelper::getColumn($data, 'purCost'));
 
             $provider = new ArrayDataProvider([
-                'allModels' => $data,
+                'allModels'  => $data,
                 'pagination' => [
                     'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
                 ],
             ]);
             return ['provider' => $provider, 'extra' => ['totalPurCost' => $totalPurCost]];
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
 
@@ -815,31 +845,32 @@ class TinyToolController extends AdminController
         $request = Yii::$app->request->post();
         $cond = $request['condition'];
         try {
-//            $sql = "SELECT SKU, SKUName, goodsCode, salerName, goodsStatus, price, weight, purchaser, supplierName,
-//                        saleNum3days, saleNum7days, saleNum15days, saleNum30days, trend, saleNumDailyAve, 399HopeUseNum,
-//                        uHopeUseNum, totalHopeUseNum, uHopeSaleDays, hopeSaleDays, purchaseNum, shipNum, purCost, shipWeight
-//                    FROM cache_overseasReplenish WHERE type='AU真仓'";
-//            if (isset($cond['sku']) && $cond['sku']) $sql .= " AND SKU LIKE '%{$cond['sku']}%'";
-//            if (isset($cond['salerName']) && $cond['salerName']) $sql .= " AND salerName LIKE '%{$cond['salerName']}%'";
-//            if (isset($cond['purchaser']) && $cond['purchaser']) $sql .= " AND purchaser LIKE '%{$cond['purchaser']}%'";
-//            if (isset($cond['trend']) && $cond['trend']) $sql .= " AND trend LIKE '%{$cond['trend']}%'";
-//            if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
-//            if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
-//            if (isset($cond['isShipping']) && $cond['isShipping'] == '是') $sql .= " AND shipNum>0 ";
-//            if (isset($cond['isShipping']) && $cond['isShipping'] == '否') $sql .= " AND shipNum=0 ";
-//            $data = Yii::$app->db->createCommand($sql)->queryAll();
+            //            $sql = "SELECT SKU, SKUName, goodsCode, salerName, goodsStatus, price, weight, purchaser, supplierName,
+            //                        saleNum3days, saleNum7days, saleNum15days, saleNum30days, trend, saleNumDailyAve, 399HopeUseNum,
+            //                        uHopeUseNum, totalHopeUseNum, uHopeSaleDays, hopeSaleDays, purchaseNum, shipNum, purCost, shipWeight
+            //                    FROM cache_overseasReplenish WHERE type='AU真仓'";
+            //            if (isset($cond['sku']) && $cond['sku']) $sql .= " AND SKU LIKE '%{$cond['sku']}%'";
+            //            if (isset($cond['salerName']) && $cond['salerName']) $sql .= " AND salerName LIKE '%{$cond['salerName']}%'";
+            //            if (isset($cond['purchaser']) && $cond['purchaser']) $sql .= " AND purchaser LIKE '%{$cond['purchaser']}%'";
+            //            if (isset($cond['trend']) && $cond['trend']) $sql .= " AND trend LIKE '%{$cond['trend']}%'";
+            //            if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
+            //            if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
+            //            if (isset($cond['isShipping']) && $cond['isShipping'] == '是') $sql .= " AND shipNum>0 ";
+            //            if (isset($cond['isShipping']) && $cond['isShipping'] == '否') $sql .= " AND shipNum=0 ";
+            //            $data = Yii::$app->db->createCommand($sql)->queryAll();
             $data = Yii::$app->py_db->createCommand("EXEC LY_eBayAURealWarehouse_Replenishment_20191105 '{$cond['salerName']}','{$cond['purchaser']}';")->queryAll();
             $totalPurCost = array_sum(ArrayHelper::getColumn($data, 'purCost'));
             $totalShipWeight = array_sum(ArrayHelper::getColumn($data, 'shipWeight'));
 
             $provider = new ArrayDataProvider([
-                'allModels' => $data,
+                'allModels'  => $data,
                 'pagination' => [
                     'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
                 ],
             ]);
             return ['provider' => $provider, 'extra' => ['totalPurCost' => $totalPurCost, 'totalShipWeight' => $totalShipWeight]];
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
     }
@@ -877,13 +908,14 @@ class TinyToolController extends AdminController
             }
 
             $provider = new ArrayDataProvider([
-                'allModels' => $data,
+                'allModels'  => $data,
                 'pagination' => [
                     'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
                 ],
             ]);
             return ['provider' => $provider, 'extra' => ['totalPurCost' => $totalPurCost, 'totalShipWeight' => $totalShipWeight]];
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
     }
@@ -906,21 +938,22 @@ class TinyToolController extends AdminController
             //$totalShipWeight = array_sum(ArrayHelper::getColumn($data, 'shipWeight'));
 
             $provider = new ArrayDataProvider([
-                'allModels' => $data,
+                'allModels'  => $data,
                 'pagination' => [
                     'pageSize' => isset($cond['pageSize']) && $cond['pageSize'] ? $cond['pageSize'] : 20,
                 ],
             ]);
             //return ['provider' => $provider, 'extra' => ['totalPurCost' => $totalPurCost, 'totalShipWeight' => $totalShipWeight]];
             return $provider;
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
     }
 
 
-//=========================================================
-//海外仓补货表格下载
+    //=========================================================
+    //海外仓补货表格下载
 
     /** 下载表格
      * Date: 2019-08-05 10:18
@@ -954,7 +987,8 @@ class TinyToolController extends AdminController
                 $data = Yii::$app->db->createCommand($sql)->queryAll();*/
                 $sql = "EXEC  [dbo].[LY_eBayUKVirtualWarehouse_Replenishment_20191113] '{$cond['salerName']}','{$cond['purchaser']}'";
                 $data = Yii::$app->py_db->createCommand($sql)->queryAll();
-                $title = ['商品编码', 'SKU', 'SKU名称', '状态', '义乌仓采购未审核', '预计可用库存', '仓库', '开发员', '采购',
+                $title = [
+                    '商品编码', 'SKU', 'SKU名称', '状态', '义乌仓采购未审核', '预计可用库存', '仓库', '开发员', '采购',
                     '供应商', '单价', '平均单价', '重量', '3天销量', '7天销量', '15天销量', '30天销量', '3天平均销量', '7天平均销量', '15天平均销量', '30天平均销量',
                     '走势', '日均销量', '预计可用总库存', '采购到货天数', '预警销售天数', '预计可卖天数', '是否特殊采购', '是否采购', '采购数量', '单价', '采购金额'];
                 break;
@@ -974,7 +1008,8 @@ class TinyToolController extends AdminController
                 if (isset($cond['isShipping']) && $cond['isShipping'] == '否') $sql .= " AND shipNum=0 ";
                 $data = Yii::$app->db->createCommand($sql)->queryAll();*/
                 $data = Yii::$app->py_db->createCommand("EXEC LY_eBayAURealWarehouse_Replenishment_20191105 '{$cond['salerName']}','{$cond['purchaser']}';")->queryAll();
-                $title = ['SKU', 'SKU名称', '商品编码', '季节', '类别', '开发员', '状态', '价格(￥)', '重量(g)', '采购', '供应商', '3天销量', '7天销量', '15天销量', '30天销量',
+                $title = [
+                    'SKU', 'SKU名称', '商品编码', '季节', '类别', '开发员', '状态', '价格(￥)', '重量(g)', '采购', '供应商', '3天销量', '7天销量', '15天销量', '30天销量',
                     '走势', '日均销量', '金皖399预计可用库存', '万邑通AU预计可用库存', '预计可用库存', '万邑通AU预计可用天数', '预计可卖天数', '采购数量', '发货数量', '采购金额', '发货重量(g)'];
                 break;
             case 'ukReal':
@@ -996,7 +1031,8 @@ class TinyToolController extends AdminController
                 foreach ($data as &$v) {
                     $v['seller1'] = Yii::$app->db->createCommand("select seller1 from cache_skuSeller where goodsCode ='{$v['goodsCode']}'")->queryScalar();
                 }
-                $title = ['SKU', 'SKU名称', '商品编码', '季节', '规格', '类别', '开发员', '状态', '价格(￥)', '重量(g)',
+                $title = [
+                    'SKU', 'SKU名称', '商品编码', '季节', '规格', '类别', '开发员', '状态', '价格(￥)', '重量(g)',
                     '采购', '供应商', '3天销量', '7天销量', '15天销量', '30天销量', '走势', '日均销量', '金皖399预计可用库存',
                     '万邑通UK预计可用库存', '预计可用库存', '万邑通UK预计可用天数', '预计可卖天数', '采购数量', '发货数量',
                     '采购金额', '发货重量(g)', '仓库', '销售'];
@@ -1009,7 +1045,8 @@ class TinyToolController extends AdminController
                     ':purchaser' => $cond['purchaser'],
                 ];
                 $data = Yii::$app->py_db->createCommand($sql)->bindValues($params)->queryAll();
-                $title = ['商品编码', 'SKU', '商品名称', '状态', '预计可用库存', '仓库', '开发员', '采购', '供应商', '成本价(￥)', '平均单价(￥)', '重量(g)', '3天销量', '7天销量', '15天销量', '30天销量',
+                $title = [
+                    '商品编码', 'SKU', '商品名称', '状态', '预计可用库存', '仓库', '开发员', '采购', '供应商', '成本价(￥)', '平均单价(￥)', '重量(g)', '3天销量', '7天销量', '15天销量', '30天销量',
                     '3天平均销量', '7天平均销量', '15天平均销量', '30天平均销量', '走势', '日均销量', '总预计可用库存', '采购到货天数', '预警销售天数', '预计可卖天数', '是否特殊备货', '是否采购', '采购数量', '采购单价', '采购金额'];
                 break;
             default :
@@ -1025,7 +1062,8 @@ class TinyToolController extends AdminController
                 if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '是') $sql .= " AND purchaseNum>0 ";
                 if (isset($cond['isPurchaser']) && $cond['isPurchaser'] == '否') $sql .= " AND purchaseNum=0 ";
                 $data = Yii::$app->db->createCommand($sql)->queryAll();
-                $title = ['SKU', 'SKU名称', '商品编码', '开发员', '状态', '采购', '供应商', '3天销量', '7天销量', '15天销量', '30天销量',
+                $title = [
+                    'SKU', 'SKU名称', '商品编码', '开发员', '状态', '采购', '供应商', '3天销量', '7天销量', '15天销量', '30天销量',
                     '走势', '日均销量', '预计可用库存', '义乌仓库存', '义乌仓采购未审核', '预计可卖天数', '采购数量', '单价', '采购金额'];
                 break;
         }
@@ -1045,7 +1083,8 @@ class TinyToolController extends AdminController
                 return ['code' => 400, 'message' => 'The file can not be empty!'];
             }
             return ApiTinyTool::uploadJoomTracking($file);
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
@@ -1065,7 +1104,8 @@ class TinyToolController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiTinyTool::getTaskJoomTracking($condition);
-        } catch (\Exception  $why) {
+        }
+        catch (\Exception  $why) {
             return ['message' => $why->getMessage(), 'code' => $why->getCode()];
         }
     }
@@ -1109,7 +1149,8 @@ class TinyToolController extends AdminController
                     throw new \Exception('SKU already exists and cannot be added repeatedly!');
                 }
                 $model = new OaEbayKeyword();
-            } else {
+            }
+            else {
                 $model = OaEbayKeyword::findOne($cond['id']);
             }
             $model->setAttributes($cond);
@@ -1125,9 +1166,10 @@ class TinyToolController extends AdminController
                 throw new \Exception('save keyword info failed!');
             }
             return true;
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             return [
-                'code' => 400,
+                'code'    => 400,
                 'message' => $e->getMessage(),
             ];
         }
@@ -1172,7 +1214,8 @@ class TinyToolController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiTinyTool::getJoomNullExpressFare($condition);
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
@@ -1186,7 +1229,8 @@ class TinyToolController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiTinyTool::updateJoomNullExpressFare($condition);
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
@@ -1201,7 +1245,8 @@ class TinyToolController extends AdminController
         try {
             $condition = Yii::$app->request->post()['condition'];
             return ApiTinyTool::getEbayBalance($condition);
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
 
         }
@@ -1220,7 +1265,8 @@ class TinyToolController extends AdminController
             $data = ApiTinyTool::getEbayBalance($condition)->models;
             $title = ['ID', '账号名称', '销售', '部门', '出账单时间', '余额', '货币', '更新时间'];
             ExportTools::toExcelOrCsv('ebay-balance', $data, 'Xls', $title);
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
@@ -1234,7 +1280,8 @@ class TinyToolController extends AdminController
     {
         try {
             return ApiTinyTool::getEbayBalanceCondition();
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
@@ -1250,7 +1297,8 @@ class TinyToolController extends AdminController
         try {
             $condition = Yii::$app->request->post('condition', []);
             return ApiTinyTool::ebayBalanceTimeGet($condition);
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
@@ -1264,7 +1312,8 @@ class TinyToolController extends AdminController
             $condition = Yii::$app->request->post('condition', []);
             return ApiTinyTool::ebayBalanceTimeUpdate($condition);
 
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
 
@@ -1279,7 +1328,8 @@ class TinyToolController extends AdminController
         try {
             $condition = Yii::$app->request->post('condition', []);
             return ApiTinyTool::ebayBalanceTimeCreate($condition);
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
@@ -1292,7 +1342,8 @@ class TinyToolController extends AdminController
         try {
             $condition = Yii::$app->request->post('condition', []);
             return ApiTinyTool::ebayBalanceTimeDelete($condition);
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
 
@@ -1307,7 +1358,8 @@ class TinyToolController extends AdminController
         try {
             $condition = Yii::$app->request->post('condition', []);
             return ApiTinyTool::ebayBalanceTimeDetail($condition);
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
 
@@ -1329,11 +1381,11 @@ class TinyToolController extends AdminController
             $pageSize = ArrayHelper::getValue($condition, 'pageSize');
             $data = ApiTinyTool::getSkuStockDetail($condition);
             return new ArrayDataProvider([
-                'allModels' => $data,
-                'sort' => [
-                    'attributes' => [
-                        'airNum','costPrice','costmoney','createDate','fourteenSellCount','oceanNum','sevenSellCount',
-                        'sku','thirtySellCount','threeSellCount','turnoverDays','useNum','weight'
+                'allModels'  => $data,
+                'sort'       => [
+                    'attributes'   => [
+                        'airNum', 'costPrice', 'costmoney', 'createDate', 'fourteenSellCount', 'oceanNum', 'sevenSellCount',
+                        'sku', 'thirtySellCount', 'threeSellCount', 'turnoverDays', 'useNum', 'weight'
                     ],
                     'defaultOrder' => [
                         'sku' => SORT_ASC,
@@ -1343,7 +1395,8 @@ class TinyToolController extends AdminController
                     'pageSize' => $pageSize ? $pageSize : 20
                 ]
             ]);
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
 
@@ -1362,11 +1415,13 @@ class TinyToolController extends AdminController
             $condition = Yii::$app->request->post('condition', []);
             $data = ApiTinyTool::getSkuStockDetail($condition);
             $name = 'ProductInventoryTurnoverDetails';
-            $title = ['商品编码', 'SKU', '商品名称', '仓库', '商品状态', '开发员', '普源创建时间', '平均单价', '成本', '可用库存',
-                '海运在途数量','空运在途数量', '重量', '销售1', '销售2', '部门', '3天销量', '7天销量', '14天销量', '30天销量', '周转天数'
+            $title = [
+                '商品编码', 'SKU', '商品名称', '仓库', '商品状态', '开发员', '普源创建时间', '平均单价', '成本', '可用库存',
+                '海运在途数量', '空运在途数量', '重量', '销售1', '销售2', '部门', '3天销量', '7天销量', '14天销量', '30天销量', '周转天数'
             ];
             ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
 
@@ -1393,7 +1448,8 @@ class TinyToolController extends AdminController
         $result = Handler::file($file, 'skuSeller');
         if (!$result) {
             return ['code' => 400, 'message' => 'File upload failed'];
-        } else {
+        }
+        else {
             //获取上传excel文件的内容并保存
             return ApiTinyTool::saveEbaySkuSellerData($result, $extension);
         }
@@ -1420,9 +1476,10 @@ class TinyToolController extends AdminController
                 ) aa GROUP BY seller1;";
         try {
             return Yii::$app->db->createCommand($sql)->queryAll();
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             return [
-                'code' => 400,
+                'code'    => 400,
                 'message' => $e->getMessage(),
             ];
         }
@@ -1447,13 +1504,15 @@ class TinyToolController extends AdminController
         $date = date('Y-m-d H:i:s');
         if ($count) {
             $sql = "UPDATE cache_skuSeller SET seller1='{$seller}',updateDate='{$date}' WHERE goodsCode='{$goodsCode}';";
-        } else {
+        }
+        else {
             $sql = "INSERT INTO cache_skuSeller(goodsCode,seller1,updateDate) values('{$goodsCode}','{$seller}','{$date}');";
         }
         try {
             Yii::$app->db->createCommand($sql)->execute();
             return true;
-        } catch (\Exception $why) {
+        }
+        catch (\Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
@@ -1475,7 +1534,7 @@ class TinyToolController extends AdminController
         if ($skuName) $sql .= " AND skuName like '%{$skuName}%' ";
         $data = Yii::$app->db->createCommand($sql)->queryAll();
         $dataProvider = new ArrayDataProvider([
-            'allModels' => $data,
+            'allModels'  => $data,
             'pagination' => [
                 'pageSize' => isset($pageSize) && $pageSize ? $pageSize : 20,
             ],
@@ -1507,8 +1566,8 @@ class TinyToolController extends AdminController
             $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
             $data = ApiTinyTool::getEbayAdFee($condition);
             $dataProvider = new ArrayDataProvider([
-                'allModels' => $data,
-                'sort' => [
+                'allModels'  => $data,
+                'sort'       => [
                     'attributes' => ['sku', 'item_id', 'ad_fee', 'transaction_price'],
                 ],
                 'pagination' => [
@@ -1516,7 +1575,8 @@ class TinyToolController extends AdminController
                 ],
             ]);
             return $dataProvider;
-        } catch (Exception $why) {
+        }
+        catch (Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
@@ -1535,10 +1595,12 @@ class TinyToolController extends AdminController
             $condition = Yii::$app->request->post('condition');
             $data = ApiTinyTool::getEbayAdFee($condition);
             $name = 'EbayAdFee';
-            $title = ['账号简称', '商品编码', '广告费率', '广告费(￥)', '广告费(原币种)', '交易时间', '描述', 'ItemId',
+            $title = [
+                '账号简称', '商品编码', '广告费率', '广告费(￥)', '广告费(原币种)', '交易时间', '描述', 'ItemId',
                 '成交价(原币种)', '物流费(原币种)', '总成交价(￥)', '物流名称'];
             ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
-        } catch (Exception $why) {
+        }
+        catch (Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
@@ -1556,9 +1618,10 @@ class TinyToolController extends AdminController
             $pageSize = isset($condition['pageSize']) ? $condition['pageSize'] : 20;
             $data = ApiTinyTool::getStockWarningData($condition);
             $dataProvider = new ArrayDataProvider([
-                'allModels' => $data,
-                'sort' => [
-                    'attributes' => ['sku', 'goodsCode', 'usenum', 'costmoney', 'dayNum', 'hopeUseNum',
+                'allModels'  => $data,
+                'sort'       => [
+                    'attributes' => [
+                        'sku', 'goodsCode', 'usenum', 'costmoney', 'dayNum', 'hopeUseNum',
                         'sellCount1', 'sellCount2', 'sellCount3'],
                 ],
                 'pagination' => [
@@ -1566,7 +1629,8 @@ class TinyToolController extends AdminController
                 ],
             ]);
             return $dataProvider;
-        } catch (Exception $why) {
+        }
+        catch (Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }
@@ -1586,13 +1650,15 @@ class TinyToolController extends AdminController
             $condition = Yii::$app->request->post('condition');
             $data = ApiTinyTool::getStockWarningData($condition);
             $name = 'stock-warning';
-            $title = ['仓库','商品编码','SKU','SKU名称','规格','商品状态','类目','重量','业绩归属人1',
-                '默认发货仓库', '创建时间','平均日销量','库存金额', '5天销量','10天销量','20天销量',
-                '万邑通UK平均单价','万邑通UK-MA平均单价','谷仓UK平均单价',
-                '万邑通UK可用数量','万邑通UK-MA可用数量','谷仓UK可用数量','金皖399可用数量','金皖399在途数量',
-                '责任归属人2','周转天数','预计可用数量'];
+            $title = [
+                '仓库', '商品编码', 'SKU', 'SKU名称', '规格', '商品状态', '类目', '重量', '业绩归属人1',
+                '默认发货仓库', '创建时间', '平均日销量', '库存金额', '5天销量', '10天销量', '20天销量',
+                '万邑通UK平均单价', '万邑通UK-MA平均单价', '谷仓UK平均单价',
+                '万邑通UK可用数量', '万邑通UK-MA可用数量', '谷仓UK可用数量', '金皖399可用数量', '金皖399在途数量',
+                '责任归属人2', '周转天数', '预计可用数量'];
             ExportTools::toExcelOrCsv($name, $data, 'Xls', $title);
-        } catch (Exception $why) {
+        }
+        catch (Exception $why) {
             return ['code' => $why->getCode(), 'message' => $why->getMessage()];
         }
     }

@@ -43,13 +43,14 @@ class Position extends ActiveRecord
         ];
     }
 
-    public static function getPositionUser($position)
+    public static function getPositionUser($position = '')
     {
         $data = PositionChild::find()
             ->select('u.id,u.username')
             ->join('INNER JOIN', 'user u' ,'u.id=user_id')
             ->join('INNER JOIN', 'auth_position p', 'p.id=position_id')
-            ->where(['p.position' => $position, 'u.status' => User::STATUS_ACTIVE])
+            ->andFilterWhere(['p.position' => $position, 'u.status' => User::STATUS_ACTIVE])
+//            ->where(['p.position' => $position, 'u.status' => User::STATUS_ACTIVE])
             ->orderBy('u.id')
             ->asArray()->all();
         return ArrayHelper::map($data,'id','username');

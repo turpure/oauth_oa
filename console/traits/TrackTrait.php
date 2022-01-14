@@ -20,7 +20,7 @@ trait TrackTrait
     public function getOrder($type, $num = 500)
     {
         return TradeSendLogisticsTrack::find()
-            //            ->andFilterWhere(['status'=>'5'])
+            //            ->andFilterWhere(['track_no' => 'EV006643476CN'])
             ->andwhere(['<', 'updated_at', strtotime(date('Y-m-d'))])
             ->andwhere(['=', 'logistic_type', $type])
             ->andwhere(['>', 'created_at', (time() - 86400 * 60)])
@@ -34,16 +34,22 @@ trait TrackTrait
      * 查询不到
      * @param $trackNo
      */
-    public function notExist($trackNo)
+    public function notExist($trackNo, $newestDetail = null)
     {
-        var_export('查询不到:' . $trackNo);
+        var_export('查询不到:' . $trackNo.PHP_EOL);
+        $updateData = [
+            'updated_at' => time(),
+            'status'     => 2
+        ];
+
+        if (!empty($newestDetail)) {
+            $updateData['newest_detail'] = $newestDetail;
+        }
+
         Yii::$app->db->createCommand()
             ->update(
                 'trade_send_logistics_track',
-                [
-                    'updated_at' => time(),
-                    'status'     => 2
-                ],
+                $updateData,
                 ['track_no' => $trackNo]
             )
             ->execute();

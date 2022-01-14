@@ -75,7 +75,7 @@ class User extends UserModel
         }
         if($this->role) {
             $query->leftJoin('auth_assignment ag','ag.user_id=user.id')
-                ->andFilterWhere(['like','role',$this->role]);
+                ->andFilterWhere(['like','item_name',$this->role]);
         }
         $query->andFilterWhere(['like', 'username', $this->username])
             ->andFilterWhere(['like', 'auth_key', $this->auth_key])

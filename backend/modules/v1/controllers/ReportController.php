@@ -1439,7 +1439,7 @@ class ReportController extends AdminController
                 'pageSize' => $condition['pageSize'] ?? 10000
             ];
             $data = ApiReport::getAmazonClearSkuProfit($condition)->models;
-            $title = ['SKU', '产品编码', '产品名称', '平台', '部门', '销售员', '销量', '成本', '销售额', '总利润', '利润率(%)'];
+            $title = ['SKU', '产品编码', '产品名称', '账号简称', '仓库', '平台', '部门', '销售员', '销量', '成本', '销售额', '总利润', '利润率(%)'];
             ExportTools::toExcelOrCsv('amazon-clear-profit', $data, 'Xls', $title);
         } catch (\Exception $why) {
             return ['message' => $why->getMessage(), 'code' => 400];

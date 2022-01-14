@@ -3,6 +3,9 @@
 use yii\helpers\Html;
 use yii\grid\GridView;
 use mdm\admin\components\Helper;
+use \yii\bootstrap\Modal;
+use yii\helpers\Url;
+use yii\widgets\ActiveForm;
 
 /* @var $this yii\web\View */
 /* @var $searchModel mdm\admin\models\searchs\User */
@@ -17,7 +20,14 @@ $this->params['breadcrumbs'][] = $this->title;
     <p>
         <?= Html::a(Yii::t('rbac-admin', '新增店铺'), ['create'], ['class' => 'btn btn-success']) ?>
         <?= Html::a(Yii::t('rbac-admin', '导出'), ['export'], ['class' => 'export btn btn-primary']) ?>
+
+        <?php /*$form = ActiveForm::begin(["options" => ["enctype" => "multipart/form-data"]]); */?><!--
+        <?/*= $form->field($model, "file")->fileInput() */?>
+        <?/*= Html::a(Yii::t('rbac-admin', '批量导入'), ['import'], ['id' => 'create', 'class' => 'import btn btn-danger']) */?>
+        --><?php /*ActiveForm::end(); */?>
     </p>
+
+
 
     <?=
     GridView::widget([
@@ -34,6 +44,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 }
             ],
             'username',
+            'check_username',
             [
                 'class' => 'yii\grid\ActionColumn',
                 'template' => Helper::filterActionColumn(['view', 'update', 'delete']),
@@ -53,5 +64,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'maxButtonCount' => 10
         ],
     ]);
+
+
     ?>
 </div>
