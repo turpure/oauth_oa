@@ -41,7 +41,7 @@ class EbayGroupDispatchService
 
     public static function addWorkGroupNumber($id)
     {
-        $sql = "update proCenter.oa_ebay_group_log set currentNumber = currentNumber + 1, `full` = if((rate - currentNumber) =0,1,0)  where id=". $id  ;
+        $sql = "update proCenter.oa_ebay_group_log set currentNumber = currentNumber + 1, `full` = if((rate - currentNumber) <= 0,1,0)  where id=". $id  ;
         $db = \Yii::$app->db;
         $ret = $db->createCommand($sql)->execute();
         return $ret;
